@@ -1,12 +1,16 @@
 (ns afterglow.core
-  (:require [flatland.protobuf.core :refer :all])
-  (:import [ola.proto Ola$TimeCode])
+  (:require [flatland.protobuf.core :refer :all]
+            [afterglow.ola-client :refer [send-request]]
+            [clojure.pprint :refer [pprint]])
+  (:import [ola.proto Ola$PluginListRequest])
   (:gen-class))
 
-(def TimeCode (protodef ola.proto.Ola$TimeCode))
+(def PluginListRequest (protodef Ola$PluginListRequest))
 
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
   (println "Hello, World!")
-  (def p (protobuf TimeCode :hours 1 :minutes 42)))
+  (let [p (protobuf PluginListRequest)]
+    (pprint (send-request "GetPlugins" p))
+    ))
