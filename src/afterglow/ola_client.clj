@@ -5,7 +5,7 @@
            [ola.rpc Rpc$RpcMessage Rpc$Type]
            [java.net Socket]
            [java.nio ByteBuffer]
-           [java.io DataOutputStream]
+           [java.io InputStream]
            [flatland.protobuf PersistentProtocolBufferMap$Def$NamingStrategy]
            [com.google.protobuf ByteString]))
 
@@ -25,7 +25,25 @@
   "Calculates the correct 4-byte header value for an OLA request of the specified length."
   (bit-or (bit-and length size-mask) version-masked))
 
-(defn send-request [name message]
+(defn parse-header [header]
+  "Returns the length encoded by a header value, after validating the protocol version."
+  (if (= (bit-and header version-mask) version-masked)
+    (bit-and header size-mask)
+    (throw (Exception. (str "Unsupported OLA protocol version, "
+                            (bit-shift-right (bit-and header version-mask) 28))))))
+
+(defn- read-fully
+  "Will fill the buffer to capacity, or throw an exception.
+  Returns the number of bytes read."
+  ^long [^InputStream input ^bytes buf]
+  (loop [off 0 len (alength buf)]
+    (let [in-size (.read input buf off len)]
+      (cond
+        (== in-size len) (+ off in-size)
+        (neg? in-size) (throw (Exception. (str "Only able to read " off " of " (alength buf) " expected bytes.")))
+        :else (recur (+ off in-size) (- len in-size))))))
+
+(defn send-request [name message response-type]
   (with-open [sock (Socket. "localhost" 9010)
               in (io/input-stream sock)
               out (io/output-stream sock)]
@@ -33,30 +51,28 @@
     (let [msg-bytes (ByteString/copyFrom (protobuf-dump message))
           request (protobuf RpcMessage :type :REQUEST :id 0 :name name :buffer msg-bytes)
           request-bytes (protobuf-dump request)
-          send-length (+ 4 (count request-bytes))
-          request-buffer (.order (ByteBuffer/allocate send-length) (ByteOrder/nativeOrder))
-          send-buffer (byte-array send-length)]
-
-      (doto request-buffer
+          header-buffer (.order (ByteBuffer/allocate 4) (ByteOrder/nativeOrder))
+          header-bytes (byte-array 4)]
+      (doto header-buffer
         (.putInt (.intValue (build-header (count request-bytes))))
-        (.put request-bytes)
         (.flip)
-        (.get send-buffer))
-      (println (count send-buffer))
-      (doseq [b send-buffer] (println b))
-      (.write out send-buffer)
-      (Thread/sleep 2000)
-      #_(let [buf (byte-array 1000) 
-            n (.read in buf)]
-        (if (> n 4)
-          (let [bb (ByteBuffer/allocate 4)]
-            (.put bb buf 0 4)
-            (.flip bb)
-            (let [response-len (.getInt bb)]
-              (if (= response-len (- n 4))
-                (let [response (byte-array response-len)]
-                  (.get bb response)
-                  (protobuf-load RpcMessage buf 4 (response-len)))
-                (throw (Exception. (str "Read wrong size? Response should be " response-len " bytes, total read: " n " (4 byte header)"))))))
-          (throw (Exception. (str "Read less than 4 bytes from olad: " n))))))
-    ))
+        (.get header-bytes))
+      (.write out header-bytes)
+      (.write out request-bytes)
+      (.flush out)
+
+      (read-fully in header-bytes)
+      (doto header-buffer
+        (.clear)
+        (.put header-bytes)
+        (.flip))
+      (let [wrapper-length (parse-header (.getInt header-buffer))
+            wrapper-bytes (byte-array wrapper-length)]
+        (read-fully in wrapper-bytes)
+        (let [wrapper (protobuf-load RpcMessage wrapper-bytes)
+              response-length (.size (:buffer wrapper))
+              response-buffer (.asReadOnlyByteBuffer (:buffer wrapper))
+              response-bytes (byte-array response-length)]
+          (println "Wrapper:" wrapper)
+          (.get response-buffer response-bytes)
+          (protobuf-load response-type response-bytes))))))
