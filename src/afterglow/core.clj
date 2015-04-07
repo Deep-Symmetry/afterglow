@@ -1,9 +1,11 @@
 (ns afterglow.core
   (:require [flatland.protobuf.core :refer :all]
             [afterglow.ola-client :refer [send-request]]
-            [clojure.pprint :refer [pprint]])
+            [taoensso.timbre :as timbre])
   (:import [ola.proto Ola$PluginListRequest Ola$PluginListReply])
   (:gen-class))
+
+(timbre/refer-timbre)
 
 (def PluginListRequest (protodef Ola$PluginListRequest))
 (def PluginListReply (protodef Ola$PluginListReply))
@@ -13,5 +15,4 @@
   [& args]
   (println "Hello, World!")
   (let [p (protobuf PluginListRequest)]
-    (pprint (send-request "GetPlugins" p PluginListReply))
-    ))
+    (send-request "GetPlugins" p PluginListReply #(info "handling" %))))

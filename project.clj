@@ -4,8 +4,11 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.6.0"]
+                 [org.clojure/core.cache "0.6.3"]
+                 [org.clojure/tools.nrepl "0.2.3"]
                  [overtone "0.9.1"]
-                 [org.flatland/protobuf "0.8.1"]]
+                 [org.flatland/protobuf "0.8.1"]
+                 [com.taoensso/timbre "3.3.1"]]
   :main ^:skip-aot afterglow.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}}
