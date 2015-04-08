@@ -15,4 +15,5 @@
   :profiles {:uberjar {:aot :all}}
   :plugins [[lein-ancient "0.6.5"]
             [lein-protobuf "0.4.2"]]
+  :prep-tasks ["protobuf" "javac" "compile"]
   :min-lein-version "2.0.0")

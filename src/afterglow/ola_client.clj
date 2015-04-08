@@ -151,21 +151,13 @@ Takes the current connection, if any, as its argument, in case cleanup is needed
       (future ((:handler handler-entry) (protobuf-load (:response-type handler-entry) response-bytes))))
     (warn "Cannot find handler for response, too old?" wrapper)))
 
-(defn- process-requests
-  "Loop to read responses from the OLA server and dispatch them to the proper
-  handlers. Needs to be called in a future."
-  [channel]
-
-  (let [connection (atom (connect-server nil))
-        request-counter (atom 0)
-        request-cache (atom (cache/ttl-cache-factory {} :ttl request-cache-ttl))
-        header-bytes (byte-array 4)
+(defn- channel-loop
+  "Reads from the internal request channel until it closes, formatting messages to be sent to the OLA server socket.
+  Can be run on an unbuffered core.async channel because this is fast, local async I/O."
+  [channel connection request-cache]
+  (let [request-counter (atom 0)
         header-buffer (.order (ByteBuffer/allocate 4) (ByteOrder/nativeOrder))
-        running (atom true)]
-
-    (debug "channel" channel "connection" connection)
-    
-    ;; A core.async loop which takes requests on the internal channel and writes them to the OLA server socket
+        header-bytes (byte-array 4)]
     (go
       (loop [request (<! channel)]
         (debug "received request" request)
@@ -173,22 +165,37 @@ Takes the current connection, if any, as its argument, in case cleanup is needed
           (let [msg-bytes (ByteString/copyFrom (protobuf-dump message))
                 request-id (next-request-id request-counter)
                 request (protobuf RpcMessage :type :REQUEST :id request-id :name name :buffer msg-bytes)
-                request-bytes (protobuf-dump request)
-                header-buffer (.order (ByteBuffer/allocate 4) (ByteOrder/nativeOrder))
-                header-bytes (byte-array 4)]
+                request-bytes (protobuf-dump request)]
             (store-handler request-id response-type response-handler request-cache)
             (doto header-buffer
+              (.clear)
               (.putInt (.intValue (build-header (count request-bytes))))
               (.flip)
               (.get header-bytes))
             (write-safely header-bytes request-bytes connection))
           (recur (<! channel))))
       ;; The channel has been closed, so signal the main thread to shut down as well
-      (reset! running false)
       (swap! connection disconnect-server))
-        
+))
+
+(defn- process-requests
+  "Set up loops to read requests on our local channel and send them to the OLA server, and read its responses
+  and  dispatch them to the proper handlers. Needs to be called in a future since it uses blocking reads from
+  the server socket."
+  [channel]
+
+  (let [connection (atom (connect-server nil))
+        request-cache (atom (cache/ttl-cache-factory {} :ttl request-cache-ttl))
+        header-bytes (byte-array 4)
+        header-buffer (.order (ByteBuffer/allocate 4) (ByteOrder/nativeOrder))]
+
+    (debug "channel" channel "connection" connection)
+    
+    ;; Run core.async loop which takes requests on the internal channel and writes them to the OLA server socket
+    (channel-loop channel connection request-cache)
+    
     ;; An ordinary loop which reads from the OLA server socket and dispatches responses to their handlers
-    (while @running
+    (while @connection
       (try
         (read-fully (:in @connection) header-bytes)
         (doto header-buffer
@@ -203,16 +210,15 @@ Takes the current connection, if any, as its argument, in case cleanup is needed
               (handle-response wrapper request-cache)
               (warn "Ignoring unrecognized response type:" wrapper))))
         (catch Exception e
-          (when @running
+          (when @connection
             (warn e "Problem reading from olad, trying to reconnect...")
             (swap! connection connect-server)
             (when-not @connection
               (error "Unable to reconnect to OLA server, shutting down ola_client")
-              (reset! running false)
               (close! channel))))))
     (info "OLA request processor terminating.")))
 
-(defn create-channel
+(defn- create-channel
   [old-channel]
   (or old-channel
       (let [c (chan)]
@@ -226,19 +232,24 @@ Takes the current connection, if any, as its argument, in case cleanup is needed
   nil)
 
 (defn start
-  "Makes sure the event handling thread and OLA server connection are up and running"
+  "Explicitly start event handling thread and OLA server connection; generally unnecessary, as
+send-request will call if necessary."
   []
   (swap! channel create-channel))
 
 (defn shutdown
-  "Stop the event handling thread and close the OLA server connection, if they exist"
+  "Stop the event handling thread and close the OLA server connection, if they exist."
   []
   (swap! channel destroy-channel))
 
 (defn send-request
   "Send a request to the OLA server."
   [name message response-type response-handler]
-  (if-let [chan @channel]
-    (>!! chan [name message response-type response-handler])
-    (error "ola_client cannot send requests while not running, discarding" name message)))
+  (loop [retrying false]
+    (start)
+    (when-not (>!! @channel [name message response-type response-handler])
+      (shutdown)
+      (if retrying
+        (error "ola_client unable to connect to server, discarding" name message)
+        (recur true)))))
 
