@@ -178,6 +178,8 @@ Takes the current connection, if any, as its argument, in case cleanup is needed
       (swap! connection disconnect-server))
 ))
 
+(declare shutdown)
+
 (defn- process-requests
   "Set up loops to read requests on our local channel and send them to the OLA server, and read its responses
   and  dispatch them to the proper handlers. Needs to be called in a future since it uses blocking reads from
@@ -215,8 +217,9 @@ Takes the current connection, if any, as its argument, in case cleanup is needed
             (swap! connection connect-server)
             (when-not @connection
               (error "Unable to reconnect to OLA server, shutting down ola_client")
-              (close! channel))))))
-    (info "OLA request processor terminating.")))
+              (shutdown))))))
+    (info "OLA request processor terminating.")
+    (shutdown)))
 
 (defn- create-channel
   [old-channel]
@@ -245,11 +248,6 @@ send-request will call if necessary."
 (defn send-request
   "Send a request to the OLA server."
   [name message response-type response-handler]
-  (loop [retrying false]
-    (start)
-    (when-not (>!! @channel [name message response-type response-handler])
-      (shutdown)
-      (if retrying
-        (error "ola_client unable to connect to server, discarding" name message)
-        (recur true)))))
+  (start)
+  (>!! @channel [name message response-type response-handler]))
 
