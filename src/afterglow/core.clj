@@ -13,10 +13,9 @@
 (def UniverseInfoReply (protodef Ola$UniverseInfoReply))
 
 (defn -main
-  "I don't do a whole lot ... yet."
+  "Test connectivity to the OLA server by sending a few messages and pretty-printing the responses."
   [& args]
-  (println "Hello, World!")
   (let [p (protobuf PluginListRequest)]
-    (ola/send-request "GetPlugins" p PluginListReply #(info "handling" %)))
+    (ola/send-request "GetPlugins" p PluginListReply #(info "Plugins" (with-out-str (clojure.pprint/pprint %)))))
   (let [p (protobuf OptionalUniverseRequest)]
-    (ola/send-request "GetUniverseInfo" p UniverseInfoReply #(info "universes" %))))
+    (ola/send-request "GetUniverseInfo" p UniverseInfoReply #(info "Universes" (with-out-str (clojure.pprint/pprint %))))))
