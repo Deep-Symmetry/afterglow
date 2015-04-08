@@ -2,6 +2,7 @@
   (:require [flatland.protobuf.core :refer :all]
             [clojure.java.io :as io]
             [clojure.core.cache :as cache]
+            [clojure.core.async :refer [chan go go-loop <! >!! close!]]
             [taoensso.timbre :as timbre])
   (:import [ola.proto Ola$STREAMING_NO_RESPONSE]
            [ola.rpc Rpc$RpcMessage Rpc$Type]
@@ -38,8 +39,8 @@
 ;; Sequence number used to tie requests to responses
 (defonce ^:private request-number (atom 0))
 
-;; Holds the server connection when active and state information
-(defonce ^:private connection (atom {:running false}))
+;; The channel used to communicate with the thread that talks to the OLA server
+(defonce ^:private channel (atom nil))
 
 (defn- next-request-id
   "Assign the sequence number for a new request, wrapping at the protocol limit.
@@ -50,35 +51,36 @@ requests will thus be long gone."
                            1
                            (inc %))))
 
-(defn- disconnect-quietly [conn]
-  (try
-    (.close (:socket conn))
-    (catch Exception e
-      (info e "Issue closing olad server socket")))
-  (dissoc conn :socket :in :out))
-
-(defn- disconnect-server []
-  (when (:socket @connection)
-    (swap! connection disconnect-quietly)))
-
-(defn- connect-server []
-  (disconnect-server)  ;; Clean up any old connection, e.g. if a read failed
-  (if (:running @connection)
+(defn- disconnect-server
+  "Disconnects any active OLA server connection, and returns the new value the @connection atom should hold."
+  [conn]
+  (when (:socket conn)
     (try
-      (let [sock (Socket. "localhost" olad-port)]
-        (try
-          (let [in (io/input-stream sock)
-                out (io/output-stream sock)]
-            (reset! server-socket (swap! connection #(assoc % :socket sock :in in :out out))))
-          (catch Exception e
-            (warn e "Problem opening olad server streams; discarding connection")
-            (try
-              (.close sock)
-              (catch Exception e
-                (info e "Further exception trying to clean up failed olad connection"))))))
+      (.close (:socket conn))
       (catch Exception e
-        (warn e "Unable to connect to olad server, is it running?")))
-    (warn "connect-server called while running is false; ignoring")))
+        (info e "Issue closing OLA server socket"))))
+  nil)
+
+(defn- connect-server
+  "Establishes a new connection to the OLA server, returning the value the @connection atom should hold for using it.
+Takes the current connection, if any, as its argument, in case cleanup is needed."
+  [conn]
+  (when (:socket conn)
+    (disconnect-server conn)) ;; Clean up any old connection, e.g. if a read failed
+  (try
+    (let [sock (Socket. "localhost" olad-port)]
+      (try
+        (let [in (io/input-stream sock)
+              out (io/output-stream sock)]
+          {:socket sock :in in :out out})
+        (catch Exception e
+          (warn e "Problem opening olad server streams; discarding connection")
+          (try
+            (.close sock)
+            (catch Exception e
+              (info e "Further exception trying to clean up failed olad connection"))))))
+    (catch Exception e
+      (warn e "Unable to connect to olad server, is it running?"))))
 
 (defn- build-header
   "Calculates the correct 4-byte header value for an OLA request of the specified length."
@@ -106,7 +108,7 @@ requests will thus be long gone."
 (defn- write-safely-internal
   "Recursive portion of write-safely, try to write a message to the olad server, reopen
   connection and recur if that fails and it is the first failure."
-  [^bytes header ^bytes message ^Boolean first-try]
+  [^bytes header ^bytes message ^Boolean first-try ^clojure.lang.Atom connection]
   (try
       (.write (:out @connection) header)
       (.write (:out @connection) message)
@@ -118,13 +120,13 @@ requests will thus be long gone."
         (warn e "Problem writing message to olad server")
         (when first-try
           (info "Reopening connection and retrying...")
-          (connect-server)
-          (write-safely-internal header message false)))))
+          (swap! connection connect-server)
+          (write-safely-internal header message false connection)))))
 
 (defn- write-safely
   "Try to write a message to the olad server, reopen connection and retry once if that failed."
-  [^bytes header ^bytes message]
-  (write-safely-internal header message true))
+  [^bytes header ^bytes message ^clojure.lang.Atom connection]
+  (write-safely-internal header message true connection))
 
 (defn- store-handler
   "Record a handler in the cache so it will be ready to call when the OLA server responds."
@@ -134,24 +136,6 @@ requests will thus be long gone."
       (swap! request-cache #(cache/hit % request-id))
       (warn "Collision for request id" request-id))
     (swap! request-cache #(cache/miss % request-id {:response-type response-type :handler handler}))))
-
-(defn send-request
-  "Send a request to the olad server."
-  [name message response-type response-handler]
-  (if (:running @connection)
-    (let [msg-bytes (ByteString/copyFrom (protobuf-dump message))
-          request-id (next-request-id)
-          request (protobuf RpcMessage :type :REQUEST :id request-id :name name :buffer msg-bytes)
-          request-bytes (protobuf-dump request)
-          header-buffer (.order (ByteBuffer/allocate 4) (ByteOrder/nativeOrder))
-          header-bytes (byte-array 4)]
-      (store-handler request-id response-type response-handler)
-      (doto header-buffer
-        (.putInt (.intValue (build-header (count request-bytes))))
-        (.flip)
-        (.get header-bytes))
-      (write-safely header-bytes request-bytes))
-    (error "ola_client cannot send requests while not running, discarding" name message)))
 
 (defn- find-handler
   "Look up the handler details for a request id, removing them from the cache."
@@ -174,10 +158,40 @@ requests will thus be long gone."
 (defn- process-requests
   "Loop to read responses from the OLA server and dispatch them to the proper
   handlers. Needs to be called in a future."
-  []
-  (let [header-bytes (byte-array 4)
-        header-buffer (.order (ByteBuffer/allocate 4) (ByteOrder/nativeOrder))]
-    (while (:running @connection)
+  [channel]
+
+  (let [connection (atom nil)
+        header-bytes (byte-array 4)
+        header-buffer (.order (ByteBuffer/allocate 4) (ByteOrder/nativeOrder))
+        running (atom true)]
+
+    (swap! connection connect-server)
+    (debug "channel" channel "connection" connection)
+    
+    ;; A core.async loop which takes requests on the internal channel and writes them to the OLA server socket
+    (go
+      (loop [request (<! channel)]
+        (debug "received request" request)
+        (when-let [[name message response-type response-handler] request]
+          (let [msg-bytes (ByteString/copyFrom (protobuf-dump message))
+                request-id (next-request-id)
+                request (protobuf RpcMessage :type :REQUEST :id request-id :name name :buffer msg-bytes)
+                request-bytes (protobuf-dump request)
+                header-buffer (.order (ByteBuffer/allocate 4) (ByteOrder/nativeOrder))
+                header-bytes (byte-array 4)]
+            (store-handler request-id response-type response-handler)
+            (doto header-buffer
+              (.putInt (.intValue (build-header (count request-bytes))))
+              (.flip)
+              (.get header-bytes))
+            (write-safely header-bytes request-bytes connection))
+          (recur (<! channel))))
+      ;; The channel has been closed, so signal the main thread to shut down as well
+      (reset! running false)
+      (swap! connection disconnect-server))
+        
+    ;; An ordinary loop which reads from the OLA server socket and dispatches responses to their handlers
+    (while @running
       (try
         (read-fully (:in @connection) header-bytes)
         (doto header-buffer
@@ -192,25 +206,42 @@ requests will thus be long gone."
               (handle-response wrapper)
               (warn "Ignoring unrecognized response type:" wrapper))))
         (catch Exception e
-          (when (:running @connection)
+          (when @running
             (warn e "Problem reading from olad, trying to reconnect...")
-            (connect-server)))))))
+            (swap! connection connect-server)
+            (when-not @connection
+              (error "Unable to reconnect to OLA server, shutting down ola_client")
+              (reset! running false)
+              (close! channel))))))
+    (info "OLA request processor terminating.")))
+
+(defn create-channel
+  [old-channel]
+  (or old-channel
+      (let [c (chan)]
+        (info "Created OLA request processor." (future (process-requests c)))
+        c)))
+
+(defn destroy-channel
+  [c]
+  (when c
+    (close! c))
+  nil)
 
 (defn start
-  "Set up the event handling thread and OLA server connection"
+  "Makes sure the event handling thread and OLA server connection are up and running"
   []
-  (if (:running @connection)
-    (error "Ignoring attempt to start ola_client when already running")
-    (do (swap! connection #(assoc % :running true))
-        (connect-server)
-        (swap! connection #(assoc % :processor (future (process-requests)))))))
+  (swap! channel create-channel))
 
 (defn shutdown
-  "Stop the event handling thread and close the OLA server connection"
+  "Stop the event handling thread and close the OLA server connection, if they exist"
   []
-  (if (:running @connection)
-    (do (future-cancel (:processor @connection))
-        (Thread/sleep 500)
-        (disconnect-server)
-        (swap! connection #(dissoc % :processor :running)))
-    (error "Ignoring attempt to shut down ola_client when not running")))
+  (swap! channel destroy-channel))
+
+(defn send-request
+  "Send a request to the OLA server."
+  [name message response-type response-handler]
+  (if-let [chan @channel]
+    (>!! chan [name message response-type response-handler])
+    (error "ola_client cannot send requests while not running, discarding" name message)))
+
