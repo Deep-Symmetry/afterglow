@@ -30,14 +30,10 @@
 ;; Local port on which the OLA server listens
 (def ^:private olad-port 9010)
 
-;; TTL cache used for keeping track of handlers to be called when OLA server responds. If
-;; an hour has gone by, we can be sure that request is never going to see a response.
+;; How long to cache handlers to be called when OLA server responds. If an hour
+;; has gone by, we can be sure that request is never going to see a response.
 (def ^:private request-cache-ttl (.convert java.util.concurrent.TimeUnit/MILLISECONDS
                                            1 java.util.concurrent.TimeUnit/HOURS))
-(defonce ^:private request-cache (atom (cache/ttl-cache-factory {} :ttl request-cache-ttl)))
-
-;; Sequence number used to tie requests to responses
-(defonce ^:private request-number (atom 0))
 
 ;; The channel used to communicate with the thread that talks to the OLA server
 (defonce ^:private channel (atom nil))
@@ -46,10 +42,10 @@
   "Assign the sequence number for a new request, wrapping at the protocol limit.
 Will be safe because it will take far longer than an hour to wrap, and stale
 requests will thus be long gone."
-  []
-  (swap! request-number #(if (= % Integer/MAX_VALUE)
-                           1
-                           (inc %))))
+  [request-counter]
+  (swap! request-counter #(if (= % Integer/MAX_VALUE)
+                            1
+                            (inc %))))
 
 (defn- disconnect-server
   "Disconnects any active OLA server connection, and returns the new value the @connection atom should hold."
@@ -130,7 +126,7 @@ Takes the current connection, if any, as its argument, in case cleanup is needed
 
 (defn- store-handler
   "Record a handler in the cache so it will be ready to call when the OLA server responds."
-  [request-id response-type handler]
+  [request-id response-type handler request-cache]
   (if (cache/has? @request-cache request-id)
     (do
       (swap! request-cache #(cache/hit % request-id))
@@ -139,15 +135,15 @@ Takes the current connection, if any, as its argument, in case cleanup is needed
 
 (defn- find-handler
   "Look up the handler details for a request id, removing them from the cache."
-  [request-id]
+  [request-id request-cache]
   (when-let [entry (cache/lookup @request-cache request-id)]
     (swap! request-cache #(cache/evict % request-id))
     entry))
 
 (defn- handle-response
   "Look up the handler associated with an OLA server response and call it on a new thread."
-  [wrapper]
-  (if-let [handler-entry (find-handler (:id wrapper))]
+  [wrapper request-cache]
+  (if-let [handler-entry (find-handler (:id wrapper) request-cache)]
     (let [response-length (.size (:buffer wrapper))
           response-buffer (.asReadOnlyByteBuffer (:buffer wrapper))
           response-bytes (byte-array response-length)]
@@ -160,12 +156,13 @@ Takes the current connection, if any, as its argument, in case cleanup is needed
   handlers. Needs to be called in a future."
   [channel]
 
-  (let [connection (atom nil)
+  (let [connection (atom (connect-server nil))
+        request-counter (atom 0)
+        request-cache (atom (cache/ttl-cache-factory {} :ttl request-cache-ttl))
         header-bytes (byte-array 4)
         header-buffer (.order (ByteBuffer/allocate 4) (ByteOrder/nativeOrder))
         running (atom true)]
 
-    (swap! connection connect-server)
     (debug "channel" channel "connection" connection)
     
     ;; A core.async loop which takes requests on the internal channel and writes them to the OLA server socket
@@ -174,12 +171,12 @@ Takes the current connection, if any, as its argument, in case cleanup is needed
         (debug "received request" request)
         (when-let [[name message response-type response-handler] request]
           (let [msg-bytes (ByteString/copyFrom (protobuf-dump message))
-                request-id (next-request-id)
+                request-id (next-request-id request-counter)
                 request (protobuf RpcMessage :type :REQUEST :id request-id :name name :buffer msg-bytes)
                 request-bytes (protobuf-dump request)
                 header-buffer (.order (ByteBuffer/allocate 4) (ByteOrder/nativeOrder))
                 header-bytes (byte-array 4)]
-            (store-handler request-id response-type response-handler)
+            (store-handler request-id response-type response-handler request-cache)
             (doto header-buffer
               (.putInt (.intValue (build-header (count request-bytes))))
               (.flip)
@@ -203,7 +200,7 @@ Takes the current connection, if any, as its argument, in case cleanup is needed
           (read-fully (:in @connection) wrapper-bytes)
           (let [wrapper (protobuf-load RpcMessage wrapper-bytes)]
             (if (= (:type wrapper) :RESPONSE)
-              (handle-response wrapper)
+              (handle-response wrapper request-cache)
               (warn "Ignoring unrecognized response type:" wrapper))))
         (catch Exception e
           (when @running
