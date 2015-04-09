@@ -10,10 +10,14 @@
                  [overtone "0.9.1"]
                  [org.flatland/protobuf "0.8.1"]
                  [com.taoensso/timbre "3.3.1"]]
+  :source-paths ["src" "target/generated"]
+  :prep-tasks [["with-profile" "+gen,+dev" "run" "-m" "afterglow.src-generator"] "protobuf" "javac" "compile"]
   :main ^:skip-aot afterglow.core
   :target-path "target/%s"
-  :profiles {:uberjar {:aot :all}}
+  :profiles {:dev {:source-paths ["src" "dev_src" "target/generated"]}
+             :gen {:prep-tasks ^:replace ["protobuf" "javac" "compile"]}
+             :uberjar {:aot :all}}
   :plugins [[lein-ancient "0.6.5"]
             [lein-protobuf "0.4.2"]]
-  :prep-tasks ["protobuf" "javac" "compile"]
+  :aliases {"gen" ["with-profile" "+gen,+dev" "run" "-m" "afterglow.src-generator"]}
   :min-lein-version "2.0.0")
