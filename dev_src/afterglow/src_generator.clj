@@ -1,5 +1,6 @@
 (ns afterglow.src-generator
-  (:require [clojure.java.io :refer [file resource]]))
+  (:require [clojure.java.io :refer [file resource]]
+            [selmer.parser :refer [render-file]]))
 
 (defn find-messages [spec]
   )
@@ -12,19 +13,19 @@
         pkg (first (map second (re-seq #"package\s+(.*);" spec)))
         src (file "target" "generated" "afterglow" (str lc-name "_messages.clj"))
         messages (map second (re-seq #"message\s+(\w+)\s*\{" spec))
-        enums (map second (re-seq #"enum\s+(\w+)\s*\{" spec))]
+        enums (map second (re-seq #"enum\s+(\w+)\s*\{" spec))
+        context {:classname name
+                 :package (first (map second (re-seq #"package\s+(.*);" spec)))
+                 :messages messages
+                 :enums enums
+                 :declared-classes (concat messages enums)}]
     (.mkdirs (.getParentFile src))
-    (spit src (str "(ns afterglow." lc-name "-messages
-  (:require [flatland.protobuf.core :refer :all])
-  (:import [" pkg " " (clojure.string/join " " (map #(str name "$" %) (concat messages enums))) "]
-           [flatland.protobuf PersistentProtocolBufferMap$Def$NamingStrategy]))
+    (spit src
+          (render-file "afterglow/messages_template.clj" context))
+    
+    (spit (file "target" "generated" "afterglow" (str lc-name "_service.clj"))
+          (render-file "afterglow/service_template.clj" context))))
 
-(def safe-strategy (reify PersistentProtocolBufferMap$Def$NamingStrategy
-                          (protoName [this clojure-name]
-                                     (name clojure-name))
-                          (clojureName [this proto-name]
-                                       (keyword proto-name))))\n\n"
-  (clojure.string/join "\n\n" (map #(str "(def " % " (protodef " name "$" % " {:naming-strategy safe-strategy}))") messages)) "\n"))))
 
 (defn generate []
   (doseq [name ["Ola" "Rpc"]]
