@@ -3,23 +3,15 @@
             [clojure.java.io :as io]
             [clojure.core.cache :as cache]
             [clojure.core.async :refer [chan go go-loop <! >!! close!]]
+            [afterglow.rpc-messages :refer [RpcMessage]]
             [taoensso.timbre :as timbre])
-  (:import [ola.proto Ola$STREAMING_NO_RESPONSE]
-           [ola.rpc Rpc$RpcMessage Rpc$Type]
-           [java.net Socket]
+  (:import [java.net Socket]
            [java.nio ByteBuffer ByteOrder]
            [java.io InputStream]
            [flatland.protobuf PersistentProtocolBufferMap$Def$NamingStrategy]
            [com.google.protobuf ByteString]))
 
 (timbre/refer-timbre)
-
-(def RpcMessage (protodef Rpc$RpcMessage
-                          {:naming-strategy (reify PersistentProtocolBufferMap$Def$NamingStrategy
-                                              (protoName [this clojure-name]
-                                                (name clojure-name))
-                                              (clojureName [this proto-name]
-                                                (keyword proto-name)))}))
 
 ;; Values needed to construct proper protocol headers for communicating with OLA server
 (def ^:private protocol-version 1)
