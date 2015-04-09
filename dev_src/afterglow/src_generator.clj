@@ -17,13 +17,13 @@
     (spit src (str "(ns afterglow." lc-name "-messages
   (:require [flatland.protobuf.core :refer :all])
   (:import [" pkg " " (clojure.string/join " " (map #(str name "$" %) (concat messages enums))) "]
-           [flatland.protobuf PersistentProtocolBufferMap$Def$NamingStrategy])
+           [flatland.protobuf PersistentProtocolBufferMap$Def$NamingStrategy]))
 
 (def safe-strategy (reify PersistentProtocolBufferMap$Def$NamingStrategy
                           (protoName [this clojure-name]
                                      (name clojure-name))
                           (clojureName [this proto-name]
-                                       (keyword proto-name)))\n\n"
+                                       (keyword proto-name))))\n\n"
   (clojure.string/join "\n\n" (map #(str "(def " % " (protodef " name "$" % " {:naming-strategy safe-strategy}))") messages)) "\n"))))
 
 (defn generate []
