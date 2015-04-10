@@ -1,21 +1,29 @@
 # Afterglow
 
-A Clojure take on a DMX lighting control system leveraging the [Overtone](https://github.com/overtone/overtone) toolkit and the [Open Lighting Architecture](https://www.openlighting.org/ola/). For efficiency, Afterglow uses [Protocol Buffers](https://developers.google.com/protocol-buffers/docs/overview) to communicate with the `olad` process running on the local machine via its [RPC Service](https://docs.openlighting.org/doc/latest/rpc_system.html).
+A Clojure take on a DMX lighting control system leveraging pieces of the [Overtone](https://github.com/overtone/overtone) toolkit and the [Open Lighting Architecture](https://www.openlighting.org/ola/). For efficiency, Afterglow uses [Protocol Buffers](https://developers.google.com/protocol-buffers/docs/overview) to communicate with the `olad` process running on the local machine via its [RPC Service](https://docs.openlighting.org/doc/latest/rpc_system.html).
 
 ## Installation
 
 1. [Install OLA](https://www.openlighting.org/ola/getting-started/downloads/); I recommend using [Homebrew](http://brew.sh) which lets you simply `brew install ola`. Once you launch the `olad` server you can interact with its embedded [web server](http://localhost:9090/ola.html), which is very helpful in seeing whether anything is working; you can even watch live DMX values changing.
-2.  Download Afterglow from http://example.com/FIXME.
+2. For now set up a Clojure project using [Leiningen](http://leiningen.org).
+3. Add this project as a dependency: `[afterglow "0.1.0-SNAPSHOT"]`
+
+Eventually you may be able to download binary distributions from somewhere.
 
 ## Usage
 
-FIXME: explanation
+Given its current development phase, you will want to use Afterglow in a Clojure repl.
 
-    $ java -jar afterglow-0.1.0-standalone.jar [args]
+    (use 'afterglow.examples)
+    (ramp-one-channel)
+    (afterglow.rhythm/metro-bpm metro 80)
+    (stop!)
+
+If you have a web browser open on OLA's DMX monitor for Universe 1, you will see the channel values ramping up quickly, then slowing down a little when you change the BPM. Edit the example to use a different universe or channel, or do more fun stuff.
 
 ## Options
 
-FIXME: listing of options this app accepts.
+FIXME: listing of options this app accepts once it can run as a standalone app.
 
 ## Examples
 
@@ -27,7 +35,10 @@ FIXME: listing of options this app accepts.
 
 ### Ideas
 
-* Consider implementing asynchronous TCP communication via [aleph](https://github.com/ztellman/aleph). Or [Netty?](http://martintrojer.github.io/clojure/2013/07/07/coreasync-and-blocking-io/) which seems to have Protobuf support of some sort built in.
+* Tons of oscillators and combinators for them, with convenient initializers.
+* Model moving head location and position, so they can be panned and aimed in a coordinated way.
+* Model colors, support setting via HSB, eventually maybe even model individual LED colors, especially for fixtures with more than three colors.
+* Add OSC support (probably using Overtone&rsquo;s implementation) for controller support, and MIDI as well.
 
 ### References
 
@@ -40,7 +51,7 @@ FIXME: listing of options this app accepts.
 
 ## License
 
-Copyright © 2015 Deep Symmetry, LLC
+Copyright © 2015 [Deep Symmetry, LLC](http://deepsymmetry.org)
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
