@@ -6,7 +6,7 @@ A Clojure take on a DMX lighting control system leveraging pieces of the [Overto
 
 1. [Install OLA](https://www.openlighting.org/ola/getting-started/downloads/); I recommend using [Homebrew](http://brew.sh) which lets you simply `brew install ola`. Once you launch the `olad` server you can interact with its embedded [web server](http://localhost:9090/ola.html), which is very helpful in seeing whether anything is working; you can even watch live DMX values changing.
 2. For now set up a Clojure project using [Leiningen](http://leiningen.org).
-3. Add this project as a dependency: `[afterglow "0.1.0-SNAPSHOT"]`
+3. Add this project as a dependency: [![Clojars Project](http://clojars.org/afterglow/latest-version.svg)](http://clojars.org/afterglow)
 
 Eventually you may be able to download binary distributions from somewhere.
 
