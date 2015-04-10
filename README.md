@@ -19,7 +19,7 @@ Given its current development phase, you will want to use Afterglow in a Clojure
     (afterglow.rhythm/metro-bpm metro 80)
     (stop!)
 
-If you have a web browser open on OLA's DMX monitor for Universe 1, you will see the channel values ramping up quickly, then slowing down a little when you change the BPM. Edit the example to use a different universe or channel, or do more fun stuff.
+If you have a web browser open on [your OLA daemon](http://localhost:9090/ola.html)'s DMX monitor for Universe 1, you will see the channel values ramping up quickly, then slowing down a little when you change the BPM. Edit the example to use a different universe or channel, or do more fun stuff.
 
 ## Options
 
