@@ -2,6 +2,10 @@
 
 A Clojure take on a DMX lighting control system leveraging pieces of the [Overtone](https://github.com/overtone/overtone) toolkit and the [Open Lighting Architecture](https://www.openlighting.org/ola/). For efficiency, Afterglow uses [Protocol Buffers](https://developers.google.com/protocol-buffers/docs/overview) to communicate with the `olad` process running on the local machine via its [RPC Service](https://docs.openlighting.org/doc/latest/rpc_system.html).
 
+## Status
+
+I am very rapidly fleshing this out; it is a bare skeleton right now, but I wanted to make sure I understood how to get it up on GitHub and Clojars, to share with the world, and to help motivate me. There will be a lot more functionality, better examples, and more explanation of how to use it, very soon.
+
 ## Installation
 
 1. [Install OLA](https://www.openlighting.org/ola/getting-started/downloads/); I recommend using [Homebrew](http://brew.sh) which lets you simply `brew install ola`. Once you launch the `olad` server you can interact with its embedded [web server](http://localhost:9090/ola.html), which is very helpful in seeing whether anything is working; you can even watch live DMX values changing.
