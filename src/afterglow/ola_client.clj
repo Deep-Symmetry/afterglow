@@ -8,7 +8,7 @@
   (:import [java.net Socket]
            [java.nio ByteBuffer ByteOrder]
            [java.io InputStream]
-           [flatland.protobuf PersistentProtocolBufferMap$Def$NamingStrategy]
+           [flatland.protobuf PersistentProtocolBufferMap]
            [com.google.protobuf ByteString]))
 
 (timbre/refer-timbre)
@@ -243,3 +243,9 @@ send-request will call if necessary."
   (start)
   (>!! @channel [name message response-type response-handler]))
 
+(defn wrap-message-if-needed
+  "Checks if a message is already a protobuf, and if not constructs one of the appropriate type"
+  [message message-type]
+  (if (= (type message) flatland.protobuf.PersistentProtocolBufferMap)
+    message
+    (protobuf message-type message)))
