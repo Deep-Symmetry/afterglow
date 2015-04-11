@@ -14,7 +14,7 @@
                  [com.taoensso/timbre "3.3.1"]]
   :source-paths ["src" "target/generated"]
   :prep-tasks [["with-profile" "+gen,+dev" "run" "-m" "afterglow.src-generator"] "protobuf" "javac" "compile"]
-  :main ^:skip-aot afterglow.core
+  :main afterglow.core
   :target-path "target/%s"
   :profiles {:dev {:source-paths ["src" "dev_src" "target/generated"]
                    :resource-paths ["resources" "dev_resources"]}
