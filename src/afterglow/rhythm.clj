@@ -3,7 +3,7 @@
       :author "Jeff Rose"
       :original "https://github.com/overtone/overtone/blob/master/src/overtone/music/rhythm.clj"}
   afterglow.rhythm
-  (require [overtone.at-at :refer [now]]))
+  (:require [overtone.at-at :refer [now]]))
 
 (defonce ^{:private true}
   _PROTOCOLS_
