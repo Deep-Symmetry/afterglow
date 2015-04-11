@@ -3,7 +3,7 @@
             [afterglow.ola-messages :refer [DmxData]]
             [taoensso.timbre :as timbre :refer [info debug]])
   (:import [com.google.protobuf ByteString])
-  (:gen-class))
+  :gen-class)
 
 (defn -main
   "Test connectivity to the OLA server by sending a few messages and pretty-printing the responses.
