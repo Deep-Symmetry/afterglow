@@ -4,7 +4,7 @@ A Clojure take on a DMX lighting control system leveraging pieces of the [Overto
 
 ## Status
 
-I am very rapidly fleshing this out; it is a bare skeleton right now, but I wanted to make sure I understood how to get it up on GitHub and Clojars, to share with the world, and to help motivate me. There will be a lot more functionality, better examples, and more explanation of how to use it, very soon.
+I am very rapidly fleshing this out; it is a bare skeleton right now, but I wanted to make sure I understood how to get it up on GitHub and Clojars, to share with the world, and to help motivate me. There will be a lot more functionality, better examples, and more explanation of how to use it, very soon. In particular, the modeling of fixtures, channels, etc. is in an early form now, and I expect there will be drastic changes as I gain experience with how I want to use them, and build macros and other tools to make them easier to define.
 
 ## Installation
 
