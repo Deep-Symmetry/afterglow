@@ -47,3 +47,9 @@
                     (catch Exception e
                       (error e "Problem trying to ramp channels")))
                  scheduler)))
+
+(defn blackout-universe
+  "Sends zero to every channel of the specified universe"
+  [universe]
+  (let [levels (byte-array 512)]
+    (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} nil)))
