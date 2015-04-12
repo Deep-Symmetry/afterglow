@@ -29,9 +29,13 @@
   (at-at/stop-and-reset-pool! scheduler))
 
 (defn ramp-channels
-  "Ramps specified DMX channels of universe 1 from zero to max and then jumps back to zero,
-  for every beat of a 120 bpm metronome (that is, pretty quickly)."
-  [& channels]
+  "Ramps specified DMX channels from zero to max and then jumps back to zero,
+  for every beat of the shared example metronome (which will probably be fairly
+  quickly).
+
+  universe must be a valid Universe ID for your OLA server, and
+  channels is a list of DMX channel numbers (1-512)."
+  [universe & channels]
   (let [levels (byte-array (apply max channels))
         indices (map dec channels)]
     (at-at/every refresh-rate
@@ -39,7 +43,7 @@
                     (let [new-level (int (* 255 (metro-beat-phase metro)))]
                       (doseq [index indices]
                         (aset levels index (ubyte new-level)))
-                      (ola/UpdateDmxData {:universe 1 :data (ByteString/copyFrom levels)} nil))
+                      (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} nil))
                     (catch Exception e
                       (error e "Problem trying to ramp channels")))
                  scheduler)))

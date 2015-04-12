@@ -19,11 +19,11 @@ Eventually you may be able to download binary distributions from somewhere.
 Given its current development phase, you will want to use Afterglow in a Clojure repl.
 
     (use 'afterglow.examples)
-    (ramp-channels 2 5)
-    (afterglow.rhythm/metro-bpm metro 80)
+    (ramp-channels 1 2 5)
+    (afterglow.rhythm/metro-bpm metro 70)
     (stop!)
 
-If you have a web browser open on [your OLA daemon](http://localhost:9090/ola.html)'s DMX monitor for Universe 1, you will see the values for channels 2 and 5 ramping up quickly, then a little more slowly after you change the BPM. Edit the example to use a different universe, or do more fun stuff.
+If you have a web browser open on [your OLA daemon](http://localhost:9090/ola.html)'s DMX monitor for Universe 1, you will see the values for channels 2 and 5 ramping up quickly, then a little more slowly after you change the BPM. Alter the example to use a universe and channels that you will actually be able to see with a connected fixture, and watch Clojure seize control of your lights!
 
 ## Options
 
