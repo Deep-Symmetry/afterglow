@@ -19,11 +19,11 @@ Eventually you may be able to download binary distributions from somewhere.
 Given its current development phase, you will want to use Afterglow in a Clojure repl.
 
     (use 'afterglow.examples)
-    (ramp-one-channel)
+    (ramp-channels 2 5)
     (afterglow.rhythm/metro-bpm metro 80)
     (stop!)
 
-If you have a web browser open on [your OLA daemon](http://localhost:9090/ola.html)'s DMX monitor for Universe 1, you will see the channel values ramping up quickly, then slowing down a little when you change the BPM. Edit the example to use a different universe or channel, or do more fun stuff.
+If you have a web browser open on [your OLA daemon](http://localhost:9090/ola.html)'s DMX monitor for Universe 1, you will see the values for channels 2 and 5 ramping up quickly, then a little more slowly after you change the BPM. Edit the example to use a different universe, or do more fun stuff.
 
 ## Options
 
@@ -42,6 +42,7 @@ FIXME: listing of options this app accepts once it can run as a standalone app.
 * Tons of oscillators and combinators for them, with convenient initializers.
 * Model moving head location and position, so they can be panned and aimed in a coordinated way.
 * Model colors, support setting via HSB, eventually maybe even model individual LED colors, especially for fixtures with more than three colors.
+* Sparkle effect, essentially a particle generator with configurable maximum brightness, fade time, distribution. Work both with arbitrary channel list, and with spatially mapped origin/density; as single intensity, or spatially mapped hue/saturation patterns.
 * Add OSC support (probably using Overtone&rsquo;s implementation) for controller support, and MIDI as well.
 
 ### References

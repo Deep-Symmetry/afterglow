@@ -5,8 +5,9 @@
   (:require [afterglow.ola-service :as ola]
             [afterglow.ola-messages :refer [DmxData]]
             [afterglow.rhythm :refer :all]
+            [afterglow.util :refer [ubyte]]
             [overtone.at-at :as at-at]
-            [taoensso.timbre :as timbre :refer [info debug]])
+            [taoensso.timbre :as timbre :refer [error info debug]])
   (:import [com.google.protobuf ByteString]))
 
 (def refresh-rate
@@ -27,10 +28,18 @@
   []
   (at-at/stop-and-reset-pool! scheduler))
 
-(defn ramp-one-channel
-  "Ramps DMX channel 1 of universe 1 from zero to max and then jumps back to zero,
+(defn ramp-channels
+  "Ramps specified DMX channels of universe 1 from zero to max and then jumps back to zero,
   for every beat of a 120 bpm metronome (that is, pretty quickly)."
-  []
-  (at-at/every refresh-rate #(let [new-level (int (* 255 (metro-beat-phase metro)))
-                                   data (ByteString/copyFrom (byte-array [new-level]))]
-                               (ola/UpdateDmxData {:universe 1 :data data} nil)) scheduler))
+  [& channels]
+  (let [levels (byte-array (apply max channels))
+        indices (map dec channels)]
+    (at-at/every refresh-rate
+                 #(try
+                    (let [new-level (int (* 255 (metro-beat-phase metro)))]
+                      (doseq [index indices]
+                        (aset levels index (ubyte new-level)))
+                      (ola/UpdateDmxData {:universe 1 :data (ByteString/copyFrom levels)} nil))
+                    (catch Exception e
+                      (error e "Problem trying to ramp channels")))
+                 scheduler)))
