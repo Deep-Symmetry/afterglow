@@ -5,6 +5,9 @@
   (:import [com.google.protobuf ByteString])
   (:gen-class))
 
+;; Make sure the experimenter does not get blasted with a ton of debug messages
+(timbre/set-level! :info)
+
 (defn -main
   "Test connectivity to the OLA server by sending a few messages and pretty-printing the responses.
 This is eventually where stanadlone functionality will be implemented; for now it is where I test
