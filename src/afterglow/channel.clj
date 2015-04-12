@@ -8,6 +8,13 @@
 (defn channel [offset]
   {:offset offset})
 
+(defn- assign-channel [start-address raw-channel]
+  (assoc raw-channel :address (+ (:offset raw-channel) (dec start-address))))
+
+(defn assign-channels [fixture start-address]
+  (let [assigner (partial assign-channel start-address)]
+    (update-in fixture [:fixture :channels] #(map assigner %))))
+
 ;; TODO figure out a good range data structure for finding which one a value falls into
 (defn dimmer [offset]
   (assoc (channel offset)

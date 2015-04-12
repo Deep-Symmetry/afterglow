@@ -13,15 +13,14 @@
   ([channel]
    (slimpar-hex3-irc channel :12-channel))
   ([channel mode]
-   (case mode
-     ;; TODO missing channels once we have definition support for them
-     :12-channel {:fixture {:channels [(chan/dimmer (+ channel 0)) (chan/color (+ channel 1) :red) (chan/color (+ channel 2) :green)
-                                       (chan/color (+ channel 3) :blue) (chan/color (+ channel 4) :amber)
-                                       (chan/color (+ channel 5) :white) (chan/color (+ channel 6) :uv "UV")]}}
-     :8-channel {:fixture {:channels [(chan/dimmer (+ channel 0)) (chan/color (+ channel 1) :red) (chan/color (+ channel 2) :green)
-                                       (chan/color (+ channel 3) :blue) (chan/color (+ channel 4) :amber)
-                                       (chan/color (+ channel 5) :white) (chan/color (+ channel 6) :uv "UV")]}}
-     :6-channel {:fixture {:channels [(chan/color (+ channel 0) :red) (chan/color (+ channel 1) :green) (chan/color (+ channel 2) :blue)
-                                      (chan/color (+ channel 3) :amber) (chan/color (+ channel 4) :white)
-                                      (chan/color (+ channel 5) :uv "UV")]}}))
+   (chan/assign-channels
+    (case mode
+      ;; TODO missing channels once we have definition support for them
+      :12-channel {:fixture {:channels [(chan/dimmer 1) (chan/color 2 :red) (chan/color 3 :green) (chan/color 4 :blue)
+                                        (chan/color 5 :amber) (chan/color 6 :white) (chan/color 7 :uv "UV")]}}
+      :8-channel {:fixture {:channels [(chan/dimmer 1) (chan/color 2 :red) (chan/color 3 :green) (chan/color 4 :blue)
+                                       (chan/color 5 :amber) (chan/color 6 :white) (chan/color 7 :uv "UV")]}}
+      :6-channel {:fixture {:channels [(chan/color 1 :red) (chan/color 2 :green) (chan/color 3 :blue)
+                                       (chan/color 4 :amber) (chan/color 5 :white) (chan/color 6 :uv "UV")]}})
+    channel))
   )
