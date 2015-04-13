@@ -39,8 +39,12 @@ FIXME: listing of options this app accepts once it can run as a standalone app.
 
 ### Ideas
 
+* Create a project Wiki on GitHub and move this kind of discussion to it:
 * Tons of oscillators and combinators for them, with convenient initializers.
 * Model moving head location and position, so they can be panned and aimed in a coordinated way.
+    - If I can’t find anything Clojure or Java native, [this C# library](http://www.codeproject.com/Articles/17425/A-Vector-Type-for-C) might serve as a guide.
+    - Or perhaps [this paper](https://www.fastgraph.com/makegames/3drotation/) with its associated C++ source.
+    - Or [this one](http://inside.mines.edu/fs_home/gmurray/ArbitraryAxisRotation/) which is already Java but seems to only perform, not calculate, rotations.
 * Model colors, support setting via HSB, eventually maybe even model individual LED colors, especially for fixtures with more than three colors.
 * Sparkle effect, essentially a particle generator with configurable maximum brightness, fade time, distribution. Work both with arbitrary channel list, and with spatially mapped origin/density; as single intensity, or spatially mapped hue/saturation patterns.
 * Add OSC support (probably using Overtone&rsquo;s implementation) for controller support, and MIDI as well.

@@ -11,7 +11,9 @@
 (defn- assign-channel [universe start-address raw-channel]
   (assoc raw-channel :address (+ (:offset raw-channel) (dec start-address)) :universe universe))
 
-(defn mount-fixture [fixture universe start-address]
+(defn patch-fixture
+  "Assign a fixture to a DMX universe and starting channel; resolves all of its channel assignments."
+  [fixture universe start-address]
   (let [assigner (partial assign-channel universe start-address)]
     (update-in fixture [:fixture :channels] #(map assigner %))))
 
