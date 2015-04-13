@@ -45,6 +45,7 @@ FIXME: listing of options this app accepts once it can run as a standalone app.
     - If I can’t find anything Clojure or Java native, [this C# library](http://www.codeproject.com/Articles/17425/A-Vector-Type-for-C) might serve as a guide.
     - Or perhaps [this paper](https://www.fastgraph.com/makegames/3drotation/) with its associated C++ source.
     - Or [this one](http://inside.mines.edu/fs_home/gmurray/ArbitraryAxisRotation/) which is already Java but seems to only perform, not calculate, rotations.
+    - Use iOS device to help determine orientation of fixture: Hold phone upright facing stage from audience perspective to set reference attitude; move to match a landmark on the fixture (documented in the fixture definition), and have phone use [CoreMotion](https://developer.apple.com/library/ios/documentation/CoreMotion/Reference/CMAttitude_Class/index.html#//apple_ref/occ/instm/CMAttitude/multiplyByInverseOfAttitude:) `CMAttitude` `multiplyByInverseOfAttitude` to determine the difference.
 * Model colors, support setting via HSB, eventually maybe even model individual LED colors, especially for fixtures with more than three colors.
 * Sparkle effect, essentially a particle generator with configurable maximum brightness, fade time, distribution. Work both with arbitrary channel list, and with spatially mapped origin/density; as single intensity, or spatially mapped hue/saturation patterns.
 * Add OSC support (probably using Overtone&rsquo;s implementation) for controller support, and MIDI as well.
