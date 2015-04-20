@@ -4,8 +4,6 @@
   (:require [afterglow.channels :as chan]
             [taoensso.timbre :as timbre :refer [error info debug]]))
 
-;; TODO add a utility function to sanity-check channel offsets
-;; TODO macros to make this more of a DSL?
 ;; TODO functions for rotational tranformatons
 ;; TODO multi-head support, with relative locations
 

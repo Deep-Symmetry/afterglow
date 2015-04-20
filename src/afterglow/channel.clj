@@ -17,25 +17,77 @@
   (let [assigner (partial assign-channel universe start-address)]
     (update-in fixture [:fixture :channels] #(map assigner %))))
 
-;; TODO figure out a good range data structure for finding which one a value falls into
-(defn dimmer [offset]
-  (assoc (channel offset)
-         :type :dimmer
-         :offset offset
-         :ranges { 255 {:type :variable
-                        :label "Intensity"}}))
+(defn full-range
+  "Returns a range spefication that encompasses all possible DMX values as a single variable setting."
+  [range-type label]
+  {:start 0
+   :end 255
+   :type range-type
+   :label label})
+
+;; TODO is this a good range data structure for finding which one a value falls into?
+(defn fine-channel
+  "Defines a channel for which sometimes multi-byte values are desired, via a separate
+channel which specifies the fractional value to be added to the main channel."
+  [chan-type offset & {:keys [fine-offset range-label]}]
+  (let [base (assoc (channel offset)
+                    :type chan-type
+                    :ranges [(full-range :variable (or range-label (clojure.string/capitalize (name chan-type))))])]
+    (if fine-offset
+      (assoc base :fine-offset fine-offset)
+      base)))
+
+
+(defn dimmer
+  ([offset]
+   (dimmer offset nil))
+  ([offset fine-offset]
+   (fine-channel :dimmer offset :fine-offset fine-offset :range-label "Intensity")))
 
 ;; TODO here is where we would add wavelength support once we can figure out the formulas
 (defn color
   ([offset kwd]
-   (color offset kwd (string/capitalize (name kwd))))
-  ([offset kwd name]
-   (assoc (dimmer offset)
-          :type :color
-          :offset offset
-          :color kwd
-          :ranges { 255 {:type :variable
-                         :label name}})))
+   (color offset kwd nil))
+  ([offset kwd label]
+   (assoc (fine-channel :color offset :range-label (or label (clojure.string/capitalize (name kwd))))
+          :color kwd)))
+
+(defn pan
+  ([offset]
+   (pan offset nil))
+  ([offset fine-offset]
+   (fine-channel :pan offset :fine-offset fine-offset)))
+
+(defn tilt
+  ([offset]
+   (tilt offset nil))
+  ([offset fine-offset]
+   (fine-channel :tilt offset :fine-offset fine-offset)))
+
+(defn focus
+  ([offset]
+   (focus offset nil))
+  ([offset fine-offset]
+   (fine-channel :focus offset :fine-offset fine-offset)))
+
+(defn iris
+  ([offset]
+   (iris offset nil))
+  ([offset fine-offset]
+   (fine-channel :iris offset :fine-offset fine-offset)))
+
+(defn zoom
+  ([offset]
+   (zoom offset nil))
+  ([offset fine-offset]
+   (fine-channel :zoom offset :fine-offset fine-offset)))
+
+(defn frost
+  ([offset]
+   (frost offset nil))
+  ([offset fine-offset]
+   (fine-channel :zoom offset :fine-offset fine-offset)))
+
 
 ;; TODO pan-tilt channels, with multi-byte support
 
