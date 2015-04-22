@@ -17,6 +17,11 @@
   (let [assigner (partial assign-channel universe start-address)]
     (update-in fixture [:fixture :channels] #(map assigner %))))
 
+(defn extract-channels
+  "Given a sequence of fixtures, returns the channels matching the specified predicate."
+  [fixtures pred]
+  (filter pred (mapcat :channels (map :fixture fixtures))))
+
 (defn full-range
   "Returns a range spefication that encompasses all possible DMX values as a single variable setting."
   [range-type label]
