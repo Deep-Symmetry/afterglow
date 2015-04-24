@@ -7,30 +7,29 @@
 
 (defonce ^{:private true}
   _PROTOCOLS_
-  (do
-    (defprotocol IMetronome
-      (metro-start [metro] [metro start-beat]
-        "Returns the start time of the metronome. Also restarts the metronome at
+  (defprotocol IMetronome
+    (metro-start [metro] [metro start-beat]
+      "Returns the start time of the metronome. Also restarts the metronome at
      'start-beat' if given.")
-      (metro-bar-start [metro] [metro start-bar])
-      (metro-tick [metro]
-        "Returns the duration of one metronome 'tick' in milleseconds.")
-      (metro-tock [metro]
-        "Returns the duration of one bar in milliseconds.")
-      (metro-beat [metro] [metro beat]
-        "Returns the next beat number or the timestamp (in milliseconds) of the
+    (metro-bar-start [metro] [metro start-bar])
+    (metro-tick [metro]
+      "Returns the duration of one metronome 'tick' in milleseconds.")
+    (metro-tock [metro]
+      "Returns the duration of one bar in milliseconds.")
+    (metro-beat [metro] [metro beat]
+      "Returns the next beat number or the timestamp (in milliseconds) of the
      given beat.")
-      (metro-beat-phase [metro]
-        "Returns the distance traveled into the current beat [0.0, 1.0)")
-      (metro-bar [metro] [metro  bar]
-        "Returns the next bar number or the timestamp (in milliseconds) of the
+    (metro-beat-phase [metro]
+      "Returns the distance traveled into the current beat [0.0, 1.0)")
+    (metro-bar [metro] [metro  bar]
+      "Returns the next bar number or the timestamp (in milliseconds) of the
      given bar")
-      (metro-bar-phase [metro]
-        "Returns the distance traveled into the current bar [0.0, 1.0)")
-      (metro-bpb [metro] [metro new-bpb]
-        "Get the current beats per bar or change it to new-bpb")
-      (metro-bpm [metro] [metro new-bpm]
-        "Get the current bpm or change the bpm to 'new-bpm'."))))
+    (metro-bar-phase [metro]
+      "Returns the distance traveled into the current bar [0.0, 1.0)")
+    (metro-bpb [metro] [metro new-bpb]
+      "Get the current beats per bar or change it to new-bpb")
+    (metro-bpm [metro] [metro new-bpm]
+      "Get the current bpm or change the bpm to 'new-bpm'.")))
 
                                         ; Rhythm
 

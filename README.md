@@ -19,11 +19,31 @@ Eventually you may be able to download binary distributions from somewhere.
 Given its current development phase, you will want to use Afterglow in a Clojure repl.
 
     (use 'afterglow.examples)
-    (ramp-channels 1 2 5)
+    
+    ;; Set up a thread to process any effects we throw into active-functions
+    ;; and output the values they generate for universe 1:
+    (run-cues 1)
+    
+    ;; Start with a cue to set all the fixtures to a nice blue color
+    (reset! active-functions {:blue blue-cue})
+    
+    ;; But I'm still not seeing anything? Oh! The dimmers...
+    ;; Ramp all the dimmers up on a sawtooth curve once per beat.
+    (swap! active-functions assoc :master (afterglow.effects.dimmer/sawtooth-beat metro sample-rig))
+    
+    ;; Slow that down a little:
     (afterglow.rhythm/metro-bpm metro 70)
+    
+    ;; Let's just set the dimmers at a fixed level:
+    (swap! active-functions assoc :master (master-cue 200))
+    
+    ;; Terminate the effect handler thread:
     (stop!)
+    
+    ;; And darken the universe we were playing with...
+    (blackout-universe 1)
 
-If you have a web browser open on [your OLA daemon](http://localhost:9090/ola.html)'s DMX monitor for Universe 1, you will see the values for channels 2 and 5 ramping up quickly, then a little more slowly after you change the BPM. Alter the example to use a universe and channels that you will actually be able to see with a connected fixture, and watch Clojure seize control of your lights!
+If you have a web browser open on [your OLA daemon](http://localhost:9090/ola.html)'s DMX monitor for Universe 1, you will see the values for channels changing, then ramping up quickly, then a little more slowly after you change the BPM. Alter the example to use a universe and channels that you will actually be able to see with a connected fixture, and watch Clojure seize control of your lights!
 
 ## Options
 
@@ -50,6 +70,7 @@ FIXME: listing of options this app accepts once it can run as a standalone app.
     - The more I investigate, the more it looks like [Java3D’s](http://docs.oracle.com/cd/E17802_01/j2se/javase/technologies/desktop/java3d/forDevelopers/J3D_1_3_API/j3dapi/) [Transform3D](http://docs.oracle.com/cd/E17802_01/j2se/javase/technologies/desktop/java3d/forDevelopers/J3D_1_3_API/j3dapi/javax/media/j3d/Transform3D.html) object is going to handle it for me, which is very convenient, as it is already available in Clojure. To combine transformations, just multiply them together (with the `mul` method).
 * Model colors, support setting via HSB, eventually maybe even model individual LED colors, especially for fixtures with more than three colors.
 * Sparkle effect, essentially a particle generator with configurable maximum brightness, fade time, distribution. Work both with arbitrary channel list, and with spatially mapped origin/density; as single intensity, or spatially mapped hue/saturation patterns.
+* Use [claypoole](https://clojars.org/com.climate/claypoole) for parallelism.
 * Add OSC support (probably using Overtone&rsquo;s implementation) for controller support, and MIDI as well.
 * Add a user interface using [Luminus](http://www.luminusweb.net/docs).
 * Looks promising for color manipulation: [jolby/colors](https://github.com/jolby/colors)!
