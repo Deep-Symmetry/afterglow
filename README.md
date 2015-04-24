@@ -41,7 +41,7 @@ Given its current development phase, you will want to use Afterglow in a Clojure
     ;; Change the color to orange
     (show/add-function! sample-show :color (global-color-cue :orange))
     
-    ;; Let's get a little fancy and ramp the dimmers up on a sawtooth curve each beatl:
+    ;; Let's get a little fancy and ramp the dimmers up on a sawtooth curve each beat:
     (show/add-function! sample-show :master
       (afterglow.effects.dimmer/sawtooth-beat (:metronome sample-show) sample-rig))
 
