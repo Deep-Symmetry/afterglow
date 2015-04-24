@@ -18,30 +18,41 @@ Eventually you may be able to download binary distributions from somewhere.
 
 Given its current development phase, you will want to use Afterglow in a Clojure repl.
 
-    (use 'afterglow.examples)
+    (require 'afterglow.examples)
+    (in-ns 'afterglow.examples')
     
-    ;; Set up a thread to process any effects we throw into active-functions
-    ;; and output the values they generate for universe 1:
-    (run-cues 1)
+    ;; Start the sample show which runs on DMX universe 1. You will want to have OLA
+    ;; configured to at least have an ArtNet universe with that ID so you can watch the
+    ;; DMX values using its web interface. It would be even better if you had an actual
+    ;; DMX interface hooked up, and changed the definition of sample-rig to include
+    ;; some real lights you have connected.
+    (show/start! sample-show)
     
-    ;; Start with a cue to set all the fixtures to a nice blue color
-    (reset! active-functions {:blue blue-cue})
+    ;; Assign a nice cool blue color to all lights in the sample rig
+    (show/add-function! sample-show :color blue-cue)
     
     ;; But I'm still not seeing anything? Oh! The dimmers...
-    ;; Ramp all the dimmers up on a sawtooth curve once per beat.
-    (swap! active-functions assoc :master (afterglow.effects.dimmer/sawtooth-beat metro sample-rig))
+    ;; Set them all to full:
+    (show/add-function! sample-show :master (master-cue 255))
     
+    ;; We can make that a little dimmer
+    (show/add-function! sample-show :master (master-cue 200))
+    
+    ;; Change the color to orange
+    (show/add-function! sample-show :color (global-color-cue :orange))
+    
+    ;; Let's get a little fancy and ramp the dimmers up on a sawtooth curve each beatl:
+    (show/add-function! sample-show :master
+      (afterglow.effects.dimmer/sawtooth-beat (:metronome sample-show) sample-rig))
+
     ;; Slow that down a little:
-    (afterglow.rhythm/metro-bpm metro 70)
-    
-    ;; Let's just set the dimmers at a fixed level:
-    (swap! active-functions assoc :master (master-cue 200))
+    (afterglow.rhythm/metro-bpm (:metronome sample-show) 70)
     
     ;; Terminate the effect handler thread:
-    (stop!)
+    (show/stop! sample-show)
     
     ;; And darken the universe we were playing with...
-    (blackout-universe 1)
+    (show/blackout-show sample-show)
 
 If you have a web browser open on [your OLA daemon](http://localhost:9090/ola.html)'s DMX monitor for Universe 1, you will see the values for channels changing, then ramping up quickly, then a little more slowly after you change the BPM. Alter the example to use a universe and channels that you will actually be able to see with a connected fixture, and watch Clojure seize control of your lights!
 
