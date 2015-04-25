@@ -23,5 +23,4 @@
   [c fixtures]
   (let [assigned (map (partial assign-color c) (extract-rgb fixtures))
         result (map #(select-keys % [:address :universe :value]) assigned)]
-    (fn []
-      result)))
+    (fn [show] result)))

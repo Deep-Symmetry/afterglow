@@ -36,7 +36,7 @@ adding a new effect with the same key as an existing effect will replace the for
   (try
     (p :clear-buffers (doseq [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
     (p :eval-functions (doseq [f (:functions @(:active-functions show))]
-                         (doseq [channel (f)]
+                         (doseq [channel (f show)]
                            (when-let [levels (get buffers (:universe channel))]
                              ;; This is always LTP, need to support HTP too
                              (aset levels (dec (:address channel)) (ubyte (:value channel)))))))

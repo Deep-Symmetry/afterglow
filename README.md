@@ -43,7 +43,7 @@ Given its current development phase, you will want to use Afterglow in a Clojure
     
     ;; Let's get a little fancy and ramp the dimmers up on a sawtooth curve each beat:
     (show/add-function! sample-show :master
-      (afterglow.effects.dimmer/sawtooth-beat (:metronome sample-show) sample-rig))
+      (afterglow.effects.dimmer/sawtooth-beat sample-rig))
 
     ;; Slow that down a little:
     (afterglow.rhythm/metro-bpm (:metronome sample-show) 70)
