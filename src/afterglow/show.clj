@@ -179,16 +179,16 @@ adding a new effect with the same key as an existing effect will replace the for
 
 (defn- address-map-internal
   "Helper function which returns a map whose keys are all addresses in use in a given universe
-  within a fixture map, and whose values are the fixture which is using that universe address."
+  within a fixture map, and whose values are the fixture key using that universe address."
   [fixtures universe]
   (reduce (fn [addr-map [k v]] (if (= universe (:universe (first (:channels v))))
-                                 (into addr-map (for [c (:channels v)] [(:address c) v]))
+                                 (into addr-map (for [c (:channels v)] [(:address c) (:id v)]))
                                  addr-map)) {} fixtures))
 
 (defn address-map
   "Returns a map whose keys are the IDs of the universes managed by the show, and whose values are
-  address maps for the corresponding universe. The address maps have keys for ever channel in use
-  by the show in that universe, and the value is the fixture using that address."
+  address maps for the corresponding universe. The address maps have keys for every channel in use
+  by the show in that universe, and the value is the key of the fixture using that address."
   [show]
   (into {} (for [u (:universes show)]
              [u (address-map-internal @(:fixtures show) u)])))
@@ -209,8 +209,7 @@ adding a new effect with the same key as an existing effect will replace the for
     (when (seq conflicts)
       (throw (IllegalStateException. (str "Cannot complete patch: "
                                           (clojure.string/join ", " (into [] (for [[k v] conflicts]
-                                                                               (str "Channel " k " in use by fixture "
-                                                                                    (:id v)))))))))
+                                                                               (str "Channel " k " in use by fixture " v))))))))
     (assoc fixtures key (assoc fixture :id key))))
 
 (defn patch-fixture!
@@ -219,6 +218,19 @@ adding a new effect with the same key as an existing effect will replace the for
   (when-not (contains? (:universes show) universe)
     (throw (IllegalArgumentException. (str "Show does not contain universe " universe))))
   (swap! (:fixtures show) #(patch-fixture-internal % (keyword key) (chan/patch-fixture fixture universe start-address))))
+
+(defn patch-fixture-group!
+  "Patch a fixture group to a universe in the show at a starting DMX channel.
+Names will be assigned by adding a hyphen and numeric suffix, starting with 1,
+to the key supplied. If an offset is supplied, it will be added to the starting
+address for each subsequent fixture; if not, the largest offset used by the
+  fixture will be used to calculate a suitable offset."
+  ([show key fixture universe start-address count]
+   (patch-fixture-group! show key fixture universe start-address count (apply max (map :offset (:channels fixture)))))
+  ([show key fixture universe start-address count offset]
+   (for [i (range count)]
+     (patch-fixture! show (keyword (str (name key) "-" (inc i))) fixture universe (+ start-address (* i offset))))))
+
 
 (defn all-fixtures
   "Returns all fixtures patched in a show."
