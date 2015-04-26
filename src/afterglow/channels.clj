@@ -15,12 +15,12 @@
   "Assign a fixture to a DMX universe and starting channel; resolves all of its channel assignments."
   [fixture universe start-address]
   (let [assigner (partial assign-channel universe start-address)]
-    (update-in fixture [:fixture :channels] #(map assigner %))))
+    (update-in fixture [:channels] #(map assigner %))))
 
 (defn extract-channels
-  "Given a sequence of fixtures, returns the channels matching the specified predicate."
+  "Given a fixture list, returns the channels matching the specified predicate."
   [fixtures pred]
-  (filter pred (mapcat :channels (map :fixture fixtures))))
+  (filter pred (mapcat :channels fixtures)))
 
 (defn full-range
   "Returns a range spefication that encompasses all possible DMX values as a single variable setting."

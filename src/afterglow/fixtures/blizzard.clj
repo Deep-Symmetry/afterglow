@@ -11,12 +11,14 @@
   ([]
    (blade-rgbw :15-channel))
   ([mode]
-   (case mode
-     ;; TODO missing channels once we have definition support for them
-     :15-channel {:fixture {:channels [(chan/pan 1 3) (chan/tilt 2 4)
-                                       (chan/color 6 :red) (chan/color 7 :green) (chan/color 8 :blue) (chan/color 9 :white)
-                                       (chan/dimmer 12)]}}
-     :11-channel {:fixture {:channels [(chan/pan 1 3) (chan/tilt 2 4)
-                                       (chan/color 6 :red) (chan/color 7 :green) (chan/color 8 :blue) (chan/color 9 :white)
-                                       (chan/dimmer 10)]}}))
+   (assoc (case mode
+            ;; TODO missing channels once we have definition support for them
+            :15-channel {:channels [(chan/pan 1 3) (chan/tilt 2 4)
+                                    (chan/color 6 :red) (chan/color 7 :green) (chan/color 8 :blue) (chan/color 9 :white)
+                                    (chan/dimmer 12)]}
+            :11-channel {:channels [(chan/pan 1 3) (chan/tilt 2 4)
+                                    (chan/color 6 :red) (chan/color 7 :green) (chan/color 8 :blue) (chan/color 9 :white)
+                                    (chan/dimmer 10)]})
+          :name "Blizzard Blade RGBW"
+          :mode mode))
   )

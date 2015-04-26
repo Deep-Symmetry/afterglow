@@ -14,6 +14,7 @@ adding a new effect with the same key as an existing effect will replace the for
             [afterglow.ola-messages :refer [DmxData]]
             [afterglow.rhythm :refer :all]
             [afterglow.util :refer [ubyte]]
+            [afterglow.channels :as chan]
             [overtone.at-at :as at-at]
             [taoensso.timbre :as timbre :refer [error info debug spy]]
             [taoensso.timbre.profiling :as profiling :refer [pspy profile p]])
@@ -79,8 +80,9 @@ adding a new effect with the same key as an existing effect will replace the for
   ([metro refresh-interval & universes]
    {:metronome metro
     :refresh-interval refresh-interval
-    :universes universes
+    :universes (set universes)
     :active-functions (atom {})
+    :fixtures (atom {})
     :task (atom nil)}))
 
 (defn stop-all!
@@ -174,6 +176,63 @@ adding a new effect with the same key as an existing effect will replace the for
   (reset! (:active-functions show) {:keys {},
                                     :functions [],
                                     :priorities []}))
+
+(defn- address-map-internal
+  "Helper function which returns a map whose keys are all addresses in use in a given universe
+  within a fixture map, and whose values are the fixture which is using that universe address."
+  [fixtures universe]
+  (reduce (fn [addr-map [k v]] (if (= universe (:universe (first (:channels v))))
+                                 (into addr-map (for [c (:channels v)] [(:address c) v]))
+                                 addr-map)) {} fixtures))
+
+(defn address-map
+  "Returns a map whose keys are the IDs of the universes managed by the show, and whose values are
+  address maps for the corresponding universe. The address maps have keys for ever channel in use
+  by the show in that universe, and the value is the fixture using that address."
+  [show]
+  (into {} (for [u (:universes show)]
+             [u (address-map-internal @(:fixtures show) u)])))
+
+(defn remove-fixture!
+  "Remove a fixture from the patch list."
+  [show key]
+  (swap! (:fixtures show) #(dissoc % (keyword key))))
+
+(defn- patch-fixture-internal
+  "Helper function which patches a fixture to a given address and universe, first removing
+  any fixture which was previously assigned that key, and making sure there are no DMX
+  channel collisions."
+  [fixtures key fixture]
+  (let [base (dissoc fixtures key)
+        addrs-used (address-map-internal base (:universe (first (:channels fixture))))
+        conflicts (select-keys addrs-used (map :address (:channels fixture)))]
+    (when (seq conflicts)
+      (throw (IllegalStateException. (str "Cannot complete patch: "
+                                          (clojure.string/join ", " (into [] (for [[k v] conflicts]
+                                                                               (str "Channel " k " in use by fixture "
+                                                                                    (:id v)))))))))
+    (assoc fixtures key (assoc fixture :id key))))
+
+(defn patch-fixture!
+  "Patch a fixture to a universe in the show at a starting DMX channel."
+  [show key fixture universe start-address]
+  (when-not (contains? (:universes show) universe)
+    (throw (IllegalArgumentException. (str "Show does not contain universe " universe))))
+  (swap! (:fixtures show) #(patch-fixture-internal % (keyword key) (chan/patch-fixture fixture universe start-address))))
+
+(defn all-fixtures
+  "Returns all fixtures patched in a show."
+  [show]
+  (vals @(:fixtures show)))
+
+(defn fixtures-named
+  "Returns all fixtures whose key matches the specified name, with an optional number following it,
+  as would be assigned to a fixture group by patch-fixtures!"
+  [show n]
+  (let [pattern (re-pattern (str (name n) "(-\\d+)?"))]
+    (reduce (fn [result [k v]] (if (re-matches pattern (name k))
+                                 (conj result v)
+                                 result)) [] @(:fixtures show))))
 
 (defn profile-show
   "Gather statistics about the performance of generating and sending a frame of DMX data to the

@@ -19,7 +19,7 @@ Eventually you may be able to download binary distributions from somewhere.
 Given its current development phase, you will want to use Afterglow in a Clojure repl.
 
     (require 'afterglow.examples)
-    (in-ns 'afterglow.examples')
+    (in-ns 'afterglow.examples)
     
     ;; Start the sample show which runs on DMX universe 1. You will want to have OLA
     ;; configured to at least have an ArtNet universe with that ID so you can watch the
@@ -28,7 +28,7 @@ Given its current development phase, you will want to use Afterglow in a Clojure
     ;; some real lights you have connected.
     (show/start! sample-show)
     
-    ;; Assign a nice cool blue color to all lights in the sample rig
+    ;; Assign a nice cool blue color to all lights in the sample show
     (show/add-function! sample-show :color blue-cue)
     
     ;; But I'm still not seeing anything? Oh! The dimmers...
@@ -43,7 +43,7 @@ Given its current development phase, you will want to use Afterglow in a Clojure
     
     ;; Let's get a little fancy and ramp the dimmers up on a sawtooth curve each beat:
     (show/add-function! sample-show :master
-      (afterglow.effects.dimmer/sawtooth-beat sample-rig))
+                        (afterglow.effects.dimmer/sawtooth-beat (show/all-fixtures sample-show)))
 
     ;; Slow that down a little:
     (afterglow.rhythm/metro-bpm (:metronome sample-show) 70)
