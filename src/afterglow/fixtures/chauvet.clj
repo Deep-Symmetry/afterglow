@@ -20,5 +20,4 @@
             :6-channel {:channels [(chan/color 1 :red) (chan/color 2 :green) (chan/color 3 :blue)
                                    (chan/color 4 :amber) (chan/color 5 :white) (chan/color 6 :uv "UV")]})
           :name "Chauvet SlimPAR Hex 3 IRC"
-          :mode mode))
-  )
+          :mode mode)))
