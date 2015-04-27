@@ -8,7 +8,8 @@
             [afterglow.fixtures.chauvet :as chauvet]
             [afterglow.fixtures.blizzard :as blizzard]
             [afterglow.effects.color :refer [color-cue]]
-            [afterglow.effects.dimmer :refer [dimmer-cue]]
+            [afterglow.effects.dimmer :refer [dimmer-cue dimmer-oscillator]]
+            [afterglow.effects.oscillators :as oscillators]
             [com.evocomputing.colors :as colors]
             [taoensso.timbre :as timbre :refer [error info debug spy]]))
 
