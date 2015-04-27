@@ -41,3 +41,18 @@
 ;;(show/add-function! sample-show :master
 ;;                    (afterglow.effects.dimmer/sawtooth-beat (show/all-fixtures sample-show)))
 
+
+;; This is for testing the enhance multi-beat and fractional-beat phase calculations I am implementing;
+;; it should probably more somewhere else, or just go away once there are example effects successfully
+;; using these.
+(defn test-phases
+  ([]
+   (test-phases 20))
+  ([iterations]
+   (dotimes [n iterations]
+     (let [snap (metro-snapshot (:metronome sample-show))]
+       (println (format "Beat %4d (phase %.3f) bar %4d (phase %.3f) 1:%.3f, 2:%.3f, 4:%.3f, 1/2:%.3f, 1/4:%.3f, 3/4:%.3f"
+                        (:beat snap) (:beat-phase snap) (:bar snap) (:bar-phase snap)
+                        (snapshot-beat-phase snap 1) (snapshot-beat-phase snap 2) (snapshot-beat-phase snap 4)
+                        (snapshot-beat-phase snap 1/2) (snapshot-beat-phase snap 1/4) (snapshot-beat-phase snap 3/4)))
+       (Thread/sleep 33)))))

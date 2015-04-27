@@ -1,7 +1,8 @@
 (ns afterglow.effects.color
   (:require [afterglow.channels :as channels]
             [com.evocomputing.colors :as colors]
-            [taoensso.timbre :as timbre :refer [error warn info debug]]))
+            [taoensso.timbre :as timbre :refer [error warn info debug]]
+            [taoensso.timbre.profiling :as profiling :refer [pspy profile]]))
 
 (defn- extract-rgb
   "Filters out only the channels which define RGB color components from a list of fixtures."
@@ -23,4 +24,6 @@
   [c fixtures]
   (let [assigned (map (partial assign-color c) (extract-rgb fixtures))
         result (map #(select-keys % [:address :universe :value]) assigned)]
-    (fn [show] result)))
+    (fn [show snapshot]
+      (pspy :color-cue
+            result))))

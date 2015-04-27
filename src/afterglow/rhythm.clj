@@ -29,7 +29,10 @@
     (metro-bpb [metro] [metro new-bpb]
       "Get the current beats per bar or change it to new-bpb")
     (metro-bpm [metro] [metro new-bpm]
-      "Get the current bpm or change the bpm to 'new-bpm'.")))
+      "Get the current bpm or change the bpm to 'new-bpm'.")
+    (metro-snapshot [metro]
+      "Take a snapshot of the current beat, bar, and phase state.")))
+
 
                                         ; Rhythm
 
@@ -49,6 +52,61 @@
                                         ;  ([] (bar 1))
                                         ;  ([b] (* (bar 1) (first @*signature) b)))
 
+(defn- marker-number
+  "Helper function to calculate the beat or bar number in effect at a given moment, given a
+  starting point and beat or bar interval."
+  [instant start interval]
+  (inc (long (/ (- instant start) interval))))
+
+(defn- marker-phase
+  "Helper function to calculate the beat or bar phase at a given moment, given a
+  starting point and beat interval."
+  [instant start interval]
+  (let [marker-ratio (/ (- instant start) interval)]
+    (- (double marker-ratio) (long marker-ratio))))
+
+;; Snapshot to support a series of beat and phase calculations with respect to a given instant in
+;; time. Used by Afterglow so that all phase computations run when updating a frame of DMX data have
+;; a consistent sense of when they are being run, to avoid, for example, half the lights acting as
+;; if they are at the very end of a beat while the rest are at the beginning of the next beat, due
+;; to a fluke in timing as their evaluation occurs over time. These also extend the notions of beat
+;; phase to enable oscillators with frequencies that are fractions or multiples of a beat.
+(defprotocol ISnapshot
+  (snapshot-beat-phase [snapshot beat-ratio]
+    "Determine the phase with respect to a multiple or fraction of beats.
+Calling this with a beat-ratio of 1 is equivalent to beat-phase,
+a beat-ratio of bpb is equivalent to bar-phase (unless the bar
+start has been moved away from the beat start), 1/2 oscillates
+twice as fast as 1, 3/4 oscillates 4 times every three beats...")
+  (snapshot-bar-phase [snapshot bar-ratio]
+    "Determine the phase with respect to a multiple or fraction of bars.
+Calling this with a beat-ratio of 1 is equivalent to bar-phase,
+1/2 oscillates twice as fast as 1, 3/4 oscillates 4 times every
+three bars..."))
+
+(defn- enhanced-phase
+  "Calculate a phase with respect to multiples or fractions of a
+marker interval (beat or bar), given the phase with respect to
+that marker, the number of that marker, and the desired ratio.
+A ratio of 1 returns the phase unchanged; 1/2 oscillates twice
+as fast, 3/4 oscillates 4 times every three markers..."
+  [marker phase desired-ratio]
+  (let [r (rationalize desired-ratio)
+          numerator (if (ratio? r) (numerator r) r)
+          denominator (if (ratio? r) (denominator r) 1)
+          base-phase (if (> numerator 1)
+                       (/ (+ (mod (dec marker) numerator) phase) numerator)
+                       phase)
+          adjusted-phase (* base-phase denominator)]
+      (- (double adjusted-phase) (long adjusted-phase))))
+
+(defrecord MetronomeSnapshot [start bar-start bpm bpb instant beat bar beat-phase bar-phase]
+  ISnapshot
+  (snapshot-beat-phase [snapshot beat-ratio]
+    (enhanced-phase beat beat-phase beat-ratio))
+  (snapshot-bar-phase [snapshot bar-ratio]
+    (enhanced-phase bar bar-phase bar-ratio)))
+
 (deftype Metronome [start bar-start bpm bpb]
 
   IMetronome
@@ -64,16 +122,14 @@
       new-bar-start))
   (metro-tick  [metro] (beat-ms 1 @bpm))
   (metro-tock  [metro] (beat-ms @bpb @bpm))
-  (metro-beat  [metro] (inc (long (/ (- (now) @start) (metro-tick metro)))))
+  (metro-beat  [metro] (marker-number (now) @start (metro-tick metro)))
   (metro-beat  [metro b] (+ (* b (metro-tick metro)) @start))
   (metro-beat-phase [metro]
-    (let [ratio (/ (- (now) @start) (metro-tick metro))]
-      (- (float ratio) (long ratio))))
-  (metro-bar   [metro] (inc (long (/ (- (now) @bar-start) (metro-tock metro)))))
+    (marker-phase (now) @start (metro-tick metro)))
+  (metro-bar   [metro] (marker-number (now) @bar-start (metro-tock metro)))
   (metro-bar   [metro b] (+ (* b (metro-tock metro)) @bar-start))
   (metro-bar-phase [metro]
-    (let [ratio (/ (- (now) @start) (metro-tock metro))]
-      (- (float ratio) (long ratio))))
+    (marker-phase (now) @bar-start (metro-tock metro)))
   (metro-bpm   [metro] @bpm)
   (metro-bpm   [metro new-bpm]
     (let [cur-beat      (metro-beat metro)
@@ -93,6 +149,13 @@
           new-bar-start (- (metro-bar metro cur-bar) (* new-tock cur-bar))]
       (reset! bar-start new-bar-start)
       (reset! bpb new-bpb)))
+  (metro-snapshot [metro]
+    (let [instant    (now)
+          beat       (marker-number instant @start (metro-tick metro))
+          bar        (marker-number instant @bar-start (metro-tock metro))
+          beat-phase (marker-phase instant @start (metro-tick metro))
+          bar-phase  (marker-phase instant @bar-start (metro-tock metro))]
+      (MetronomeSnapshot. @start @bar-start @bpm @bpb instant beat bar beat-phase bar-phase)))
 
   clojure.lang.ILookup
   (valAt [this key] (.valAt this key nil))
@@ -141,3 +204,4 @@
                                         ; * jazz groove, latin groove
                                         ; * techno grooves (hard on beat one)
                                         ; * make something more driving, or more layed back...
+

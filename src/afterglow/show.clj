@@ -36,11 +36,12 @@ adding a new effect with the same key as an existing effect will replace the for
   [show buffers]
   (try
     (p :clear-buffers (doseq [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
-    (p :eval-functions (doseq [f (:functions @(:active-functions show))]
-                         (doseq [channel (f show)]
-                           (when-let [levels (get buffers (:universe channel))]
-                             ;; This is always LTP, need to support HTP too
-                             (aset levels (dec (:address channel)) (ubyte (:value channel)))))))
+    (p :eval-functions (let [snapshot (metro-snapshot (:metronome show))]
+                         (doseq [f (:functions @(:active-functions show))]
+                           (doseq [channel (f show snapshot)]
+                             (when-let [levels (get buffers (:universe channel))]
+                               ;; This is always LTP, need to support HTP too
+                               (aset levels (dec (:address channel)) (ubyte (:value channel))))))))
     (p :send-dmx-data (doseq [universe (keys buffers)]
                         (let [levels (get buffers universe)]
                           (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} nil))))
@@ -245,6 +246,8 @@ address for each subsequent fixture; if not, the largest offset used by the
     (reduce (fn [result [k v]] (if (re-matches pattern (name k))
                                  (conj result v)
                                  result)) [] @(:fixtures show))))
+
+;; TODO Provide general regex search of fixtures? Provide named fixture groups?
 
 (defn profile-show
   "Gather statistics about the performance of generating and sending a frame of DMX data to the
