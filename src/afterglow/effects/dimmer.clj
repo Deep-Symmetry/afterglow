@@ -38,7 +38,7 @@
      (fn [show snapshot]
        (pspy :dimmer-oscillator
              (let [phase (osc snapshot)
-                   new-level (+ min (long (* range phase)))]
+                   new-level (+ min (Math/round (* range phase)))]
                (map (partial assign-level new-level) chans)))))))
 
 (defn sawtooth-beat
