@@ -39,8 +39,9 @@
 ;;(show/add-function! sample-show :master (master-cue 255))
 
 ;; Get a little fancier with some beat-driven fades
-;;(show/add-function! sample-show :master
-;;                    (afterglow.effects.dimmer/sawtooth-beat (show/all-fixtures sample-show)))
+;; (show/add-function! sample-show :master
+;;                     (dimmer-oscillator (oscillators/sawtooth-beat)
+;;                                        (show/all-fixtures sample-show)))
 
 
 ;; This is for testing the enhance multi-beat and fractional-beat phase calculations I am implementing;
