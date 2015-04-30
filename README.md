@@ -18,6 +18,8 @@ Eventually you may be able to download binary distributions from somewhere.
 
 Given its current development phase, you will want to use Afterglow in a Clojure repl.
 
+    ;; The next two lines are not needed if you are using Leiningen to get your repl,
+    ;; since the project is configured to start you in this namespace for convenience.
     (require 'afterglow.examples)
     (in-ns 'afterglow.examples)
     
