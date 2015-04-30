@@ -7,6 +7,7 @@
                  [org.clojure/core.cache "0.6.4"]
                  [org.clojure/tools.nrepl "0.2.10"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
+                 [org.clojure/math.numeric-tower "0.0.4"]
                  [overtone/at-at "1.2.0"]
                  ;; [overtone "0.9.1"]
                  [org.flatland/protobuf "0.8.1"]

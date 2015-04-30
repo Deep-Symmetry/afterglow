@@ -15,8 +15,8 @@
     (if-let [fine-index (:fine-index channel)]
       (do
         (aset levels (:index channel) (ubyte value))
-        (aset levels fine-index (ubyte (Math/round (* 255 (- value (int value)))))))
-      (aset levels (:index channel) (ubyte (Math/round value))))))
+        (aset levels fine-index (ubyte (math/round (* 255 (- value (int value)))))))
+      (aset levels (:index channel) (ubyte (math/round value))))))
 
 (defn build-channel-assigner
   "Returns an assigner which applies the specified assignment function to the supplied channel."

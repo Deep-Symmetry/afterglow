@@ -64,7 +64,7 @@
             (fn [show snapshot target previous-assignment]
               (pspy :dimmer-oscillator
                     (let [phase (osc snapshot)
-                          new-level (+ min (Math/round (* range phase)))]
+                          new-level (+ min (* range phase))]
                       new-level))))]
     (chan-fx/build-simple-channel-cue (str "Dimmer Oscillator " min "-" max (when htp? " (HTP)")) f chans)))
 
