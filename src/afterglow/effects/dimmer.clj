@@ -45,7 +45,9 @@
   "Returns an effect function which drives the dimmer channels of the supplied fixtures according to
   a supplied oscillator function and the show metronome.  If :htp? is true, use highest-takes-precedence
   (i.e. compare to the previous assignment, and let the higher value remain). Unless otherwise specified,
-  via :min and :max, ranges from 0 to 255."
+  via :min and :max, ranges from 0 to 255. Returns a fractional value, because that can be handled by
+  channels with an associated fine channel (commonly pan and tilt), and will be resolved in the process
+  of assigning the value to the DMX channels."
   [osc fixtures & {:keys [min max htp?] :or {min 0 max 255 htp? true}}]
   (fx-util/validate-dmx-value min "min")
   (fx-util/validate-dmx-value max "max")
@@ -57,7 +59,7 @@
             (fn [show snapshot target previous-assignment]
               (pspy :dimmer-oscillator-htp
                     (let [phase (osc snapshot)
-                          new-level (+ min (Math/round (* range phase)))]
+                          new-level (+ min (* range phase))]
                       (clojure.core/max new-level (or previous-assignment 0)))))
             (fn [show snapshot target previous-assignment]
               (pspy :dimmer-oscillator

@@ -11,10 +11,12 @@
   as well (in which there is a high and low byte), using any fractional part of the value
   to determine the fine channel if one is present."
   [buffers channel value]
-    (when-let [levels (get buffers (:universe channel))]
-    (aset levels (:index channel) (ubyte value))
-    (when-let [fine-index (:fine-index channel)]
-      (aset levels fine-index (ubyte (Math/round (* 255 (- value (int value)))))))))
+  (when-let [levels (get buffers (:universe channel))]
+    (if-let [fine-index (:fine-index channel)]
+      (do
+        (aset levels (:index channel) (ubyte value))
+        (aset levels fine-index (ubyte (Math/round (* 255 (- value (int value)))))))
+      (aset levels (:index channel) (ubyte (Math/round value))))))
 
 (defn build-channel-assigner
   "Returns an assigner which applies the specified assignment function to the supplied channel."
