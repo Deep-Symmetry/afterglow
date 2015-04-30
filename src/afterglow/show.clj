@@ -14,6 +14,9 @@ adding a new effect with the same key as an existing effect will replace the for
             [afterglow.ola-messages :refer [DmxData]]
             [afterglow.rhythm :refer :all]
             [afterglow.util :refer [ubyte]]
+            [afterglow.effects.util :as fx-util]
+            [afterglow.effects.channel :refer [channel-assignment-resolver]]
+            [afterglow.effects.color :refer [color-assignment-resolver]]
             [afterglow.channels :as chan]
             [overtone.at-at :as at-at]
             [taoensso.timbre :as timbre :refer [error info debug spy]]
@@ -31,20 +34,55 @@ adding a new effect with the same key as an existing effect will replace the for
   scheduler
   (at-at/mk-pool))
 
+(def resolution-handlers
+  "The order in which assigners should be evaluated, and the functions which resolve them into DMX channel
+  updates. A list of tuples which identify the assigner type key, and the function to invoke for such assigners."
+  [[:channel channel-assignment-resolver]
+   [:color color-assignment-resolver]])
+
+(defn- gather-assigners
+  "Collect all of the assigners that are in effect at the current moment in the show, organized by type
+  and the unique ID of the element they affect, sorted in priority order under those keys."
+  [show snapshot]
+  (pspy :gather-assigners
+        (reduce (fn [altered-map assigner]
+                  (let [key-path [(:kind assigner) (:target-id assigner)]]
+                    (assoc-in altered-map key-path (conj (get-in altered-map key-path []) assigner))))
+                {}
+                (mapcat #(fx-util/generate % show snapshot) (:functions @(:active-functions show))))))
+
+(defn- run-assigners
+  "Returns a tuple of the target to be assigned, and the final value for that target, after iterating
+  over an assigner list."
+  [show snapshot assigners]
+  (pspy :run-assigners
+        (reduce (fn [result-so-far assigner]
+                  [(:target assigner) (fx-util/assign assigner show snapshot (:target assigner)
+                                                      (get result-so-far 1))])
+                []
+                assigners)))
+
+(declare remove-function!)
+
 (defn- send-dmx
   "Calculate and send the next frame of DMX values for the universes and effects run by this show."
   [show buffers]
   (try
-    (p :clear-buffers (doseq [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
-    (p :eval-functions (let [snapshot (metro-snapshot (:metronome show))]
-                         (doseq [f (:functions @(:active-functions show))]
-                           (doseq [channel (f show snapshot)]
-                             (when-let [levels (get buffers (:universe channel))]
-                               ;; This is always LTP, need to support HTP too
-                               (aset levels (dec (:address channel)) (ubyte (:value channel))))))))
-    (p :send-dmx-data (doseq [universe (keys buffers)]
-                        (let [levels (get buffers universe)]
-                          (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} nil))))
+    (let [snapshot (metro-snapshot (:metronome show))
+          assigners (atom {})]  ;; TODO remove assigners?
+      (p :clear-buffers (doseq [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
+      (p :clean-finished-effects (let [indexed (map vector (iterate inc 0) (:functions @(:active-functions show)))]
+                                   (doseq [[index effect] indexed]
+                                     (when-not (fx-util/still-active? effect show snapshot)
+                                       (remove-function! (get @(:keys @(:active-functions show)) index))))))
+      (let [all-assigners (gather-assigners show snapshot)]
+        (doseq [[kind handler] resolution-handlers]
+          (doseq [assigners (vals (get all-assigners kind))]
+            (let [[target value] (run-assigners show snapshot assigners)]
+              (p :resolve-value (handler show buffers target value))))))
+      (p :send-dmx-data (doseq [universe (keys buffers)]
+                          (let [levels (get buffers universe)]
+                            (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} nil)))))
     (catch Exception e
       (error e "Problem trying to run cues"))))
 
@@ -82,6 +120,9 @@ adding a new effect with the same key as an existing effect will replace the for
    {:metronome metro
     :refresh-interval refresh-interval
     :universes (set universes)
+    :default-lightness (atom 50.0)
+    :default-saturation (atom 100.0)
+    :next-id (atom 0)
     :active-functions (atom {})
     :fixtures (atom {})
     :task (atom nil)}))
@@ -106,9 +147,10 @@ adding a new effect with the same key as an existing effect will replace the for
   "Helper function which removes the function with the specified key from the priority list
   structure maintained for the show."
   [fns key]
-  (if-let [index (get (:keys fns) key)]
-    {:keys (remove-key (:keys fns) key index)
-     :functions (vec-remove (:functions fns) index)
+  (if-let [index (get (:indices fns) key)]
+    {:functions (vec-remove (:functions fns) index)
+     :indices (remove-key (:indices fns) key index)
+     :keys (vec-remove (:keys fns) index)
      :priorities (vec-remove (:priorities fns) index)}
     fns))
 
@@ -144,8 +186,9 @@ adding a new effect with the same key as an existing effect will replace the for
   [fns key f priority]
   (let [base (remove-function-internal fns key)
         index (find-insertion-index (:priorities base) priority)]
-    {:keys (insert-key (:keys base) key index)
-     :functions (vec-insert (:functions base) index f)
+    {:functions (vec-insert (:functions base) index f)
+     :indices (insert-key (:indices base) key index)
+     :keys (vec-insert (:keys base) index key)
      :priorities (vec-insert (:priorities base) index priority)}))
 
 (defn add-function!
@@ -174,8 +217,9 @@ adding a new effect with the same key as an existing effect will replace the for
   "Remove all effect functions from the active set, leading to a blackout state in all controlled
   universes (if the show is running) until new functions are added."
   [show]
-  (reset! (:active-functions show) {:keys {},
-                                    :functions [],
+  (reset! (:active-functions show) {:functions [],
+                                    :indices {},
+                                    :keys [],
                                     :priorities []}))
 
 (defn- address-map-internal
@@ -199,11 +243,17 @@ adding a new effect with the same key as an existing effect will replace the for
   [show key]
   (swap! (:fixtures show) #(dissoc % (keyword key))))
 
+(defn next-id
+  "Assign an ID value which is unique to this show, for efficient identification of fixtures and
+  heads while combining effects functions."
+  [show]
+  (swap! (:next-id show) inc))
+
 (defn- patch-fixture-internal
   "Helper function which patches a fixture to a given address and universe, first removing
   any fixture which was previously assigned that key, and making sure there are no DMX
   channel collisions."
-  [fixtures key fixture]
+  [show fixtures ^clojure.lang.Keyword key fixture]
   (let [base (dissoc fixtures key)
         addrs-used (address-map-internal base (:universe (first (:channels fixture))))
         conflicts (select-keys addrs-used (map :address (:channels fixture)))]
@@ -211,14 +261,14 @@ adding a new effect with the same key as an existing effect will replace the for
       (throw (IllegalStateException. (str "Cannot complete patch: "
                                           (clojure.string/join ", " (into [] (for [[k v] conflicts]
                                                                                (str "Channel " k " in use by fixture " v))))))))
-    (assoc fixtures key (assoc fixture :id key))))
+    (assoc fixtures key (assoc fixture :key key :id (next-id show)))))
 
 (defn patch-fixture!
   "Patch a fixture to a universe in the show at a starting DMX channel."
   [show key fixture universe start-address]
   (when-not (contains? (:universes show) universe)
     (throw (IllegalArgumentException. (str "Show does not contain universe " universe))))
-  (swap! (:fixtures show) #(patch-fixture-internal % (keyword key) (chan/patch-fixture fixture universe start-address))))
+  (swap! (:fixtures show) #(patch-fixture-internal show % (keyword key) (chan/patch-fixture fixture universe start-address))))
 
 (defn patch-fixture-group!
   "Patch a fixture group to a universe in the show at a starting DMX channel.

@@ -13,6 +13,9 @@
             [com.evocomputing.colors :as colors]
             [taoensso.timbre :as timbre :refer [error info debug spy]]))
 
+;; Make sure the experimenter does not get blasted with a ton of debug messages
+(timbre/set-level! :info)
+
 ;; Create a show that runs on DMX universe 1, for demonstration purposes.
 (defonce sample-show (show/show 1))
 
@@ -24,7 +27,8 @@
 (defn global-color-cue
   "Make a fixed color cue which affects all lights in the sample rig."
   [color-name]
-  (afterglow.effects.color/color-cue (com.evocomputing.colors/create-color color-name)
+  (afterglow.effects.color/color-cue (str "Color: " (name color-name))
+                                     (com.evocomputing.colors/create-color color-name)
                                      (show/all-fixtures sample-show)))
 
 (def blue-cue (global-color-cue :slateblue))

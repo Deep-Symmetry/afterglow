@@ -9,18 +9,41 @@
   {:offset offset})
 
 (defn- assign-channel [universe start-address raw-channel]
-  (assoc raw-channel :address (+ (:offset raw-channel) (dec start-address)) :universe universe))
+  (cond-> raw-channel
+    true (assoc :address (+ (:offset raw-channel) (dec start-address))
+                :index (+ (dec (:offset raw-channel)) (dec start-address))
+                :universe universe)
+    (:fine-offset raw-channel) (assoc :fine-address (+ (:fine-offset raw-channel) (dec start-address))
+                                      :fine-index (+ (dec (:fine-offset raw-channel)) (dec start-address)))))
+
+(defn- patch-heads
+  "Assigns the heads of a fixture to a DMX universe and starting channel; resolves all of
+  their channel assignments."
+  [fixture channel-assigner]
+  ;; TODO implement, iterate over heads, mapping assigner to their channels
+  fixture)
 
 (defn patch-fixture
   "Assign a fixture to a DMX universe and starting channel; resolves all of its channel assignments."
   [fixture universe start-address]
   (let [assigner (partial assign-channel universe start-address)]
-    (update-in fixture [:channels] #(map assigner %))))
+    (update-in (patch-heads fixture assigner) [:channels] #(map assigner %))))
 
 (defn extract-channels
   "Given a fixture list, returns the channels matching the specified predicate."
   [fixtures pred]
   (filter pred (mapcat :channels fixtures)))
+
+(defn expand-heads
+  "Given a list of fixtures, expands it to include the heads."
+  [fixtures]
+  (mapcat #(concat [%] (:heads %)) fixtures))
+
+(defn extract-heads-with-some-matching-channel
+  "Given a fixture list, returns all heads (which may be top-level fixtures too)
+  whose channels contain a match for the specified predicate."
+  [fixtures pred]
+  (filter #(some pred (:channels %)) (expand-heads fixtures)))
 
 (defn full-range
   "Returns a range spefication that encompasses all possible DMX values as a single variable setting."
@@ -93,8 +116,6 @@ channel which specifies the fractional value to be added to the main channel."
   ([offset fine-offset]
    (fine-channel :zoom offset :fine-offset fine-offset)))
 
-
-;; TODO pan-tilt channels, with multi-byte support
 
 ;; TODO control channels
 

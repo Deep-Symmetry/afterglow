@@ -24,4 +24,6 @@
   :plugins [[lein-ancient "0.6.5"]
             [lein-protobuf "0.4.2"]]
   :aliases {"gen" ["with-profile" "+gen,+dev" "run" "-m" "afterglow.src-generator"]}
+  :repl-options {:init-ns afterglow.examples
+                 :welcome (println "Afterglow loaded.")}
   :min-lein-version "2.0.0")

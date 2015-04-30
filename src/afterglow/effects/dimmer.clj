@@ -1,56 +1,68 @@
 (ns afterglow.effects.dimmer
   (:require [afterglow.channels :as channels]
+            [afterglow.effects.channel :as chan-fx]
+            [afterglow.effects.util :as fx-util]
             [afterglow.rhythm :refer [metro-beat-phase]]
             [taoensso.timbre :as timbre :refer [error warn info debug]]
-            [taoensso.timbre.profiling :as profiling :refer [pspy profile]]))
+            [taoensso.timbre.profiling :as profiling :refer [pspy profile]])
+  (:import [afterglow.effects.util IEffect]))
 
 (defn- assign-level
   "Assigns a dimmer level to the channel."
   [level channel]
   (assoc channel :value level))
 
+(defn dimmer-channel?
+  "Returns true if the supplied channel is a dimmer."
+  [c]
+  (= (:type c) :dimmer))
+
+(defn- gather-dimmer-channels
+  "Finds all channels in the supplied fixture list which are dimmers, even if they are inside heads."
+  [fixtures]
+  (let [heads (channels/extract-heads-with-some-matching-channel fixtures dimmer-channel?)]
+    (channels/extract-channels heads dimmer-channel?)))
+
+;; TODO UNUSED, remove once sure this will not be needed.
+(defn- build-dimmer-assigners
+  "Reurns a list of assigners which apply an assignment function to all dimmer channels in the
+  supplied fixtures (and their individually-dimmable heads, if applicable)."
+  [fixtures value f]
+  (map #(chan-fx/build-channel-assigner % f) (gather-dimmer-channels fixtures)))
+
 (defn dimmer-cue
-  "Returns an effect function which simply assigns a fixed value to the fixtures supplied when invoked."
-  [level fixtures]
-  (let [assigned (map (partial assign-level level) (channels/extract-channels fixtures #(= (:type %) :dimmer)))
-        result (map #(select-keys % [:address :universe :value]) assigned)]
-    ;; TODO handle fixtures with fine dimmer channels through fractional values? Have extract-channels
-    ;; synthesize extra :dimmer-fine channels, or change the way I define fixtures to just include those?
-    ;; I am leaning towards the latter
-    (fn [show snapshot]
-      (pspy :dimmer-cue
-            result))))
+  "Returns an effect which simply assigns a fixed value to all dimmers of the supplied fixtures. If htp?
+  is true, use highest-takes-precedence (i.e. compare to the previous assignment, and let the higher value
+  remain)."
+  ([level fixtures]
+   (dimmer-cue level fixtures true))
+  ([level fixtures htp?]
+   (fx-util/validate-dmx-value level "level")
+   (let [dimmers (gather-dimmer-channels fixtures)]
+     (chan-fx/build-fixed-channel-cue (str "Dimmers=" level (when htp?) " (HTP)") level dimmers htp?))))
 
 (defn dimmer-oscillator
   "Returns an effect function which drives the dimmer channels of the supplied fixtures according to
-  a supplied oscillator function and the show metronome."
-  ([osc fixtures]
-   (dimmer-oscillator osc 0 255 fixtures))
-  ([osc min max fixtures]
-   (when (or (< min 0) (> min 255))
-     (throw (IllegalArgumentException. "min value must range from 0 to 255")))
-   (when (or (< max 0) (> max 255))
-     (throw (IllegalArgumentException. "max value must range from 0 to 255")))
-   (when-not (< min max)
-     (throw (IllegalArgumentException. "min must be less than max")))
-   (let [range (long (- max min))
-         chans (map #(select-keys % [:address :universe]) (channels/extract-channels fixtures #(= (:type %) :dimmer)))]
-     (fn [show snapshot]
-       (pspy :dimmer-oscillator
-             (let [phase (osc snapshot)
-                   new-level (+ min (Math/round (* range phase)))]
-               (map (partial assign-level new-level) chans)))))))
+  a supplied oscillator function and the show metronome.  If :htp? is true, use highest-takes-precedence
+  (i.e. compare to the previous assignment, and let the higher value remain). Unless otherwise specified,
+  via :min and :max, ranges from 0 to 255."
+  [osc fixtures & {:keys [min max htp?] :or {min 0 max 255 htp? true}}]
+  (fx-util/validate-dmx-value min "min")
+  (fx-util/validate-dmx-value max "max")
+  (when-not (< min max)
+    (throw (IllegalArgumentException. "min must be less than max")))
+  (let [range (long (- max min))
+        chans (channels/extract-channels fixtures #(= (:type %) :dimmer))
+        f (if htp?
+            (fn [show snapshot target previous-assignment]
+              (pspy :dimmer-oscillator-htp
+                    (let [phase (osc snapshot)
+                          new-level (+ min (Math/round (* range phase)))]
+                      (clojure.core/max new-level (or previous-assignment 0)))))
+            (fn [show snapshot target previous-assignment]
+              (pspy :dimmer-oscillator
+                    (let [phase (osc snapshot)
+                          new-level (+ min (Math/round (* range phase)))]
+                      new-level))))]
+    (chan-fx/build-simple-channel-cue (str "Dimmer Oscillator " min "-" max (when htp? " (HTP)")) f chans)))
 
-(defn sawtooth-beat
-  "Returns an effect function which ramps the dimmer over each beat of a metronome."
-  ([fixtures]
-   (sawtooth-beat 0 255 false fixtures))
-  ([min max down? fixtures]
-   (let [range (- max min)
-         chans (map #(select-keys % [:address :universe]) (channels/extract-channels fixtures #(= (:type %) :dimmer)))]
-     (fn [show snapshot]
-       (pspy :sawtooth-beat
-          (let [phase (.beat-phase snapshot)
-                adj (if down? (- 1.0 phase) phase)
-                new-level (+ min (int (* range adj)))]
-            (map (partial assign-level new-level) chans)))))))

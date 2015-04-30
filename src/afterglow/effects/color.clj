@@ -1,29 +1,39 @@
 (ns afterglow.effects.color
   (:require [afterglow.channels :as channels]
+            [afterglow.effects.channel :refer [apply-channel-value]]
+            [afterglow.effects.util :refer :all]
             [com.evocomputing.colors :as colors]
-            [taoensso.timbre :as timbre :refer [error warn info debug]]
-            [taoensso.timbre.profiling :as profiling :refer [pspy profile]]))
+            [taoensso.timbre :as timbre :refer [error warn info debug spy]]
+            [taoensso.timbre.profiling :as profiling :refer [pspy profile]])
+  (:import [afterglow.effects.util Assigner Effect]))
 
-(defn- extract-rgb
-  "Filters out only the channels which define RGB color components from a list of fixtures."
-  [fixtures]
-  (channels/extract-channels fixtures #(#{:red :green :blue} (:color %))))
+(defn build-color-assigner
+  "Returns an assigner which applies the specified assignment function to the supplied head or fixture."
+  [head f]
+  (Assigner. :color (keyword (str "i" (:id head))) head f))
 
-(defn- assign-color
-  "Given an RGB color component channel, assigns it the appropriate DMX value for a color."
-  [color channel]
-  (cond (= (:color channel) :red)
-        (assoc channel :value (colors/red color))
-        (= (:color channel) :green)
-        (assoc channel :value (colors/green color))
-        (= (:color channel) :blue)
-        (assoc channel :value (colors/blue color))))
+(defn build-color-assigners
+  "Returns a list of assigners which apply a color assignment function to all the supplied heads or fixtures."
+  [heads f]
+  (map #(build-color-assigner % f) heads))
 
+;; TODO support different kinds of color mixing, blending, HTP...
+;; TODO someday support color wheels too, optionally, with a tolerance level
+;; Then can combine with a conditional dimmer setting if a color was assigned.
 (defn color-cue
-  "Returns an effect function which simply assigns a fixed color to the fixtures supplied when invoked."
-  [c fixtures]
-  (let [assigned (map (partial assign-color c) (extract-rgb fixtures))
-        result (map #(select-keys % [:address :universe :value]) assigned)]
-    (fn [show snapshot]
-      (pspy :color-cue
-            result))))
+  "Returns an effect which simply assigns a fixed color to all heads of the fixtures supplied when invoked."
+  [name c fixtures]
+  (let [heads (filter #(= 3 (count (filter #{:red :green :blue} (map :color (:channels %))))) (channels/expand-heads fixtures))
+        assigners (build-color-assigners heads (fn [show snapshot target previous-assignment] c))]
+    (Effect. name always-active (fn  [show snapshot] assigners) end-immediately)))
+
+;; TODO handle color wheels and/or other color channels
+(defn color-assignment-resolver
+  "Resolves the assignmnet of a color to a fixture or a head."
+  [show buffers target assignment]
+  (doseq [c (filter #(= (:color %) :red) (:channels target))]
+    (apply-channel-value buffers c (com.evocomputing.colors/red assignment)))
+  (doseq [c (filter #(= (:color %) :green) (:channels target))]
+    (apply-channel-value buffers c (com.evocomputing.colors/green assignment)))
+  (doseq [c (filter #(= (:color %) :blue) (:channels target))]
+    (apply-channel-value buffers c (com.evocomputing.colors/blue assignment))))
