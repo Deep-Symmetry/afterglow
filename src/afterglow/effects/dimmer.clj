@@ -1,11 +1,10 @@
 (ns afterglow.effects.dimmer
+  "Effects pipeline functions for working with dimmer channels for fixtures and heads."
+  {:author "James Elliott"}
   (:require [afterglow.channels :as channels]
             [afterglow.effects.channel :as chan-fx]
             [afterglow.effects.util :as fx-util]
-            [afterglow.rhythm :refer [metro-beat-phase]]
-            [taoensso.timbre :as timbre :refer [error warn info debug]]
-            [taoensso.timbre.profiling :as profiling :refer [pspy profile]])
-  (:import [afterglow.effects.util IEffect]))
+            [taoensso.timbre.profiling :refer [pspy]]))
 
 (defn- assign-level
   "Assigns a dimmer level to the channel."

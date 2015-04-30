@@ -1,5 +1,5 @@
-(ns
-    ^{:doc "Encapsulates a synchronized light show, executing a vaying collection of effects with
+(ns afterglow.show
+  "Encapsulates a synchronized light show, executing a vaying collection of effects with
 output to a number of DMX universes. Assumes control of the assigned universes, so only
 one show at a time should be assigned a given universe. Of course, you can stack as many
 effects as you'd like in that show. The effects are maintained in a priority queue, with
@@ -8,20 +8,17 @@ latest-takes-priority semantics. The default priority when adding an effect is z
 you can assign it any integer, and it will be inserted into the queue after any existing
 effects with the same priority. All effects are assigned a key when they are added, and
 adding a new effect with the same key as an existing effect will replace the former one."
-      :author "James Elliott"}
-  afterglow.show
-  (:require [afterglow.ola-service :as ola]
-            [afterglow.ola-messages :refer [DmxData]]
-            [afterglow.rhythm :refer :all]
-            [afterglow.util :refer [ubyte]]
-            [afterglow.effects.util :as fx-util]
+  {:author "James Elliott"}
+  (:require [afterglow.channels :as chan]
             [afterglow.effects.channel :refer [channel-assignment-resolver]]
             [afterglow.effects.color :refer [color-assignment-resolver]]
-            [afterglow.channels :as chan]
+            [afterglow.effects.util :as fx-util]
+            [afterglow.ola-service :as ola]
+            [afterglow.rhythm :refer :all]
             [overtone.at-at :as at-at]
-            [taoensso.timbre :as timbre :refer [error info debug spy]]
-            [taoensso.timbre.profiling :as profiling :refer [pspy profile p]])
-  (:import [com.google.protobuf ByteString]))
+            [taoensso.timbre :refer [error]]
+            [taoensso.timbre.profiling :refer [p profile pspy]])
+  (:import (com.google.protobuf ByteString)))
 
 
 (def default-refresh-interval
@@ -259,8 +256,8 @@ adding a new effect with the same key as an existing effect will replace the for
         conflicts (select-keys addrs-used (map :address (:channels fixture)))]
     (when (seq conflicts)
       (throw (IllegalStateException. (str "Cannot complete patch: "
-                                          (clojure.string/join ", " (into [] (for [[k v] conflicts]
-                                                                               (str "Channel " k " in use by fixture " v))))))))
+                                          (clojure.string/join ", " (vec (for [[k v] conflicts]
+                                                                           (str "Channel " k " in use by fixture " v))))))))
     (assoc fixtures key (assoc fixture :key key :id (next-id show)))))
 
 (defn patch-fixture!

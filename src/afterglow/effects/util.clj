@@ -1,8 +1,11 @@
 (ns afterglow.effects.util
+  "Support functions for building the effects pipeline."
+  {:author "James Elliott"}
   (:require [afterglow.channels :as channels]
-           [com.evocomputing.colors :as colors]
-           [taoensso.timbre :as timbre :refer [error warn info debug]]
-           [taoensso.timbre.profiling :as profiling :refer [pspy profile]])
+            [afterglow.rhythm :refer :all]
+            [com.evocomputing.colors :as colors]
+            [taoensso.timbre :as timbre :refer [error warn info debug]]
+            [taoensso.timbre.profiling :as profiling :refer [pspy profile]])
   (:import [afterglow.rhythm MetronomeSnapshot]))
 
 (defprotocol IAssigner
@@ -89,6 +92,6 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
   ([value]
    (validate-dmx-value "value"))
   ([value name]
-   (when (or (< value 0) (> value 255))
+   (when (or (neg? value) (> value 255))
      (throw (IllegalArgumentException. (str name " must range from 0 to 255"))))
 ))

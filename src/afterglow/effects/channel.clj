@@ -1,10 +1,10 @@
 (ns afterglow.effects.channel
-  (:require [afterglow.channels :as channels]
+  "Effects pipeline functions for working with individual DMX channels."
+  {:author "James Elliott"}
+  (:require [afterglow.effects.util :refer :all]
             [afterglow.util :refer [ubyte]]
-            [afterglow.effects.util :refer :all]
-            [taoensso.timbre :as timbre :refer [error warn info debug]]
-            [taoensso.timbre.profiling :as profiling :refer [pspy profile]])
-  (:import [afterglow.effects.util Assigner Effect]))
+            [clojure.math.numeric-tower :as math])
+  (:import (afterglow.effects.util Assigner Effect)))
 
 (defn apply-channel-value
   "A function which sets the DMX buffer value(s) for a channel, supporting fine channels

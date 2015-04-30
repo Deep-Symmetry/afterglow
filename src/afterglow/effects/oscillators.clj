@@ -1,7 +1,7 @@
 (ns afterglow.effects.oscillators
-  (:require [afterglow.rhythm :as rhythm]
-            [taoensso.timbre :as timbre :refer [error warn info debug]]
-            [taoensso.timbre.profiling :as profiling :refer [pspy profile]]))
+  "Provide a variety of waveforms at frequencies related to the show metronome to
+  facilitate building visually and musically pleasing effects."
+  (:require [afterglow.rhythm :as rhythm]))
 
 (defn- adjust-phase
   "Helper function to offset a phase by a given amount. Phases range from [0.0-1.0)."
@@ -138,7 +138,7 @@
    (square-beat width beat-ratio 0.0))
 
   ([^Double width beat-ratio ^Double phase]
-   (when (not (and (> width 0.0) (< width 1.0)))
+   (when-not (and (> width 0.0) (< width 1.0))
      (throw (IllegalArgumentException. "width must fall between 0.0 and 1.0")))
    (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
      (let [reached (adjust-phase (rhythm/snapshot-beat-phase snapshot beat-ratio) phase)]
@@ -165,7 +165,7 @@
    (square-bar width bar-ratio 0.0))
 
   ([^Double width bar-ratio ^Double phase]
-   (when (not (and (> width 0.0) (< width 1.0)))
+   (when-not (and (> width 0.0) (< width 1.0))
      (throw (IllegalArgumentException. "width must fall between 0.0 and 1.0")))
    (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
      (let [reached (adjust-phase (rhythm/snapshot-bar-phase snapshot bar-ratio) phase)]

@@ -1,8 +1,6 @@
-(ns
-    ^{:doc "Models for fixtures provided by Blizzard Lighting"}
-  afterglow.fixtures.blizzard
-  (:require [afterglow.channels :as chan]
-            [taoensso.timbre :as timbre :refer [error info debug]]))
+(ns afterglow.fixtures.blizzard
+  "Models for fixtures provided by Blizzard Lighting"
+  (:require [afterglow.channels :as chan]))
 
 ;; TODO functions for rotational tranformatons
 ;; TODO multi-head support, with relative locations

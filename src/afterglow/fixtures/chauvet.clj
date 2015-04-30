@@ -1,8 +1,6 @@
-(ns
-    ^{:doc "Models for fixtures provided by Chauvet Lighting"}
-  afterglow.fixtures.chauvet
-  (:require [afterglow.channels :as chan]
-            [taoensso.timbre :as timbre :refer [error info debug]]))
+(ns afterglow.fixtures.chauvet
+  "Models for fixtures provided by Chauvet Lighting."
+  (:require [afterglow.channels :as chan]))
 
 ;; TODO functions for rotational tranformatons
 ;; TODO multi-head support, with relative locations

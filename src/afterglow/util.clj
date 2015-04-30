@@ -1,7 +1,6 @@
-(ns
-    ^{:doc "Utility functions that are likely to be widely useful"
-      :author "James Elliott"}
-  afterglow.util)
+(ns afterglow.util
+  "Utility functions that are likely to be widely useful"
+  {:author "James Elliott"})
 
 (defn ubyte
   "Convert an integer to its unsigned byte equivalent. Necessary for convenient handling of DMX values

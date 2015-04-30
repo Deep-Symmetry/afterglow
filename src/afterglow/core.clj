@@ -1,8 +1,10 @@
 (ns afterglow.core
+  "This will become the main class for running Afterglow as a self-contained JAR application, once
+  there is some sort of interface for configuration and control. For now it just has some testing
+  code, and the main namespace you want to be using in your REPL is afterglow.examples"
   (:require [afterglow.ola-service :as ola]
-            [afterglow.ola-messages :refer [DmxData]]
-            [taoensso.timbre :as timbre :refer [info debug]])
-  (:import [com.google.protobuf ByteString])
+            [taoensso.timbre :as timbre :refer [info]])
+  (:import (com.google.protobuf ByteString))
   (:gen-class))
 
 ;; Make sure the experimenter does not get blasted with a ton of debug messages

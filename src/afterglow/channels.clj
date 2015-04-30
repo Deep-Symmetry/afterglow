@@ -1,9 +1,6 @@
-(ns
-    ^{:doc "Functions for modeling DMX channels"
-      :author "James Elliott"}
-  afterglow.channels
-  (:require [clojure.string :as string]
-            [taoensso.timbre :as timbre :refer [error info debug]]))
+(ns afterglow.channels
+  "Functions for modeling DMX channels"
+  {:author "James Elliott"})
 
 (defn channel [offset]
   {:offset offset})

@@ -1,8 +1,8 @@
-(ns
-    ^{:doc "Functions to help work with musical time."
-      :author "Jeff Rose"
-      :original "https://github.com/overtone/overtone/blob/master/src/overtone/music/rhythm.clj"}
-  afterglow.rhythm
+(ns afterglow.rhythm
+  "Functions to help work with musical time."
+  {:author "Jeff Rose, James Elliott",
+   :original
+   "https://github.com/overtone/overtone/blob/master/src/overtone/music/rhythm.clj"}
   (:require [overtone.at-at :refer [now]]))
 
 (defonce ^{:private true}

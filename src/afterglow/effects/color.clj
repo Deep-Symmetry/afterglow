@@ -1,11 +1,10 @@
 (ns afterglow.effects.color
+  "Effects pipeline functions for working with color assignments to fixtures and heads."
+  {:author "James Elliott"}
   (:require [afterglow.channels :as channels]
             [afterglow.effects.channel :refer [apply-channel-value]]
-            [afterglow.effects.util :refer :all]
-            [com.evocomputing.colors :as colors]
-            [taoensso.timbre :as timbre :refer [error warn info debug spy]]
-            [taoensso.timbre.profiling :as profiling :refer [pspy profile]])
-  (:import [afterglow.effects.util Assigner Effect]))
+            [afterglow.effects.util :refer :all])
+  (:import (afterglow.effects.util Assigner Effect)))
 
 (defn build-color-assigner
   "Returns an assigner which applies the specified assignment function to the supplied head or fixture."

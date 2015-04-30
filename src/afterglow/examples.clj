@@ -1,17 +1,15 @@
-(ns
-    ^{:doc "Show some simple ways to use Afterglow, inspire exploration."
-      :author "James Elliott"}
-  afterglow.examples
-  (:require [afterglow.show :as show]
-            [afterglow.rhythm :refer :all]
-            [afterglow.channels :refer [patch-fixture]]
-            [afterglow.fixtures.chauvet :as chauvet]
-            [afterglow.fixtures.blizzard :as blizzard]
-            [afterglow.effects.color :refer [color-cue]]
-            [afterglow.effects.dimmer :refer [dimmer-cue dimmer-oscillator]]
+(ns afterglow.examples
+  "Show some simple ways to use Afterglow, inspire exploration."
+  {:author "James Elliott"}
+  (:require [afterglow.effects.color :refer [color-cue]]
+            [afterglow.effects.dimmer :refer [dimmer-cue
+                                              dimmer-oscillator]]
             [afterglow.effects.oscillators :as oscillators]
-            [com.evocomputing.colors :as colors]
-            [taoensso.timbre :as timbre :refer [error info debug spy]]))
+            [afterglow.fixtures.blizzard :as blizzard]
+            [afterglow.fixtures.chauvet :as chauvet]
+            [afterglow.rhythm :refer :all]
+            [afterglow.show :as show]
+            [taoensso.timbre :as timbre]))
 
 ;; Make sure the experimenter does not get blasted with a ton of debug messages
 (timbre/set-level! :info)
@@ -27,7 +25,7 @@
 (defn global-color-cue
   "Make a fixed color cue which affects all lights in the sample rig."
   [color-name]
-  (afterglow.effects.color/color-cue (str "Color: " (name color-name))
+  (color-cue (str "Color: " (name color-name))
                                      (com.evocomputing.colors/create-color color-name)
                                      (show/all-fixtures sample-show)))
 
@@ -36,7 +34,7 @@
 (defn master-cue
   "Return an effect function that sets all the dimmers in the sample rig to a fixed value."
   [level]
-  (afterglow.effects.dimmer/dimmer-cue level (show/all-fixtures sample-show)))
+  (dimmer-cue level (show/all-fixtures sample-show)))
 
 ;; Start simple with a cool blue color from all the lights
 ;;(show/add-function! sample-show :color blue-cue)
