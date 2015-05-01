@@ -89,6 +89,7 @@ FIXME: listing of options this app accepts once it can run as a standalone app.
 * Add a user interface using [Luminus](http://www.luminusweb.net/docs).
 * Looks promising for color manipulation: [jolby/colors](https://github.com/jolby/colors)!
 * Serious references for color manipulation, but in [Julia](https://github.com/timholy/Color.jl).
+* Absolutely amazing reference on [color vision](http://handprint.com/LS/CVS/color.html)! Send him a note asking if he knows where I can find an algorithm for using arbitrary LEDs to make an HSL color!
 
 ### References
 
