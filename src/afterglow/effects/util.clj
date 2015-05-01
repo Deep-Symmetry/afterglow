@@ -101,4 +101,4 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
   ([value]
    (validate-dmx-value "value"))
   ([value name]
-   (validate-value 0 255 name)))
+   (validate-value value 0 255 name)))
