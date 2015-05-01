@@ -51,6 +51,11 @@ Given its current development phase, you will want to use Afterglow in a Clojure
     ;; Slow that down a little:
     (afterglow.rhythm/metro-bpm (:metronome sample-show) 70)
     
+    ;; How about a nice cycling rainbow color fade?
+    (show/add-function! sample-show :color
+                        (hue-oscillator (oscillators/sawtooth-bar)
+                                        (show/all-fixtures sample-show)))
+
     ;; Terminate the effect handler thread:
     (show/stop! sample-show)
     
