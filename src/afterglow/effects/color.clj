@@ -44,4 +44,8 @@
           s-scale (* 2 (- 0.5 (math/abs (- 0.5 l))))
           level (* 255 l (- 1 (* s s-scale)))]
       (doseq [c whites]
-        (apply-channel-value buffers c level)))))
+        (apply-channel-value buffers c level))))
+  ;; Even more experimental: Support other arbitrary color channels
+  (doseq [c (filter :hue (:channels target))]
+    (let [as-if-red (com.evocomputing.colors/adjust-hue assignment (- (:hue c)))]
+      (apply-channel-value buffers c (com.evocomputing.colors/red as-if-red)))))

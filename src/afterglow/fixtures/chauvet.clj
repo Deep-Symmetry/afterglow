@@ -12,10 +12,10 @@
    (assoc (case mode
             ;; TODO missing channels once we have definition support for them
             :12-channel {:channels [(chan/dimmer 1) (chan/color 2 :red) (chan/color 3 :green) (chan/color 4 :blue)
-                                    (chan/color 5 :amber) (chan/color 6 :white) (chan/color 7 :uv "UV")]}
+                                    (chan/color 5 :amber :hue 45) (chan/color 6 :white) (chan/color 7 :uv :label "UV")]}
             :8-channel {:channels [(chan/dimmer 1) (chan/color 2 :red) (chan/color 3 :green) (chan/color 4 :blue)
-                                   (chan/color 5 :amber) (chan/color 6 :white) (chan/color 7 :uv "UV")]}
+                                   (chan/color 5 :amber :hue 45) (chan/color 6 :white) (chan/color 7 :uv :label "UV")]}
             :6-channel {:channels [(chan/color 1 :red) (chan/color 2 :green) (chan/color 3 :blue)
-                                   (chan/color 4 :amber) (chan/color 5 :white) (chan/color 6 :uv "UV")]})
+                                   (chan/color 4 :amber :hue 45) (chan/color 5 :white) (chan/color 6 :uv :label "UV")]})
           :name "Chauvet SlimPAR Hex 3 IRC"
           :mode mode)))

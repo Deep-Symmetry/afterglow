@@ -71,11 +71,10 @@ channel which specifies the fractional value to be added to the main channel."
 
 ;; TODO here is where we would add wavelength support once we can figure out the formulas
 (defn color
-  ([offset kwd]
-   (color offset kwd nil))
-  ([offset kwd label]
-   (assoc (fine-channel :color offset :range-label (or label (clojure.string/capitalize (name kwd))))
-          :color kwd)))
+  [offset kwd & {:keys [hue label]}]
+  (-> (fine-channel :color offset :range-label (or label (clojure.string/capitalize (name kwd))))
+      (assoc :color (keyword kwd))
+      (cond-> hue (assoc :hue hue))))
 
 (defn pan
   ([offset]
