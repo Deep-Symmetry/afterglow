@@ -13,8 +13,10 @@ adding a new effect with the same key as an existing effect will replace the for
             [afterglow.effects.channel :refer [channel-assignment-resolver]]
             [afterglow.effects.color :refer [color-assignment-resolver]]
             [afterglow.effects.util :as fx-util]
+            [afterglow.midi :as midi]
             [afterglow.ola-service :as ola]
             [afterglow.rhythm :refer :all]
+            [clojure.string :refer [blank?]]
             [overtone.at-at :as at-at]
             [taoensso.timbre :refer [error]]
             [taoensso.timbre.profiling :refer [p profile pspy]])
@@ -115,6 +117,7 @@ adding a new effect with the same key as an existing effect will replace the for
    (show (metronome 120) default-refresh-interval universe))
   ([metro refresh-interval & universes]
    {:metronome metro
+    :midi-sync (atom nil)
     :refresh-interval refresh-interval
     :universes (set universes)
     :default-lightness (atom 50.0)
@@ -128,6 +131,17 @@ adding a new effect with the same key as an existing effect will replace the for
   "Kills all scheduled tasks which shows may have created to output their DMX values."
   []
   (at-at/stop-and-reset-pool! scheduler))
+
+(defn sync-to-midi-clock
+  "Starts synchronizing the a show's metronome to MIDI clock messages from the named MIDI source. If no source name is
+  supplied, stops synchronization of the metronome."
+  ([show]
+   (sync-to-midi-clock show nil))
+  ([show source-name]
+   (swap! (:midi-sync show) (fn [syncer]
+                              (when syncer (midi/sync-stop syncer))
+                              (when-not (blank? source-name)
+                                (midi/sync-to-midi-clock (:metronome show) source-name))))))
 
 (defn- vec-remove
   "Remove the element at the specified index from the collection."

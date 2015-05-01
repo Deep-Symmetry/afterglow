@@ -9,6 +9,8 @@
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [overtone/at-at "1.2.0"]
+                 [overtone/midi-clj "0.5.0"]
+                 [amalloy/ring-buffer "1.1"]
                  ;; [overtone "0.9.1"]
                  [org.flatland/protobuf "0.8.1"]
                  [selmer "0.8.2"]

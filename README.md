@@ -90,7 +90,7 @@ FIXME: listing of options this app accepts once it can run as a standalone app.
 * Model colors, support setting via HSB, eventually maybe even model individual LED colors, especially for fixtures with more than three colors.
 * Sparkle effect, essentially a particle generator with configurable maximum brightness, fade time, distribution. Work both with arbitrary channel list, and with spatially mapped origin/density; as single intensity, or spatially mapped hue/saturation patterns.
 * Use [claypoole](https://clojars.org/com.climate/claypoole) for parallelism.
-* Add OSC support (probably using Overtone&rsquo;s implementation) for controller support, and MIDI as well.
+* Add OSC support (probably using [Overtone&rsquo;s implementation](https://github.com/rosejn/osc-clj)) for controller support, and MIDI as well.
 * Add a user interface using [Luminus](http://www.luminusweb.net/docs).
 * Looks promising for color manipulation: [jolby/colors](https://github.com/jolby/colors)!
 * Serious references for color manipulation, but in [Julia](https://github.com/timholy/Color.jl).
