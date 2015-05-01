@@ -3,7 +3,8 @@
   {:author "James Elliott"}
   (:require [afterglow.channels :as channels]
             [afterglow.effects.channel :refer [apply-channel-value]]
-            [afterglow.effects.util :refer :all])
+            [afterglow.effects.util :refer :all]
+            [clojure.math.numeric-tower :as math])
   (:import (afterglow.effects.util Assigner Effect)))
 
 (defn build-color-assigner
@@ -35,4 +36,12 @@
   (doseq [c (filter #(= (:color %) :green) (:channels target))]
     (apply-channel-value buffers c (com.evocomputing.colors/green assignment)))
   (doseq [c (filter #(= (:color %) :blue) (:channels target))]
-    (apply-channel-value buffers c (com.evocomputing.colors/blue assignment))))
+    (apply-channel-value buffers c (com.evocomputing.colors/blue assignment)))
+  ;; Expermental: Does this work well in bringing in the white channel?
+  (when-let [whites (filter #(= (:color %) :white) (:channels target))]
+    (let [l (/ (com.evocomputing.colors/lightness assignment) 100)
+          s (/ (com.evocomputing.colors/saturation assignment) 100)
+          s-scale (* 2 (- 0.5 (math/abs (- 0.5 l))))
+          level (* 255 l (- 1 (* s s-scale)))]
+      (doseq [c whites]
+        (apply-channel-value buffers c level)))))
