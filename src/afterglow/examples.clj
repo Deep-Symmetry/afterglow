@@ -9,6 +9,7 @@
             [afterglow.fixtures.chauvet :as chauvet]
             [afterglow.rhythm :refer :all]
             [afterglow.show :as show]
+            [com.evocomputing.colors :refer [color-name create-color]]
             [taoensso.timbre :as timbre]))
 
 ;; Make sure the experimenter does not get blasted with a ton of debug messages
@@ -24,10 +25,14 @@
 
 (defn global-color-cue
   "Make a fixed color cue which affects all lights in the sample rig."
-  [color-name]
-  (color-cue (str "Color: " (name color-name))
-                                     (com.evocomputing.colors/create-color color-name)
-                                     (show/all-fixtures sample-show)))
+  [color]
+  (try
+    (let [c (if (= (type color) :com.evocomputing.colors/color)
+              color
+              (create-color color))]
+      (color-cue (str "Color: " (color-name c)) c (show/all-fixtures sample-show)))
+    (catch Exception e
+      (throw (Exception. (str "Can't figure out how to create color from " color))))))
 
 (def blue-cue (global-color-cue :slateblue))
 
