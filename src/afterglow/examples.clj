@@ -1,7 +1,7 @@
 (ns afterglow.examples
   "Show some simple ways to use Afterglow, inspire exploration."
   {:author "James Elliott"}
-  (:require [afterglow.effects.color :refer [color-cue]]
+  (:require [afterglow.effects.color :refer [color-cue hue-oscillator]]
             [afterglow.effects.dimmer :refer [dimmer-cue
                                               dimmer-oscillator]]
             [afterglow.effects.oscillators :as oscillators]
