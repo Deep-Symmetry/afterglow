@@ -51,6 +51,10 @@ Given its current development phase, you will want to use Afterglow in a Clojure
     ;; Slow that down a little:
     (afterglow.rhythm/metro-bpm (:metronome sample-show) 70)
     
+    ;; If you have DJ software or a mixer sending you MIDI clock data, you can sync
+    ;; the show's BPM to it:
+    (show/sync-to-midi-clock sample-show "DJM-2000")
+
     ;; How about a nice cycling rainbow color fade?
     (show/add-function! sample-show :color
                         (hue-oscillator (oscillators/sawtooth-bar)
