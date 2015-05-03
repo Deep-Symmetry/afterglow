@@ -119,8 +119,7 @@ adding a new effect with the same key as an existing effect will replace the for
    (show (metronome 120) default-refresh-interval universe))
   ([metro refresh-interval & universes]
    {:metronome metro
-    :midi-sync (atom nil)
-    :dj-link-sync (atom nil)
+    :sync (atom nil)
     :refresh-interval refresh-interval
     :universes (set universes)
     :default-lightness (atom 50.0)
@@ -136,43 +135,26 @@ adding a new effect with the same key as an existing effect will replace the for
   []
   (at-at/stop-and-reset-pool! scheduler))
 
-(declare sync-to-dj-link)
-
-(defn sync-to-midi-clock
-  "Starts synchronizing the a show's metronome to MIDI clock messages
-  from the named MIDI source. If no source name is supplied, stops
-  synchronization of the metronome. Stops any synchronization to
-  Pioneer Pro DJ Link that may be underway."
+(defn sync-to-external-clock
+  "Starts synchronizing the a show's metronome to an external clock
+  source. Pass it a function which takes the metronome and binds it to
+  the source, returning a ClockSync object which will be stored with
+  the show, so synchronization can later be stopped if desired.
+  Calling this stops any synchronization that was formerly in effect,
+  and calling it with no sync-fn argument simply leaves it stopped."
   ([show]
-   (sync-to-midi-clock show nil))
-  ([show source-name]
-   (when @(:dj-link-sync show) (sync-to-dj-link show nil))
-   (swap! (:midi-sync show) (fn [syncer]
-                              (when syncer (midi/sync-stop syncer))
-                              (when-not (blank? source-name)
-                                (midi/sync-to-midi-clock (:metronome show) source-name))))))
-
-(defn sync-to-dj-link
-  "Starts synchronizing the a show's metronome to network messages
-  from the named DJ Link transmitter. If no source name is supplied,
-  stops synchronization of the metronome. Stops any MIDI
-  synchronization that may be underway."
-  ([show]
-   (sync-to-dj-link show nil))
-  ([show source-name]
-   (when @(:midi-sync show) (sync-to-midi-clock show nil))
-   (swap! (:dj-link-sync show) (fn [syncer]
-                                 (when syncer (midi/sync-stop syncer))
-                                 (when-not (blank? source-name)
-                                   (dj-link/sync-to-dj-link (:metronome show) source-name))))))
+   (sync-to-external-clock show nil))
+  ([show sync-fn]
+   (swap! (:sync show) (fn [former-sync]
+                              (when former-sync (midi/sync-stop former-sync))
+                              (when sync-fn (sync-fn (:metronome show)))))))
 
 (defn sync-status
   "Checks what kind of synchronization is in effect, and reports on how it seems to be working."
   [show]
-  (cond
-    @(:midi-sync show) {:type :midi, :status (midi/sync-status @(:midi-sync show))}
-    @(:dj-link-sync show) {:type :midi, :status (midi/sync-status @(:dj-link-sync show))}
-    :else              {:type :manual}))
+  (if-let [sync-in-effect @(:sync show)]
+    (midi/sync-status sync-in-effect)
+    {:type :manual}))
 
 (defn- vec-remove
   "Remove the element at the specified index from the collection."

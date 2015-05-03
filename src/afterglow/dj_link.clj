@@ -68,19 +68,21 @@
                     (when s (.close s))
                     nil)))
   (sync-status [this]
-    (cond
-      (nil? watcher)                "Stopped."
-      (zero? @packet-count)         "Network problems? No DJ Link packets received."
-      (zero? @sync-count)           (str "Configuration problem? No DJ Link beat packets received from " target-name ".")
-      (> (- (now) @last-sync) 1000) (str "Stalled? No sync packets received in " (- (now) @last-sync) "ms.")
-      :else                         (str "Running. " @sync-count " beats received."))))
+    {:type :dj-link,
+     :status (cond
+               (nil? watcher)                "Stopped."
+               (zero? @packet-count)         "Network problems? No DJ Link packets received."
+               (zero? @sync-count)           (str "Configuration problem? No DJ Link beat packets received from " target-name ".")
+               (> (- (now) @last-sync) 1000) (str "Stalled? No sync packets received in " (- (now) @last-sync) "ms.")
+               :else                         (str "Running. " @sync-count " beats received."))}))
 
 (defn sync-to-dj-link
-  "Cause the beats-per-minute setting of the supplied metronome to
-  track the values received from the named DJ Link transmitter on the
-  local network. This synchronization can be stopped by calling the
-  sync-stop function on the object returned."
-  [^afterglow.rhythm.Metronome metronome ^String dj-link-device-name]
-  (let [sync-handler (UDPSync. metronome dj-link-device-name (atom nil) (atom nil) (atom 0) (atom 0) (atom nil))]
-    (sync-start sync-handler)
-    sync-handler))
+  "Returns a sync function that will cause the beats-per-minute
+  setting of the supplied metronome to track the values received from
+  the named DJ Link transmitter on the local network. This is intended
+  for use with afterglow.show/sync-to-external-clock."
+  [dj-link-device-name]
+  (fn [^afterglow.rhythm.Metronome metronome]
+    (let [sync-handler (UDPSync. metronome dj-link-device-name (atom nil) (atom nil) (atom 0) (atom 0) (atom nil))]
+      (sync-start sync-handler)
+      sync-handler)))

@@ -53,7 +53,16 @@ Given its current development phase, you will want to use Afterglow in a Clojure
     
     ;; If you have DJ software or a mixer sending you MIDI clock data, you can sync
     ;; the show's BPM to it:
-    (show/sync-to-midi-clock sample-show "DJM-2000")
+    (show/sync-to-external-clock (afterglow.midi/sync-to-midi-clock "traktor"))
+
+    ;; If you have Pioneer gear sending you Pro DJ Link packets, you can sync even
+    ;; more precisely:
+    (show/sync-to-external-clock sample-show (afterglow.dj-link/sync-to-dj-link "DJM-2000"))
+    
+    ;; To check on the sync status:
+    (show/sync-status sample-show)
+    ; -> {:type :midi, :status "Running, clock pulse buffer is full."}
+    ; -> {:type :dj-link, :status "Network problems? No DJ Link packets received."}
 
     ;; How about a nice cycling rainbow color fade?
     (show/add-function! sample-show :color

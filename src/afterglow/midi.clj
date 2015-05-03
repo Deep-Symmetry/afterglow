@@ -42,16 +42,19 @@
       (midi/midi-handle-events midi-clock-source (fn [msg] nil)))
     (sync-status [this]
       (let [n (count @buffer)]
-        (cond
-          (empty? @buffer)           "Inactive, no clock pulses have been received."
-          (< n  max-clock-intervals) (str "Stalled? Clock pulse buffer has " n " of " max-clock-intervals " pulses in it.")
-          :else                      "Running, clock pulse buffer is full."))))
+        {:type :midi,
+         :status (cond
+                   (empty? @buffer)           "Inactive, no clock pulses have been received."
+                   (< n  max-clock-intervals) (str "Stalled? Clock pulse buffer has " n " of " max-clock-intervals " pulses in it.")
+                   :else                      "Running, clock pulse buffer is full.")})))
 
 (defn sync-to-midi-clock
-  "Cause the beats-per-minute setting of the supplied metronome to track the MIDI clock messages
-  received from the named MIDI source. This synchronization can be stopped by calling the sync-stop
-  function on the object returned."
-  [^afterglow.rhythm.Metronome metronome ^String midi-clock-source]
-  (let [sync-handler (ClockSync. metronome (midi/midi-in midi-clock-source) (atom (ring-buffer max-clock-intervals)))]
-    (sync-start sync-handler)
-    sync-handler))
+  "Returns a sync function that will cause the beats-per-minute
+  setting of the supplied metronome to track the MIDI clock messages
+  received from the named MIDI source. This is intended for use with
+  afterglow.show/sync-to-external-clock."
+  [midi-clock-source]
+  (fn [^afterglow.rhythm.Metronome metronome]
+    (let [sync-handler (ClockSync. metronome (midi/midi-in midi-clock-source) (atom (ring-buffer max-clock-intervals)))]
+      (sync-start sync-handler)
+      sync-handler)))
