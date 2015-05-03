@@ -86,19 +86,21 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
   [show snapshot]
   true)
 
-;;TODO make this a macro so you can skip passing the name if it is the same as the argument.
-(defn validate-value
+(defmacro validate-value
   "Ensure that a number falls within a specified range, throwing an exception otherwise."
   ([value min max]
-   (validate-value value min max "value"))
+   (let [arg value]
+     `(validate-value ~value ~min ~max ~(str arg))))
   ([value min max name]
-   (when (or (< value min) (> value max))
-     (throw (IllegalArgumentException. (str name " must range from " min " to " max))))))
+   `(if (or (< ~value ~min) (> ~value ~max))
+      (throw (IllegalArgumentException. (str ~name " must range from " ~min " to " ~max)))
+      true)))
 
-(defn validate-dmx-value
+(defmacro validate-dmx-value
   "Ensure that a number falls within a valid range for a DMX value assignment,
   throwing an exception otherwise."
   ([value]
-   (validate-dmx-value "value"))
+   (let [arg value]
+     `(validate-dmx-value ~value ~(str arg))))
   ([value name]
-   (validate-value value 0 255 name)))
+   `(validate-value ~value 0 255 ~name)))

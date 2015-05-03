@@ -43,7 +43,7 @@
   ([level fixtures]
    (dimmer-cue level fixtures true))
   ([level fixtures htp?]
-   (fx-util/validate-dmx-value level "level")
+   (fx-util/validate-dmx-value level)
    (let [dimmers (gather-dimmer-channels fixtures)]
      (chan-fx/build-fixed-channel-cue (str "Dimmers=" level (when htp?) " (HTP)") level dimmers htp?))))
 
@@ -55,8 +55,8 @@
   channels with an associated fine channel (commonly pan and tilt), and will be resolved in the process
   of assigning the value to the DMX channels."
   [osc fixtures & {:keys [min max htp?] :or {min 0 max 255 htp? true}}]
-  (fx-util/validate-dmx-value min "min")
-  (fx-util/validate-dmx-value max "max")
+  (fx-util/validate-dmx-value min)
+  (fx-util/validate-dmx-value max)
   (when-not (< min max)
     (throw (IllegalArgumentException. "min must be less than max")))
   (let [range (long (- max min))

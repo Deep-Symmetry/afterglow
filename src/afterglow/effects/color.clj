@@ -44,8 +44,8 @@
   lightness to 50, but these can be set via :saturation
   and :lightness."
   [osc fixtures & {:keys [min max saturation lightness] :or {min 0 max 359 saturation 100 lightness 50}}]
-  (validate-value saturation 0 100 "saturation")
-  (validate-value lightness 0 100 "lightness")
+  (validate-value saturation 0 100)
+  (validate-value lightness 0 100)
   (when-not (< min max)
     (throw (IllegalArgumentException. "min must be less than max")))
   (let [range (long (- max min))
