@@ -8,4 +8,4 @@
 
 (deftest test-extract-rgb
   (testing "Finding RGB color channels")
-  (is (= [2 3 4] (map :offset (#'afterglow.effects.color/extract-rgb [(chauvet/slimpar-hex3-irc)])))))
+  (is (= [:12-channel-mix-uv] (map :mode (#'afterglow.effects.color/find-rgb-heads [(chauvet/slimpar-hex3-irc)])))))
