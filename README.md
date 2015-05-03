@@ -77,7 +77,7 @@ FIXME: listing of options this app accepts once it can run as a standalone app.
 ### Working with Color
 
 Cues that assign color to lights are designed to leverage the
-`[jolby/colors](https://github.com/jolby/colors)` library. In addition
+[jolby/colors](https://github.com/jolby/colors) library. In addition
 to creating colors by name, as in the Usage examples, you can create
 them by hex string, RGB values, and, most usefully when thinking about
 how to mix and fade them,
@@ -95,8 +95,10 @@ something like this:
                                           :max (hue (adjust-hue yellow 5)))))
 
 You can add lighten it up by adding something like `:lightness 70` to the
-`hue-oscillator` call, darken it a bumch with `:lightness 20` or desaturate
-it a touch with `:saturation 80`...
+`hue-oscillator` call, darken it a bunch with `:lightness 20` or desaturate
+it a touch with `:saturation 80`... For more options and ideas, delve into
+the colors library API documentation, and the various oscillators that
+Afterglow makes available to you.
 
 ...
 
