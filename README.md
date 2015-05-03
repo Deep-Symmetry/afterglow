@@ -57,7 +57,8 @@ Given its current development phase, you will want to use Afterglow in a Clojure
 
     ;; If you have Pioneer gear sending you Pro DJ Link packets, you can sync even
     ;; more precisely:
-    (show/sync-to-external-clock sample-show (afterglow.dj-link/sync-to-dj-link "DJM-2000"))
+    (show/sync-to-external-clock sample-show
+                                 (afterglow.dj-link/sync-to-dj-link "DJM-2000"))
     
     ;; To check on the sync status:
     (show/sync-status sample-show)
