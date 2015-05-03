@@ -83,7 +83,7 @@ them by hex string, RGB values, and, most usefully when thinking about
 how to mix and fade them,
 [HSL](http://en.wikipedia.org/wiki/HSL_and_HSV) (Hue, Saturation, and
 Lightness). So, if you wanted a cue that shifts back and forth around
-yellow, and didn't remember the hue value of yellow, you could do
+yellow, and don't remember the hue value of yellow, you could do
 something like this:
 
     (use 'com.evocomputing.colors)
