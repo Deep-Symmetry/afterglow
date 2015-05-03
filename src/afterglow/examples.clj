@@ -9,7 +9,7 @@
             [afterglow.fixtures.chauvet :as chauvet]
             [afterglow.rhythm :refer :all]
             [afterglow.show :as show]
-            [com.evocomputing.colors :refer [color-name create-color]]
+            [com.evocomputing.colors :refer [color-name create-color adjust-hue hue]]
             [taoensso.timbre :as timbre]))
 
 ;; Make sure the experimenter does not get blasted with a ton of debug messages
@@ -42,14 +42,26 @@
   (dimmer-cue level (show/all-fixtures sample-show)))
 
 ;; Start simple with a cool blue color from all the lights
-;;(show/add-function! sample-show :color blue-cue)
-;;(show/add-function! sample-show :master (master-cue 255))
+(show/add-function! sample-show :color blue-cue)
+(show/add-function! sample-show :master (master-cue 255))
 
 ;; Get a little fancier with some beat-driven fades
-;; (show/add-function! sample-show :master
-;;                     (dimmer-oscillator (oscillators/sawtooth-beat)
-;;                                        (show/all-fixtures sample-show)))
+(show/add-function! sample-show :master
+                    (dimmer-oscillator (oscillators/sawtooth-beat)
+                                       (show/all-fixtures sample-show)))
 
+;; Shift a little around yellow...
+;; (let [yellow (create-color :yellow)]
+;;   (show/add-function! sample-show :color
+;;                       (hue-oscillator (oscillators/sine-beat)
+;;                                       (show/all-fixtures sample-show)
+;;                                       :min (hue (adjust-hue yellow -5))
+;;                                       :max (hue (adjust-hue yellow 5)))))
+
+
+;; To actually start the effects above (although only the last one assigned to any
+;; given keyword will still be in effect), uncomment or evaluate the next line:
+;; (show/start! sample-show)
 
 ;; This is for testing the enhance multi-beat and fractional-beat phase calculations I am implementing;
 ;; it should probably more somewhere else, or just go away once there are example effects successfully

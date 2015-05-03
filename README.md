@@ -1,6 +1,6 @@
 # Afterglow
 
-A Clojure take on a DMX lighting control system leveraging pieces of the [Overtone](https://github.com/overtone/overtone) toolkit and the [Open Lighting Architecture](https://www.openlighting.org/ola/). For efficiency, Afterglow uses [Protocol Buffers](https://developers.google.com/protocol-buffers/docs/overview) to communicate with the `olad` process running on the local machine via its [RPC Service](https://docs.openlighting.org/doc/latest/rpc_system.html).
+A Clojure take on DMX lighting control, leveraging the [Open Lighting Architecture](https://www.openlighting.org/ola/), and pieces of the [Overtone](https://github.com/overtone/overtone) toolkit. For efficiency, Afterglow uses [Protocol Buffers](https://developers.google.com/protocol-buffers/docs/overview) to communicate with the `olad` process running on the local machine via its [RPC Service](https://docs.openlighting.org/doc/latest/rpc_system.html).
 
 ## Status
 
@@ -73,6 +73,30 @@ If you have a web browser open on [your OLA daemon](http://localhost:9090/ola.ht
 FIXME: listing of options this app accepts once it can run as a standalone app.
 
 ## Examples
+
+### Working with Color
+
+Cues that assign color to lights are designed to leverage the
+`[jolby/colors](https://github.com/jolby/colors)` library. In addition
+to creating colors by name, as in the Usage examples, you can create
+them by hex string, RGB values, and, most usefully when thinking about
+how to mix and fade them,
+[HSL](http://en.wikipedia.org/wiki/HSL_and_HSV) (Hue, Saturation, and
+Lightness). So, if you wanted a cue that shifts back and forth around
+yellow, and didn't remember the hue value of yellow, you could do
+something like this:
+
+    (use 'com.evocomputing.colors)
+    (let [yellow (create-color :yellow)]
+      (show/add-function! sample-show :color
+                          (hue-oscillator (oscillators/sine-beat)
+                                          (show/all-fixtures sample-show)
+                                          :min (hue (adjust-hue yellow -5))
+                                          :max (hue (adjust-hue yellow 5)))))
+
+You can add lighten it up by adding something like `:lightness 70` to the
+`hue-oscillator` call, darken it a bumch with `:lightness 20` or desaturate
+it a touch with `:saturation 80`...
 
 ...
 
