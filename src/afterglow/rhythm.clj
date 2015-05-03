@@ -3,7 +3,8 @@
   {:author "Jeff Rose, James Elliott",
    :original
    "https://github.com/overtone/overtone/blob/master/src/overtone/music/rhythm.clj"}
-  (:require [overtone.at-at :refer [now]]))
+  (:require [overtone.at-at :refer [now]]
+            [clojure.math.numeric-tower :refer [round]]))
 
 (defonce ^{:private true}
   _PROTOCOLS_
@@ -11,7 +12,9 @@
     (metro-start [metro] [metro start-beat]
       "Returns the start time of the metronome. Also restarts the metronome at
      'start-beat' if given.")
-    (metro-bar-start [metro] [metro start-bar])
+    (metro-bar-start [metro] [metro start-bar]
+      "Returns the bar-start time of the metronome. Also restarts the metronome at
+     'start-bar' if given.")
     (metro-tick [metro]
       "Returns the duration of one metronome 'tick' in milleseconds.")
     (metro-tock [metro]
@@ -19,13 +22,15 @@
     (metro-beat [metro] [metro beat]
       "Returns the next beat number or the timestamp (in milliseconds) of the
      given beat.")
-    (metro-beat-phase [metro]
-      "Returns the distance traveled into the current beat [0.0, 1.0)")
+    (metro-beat-phase [metro] [metro phase]
+      "Returns the distance traveled into the current beat [0.0, 1.0), or
+       adjusts the phase to match the one supplied.")
     (metro-bar [metro] [metro  bar]
       "Returns the next bar number or the timestamp (in milliseconds) of the
      given bar")
-    (metro-bar-phase [metro]
-      "Returns the distance traveled into the current bar [0.0, 1.0)")
+    (metro-bar-phase [metro] [metro phase]
+      "Returns the distance traveled into the current bar [0.0, 1.0), or
+       adjusts the phase to match the one supplied.")
     (metro-bpb [metro] [metro new-bpb]
       "Get the current beats per bar or change it to new-bpb")
     (metro-bpm [metro] [metro new-bpm]
@@ -126,10 +131,22 @@ as fast, 3/4 oscillates 4 times every three markers..."
   (metro-beat  [metro b] (+ (* b (metro-tick metro)) @start))
   (metro-beat-phase [metro]
     (marker-phase (now) @start (metro-tick metro)))
+  (metro-beat-phase [metro phase]
+    (let [delta (- phase (metro-beat-phase metro))
+          shift (round (* (metro-tick metro) (if (> delta 0.5) (- delta 1)
+                                                 (if (< delta -0.5) (+ delta 1) delta))))]
+      (swap! start - shift)
+      (swap! bar-start - shift)))
   (metro-bar   [metro] (marker-number (now) @bar-start (metro-tock metro)))
   (metro-bar   [metro b] (+ (* b (metro-tock metro)) @bar-start))
   (metro-bar-phase [metro]
     (marker-phase (now) @bar-start (metro-tock metro)))
+  (metro-bar-phase [metro phase]
+    (let [delta (- phase (metro-bar-phase metro))
+          shift (round (* (metro-tock metro) (if (> delta 0.5) (- delta 1)
+                                                 (if (< delta -0.5) (+ delta 1) delta))))]
+      (swap! start - shift)
+      (swap! bar-start - shift)))
   (metro-bpm   [metro] @bpm)
   (metro-bpm   [metro new-bpm]
     (let [cur-beat      (metro-beat metro)

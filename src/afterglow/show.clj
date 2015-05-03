@@ -14,6 +14,7 @@ adding a new effect with the same key as an existing effect will replace the for
             [afterglow.effects.color :refer [color-assignment-resolver]]
             [afterglow.effects.util :as fx-util]
             [afterglow.midi :as midi]
+            [afterglow.dj-link :as dj-link]
             [afterglow.ola-service :as ola]
             [afterglow.rhythm :refer :all]
             [clojure.string :refer [blank?]]
@@ -68,7 +69,7 @@ adding a new effect with the same key as an existing effect will replace the for
   [show buffers]
   (try
     (let [snapshot (metro-snapshot (:metronome show))
-          assigners (atom {})]  ;; TODO remove assigners?
+          assigners (atom {})] ;; TODO remove assigners?
       (p :clear-buffers (doseq [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
       (p :clean-finished-effects (let [indexed (map vector (iterate inc 0) (:functions @(:active-functions show)))]
                                    (doseq [[index effect] indexed]
@@ -92,14 +93,15 @@ adding a new effect with the same key as an existing effect will replace the for
   show)
 
 (defn- create-buffers
-  "Create the map of universe IDs to byte arrays used to calculate DMX values
-  for universes managed by this show."
+  "Create the map of universe IDs to byte arrays used to calculate DMX
+  values for universes managed by this show."
   [show]
   (into {} (for [universe (:universes show)] [universe (byte-array 512)])))
 
 (defn start!
-  "Starts (or restarts) a scheduled task to calculate and send DMX values to the universes controlled
-  by this show at the appropriate refresh rate. Returns the show."
+  "Starts (or restarts) a scheduled task to calculate and send DMX
+  values to the universes controlled by this show at the appropriate
+  refresh rate. Returns the show."
   [show]
   (stop! show)
   (let [buffers (create-buffers show)]
@@ -111,13 +113,14 @@ adding a new effect with the same key as an existing effect will replace the for
 
 (defn show
   "Create a show coordinator to calculate and send DMX values to the specified universe(s),
-  with a shared metronome to coordinate timing. Values are computed and sent at the specified
-  refresh interval."
+  with a shared metronome to coordinate timing. Values are computed
+  and sent at the specified refresh interval."
   ([universe]
    (show (metronome 120) default-refresh-interval universe))
   ([metro refresh-interval & universes]
    {:metronome metro
     :midi-sync (atom nil)
+    :dj-link-sync (atom nil)
     :refresh-interval refresh-interval
     :universes (set universes)
     :default-lightness (atom 50.0)
@@ -128,26 +131,47 @@ adding a new effect with the same key as an existing effect will replace the for
     :task (atom nil)}))
 
 (defn stop-all!
-  "Kills all scheduled tasks which shows may have created to output their DMX values."
+  "Kills all scheduled tasks which shows may have created to output
+  their DMX values."
   []
   (at-at/stop-and-reset-pool! scheduler))
 
+(declare sync-to-dj-link)
+
 (defn sync-to-midi-clock
-  "Starts synchronizing the a show's metronome to MIDI clock messages from the named MIDI source. If no source name is
-  supplied, stops synchronization of the metronome."
+  "Starts synchronizing the a show's metronome to MIDI clock messages
+  from the named MIDI source. If no source name is supplied, stops
+  synchronization of the metronome. Stops any synchronization to
+  Pioneer Pro DJ Link that may be underway."
   ([show]
    (sync-to-midi-clock show nil))
   ([show source-name]
+   (when @(:dj-link-sync show) (sync-to-dj-link show nil))
    (swap! (:midi-sync show) (fn [syncer]
                               (when syncer (midi/sync-stop syncer))
                               (when-not (blank? source-name)
                                 (midi/sync-to-midi-clock (:metronome show) source-name))))))
+
+(defn sync-to-dj-link
+  "Starts synchronizing the a show's metronome to network messages
+  from the named DJ Link transmitter. If no source name is supplied,
+  stops synchronization of the metronome. Stops any MIDI
+  synchronization that may be underway."
+  ([show]
+   (sync-to-dj-link show nil))
+  ([show source-name]
+   (when @(:midi-sync show) (sync-to-midi-clock show nil))
+   (swap! (:dj-link-sync show) (fn [syncer]
+                                 (when syncer (midi/sync-stop syncer))
+                                 (when-not (blank? source-name)
+                                   (dj-link/sync-to-dj-link (:metronome show) source-name))))))
 
 (defn sync-status
   "Checks what kind of synchronization is in effect, and reports on how it seems to be working."
   [show]
   (cond
     @(:midi-sync show) {:type :midi, :status (midi/sync-status @(:midi-sync show))}
+    @(:dj-link-sync show) {:type :midi, :status (midi/sync-status @(:dj-link-sync show))}
     :else              {:type :manual}))
 
 (defn- vec-remove

@@ -1,5 +1,5 @@
 (ns afterglow.midi
-  "Handles MIDI communication."
+  "Handles MIDI communication, including syncing a show metronome to MIDI clock pulses."
   (:require [afterglow.rhythm :refer :all]
             [amalloy.ring-buffer :refer [ring-buffer]]
             [overtone.at-at :refer [now]]
@@ -9,7 +9,8 @@
 ;; How many pulses should we average?
 (def ^:private max-clock-intervals 12)
 
-;; A simple protocol for our MIDI clock sync object, allowing it to be started and stopped.
+;; A simple protocol for our clock sync object, allowing it to be started and stopped,
+;; and the status checked.
 (defprotocol IClockSync
   (sync-start [this])
   (sync-stop [this])
