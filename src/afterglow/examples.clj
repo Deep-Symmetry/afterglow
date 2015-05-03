@@ -1,7 +1,7 @@
 (ns afterglow.examples
   "Show some simple ways to use Afterglow, inspire exploration."
   {:author "James Elliott"}
-  (:require [afterglow.effects.color :refer [color-cue hue-oscillator]]
+  (:require [afterglow.effects.color :refer [color-cue]]
             [afterglow.effects.dimmer :refer [dimmer-cue
                                               dimmer-oscillator]]
             [afterglow.effects.oscillators :as oscillators]
@@ -9,11 +9,24 @@
             [afterglow.fixtures.chauvet :as chauvet]
             [afterglow.rhythm :refer :all]
             [afterglow.show :as show]
-            [com.evocomputing.colors :refer [color-name create-color adjust-hue hue]]
-            [taoensso.timbre :as timbre]))
+            [com.evocomputing.colors :refer [color-name create-color]]
+            [taoensso.timbre :as timbre]
+            [taoensso.timbre.appenders.rotor :as rotor]))
 
 ;; Make sure the experimenter does not get blasted with a ton of debug messages
 (timbre/set-level! :info)
+
+(timbre/set-config!
+ [:appenders :rotor]
+ {:min-level :info
+  :enabled? true
+  :async? false ; should be always false for rotor
+  :max-message-per-msecs nil
+  :fn rotor/appender-fn})
+
+(timbre/set-config!
+ [:shared-appender-config :rotor]
+ {:path "logs/afterglow.log" :max-size 100000 :backlog 5})
 
 ;; Create a show that runs on DMX universe 1, for demonstration purposes.
 (defonce sample-show (show/show 1))
