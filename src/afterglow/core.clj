@@ -17,7 +17,6 @@ things, especially before they get moved to the new examples namespace."
   [& args]
   (ola/GetPlugins #(info "Plugins" (with-out-str (clojure.pprint/pprint %))))
   (ola/GetUniverseInfo #(info "Universes" (with-out-str (clojure.pprint/pprint %))))
-  ;; TODO Build DMX values in a ByteBuffer, keeping track of max one set, then copy to ByteString and send to OLA. Profit!
   (ola/UpdateDmxData {:universe 1 :data (ByteString/copyFrom (byte-array [3 2 1 52]))}
                      #(info "Updated DMX Data" (with-out-str (clojure.pprint/pprint %))))
 

@@ -29,13 +29,6 @@
   (let [heads (channels/extract-heads-with-some-matching-channel fixtures dimmer-channel?)]
     (channels/extract-channels heads dimmer-channel?)))
 
-;; TODO UNUSED, remove once sure this will not be needed.
-(defn- build-dimmer-assigners
-  "Reurns a list of assigners which apply an assignment function to all dimmer channels in the
-  supplied fixtures (and their individually-dimmable heads, if applicable)."
-  [fixtures value f]
-  (map #(chan-fx/build-channel-assigner % f) (gather-dimmer-channels fixtures)))
-
 (defn dimmer-cue
   "Returns an effect which simply assigns a fixed value to all dimmers of the supplied fixtures. If htp?
   is true, use highest-takes-precedence (i.e. compare to the previous assignment, and let the higher value

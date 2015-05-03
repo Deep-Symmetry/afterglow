@@ -69,7 +69,6 @@ channel which specifies the fractional value to be added to the main channel."
   ([offset fine-offset]
    (fine-channel :dimmer offset :fine-offset fine-offset :range-label "Intensity")))
 
-;; TODO here is where we would add wavelength support once we can figure out the formulas
 (defn color
   [offset kwd & {:keys [hue label]}]
   (-> (fine-channel :color offset :range-label (or label (clojure.string/capitalize (name kwd))))

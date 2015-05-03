@@ -68,8 +68,7 @@ adding a new effect with the same key as an existing effect will replace the for
   "Calculate and send the next frame of DMX values for the universes and effects run by this show."
   [show buffers]
   (try
-    (let [snapshot (metro-snapshot (:metronome show))
-          assigners (atom {})] ;; TODO remove assigners?
+    (let [snapshot (metro-snapshot (:metronome show))]
       (p :clear-buffers (doseq [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
       (p :clean-finished-effects (let [indexed (map vector (iterate inc 0) (:functions @(:active-functions show)))]
                                    (doseq [[index effect] indexed]

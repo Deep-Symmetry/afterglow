@@ -58,7 +58,7 @@
         assigners (build-color-assigners heads f)]
     (Effect. "Hue Oscillator" always-active (fn [show snapshot] assigners) end-immediately)))
 
-;; TODO handle color wheels and/or other color channels
+;; TODO handle color wheels
 (defn color-assignment-resolver
   "Resolves the assignmnet of a color to a fixture or a head."
   [show buffers target assignment]
