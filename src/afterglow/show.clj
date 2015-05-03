@@ -143,6 +143,13 @@ adding a new effect with the same key as an existing effect will replace the for
                               (when-not (blank? source-name)
                                 (midi/sync-to-midi-clock (:metronome show) source-name))))))
 
+(defn sync-status
+  "Checks what kind of synchronization is in effect, and reports on how it seems to be working."
+  [show]
+  (cond
+    @(:midi-sync show) {:type :midi, :status (midi/sync-status @(:midi-sync show))}
+    :else              {:type :manual}))
+
 (defn- vec-remove
   "Remove the element at the specified index from the collection."
   [coll pos]
