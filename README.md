@@ -132,7 +132,6 @@ Afterglow makes available to you.
 * Use [claypoole](https://clojars.org/com.climate/claypoole) for parallelism.
 * Add OSC support (probably using [Overtone&rsquo;s implementation](https://github.com/rosejn/osc-clj)) for controller support, and MIDI as well.
 * Add a user interface using [Luminus](http://www.luminusweb.net/docs).
-* Looks promising for color manipulation: [jolby/colors](https://github.com/jolby/colors)!
 * Serious references for color manipulation, but in [Julia](https://github.com/timholy/Color.jl).
 * Absolutely amazing reference on [color vision](http://handprint.com/LS/CVS/color.html)! Send him a note asking if he knows where I can find an algorithm for using arbitrary LEDs to make an HSL color!
 

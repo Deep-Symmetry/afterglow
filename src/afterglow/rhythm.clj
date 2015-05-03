@@ -4,7 +4,7 @@
    :original
    "https://github.com/overtone/overtone/blob/master/src/overtone/music/rhythm.clj"}
   (:require [overtone.at-at :refer [now]]
-            [clojure.math.numeric-tower :refer [round]]))
+            [clojure.math.numeric-tower :refer [round floor]]))
 
 (defonce ^{:private true}
   _PROTOCOLS_
@@ -77,17 +77,23 @@
 ;; to a fluke in timing as their evaluation occurs over time. These also extend the notions of beat
 ;; phase to enable oscillators with frequencies that are fractions or multiples of a beat.
 (defprotocol ISnapshot
-  (snapshot-beat-phase [snapshot beat-ratio]
+  (snapshot-beat-phase [snapshot] [snapshot beat-ratio]
     "Determine the phase with respect to a multiple or fraction of beats.
-Calling this with a beat-ratio of 1 is equivalent to beat-phase,
-a beat-ratio of bpb is equivalent to bar-phase (unless the bar
-start has been moved away from the beat start), 1/2 oscillates
-twice as fast as 1, 3/4 oscillates 4 times every three beats...")
-  (snapshot-bar-phase [snapshot bar-ratio]
+Calling this with a beat-ratio of 1 (the default if not provided) is
+equivalent to beat-phase, a beat-ratio of bpb is equivalent to
+bar-phase (unless the bar start has been moved away from the beat
+start), 1/2 oscillates twice as fast as 1, 3/4 oscillates 4 times
+every three beats... Phases range from [0-1).")
+  (snapshot-bar-phase [snapshot] [snapshot bar-ratio]
     "Determine the phase with respect to a multiple or fraction of bars.
-Calling this with a beat-ratio of 1 is equivalent to bar-phase,
-1/2 oscillates twice as fast as 1, 3/4 oscillates 4 times every
-three bars..."))
+Calling this with a beat-ratio of 1 (the default if not provided) is
+equivalent to bar-phase, 1/2 oscillates twice as fast as 1, 3/4
+oscillates 4 times every three bars... Phases range from [0-1).")
+  (snapshot-beat-within-bar [snapshot]
+    "Returns the beat number relative to the start of the bar: The down
+beat is 1, and the range goes up to the beats-per-bar of the metronome.")
+  (snapshot-down-beat? [snapshot]
+    "True if the current beat is the first beat in the current bar."))
 
 (defn- enhanced-phase
   "Calculate a phase with respect to multiples or fractions of a
@@ -107,10 +113,20 @@ as fast, 3/4 oscillates 4 times every three markers..."
 
 (defrecord MetronomeSnapshot [start bar-start bpm bpb instant beat bar beat-phase bar-phase]
   ISnapshot
+  (snapshot-beat-phase [snapshot]
+    (snapshot-beat-phase snapshot 1))
   (snapshot-beat-phase [snapshot beat-ratio]
     (enhanced-phase beat beat-phase beat-ratio))
+  (snapshot-bar-phase [snapshot]
+    (snapshot-bar-phase snapshot 1))
   (snapshot-bar-phase [snapshot bar-ratio]
-    (enhanced-phase bar bar-phase bar-ratio)))
+    (enhanced-phase bar bar-phase bar-ratio))
+  (snapshot-beat-within-bar [snapshot]
+    (let [beat-size (/ 1 bpb)]
+      (inc (floor (/ (snapshot-bar-phase snapshot 1) beat-size)))))
+  (snapshot-down-beat? [snapshot]
+    (let [beat-size (/ 1 bpb)]
+      (zero? (floor (/ (snapshot-bar-phase snapshot 1) beat-size))))))
 
 (deftype Metronome [start bar-start bpm bpb]
 

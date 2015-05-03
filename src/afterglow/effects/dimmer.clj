@@ -1,6 +1,13 @@
 (ns afterglow.effects.dimmer
-  "Effects pipeline functions for working with dimmer channels for fixtures and heads."
-  {:author "James Elliott"}
+  "Effects pipeline functions for working with dimmer channels for
+  fixtures and heads. Some fixtures have damping functions that slow
+  down their dimmer response, so you may not get the kind of
+  coordination you would like from dimmer-oscillator cues. The
+  recommended best practice is to use the dimmer channels as a master
+  dimmer level to allow tweaking the overall brightness of the show,
+  or a set of fixtures, probably tied to a fader on your controller,
+  and using the lightness attribute of a color cue to create
+  time-varying brightness effects." {:author "James Elliott"}
   (:require [afterglow.channels :as channels]
             [afterglow.effects.channel :as chan-fx]
             [afterglow.effects.util :as fx-util]
