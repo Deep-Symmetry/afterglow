@@ -16,6 +16,8 @@
 ;; Make sure the experimenter does not get blasted with a ton of debug messages
 (timbre/set-level! :info)
 
+;; Provide a nice, organized set of log files to help hunt down problems, especially
+;; for exceptions which occur on background threads.
 (timbre/set-config!
  [:appenders :rotor]
  {:min-level :info
