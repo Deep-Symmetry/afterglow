@@ -117,13 +117,15 @@ as fast, 3/4 oscillates 4 times every three markers..."
   IMetronome
   (metro-start [metro] @start)
   (metro-start [metro start-beat]
-    (let [new-start (- (now) (* start-beat (metro-tick metro)))]
+    (let [new-start (round (- (now) (* start-beat (metro-tick metro))))]
       (reset! start new-start)
+      (reset! bar-start new-start)  ; Keep phases consistent
       new-start))
   (metro-bar-start [metro] @bar-start)
   (metro-bar-start [metro start-bar]
-    (let [new-bar-start (- (now) (* start-bar (metro-tock metro)))]
+    (let [new-bar-start (round (- (now) (* start-bar (metro-tock metro))))]
       (reset! bar-start new-bar-start)
+      (reset! start new-bar-start)  ; Keep phases consistent
       new-bar-start))
   (metro-tick  [metro] (beat-ms 1 @bpm))
   (metro-tock  [metro] (beat-ms @bpb @bpm))
@@ -153,8 +155,8 @@ as fast, 3/4 oscillates 4 times every three markers..."
           cur-bar       (metro-bar metro)
           new-tick      (beat-ms 1 new-bpm)
           new-tock      (* @bpb new-tick)
-          new-start     (- (metro-beat metro cur-beat) (* new-tick cur-beat))
-          new-bar-start (- (metro-bar metro cur-bar) (* new-tock cur-bar))]
+          new-start     (round (- (metro-beat metro cur-beat) (* new-tick cur-beat)))
+          new-bar-start (round (- (metro-bar metro cur-bar) (* new-tock cur-bar)))]
       (reset! start new-start)
       (reset! bar-start new-bar-start)
       (reset! bpm new-bpm))
