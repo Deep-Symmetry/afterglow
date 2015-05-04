@@ -13,12 +13,18 @@
     (:fine-offset raw-channel) (assoc :fine-address (+ (:fine-offset raw-channel) (dec start-address))
                                       :fine-index (+ (dec (:fine-offset raw-channel)) (dec start-address)))))
 
+(defn- patch-head
+  "Assigns a single head to a DMX universe and starting channel; resolves all of its
+  channel assignments."
+  [channel-assigner raw-head]
+  (update-in raw-head [:channels] #(map channel-assigner %)))
+
 (defn- patch-heads
   "Assigns the heads of a fixture to a DMX universe and starting channel; resolves all of
   their channel assignments."
   [fixture channel-assigner]
-  ;; TODO implement, iterate over heads, mapping assigner to their channels
-  fixture)
+  (let [assigner (partial patch-head channel-assigner)]
+    (update-in fixture [:heads] #(map assigner %))))
 
 (defn patch-fixture
   "Assign a fixture to a DMX universe and starting channel; resolves all of its channel assignments."

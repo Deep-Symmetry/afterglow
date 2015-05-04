@@ -3,7 +3,6 @@
   (:require [afterglow.channels :as chan]))
 
 ;; TODO functions for rotational tranformatons
-;; TODO make mixing of amber and UV keyword flags in the constructor, defaulting to on
 
 (defn slimpar-hex3-irc
   ([]
