@@ -29,7 +29,7 @@
   (sync-start [this]
     (swap! socket (fn [s]
                     (when s (.close s))
-                    (DatagramSocket. port (. InetAddress getByName "0.0.0.0"))))
+                    (DatagramSocket. port (InetAddress/getByName "0.0.0.0"))))
     (reset! packet-count 0)
     (reset! sync-count 0)
     (reset! last-sync nil)

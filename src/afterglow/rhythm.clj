@@ -151,8 +151,8 @@ as fast, 3/4 oscillates 4 times every three markers..."
     (marker-phase (now) @start (metro-tick metro)))
   (metro-beat-phase [metro phase]
     (let [delta (- phase (metro-beat-phase metro))
-          shift (round (* (metro-tick metro) (if (> delta 0.5) (- delta 1)
-                                                 (if (< delta -0.5) (+ delta 1) delta))))]
+          shift (round (* (metro-tick metro) (if (> delta 0.5) (dec delta)
+                                                 (if (< delta -0.5) (inc delta) delta))))]
       (swap! start - shift)
       (swap! bar-start - shift)))
   (metro-bar   [metro] (marker-number (now) @bar-start (metro-tock metro)))
@@ -161,8 +161,8 @@ as fast, 3/4 oscillates 4 times every three markers..."
     (marker-phase (now) @bar-start (metro-tock metro)))
   (metro-bar-phase [metro phase]
     (let [delta (- phase (metro-bar-phase metro))
-          shift (round (* (metro-tock metro) (if (> delta 0.5) (- delta 1)
-                                                 (if (< delta -0.5) (+ delta 1) delta))))]
+          shift (round (* (metro-tock metro) (if (> delta 0.5) (dec delta)
+                                                 (if (< delta -0.5) (inc delta) delta))))]
       (swap! start - shift)
       (swap! bar-start - shift)))
   (metro-bpm   [metro] @bpm)
