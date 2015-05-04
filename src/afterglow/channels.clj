@@ -16,21 +16,22 @@
 (defn- patch-head
   "Assigns a single head to a DMX universe and starting channel; resolves all of its
   channel assignments."
-  [channel-assigner raw-head]
-  (update-in raw-head [:channels] #(map channel-assigner %)))
+  [channel-assigner fixture id-fn raw-head]
+  (assoc (update-in raw-head [:channels] #(map channel-assigner %))
+         :fixture fixture :id (id-fn)))
 
 (defn- patch-heads
   "Assigns the heads of a fixture to a DMX universe and starting channel; resolves all of
   their channel assignments."
-  [fixture channel-assigner]
-  (let [assigner (partial patch-head channel-assigner)]
+  [fixture channel-assigner id-fn]
+  (let [assigner (partial patch-head channel-assigner fixture id-fn)]
     (update-in fixture [:heads] #(map assigner %))))
 
 (defn patch-fixture
   "Assign a fixture to a DMX universe and starting channel; resolves all of its channel assignments."
-  [fixture universe start-address]
+  [fixture universe start-address id-fn]
   (let [assigner (partial assign-channel universe start-address)]
-    (update-in (patch-heads fixture assigner) [:channels] #(map assigner %))))
+    (update-in (patch-heads fixture assigner id-fn) [:channels] #(map assigner %))))
 
 (defn extract-channels
   "Given a fixture list, returns the channels matching the specified predicate."

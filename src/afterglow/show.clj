@@ -291,7 +291,8 @@ adding a new effect with the same key as an existing effect will replace the for
   [show key fixture universe start-address]
   (when-not (contains? (:universes show) universe)
     (throw (IllegalArgumentException. (str "Show does not contain universe " universe))))
-  (swap! (:fixtures show) #(patch-fixture-internal show % (keyword key) (chan/patch-fixture fixture universe start-address))))
+  (swap! (:fixtures show) #(patch-fixture-internal show % (keyword key) (chan/patch-fixture fixture universe start-address
+                                                                                            (fn [] (next-id show))))))
 
 (defn patch-fixture-group!
   "Patch a fixture group to a universe in the show at a starting DMX channel.
