@@ -62,7 +62,7 @@ adding a new effect with the same key as an existing effect will replace the for
                 []
                 assigners)))
 
-(declare remove-function!)
+(declare end-function!)
 
 (defn- send-dmx
   "Calculate and send the next frame of DMX values for the universes and effects run by this show."
@@ -73,7 +73,7 @@ adding a new effect with the same key as an existing effect will replace the for
       (p :clean-finished-effects (let [indexed (map vector (iterate inc 0) (:functions @(:active-functions show)))]
                                    (doseq [[index effect] indexed]
                                      (when-not (fx-util/still-active? effect show snapshot)
-                                       (remove-function! (get @(:keys @(:active-functions show)) index))))))
+                                       (end-function! show (get (:keys @(:active-functions show)) index) true)))))
       (let [all-assigners (gather-assigners show snapshot)]
         (doseq [[kind handler] resolution-handlers]
           (doseq [assigners (vals (get all-assigners kind))]
@@ -215,26 +215,42 @@ adding a new effect with the same key as an existing effect will replace the for
      :priorities (vec-insert (:priorities base) index priority)}))
 
 (defn add-function!
-  "Add an effect function or cue to the active set which are affecting DMX outputs for the show.
-  If no priority is specified, zero is used. This function is added after all existing functions
-  with equal or lower priority, and replaces any existing function with the same key. Since the
-  functions are executed in order, ones which come later will win when setting DMX values for the
-  same channel if that channel uses latest-takes-priority mode; for channels using highest-takes
-  priority, the order does not matter."
+  "Add an effect function or cue to the active set which are affecting
+  DMX outputs for the show. If no priority is specified, zero is used.
+  This function is added after all existing functions with equal or
+  lower priority, and replaces any existing function with the same
+  key. Since the functions are executed in order, ones which come
+  later will win when setting DMX values for the same channel if that
+  channel uses latest-takes-priority mode; for channels using
+  highest-takes priority, the order does not matter."
   ([show key f]
    (add-function! show key f 0))
   ([show key f priority]
-   (swap! (:active-functions show) #(add-function-internal % key f priority))))
+   (swap! (:active-functions show) #(add-function-internal % (keyword key) f priority))))
 
 (defn- vec-remove
   "Remove the element at the specified index from the collection."
   [coll pos]
   (vec (concat (subvec coll 0 pos) (subvec coll (inc pos)))))
 
-(defn remove-function!
-  "Remove an effect function or cue from the active set which are affecting DMX outputs for the show."
+(defn find-function
+  "Looks up the specified function in the show's list of active effect
+  functions."
   [show key]
-  (swap! (:active-functions show) #(remove-function-internal % key)))
+  (get (:functions @(:active-functions show)) (get (:indices @(:active-functions show)) (keyword key))))
+
+(defn end-function!
+  "Shut down a running effect function. Unless a true value is passed
+  for force, this is done by asking the function to end (and waiting
+  until it reports completion). Forcibly stopping it simply
+  immediately removes it from the show."
+  ([show key]
+   (end-function! show key false))
+  ([show key force]
+   (let [effect (find-function show key)] 
+     (when (and effect
+                (or force (fx-util/end effect show (metro-snapshot (:metronome show)))))
+       (swap! (:active-functions show) #(remove-function-internal % (keyword key)))))))
 
 (defn clear-functions!
   "Remove all effect functions from the active set, leading to a blackout state in all controlled
