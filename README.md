@@ -135,6 +135,7 @@ Afterglow makes available to you.
 * Add a user interface using [Luminus](http://www.luminusweb.net/docs).
 * Serious references for color manipulation, but in [Julia](https://github.com/timholy/Color.jl).
 * Absolutely amazing reference on [color vision](http://handprint.com/LS/CVS/color.html)! Send him a note asking if he knows where I can find an algorithm for using arbitrary LEDs to make an HSL color!
+* When it is time to optimize performance, study the [type hints](http://clojure.org/java_interop#Java%20Interop-Type%20Hints) interop information looks very informative and helpful.
 
 ### References
 
