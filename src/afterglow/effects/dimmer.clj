@@ -62,8 +62,6 @@
                       (clojure.core/max new-level (or previous-assignment 0)))))
             (fn [show snapshot target previous-assignment]
               (pspy :dimmer-oscillator
-                    (let [phase (osc snapshot)
-                          new-level (+ min (* range phase))]
-                      new-level))))]
+                    (+ min (* range (osc snapshot))))))]
     (chan-fx/build-simple-channel-cue (str "Dimmer Oscillator " min "-" max (when htp? " (HTP)")) f chans)))
 

@@ -87,7 +87,8 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
   true)
 
 (defmacro validate-value
-  "Ensure that a number falls within a specified range, throwing an exception otherwise."
+  "Ensure that a number falls within a specified range, throwing an
+  exception otherwise."
   ([value min max]
    (let [arg value]
      `(validate-value ~value ~min ~max ~(str arg))))
