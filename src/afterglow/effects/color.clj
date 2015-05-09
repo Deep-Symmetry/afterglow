@@ -25,7 +25,7 @@
   (map #(build-color-assigner % f) heads))
 
 (defn build-color-parameter-assigner
-  "Returns an assigner which apply a color parameter to the supplied
+  "Returns an assigner which applies a color parameter to the supplied
   head or fixture. If the parameter is not frame-dynamic, it gets
   resolved when creating this assigner. Otherwise, resolution is
   deferred to frame rendering time."
@@ -48,8 +48,7 @@
   [name c show fixtures]
   (params/validate-param-type c :com.evocomputing.colors/color)
   (let [heads (filter #(= 3 (count (filter #{:red :green :blue} (map :color (:channels %))))) (channels/expand-heads fixtures))
-        assigners (build-color-parameter-assigners heads c show)
-        #_(build-color-assigners heads (fn [show snapshot target previous-assignment] c))]
+        assigners (build-color-parameter-assigners heads c show)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
 (defn find-rgb-heads
@@ -61,11 +60,11 @@
 
 ;; Deprecated in favor of new composable dynamic parameter mechanism
 (defn hue-oscillator
-  "Returns an effect function which sets the hue to all heads of the
-  fixtures supplied according to a supplied oscillator function and
-  the show metronome. Unless otherwise specified, via :min and :max,
-  the hue ranges from 0 to 359. Saturation defaults to 100 and
-  lightness to 50, but these can be set via :saturation
+  "*Deprecated* Returns an effect function which sets the hue to all
+  heads of the fixtures supplied according to a supplied oscillator
+  function and the show metronome. Unless otherwise specified,
+  via :min and :max, the hue ranges from 0 to 359. Saturation defaults
+  to 100 and lightness to 50, but these can be set via :saturation
   and :lightness."
   [osc fixtures & {:keys [min max saturation lightness] :or {min 0 max 359 saturation 100 lightness 50}}]
   (validate-value saturation 0 100)

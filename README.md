@@ -67,17 +67,18 @@ Given its current development phase, you will want to use Afterglow in a Clojure
     ; -> {:type :dj-link, :status "Network problems? No DJ Link packets received."}
 
     ;; How about a nice cycling rainbow color fade?
-    (def hue-param (params/build-oscillated-param (oscillators/sawtooth-bar)
-                                                   :max 360 :frame-dynamic true))
+    (def hue-param (params/build-oscillated-param
+      (oscillators/sawtooth-bar) :max 360))
     (show/add-function! sample-show :color
       (global-color-cue (params/build-color-param :s 100 :l 50 :h hue-param)))
 
-    ;; Here is a deprecated way to do that, which currently still works, and
-    ;; is perhaps a tiny bit more efficient, but it does not generalize like
-    ;; the new composable dynamic parameter system can.
+    ;; Or maybe a color that wavers near yellow?
+    (def yellow (create-color :yellow))
+    (def hue-param (params/build-oscillated-param
+      (oscillators/sine-beat) :min (hue (adjust-hue yellow -5))
+                              :max (hue (adjust-hue yellow 5))))
     (show/add-function! sample-show :color
-                        (hue-oscillator (oscillators/sawtooth-bar)
-                                        (show/all-fixtures sample-show)))
+      (global-color-cue (params/build-color-param :s 100 :l 50 :h hue-param)))
 
     ;; Terminate the effect handler thread:
     (show/stop! sample-show)

@@ -1,9 +1,11 @@
 (ns afterglow.effects.channel
   "Effects pipeline functions for working with individual DMX channels."
   {:author "James Elliott"}
-  (:require [afterglow.effects.util :refer :all]
+  (:require [afterglow.effects.params :as params]
+            [afterglow.effects.util :refer :all]
             [afterglow.util :refer [ubyte]]
-            [clojure.math.numeric-tower :as math])
+            [clojure.math.numeric-tower :as math]
+            [com.evocomputing.colors :refer [clamp-rgb-int]])
   (:import (afterglow.effects.util Assigner Effect)))
 
 (defn apply-channel-value
@@ -24,18 +26,33 @@
   (Assigner. :channel (keyword (str "u" (:universe channel) "a" (:address channel))) channel f))
 
 (defn build-channel-assigners
-  "Returns a list of assigners which apply a channel assignment function to all the supplied channels."
+  "Returns a list of assigners which apply a channel assignment
+  function to all the supplied channels."
   [channels f]
   (map #(build-channel-assigner % f) channels))
 
 (defn build-fixed-channel-cue
-  "Returns an effect which simply assigns a fixed value to all the supplied channels. If htp?
-is true, applies highest-takes-precedence (i.e. compares the value to the previous assignment
-  for the channel, and lets the highest value remain)."
+  "Returns an effect which simply assigns a fixed value to all the
+  supplied channels. If htp? is true, applies
+  highest-takes-precedence (i.e. compares the value to the previous
+  assignment for the channel, and lets the highest value remain)."
   [name level channels htp?]
   (let [f (if htp?
             (fn [show snapshot target previous-assignment] (max level (or previous-assignment 0)))
             (fn [show snapshot target previous-assignment] level))
+        assigners (build-channel-assigners channels f)]
+    (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
+
+(defn build-parameterized-channel-cue
+  "Returns an effect which assigns a dynamic value to all the supplied
+  channels. If htp? is true, applies highest-takes-precedence (i.e.
+  compares the value to the previous assignment for the channel, and
+  lets the highest value remain)."
+  [name level channels htp?]
+  (let [f (if htp?
+            (fn [show snapshot target previous-assignment] (max (clamp-rgb-int (params/resolve-param level show snapshot))
+                                                                (or previous-assignment 0)))
+            (fn [show snapshot target previous-assignment] (clamp-rgb-int (params/resolve-param level show snapshot))))
         assigners (build-channel-assigners channels f)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
@@ -46,7 +63,6 @@ is true, applies highest-takes-precedence (i.e. compares the value to the previo
   (let [assigners (build-channel-assigners channels f)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
-;; TODO handle dynamic parameters
 (defn channel-assignment-resolver
   "Resolves the assignment of a level to a single DMX channel."
   [show buffers snapshot target assignment]

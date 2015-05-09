@@ -10,7 +10,7 @@
             [afterglow.fixtures.chauvet :as chauvet]
             [afterglow.rhythm :refer :all]
             [afterglow.show :as show]
-            [com.evocomputing.colors :refer [color-name create-color]]
+            [com.evocomputing.colors :refer [color-name create-color hue adjust-hue]]
             [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders.rotor :as rotor]))
 
@@ -59,25 +59,16 @@
 (defn master-cue
   "Return an effect function that sets all the dimmers in the sample rig to a fixed value."
   [level]
-  (dimmer-cue level (show/all-fixtures sample-show)))
+  (dimmer-cue level sample-show (show/all-fixtures sample-show)))
 
 ;; Start simple with a cool blue color from all the lights
 (show/add-function! sample-show :color blue-cue)
 (show/add-function! sample-show :master (master-cue 255))
 
-;; Get a little fancier with some beat-driven fades
+;; Get a little fancier with a beat-driven fade
 (show/add-function! sample-show :master
-                    (dimmer-oscillator (oscillators/sawtooth-beat)
-                                       (show/all-fixtures sample-show)))
-
-;; Shift a little around yellow...
-;; (let [yellow (create-color :yellow)]
-;;   (show/add-function! sample-show :color
-;;                       (hue-oscillator (oscillators/sine-beat)
-;;                                       (show/all-fixtures sample-show)
-;;                                       :min (hue (adjust-hue yellow -5))
-;;                                       :max (hue (adjust-hue yellow 5)))))
-
+                    (master-cue (params/build-oscillated-param
+                                 (oscillators/sawtooth-beat))))
 
 ;; To actually start the effects above (although only the last one assigned to any
 ;; given keyword will still be in effect), uncomment or evaluate the next line:
@@ -97,3 +88,4 @@
                         (snapshot-beat-phase snap 1) (snapshot-beat-phase snap 2) (snapshot-beat-phase snap 4)
                         (snapshot-beat-phase snap 1/2) (snapshot-beat-phase snap 1/4) (snapshot-beat-phase snap 3/4)))
        (Thread/sleep 33)))))
+
