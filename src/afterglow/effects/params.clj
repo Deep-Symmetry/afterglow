@@ -134,7 +134,7 @@
    (resolve-unless-frame-dynamic arg show snapshot nil))
   ([arg show snapshot head]
    (if (satisfies? IParam arg)
-     (if (not (frame-dynamic? arg))
+     (if-not (frame-dynamic? arg)
        (resolve-param arg show snapshot head)
        (if (satisfies? IHeadParam arg)
          (resolve-non-frame-dynamic-elements-for-head arg show snapshot head)
