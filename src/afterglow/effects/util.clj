@@ -38,7 +38,7 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
 #_(defprotocol IAssignmentResolver
   "Translates an attribute assignment (color, attitude, channel value) for an element of a light show
   to the actual DMX values that will implement it."
-  (resolve-assignment [this show buffers target assignment]
+  (resolve-assignment [this show buffers target snapshot assignment]
     "Translate the assignment to appropriate setting for target DMX channels."))
 
 ;; The show will maintain a list of resolvers for the different kinds of assignments that can
@@ -47,10 +47,10 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
 ;; low-level assignments. Each list of assignments of a particular kind can be processed in parallel,
 ;; however, since there will only be one resulting assignment for each target.
 ;; The assignment resolvers will be functions:
-#_(defn AssignmentResolver [^clojure.lang.Keyword kind target assignment ^clojure.lang.IFn f]
+#_(defn AssignmentResolver [^clojure.lang.Keyword kind target snapshot assignment ^clojure.lang.IFn f]
     IAssignmentResolver
-    (resolve-assignment [this show buffers target assignment]
-                        (f show buffers target assignment)))
+    (resolve-assignment [this show buffers target snapshot assignment]
+                        (f show buffers target snapshot assignment)))
 
 ;; At each DMX frame generation, we will run through all the effects and ask them if they are still
 ;; active. If not, they will be removed from the list of active effects. For the remaining ones,

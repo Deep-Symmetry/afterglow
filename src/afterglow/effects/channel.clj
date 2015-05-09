@@ -46,7 +46,8 @@ is true, applies highest-takes-precedence (i.e. compares the value to the previo
   (let [assigners (build-channel-assigners channels f)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
+;; TODO handle dynamic parameters
 (defn channel-assignment-resolver
-  "Resolves the assignmnet of a level to a single DMX channel."
-  [show buffers target assignment]
+  "Resolves the assignment of a level to a single DMX channel."
+  [show buffers snapshot target assignment]
   (apply-channel-value buffers target assignment))

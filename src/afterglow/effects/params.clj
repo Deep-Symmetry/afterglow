@@ -23,11 +23,16 @@
     generated. If false, the value can be determined at the time an
     effect is created, and passed as a primitive to the assigners.")
   (result-type [this]
-    "The type of value that will be returned when this parameter is resolved."))
+    "The type of value that will be returned when this parameter is resolved.")
+  (resolve-non-frame-dynamic-elements [this show snapshot]
+    "Called when an effect is created using this parameter. If it is
+    not frame-dynamic, returns its final resolution; otherwise,
+    returns a version of itself where any non frame-dynamic input
+    parameters have been resolved."))
 
 ;; TODO add things like MIDIParam, OpenSoundParam? Or more likely those come from ShowVariableParam...
 
-(defn- check-type
+(defn check-type
   "Ensure that a parameter satisfies a predicate, or that it satisfies
   IParam and, when evaluated, returns a type that passes that
   predicate, throwing an exception otherwise. Used by the
@@ -66,10 +71,31 @@
   ([value type-expected name]
    `(when (some? ~value) (check-type ~value ~type-expected ~name))))
 
+(defprotocol IHeadParam
+  "An extension to IParam for parameters that are specific to a given
+  head (because they depend on things like its orientation or
+  location)."
+  (evaluate-for-head [this show snapshot head]
+    "Determine the value of this numeric parameter at a given moment
+    of the show, as applied to the specific fixture head.")
+    (resolve-non-frame-dynamic-elements-for-head [this show snapshot head]
+    "Called when an effect is created using this parameter and there
+    is head information available. If the parameter is not
+    frame-dynamic, returns its final resolution; otherwise, returns a
+    version of itself where any non frame-dynamic input parameters
+    have been resolved."))
+
+(defn head-param?
+  "Checks whether the argument is an IParam which also satisfies IHeadParam"
+  [arg]
+  (and (satisfies? IParam arg) (satisfies? IHeadParam arg)))
+
 (defn resolve-param
-  "Takes an argument which may be a raw value, or may be an IParam. If it is
-  the latter, evaluates it and returns the resulting number. Otherwise just
-  returns the value that was passed in."
+  "Takes an argument which may be a raw value, or may be an IParam. If
+  it is the latter, evaluates it and returns the resulting number.
+  Otherwise just returns the value that was passed in. If head is
+  supplied, and the parameter can use it at resolution time, then pass
+  it along."
   ([arg show snapshot]
    (resolve-param arg show snapshot nil))
   ([arg show snapshot head]
@@ -84,19 +110,6 @@
   [arg]
   (and (satisfies? IParam arg) (frame-dynamic? arg)))
 
-(defprotocol IHeadParam
-  "An extension to IParam for parameters that are specific to a given
-  head (because they depend on things like its orientation or
-  location)."
-  (evaluate-for-head [this show snapshot head]
-    "Determine the value of this numeric parameter at a given moment
-    of the show, as applied to the specific fixture head."))
-
-(defn head-param?
-  "Checks whether the argument is an IParam which also satisfies IHeadParam"
-  [arg]
-  (and (satisfies? IParam arg) (satisfies? IHeadParam arg)))
-
 (defn- oscillator-resolver-internal
   "Handles the calculation of an oscillator based on dynamic parameter
   values for at least one of min and max"
@@ -110,19 +123,45 @@
         (error "Oscillator dynamic parameters min > max, returning max.")
         max))))
 
+(defn resolve-unless-frame-dynamic
+  "If the first argument is a dynamic parameter which is not dynamic
+  all the way to the frame level, return the result of resolving it
+  now. If it is dynamic to the frame level, ask it to resolve any non
+  frame-dynamic elements. Otherwise return it unchanged. If head is
+  supplied, and the parameter can use it at resolution time, then pass
+  it along."
+  ([arg show snapshot]
+   (resolve-unless-frame-dynamic arg show snapshot nil))
+  ([arg show snapshot head]
+   (if (satisfies? IParam arg)
+     (if (not (frame-dynamic? arg))
+       (resolve-param arg show snapshot head)
+       (if (satisfies? IHeadParam arg)
+         (resolve-non-frame-dynamic-elements-for-head arg show snapshot head)
+         (resolve-non-frame-dynamic-elements arg show snapshot)))
+     arg)))
+
 ;; TODO Come up with a way to read and write parameters. Some kind of DSL for these builders.
 ;; Was thinking could do it through defrecord, but that seems not flexible enough. Will also
 ;; need a DSL for oscillators, of course. And will want to add dynamic oscillators which
-;; themselves support this kind of deferred parameters.
-(defn build-oscillator-param
-  "Returns a number parameter that is driven by an oscillator."
-  [osc & {:keys [min max metronome frame-dynamic] :or {min 0 max 255 frame-dynamic :default}}]
+;; themselves support this kind of deferred parameters. Maybe a string format for oscillator
+;; specifications? Actually, leaning towards a build-oscillator-param which resolves to an
+;; oscillator, so make that a protocol too, and have the builder take the name and osc
+;; parameters, which can all be dynamic. Make a metronome param too, so they can come out
+;; of the show variables.
+(defn build-oscillated-param
+  "Returns a number parameter that is driven by an oscillator. By
+  default will be frame-dynamic, since it oscillates, but if you make
+  frame-dynamic false, the value will be fixed once it is assigned to
+  an effect, acting like a random number generator with the
+  oscillator's range."
+  [osc & {:keys [min max metronome frame-dynamic] :or {min 0 max 255 frame-dynamic true}}]
   (validate-param-type min Number)
   (validate-param-type max Number)
   (if-not (some (partial satisfies? IParam) [min max])
     ;; Optimize the simple case of all constant parameters
     (let [range (- max min)
-          dyn (boolean frame-dynamic)  ; Make it dynamic unless explicitly set false
+          dyn (boolean frame-dynamic)
           eval-fn (if (some? metronome)
                     (fn [show _] (+ min (* range (osc (metro-snapshot metronome)))))
                     (fn [show snapshot] (+ min (* range (osc snapshot)))))]
@@ -131,11 +170,11 @@
       (reify IParam
         (evaluate [this show snapshot] (eval-fn show snapshot))
         (frame-dynamic? [this] dyn)
-        (result-type [this] Number)))
+        (result-type [this] Number)
+        (resolve-non-frame-dynamic-elements [this show snapshot]  ; Nothing to resolve, return self
+          this)))
     ;; Support the general case where we have an incoming variable parameter
-    (let [dyn (if (= :default frame-dynamic)
-                (some frame-dynamic-param? [min max])  ; Let the incoming parameter determine how dynamic to be
-                (boolean frame-dynamic))
+    (let [dyn (boolean frame-dynamic)
           eval-fn (if (some? metronome)
                     (fn [show snapshot]
                       (oscillator-resolver-internal show snapshot min max osc (metro-snapshot metronome)))
@@ -144,7 +183,14 @@
       (reify IParam
         (evaluate [this show snapshot] (eval-fn show snapshot))
         (frame-dynamic? [this] dyn)
-        (result-type [this] Number)))))
+        (result-type [this] Number)
+        (resolve-non-frame-dynamic-elements [this show snapshot]
+          (build-oscillated-param osc :min (resolve-unless-frame-dynamic min show snapshot)
+                                  :max (resolve-unless-frame-dynamic max show snapshot)
+                                  :metronome metronome :frame-dynamic dyn))))))
+
+;; TODO metronome parameters, with access to the show metronome and other metronome variables
+
 
 (defn interpret-color
   "Accept a color as either a jolby/colors object, an IParam which will produce a color,
@@ -175,11 +221,13 @@
   the base color to which other arguments are applied. The default
   base color is black, in the form of all zero values for r, g, b, h,
   s, and l. To this base it will then assign values for individual
-  color parameters. Not all combinations make sense, of course, you
+  color parameters. Not all combinations make sense, of course: you
   will probably want to stick with some of h, s, and l, or r, g, and
   b. If values from both are supplied, the r, g, and/or b assignments
   will occur first, then then any h, s, and l assignments will be
-  applied to the resulting color."
+  applied to the resulting color. If you do not specify a value for
+  frame-dynamic, the color parameter will be frame dynamic if it has
+  any incoming parameters which are."
   [& {:keys [color r g b h s l frame-dynamic]
       :or {color default-color frame-dynamic :default}}]
   (let [c (interpret-color color)]
@@ -211,7 +259,7 @@
         @result-color)
       ;; Handle the general case of some dynamic parameters
       (let [dyn (if (= :default frame-dynamic)
-                  (some frame-dynamic-param? [color r g b h s l])  ; Let incoming args control how dynamic to be
+                  (boolean (some frame-dynamic-param? [color r g b h s l])) ; Let incoming args control how dynamic to be
                   (boolean frame-dynamic))
             eval-fn (fn [show snapshot head]
                       (let [result-color (atom c)]
@@ -230,15 +278,25 @@
                             (swap! result-color #(colors/create-color {:h (or hue (colors/hue %))
                                                                        :s (or saturation (colors/saturation %))
                                                                        :l (or lightness (colors/lightness %))}))))
-                        @result-color))]
+                        @result-color))
+            resolve-fn (fn [show snapshot head]
+                         (build-color-param :color (resolve-unless-frame-dynamic c show snapshot head)
+                                            :r (resolve-unless-frame-dynamic r show snapshot head)
+                                            :g (resolve-unless-frame-dynamic g show snapshot head)
+                                            :b (resolve-unless-frame-dynamic b show snapshot head)
+                                            :h (resolve-unless-frame-dynamic h show snapshot head)
+                                            :s (resolve-unless-frame-dynamic s show snapshot head)
+                                            :l (resolve-unless-frame-dynamic l show snapshot head)
+                                            :frame-dynamic dyn))]
         (reify
           IParam
           (evaluate [this show snapshot] (eval-fn show snapshot nil))
           (frame-dynamic? [this] dyn)
           (result-type [this] :com.evocomputing.colors/color)
+          (resolve-non-frame-dynamic-elements [this show snapshot] (resolve-fn show snapshot nil))
           IHeadParam
-          (evaluate-for-head [this show snapshot head] (eval-fn this show snapshot head))
-        )))))
+          (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))
+          (resolve-non-frame-dynamic-elements-for-head [this show snapshot head] (resolve-fn show snapshot head)))))))
 
 ;; TODO some kind of random parameter?
 

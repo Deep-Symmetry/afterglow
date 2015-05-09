@@ -78,7 +78,7 @@ adding a new effect with the same key as an existing effect will replace the for
         (doseq [[kind handler] resolution-handlers]
           (doseq [assigners (vals (get all-assigners kind))]
             (let [[target value] (run-assigners show snapshot assigners)]
-              (p :resolve-value (handler show buffers target value))))))
+              (p :resolve-value (handler show buffers snapshot target value))))))
       (p :send-dmx-data (doseq [universe (keys buffers)]
                           (let [levels (get buffers universe)]
                             (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} nil)))))

@@ -5,6 +5,7 @@
             [afterglow.effects.dimmer :refer [dimmer-cue
                                               dimmer-oscillator]]
             [afterglow.effects.oscillators :as oscillators]
+            [afterglow.effects.params :as params]
             [afterglow.fixtures.blizzard :as blizzard]
             [afterglow.fixtures.chauvet :as chauvet]
             [afterglow.rhythm :refer :all]
@@ -43,12 +44,15 @@
   "Make a fixed color cue which affects all lights in the sample rig."
   [color]
   (try
-    (let [c (if (= (type color) :com.evocomputing.colors/color)
-              color
-              (create-color color))]
-      (color-cue (str "Color: " (color-name c)) c (show/all-fixtures sample-show)))
+    (let [[c desc] (cond (= (type color) :com.evocomputing.colors/color)
+                       [color (color-name color)]
+                       (and (satisfies? params/IParam color) (= (params/result-type color) :com.evocomputing.colors/color))
+                       [color "variable"]
+                       :else
+                       [(create-color color) color])]
+      (color-cue (str "Color: " desc) c sample-show (show/all-fixtures sample-show)))
     (catch Exception e
-      (throw (Exception. (str "Can't figure out how to create color from " color))))))
+      (throw (Exception. (str "Can't figure out how to create color from " color) e)))))
 
 (def blue-cue (global-color-cue :slateblue))
 
