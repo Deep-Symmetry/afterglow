@@ -72,14 +72,6 @@ Given its current development phase, you will want to use Afterglow in a Clojure
     (show/add-function! sample-show :color
       (global-color-cue (params/build-color-param :s 100 :l 50 :h hue-param)))
 
-    ;; Or maybe a color that wavers near yellow?
-    (def yellow (create-color :yellow))
-    (def hue-param (params/build-oscillated-param
-      (oscillators/sine-beat) :min (hue (adjust-hue yellow -5))
-                              :max (hue (adjust-hue yellow 5))))
-    (show/add-function! sample-show :color
-      (global-color-cue (params/build-color-param :s 100 :l 50 :h hue-param)))
-
     ;; Terminate the effect handler thread:
     (show/stop! sample-show)
     
@@ -107,17 +99,17 @@ yellow, and don't remember the hue value of yellow, you could do
 something like this:
 
     (use 'com.evocomputing.colors)
-    (let [yellow (create-color :yellow)]
-      (show/add-function! sample-show :color
-                          (hue-oscillator (oscillators/sine-beat)
-                                          (show/all-fixtures sample-show)
-                                          :min (hue (adjust-hue yellow -5))
-                                          :max (hue (adjust-hue yellow 5)))))
+    (def yellow (create-color :yellow))
+    (def hue-param (params/build-oscillated-param
+      (oscillators/sine-beat) :min (hue (adjust-hue yellow -5))
+                              :max (hue (adjust-hue yellow 5))))
+    (show/add-function! sample-show :color
+      (global-color-cue (params/build-color-param :s 100 :l 50 :h hue-param)))
 
-You can add lighten it up by adding something like `:lightness 70` to the
-`hue-oscillator` call, darken it a bunch with `:lightness 20` or desaturate
-it a touch with `:saturation 80`... For more options and ideas, delve into
-the colors library API documentation, and the various oscillators that
+You can add lighten it up by changing to something like `:l 70` in the
+`build-color-param` call, darken it a bunch with `:l 20` or desaturate
+it a touch with `:s 80`... For more options and ideas, delve into the
+colors library API documentation, and the various oscillators that
 Afterglow makes available to you.
 
 ...
