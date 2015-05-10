@@ -121,10 +121,9 @@ adding a new effect with the same key as an existing effect will replace the for
     :sync (atom nil)
     :refresh-interval refresh-interval
     :universes (set universes)
-    :default-lightness (atom 50.0)
-    :default-saturation (atom 100.0)
     :next-id (atom 0)
     :active-functions (atom {})
+    :variables (atom {})
     :fixtures (atom {})
     :task (atom nil)}))
 
