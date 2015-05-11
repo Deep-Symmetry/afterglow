@@ -27,9 +27,8 @@
   control-change message. Checks whether there are show variables
   mapped to it, and if so, updates them."
   [msg]
-  (doseq [show (vals (get-in @control-mappings [(:name (:device msg)) (:channel msg) (:note msg)]))]
-    (doseq [handler (vals show)]
-      (handler msg))))
+  (doseq [handler (vals (get-in @control-mappings [(:name (:device msg)) (:channel msg) (:note msg)]))]
+    (handler msg)))
 
 (defn- incoming-message-handler
   "Attached to all midi input devices we manage. Fields incoming MIDI
@@ -113,26 +112,19 @@
       (sync-start sync-handler)
       sync-handler)))
 
-(defn- assign-show-variable
-  "Helper function to swap in a new value for a show variable."
-  [show key newval]
-  (swap! (:variables show) #(assoc % key newval)))
+(defn add-control-mapping
+  "Register a handler to be called whenever a MIDI controller change
+  message is received from the specified device, on the specified
+  channel and controller number. A unique key must be given, by which
+  this mapping can later be removed. Any subsequent MIDI message which
+  matches will be passed to the handler as its single argument."
+  [midi-device-name channel control-number key handler]
+  (swap! control-mappings #(assoc-in % [(:name (find-midi-in midi-device-name))
+                                        (int channel) (int control-number) (keyword key)] handler)))
 
-(defn add-var-control-mapping
-  [midi-device-name channel control-number show variable & {:keys [min max] :or {min 0 max 127}}]
-  (when-not (< min max)
-    (throw (IllegalArgumentException. "min must be less than max")))
-  (let [range (- max min)
-        key (keyword variable)]
-    (swap! control-mappings #(assoc-in % [(:name (find-midi-in midi-device-name))
-                                          (int channel) (int control-number) show key]
-                                       (fn [msg]
-                                         (let [newval (float (+ min (/ (* (:velocity msg) range) 127)))]
-                                           (assign-show-variable show key newval)))))))
-
-(defn remove-var-control-mapping
-  [midi-device-name channel control-number show variable]
-  (let [range (- max min)
-        key (keyword variable)]
-    (swap! control-mappings #(update-in % [(:name (find-midi-in midi-device-name))
-                                           (int channel) (int control-number) show] dissoc key))))
+(defn remove-control-mapping
+  "Unregister a handler previously registered with
+  add-control-mapping, identified by the unique key."
+  [midi-device-name channel control-number key]
+  (swap! control-mappings #(update-in % [(:name (find-midi-in midi-device-name))
+                                         (int channel) (int control-number)] dissoc (keyword key))))

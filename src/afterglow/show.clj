@@ -110,6 +110,12 @@ adding a new effect with the same key as an existing effect will replace the for
                                           scheduler))))
   show)
 
+
+(defonce ^{:doc "Used to give each show a unique ID, for registering its MIDI event handlers, etc."
+           :private true}
+  show-counter
+  (atom 0))
+
 (defn show
   "Create a show coordinator to calculate and send DMX values to the specified universe(s),
   with a shared metronome to coordinate timing. Values are computed
@@ -117,7 +123,8 @@ adding a new effect with the same key as an existing effect will replace the for
   ([universe]
    (show (metronome 120) default-refresh-interval universe))
   ([metro refresh-interval & universes]
-   {:metronome metro
+   {:id (swap! show-counter inc)
+    :metronome metro
     :sync (atom nil)
     :refresh-interval refresh-interval
     :universes (set universes)
@@ -153,6 +160,38 @@ adding a new effect with the same key as an existing effect will replace the for
   (if-let [sync-in-effect @(:sync show)]
     (midi/sync-status sync-in-effect)
     {:type :manual}))
+
+;; Someday generate feedback on assigned MIDI channels, etc...
+(defn set-variable
+  "Set a value for a show variable."
+  [show key newval]
+  (swap! (:variables show) #(assoc % (keyword key) newval)))
+
+(defn add-midi-control-to-var-mapping
+  "Cause the specified show variable to be updated by any MIDI
+  controller-change messages from the specified device sent on the
+  specified channel and controller number. If min and/or max are
+  specified, the normal MIDI range from 0 to 127 will be mapped to the
+  supplied range instead."
+  [show midi-device-name channel control-number variable & {:keys [min max] :or {min 0 max 127}}]
+  (when (= min max)
+    (throw (IllegalArgumentException. "min must differ from max")))
+  (let [calc-fn (cond (and (= min 0) (= max 127))
+                      (fn [midi-val] midi-val)
+                      (< min max)
+                      (let [range (- max min)]
+                        (fn [midi-val] (float (+ min (/ (* midi-val range) 127)))))
+                      :else
+                      (let [range (- min max)]
+                        (fn [midi-val] (float (+ max (/ (* midi-val range) 127))))))]
+    (midi/add-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":var" (str (keyword variable)))
+                              (fn [msg] (set-variable show variable (calc-fn (:velocity msg)))))))
+
+(defn remove-midi-control-to-var-mapping
+  "Cease updating the specified show variable when the specified MIDI
+  controller-change messages are received."
+  [show midi-device-name channel control-number variable]
+  (midi/remove-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":var" (str (keyword variable)))))
 
 (defn- vec-remove
   "Remove the element at the specified index from the collection."
