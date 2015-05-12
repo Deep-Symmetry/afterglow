@@ -45,7 +45,7 @@ Given its current development phase, you will want to use Afterglow in a Clojure
     
     ;; Let's get a little fancy and ramp the dimmers up on a sawtooth curve each beat:
     (show/add-function! sample-show :master
-                        (master-cue (params/build-oscillated-param
+                        (master-cue (params/build-oscillated-param sample-show
                                      (oscillators/sawtooth-beat))))
     
     ;; Slow that down a little:
@@ -68,9 +68,10 @@ Given its current development phase, you will want to use Afterglow in a Clojure
 
     ;; How about a nice cycling rainbow color fade?
     (def hue-param (params/build-oscillated-param
-      (oscillators/sawtooth-bar) :max 360))
+      sample-show (oscillators/sawtooth-bar) :max 360))
     (show/add-function! sample-show :color
-      (global-color-cue (params/build-color-param :s 100 :l 50 :h hue-param)))
+      (global-color-cue
+        (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
 
     ;; Terminate the effect handler thread:
     (show/stop! sample-show)
@@ -99,12 +100,13 @@ yellow, and don't remember the hue value of yellow, you could do
 something like this:
 
     (use 'com.evocomputing.colors)
-    (def yellow (create-color :yellow))
-    (def hue-param (params/build-oscillated-param
+    (def yellow (create-color "yellow"))
+    (def hue-param (params/build-oscillated-param sample-show
       (oscillators/sine-beat) :min (hue (adjust-hue yellow -5))
                               :max (hue (adjust-hue yellow 5))))
     (show/add-function! sample-show :color
-      (global-color-cue (params/build-color-param :s 100 :l 50 :h hue-param)))
+      (global-color-cue
+        (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
 
 You can add lighten it up by changing to something like `:l 70` in the
 `build-color-param` call, darken it a bunch with `:l 20` or desaturate

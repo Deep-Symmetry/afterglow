@@ -6,8 +6,7 @@
   show metronome snapshot, show variables (which can be bound to OSC
   and MIDI mappings), and other, not-yet-imagined things."
   {:author "James Elliott"}
-  (:require [afterglow.effects.util :as fx-utils]
-            [afterglow.rhythm :refer [metro-snapshot]]
+  (:require [afterglow.rhythm :refer [metro-snapshot]]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
             [taoensso.timbre :refer [error]]))
@@ -41,15 +40,16 @@
   (cond (class? type-expected)
         (when-not (or (instance? type-expected value)
                       (and (satisfies? IParam value)  (.isAssignableFrom type-expected (result-type value))))
-          (throw (IllegalArgumentException. (str name " must be of type " (quote type-expected)))))
+          (throw (IllegalArgumentException. (str "Variable " name " must be of type " type-expected))))
 
         (keyword? type-expected)
         (when-not (or (= type-expected (type value))
                       (and (satisfies? IParam value) (= type-expected (result-type value))))
-          (throw (IllegalArgumentException. (str name " must be of type " (quote type-expected)))))
+          (throw (IllegalArgumentException. (str "Variable " name " must be of type " type-expected))))
 
         :else
-        (throw (IllegalArgumentException. (str "Do not know how to check for type " (quote type-expected))))))
+        (throw (IllegalArgumentException. (str "Do not know how to check for type " type-expected))))
+  value)  ;; Return the value if it validated
 
 (defmacro validate-param-type
   "Ensure that a parameter satisfies a predicate, or that it satisfies
@@ -141,6 +141,70 @@
          (resolve-non-frame-dynamic-elements arg show snapshot)))
      arg)))
 
+(defn build-variable-param
+  "Create a dynamic parameter whose value is determined by the value
+  held in a show variable at the time evaluation is performed. Unless
+  :frame-dynamic is passed a false value, this evaluation will happen
+  every frame. If no type-compatible value is found in the show
+  variable, a default value is returned. That will be the number zero,
+  unless otherwise specified by :default. The type expected (and
+  returned) by this parameter will be numeric, unless a different
+  value is passed for :type, (in which case a new type-compatible
+  default value must be specified :default). If the show variable
+  already holds a dyamic parameter at the time this variable parameter
+  is created, the binding is short-circuited to return that existing
+  parameter rather than creating a new one, so the type must be
+  compatible."
+  [show variable & {:keys [frame-dynamic type default] :or {frame-dynamic true type Number default 0}}]
+  (validate-param-type default type)
+  (let [key (keyword variable)
+        current (get @(:variables show) key)]
+    (if (and (some? current) (satisfies? IParam current))
+      ;; Found a parameter at the named variable, try to bind now.
+      (do (validate-param-type current type key)
+          current)  ; Binding succeeded; return underlying parameter
+      ;; Did not find parameter, defer binding via variable
+      (reify IParam
+        (evaluate [this show snapshot] (let [candidate (get @(:variables show) key default)]
+                                         (try
+                                           (validate-param-type candidate type)
+                                           candidate
+                                           (catch Throwable t
+                                             (error (str "Unable to use value of variable " key ", value " candidate
+                                                         " is not of type " type ". Using default " default))
+                                             default))))
+        (frame-dynamic? [this] frame-dynamic)
+        (result-type [this] type)
+        (resolve-non-frame-dynamic-elements [this show snapshot]  ; Nothing to resolve, return self
+          this)))))
+
+(defn- bind-keyword-param-internal
+  "If an input to a dynamic parameter has been passed as a keyword,
+  treat that as a reference to a show variable. If that variable
+  currently holds a dynamic parameter, try to bind it directly (throw
+  an exception if the types do not match). Otherwise, build a new
+  variable param to bind to future values of that show variable, and
+  return that, logging a warning if the current value (if any) of the
+  show variable is of an incompatible type for the parameter being
+  bound. If the input parameter is not a keyword, simply validate its
+  type."
+  [param show type-expected default param-name]
+  (when (some? param)
+    (if (keyword? param)
+      (build-variable-param show param :type type-expected :default default)
+      ;; No keyword to bind to, just validate
+      (validate-param-type param type-expected param-name))))
+
+(defmacro bind-keyword-param
+  "If an input to a dynamic parameter has been passed as a keyword,
+  treat that as a reference to a show variable. If the input parameter
+  is not a keyword, simply validate its type."
+  ([value show type-expected default]
+   (let [arg value]
+     `(bind-keyword-param-internal ~value ~show ~type-expected ~default ~(str arg))))
+  ([value show type-expected default param-name]
+   `(bind-keyword-param-internal ~value ~show ~type-expected ~default ~param-name)))
+
 ;; TODO Come up with a way to read and write parameters. Some kind of DSL for these builders.
 ;; Was thinking could do it through defrecord, but that seems not flexible enough. Will also
 ;; need a DSL for oscillators, of course. And will want to add dynamic oscillators which
@@ -155,49 +219,53 @@
   frame-dynamic false, the value will be fixed once it is assigned to
   an effect, acting like a random number generator with the
   oscillator's range."
-  [osc & {:keys [min max metronome frame-dynamic] :or {min 0 max 255 frame-dynamic true}}]
-  (validate-param-type min Number)
-  (validate-param-type max Number)
-  (if-not (some (partial satisfies? IParam) [min max])
-    ;; Optimize the simple case of all constant parameters
-    (let [range (- max min)
-          dyn (boolean frame-dynamic)
-          eval-fn (if (some? metronome)
-                    (fn [show _] (+ min (* range (osc (metro-snapshot metronome)))))
-                    (fn [show snapshot] (+ min (* range (osc snapshot)))))]
-      (when-not (pos? range)
-        (throw (IllegalArgumentException. "min must be less than max")))
-      (reify IParam
-        (evaluate [this show snapshot] (eval-fn show snapshot))
-        (frame-dynamic? [this] dyn)
-        (result-type [this] Number)
-        (resolve-non-frame-dynamic-elements [this show snapshot]  ; Nothing to resolve, return self
-          this)))
-    ;; Support the general case where we have an incoming variable parameter
-    (let [dyn (boolean frame-dynamic)
-          eval-fn (if (some? metronome)
-                    (fn [show snapshot]
-                      (oscillator-resolver-internal show snapshot min max osc (metro-snapshot metronome)))
-                    (fn [show snapshot]
-                      (oscillator-resolver-internal show snapshot min max osc snapshot)))]
-      (reify IParam
-        (evaluate [this show snapshot] (eval-fn show snapshot))
-        (frame-dynamic? [this] dyn)
-        (result-type [this] Number)
-        (resolve-non-frame-dynamic-elements [this show snapshot]
-          (build-oscillated-param osc :min (resolve-unless-frame-dynamic min show snapshot)
-                                  :max (resolve-unless-frame-dynamic max show snapshot)
-                                  :metronome metronome :frame-dynamic dyn))))))
+  [show osc & {:keys [min max metronome frame-dynamic] :or {min 0 max 255 frame-dynamic true}}]
+  (let [min (bind-keyword-param min show Number 0)
+        max (bind-keyword-param max show Number 255)]
+    (if-not (some (partial satisfies? IParam) [min max])
+      ;; Optimize the simple case of all constant parameters
+      (let [range (- max min)
+            dyn (boolean frame-dynamic)
+            eval-fn (if (some? metronome)
+                      (fn [show _] (+ min (* range (osc (metro-snapshot metronome)))))
+                      (fn [show snapshot] (+ min (* range (osc snapshot)))))]
+        (when-not (pos? range)
+          (throw (IllegalArgumentException. "min must be less than max")))
+        (reify IParam
+          (evaluate [this show snapshot] (eval-fn show snapshot))
+          (frame-dynamic? [this] dyn)
+          (result-type [this] Number)
+          (resolve-non-frame-dynamic-elements [this show snapshot]  ; Nothing to resolve, return self
+            this)))
+      ;; Support the general case where we have an incoming variable parameter
+      (let [dyn (boolean frame-dynamic)
+            eval-fn (if (some? metronome)
+                      (fn [show snapshot]
+                        (oscillator-resolver-internal show snapshot min max osc (metro-snapshot metronome)))
+                      (fn [show snapshot]
+                        (oscillator-resolver-internal show snapshot min max osc snapshot)))]
+        (reify IParam
+          (evaluate [this show snapshot] (eval-fn show snapshot))
+          (frame-dynamic? [this] dyn)
+          (result-type [this] Number)
+          (resolve-non-frame-dynamic-elements [this show snapshot]
+            (build-oscillated-param osc :min (resolve-unless-frame-dynamic min show snapshot)
+                                    :max (resolve-unless-frame-dynamic max show snapshot)
+                                    :metronome metronome :frame-dynamic dyn)))))))
 
 ;; TODO metronome parameters, with access to the show metronome and other metronome variables
 
 
 (defn interpret-color
   "Accept a color as either a jolby/colors object, an IParam which will produce a color,
-  or a keyword or string which will be passed to the jolby/colors create-color function."
+  a keyword, which will be bound to a show variable by the caller, or a string which is
+  passed to the jolby/colors create-color function."
   [color]
-  (cond (or (string? color) (keyword? color))
+  (cond (string? color)
         (colors/create-color color)
+
+        (keyword? color)
+        color
 
         (= (type color) :com.evocomputing.colors/color)
         color
@@ -228,16 +296,15 @@
   applied to the resulting color. If you do not specify a value for
   frame-dynamic, the color parameter will be frame dynamic if it has
   any incoming parameters which are."
-  [& {:keys [color r g b h s l frame-dynamic]
+  [show & {:keys [color r g b h s l frame-dynamic]
       :or {color default-color frame-dynamic :default}}]
-  (let [c (interpret-color color)]
-    (validate-param-type c :com.evocomputing.colors/color)
-    (validate-optional-param-type r Number)
-    (validate-optional-param-type g Number)
-    (validate-optional-param-type b Number)
-    (validate-optional-param-type h Number)
-    (validate-optional-param-type s Number)
-    (validate-optional-param-type l Number)
+  (let [c (bind-keyword-param (interpret-color color) show :com.evocomputing.colors/color default-color "color")
+        r (bind-keyword-param r show Number 0)
+        g (bind-keyword-param g show Number 0)
+        b (bind-keyword-param b show Number 0)
+        h (bind-keyword-param h show Number 0)
+        s (bind-keyword-param s show Number 0)
+        l (bind-keyword-param l show Number 0)]
     (if-not (some (partial satisfies? IParam) [c r g b h s l])
       ;; Optimize the degenerate case of all constant parameters
       (let [result-color (atom c)]
@@ -280,7 +347,8 @@
                                                                        :l (or lightness (colors/lightness %))}))))
                         @result-color))
             resolve-fn (fn [show snapshot head]
-                         (build-color-param :color (resolve-unless-frame-dynamic c show snapshot head)
+                         (build-color-param show
+                                            :color (resolve-unless-frame-dynamic c show snapshot head)
                                             :r (resolve-unless-frame-dynamic r show snapshot head)
                                             :g (resolve-unless-frame-dynamic g show snapshot head)
                                             :b (resolve-unless-frame-dynamic b show snapshot head)

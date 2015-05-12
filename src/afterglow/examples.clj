@@ -54,7 +54,7 @@
     (catch Exception e
       (throw (Exception. (str "Can't figure out how to create color from " color) e)))))
 
-(def blue-cue (global-color-cue :slateblue))
+(def blue-cue (global-color-cue "slateblue"))
 
 (defn master-cue
   "Return an effect function that sets all the dimmers in the sample rig to a fixed value."
@@ -67,8 +67,7 @@
 
 ;; Get a little fancier with a beat-driven fade
 (show/add-function! sample-show :master
-                    (master-cue (params/build-oscillated-param
-                                 (oscillators/sawtooth-beat))))
+                    (master-cue (params/build-oscillated-param sample-show (oscillators/sawtooth-beat))))
 
 ;; To actually start the effects above (although only the last one assigned to any
 ;; given keyword will still be in effect), uncomment or evaluate the next line:
