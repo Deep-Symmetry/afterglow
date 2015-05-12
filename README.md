@@ -55,6 +55,8 @@ Given its current development phase, you will want to use Afterglow in a Clojure
     ;; the show's BPM to it:
     (show/sync-to-external-clock sample-show
                                  (afterglow.midi/sync-to-midi-clock "traktor"))
+    ;; (You don't even need to give the MIDI device name if there is only one
+    ;; device sending MIDI clock messages.)
 
     ;; If you have Pioneer gear sending you Pro DJ Link packets, you can sync even
     ;; more precisely:
