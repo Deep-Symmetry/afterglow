@@ -9,7 +9,8 @@
   (:require [afterglow.rhythm :refer [metro-snapshot]]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
-            [taoensso.timbre :refer [error]]))
+            [taoensso.timbre :refer [error]])
+  (:import [afterglow.rhythm Metronome]))
 
 (defprotocol IParam
   "A dynamic parameter which gets evaluated during the run of a light show,
@@ -112,10 +113,10 @@
 
 (defn- oscillator-resolver-internal
   "Handles the calculation of an oscillator based on dynamic parameter
-  values for at least one of min and max"
-  [show params-snapshot min-arg max-arg osc osc-snapshot]
-  (let [min (resolve-param min-arg show params-snapshot)
-        max (resolve-param max-arg show params-snapshot)
+  values for at least one of min and max."
+  [show params-snapshot min max osc osc-snapshot]
+  (let [min (resolve-param min show params-snapshot)
+        max (resolve-param max show params-snapshot)
         range (- max min)]
     (if (neg? range)
       (do
@@ -226,14 +227,6 @@
   ([value show type-expected default param-name]
    `(bind-keyword-param-internal ~value ~show ~type-expected ~default ~param-name)))
 
-;; TODO Come up with a way to read and write parameters. Some kind of DSL for these builders.
-;; Was thinking could do it through defrecord, but that seems not flexible enough. Will also
-;; need a DSL for oscillators, of course. And will want to add dynamic oscillators which
-;; themselves support this kind of deferred parameters. Maybe a string format for oscillator
-;; specifications? Actually, leaning towards a build-oscillator-param which resolves to an
-;; oscillator, so make that a protocol too, and have the builder take the name and osc
-;; parameters, which can all be dynamic. Make a metronome param too, so they can come out
-;; of the show variables.
 (defn build-oscillated-param
   "Returns a number parameter that is driven by an oscillator. By
   default will be frame-dynamic, since it oscillates, but if you make
@@ -242,8 +235,9 @@
   oscillator's range."
   [show osc & {:keys [min max metronome frame-dynamic] :or {min 0 max 255 frame-dynamic true}}]
   (let [min (bind-keyword-param min show Number 0)
-        max (bind-keyword-param max show Number 255)]
-    (if-not (some (partial satisfies? IParam) [min max])
+        max (bind-keyword-param max show Number 255)
+        metronome (bind-keyword-param metronome show Metronome (:metronome show))]
+    (if-not (some (partial satisfies? IParam) [min max metronome])
       ;; Optimize the simple case of all constant parameters
       (let [range (- max min)
             dyn (boolean frame-dynamic)
@@ -262,7 +256,8 @@
       (let [dyn (boolean frame-dynamic)
             eval-fn (if (some? metronome)
                       (fn [show snapshot]
-                        (oscillator-resolver-internal show snapshot min max osc (metro-snapshot metronome)))
+                        (oscillator-resolver-internal show snapshot min max osc
+                                                      (metro-snapshot (resolve-param metronome show snapshot))))
                       (fn [show snapshot]
                         (oscillator-resolver-internal show snapshot min max osc snapshot)))]
         (reify IParam
