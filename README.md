@@ -75,6 +75,25 @@ Given its current development phase, you will want to use Afterglow in a Clojure
       (global-color-cue
         (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
 
+    ;; Here is an example of how I can have a knob on one of my MIDI controllers
+    ;; set the hue of all the lights. It shows up with a MIDI port name of "SLIDER/KNOB",
+    ;; and its first rotary controller is control 16 on channel 0. I can map that to
+    ;; set a show variable called "knob-1" to the values 0-360:
+    (show/add-midi-control-to-var-mapping sample-show "Slider" 0 16 :knob-1 :max 360)
+
+    ;; Then I can create a color cue based on that show variable:
+    (show/add-function! sample-show :color
+      (global-color-cue
+      (params/build-color-param sample-show :s 100 :l 50 :h :knob-1)))
+
+    ;; Combining oscillators and variables, have a knob control how far a hue
+    ;; oscillates:
+    (def hue-param (params/build-oscillated-param sample-show (oscillators/sine-beat)
+                                                  :max :knob-1))
+    (show/add-function! sample-show :color
+      (global-color-cue
+      (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
+
     ;; Terminate the effect handler thread:
     (show/stop! sample-show)
     

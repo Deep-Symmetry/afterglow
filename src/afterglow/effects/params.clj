@@ -117,11 +117,11 @@
   (let [min (resolve-param min-arg show params-snapshot)
         max (resolve-param max-arg show params-snapshot)
         range (- max min)]
-    (if (pos? range)
-      (+ min (* range (osc osc-snapshot)))
+    (if (neg? range)
       (do
         (error "Oscillator dynamic parameters min > max, returning max.")
-        max))))
+        max)
+      (+ min (* range (osc osc-snapshot))))))
 
 (defn resolve-unless-frame-dynamic
   "If the first argument is a dynamic parameter which is not dynamic
@@ -154,8 +154,11 @@
   already holds a dyamic parameter at the time this variable parameter
   is created, the binding is short-circuited to return that existing
   parameter rather than creating a new one, so the type must be
-  compatible."
-  [show variable & {:keys [frame-dynamic type default] :or {frame-dynamic true type Number default 0}}]
+  compatible. If adjust-fn is supplied, it will be called with the
+  value of the variable and its return value will be used as the value
+  of the dynamic parameter. It must return a compatible type or its
+  result will be discarded."
+  [show variable & {:keys [frame-dynamic type default adjust-fn] :or {frame-dynamic true type Number default 0}}]
   (validate-param-type default type)
   (let [key (keyword variable)
         current (get @(:variables show) key)]
@@ -164,19 +167,37 @@
       (do (validate-param-type current type key)
           current)  ; Binding succeeded; return underlying parameter
       ;; Did not find parameter, defer binding via variable
-      (reify IParam
-        (evaluate [this show snapshot] (let [candidate (get @(:variables show) key default)]
-                                         (try
-                                           (validate-param-type candidate type)
-                                           candidate
-                                           (catch Throwable t
-                                             (error (str "Unable to use value of variable " key ", value " candidate
-                                                         " is not of type " type ". Using default " default))
-                                             default))))
-        (frame-dynamic? [this] frame-dynamic)
-        (result-type [this] type)
-        (resolve-non-frame-dynamic-elements [this show snapshot]  ; Nothing to resolve, return self
-          this)))))
+      (let [eval-fn (fn [show] (if (nil? adjust-fn)
+                                 (let [candidate (get @(:variables show) key default)]
+                                   (try
+                                     (validate-param-type candidate type)
+                                     candidate
+                                     (catch Throwable t
+                                       (error (str "Unable to use value of variable " key ", value " candidate
+                                                   " is not of type " type ". Using default " default))
+                                       default)))
+                                 (let [candidate (get @(:variables show) key default)]
+                                   (try
+                                     (validate-param-type candidate type)
+                                     (let [adjusted (adjust-fn candidate)]
+                                       (try
+                                         (validate-param-type adjusted type)
+                                         adjusted
+                                         (catch Throwable t
+                                           (error (str "Unable to use adjust-fn result for variable " variable
+                                                       ", value " adjusted " is not of type " type
+                                                       ". Using unadjusted value " candidate))
+                                           candidate)))
+                                     (catch Throwable t
+                                       (error (str "Unable to use value of variable " key ", value " candidate
+                                                   " is not of type " type ". Using default " default))
+                                       default)))))]
+        (reify IParam
+          (evaluate [this show snapshot] (eval-fn show))
+          (frame-dynamic? [this] frame-dynamic)
+          (result-type [this] type)
+          (resolve-non-frame-dynamic-elements [this show snapshot]  ; Nothing to resolve, return self
+            this))))))
 
 (defn- bind-keyword-param-internal
   "If an input to a dynamic parameter has been passed as a keyword,
@@ -249,7 +270,7 @@
           (frame-dynamic? [this] dyn)
           (result-type [this] Number)
           (resolve-non-frame-dynamic-elements [this show snapshot]
-            (build-oscillated-param osc :min (resolve-unless-frame-dynamic min show snapshot)
+            (build-oscillated-param show osc :min (resolve-unless-frame-dynamic min show snapshot)
                                     :max (resolve-unless-frame-dynamic max show snapshot)
                                     :metronome metronome :frame-dynamic dyn)))))))
 
@@ -293,10 +314,13 @@
   will probably want to stick with some of h, s, and l, or r, g, and
   b. If values from both are supplied, the r, g, and/or b assignments
   will occur first, then then any h, s, and l assignments will be
-  applied to the resulting color. If you do not specify a value for
-  frame-dynamic, the color parameter will be frame dynamic if it has
-  any incoming parameters which are."
-  [show & {:keys [color r g b h s l frame-dynamic]
+  applied to the resulting color. Finally, if any adjustment values
+  have been supplied for hue, saturation or lightness, they will be
+  added to the corresponding values (rotating around the hue circle,
+  clamped to the legal range for the others). If you do not specify a
+  value for frame-dynamic, this color parameter will be frame dynamic
+  if it has any incoming parameters which are."
+  [show & {:keys [color r g b h s l adjust-hue adjust-saturation adjust-lightness frame-dynamic]
       :or {color default-color frame-dynamic :default}}]
   (let [c (bind-keyword-param (interpret-color color) show :com.evocomputing.colors/color default-color "color")
         r (bind-keyword-param r show Number 0)
@@ -304,8 +328,11 @@
         b (bind-keyword-param b show Number 0)
         h (bind-keyword-param h show Number 0)
         s (bind-keyword-param s show Number 0)
-        l (bind-keyword-param l show Number 0)]
-    (if-not (some (partial satisfies? IParam) [c r g b h s l])
+        l (bind-keyword-param l show Number 0)
+        adjust-hue (bind-keyword-param adjust-hue show Number 0)
+        adjust-saturation (bind-keyword-param adjust-saturation show Number 0)
+        adjust-lightness (bind-keyword-param adjust-lightness show Number 0)]
+    (if-not (some (partial satisfies? IParam) [c r g b h s l adjust-hue adjust-saturation adjust-lightness])
       ;; Optimize the degenerate case of all constant parameters
       (let [result-color (atom c)]
         (if (seq (filter identity [r g b]))
@@ -323,10 +350,18 @@
             (swap! result-color #(colors/create-color {:h (or hue (colors/hue %))
                                                        :s (or saturation (colors/saturation %))
                                                        :l (or lightness (colors/lightness %))}))))
+        (when adjust-hue
+          (swap! result-color #(colors/adjust-hue % (float adjust-hue))))
+        (when adjust-saturation
+          (swap! result-color #(colors/saturate % (float adjust-saturation))))
+        (when adjust-lightness
+          (swap! result-color #(colors/lighten % (float adjust-lightness))))
         @result-color)
       ;; Handle the general case of some dynamic parameters
       (let [dyn (if (= :default frame-dynamic)
-                  (boolean (some frame-dynamic-param? [color r g b h s l])) ; Let incoming args control how dynamic to be
+                  ;; Default means incoming args control how dynamic we should be
+                  (boolean (some frame-dynamic-param? [color r g b h s l adjust-hue adjust-saturation adjust-lightness]))
+                  ;; We were given an explicit value for frame-dynamic
                   (boolean frame-dynamic))
             eval-fn (fn [show snapshot head]
                       (let [result-color (atom c)]
@@ -345,7 +380,13 @@
                             (swap! result-color #(colors/create-color {:h (or hue (colors/hue %))
                                                                        :s (or saturation (colors/saturation %))
                                                                        :l (or lightness (colors/lightness %))}))))
-                        @result-color))
+                                (when adjust-hue
+                                  (swap! result-color #(colors/adjust-hue % (float (resolve-param adjust-hue show snapshot head)))))
+                                (when adjust-saturation
+                                  (swap! result-color #(colors/saturate % (float (resolve-param adjust-saturation show snapshot head)))))
+                                (when adjust-lightness
+                                  (swap! result-color #(colors/lighten % (float (resolve-param adjust-lightness show snapshot head)))))
+                                @result-color))
             resolve-fn (fn [show snapshot head]
                          (build-color-param show
                                             :color (resolve-unless-frame-dynamic c show snapshot head)
@@ -355,6 +396,9 @@
                                             :h (resolve-unless-frame-dynamic h show snapshot head)
                                             :s (resolve-unless-frame-dynamic s show snapshot head)
                                             :l (resolve-unless-frame-dynamic l show snapshot head)
+                                            :adjust-hue (resolve-unless-frame-dynamic adjust-hue show snapshot head)
+                                            :adjust-saturation (resolve-unless-frame-dynamic adjust-saturation show snapshot head)
+                                            :adjust-lightness (resolve-unless-frame-dynamic adjust-lightness show snapshot head)
                                             :frame-dynamic dyn))]
         (reify
           IParam
@@ -367,8 +411,3 @@
           (resolve-non-frame-dynamic-elements-for-head [this show snapshot head] (resolve-fn show snapshot head)))))))
 
 ;; TODO some kind of random parameter?
-
-
-
-
-
