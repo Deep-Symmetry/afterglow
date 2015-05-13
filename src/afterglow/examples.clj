@@ -66,8 +66,8 @@
 (show/add-function! sample-show :master (master-cue 255))
 
 ;; Get a little fancier with a beat-driven fade
-(show/add-function! sample-show :master
-                    (master-cue (params/build-oscillated-param sample-show (oscillators/sawtooth-beat))))
+;; (show/add-function! sample-show :master
+;;                     (master-cue (params/build-oscillated-param sample-show (oscillators/sawtooth-beat))))
 
 ;; To actually start the effects above (although only the last one assigned to any
 ;; given keyword will still be in effect), uncomment or evaluate the next line:

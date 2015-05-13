@@ -21,7 +21,8 @@ adding a new effect with the same key as an existing effect will replace the for
             [overtone.at-at :as at-at]
             [taoensso.timbre :refer [error]]
             [taoensso.timbre.profiling :refer [p profile pspy]])
-  (:import (com.google.protobuf ByteString)))
+  (:import (com.google.protobuf ByteString)
+           (afterglow.rhythm Metronome)))
 
 
 (def default-refresh-interval
@@ -191,7 +192,67 @@ adding a new effect with the same key as an existing effect will replace the for
   "Cease updating the specified show variable when the specified MIDI
   controller-change messages are received."
   [show midi-device-name channel control-number variable]
-  (midi/remove-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":var" (str (keyword variable)))))
+  (midi/remove-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":var" (keyword variable))))
+
+(defn- add-midi-control-metronome-mapping
+  "Helper function to perform some action on a metronome when a
+  control-change message with non-zero value is received from the
+  specified device, channel, and controller number."
+  [show midi-device-name channel control-number variable mapped-fn]
+  (let [metronome (if variable
+                    (get @(:variables show) (keyword variable))
+                    (:metronome show))]
+    (when (and variable (not= (type metronome Metronome)))
+      (throw (IllegalArgumentException. "variable must contain a Metronome")))
+    (midi/add-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":metronome" (keyword variable))
+                              (fn [msg] (when (pos? (:velocity msg)) (mapped-fn metronome))))))
+
+(defn add-midi-control-metronome-reset-mapping
+  "Cause the show metronome (or a metronome stored in a show variable)
+  to be reset to beat 1, bar 1, phrase 1 when a control-change message
+  with non-zero value is received from the specified device, channel,
+  and controller number."
+  ([show midi-device-name channel control-number]
+   (add-midi-control-metronome-reset-mapping show midi-device-name channel control-number nil))
+  ([show midi-device-name channel control-number variable]
+   (add-midi-control-metronome-mapping show midi-device-name channel control-number variable
+                                       (fn [metronome] (metro-start metronome 1)))))
+
+(defn remove-midi-control-metronome-mapping
+  "Stop affecting the show metronome (or a metronome stored in the
+  specified show variable) when the specified MIDI controller-change
+  messages are received. This undoes the effect of any of the
+  add-mid-control-metronome-mapping functions."
+  ([show midi-device-name channel control-number]
+   (remove-midi-control-metronome-mapping show midi-device-name channel control-number nil))
+  ([show midi-device-name channel control-number variable]
+   (midi/remove-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":metronome" (keyword variable)))
+   (when (and variable (not= (type metronome Metronome)))
+     (throw (IllegalArgumentException. "variable must contain a Metronome")))))
+
+(defn add-midi-control-metronome-align-bar-mapping
+  "Cause the show metronome (or a metronome stored in a show variable)
+  to adjust so the closest beat is considered the first in the current
+  measure, without moving the beat, when a control-change message with
+  non-zero value is received from the specified device, channel, and
+  controller number."
+  ([show midi-device-name channel control-number]
+   (add-midi-control-metronome-align-bar-mapping show midi-device-name channel control-number nil))
+  ([show midi-device-name channel control-number variable]
+   (add-midi-control-metronome-mapping show midi-device-name channel control-number variable
+                                       (fn [metronome] (metro-bar-start metronome (metro-bar metronome))))))
+
+(defn add-midi-control-metronome-align-phrase-mapping
+  "Cause the show metronome (or a metronome stored in a show variable)
+  to adjust so the closest beat is considered the first in the current
+  phrase, without moving the beat, when a control-change message with
+  non-zero value is received from the specified device, channel, and
+  controller number."
+  ([show midi-device-name channel control-number]
+   (add-midi-control-metronome-align-bar-mapping show midi-device-name channel control-number nil))
+  ([show midi-device-name channel control-number variable]
+   (add-midi-control-metronome-mapping show midi-device-name channel control-number variable
+                                       (fn [metronome] (metro-phrase-start metronome (metro-phrase metronome))))))
 
 (defn- vec-remove
   "Remove the element at the specified index from the collection."

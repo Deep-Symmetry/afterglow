@@ -166,12 +166,12 @@ as fast, 3/4 oscillates 4 times every three markers..."
   (metro-bar-start [metro start-bar]
     (let [phase (metro-beat-phase metro)
           shift (* (metro-tick metro) (if (> phase 0.5) (dec phase) phase))
-          new-bar-start (round (+ shift (- (now) (* (dec start-bar) (metro-tock metro)))))]
+          new-bar-start (round (- (now) shift (* (dec start-bar) (metro-tock metro))))]
       (reset! start new-bar-start)))
   (metro-phrase-start [metro start-phrase]
     (let [phase (metro-beat-phase metro)
           shift (* (metro-tick metro) (if (> phase 0.5) (dec phase) phase))
-          new-phrase-start (round (+ shift (- (now) (* (dec start-phrase) (metro-ding metro)))))]
+          new-phrase-start (round (- (now) shift (* (dec start-phrase) (metro-ding metro))))]
       (reset! start new-phrase-start)))
 
   (metro-tick [metro] (beat-ms 1 @bpm))
