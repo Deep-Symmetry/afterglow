@@ -12,13 +12,13 @@ via its
 ## Status
 
 I am very rapidly fleshing this out; it has started to develop some
-really useful and snazzy features, but a majority remains in my to-do
-lists and in my head. The examples are already starting to be
-intriguing and informative, but there will be more, and better
-documentation, very soon. In particular, the modeling of fixtures,
-channels, etc. is in an early form now, and I expect there will be
-drastic changes as I gain experience with how I want to use them, and
-build macros and other tools to make them easier to define.
+really fun features, but a majority remains in my to-do lists and in
+my head. The examples are already starting to be intriguing and
+informative, but there will be more, and better documentation, very
+soon. In particular, the modeling of fixtures, channels, etc. is in an
+early form now, and I expect there will be drastic changes as I gain
+experience with how I want to use them, and build macros and other
+tools to make them easier to define.
 
 ## Installation
 
@@ -45,15 +45,16 @@ Given its current development phase, you will want to use Afterglow in a Clojure
     (require 'afterglow.examples)
     (in-ns 'afterglow.examples)
     
-> Start the sample show which runs on DMX universe 1. You will want to have OLA
-> configured to at least have an ArtNet universe with that ID so you can watch the
-> DMX values using its web interface. It would be even better if you had an actual
-> DMX interface hooked up, and changed the definition of sample-rig to include
-> some real lights you have connected.
+> Start the sample show which runs on DMX universe 1. You will want to
+> have OLA configured to at least have an ArtNet universe with that ID
+> so you can watch the DMX values using its web interface. It would be
+> even better if you had an actual DMX interface hooked up, and
+> changed the definition of `sample-rig` to include some real lights
+> you have connected.
 
     (show/start! sample-show)
     
-> Assign a nice cool blue color to all lights in the sample show
+> Assign a nice cool blue color to all lights in the sample show:
 
     (show/add-function! sample-show :color blue-cue)
     
@@ -62,7 +63,7 @@ Given its current development phase, you will want to use Afterglow in a Clojure
 
     (show/add-function! sample-show :master (master-cue 255))
     
-> We can make that a little dimmer
+> We can make that a little dimmer...
 
     (show/add-function! sample-show :master (master-cue 200))
     
@@ -117,37 +118,6 @@ seize control of your lights!
 ## Options
 
 FIXME: listing of options this app accepts once it can run as a standalone app.
-
-## Examples
-
-### Working with Color
-
-Cues that assign color to lights are designed to leverage the
-[jolby/colors](https://github.com/jolby/colors) library. In addition
-to creating colors by name, as in the Usage examples, you can create
-them by hex string, RGB values, and, most usefully when thinking about
-how to mix and fade them,
-[HSL](http://en.wikipedia.org/wiki/HSL_and_HSV) (Hue, Saturation, and
-Lightness). So, if you wanted a cue that shifts back and forth around
-yellow, and don't remember the hue value of yellow, you could do
-something like this:
-
-    (use 'com.evocomputing.colors)
-    (def yellow (create-color "yellow"))
-    (def hue-param (params/build-oscillated-param sample-show
-      (oscillators/sine-beat) :min (hue (adjust-hue yellow -5))
-                              :max (hue (adjust-hue yellow 5))))
-    (show/add-function! sample-show :color
-      (global-color-cue
-        (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
-
-You can add lighten it up by changing to something like `:l 70` in the
-`build-color-param` call, darken it a bunch with `:l 20` or desaturate
-it a touch with `:s 80`... For more options and ideas, delve into the
-colors library API documentation, and the various oscillators that
-Afterglow makes available to you.
-
-...
 
 ### Bugs
 
