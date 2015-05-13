@@ -190,6 +190,28 @@
                                                 "was found."))))))))
 
 ;; TODO function to return next control or note message received, to aid mapping
+(defn identify-mapping
+  "Report on the next MIDI control or note message received, to aid in
+  setting up a mapping to a button, fader, or knob. Call this, then
+  twiddle the knob, press the button, or move the fader, and see what
+  Afterglow received. Pass a timeout in ms to control how long it will
+  wait for a message (the default is ten seconds). This is an upper
+  limit; if a message is received before the timeout, it will be
+  reported immediately."
+  ([]
+   (identify-mapping 10000))
+  ([timeout]
+   (open-inputs-if-needed!)
+   (let [result (promise)
+         message-finder (fn [msg]
+                          (when (#{:note :control-change} (:status msg))
+                            (deliver result msg)))]
+     (swap! global-handlers conj message-finder)
+     (let [found (deref result timeout nil)]
+       (swap! global-handlers disj message-finder)
+       (when found
+         (assoc (select-keys found [:command :channel :note :velocity])
+                :device (select-keys (:device found) [:name :description])))))))
 
 ;; TODO apply to all matching input sources?
 (defn add-control-mapping
@@ -207,7 +229,7 @@
     (swap! control-mappings #(assoc-in % [(:name (first result))
                                           (int channel) (int control-number) (keyword key)] handler))))
 
-;; TODO apply to all matching input source?
+;; TODO apply to all matching input sources?
 (defn remove-control-mapping
   "Unregister a handler previously registered with
   add-control-mapping, identified by the unique key. The first MIDI
