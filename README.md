@@ -1,16 +1,37 @@
 # Afterglow
 
-A Clojure take on DMX lighting control, leveraging the [Open Lighting Architecture](https://www.openlighting.org/ola/), and pieces of the [Overtone](https://github.com/overtone/overtone) toolkit. For efficiency, Afterglow uses [Protocol Buffers](https://developers.google.com/protocol-buffers/docs/overview) to communicate with the `olad` process running on the local machine via its [RPC Service](https://docs.openlighting.org/doc/latest/rpc_system.html).
+A Clojure take on DMX lighting control, leveraging the
+[Open Lighting Architecture](https://www.openlighting.org/ola/), and
+pieces of the [Overtone](https://github.com/overtone/overtone)
+toolkit. For efficiency, Afterglow uses
+[Protocol Buffers](https://developers.google.com/protocol-buffers/docs/overview)
+to communicate with the `olad` process running on the local machine
+via its
+[RPC Service](https://docs.openlighting.org/doc/latest/rpc_system.html).
 
 ## Status
 
-I am very rapidly fleshing this out; it is a bare skeleton right now, but I wanted to make sure I understood how to get it up on GitHub and Clojars, to share with the world, and to help motivate me. There will be a lot more functionality, better examples, and more explanation of how to use it, very soon. In particular, the modeling of fixtures, channels, etc. is in an early form now, and I expect there will be drastic changes as I gain experience with how I want to use them, and build macros and other tools to make them easier to define.
+I am very rapidly fleshing this out; it has started to develop some
+really useful and snazzy features, but a majority remains in my to-do
+lists and in my head. The examples are already starting to be
+intriguing and informative, but there will be more, and better
+documentation, very soon. In particular, the modeling of fixtures,
+channels, etc. is in an early form now, and I expect there will be
+drastic changes as I gain experience with how I want to use them, and
+build macros and other tools to make them easier to define.
 
 ## Installation
 
-1. [Install OLA](https://www.openlighting.org/ola/getting-started/downloads/); I recommend using [Homebrew](http://brew.sh) which lets you simply `brew install ola`. Once you launch the `olad` server you can interact with its embedded [web server](http://localhost:9090/ola.html), which is very helpful in seeing whether anything is working; you can even watch live DMX values changing.
+1. [Install OLA](https://www.openlighting.org/ola/getting-started/downloads/);
+   I recommend using [Homebrew](http://brew.sh) which lets you simply
+   `brew install ola`. Once you launch the `olad` server you can
+   interact with its embedded
+   [web server](http://localhost:9090/ola.html), which is very helpful
+   in seeing whether anything is working; you can even watch live DMX
+   values changing.
 2. For now set up a Clojure project using [Leiningen](http://leiningen.org).
-3. Add this project as a dependency: [![Clojars Project](http://clojars.org/afterglow/latest-version.svg)](http://clojars.org/afterglow)
+3. Add this project as a dependency:
+   [![Clojars Project](http://clojars.org/afterglow/latest-version.svg)](http://clojars.org/afterglow)
 
 Eventually you may be able to download binary distributions from somewhere.
 
@@ -18,55 +39,54 @@ Eventually you may be able to download binary distributions from somewhere.
 
 Given its current development phase, you will want to use Afterglow in a Clojure repl.
 
-    ;; The next two lines are not needed if you are using Leiningen to get your repl,
-    ;; since the project is configured to start you in this namespace for convenience.
+> The next two lines are not needed if you are using Leiningen to get your repl,
+> since the project is configured to start you in this namespace for convenience.
+
     (require 'afterglow.examples)
     (in-ns 'afterglow.examples)
     
-    ;; Start the sample show which runs on DMX universe 1. You will want to have OLA
-    ;; configured to at least have an ArtNet universe with that ID so you can watch the
-    ;; DMX values using its web interface. It would be even better if you had an actual
-    ;; DMX interface hooked up, and changed the definition of sample-rig to include
-    ;; some real lights you have connected.
+> Start the sample show which runs on DMX universe 1. You will want to have OLA
+> configured to at least have an ArtNet universe with that ID so you can watch the
+> DMX values using its web interface. It would be even better if you had an actual
+> DMX interface hooked up, and changed the definition of sample-rig to include
+> some real lights you have connected.
+
     (show/start! sample-show)
     
-    ;; Assign a nice cool blue color to all lights in the sample show
+> Assign a nice cool blue color to all lights in the sample show
+
     (show/add-function! sample-show :color blue-cue)
     
-    ;; But I'm still not seeing anything? Oh! The dimmers...
-    ;; Set them all to full:
+> But I'm still not seeing anything? Oh! The dimmers...
+> Set them all to full:
+
     (show/add-function! sample-show :master (master-cue 255))
     
-    ;; We can make that a little dimmer
+> We can make that a little dimmer
+
     (show/add-function! sample-show :master (master-cue 200))
     
-    ;; Change the color to orange
+> Change the color to orange
+
     (show/add-function! sample-show :color (global-color-cue :orange))
     
-    ;; Let's get a little fancy and ramp the dimmers up on a sawtooth curve each beat:
+> Let's get a little fancy and ramp the dimmers up on a sawtooth curve each beat:
+
     (show/add-function! sample-show :master
                         (master-cue (params/build-oscillated-param sample-show
                                      (oscillators/sawtooth-beat))))
     
-    ;; Slow that down a little:
+> Slow that down a little:
+
     (afterglow.rhythm/metro-bpm (:metronome sample-show) 70)
     
-    ;; If you have DJ software or a mixer sending you MIDI clock data, you can sync
-    ;; the show's BPM to it:
+> If you have DJ software or a mixer sending you MIDI clock data, you
+> can sync the show's BPM to it (see the
+> [wiki](https://github.com/brunchboy/afterglow/wiki/MIDI-Mapping-and-Beat-Sync#syncing-to-midi-clock)
+> for details):
+
     (show/sync-to-external-clock sample-show
                                  (afterglow.midi/sync-to-midi-clock "traktor"))
-    ;; (You don't even need to give the MIDI device name if there is only one
-    ;; device sending MIDI clock messages.)
-
-    ;; If you have Pioneer gear sending you Pro DJ Link packets, you can sync even
-    ;; more precisely:
-    (show/sync-to-external-clock sample-show
-                                 (afterglow.dj-link/sync-to-dj-link "DJM-2000"))
-    
-    ;; To check on the sync status:
-    (show/sync-status sample-show)
-    ; -> {:type :midi, :status "Running, clock pulse buffer is full."}
-    ; -> {:type :dj-link, :status "Network problems? No DJ Link packets received."}
 
     ;; How about a nice cycling rainbow color fade?
     (def hue-param (params/build-oscillated-param
@@ -75,24 +95,10 @@ Given its current development phase, you will want to use Afterglow in a Clojure
       (global-color-cue
         (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
 
-    ;; Here is an example of how I can have a knob on one of my MIDI controllers
-    ;; set the hue of all the lights. It shows up with a MIDI port name of "SLIDER/KNOB",
-    ;; and its first rotary controller is control 16 on channel 0. I can map that to
-    ;; set a show variable called "knob-1" to the values 0-360:
-    (show/add-midi-control-to-var-mapping sample-show "Slider" 0 16 :knob-1 :max 360)
-
-    ;; Then I can create a color cue based on that show variable:
-    (show/add-function! sample-show :color
-      (global-color-cue
-      (params/build-color-param sample-show :s 100 :l 50 :h :knob-1)))
-
-    ;; Combining oscillators and variables, have a knob control how far a hue
-    ;; oscillates:
-    (def hue-param (params/build-oscillated-param sample-show (oscillators/sine-beat)
-                                                  :max :knob-1))
-    (show/add-function! sample-show :color
-      (global-color-cue
-      (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
+> The Wiki has
+> [more examples](https://github.com/brunchboy/afterglow/wiki/Effect-Examples)
+> of building effects, and mapping parameters to MIDI controllers.
+> When you are all done, you can:
 
     ;; Terminate the effect handler thread:
     (show/stop! sample-show)
@@ -100,7 +106,13 @@ Given its current development phase, you will want to use Afterglow in a Clojure
     ;; And darken the universe we were playing with...
     (show/blackout-show sample-show)
 
-If you have a web browser open on [your OLA daemon](http://localhost:9090/ola.html)'s DMX monitor for Universe 1, you will see the values for channels changing, then ramping up quickly, then a little more slowly after you change the BPM. Alter the example to use a universe and channels that you will actually be able to see with a connected fixture, and watch Clojure seize control of your lights!
+If you have a web browser open on
+[your OLA daemon](http://localhost:9090/ola.html)'s DMX monitor for
+Universe 1, you will see the values for channels changing, then
+ramping up quickly, then a little more slowly after you change the
+BPM. Alter the example to use a universe and channels that you will
+actually be able to see with a connected fixture, and watch Clojure
+seize control of your lights!
 
 ## Options
 
@@ -143,8 +155,6 @@ Afterglow makes available to you.
 
 ### Ideas
 
-* Create a project Wiki on GitHub and move this kind of discussion to it:
-* Tons of oscillators and combinators for them, with convenient initializers.
 * Model moving head location and position, so they can be panned and aimed in a coordinated way.
     - [Wikipedia](http://en.wikipedia.org/wiki/Rotation_formalisms_in_three_dimensions) has the most promising overview of what I need to do.
     - If I can’t find anything Clojure or Java native, [this C# library](http://www.codeproject.com/Articles/17425/A-Vector-Type-for-C) might serve as a guide.
