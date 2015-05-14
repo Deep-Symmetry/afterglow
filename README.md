@@ -59,14 +59,18 @@ the definition of `sample-rig` to include some real lights you have
 connected. Either way, here is how you start the show sending control
 signals to lights:
 
-    (show/start! sample-show)
-    
+```clojure
+(show/start! sample-show)
+```
+
 The `afterglow.examples` namespace has already assigned a nice cool
 blue color to all lights in the sample show and set their dimmers to
 full, using these two lines:
 
-    (show/add-function! sample-show :color blue-cue)
-    (show/add-function! sample-show :master (master-cue 255))
+```clojure
+(show/add-function! sample-show :color blue-cue)
+(show/add-function! sample-show :master (master-cue 255))
+```
 
 So if you happened to have the same fixtures hooked up, assigned the
 same DMX addresses as I did when I wrote this, you would see a bunch
@@ -77,27 +81,35 @@ have set up a Universe with ID 1.
     
 We can set the lights a little dimmer...
 
-    (show/add-function! sample-show :master (master-cue 200))
+```clojure
+(show/add-function! sample-show :master (master-cue 200))
+```
 
 > Adding a function with the same keyword as an existing function
 > replaces the old one. The dimmer channels drop from 255 to 200.
     
 Change the color to orange:
 
-    (show/add-function! sample-show :color (global-color-cue :orange))
+```clojure
+(show/add-function! sample-show :color (global-color-cue :orange))
+```
 
 > The color channel values change.
     
 Let's get a little fancy and ramp the dimmers up on a sawtooth curve each beat:
 
-    (show/add-function! sample-show :master
-                        (master-cue (params/build-oscillated-param sample-show
-                                     (oscillators/sawtooth-beat))))
-    
+```clojure
+(show/add-function! sample-show :master
+                    (master-cue (params/build-oscillated-param sample-show
+                                (oscillators/sawtooth-beat))))
+```
+
 Slow that down a little:
 
-    (afterglow.rhythm/metro-bpm (:metronome sample-show) 70)
-    
+```clojure
+(afterglow.rhythm/metro-bpm (:metronome sample-show) 70)
+```
+
 > If you have a web browser open on
 > [your OLA daemon](http://localhost:9090/ola.html)'s DMX monitor for
 > Universe 1, you will see the values for channels changing, then
@@ -121,16 +133,20 @@ can sync the show's BPM to it (see the
 [wiki](https://github.com/brunchboy/afterglow/wiki/MIDI-Mapping-and-Beat-Sync#syncing-to-midi-clock)
 for details):
 
-    (show/sync-to-external-clock sample-show
-                                 (afterglow.midi/sync-to-midi-clock "traktor"))
+```clojure
+(show/sync-to-external-clock sample-show
+                             (afterglow.midi/sync-to-midi-clock "traktor"))
+```
 
 How about a nice cycling rainbow color fade?
 
-    (def hue-param (params/build-oscillated-param
-      sample-show (oscillators/sawtooth-bar) :max 360))
-    (show/add-function! sample-show :color
-      (global-color-cue
-        (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
+```clojure
+(def hue-param (params/build-oscillated-param
+  sample-show (oscillators/sawtooth-bar) :max 360))
+(show/add-function! sample-show :color
+  (global-color-cue
+    (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
+```
 
 > The Wiki has
 > [more examples](https://github.com/brunchboy/afterglow/wiki/Effect-Examples)
@@ -138,11 +154,15 @@ How about a nice cycling rainbow color fade?
 
 When you are all done, you can terminate the effect handler thread...
 
-    (show/stop! sample-show)
+```clojure
+(show/stop! sample-show)
+```
     
 And darken the universe you were playing with.
 
-    (show/blackout-show sample-show)
+```clojure
+(show/blackout-show sample-show)
+```
 
 > An alternate way of accomplishing those last two steps would have been to call
 > `(show/clear-functions! sample-show)` before `show/stop!` because once there
