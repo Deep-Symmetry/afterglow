@@ -138,7 +138,7 @@ When you are all done, you can terminate the effect handler thread...
 
     (show/stop! sample-show)
     
-And darken the universe we were playing with.
+And darken the universe you were playing with.
 
     (show/blackout-show sample-show)
 
