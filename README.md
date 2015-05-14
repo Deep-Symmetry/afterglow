@@ -41,8 +41,10 @@ Eventually you may be able to download binary distributions from somewhere.
 
 Given its current development phase, you will want to use Afterglow in a Clojure repl.
 
-> The next two lines are not needed if you are using Leiningen to get your repl,
-> since the project is configured to start you in this namespace for convenience.
+> The next two lines are not needed if you are using a checkout of the
+> Afterglow source code rather than the library version described
+> above, since the project is configured to start you in this
+> namespace for convenience.
 
     (require 'afterglow.examples)
     (in-ns 'afterglow.examples)
@@ -75,8 +77,8 @@ We can set the lights a little dimmer...
 
     (show/add-function! sample-show :master (master-cue 200))
 
-> Adding a function with the same keyword as an existing function replaces
-> the old one. The dimmer channels drop from 255 to 200.
+> Adding a function with the same keyword as an existing function
+> replaces the old one. The dimmer channels drop from 255 to 200.
     
 Change the color to orange:
 
@@ -98,12 +100,13 @@ Slow that down a little:
 > [your OLA daemon](http://localhost:9090/ola.html)'s DMX monitor for
 > Universe 1, you will see the values for channels changing, then
 > ramping up quickly, then a little more slowly after you change the
-> BPM. OLA 0.9.5 introduced a new, beta web UI based on AngularJS which
-> you can access through a small [New UI (Beta)](http://localhost:9090/new/)
-> link at the bottom of the page. In my experience, it has been
-> completely stable, looks a lot better, and is *far* more dynamic
-> and responsive at monitoring changing DMX values, and presenting
-> them in an intuitive at-a-glance way.
+> BPM. OLA 0.9.5 introduced a new, beta web UI based on AngularJS
+> which you can access through a small
+> [New UI (Beta)](http://localhost:9090/new/) link at the bottom of
+> the page. In my experience, it has been completely stable, looks a
+> lot better, and is *far* more dynamic and responsive at monitoring
+> changing DMX values, and presenting them in an intuitive at-a-glance
+> way.
 
 If you can, alter the example to use a universe and channels that you
 will actually be able to see with a connected fixture, and watch
@@ -130,9 +133,8 @@ How about a nice cycling rainbow color fade?
 > The Wiki has
 > [more examples](https://github.com/brunchboy/afterglow/wiki/Effect-Examples)
 > of building effects, and mapping parameters to MIDI controllers.
-> When you are all done, you can:
 
-Terminate the effect handler thread...
+When you are all done, you can terminate the effect handler thread...
 
     (show/stop! sample-show)
     
