@@ -46,9 +46,11 @@ Given its current development phase, you will want to use Afterglow in a Clojure
 > above, since the project is configured to start you in this
 > namespace for convenience.
 
-    (require 'afterglow.examples)
-    (in-ns 'afterglow.examples)
-    
+```clojure
+(require 'afterglow.examples)
+(in-ns 'afterglow.examples)
+```
+
 Start the sample show which runs on DMX universe 1. You will want to
 have OLA configured to at least have an ArtNet universe with that ID
 so you can watch the DMX values using its web interface. It would be
