@@ -16,33 +16,27 @@
   oscillator at the specified fraction or multiple of a beat, and supplying a
   phase will offset the oscillator from the underlying metronome phase by that
   amount."
-  ([]
-   (sawtooth-beat false))
+  [& {:keys [down? beat-ratio phase] :or {down? false beat-ratio 1 phase 0.0}}]
+  (cond (and (= beat-ratio 1) (= phase 0.0)) ; Simplest case; maybe no calculation
+        (if down?
+          (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+            (- 1.0 (.beat-phase snapshot)))
+          (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+            (.beat-phase snapshot)))
+        
+        (= phase 0.0)  ; Can ignore phase, but have a beat-ratio to contend with
+        (if down?
+          (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+            (- 1.0 (rhythm/snapshot-beat-phase snapshot beat-ratio)))
+          (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+            (rhythm/snapshot-beat-phase snapshot beat-ratio)))
 
-  ([^Boolean down?]
-   (if down?
-     (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-       (- 1.0 (.beat-phase snapshot)))
-     (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-       (.beat-phase snapshot))))
-
-  ([^Boolean down? beat-ratio]
-   (if (= beat-ratio 1)
-     (sawtooth-beat down?) ;Delegate to faster implementation since it gives the right results
-     (if down?
-       (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-         (- 1.0 (rhythm/snapshot-beat-phase snapshot beat-ratio)))
-       (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-         (rhythm/snapshot-beat-phase snapshot beat-ratio)))))
-
-  ([^Boolean down? beat-ratio ^Double phase]
-   (if (= phase 0.0)
-     (sawtooth-beat down? beat-ratio) ;Delegate to faster implementation since it gives the right results
-     (if down?
-       (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-         (- 1.0 (adjust-phase (rhythm/snapshot-beat-phase snapshot beat-ratio) phase)))
-       (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-         (adjust-phase (rhythm/snapshot-beat-phase snapshot beat-ratio) phase))))))
+        :else  ; Full blown beat calculation
+        (if down?
+          (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+            (- 1.0 (adjust-phase (rhythm/snapshot-beat-phase snapshot beat-ratio) phase)))
+          (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+            (adjust-phase (rhythm/snapshot-beat-phase snapshot beat-ratio) phase)))))
 
 (defn sawtooth-bar
   "Returns an oscillator which generates a sawtooth wave relative to the phase
@@ -51,33 +45,56 @@
   oscillator at the specified fraction or multiple of a bar, and supplying a
   phase will offset the oscillator from the underlying metronome phase by that
   amount."
-  ([]
-   (sawtooth-bar false))
+  [& {:keys [down? bar-ratio phase] :or {down? false bar-ratio 1 phase 0.0}}]
+  (cond (and (= bar-ratio 1) (= phase 0.0))  ; Simplest case, maybe no calculation
+        (if down?
+          (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+            (- 1.0 (.bar-phase snapshot)))
+          (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+            (.bar-phase snapshot)))
 
-  ([^Boolean down?]
-   (if down?
-     (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-       (- 1.0 (.bar-phase snapshot)))
-     (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-       (.bar-phase snapshot))))
+        (= phase 0.0)  ; Can ignore phase, but have a bar-ratio to contend with
+        (if down?
+          (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+            (- 1.0 (rhythm/snapshot-bar-phase snapshot bar-ratio)))
+          (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+            (rhythm/snapshot-bar-phase snapshot bar-ratio)))
 
-  ([^Boolean down? bar-ratio]
-   (if (= bar-ratio 1)
-     (sawtooth-bar down?) ;Delegate to faster implementation since it gives the right results
-     (if down?
-       (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-         (- 1.0 (rhythm/snapshot-bar-phase snapshot bar-ratio)))
-       (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-         (rhythm/snapshot-bar-phase snapshot bar-ratio)))))
+        :else  ; Full blown bar calculation
+        (if down?
+          (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+            (- 1.0 (adjust-phase (rhythm/snapshot-bar-phase snapshot bar-ratio) phase)))
+          (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+            (adjust-phase (rhythm/snapshot-bar-phase snapshot bar-ratio) phase)))))
 
-  ([^Boolean down? bar-ratio ^Double phase]
-   (if (= phase 0.0)
-     (sawtooth-bar down? bar-ratio) ;Delegate to faster implementation since it gives the right results
-     (if down?
-       (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-         (- 1.0 (adjust-phase (rhythm/snapshot-bar-phase snapshot bar-ratio) phase)))
-       (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-         (adjust-phase (rhythm/snapshot-bar-phase snapshot bar-ratio) phase))))))
+(defn sawtooth-phrase
+  "Returns an oscillator which generates a sawtooth wave relative to the phase
+  of the current phrase. Passing true for down? creates an inverse sawtooth wave
+  (ramps downward rather than upward), supplying a phrase ratio will run the
+  oscillator at the specified fraction or multiple of a phrase, and supplying a
+  phase will offset the oscillator from the underlying metronome phase by that
+  amount."
+  [& {:keys [down? phrase-ratio phase] :or {down? false phrase-ratio 1 phase 0.0}}]
+  (cond (and (= phrase-ratio 1) (= phase 0.0))  ; Simplest case, maybe no calculation
+        (if down?
+          (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+            (- 1.0 (.phrase-phase snapshot)))
+          (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+            (.phrase-phase snapshot)))
+
+        (= phase 0.0)  ; Can ignore phase, but have a phrase-ratio to contend with
+        (if down?
+          (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+            (- 1.0 (rhythm/snapshot-phrase-phase snapshot phrase-ratio)))
+          (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+            (rhythm/snapshot-phrase-phase snapshot phrase-ratio)))
+
+        :else  ; Full blown phrase calculation
+        (if down?
+          (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+            (- 1.0 (adjust-phase (rhythm/snapshot-phrase-phase snapshot phrase-ratio) phase)))
+          (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+            (adjust-phase (rhythm/snapshot-phrase-phase snapshot phrase-ratio) phase)))))
 
 (defn triangle-beat
   "Returns an oscillator which generates a triangle wave relative to the phase
@@ -85,19 +102,13 @@
   the specified fraction or multiple of a beat, and supplying a phase
   will offset the oscillator from the underlying metronome phase by that
   amount."
-  ([]
-   (triangle-beat 1 0.0))
-
-  ([beat-ratio]
-   (triangle-beat beat-ratio 0.0))
-
-  ([beat-ratio ^Double phase]
-   (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-     (let [reached (adjust-phase (rhythm/snapshot-beat-phase snapshot beat-ratio) phase)
-           intensity (adjust-phase (rhythm/snapshot-beat-phase snapshot (/ beat-ratio 2)) phase)]
-       (if (< reached 0.5)
-         intensity
-         (- 1.0 intensity))))))
+  [& {:keys [beat-ratio phase] :or {beat-ratio 1 phase 0.0}}]
+  (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+    (let [reached (adjust-phase (rhythm/snapshot-beat-phase snapshot beat-ratio) phase)
+          intensity (adjust-phase (rhythm/snapshot-beat-phase snapshot (/ beat-ratio 2)) phase)]
+      (if (< reached 0.5)
+        intensity
+        (- 1.0 intensity)))))
 
 (defn triangle-bar
   "Returns an oscillator which generates a triangle wave relative to the phase
@@ -105,19 +116,27 @@
   the specified fraction or multiple of a bar, and supplying a phase
   will offset the oscillator from the underlying metronome phase by that
   amount."
-  ([]
-   (triangle-bar 1 0.0))
+  [& {:keys [bar-ratio phase] :or {bar-ratio 1 phase 0.0}}]
+  (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+    (let [reached (adjust-phase (rhythm/snapshot-bar-phase snapshot bar-ratio) phase)
+          intensity (adjust-phase (rhythm/snapshot-bar-phase snapshot (/ bar-ratio 2)) phase)]
+      (if (< reached 0.5)
+        intensity
+        (- 1.0 intensity)))))
 
-  ([bar-ratio]
-   (triangle-bar bar-ratio 0.0))
-
-  ([bar-ratio ^Double phase]
-   (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-     (let [reached (adjust-phase (rhythm/snapshot-bar-phase snapshot bar-ratio) phase)
-           intensity (adjust-phase (rhythm/snapshot-bar-phase snapshot (/ bar-ratio 2)) phase)]
-       (if (< reached 0.5)
-         intensity
-         (- 1.0 intensity))))))
+(defn triangle-phrase
+  "Returns an oscillator which generates a triangle wave relative to the phase
+  of the current phrase. Supplying a phrase ratio will run the oscillator at
+  the specified fraction or multiple of a phrase, and supplying a phase
+  will offset the oscillator from the underlying metronome phase by that
+  amount."
+  [& {:keys [phrase-ratio phase] :or {phrase-ratio 1 phase 0.0}}]
+  (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+    (let [reached (adjust-phase (rhythm/snapshot-phrase-phase snapshot phrase-ratio) phase)
+          intensity (adjust-phase (rhythm/snapshot-phrase-phase snapshot (/ phrase-ratio 2)) phase)]
+      (if (< reached 0.5)
+        intensity
+        (- 1.0 intensity)))))
 
 (defn square-beat
   "Returns an oscillator which generates a square wave relative to the phase
@@ -128,23 +147,14 @@
   the specified fraction or multiple of a beat, and supplying a phase
   will offset the oscillator from the underlying metronome phase by that
   amount. "
-  ([]
-   (square-beat 0.5 1 0.0))
-
-  ([^Double width]
-   (square-beat width 1 0.0))
-
-  ([^Double width beat-ratio]
-   (square-beat width beat-ratio 0.0))
-
-  ([^Double width beat-ratio ^Double phase]
-   (when-not (and (> width 0.0) (< width 1.0))
-     (throw (IllegalArgumentException. "width must fall between 0.0 and 1.0")))
-   (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-     (let [reached (adjust-phase (rhythm/snapshot-beat-phase snapshot beat-ratio) phase)]
-       (if (< reached width)
-         1.0
-         0.0)))))
+  [& {:keys [width beat-ratio phase] :or {width 0.5 beat-ratio 1 phase 0.0}}]
+  (when-not (and (> width 0.0) (< width 1.0))
+    (throw (IllegalArgumentException. "width must fall between 0.0 and 1.0")))
+  (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+    (let [reached (adjust-phase (rhythm/snapshot-beat-phase snapshot beat-ratio) phase)]
+      (if (< reached width)
+        1.0
+        0.0))))
 
 (defn square-bar
   "Returns an oscillator which generates a square wave relative to the phase
@@ -155,23 +165,32 @@
   the specified fraction or multiple of a bar, and supplying a phase
   will offset the oscillator from the underlying metronome phase by that
   amount. "
-  ([]
-   (square-bar 0.5 1 0.0))
+  [& {:keys [width bar-ratio phase] :or {width 0.5 bar-ratio 1 phase 0.0}}]
+  (when-not (and (> width 0.0) (< width 1.0))
+    (throw (IllegalArgumentException. "width must fall between 0.0 and 1.0")))
+  (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+    (let [reached (adjust-phase (rhythm/snapshot-bar-phase snapshot bar-ratio) phase)]
+      (if (< reached width)
+        0.0
+        1.0))))
 
-  ([^Double width]
-   (square-bar width 1 0.0))
-
-  ([^Double width bar-ratio]
-   (square-bar width bar-ratio 0.0))
-
-  ([^Double width bar-ratio ^Double phase]
-   (when-not (and (> width 0.0) (< width 1.0))
-     (throw (IllegalArgumentException. "width must fall between 0.0 and 1.0")))
-   (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-     (let [reached (adjust-phase (rhythm/snapshot-bar-phase snapshot bar-ratio) phase)]
-       (if (< reached width)
-         0.0
-         1.0)))))
+(defn square-phrase
+  "Returns an oscillator which generates a square wave relative to the phase
+  of the current phrase. Specifying a width adjusts how much of the time the
+  wave is on (high); the default is 0.5, lower values cause it to turn on
+  sooner, larger values later. In any case the width must be greater than
+  0.0 and less than 1.0. Supplying a phrase ratio will run the oscillator at
+  the specified fraction or multiple of a phrase, and supplying a phase
+  will offset the oscillator from the underlying metronome phase by that
+  amount. "
+  [& {:keys [width phrase-ratio phase] :or {width 0.5 phrase-ratio 1 phase 0.0}}]
+  (when-not (and (> width 0.0) (< width 1.0))
+    (throw (IllegalArgumentException. "width must fall between 0.0 and 1.0")))
+  (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+    (let [reached (adjust-phase (rhythm/snapshot-phrase-phase snapshot phrase-ratio) phase)]
+      (if (< reached width)
+        0.0
+        1.0))))
 
 (defn sine-beat
   "Returns an oscillator which generates a sine wave relative to the phase
@@ -180,17 +199,11 @@
   oscillator at the specified fraction or multiple of a beat, and supplying
   a phase will offset the oscillator from the underlying metronome phase by
   that amount. "
-  ([]
-   (sine-beat 1 0.0))
-
-  ([beat-ratio]
-   (sine-beat beat-ratio 0.0))
-
-  ([beat-ratio ^Double phase]
-   (let [adjusted-phase (- phase 0.25)
-         two-pi (* 2.0 Math/PI)]
-     (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-       (+ 0.5 (Math/sin (* two-pi (adjust-phase (rhythm/snapshot-beat-phase snapshot beat-ratio) adjusted-phase))))))))
+  [& {:keys [beat-ratio phase] :or {beat-ratio 1 phase 0.0}}]
+  (let [adjusted-phase (- phase 0.25)
+        two-pi (* 2.0 Math/PI)]
+    (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+      (+ 0.5 (Math/sin (* two-pi (adjust-phase (rhythm/snapshot-beat-phase snapshot beat-ratio) adjusted-phase)))))))
 
 (defn sine-bar
   "Returns an oscillator which generates a sine wave relative to the phase
@@ -199,14 +212,21 @@
   oscillator at the specified fraction or multiple of a bar, and supplying
   a phase will offset the oscillator from the underlying metronome phase by
   that amount. "
-  ([]
-   (sine-bar 1 0.0))
+  [& {:keys [bar-ratio phase] :or {bar-ratio 1 phase 0.0}}]
+  (let [adjusted-phase (- phase 0.25)
+        two-pi (* 2.0 Math/PI)]
+    (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+      (+ 0.5 (* 0.5 (Math/sin (* two-pi (adjust-phase (rhythm/snapshot-bar-phase snapshot bar-ratio) adjusted-phase))))))))
 
-  ([bar-ratio]
-   (sine-bar bar-ratio 0.0))
-
-  ([bar-ratio ^Double phase]
-   (let [adjusted-phase (- phase 0.25)
-         two-pi (* 2.0 Math/PI)]
-     (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-       (+ 0.5 (* 0.5 (Math/sin (* two-pi (adjust-phase (rhythm/snapshot-bar-phase snapshot bar-ratio) adjusted-phase)))))))))
+(defn sine-phrase
+  "Returns an oscillator which generates a sine wave relative to the phase
+  of the current phrase. The wave has value 1.0 at phase 0.0, dropping to 0.0
+  at phase 0.5, and returning to 1.0. Supplying a phrase ratio will run the
+  oscillator at the specified fraction or multiple of a phrase, and supplying
+  a phase will offset the oscillator from the underlying metronome phase by
+  that amount. "
+  [& {:keys [phrase-ratio phase] :or {phrase-ratio 1 phase 0.0}}]
+  (let [adjusted-phase (- phase 0.25)
+        two-pi (* 2.0 Math/PI)]
+    (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+      (+ 0.5 (* 0.5 (Math/sin (* two-pi (adjust-phase (rhythm/snapshot-phrase-phase snapshot phrase-ratio) adjusted-phase))))))))
