@@ -20,6 +20,7 @@
   "The default color to flash on beats that are not down beats."
   (colors/darken (colors/create-color :yellow) 30))
 
+;; TODO take a metronome parameter and support dynamic parameters!
 (defn metronome-cue
   "Returns an effect function which flashes the supplied fixtures to
   the beats of the show metronome, emphasizing the down beat, which is
@@ -27,8 +28,9 @@
   color of the flashes can be controlled by the :down-beat-color
   and :other-beat-color arguments (defaulting to red with lightness
   70, and yellow with lightness 20, respectively)."
-  [fixtures & {:keys [down-beat-color other-beat-color] :or {down-beat-color default-down-beat-color
-                                                             other-beat-color default-other-beat-color}}]
+  [show fixtures & {:keys [down-beat-color other-beat-color]
+                    :or {down-beat-color default-down-beat-color
+                         other-beat-color default-other-beat-color}}]
   (let [heads (find-rgb-heads fixtures)
         running (atom true)
         f (fn [show snapshot target previous-assignment]
