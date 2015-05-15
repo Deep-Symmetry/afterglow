@@ -45,10 +45,10 @@
 ;; Then can combine with a conditional dimmer setting if a color was assigned.
 (defn color-cue
   "Returns an effect which assigns a color parameter to all heads of the fixtures supplied when invoked."
-  [name c show fixtures]
-  (params/validate-param-type c :com.evocomputing.colors/color)
+  [name color show fixtures]
+  (params/validate-param-type color :com.evocomputing.colors/color)
   (let [heads (filter #(= 3 (count (filter #{:red :green :blue} (map :color (:channels %))))) (channels/expand-heads fixtures))
-        assigners (build-color-parameter-assigners heads c show)]
+        assigners (build-color-parameter-assigners heads color show)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
 (defn find-rgb-heads
