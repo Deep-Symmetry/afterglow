@@ -130,7 +130,11 @@ adding a new effect with the same key as an existing effect will replace the for
     :refresh-interval refresh-interval
     :universes (set universes)
     :next-id (atom 0)
-    :active-functions (atom {})
+    :active-functions (atom {:functions []
+                             :indices {}
+                             :keys []
+                             :priorities []
+                             :ending #{}})
     :variables (atom {})
     :fixtures (atom {})
     :task (atom nil)}))
@@ -273,7 +277,8 @@ adding a new effect with the same key as an existing effect will replace the for
     {:functions (vec-remove (:functions fns) index)
      :indices (remove-key (:indices fns) key index)
      :keys (vec-remove (:keys fns) index)
-     :priorities (vec-remove (:priorities fns) index)}
+     :priorities (vec-remove (:priorities fns) index)
+     :ending (disj (:ending fns) key)}
     fns))
 
 (defn- find-insertion-index
@@ -311,7 +316,8 @@ adding a new effect with the same key as an existing effect will replace the for
     {:functions (vec-insert (:functions base) index f)
      :indices (insert-key (:indices base) key index)
      :keys (vec-insert (:keys base) index key)
-     :priorities (vec-insert (:priorities base) index priority)}))
+     :priorities (vec-insert (:priorities base) index priority)
+     :ending (:ending base)}))
 
 (defn add-function!
   "Add an effect function or cue to the active set which are affecting
@@ -346,10 +352,13 @@ adding a new effect with the same key as an existing effect will replace the for
   ([show key]
    (end-function! show key false))
   ([show key force]
-   (let [effect (find-function show key)] 
-     (when (and effect
-                (or force (fx-util/end effect show (metro-snapshot (:metronome show)))))
-       (swap! (:active-functions show) #(remove-function-internal % (keyword key)))))))
+   (let [effect (find-function show key)
+         key (keyword key)] 
+     (if (and effect
+              (or force ((:ending @(:active-functions show)) key)
+                  (fx-util/end effect show (metro-snapshot (:metronome show)))))
+       (swap! (:active-functions show) #(remove-function-internal % key))
+       (swap! (:active-functions show) #(update-in % [:ending] conj key))))))
 
 (defn clear-functions!
   "Remove all effect functions from the active set, leading to a blackout state in all controlled
@@ -358,7 +367,8 @@ adding a new effect with the same key as an existing effect will replace the for
   (reset! (:active-functions show) {:functions [],
                                     :indices {},
                                     :keys [],
-                                    :priorities []}))
+                                    :priorities []
+                                    :ending #{}}))
 
 (defn- address-map-internal
   "Helper function which returns a map whose keys are all addresses in use in a given universe
