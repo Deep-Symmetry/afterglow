@@ -148,9 +148,10 @@ How about a nice cycling rainbow color fade?
     (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
 ```
 
-> The Wiki has
-> [more examples](https://github.com/brunchboy/afterglow/wiki/Effect-Examples)
-> of building effects, and mapping parameters to MIDI controllers.
+> The Wiki has more examples of
+> [building effects](https://github.com/brunchboy/afterglow/wiki/effect-examples), and
+> [mapping parameters](https://github.com/brunchboy/afterglow/wiki/midi-mapping-and-beat-sync)
+> to MIDI controllers.
 
 When you are all done, you can terminate the effect handler thread...
 
