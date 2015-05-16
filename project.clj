@@ -3,7 +3,7 @@
   :url "https://github.com/brunchboy/afterglow"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.7.0-beta2"]
+  :dependencies [[org.clojure/clojure "1.7.0-beta3"]
                  [org.clojure/core.cache "0.6.4"]
                  [org.clojure/tools.nrepl "0.2.10"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
@@ -25,8 +25,11 @@
              :gen {:prep-tasks ^:replace ["protobuf" "javac" "compile"]}
              :uberjar {:aot :all}}
   :plugins [[lein-ancient "0.6.5"]
-            [lein-protobuf "0.4.2"]]
+            [lein-protobuf "0.4.2" :exclusions [leinjacker]]
+            [codox "0.8.12"]]
   :aliases {"gen" ["with-profile" "+gen,+dev" "run" "-m" "afterglow.src-generator"]}
   :repl-options {:init-ns afterglow.examples
                  :welcome (println "Afterglow loaded.")}
+  :codox {:src-dir-uri "http://github.com/brunchboy/afterglow/blob/master/"
+          :src-linenum-anchor-prefix "L"}
   :min-lein-version "2.0.0")
