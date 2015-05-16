@@ -14,13 +14,13 @@ via its
 I am very rapidly fleshing this out; it has started to develop some
 really fun features, but a majority remains in my to-do lists and in
 my head. The examples are already starting to be intriguing and
-informative, but there will be more, and better documentation, very
-soon. In particular, the modeling of fixtures, channels, etc. is in an
-early form now, and there have been drastic changes as I gain
-experience with how I want to use them, and build macros and other
-tools to make them easier to define. They are starting to feel about
-right, but I need to flesh out a few more pieces before it is ready
-for a first release.
+informative, and the
+[documentation](https://github.com/brunchboy/afterglow/wiki)
+is getting substantial. But the modeling of fixtures, channels, etc.
+is in an early form now, and there have been drastic changes as I gain
+experience with how I want to use them. Things are starting to feel
+about right, but I need to flesh out a few more pieces before it is
+ready for a first release.
 
 ## Installation
 
@@ -149,9 +149,13 @@ How about a nice cycling rainbow color fade?
 ```
 
 > The Wiki has more examples of
-> [building effects](https://github.com/brunchboy/afterglow/wiki/effect-examples), and
+> [building effects](https://github.com/brunchboy/afterglow/wiki/effect-examples),
+> and
 > [mapping parameters](https://github.com/brunchboy/afterglow/wiki/midi-mapping-and-beat-sync)
-> to MIDI controllers.
+> to MIDI controllers. There is also low-level
+> [API documentation](http://deepsymmetry.org/afterglow/doc), but the
+> Wiki is the best starting point for a conceptual overview and
+> introduction.
 
 When you are all done, you can terminate the effect handler thread...
 
