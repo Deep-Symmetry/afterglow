@@ -4,13 +4,15 @@
   {:author "James Elliott"}
   (:require [afterglow.effects.color :refer [build-color-assigners
                                              find-rgb-heads]]
+            [afterglow.effects.params :as params]
             [afterglow.effects.util]
-            [afterglow.rhythm :refer [snapshot-bar-phase
-                                      snapshot-beat-phase
-                                      snapshot-down-beat?]]
+            [afterglow.rhythm :as rhythm :refer [snapshot-bar-phase
+                                                 snapshot-beat-phase
+                                                 snapshot-down-beat?]]
             [com.evocomputing.colors :as colors]
             [taoensso.timbre.profiling :refer [pspy]])
-  (:import (afterglow.effects.util Effect)))
+  (:import (afterglow.effects.util Effect)
+           (afterglow.rhythm Metronome)))
 
 (def default-down-beat-color
   "The default color to flash on the down beats."
@@ -28,26 +30,44 @@
   color of the flashes can be controlled by the :down-beat-color
   and :other-beat-color arguments (defaulting to red with lightness
   70, and yellow with lightness 20, respectively)."
-  [show fixtures & {:keys [down-beat-color other-beat-color]
+  [show fixtures & {:keys [down-beat-color other-beat-color metronome]
                     :or {down-beat-color default-down-beat-color
-                         other-beat-color default-other-beat-color}}]
-  (let [heads (find-rgb-heads fixtures)
-        running (atom true)
-        f (fn [show snapshot target previous-assignment]
-            (pspy :metronome-cue
-                  (let [raw-intensity (* 2 (- (/ 1 2) (snapshot-beat-phase snapshot 1)))
-                        intensity (if (neg? raw-intensity) 0 raw-intensity)
-                        base-color (if (snapshot-down-beat? snapshot) down-beat-color other-beat-color)]
-                    (colors/create-color {:h (colors/hue base-color)
-                                          :s (colors/saturation base-color)
-                                          :l (* (colors/lightness base-color) intensity)}))))
-        assigners (build-color-assigners heads f)]
-    (Effect. "Metronome"
-             (fn [snow snapshot]  ;; Continue running until the end of a measure
-               (or @running (< (snapshot-bar-phase snapshot) 0.9)))
-             (fn [show snapshot] assigners)
-             (fn [snow snapshot]  ;; Arrange to shut down at the end of a measure
-               (reset! running false)))))
+                         other-beat-color default-other-beat-color
+                         metronome (:metronome show)}}]
+  (let [down-beat-color (params/bind-keyword-param down-beat-color show :com.evocomputing.colors/color default-down-beat-color)
+        other-beat-color (params/bind-keyword-param other-beat-color show :com.evocomputing.colors/color default-other-beat-color)
+        metronome (params/bind-keyword-param metronome show Metronome (:metronome show))]
+    (params/validate-param-type down-beat-color :com.evocomputing.colors/color)
+    (params/validate-param-type other-beat-color :com.evocomputing.colors/color)
+    (params/validate-param-type metronome Metronome)
+    (let [heads (find-rgb-heads fixtures)
+          running (atom true)
+          ;; Need to use the show metronome as a snapshot to resolve our metronome parameter first
+          metronome (params/resolve-param metronome show (rhythm/metro-snapshot (:metronome show)))
+          snapshot (rhythm/metro-snapshot metronome)
+          down-beat-color (params/resolve-unless-frame-dynamic down-beat-color show snapshot)
+          other-beat-color (params/resolve-unless-frame-dynamic other-beat-color show snapshot)
+          local-snapshot (atom nil)  ; Need to set up a snapshot at start of each run for all assigners
+          f (fn [show snapshot target previous-assignment]
+              (pspy :metronome-cue
+                    (let [raw-intensity (* 2 (- (/ 1 2) (snapshot-beat-phase @local-snapshot 1)))
+                          intensity (if (neg? raw-intensity) 0 raw-intensity)
+                          base-color (if (snapshot-down-beat? @local-snapshot)
+                                       (params/resolve-param down-beat-color show @local-snapshot)
+                                       (params/resolve-param other-beat-color show @local-snapshot))]
+                      (colors/create-color {:h (colors/hue base-color)
+                                            :s (colors/saturation base-color)
+                                            :l (* (colors/lightness base-color) intensity)}))))
+          assigners (build-color-assigners heads f)]
+      (Effect. "Metronome"
+               (fn [snow snapshot]  ;; Continue running until the end of a measure
+                 ;; Also need to set up the local snapshot based on our private metronome
+                 ;; for the assigners to use.
+                 (reset! local-snapshot (rhythm/metro-snapshot metronome))
+                 (or @running (< (snapshot-bar-phase @local-snapshot) 0.9)))
+               (fn [show snapshot] assigners)
+               (fn [snow snapshot]  ;; Arrange to shut down at the end of a measure
+                 (reset! running false))))))
 
 ;; TODO add off-beat-penalty that slopes the chance downwards as the beat passes,
 ;; same for off-bar-penalty, so can prioritize beats and bars, perhaps pass an oscillator

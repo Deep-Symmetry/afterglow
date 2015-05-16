@@ -200,7 +200,7 @@
           (resolve-non-frame-dynamic-elements [this show snapshot]  ; Nothing to resolve, return self
             this))))))
 
-(defn- bind-keyword-param-internal
+(defn bind-keyword-param-internal
   "If an input to a dynamic parameter has been passed as a keyword,
   treat that as a reference to a show variable. If that variable
   currently holds a dynamic parameter, try to bind it directly (throw

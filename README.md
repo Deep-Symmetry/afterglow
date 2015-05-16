@@ -188,7 +188,9 @@ TODO: listing of options this app accepts once it can run as a standalone app.
 - [x] Improve Oscillators
   - [x] Use keyword parameters
   - [x] Add phrase oscillators
-  - [x] Finish Wiki page
+  - [x] Finish wiki page
+- [x] Have metronome cue take metronome parameter and support dynamic
+  parameters.
 - [ ] See if I can get Traktor to just send beat notes for master
   track; if so, add mode for MIDI sync to ride them like DJ link
   - [ ] See example on page 166 of Traktor Bible; it is close, but I
