@@ -20,8 +20,8 @@
   :prep-tasks [["with-profile" "+gen,+dev" "run" "-m" "afterglow.src-generator"] "protobuf" "javac" "compile"]
   :main afterglow.core
   :target-path "target/%s"
-  :profiles {:dev {:source-paths ["src" "dev_src" "target/generated"]
-                   :resource-paths ["resources" "dev_resources"]}
+  :profiles {:dev {:source-paths ["dev_src"]
+                   :resource-paths ["dev_resources"]}
              :gen {:prep-tasks ^:replace ["protobuf" "javac" "compile"]}
              :uberjar {:aot :all}}
   :plugins [[lein-ancient "0.6.5"]
