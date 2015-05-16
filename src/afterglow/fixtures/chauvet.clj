@@ -1,10 +1,14 @@
 (ns afterglow.fixtures.chauvet
-  "Models for fixtures provided by Chauvet Lighting."
+  "Models for fixtures provided by [Chauvet Lighting](http://www.chauvetlighting.com)."
+  {:doc/format :markdown}
   (:require [afterglow.channels :as chan]))
 
 ;; TODO functions for rotational tranformatons
 
 (defn slimpar-hex3-irc
+  "[SlimPAR HEX 3 IRC](http://www.chauvetlighting.com/slimpar-hex3irc.html)
+  six-color low-profile LED PAR."
+  {:doc/format :markdown}
   ([]
    (slimpar-hex3-irc :12-channel))
   ([mode & {:keys [mix-amber mix-uv] :or {mix-amber true mix-uv true}}]

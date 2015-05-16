@@ -3,15 +3,16 @@
   packets on the local network, such as Pioneer Nexus mixers and players.
   This is purely experimental and based on network traffic capture, but
   unless they change the protocol, it works really well, providing rock
-  solid BPM and measure-phase tracking."
+  solid BPM, beat, and measure-phase tracking."
   (:require [afterglow.midi :refer [IClockSync sync-start sync-stop sync-status]]
             [afterglow.rhythm :refer :all]
             [afterglow.util :refer [unsign]]
             [overtone.at-at :refer [now]])
   (:import [java.net InetAddress DatagramPacket DatagramSocket]))
 
-;; The UDP port on which BPM and beat packets are broadcast
-(def port 50001)
+(def port
+  "The UDP port on which BPM and beat packets are broadcast."
+  50001)
 
 (defn- receive
   "Block until a UDP message is received on the given DatagramSocket, and
@@ -24,7 +25,8 @@
 
 ;; A simple object which holds the UDP server for receiving DJ Link packets,
 ;; and tying them to the metronome driving the timing of a light show.
-(defrecord UDPSync [metronome target-name socket watcher packet-count sync-count last-sync]
+(defrecord UDPSync
+ [metronome target-name socket watcher packet-count sync-count last-sync]
   IClockSync
   (sync-start [this]
     (swap! socket (fn [s]
@@ -75,6 +77,10 @@
                (zero? @sync-count)           (str "Configuration problem? No DJ Link beat packets received from " target-name ".")
                (> (- (now) @last-sync) 1000) (str "Stalled? No sync packets received in " (- (now) @last-sync) "ms.")
                :else                         (str "Running. " @sync-count " beats received."))}))
+
+;; Suppress uninformative auto-generated documentation entries.
+(alter-meta! #'->UDPSync assoc :no-doc true)
+(alter-meta! #'map->UDPSync assoc :no-doc true)
 
 (defn sync-to-dj-link
   "Returns a sync function that will cause the beats-per-minute

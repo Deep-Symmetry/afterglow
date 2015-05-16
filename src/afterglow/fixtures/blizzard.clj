@@ -1,10 +1,15 @@
 (ns afterglow.fixtures.blizzard
-  "Models for fixtures provided by Blizzard Lighting"
+  "Models for fixtures provided by [Blizzard
+  Lighting](http://www.blizzardlighting.com)."
+  {:doc/format :markdown}
   (:require [afterglow.channels :as chan]))
 
 ;; TODO functions for rotational tranformatons
 
 (defn blade-rgbw
+  "[Blade RGBW](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&layout=item&id=177&Itemid=157)
+  moving head."
+  {:doc/format :markdown}
   ([]
    (blade-rgbw :15-channel))
   ([mode]
@@ -26,6 +31,9 @@
   {:channels [(chan/color (+ 2 (* 3 index)) :red) (chan/color (+ 3 (* 3 index)) :green) (chan/color (+ 4 (* 3 index)) :blue)]})
 
 (defn weather-system
+  "[Weather System](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&layout=item&id=173&Itemid=152)
+  8-fixture LED bar."
+  {:doc/format :markdown}
   ([]
    (weather-system :26-channel))
   ([mode]

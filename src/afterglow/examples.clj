@@ -1,6 +1,6 @@
 (ns afterglow.examples
-  "Show some simple ways to use Afterglow, inspire exploration."
-  {:author "James Elliott"}
+  "Show some simple ways to use Afterglow, and hopefully inspire
+  exploration." {:author "James Elliott"}
   (:require [afterglow.effects.color :refer [color-cue]]
             [afterglow.effects.dimmer :refer [dimmer-cue
                                               dimmer-oscillator]]
@@ -31,8 +31,9 @@
  [:shared-appender-config :rotor]
  {:path "logs/afterglow.log" :max-size 100000 :backlog 5})
 
-;; Create a show that runs on DMX universe 1, for demonstration purposes.
-(defonce sample-show (show/show 1))
+;; Create a show that runs on OLA universe 1, for demonstration purposes.
+(defonce ^{:doc "An example show which controls only the OLA universe with ID 1."}
+  sample-show (show/show 1))
 
 ;; Throw a couple of fixtures in there to play with. For better fun, use
 ;; fixtures and addresses that correspond to your actual hardware.
@@ -41,7 +42,9 @@
 (show/patch-fixture! sample-show :ws-1 (blizzard/weather-system) 1 161)
 
 (defn global-color-cue
-  "Make a fixed color cue which affects all lights in the sample rig."
+  "Make a color cue which affects all lights in the sample show. This
+  became vastly more useful once I implemented dynamic color
+  parameters."
   [color]
   (try
     (let [[c desc] (cond (= (type color) :com.evocomputing.colors/color)
@@ -54,10 +57,16 @@
     (catch Exception e
       (throw (Exception. (str "Can't figure out how to create color from " color) e)))))
 
-(def blue-cue (global-color-cue "slateblue"))
+(def blue-cue
+  "An effect which assigns all fixtures to a nice blue color."
+  (global-color-cue "slateblue"))
 
 (defn master-cue
-  "Return an effect function that sets all the dimmers in the sample rig to a fixed value."
+  "Return an effect function that sets all the dimmers in the sample
+  rig. Originally this had to be to a static value, but now that
+  dynamic parameters exist, it can vary in response to a MIDI mapped
+  show variable, an oscillator, or (once geometry is implemented), the
+  location of the fixture."
   [level]
   (dimmer-cue level sample-show (show/all-fixtures sample-show)))
 
@@ -73,10 +82,10 @@
 ;; given keyword will still be in effect), uncomment or evaluate the next line:
 ;; (show/start! sample-show)
 
-;; This is for testing the enhance multi-beat and fractional-beat phase calculations I am implementing;
-;; it should probably more somewhere else, or just go away once there are example effects successfully
-;; using these.
-(defn test-phases
+(defn ^:deprecated test-phases
+  "This is for testing the enhanced multi-beat and fractional-beat phase calculations I am implementing;
+  it should probably more somewhere else, or just go away once there are example effects successfully
+  using these."
   ([]
    (test-phases 20))
   ([iterations]
