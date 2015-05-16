@@ -191,6 +191,23 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   - [x] Finish wiki page
 - [x] Have metronome cue take metronome parameter and support dynamic
   parameters.
+- [ ] Sparkle effect, essentially a particle generator with configurable maximum brightness, fade time, distribution.
+  - [x] Get basic effect working until spatial features are available.
+  - [ ] Work both with arbitrary head list, and with spatially mapped origin/density.
+  - [ ] Work as single intensity, or spatially mapped hue/saturation patterns.
+- [ ] Implement a grand master dimmer in the show which imposes a ceiling on all dimmer cues.
+  - [ ] Also allow custom sub-master dimmer variables, chained off
+    each other and ultimately the grand master, assigned to cues. Each
+    step can scale the output.
+  - [ ] All dimmer cues are assigned a master chain, defaulting to the
+    grand master if none supplied.
+- [ ] Compound effects: Have effect functions pass a context map to
+    children with show, snapshot, own stuff? For example, so the
+    children can be aware of build, duration, a shared palette, other
+    things?
+- [ ] Provide a mechanism for creating and controlling/monitoring
+  effects via OSC messages. Probably essentially a special-purpose OSC
+  REPL.
 - [ ] See if I can get Traktor to just send beat notes for master
   track; if so, add mode for MIDI sync to ride them like DJ link
   - [ ] See example on page 166 of Traktor Bible; it is close, but I
@@ -199,6 +216,8 @@ TODO: listing of options this app accepts once it can run as a standalone app.
     author for advice? Alternately, send separate messages when each
     deck is set as the tempo master, and use those to keep track of
     which beat pulses to pay attention to?
+- [ ] See if I can detect which Pro DJ Link device is the current
+  master, and if so, add an option for down beat tracking using that.
   
 ### Ideas
 
@@ -209,7 +228,6 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   - [ ] Or [this one](http://inside.mines.edu/fs_home/gmurray/ArbitraryAxisRotation/) which is already Java but seems to only perform, not calculate, rotations.
   - [ ] Use iOS device to help determine orientation of fixture: Hold phone upright facing stage from audience perspective to set reference attitude; move to match a landmark on the fixture (documented in the fixture definition), and have phone use [CoreMotion](https://developer.apple.com/library/ios/documentation/CoreMotion/Reference/CMAttitude_Class/index.html#//apple_ref/occ/instm/CMAttitude/multiplyByInverseOfAttitude:) `CMAttitude` `multiplyByInverseOfAttitude` to determine the difference.
   - [ ] The more I investigate, the more it looks like [Java3D’s](http://docs.oracle.com/cd/E17802_01/j2se/javase/technologies/desktop/java3d/forDevelopers/J3D_1_3_API/j3dapi/) [Transform3D](http://docs.oracle.com/cd/E17802_01/j2se/javase/technologies/desktop/java3d/forDevelopers/J3D_1_3_API/j3dapi/javax/media/j3d/Transform3D.html) object is going to handle it for me, which is very convenient, as it is already available in Clojure. To combine transformations, just multiply them together (with the `mul` method).
-- [ ] Sparkle effect, essentially a particle generator with configurable maximum brightness, fade time, distribution. Work both with arbitrary channel list, and with spatially mapped origin/density; as single intensity, or spatially mapped hue/saturation patterns.
 - [ ] Use [claypoole](https://clojars.org/com.climate/claypoole) for parallelism.
 - [ ] Add OSC support (probably using [Overtone&rsquo;s implementation](https://github.com/rosejn/osc-clj)) for controller support, and MIDI as well.
 - [ ] Serious references for color manipulation, but in [Julia](https://github.com/timholy/Color.jl).

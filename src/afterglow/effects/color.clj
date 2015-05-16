@@ -12,6 +12,19 @@
             [taoensso.timbre.profiling :refer [pspy]])
   (:import (afterglow.effects.util Assigner Effect)))
 
+(defn htp-merge
+  "Helper function for assigners that want to use
+  highest-takes-priority blending for RGB colors. Returns a color
+  that contains the highest red component from the two input colors,
+  the highest green component, and the highest blue component."
+  [previous current]
+  (if (some? previous)
+    (let [red (max (colors/red previous) (colors/red current))
+          green (max (colors/green previous) (colors/green current))
+          blue (max (colors/blue previous) (colors/blue current))]
+      (colors/create-color :r red :g green :b blue))
+    current))
+
 (defn build-color-assigner
   "Returns an assigner which applies the specified assignment function
   to the supplied head or fixture."

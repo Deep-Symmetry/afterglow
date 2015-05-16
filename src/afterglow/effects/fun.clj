@@ -2,7 +2,9 @@
   "A collection of neat effects that are both useful in shows, and
   examples of how to create such things."
   {:author "James Elliott"}
-  (:require [afterglow.effects.color :refer [build-color-assigners
+  (:require [afterglow.effects.color :refer [build-color-assigner
+                                             build-color-assigners
+                                             htp-merge
                                              find-rgb-heads]]
             [afterglow.effects.params :as params]
             [afterglow.effects.util]
@@ -69,12 +71,68 @@
                (fn [snow snapshot]  ;; Arrange to shut down at the end of a measure
                  (reset! running false))))))
 
+(def default-sparkle-color
+  "The default color for the sparkle effect."
+  (colors/create-color "white"))
+
+(defn- remove-finished-sparkles
+  "Filters out any sparkles that were created longer ago than the fade time.
+  sparkles is a map from head to the timestamp at which the sparkle was created."
+  [sparkles show snapshot fade-time]
+  (pspy :remove-finished-sparkles
+        (let [now (:instant snapshot)]
+          (reduce
+           (fn [result [head creation-time]]
+             (let [fade-time (params/resolve-param fade-time show snapshot head)]
+               (if (< (- now creation-time) fade-time)
+                 (assoc result head creation-time)
+                 result)))
+           {}
+           sparkles))))
+
 ;; TODO add off-beat-penalty that slopes the chance downwards as the beat passes,
 ;; same for off-bar-penalty, so can prioritize beats and bars, perhaps pass an oscillator
-;; so they can be scaled in time too. Eventually allow randomization of dwell and perhaps
+;; so they can be scaled in time too. Eventually allow randomization of fade time and perhaps
 ;; hue and peak brightness, with control over how much they vary?
 (defn sparkle
   "A random sparkling effect like a particle generator over the supplied fixture heads."
-  [fixtures & {:keys [color chance dwell]}]
-  )
-
+  [show fixtures & {:keys [color chance fade-time] :or {color default-sparkle-color chance 0.001 fade-time 500}}]
+  (let [color (params/bind-keyword-param color show :com.evocomputing.colors/color default-sparkle-color)
+        chance (params/bind-keyword-param chance show Number 0.001)
+        fade-time (params/bind-keyword-param fade-time show Number 500)]
+    (params/validate-param-type color :com.evocomputing.colors/color)
+    (params/validate-param-type chance Number)
+    (params/validate-param-type fade-time Number)
+    (let [heads (find-rgb-heads fixtures)
+          running (atom true)
+          sparkles (atom {})  ; Currently a map from head ID to creation timestamp for active sparkles
+          snapshot (rhythm/metro-snapshot (:metronome show))
+          color (params/resolve-unless-frame-dynamic color show snapshot)
+          chance (params/resolve-unless-frame-dynamic chance show snapshot)
+          fade-time (params/resolve-unless-frame-dynamic fade-time show snapshot)]
+      (Effect. "Sparkle"
+              (fn [show snapshot]
+                ;; Continue running until all existing sparkles fade
+                (swap! sparkles remove-finished-sparkles show snapshot fade-time)
+                (or @running (seq @sparkles)))
+              (fn [show snapshot]
+                (pspy :sparkle
+                      ;; See if we create any new sparkles (unless we've been asked to end).
+                      (when @running
+                        (doseq [head heads]
+                          (let [chance (params/resolve-param chance show snapshot head)]
+                            (when (< (rand) chance)
+                              (swap! sparkles assoc head (:instant snapshot))))))
+                      ;; Build assigners for all active sparkles.
+                      (let [fade-time (params/resolve-unless-frame-dynamic fade-time show snapshot)
+                            now (:instant snapshot)]
+                        (for [[head creation-time] @sparkles]
+                          (let [color (params/resolve-param color show snapshot head)
+                                fraction (/ (- now creation-time) fade-time)
+                                faded (colors/darken color (* fraction (colors/lightness color)))]
+                            (build-color-assigner head (fn [show snapshot target previous-assignment]
+                                                         (htp-merge (params/resolve-param previous-assignment show snapshot head)
+                                                                    faded))))))))
+              (fn [show snapshot]
+                ;; Arrange to shut down once all existing sparkles fade out.
+                (reset! running false))))))
