@@ -178,6 +178,26 @@ TODO: listing of options this app accepts once it can run as a standalone app.
 
 ...
 
+### Tasks
+
+- [x] Sync metronomes to MIDI
+- [x] Add metronome chase for clear sync testing
+- [x] Allow parameterized effects functions
+- [x] Start wiki
+- [x] Allow metronomes to be show variables
+- [x] Improve Oscillators
+  - [x] Use keyword parameters
+  - [x] Add phrase oscillators
+  - [x] Finish Wiki page
+- [ ] See if I can get Traktor to just send beat notes for master
+  track; if so, add mode for MIDI sync to ride them like DJ link
+  - [ ] See example on page 166 of Traktor Bible; it is close, but I
+    want to add a condition that makes sure these pulses are sent only
+    for the deck which is currently the tempo master. Write to the
+    author for advice? Alternately, send separate messages when each
+    deck is set as the tempo master, and use those to keep track of
+    which beat pulses to pay attention to?
+  
 ### Ideas
 
 - [ ] Model moving head location and position, so they can be panned and aimed in a coordinated way.
