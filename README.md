@@ -79,7 +79,7 @@ of blue light. Realistically, you can be able to navigate to the
 the non-zero DMX values in the blue and dimmer channels, assuming you
 have set up a Universe with ID 1.
     
-We can set the lights a little dimmer...
+We can make the lights a little dimmer...
 
 ```clojure
 (show/add-function! sample-show :master (master-cue 200))
@@ -87,6 +87,22 @@ We can set the lights a little dimmer...
 
 > Adding a function with the same keyword as an existing function
 > replaces the old one. The dimmer channels drop from 255 to 200.
+
+But for dimmer channels, there is an even better way of doing that:
+
+```clojure
+(master-set-level (:grand-master sample-show) 80)
+```
+
+> All cues which set dimmer levels are tied to a dimmer master chain.
+> If none is specified when creating the cue, they are tied directly
+> to the show's dimmer grand master. Setting this to a value less than
+> 100 scales the dimmer values sent to the lights down by that amount.
+> So the above command dims the lights to 80% of their possible
+> brightness, no matter what else the cues are trying to do. This is
+> such a useful feature that you will almost always want a fader on a
+> MIDI controller mapped to the grand master, which is the default
+> target of `show/add-midi-control-to-master-mapping`.
     
 Change the color to orange:
 

@@ -2,8 +2,7 @@
   "Show some simple ways to use Afterglow, and hopefully inspire
   exploration." {:author "James Elliott"}
   (:require [afterglow.effects.color :refer [color-cue]]
-            [afterglow.effects.dimmer :refer [dimmer-cue
-                                              dimmer-oscillator]]
+            [afterglow.effects.dimmer :refer [dimmer-cue dimmer-oscillator master-set-level]]
             [afterglow.effects.fun :as fun]
             [afterglow.effects.oscillators :as oscillators]
             [afterglow.effects.params :as params]
