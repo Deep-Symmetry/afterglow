@@ -231,7 +231,7 @@ adding a new effect with the same key as an existing effect will replace the for
 (defn remove-midi-control-to-master-mapping
   "Cease updating the specified show variable when the specified MIDI
   controller-change messages are received."
-  [show midi-device-name channel control-number master]
+  [show midi-device-name channel control-number & {:keys [master] :or {master (:grand-master show)}}]
   (let [bound (bind-keyword-param master show Master (:grand-master show))
         master (resolve-param bound show (metro-snapshot (:metronome show)))]
     (midi/remove-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":master" (.hashCode master)))))
