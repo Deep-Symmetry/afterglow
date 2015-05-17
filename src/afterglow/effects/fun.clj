@@ -128,6 +128,7 @@
                             now (:instant snapshot)]
                         (for [[head creation-time] @sparkles]
                           (let [color (params/resolve-param color show snapshot head)
+                                fade-time (max 10 (params/resolve-param fade-time show snapshot head))
                                 fraction (/ (- now creation-time) fade-time)
                                 faded (colors/darken color (* fraction (colors/lightness color)))]
                             (build-color-assigner head (fn [show snapshot target previous-assignment]

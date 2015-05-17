@@ -4,6 +4,7 @@
   (:require [afterglow.effects.color :refer [color-cue]]
             [afterglow.effects.dimmer :refer [dimmer-cue
                                               dimmer-oscillator]]
+            [afterglow.effects.fun :as fun]
             [afterglow.effects.oscillators :as oscillators]
             [afterglow.effects.params :as params]
             [afterglow.fixtures.blizzard :as blizzard]
@@ -82,10 +83,42 @@
 ;; given keyword will still be in effect), uncomment or evaluate the next line:
 ;; (show/start! sample-show)
 
+(defn sparkle-test
+  "Set up a sedate rainbow fade and then layer on a sparkle effect to test
+  effect mixing."
+  []
+  (let [hue-param (params/build-oscillated-param
+                   sample-show (oscillators/sawtooth-phrase) :max 360)]
+    (show/add-function! sample-show :color
+                        (global-color-cue
+                         (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
+    (show/add-function! sample-show :sparkle
+                        (fun/sparkle sample-show (show/all-fixtures sample-show) :chance 0.05 :fade-time 50))))
+
+(defn mapped-sparkle-test
+  "A verion of the sparkle test that creates a bunch of MIDI-mapped
+  show variables to adjust parameters while it runs."
+  []
+  (show/add-midi-control-to-var-mapping sample-show "Slider" 0 16 :sparkle-hue :max 360)
+  (show/add-midi-control-to-var-mapping sample-show "Slider" 0 0 :sparkle-lightness :max 100.0)
+  (show/add-midi-control-to-var-mapping sample-show "Slider" 0 17 :sparkle-fade :min 10 :max 2000)
+  (show/add-midi-control-to-var-mapping sample-show "Slider" 0 1 :sparkle-chance :max 0.3)
+  (let [hue-param (params/build-oscillated-param
+                   sample-show (oscillators/sawtooth-phrase) :max 360)
+        sparkle-color-param (params/build-color-param sample-show :s 100 :l :sparkle-lightness :h :sparkle-hue)]
+    (show/add-function! sample-show :color
+                        (global-color-cue
+                         (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
+    (show/add-function! sample-show :sparkle
+                        (fun/sparkle sample-show (show/all-fixtures sample-show)
+                                     :color sparkle-color-param
+                                     :chance :sparkle-chance :fade-time :sparkle-fade))))
+
 (defn ^:deprecated test-phases
-  "This is for testing the enhanced multi-beat and fractional-beat phase calculations I am implementing;
-  it should probably more somewhere else, or just go away once there are example effects successfully
-  using these."
+  "This is for testing the enhanced multi-beat and fractional-beat
+  phase calculations I am implementing; it should probably more
+  somewhere else, or just go away once there are example effects
+  successfully using these."
   ([]
    (test-phases 20))
   ([iterations]
