@@ -39,7 +39,7 @@
 ;; fixtures and addresses that correspond to your actual hardware.
 (show/patch-fixture! sample-show :hex-1 (chauvet/slimpar-hex3-irc) 1 129)
 (show/patch-fixture! sample-show :blade-1 (blizzard/blade-rgbw) 1 270)
-(show/patch-fixture! sample-show :ws-1 (blizzard/weather-system) 1 161)
+(show/patch-fixture! sample-show :ws-1 (blizzard/weather-system) 1 161 :x 1.0 :y 1.5)
 
 (defn global-color-cue
   "Make a color cue which affects all lights in the sample show. This

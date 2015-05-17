@@ -24,11 +24,15 @@
           :name "Blizzard Blade RGBW"
           :mode mode)))
 
+(def ^:private ws-head-offsets
+  "The X-axis positions of the eight weather system heads"
+  [-0.406 -0.305 -0.191 -0.083 0.083 0.191 0.305 0.406])
 
 (defn- ws-head
   "Creates a head definition for one head of the Weather System"
   [index]
-  {:channels [(chan/color (+ 2 (* 3 index)) :red) (chan/color (+ 3 (* 3 index)) :green) (chan/color (+ 4 (* 3 index)) :blue)]})
+  {:channels [(chan/color (+ 2 (* 3 index)) :red) (chan/color (+ 3 (* 3 index)) :green) (chan/color (+ 4 (* 3 index)) :blue)]
+   :x (get ws-head-offsets index)})
 
 (defn weather-system
   "[Weather System](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&layout=item&id=173&Itemid=152)

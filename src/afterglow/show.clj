@@ -451,11 +451,14 @@ adding a new effect with the same key as an existing effect will replace the for
 
 (defn patch-fixture!
   "Patch a fixture to a universe in the show at a starting DMX channel."
-  [show key fixture universe start-address]
+  [show key fixture universe start-address & {:keys [x y z x-rotation y-rotation z-rotation]
+                                              :or {x 0.0 y 0.0 z 0.0 x-rotation 0.0 y-rotation 0.0 z-rotation 0.0}}]
   (when-not (contains? (:universes show) universe)
     (throw (IllegalArgumentException. (str "Show does not contain universe " universe))))
-  (swap! (:fixtures show) #(patch-fixture-internal show % (keyword key) (chan/patch-fixture fixture universe start-address
-                                                                                            (fn [] (next-id show))))))
+  (let [positioned (afterglow.transform/transform-fixture fixture x y z x-rotation y-rotation z-rotation)]
+    (swap! (:fixtures show) #(patch-fixture-internal show % (keyword key)
+                                                     (chan/patch-fixture positioned universe start-address
+                                                                         (fn [] (next-id show)))))))
 
 (defn patch-fixture-group!
   "Patch a fixture group to a universe in the show at a starting DMX channel.

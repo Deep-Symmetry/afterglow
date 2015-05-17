@@ -210,7 +210,11 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   - [x] Finish wiki page
 - [x] Have metronome cue take metronome parameter and support dynamic
   parameters.
-- [ ] Sparkle effect, essentially a particle generator with configurable maximum brightness, fade time, distribution.
+- [ ] Consider having patched fixture hold a reference to the show.
+  That way we could stop having to pass it so many places, though it
+  would make printing fixtures less useful.
+- [ ] Sparkle effect, essentially a particle generator with
+  configurable maximum brightness, fade time, distribution.
   - [x] Get basic effect working until spatial features are available.
   - [ ] Work both with arbitrary head list, and with spatially mapped origin/density.
   - [ ] Work as single intensity, or spatially mapped hue/saturation patterns.
