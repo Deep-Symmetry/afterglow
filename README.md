@@ -99,10 +99,9 @@ But for dimmer channels, there is an even better way of doing that:
 > to the show's dimmer grand master. Setting this to a value less than
 > 100 scales the dimmer values sent to the lights down by that amount.
 > So the above command dims the lights to 80% of their possible
-> brightness, no matter what else the cues are trying to do. This is
-> such a useful feature that you will almost always want a fader on a
-> MIDI controller mapped to the grand master, which is the default
-> target of `show/add-midi-control-to-master-mapping`.
+> brightness, no matter what else the cues are trying to do. See the
+> [dimmer effects API documentation](http://deepsymmetry.org/afterglow/doc/afterglow.effects.dimmer.html)
+> for more details.
     
 Change the color to orange:
 

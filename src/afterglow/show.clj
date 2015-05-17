@@ -206,8 +206,8 @@ adding a new effect with the same key as an existing effect will replace the for
   "Cause the specified dimmer master to be updated by any MIDI
   controller-change messages from the specified device sent on the
   specified channel and controller number. If min and/or max are
-  specified, the normal MIDI range from 0 to 127 will be mapped to the
-  supplied range instead, but both must be valid percentages (in the
+  specified, they will be used instead of the normal master range of 0
+  to 100. If given, both min and max must be valid percentages (in the
   range 0 to 100). If no master is supplied, the show's grand master
   is bound. If master is a keyword, it is resolved as a show variable
   containing a dimmer master."

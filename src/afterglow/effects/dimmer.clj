@@ -1,14 +1,31 @@
 (ns afterglow.effects.dimmer
   "Effects pipeline functions for working with dimmer channels for
-  fixtures and heads. Some fixtures have damping functions that slow
-  down their dimmer response, so you may not get the kind of
-  coordination you would like from dimmer-oscillator cues. The
-  recommended best practice is to use the dimmer channels as a master
-  dimmer level to allow tweaking the overall brightness of the show,
-  or a set of fixtures, probably tied to a fader on your controller,
-  and using the lightness attribute of a color cue to create
-  time-varying brightness effects."
-  {:author "James Elliott"}
+  fixtures and heads. Dimmer cues are always tied to a _master_
+  chain, which can scale back the maximum allowable value for that
+  dimmer channel, as a percentage. Unless otherwise specified, the
+  dimmer cue will be attached to the show grand master, but you can
+  create other masters to adjust the brightness of groups of fixtures,
+  perhaps because they are intrinsically brighter, or to adjust the
+  balance of lighting for artistic reasons. Secondary masters can be
+  chained to each other, and are always chained to the show grand
+  master, so turning that down will dim the entire show; setting it to
+  zero will black out the show.
+
+  This master scaling capability is so useful that you will almost
+  always want a prominent fader on a MIDI controller tied to the show
+  grand master, and possibly others to secondary masters.
+  [[show/add-midi-control-to-master-mapping]] makes that easy,
+  especially for the grand master, and for submasters stored in show
+  variables, which can be referred to by their keywords.
+
+  Some fixtures have damping functions that slow down their dimmer
+  response, so you may not get the kind of coordination you would like
+  from dimmer-oscillator cues. The recommended best practice is to use
+  the dimmer channels as a maximum brightness level to allow tweaking
+  the overall brightness of an effect, and using the lightness
+  attribute of a color cue to create time-varying brightness effects."
+  {:author "James Elliott"
+   :doc/format :markdown}
   (:require [afterglow.channels :as channels]
             [afterglow.effects.channel :as chan-fx]
             [afterglow.effects.params :as params]
@@ -117,6 +134,7 @@
   because that can be handled by channels with an associated fine
   channel (commonly pan and tilt), and will be resolved in the process
   of assigning the value to the DMX channels."
+  {:deprecated true}
   [osc fixtures & {:keys [min max htp?] :or {min 0 max 255 htp? true}}]
   (fx-util/validate-dmx-value min)
   (fx-util/validate-dmx-value max)
