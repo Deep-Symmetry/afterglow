@@ -36,9 +36,10 @@
   supplied channels. If htp? is true, applies
   highest-takes-precedence (i.e. compares the value to the previous
   assignment for the channel, and lets the highest value remain)."
-  [name level channels htp?]
+  [name level channels & {:keys [htp?]}]
   (let [f (if htp?
-            (fn [show snapshot target previous-assignment] (max level (or previous-assignment 0)))
+            (fn [show snapshot target previous-assignment]
+              (max level (or (params/resolve-param previous-assignment show snapshot) 0)))
             (fn [show snapshot target previous-assignment] level))
         assigners (build-channel-assigners channels f)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
@@ -48,11 +49,13 @@
   channels. If htp? is true, applies highest-takes-precedence (i.e.
   compares the value to the previous assignment for the channel, and
   lets the highest value remain)."
-  [name level channels htp?]
+  [name level channels & {:keys [htp?]}]
   (let [f (if htp?
-            (fn [show snapshot target previous-assignment] (max (clamp-rgb-int (params/resolve-param level show snapshot))
-                                                                (or previous-assignment 0)))
-            (fn [show snapshot target previous-assignment] (clamp-rgb-int (params/resolve-param level show snapshot))))
+            (fn [show snapshot target previous-assignment]
+              (max (clamp-rgb-int (params/resolve-param level show snapshot))
+                   (or (params/resolve-param previous-assignment show snapshot) 0)))
+            (fn [show snapshot target previous-assignment]
+              (clamp-rgb-int (params/resolve-param level show snapshot))))
         assigners (build-channel-assigners channels f)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 

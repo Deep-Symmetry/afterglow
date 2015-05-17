@@ -12,9 +12,13 @@
   (:require [afterglow.channels :as channels]
             [afterglow.effects.channel :as chan-fx]
             [afterglow.effects.params :as params]
-            [afterglow.effects.util :as fx-util]
+            [afterglow.effects.util :as fx-util :refer [always-active
+                                                        end-immediately]]
             [afterglow.rhythm :refer [metro-snapshot]]
-            [taoensso.timbre.profiling :refer [pspy]]))
+            [com.evocomputing.colors :refer [clamp-percent-float
+                                             clamp-rgb-int]]
+            [taoensso.timbre.profiling :refer [pspy]])
+  (:import (afterglow.effects.util Effect)))
 
 (defn- assign-level
   "Assigns a dimmer level to the channel."
@@ -33,18 +37,74 @@
   (let [heads (channels/extract-heads-with-some-matching-channel fixtures dimmer-channel?)]
     (channels/extract-channels heads dimmer-channel?)))
 
+(defprotocol IDimmerMaster
+  "A chainable limiter of dimmer cues."
+  (master-set-level [master new-level]
+    "Set the level of this master, as a percentage from 0 to 100. Any
+    value less than 100 will cause the dimmer cues attached to this
+    master to have their levels scaled back by that amount. If there
+    are any parent masters attached to this one, they may further
+    scale back the value in turn.")
+  (master-scale [master value]
+    "Scale down the value being sent to a dimmer according to this
+    master level, and any parent masters associated with it."))
+
+(defrecord Master [level parent]
+  IDimmerMaster
+  (master-set-level [master new-level]
+    (reset! level (clamp-percent-float new-level)))
+  (master-scale [master value]
+    (let [scaled (* value (/ @level 100))]
+      (if (some? parent)
+        (master-scale parent scaled)
+        scaled))))
+
+(defn master
+  "Create a master for scaling dimmer cues. If you set its level to
+  less than 100 (interpreted as a percentage), all dimmer cues created
+  with this master will be scaled back appropriately. If you supply a
+  parent master, it will get a chance to scale them back as well. If
+  you don't, the show's grand master is used as the parent master."
+  [show & {:keys [level parent] :or {level 100 parent (:grand-master show)}}]
+  (let [initial-level (atom (clamp-percent-float level))]
+    (Master. initial-level parent)))
+
+(defn- build-parameterized-dimmer-cue
+  "Returns an effect which assigns a dynamic value to all the supplied
+  dimmers. If htp? is true, applies highest-takes-precedence (i.e.
+  compares the value to the previous assignment for the channel, and
+  lets the highest value remain). All dimmer cues are associated with
+  a master chain which can scale down the values to which they are set.
+  If none is supplied when creating the dimmer cue, the show's grand
+  master is used."
+  [name level show channels htp? master]
+  (params/validate-param-type master Master)
+  (let [f (if htp?
+            (fn [show snapshot target previous-assignment]
+              (clamp-rgb-int (max (master-scale master (params/resolve-param level show snapshot))
+                                  (or previous-assignment 0))))
+            (fn [show snapshot target previous-assignment]
+              (clamp-rgb-int (master-scale master (params/resolve-param level show snapshot)))))
+        assigners (chan-fx/build-channel-assigners channels f)]
+    (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
+
 (defn dimmer-cue
-  "Returns an effect which simply assigns a value to all dimmers of
-  the supplied fixtures. If htp? is true, use
-  highest-takes-precedence (i.e. compare to the previous assignment,
-  and let the higher value remain)."
-  ([level show fixtures]
-   (dimmer-cue level show fixtures true))
-  ([level show fixtures htp?]
-      (let [dimmers (gather-dimmer-channels fixtures)
-         resolved (params/resolve-unless-frame-dynamic level show (metro-snapshot (:metronome show)))
-         label (if (satisfies? params/IParam level) "<dynamic>" level)]
-     (chan-fx/build-parameterized-channel-cue (str "Dimmers=" label (when htp?) " (HTP)") resolved dimmers htp?))))
+  "Returns an effect which assigns a dynamic value to all the supplied
+  dimmers. If htp? is true, applies highest-takes-precedence (i.e.
+  compares the value to the previous assignment for the channel, and
+  lets the highest value remain). All dimmer cues are associated with
+  a master chain which can scale down the values to which they are set.
+  If none is supplied when creating the dimmer cue, the show's grand
+  master is used."
+  [level show fixtures & {:keys [htp? master] :or {htp? true master (:grand-master show)}}]
+  (params/validate-param-type level Number)
+  (params/validate-param-type master Master)
+  (let [dimmers (gather-dimmer-channels fixtures)
+        snapshot (metro-snapshot (:metronome show))
+        level (params/resolve-unless-frame-dynamic level show snapshot)
+        master (params/resolve-param master show snapshot)  ; Can resolve now; value is inherently dynamic.
+        label (if (satisfies? params/IParam level) "<dynamic>" level)]
+    (build-parameterized-dimmer-cue (str "Dimmers=" label (when htp?) " (HTP)") level show dimmers htp? master)))
 
 ;; Deprecated now that you can pass an oscillated parameter to dimmer-cue
 (defn dimmer-oscillator
@@ -74,4 +134,3 @@
               (pspy :dimmer-oscillator
                     (+ min (* range (osc snapshot))))))]
     (chan-fx/build-simple-channel-cue (str "Dimmer Oscillator " min "-" max (when htp? " (HTP)")) f chans)))
-

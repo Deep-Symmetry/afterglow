@@ -199,11 +199,11 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   - [x] Get basic effect working until spatial features are available.
   - [ ] Work both with arbitrary head list, and with spatially mapped origin/density.
   - [ ] Work as single intensity, or spatially mapped hue/saturation patterns.
-- [ ] Implement a grand master dimmer in the show which imposes a ceiling on all dimmer cues.
-  - [ ] Also allow custom sub-master dimmer variables, chained off
+- [x] Implement a grand master dimmer in the show which imposes a ceiling on all dimmer cues.
+  - [x] Also allow custom sub-master dimmer variables, chained off
     each other and ultimately the grand master, assigned to cues. Each
     step can scale the output.
-  - [ ] All dimmer cues are assigned a master chain, defaulting to the
+  - [x] All dimmer cues are assigned a master chain, defaulting to the
     grand master if none supplied.
 - [ ] Compound effects: Have effect functions pass a context map to
     children with show, snapshot, own stuff? For example, so the

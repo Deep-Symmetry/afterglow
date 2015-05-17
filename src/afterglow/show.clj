@@ -12,6 +12,8 @@ adding a new effect with the same key as an existing effect will replace the for
   (:require [afterglow.channels :as chan]
             [afterglow.effects.channel :refer [channel-assignment-resolver]]
             [afterglow.effects.color :refer [color-assignment-resolver]]
+            [afterglow.effects.dimmer :refer [IDimmerMaster master master-set-level]]
+            [afterglow.effects.params :refer [validate-param-type resolve-param bind-keyword-param]]
             [afterglow.effects.util :as fx-util]
             [afterglow.midi :as midi]
             [afterglow.dj-link :as dj-link]
@@ -21,8 +23,9 @@ adding a new effect with the same key as an existing effect will replace the for
             [overtone.at-at :as at-at]
             [taoensso.timbre :refer [error]]
             [taoensso.timbre.profiling :refer [p profile pspy]])
-  (:import (com.google.protobuf ByteString)
-           (afterglow.rhythm Metronome)))
+  (:import [com.google.protobuf ByteString]
+           [afterglow.effects.dimmer Master]
+           [afterglow.rhythm Metronome]))
 
 
 (def default-refresh-interval
@@ -136,6 +139,7 @@ adding a new effect with the same key as an existing effect will replace the for
                              :priorities []
                              :ending #{}})
     :variables (atom {})
+    :grand-master (master nil)  ; Only the grand master can have no show, or parent.
     :fixtures (atom {})
     :task (atom nil)}))
 
@@ -189,7 +193,7 @@ adding a new effect with the same key as an existing effect will replace the for
                       :else
                       (let [range (- min max)]
                         (fn [midi-val] (float (+ max (/ (* midi-val range) 127))))))]
-    (midi/add-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":var" (str (keyword variable)))
+    (midi/add-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":var" (keyword variable))
                               (fn [msg] (set-variable show variable (calc-fn (:velocity msg)))))))
 
 (defn remove-midi-control-to-var-mapping
@@ -197,6 +201,40 @@ adding a new effect with the same key as an existing effect will replace the for
   controller-change messages are received."
   [show midi-device-name channel control-number variable]
   (midi/remove-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":var" (keyword variable))))
+
+(defn add-midi-control-to-master-mapping
+  "Cause the specified dimmer master to be updated by any MIDI
+  controller-change messages from the specified device sent on the
+  specified channel and controller number. If min and/or max are
+  specified, the normal MIDI range from 0 to 127 will be mapped to the
+  supplied range instead, but both must be valid percentages (in the
+  range 0 to 100). If no master is supplied, the show's grand master
+  is bound. If master is a keyword, it is resolved as a show variable
+  containing a dimmer master."
+  [show midi-device-name channel control-number & {:keys [master min max] :or {master (:grand-master show) min 0 max 100}}]
+  (when (= min max)
+    (throw (IllegalArgumentException. "min must differ from max")))
+  (when (or (< min 0) (> min 100))
+    (throw (IllegalArgumentException. "min must be between 0 and 100")))
+  (when (or (< max 0) (> max 100))
+    (throw (IllegalArgumentException. "max must be between 0 and 100")))
+  (let [bound (bind-keyword-param master show Master (:grand-master show))
+        master (resolve-param bound show (metro-snapshot (:metronome show)))
+        calc-fn (if (< min max)
+                  (let [range (- max min)]
+                    (fn [midi-val] (float (+ min (/ (* midi-val range) 127)))))
+                  (let [range (- min max)]
+                    (fn [midi-val] (float (+ max (/ (* midi-val range) 127))))))]
+    (midi/add-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":master" (.hashCode master))
+                              (fn [msg] (master-set-level master (calc-fn (:velocity msg)))))))
+
+(defn remove-midi-control-to-master-mapping
+  "Cease updating the specified show variable when the specified MIDI
+  controller-change messages are received."
+  [show midi-device-name channel control-number master]
+  (let [bound (bind-keyword-param master show Master (:grand-master show))
+        master (resolve-param bound show (metro-snapshot (:metronome show)))]
+    (midi/remove-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":master" (.hashCode master)))))
 
 (defn- add-midi-control-metronome-mapping
   "Helper function to perform some action on a metronome when a

@@ -63,9 +63,9 @@
    `(check-type ~value ~type-expected ~name)))
 
 (defmacro validate-optional-param-type
-  "Ensure that a parameter satisfies a predicate, or that it satisfies
-  IParam and, when evaluated, returns a type that passes that predicate,
-  throwing an exception otherwise."
+  "Ensure that a parameter, if not nil, satisfies a predicate, or that
+  it satisfies IParam and, when evaluated, returns a type that passes
+  that predicate, throwing an exception otherwise."
   ([value type-expected]
    (let [arg value]
      `(validate-optional-param-type ~value ~type-expected ~(str arg))))
