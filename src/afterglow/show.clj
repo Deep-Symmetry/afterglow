@@ -207,12 +207,19 @@
     {:type :manual}))
 
 ;; TODO: Someday generate feedback on assigned MIDI channels, etc...
-(defn set-variable
+(defn set-variable!
   "Set a value for a variable associated with [[*show*]]."
   {:doc/format :markdown}
   [key newval]
   {:pre [(some? *show*) (some? key)]}
   (swap! (:variables *show*) #(assoc % (keyword key) newval)))
+
+(defn get-variable
+  "Get the value of a variable associated with [[*show]]."
+  {:doc/format :markdown}
+  [key]
+  {:pre [(some? key)]}
+  ((keyword key) @(:variables *show*)))
 
 (defn add-midi-control-to-var-mapping
   "Cause the specified variable in [[*show*]] to be updated by any
