@@ -55,7 +55,7 @@
   {:author "James Elliott"
    :doc/format :markdown}
   (:import [javax.media.j3d Transform3D]
-           [javax.vecmath Point3d]))
+           [javax.vecmath Point3d Vector3d]))
 
 (defn inches
   "Converts a number of inches to the corresponding number of meters."
@@ -71,21 +71,21 @@
 (defn- transform-head
   "Determine the position and orientation of a fixture's head."
   [fixture head]
-  (let [fixture-rotation (:rotation fixture)
+  (let [rotation (Transform3D. (:rotation fixture)) ; Not immutable, so copy!
         point (Point3d. (:x head 0.0) (:y head 0.0) (:z head 0.0))
-        rotation (Transform3D. fixture-rotation)
+        head-euler-angles (Vector3d. (:x-rotation head 0.0) (:y-rotation head 0.0) (:z-rotation head 0.0))
+        base-head-rotation (Transform3D.)
         axis (Transform3D.)]
 
-    ;; Calculate the compound rotation applied to the head
-    (.rotX axis (:x-rotation head 0.0))
-    (.mul rotation axis)
-    (.rotY axis (:y-rotation head 0.0))
-    (.mul rotation axis)
-    (.rotZ axis (:z-rotation head 0.0))
-    (.mul rotation axis)
-
     ;; Transform the location of the head based on the fixture rotation
-    (.transform fixture-rotation point)
+    (.transform rotation point)
+
+    ;; Calculate the compound rotation applied to the head
+    (.setEuler base-head-rotation head-euler-angles)
+    (.mul rotation base-head-rotation)
+    ;; fixture-rotation now holds the result of both rotations: First the rotation
+    ;; from hanging the fixture, then the rotation of the individual head with
+    ;; respect to the fixture itself, if any.
 
     (assoc head
            :rotation rotation
@@ -110,8 +110,35 @@
   fixture from its reference orientation to the orientation in which
   it was actually hung."
   [fixture x y z x-rotation y-rotation z-rotation]
+  (let [euler (Vector3d. x-rotation y-rotation z-rotation)
+        rotation (Transform3D.)]
+    ;; Calculate the compound rotation applied to the fixture
+    (.setEuler rotation euler)
+    (transform-heads (assoc fixture :x x :y y :z z :rotation rotation
+                            :x-rotation x-rotation :y-rotation y-rotation :z-rotation z-rotation))))
+
+(defn reverse-euler
+  "See if I can get euler angles back out of a transformation matrix."
+    [x-rotation y-rotation z-rotation]
   (let [rotation (Transform3D.)
-        axis (Transform3D.)]
+        euler (Vector3d. x-rotation y-rotation z-rotation)
+        matrix (javax.vecmath.Matrix3d.)]
+    (.setEuler rotation euler)
+    (.get rotation matrix)
+    (taoensso.timbre/info "phi:" (Math/atan2 (.-m20 matrix) (.-m21 matrix)))
+    (taoensso.timbre/info "theta" (Math/acos (.m22 matrix)))
+    (taoensso.timbre/info "psi:" (Math/atan2 (.-m02 matrix) (.-m12 matrix)))))
+
+(defn compare-euler
+  "Test whether setting euler angles is the same as what I am doing
+  in one step."
+  [x-rotation y-rotation z-rotation]
+  (let [rotation (Transform3D.)
+        axis (Transform3D.)
+        euler (Vector3d. x-rotation y-rotation z-rotation)
+        from-euler (Transform3D.)
+        compound-point (Point3d. 0 0 1)
+        euler-point (Point3d. 0 0 1)]
     ;; Calculate the compound rotation applied to the fixture
     (.rotX axis x-rotation)
     (.mul rotation axis)
@@ -119,8 +146,19 @@
     (.mul rotation axis)
     (.rotZ axis z-rotation)
     (.mul rotation axis)
-    (transform-heads (assoc fixture :x x :y y :z z :rotation rotation
-                            :x-rotation x-rotation :y-rotation y-rotation :z-rotation z-rotation))))
+    (taoensso.timbre/info "Compound rotation:\n" rotation)
+    (.setEuler from-euler euler)
+    (taoensso.timbre/info "Euler angle rotation:\n" from-euler)
+    (taoensso.timbre/info "Equal?" (.equals rotation from-euler))
+    (.transform rotation compound-point)
+    (.transform from-euler euler-point)
+    (taoensso.timbre/info "Compound transformed:\n" compound-point)
+    (taoensso.timbre/info "Euler transformed:\n" euler-point)
+    (taoensso.timbre/info "Equal?" (.equals compound-point euler-point))))
+
+(defn show-head-positions
+  [fixture-key]
+  (map #(select-keys % [:x :y :z]) (:heads ((keyword fixture-key) @(:fixtures afterglow.examples/sample-show)))))
 
 ;; Examples until I really write something
 (def foo (Transform3D.))

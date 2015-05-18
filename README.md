@@ -251,6 +251,11 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   - [ ] Or [this one](http://inside.mines.edu/fs_home/gmurray/ArbitraryAxisRotation/) which is already Java but seems to only perform, not calculate, rotations.
   - [ ] Use iOS device to help determine orientation of fixture: Hold phone upright facing stage from audience perspective to set reference attitude; move to match a landmark on the fixture (documented in the fixture definition), and have phone use [CoreMotion](https://developer.apple.com/library/ios/documentation/CoreMotion/Reference/CMAttitude_Class/index.html#//apple_ref/occ/instm/CMAttitude/multiplyByInverseOfAttitude:) `CMAttitude` `multiplyByInverseOfAttitude` to determine the difference.
   - [ ] The more I investigate, the more it looks like [Java3D’s](http://docs.oracle.com/cd/E17802_01/j2se/javase/technologies/desktop/java3d/forDevelopers/J3D_1_3_API/j3dapi/) [Transform3D](http://docs.oracle.com/cd/E17802_01/j2se/javase/technologies/desktop/java3d/forDevelopers/J3D_1_3_API/j3dapi/javax/media/j3d/Transform3D.html) object is going to handle it for me, which is very convenient, as it is already available in Clojure. To combine transformations, just multiply them together (with the `mul` method).
+  - [ ] Use `setEuler` to set a `Transform3D` to a specific set of rotation angles.
+  - [ ] If this leads to accuracy issues or loss of a degree of freedom, consider Quaternions, as recommended in
+  this [article](http://java.sys-con.com/node/99792).
+  - [ ] Wow, this may be exactly what I need: Java code for converting Quaternions to Euler Angles:
+  http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
 - [ ] Use [claypoole](https://clojars.org/com.climate/claypoole) for parallelism.
 - [ ] Add OSC support (probably using [Overtone&rsquo;s implementation](https://github.com/rosejn/osc-clj)) for controller support, and MIDI as well.
 - [ ] Serious references for color manipulation, but in [Julia](https://github.com/timholy/Color.jl).
