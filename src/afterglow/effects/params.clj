@@ -111,7 +111,7 @@
   [arg]
   (and (satisfies? IParam arg) (frame-dynamic? arg)))
 
-(defn- oscillator-resolver-internal
+(defn- resolve-oscillator
   "Handles the calculation of an oscillator based on dynamic parameter
   values for at least one of min and max."
   [show params-snapshot min max osc osc-snapshot]
@@ -200,7 +200,7 @@
           (resolve-non-frame-dynamic-elements [this show snapshot]  ; Nothing to resolve, return self
             this))))))
 
-(defn bind-keyword-param-internal
+(defn bind-keyword-param*
   "If an input to a dynamic parameter has been passed as a keyword,
   treat that as a reference to a show variable. If that variable
   currently holds a dynamic parameter, try to bind it directly (throw
@@ -223,9 +223,9 @@
   is not a keyword, simply validate its type."
   ([value show type-expected default]
    (let [arg value]
-     `(bind-keyword-param-internal ~value ~show ~type-expected ~default ~(str arg))))
+     `(bind-keyword-param* ~value ~show ~type-expected ~default ~(str arg))))
   ([value show type-expected default param-name]
-   `(bind-keyword-param-internal ~value ~show ~type-expected ~default ~param-name)))
+   `(bind-keyword-param* ~value ~show ~type-expected ~default ~param-name)))
 
 (defn build-oscillated-param
   "Returns a number parameter that is driven by an oscillator. By
@@ -256,10 +256,10 @@
       (let [dyn (boolean frame-dynamic)
             eval-fn (if (some? metronome)
                       (fn [show snapshot]
-                        (oscillator-resolver-internal show snapshot min max osc
+                        (resolve-oscillator show snapshot min max osc
                                                       (metro-snapshot (resolve-param metronome show snapshot))))
                       (fn [show snapshot]
-                        (oscillator-resolver-internal show snapshot min max osc snapshot)))]
+                        (resolve-oscillator show snapshot min max osc snapshot)))]
         (reify IParam
           (evaluate [this show snapshot] (eval-fn show snapshot))
           (frame-dynamic? [this] dyn)
