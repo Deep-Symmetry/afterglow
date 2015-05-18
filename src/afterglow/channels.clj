@@ -43,12 +43,20 @@
   [fixtures]
   (mapcat #(concat [%] (:heads %)) fixtures))
 
+(defn all-addresses
+  "Returns all the addresses being used by a list of patched fixtures,
+  including those used by any fixture heads."
+  [fixtures]
+  (map :address (mapcat :channels (afterglow.channels/expand-heads fixtures))))
+
+
 (defn extract-heads-with-some-matching-channel
   "Given a fixture list, returns all heads (which may be top-level fixtures too)
   whose channels contain a match for the specified predicate."
   [fixtures pred]
   (filter #(some pred (:channels %)) (expand-heads fixtures)))
 
+;; TODO: is this a good range data structure for finding which one a value falls into?
 (defn full-range
   "Returns a range spefication that encompasses all possible DMX values as a single variable setting."
   [range-type label]
@@ -57,7 +65,6 @@
    :type range-type
    :label label})
 
-;; TODO is this a good range data structure for finding which one a value falls into?
 (defn fine-channel
   "Defines a channel for which sometimes multi-byte values are desired, via a separate
 channel which specifies the fractional value to be added to the main channel."
@@ -119,6 +126,6 @@ channel which specifies the fractional value to be added to the main channel."
    (fine-channel :zoom offset :fine-offset fine-offset)))
 
 
-;; TODO control channels
+;; TODO: control channels
 
-;; TODO gobo wheel and color wheel channels special variants of control channels?
+;; TODO: gobo wheel and color wheel channels special variants of control channels?
