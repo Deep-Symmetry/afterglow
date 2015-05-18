@@ -224,7 +224,7 @@
   {:pre [(some? *show*) (some? midi-device-name) (number? min) (number? max) (not= min max)
          (integer? channel) (<= 0 channel 15) (integer? control-number) (<= 0 control-number 127) (some? variable)]}
   (let [show *show*  ; Bind so we can pass it to update function running on another thread
-        calc-fn (cond (and (= min 0) (= max 127))
+        calc-fn (cond (and (zero? min) (= max 127))
                       (fn [midi-val] midi-val)
                       (< min max)
                       (let [range (- max min)]
