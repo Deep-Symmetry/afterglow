@@ -235,6 +235,7 @@ TODO: listing of options this app accepts once it can run as a standalone app.
 - [ ] Consider having patched fixture hold a reference to the show.
   That way we could stop having to pass it so many places, though it
   would make printing fixtures less useful.
+- [ ] Rename IEffect and other protocols to Clojure names.
 - [ ] Sparkle effect, essentially a particle generator with
   configurable maximum brightness, fade time, distribution.
   - [x] Get basic effect working until spatial features are available.
