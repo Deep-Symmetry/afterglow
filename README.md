@@ -74,10 +74,10 @@ full, using these two lines:
 
 So if you happened to have the same fixtures hooked up, assigned the
 same DMX addresses as I did when I wrote this, you would see a bunch
-of blue light. Realistically, you can be able to navigate to the
-`olad` embedded [web server](http://localhost:9090/ola.html) and see
-the non-zero DMX values in the blue and dimmer channels, assuming you
-have set up a Universe with ID 1.
+of blue light. More realistically, you can navigate to the `olad`
+embedded [web server](http://localhost:9090/ola.html) and see the
+non-zero DMX values in the blue and dimmer channels, assuming you have
+set up a Universe with ID 1.
     
 > In an environment where you are running multiple shows, the more
 > general way of working with one would look like:
