@@ -241,7 +241,7 @@
                         (fn [midi-val] (float (+ max (/ (* midi-val range) 127))))))]
     (midi/add-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":var" (keyword variable))
                               (fn [msg] (with-show show
-                                          (set-variable variable (calc-fn (:velocity msg))))))))
+                                          (set-variable! variable (calc-fn (:velocity msg))))))))
 
 (defn remove-midi-control-to-var-mapping
   "Cease updating the specified variable in [[*show*]] when the
