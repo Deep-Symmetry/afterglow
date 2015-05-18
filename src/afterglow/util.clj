@@ -14,3 +14,9 @@
   "Convert a signed byte to its unsigned int equivalent, in the range 0-255."
   [val]
   (bit-and val 0xff))
+
+(defn valid-dmx-value?
+  "Checks that the supplied value is within the legal range for a DMX
+  channel assignment."
+  [v]
+  (<= 0 v 255))
