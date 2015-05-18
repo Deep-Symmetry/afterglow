@@ -156,7 +156,7 @@
     (taoensso.timbre/info "Euler transformed:\n" euler-point)
     (taoensso.timbre/info "Equal?" (.equals compound-point euler-point))))
 
-(defn show-head-positions
+#_(defn show-head-positions
   [fixture-key]
   (map #(select-keys % [:x :y :z]) (:heads ((keyword fixture-key) @(:fixtures afterglow.examples/sample-show)))))
 
