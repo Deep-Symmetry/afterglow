@@ -1,4 +1,4 @@
-(ns afterglow.effects.util
+(ns afterglow.effects
   "Support functions for building the effects pipeline."
   {:author "James Elliott"}
   (:require [afterglow.channels :as channels]
@@ -17,6 +17,7 @@
     "Calculate the value the show element should have at this moment in time. Return a value
 appropriate for the kind of assignment, e.g. color object, channel value."))
 
+;; TODO: Really document this, both as API docs and on the Wiki.
 ;; So...
 ;;
 ;; We are going to have types of assigners: :channel, :head-color, :head-rotation. Each will be
@@ -85,23 +86,3 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
   "An effect end function which simply says the effect is now finished."
   [show snapshot]
   true)
-
-(defmacro validate-value
-  "Ensure that a number falls within a specified range, throwing an
-  exception otherwise."
-  ([value min max]
-   (let [arg value]
-     `(validate-value ~value ~min ~max ~(str arg))))
-  ([value min max name]
-   `(if (or (< ~value ~min) (> ~value ~max))
-      (throw (IllegalArgumentException. (str ~name " must range from " ~min " to " ~max)))
-      true)))
-
-(defmacro validate-dmx-value
-  "Ensure that a number falls within a valid range for a DMX value assignment,
-  throwing an exception otherwise."
-  ([value]
-   (let [arg value]
-     `(validate-dmx-value ~value ~(str arg))))
-  ([value name]
-   `(validate-value ~value 0 255 ~name)))

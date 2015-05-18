@@ -1,12 +1,12 @@
 (ns afterglow.effects.channel
   "Effects pipeline functions for working with individual DMX channels."
   {:author "James Elliott"}
-  (:require [afterglow.effects.params :as params]
-            [afterglow.effects.util :refer :all]
+  (:require [afterglow.effects :refer [always-active end-immediately]]
+            [afterglow.effects.params :as params]
             [afterglow.util :refer [ubyte]]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :refer [clamp-rgb-int]])
-  (:import (afterglow.effects.util Assigner Effect)))
+  (:import (afterglow.effects Assigner Effect)))
 
 (defn apply-channel-value
   "A function which sets the DMX buffer value(s) for a channel, supporting fine channels

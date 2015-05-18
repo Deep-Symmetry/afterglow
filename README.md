@@ -60,7 +60,7 @@ connected. Either way, here is how you start the show sending control
 signals to lights:
 
 ```clojure
-(show/start! sample-show)
+(show/start!)
 ```
 
 The `afterglow.examples` namespace has already assigned a nice cool
@@ -68,8 +68,8 @@ blue color to all lights in the sample show and set their dimmers to
 full, using these two lines:
 
 ```clojure
-(show/add-function! sample-show :color blue-cue)
-(show/add-function! sample-show :master (master-cue 255))
+(show/add-function! :color blue-cue)
+(show/add-function! :master (master-cue 255))
 ```
 
 So if you happened to have the same fixtures hooked up, assigned the
@@ -79,10 +79,34 @@ of blue light. Realistically, you can be able to navigate to the
 the non-zero DMX values in the blue and dimmer channels, assuming you
 have set up a Universe with ID 1.
     
+> In an environment where you are running multiple shows, the more
+> general way of working with one would look like:
+
+```clojure
+(with-show sample-show
+  (show/start!)
+  (show/add-function! :color blue-cue)
+  (show/add-function! :master (master-cue 255)))
+```
+
+> However, the examples namespace assumes you are just using one,
+> and has set it up as the default show, like this:
+
+```clojure
+(set-default-show! sample-show)
+```
+
+> That saves us the trouble of wrapping all our show manipulation
+> functions inside of `(with-show ...)` to establish a context. You
+> will likely want to do something similar in setting up your own
+> shows, since a single show is the most common scenario. See the
+> [afterglow.show-context](http://deepsymmetry.org/afterglow/doc/afterglow.show-context.html)
+> API documentation for more details.
+
 We can make the lights a little dimmer...
 
 ```clojure
-(show/add-function! sample-show :master (master-cue 200))
+(show/add-function! :master (master-cue 200))
 ```
 
 > Adding a function with the same keyword as an existing function
@@ -106,7 +130,7 @@ But for dimmer channels, there is an even better way of doing that:
 Change the color to orange:
 
 ```clojure
-(show/add-function! sample-show :color (global-color-cue :orange))
+(show/add-function! :color (global-color-cue :orange))
 ```
 
 > The color channel values change.
@@ -114,7 +138,7 @@ Change the color to orange:
 Let's get a little fancy and ramp the dimmers up on a sawtooth curve each beat:
 
 ```clojure
-(show/add-function! sample-show :master
+(show/add-function! :master
                     (master-cue (params/build-oscillated-param sample-show
                                 (oscillators/sawtooth-beat))))
 ```
@@ -149,8 +173,7 @@ can sync the show's BPM to it (see the
 for details):
 
 ```clojure
-(show/sync-to-external-clock sample-show
-                             (afterglow.midi/sync-to-midi-clock "traktor"))
+(show/sync-to-external-clock (afterglow.midi/sync-to-midi-clock "traktor"))
 ```
 
 How about a nice cycling rainbow color fade?
@@ -158,9 +181,8 @@ How about a nice cycling rainbow color fade?
 ```clojure
 (def hue-param (params/build-oscillated-param
   sample-show (oscillators/sawtooth-bar) :max 360))
-(show/add-function! sample-show :color
-  (global-color-cue
-    (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
+(show/add-function! :color (global-color-cue
+  (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
 ```
 
 > The Wiki has more examples of
@@ -175,19 +197,19 @@ How about a nice cycling rainbow color fade?
 When you are all done, you can terminate the effect handler thread...
 
 ```clojure
-(show/stop! sample-show)
+(show/stop!)
 ```
     
 And darken the universe you were playing with.
 
 ```clojure
-(show/blackout-show sample-show)
+(show/blackout-show)
 ```
 
 > An alternate way of accomplishing those last two steps would have been to call
-> `(show/clear-functions! sample-show)` before `show/stop!` because once there
-> were no effect functions, all the DMX values would settle back at zero and
-> stay there until you stopped the show.
+> `(show/clear-functions!)` before `(show/stop!)` because once there were
+> were no active effect functions, all the DMX values would settle back at zero
+> and stay there until you stopped the show.
 
 ## Options
 

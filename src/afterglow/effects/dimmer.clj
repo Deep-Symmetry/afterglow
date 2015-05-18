@@ -29,13 +29,13 @@
   (:require [afterglow.channels :as channels]
             [afterglow.effects.channel :as chan-fx]
             [afterglow.effects.params :as params]
-            [afterglow.effects.util :as fx-util :refer [always-active
-                                                        end-immediately]]
+            [afterglow.effects :refer [always-active end-immediately]]
             [afterglow.rhythm :refer [metro-snapshot]]
+            [afterglow.util :refer [valid-dmx-value?]]
             [com.evocomputing.colors :refer [clamp-percent-float
                                              clamp-rgb-int]]
             [taoensso.timbre.profiling :refer [pspy]])
-  (:import (afterglow.effects.util Effect)))
+  (:import (afterglow.effects Effect)))
 
 (defn- assign-level
   "Assigns a dimmer level to the channel."
@@ -136,10 +136,7 @@
   of assigning the value to the DMX channels."
   {:deprecated true}
   [osc fixtures & {:keys [min max htp?] :or {min 0 max 255 htp? true}}]
-  (fx-util/validate-dmx-value min)
-  (fx-util/validate-dmx-value max)
-  (when-not (< min max)
-    (throw (IllegalArgumentException. "min must be less than max")))
+  {:pre [(valid-dmx-value? min) (valid-dmx-value? max) (< min max) (seq? fixtures) (ifn? osc)]}
   (let [range (long (- max min))
         chans (channels/extract-channels fixtures #(= (:type %) :dimmer))
         f (if htp?

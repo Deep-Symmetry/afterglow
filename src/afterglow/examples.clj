@@ -10,6 +10,7 @@
             [afterglow.fixtures.chauvet :as chauvet]
             [afterglow.rhythm :refer :all]
             [afterglow.show :as show]
+            [afterglow.show-context :refer :all]
             [com.evocomputing.colors :refer [color-name create-color hue adjust-hue]]
             [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders.rotor :as rotor]))
@@ -35,11 +36,15 @@
 (defonce ^{:doc "An example show which controls only the OLA universe with ID 1."}
   sample-show (show/show 1))
 
+;; Make it the default show so we don't need to wrap everything below
+;; in a (with-show sample-show ...) binding.
+(set-default-show! sample-show)
+
 ;; Throw a couple of fixtures in there to play with. For better fun, use
 ;; fixtures and addresses that correspond to your actual hardware.
-(show/patch-fixture! sample-show :hex-1 (chauvet/slimpar-hex3-irc) 1 129)
-(show/patch-fixture! sample-show :blade-1 (blizzard/blade-rgbw) 1 270)
-(show/patch-fixture! sample-show :ws-1 (blizzard/weather-system) 1 161 :x 1.0 :y 1.5)
+(show/patch-fixture! :hex-1 (chauvet/slimpar-hex3-irc) 1 129)
+(show/patch-fixture! :blade-1 (blizzard/blade-rgbw) 1 270)
+(show/patch-fixture! :ws-1 (blizzard/weather-system) 1 161 :x 1.0 :y 1.5)
 
 (defn global-color-cue
   "Make a color cue which affects all lights in the sample show. This
@@ -53,7 +58,7 @@
                        [color "variable"]
                        :else
                        [(create-color color) color])]
-      (color-cue (str "Color: " desc) c sample-show (show/all-fixtures sample-show)))
+      (color-cue (str "Color: " desc) c sample-show (show/all-fixtures)))
     (catch Exception e
       (throw (Exception. (str "Can't figure out how to create color from " color) e)))))
 
@@ -68,19 +73,19 @@
   show variable, an oscillator, or (once geometry is implemented), the
   location of the fixture."
   [level]
-  (dimmer-cue level sample-show (show/all-fixtures sample-show)))
+  (dimmer-cue level sample-show (show/all-fixtures)))
 
 ;; Start simple with a cool blue color from all the lights
-(show/add-function! sample-show :color blue-cue)
-(show/add-function! sample-show :master (master-cue 255))
+(show/add-function! :color blue-cue)
+(show/add-function! :master (master-cue 255))
 
 ;; Get a little fancier with a beat-driven fade
-;; (show/add-function! sample-show :master
+;; (show/add-function! :master
 ;;                     (master-cue (params/build-oscillated-param sample-show (oscillators/sawtooth-beat))))
 
 ;; To actually start the effects above (although only the last one assigned to any
 ;; given keyword will still be in effect), uncomment or evaluate the next line:
-;; (show/start! sample-show)
+;; (show/start!)
 
 (defn sparkle-test
   "Set up a sedate rainbow fade and then layer on a sparkle effect to test
@@ -88,27 +93,27 @@
   []
   (let [hue-param (params/build-oscillated-param
                    sample-show (oscillators/sawtooth-phrase) :max 360)]
-    (show/add-function! sample-show :color
+    (show/add-function! :color
                         (global-color-cue
                          (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
-    (show/add-function! sample-show :sparkle
+    (show/add-function! :sparkle
                         (fun/sparkle sample-show (show/all-fixtures sample-show) :chance 0.05 :fade-time 50))))
 
 (defn mapped-sparkle-test
   "A verion of the sparkle test that creates a bunch of MIDI-mapped
   show variables to adjust parameters while it runs."
   []
-  (show/add-midi-control-to-var-mapping sample-show "Slider" 0 16 :sparkle-hue :max 360)
-  (show/add-midi-control-to-var-mapping sample-show "Slider" 0 0 :sparkle-lightness :max 100.0)
-  (show/add-midi-control-to-var-mapping sample-show "Slider" 0 17 :sparkle-fade :min 10 :max 2000)
-  (show/add-midi-control-to-var-mapping sample-show "Slider" 0 1 :sparkle-chance :max 0.3)
+  (show/add-midi-control-to-var-mapping "Slider" 0 16 :sparkle-hue :max 360)
+  (show/add-midi-control-to-var-mapping "Slider" 0 0 :sparkle-lightness :max 100.0)
+  (show/add-midi-control-to-var-mapping  "Slider" 0 17 :sparkle-fade :min 10 :max 2000)
+  (show/add-midi-control-to-var-mapping  "Slider" 0 1 :sparkle-chance :max 0.3)
   (let [hue-param (params/build-oscillated-param
                    sample-show (oscillators/sawtooth-phrase) :max 360)
         sparkle-color-param (params/build-color-param sample-show :s 100 :l :sparkle-lightness :h :sparkle-hue)]
-    (show/add-function! sample-show :color
+    (show/add-function! :color
                         (global-color-cue
                          (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
-    (show/add-function! sample-show :sparkle
+    (show/add-function! :sparkle
                         (fun/sparkle sample-show (show/all-fixtures sample-show)
                                      :color sparkle-color-param
                                      :chance :sparkle-chance :fade-time :sparkle-fade))))
@@ -128,4 +133,3 @@
                         (snapshot-beat-phase snap 1) (snapshot-beat-phase snap 2) (snapshot-beat-phase snap 4)
                         (snapshot-beat-phase snap 1/2) (snapshot-beat-phase snap 1/4) (snapshot-beat-phase snap 3/4)))
        (Thread/sleep 33)))))
-

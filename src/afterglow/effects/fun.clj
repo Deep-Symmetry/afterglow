@@ -6,14 +6,14 @@
                                              build-color-assigners
                                              htp-merge
                                              find-rgb-heads]]
+            [afterglow.effects]
             [afterglow.effects.params :as params]
-            [afterglow.effects.util]
             [afterglow.rhythm :as rhythm :refer [snapshot-bar-phase
                                                  snapshot-beat-phase
                                                  snapshot-down-beat?]]
             [com.evocomputing.colors :as colors]
             [taoensso.timbre.profiling :refer [pspy]])
-  (:import (afterglow.effects.util Effect)
+  (:import (afterglow.effects Effect)
            (afterglow.rhythm Metronome)))
 
 (def default-down-beat-color

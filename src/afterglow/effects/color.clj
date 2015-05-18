@@ -2,15 +2,14 @@
   "Effects pipeline functions for working with color assignments to fixtures and heads."
   {:author "James Elliott"}
   (:require [afterglow.channels :as channels]
+            [afterglow.effects :refer [always-active end-immediately]]
             [afterglow.effects.channel :refer [apply-channel-value]]
             [afterglow.effects.params :as params]
-            [afterglow.effects.util :refer :all]
             [afterglow.rhythm :as rhythm]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
-            [taoensso.timbre :refer [spy]]
             [taoensso.timbre.profiling :refer [pspy]])
-  (:import (afterglow.effects.util Assigner Effect)))
+  (:import (afterglow.effects Assigner Effect)))
 
 (defn htp-merge
   "Helper function for assigners that want to use
@@ -80,10 +79,7 @@
   to 100 and lightness to 50, but these can be set via :saturation
   and :lightness."
   [osc fixtures & {:keys [min max saturation lightness] :or {min 0 max 359 saturation 100 lightness 50}}]
-  (validate-value saturation 0 100)
-  (validate-value lightness 0 100)
-  (when-not (< min max)
-    (throw (IllegalArgumentException. "min must be less than max")))
+  {:pre [(<= 0 saturation 100) (<= 0 lightness 100) (< min max) (seq? fixtures) (ifn? osc)]}
   (let [range (long (- max min))
         heads (find-rgb-heads fixtures)
         f (fn [show snapshot target previous-assignment]
