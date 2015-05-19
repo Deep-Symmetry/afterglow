@@ -6,6 +6,7 @@
             [afterglow.effects.channel :refer [apply-channel-value]]
             [afterglow.effects.params :as params]
             [afterglow.rhythm :as rhythm]
+            [afterglow.show-context :refer [*show*]]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
             [taoensso.timbre.profiling :refer [pspy]])
@@ -56,11 +57,13 @@
 ;; TODO someday support color wheels too, optionally, with a tolerance level
 ;; Then can combine with a conditional dimmer setting if a color was assigned.
 (defn color-cue
-  "Returns an effect which assigns a color parameter to all heads of the fixtures supplied when invoked."
-  [name color show fixtures]
+  "Returns an effect which assigns a color parameter to all heads of
+  the fixtures supplied when invoked."
+  [name color fixtures]
+  {:pre [(some? name) (some? *show*)]}
   (params/validate-param-type color :com.evocomputing.colors/color)
   (let [heads (filter #(= 3 (count (filter #{:red :green :blue} (map :color (:channels %))))) (channels/expand-heads fixtures))
-        assigners (build-color-parameter-assigners heads color show)]
+        assigners (build-color-parameter-assigners heads color *show*)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
 (defn find-rgb-heads
@@ -78,6 +81,7 @@
   via :min and :max, the hue ranges from 0 to 359. Saturation defaults
   to 100 and lightness to 50, but these can be set via :saturation
   and :lightness."
+  {:deprecated true}
   [osc fixtures & {:keys [min max saturation lightness] :or {min 0 max 359 saturation 100 lightness 50}}]
   {:pre [(<= 0 saturation 100) (<= 0 lightness 100) (< min max) (seq? fixtures) (ifn? osc)]}
   (let [range (long (- max min))

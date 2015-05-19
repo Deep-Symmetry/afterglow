@@ -31,6 +31,7 @@
             [afterglow.effects.params :as params]
             [afterglow.effects :refer [always-active end-immediately]]
             [afterglow.rhythm :refer [metro-snapshot]]
+            [afterglow.show-context :refer [*show*]]
             [afterglow.util :refer [valid-dmx-value?]]
             [com.evocomputing.colors :refer [clamp-percent-float
                                              clamp-rgb-int]]
@@ -107,21 +108,24 @@
 
 (defn dimmer-cue
   "Returns an effect which assigns a dynamic value to all the supplied
-  dimmers. If htp? is true, applies highest-takes-precedence (i.e.
-  compares the value to the previous assignment for the channel, and
-  lets the highest value remain). All dimmer cues are associated with
-  a master chain which can scale down the values to which they are set.
-  If none is supplied when creating the dimmer cue, the show's grand
-  master is used."
-  [level show fixtures & {:keys [htp? master] :or {htp? true master (:grand-master show)}}]
+  dimmers. If a `true` value is passed for `:htp?`, applies
+  _highest-takes-precedence_ (i.e. compares the value to the previous
+  assignment for the channel, and lets the highest value remain).
+
+  All dimmer cues are associated with a [[master]] chain which can
+  scale down the values to which they are set. If none is supplied
+  when creating the dimmer cue, the show's grand master is used."
+  {:doc/format :markdown}
+  [level fixtures & {:keys [htp? master] :or {htp? true master (:grand-master *show*)}}]
+  {:pre [(some? *show*)]}
   (let [level (params/bind-keyword-param level Number 255)
-        master (params/bind-keyword-param master Master (:grand-master show))]
+        master (params/bind-keyword-param master Master (:grand-master *show*))]
     (let [dimmers (gather-dimmer-channels fixtures)
-          snapshot (metro-snapshot (:metronome show))
-          level (params/resolve-unless-frame-dynamic level show snapshot)
-          master (params/resolve-param master show snapshot)  ; Can resolve now; value is inherently dynamic.
+          snapshot (metro-snapshot (:metronome *show*))
+          level (params/resolve-unless-frame-dynamic level *show* snapshot)
+          master (params/resolve-param master *show* snapshot)  ; Can resolve now; value is inherently dynamic.
           label (if (satisfies? params/IParam level) "<dynamic>" level)]
-      (build-parameterized-dimmer-cue (str "Dimmers=" label (when htp?) " (HTP)") level show dimmers htp? master))))
+      (build-parameterized-dimmer-cue (str "Dimmers=" label (when htp?) " (HTP)") level *show* dimmers htp? master))))
 
 ;; Deprecated now that you can pass an oscillated parameter to dimmer-cue
 (defn dimmer-oscillator

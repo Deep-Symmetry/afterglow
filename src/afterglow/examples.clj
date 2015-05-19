@@ -2,7 +2,7 @@
   "Show some simple ways to use Afterglow, and hopefully inspire
   exploration." {:author "James Elliott"}
   (:require [afterglow.effects.color :refer [color-cue]]
-            [afterglow.effects.dimmer :refer [dimmer-cue dimmer-oscillator master-set-level]]
+            [afterglow.effects.dimmer :refer [dimmer-cue master-set-level]]
             [afterglow.effects.fun :as fun]
             [afterglow.effects.oscillators :as oscillators]
             [afterglow.effects.params :as params]
@@ -58,7 +58,7 @@
                        [color "variable"]
                        :else
                        [(create-color color) color])]
-      (color-cue (str "Color: " desc) c sample-show (show/all-fixtures)))
+      (color-cue (str "Color: " desc) c (show/all-fixtures)))
     (catch Exception e
       (throw (Exception. (str "Can't figure out how to create color from " color) e)))))
 
@@ -73,7 +73,7 @@
   show variable, an oscillator, or (once geometry is implemented), the
   location of the fixture."
   [level]
-  (dimmer-cue level sample-show (show/all-fixtures)))
+  (dimmer-cue level (show/all-fixtures)))
 
 ;; Start simple with a cool blue color from all the lights
 (show/add-function! :color blue-cue)

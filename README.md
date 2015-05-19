@@ -147,7 +147,7 @@ Let's get a little fancy and ramp the dimmers up on a sawtooth curve each beat:
 
 ```clojure
 (show/add-function! :master
-                    (master-cue (params/build-oscillated-param sample-show
+                    (master-cue (params/build-oscillated-param
                                 (oscillators/sawtooth-beat))))
 ```
 
@@ -187,10 +187,9 @@ for details):
 How about a nice cycling rainbow color fade?
 
 ```clojure
-(def hue-param (params/build-oscillated-param
-  sample-show (oscillators/sawtooth-bar) :max 360))
+(def hue-param (params/build-oscillated-param (oscillators/sawtooth-bar) :max 360))
 (show/add-function! :color (global-color-cue
-  (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
+  (params/build-color-param :s 100 :l 50 :h hue-param)))
 ```
 
 > The Wiki has more examples of
@@ -240,9 +239,10 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   - [x] Finish wiki page
 - [x] Have metronome cue take metronome parameter and support dynamic
   parameters.
-- [ ] Consider having patched fixture hold a reference to the show.
+- [x] Consider having patched fixture hold a reference to the show.
   That way we could stop having to pass it so many places, though it
-  would make printing fixtures less useful.
+  would make printing fixtures less useful. (Not needed; dynamic
+  binding works better.)
 - [ ] Make pass over all source, flesh out API doc and preconditions.
 - [ ] Sparkle effect, essentially a particle generator with
   configurable maximum brightness, fade time, distribution.
