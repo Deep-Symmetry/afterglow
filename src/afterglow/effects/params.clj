@@ -136,7 +136,7 @@
   ([arg show snapshot]
    (resolve-unless-frame-dynamic arg show snapshot nil))
   ([arg show snapshot head]
-   {:pre [(some? arg) (some? show)]}
+   {:pre [(some? show)]}
    (if (satisfies? IParam arg)
      (if-not (frame-dynamic? arg)
        (resolve-param arg show snapshot head)
@@ -238,22 +238,28 @@
    `(bind-keyword-param* ~value ~type-expected ~default ~param-name)))
 
 (defn build-oscillated-param
-  "Returns a number parameter that is driven by an oscillator. By
-  default will be frame-dynamic, since it oscillates, but if you make
-  frame-dynamic false, the value will be fixed once it is assigned to
-  an effect, acting like a random number generator with the
-  oscillator's range."
-  [show osc & {:keys [min max metronome frame-dynamic] :or {min 0 max 255 frame-dynamic true}}]
+  "Returns a number parameter that is driven by
+  an [oscillator](https://github.com/brunchboy/afterglow/wiki/Oscillators).
+  By default will be frame-dynamic, since it oscillates, but if you
+  pass a `false` value for `:frame-dynamic', the value will be fixed
+  once it is assigned to an effect, acting like a random number
+  generator with the oscillator's range. If you don't specify a
+  `:metronome` to use, the
+  main [metronome](https://github.com/brunchboy/afterglow/wiki/Metronomes)
+  in [[*show*]] will be used."
+  {:doc/format :markdown}
+  [osc & {:keys [min max metronome frame-dynamic] :or {min 0 max 255 frame-dynamic true}}]
+  {:pre [(some? *show*) (ifn? osc)]}
   (let [min (bind-keyword-param min Number 0)
         max (bind-keyword-param max Number 255)
-        metronome (bind-keyword-param metronome Metronome (:metronome show))]
+        metronome (bind-keyword-param metronome Metronome (:metronome *show*))]
     (if-not (some (partial satisfies? IParam) [min max metronome])
       ;; Optimize the simple case of all constant parameters
       (let [range (- max min)
             dyn (boolean frame-dynamic)
             eval-fn (if (some? metronome)
-                      (fn [show _] (+ min (* range (osc (metro-snapshot metronome)))))
-                      (fn [show snapshot] (+ min (* range (osc snapshot)))))]
+                      (fn [_ _] (+ min (* range (osc (metro-snapshot metronome)))))
+                      (fn [_ snapshot] (+ min (* range (osc snapshot)))))]
         (when-not (pos? range)
           (throw (IllegalArgumentException. "min must be less than max")))
         (reify IParam
@@ -264,6 +270,7 @@
             this)))
       ;; Support the general case where we have an incoming variable parameter
       (let [dyn (boolean frame-dynamic)
+            bound-show *show*  ; Bind it now so we can pass it to other threads
             eval-fn (if (some? metronome)
                       (fn [show snapshot]
                         (resolve-oscillator show snapshot min max osc
@@ -275,9 +282,10 @@
           (frame-dynamic? [this] dyn)
           (result-type [this] Number)
           (resolve-non-frame-dynamic-elements [this show snapshot]
-            (build-oscillated-param show osc :min (resolve-unless-frame-dynamic min show snapshot)
-                                    :max (resolve-unless-frame-dynamic max show snapshot)
-                                    :metronome metronome :frame-dynamic dyn)))))))
+            (with-show bound-show
+              (build-oscillated-param osc :min (resolve-unless-frame-dynamic min bound-show snapshot)
+                                      :max (resolve-unless-frame-dynamic max bound-show snapshot)
+                                      :metronome metronome :frame-dynamic dyn))))))))
 
 ;; TODO metronome parameters, with access to the show metronome and other metronome variables
 

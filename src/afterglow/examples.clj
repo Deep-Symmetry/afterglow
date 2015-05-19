@@ -81,7 +81,7 @@
 
 ;; Get a little fancier with a beat-driven fade
 ;; (show/add-function! :master
-;;                     (master-cue (params/build-oscillated-param sample-show (oscillators/sawtooth-beat))))
+;;                     (master-cue (params/build-oscillated-param (oscillators/sawtooth-beat))))
 
 ;; To actually start the effects above (although only the last one assigned to any
 ;; given keyword will still be in effect), uncomment or evaluate the next line:
@@ -91,8 +91,7 @@
   "Set up a sedate rainbow fade and then layer on a sparkle effect to test
   effect mixing."
   []
-  (let [hue-param (params/build-oscillated-param
-                   sample-show (oscillators/sawtooth-phrase) :max 360)]
+  (let [hue-param (params/build-oscillated-param (oscillators/sawtooth-phrase) :max 360)]
     (show/add-function! :color
                         (global-color-cue
                          (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
@@ -107,8 +106,7 @@
   (show/add-midi-control-to-var-mapping "Slider" 0 0 :sparkle-lightness :max 100.0)
   (show/add-midi-control-to-var-mapping  "Slider" 0 17 :sparkle-fade :min 10 :max 2000)
   (show/add-midi-control-to-var-mapping  "Slider" 0 1 :sparkle-chance :max 0.3)
-  (let [hue-param (params/build-oscillated-param
-                   sample-show (oscillators/sawtooth-phrase) :max 360)
+  (let [hue-param (params/build-oscillated-param (oscillators/sawtooth-phrase) :max 360)
         sparkle-color-param (params/build-color-param sample-show :s 100 :l :sparkle-lightness :h :sparkle-hue)]
     (show/add-function! :color
                         (global-color-cue
