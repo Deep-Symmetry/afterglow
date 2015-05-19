@@ -463,7 +463,7 @@
    (end-function! key false))
   ([key force]
   {:pre [(some? *show*) (some? key)]}
-  (let [effect (find-function *show* key)
+  (let [effect (find-function key)
         key (keyword key)] 
     (if (and effect
              (or force ((:ending @(:active-functions *show*)) key)
