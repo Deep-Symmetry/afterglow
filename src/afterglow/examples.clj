@@ -112,8 +112,7 @@
                         (global-color-cue
                          (params/build-color-param :s 100 :l 50 :h hue-param)))
     (show/add-function! :sparkle
-                        (fun/sparkle sample-show (show/all-fixtures)
-                                     :color sparkle-color-param
+                        (fun/sparkle (show/all-fixtures) :color sparkle-color-param
                                      :chance :sparkle-chance :fade-time :sparkle-fade))))
 
 (defn ^:deprecated test-phases

@@ -11,6 +11,7 @@
             [afterglow.rhythm :as rhythm :refer [snapshot-bar-phase
                                                  snapshot-beat-phase
                                                  snapshot-down-beat?]]
+            [afterglow.show-context :refer [*show*]]
             [com.evocomputing.colors :as colors]
             [taoensso.timbre.profiling :refer [pspy]])
   (:import (afterglow.effects Effect)
@@ -24,7 +25,6 @@
   "The default color to flash on beats that are not down beats."
   (colors/darken (colors/create-color :yellow) 30))
 
-;; TODO take a metronome parameter and support dynamic parameters!
 (defn metronome-cue
   "Returns an effect function which flashes the supplied fixtures to
   the beats of the show metronome, emphasizing the down beat, which is
@@ -32,23 +32,24 @@
   color of the flashes can be controlled by the :down-beat-color
   and :other-beat-color arguments (defaulting to red with lightness
   70, and yellow with lightness 20, respectively)."
-  [show fixtures & {:keys [down-beat-color other-beat-color metronome]
-                    :or {down-beat-color default-down-beat-color
-                         other-beat-color default-other-beat-color
-                         metronome (:metronome show)}}]
+  [fixtures & {:keys [down-beat-color other-beat-color metronome]
+               :or {down-beat-color default-down-beat-color
+                    other-beat-color default-other-beat-color
+                    metronome (:metronome *show*)}}]
+  {:pre [(some? *show*)]}
   (let [down-beat-color (params/bind-keyword-param down-beat-color :com.evocomputing.colors/color default-down-beat-color)
         other-beat-color (params/bind-keyword-param other-beat-color :com.evocomputing.colors/color default-other-beat-color)
-        metronome (params/bind-keyword-param metronome Metronome (:metronome show))]
+        metronome (params/bind-keyword-param metronome Metronome (:metronome *show*))]
     (params/validate-param-type down-beat-color :com.evocomputing.colors/color)
     (params/validate-param-type other-beat-color :com.evocomputing.colors/color)
     (params/validate-param-type metronome Metronome)
     (let [heads (find-rgb-heads fixtures)
           running (atom true)
           ;; Need to use the show metronome as a snapshot to resolve our metronome parameter first
-          metronome (params/resolve-param metronome show (rhythm/metro-snapshot (:metronome show)))
+          metronome (params/resolve-param metronome *show* (rhythm/metro-snapshot (:metronome *show*)))
           snapshot (rhythm/metro-snapshot metronome)
-          down-beat-color (params/resolve-unless-frame-dynamic down-beat-color show snapshot)
-          other-beat-color (params/resolve-unless-frame-dynamic other-beat-color show snapshot)
+          down-beat-color (params/resolve-unless-frame-dynamic down-beat-color *show* snapshot)
+          other-beat-color (params/resolve-unless-frame-dynamic other-beat-color *show* snapshot)
           local-snapshot (atom nil)  ; Need to set up a snapshot at start of each run for all assigners
           f (fn [show snapshot target previous-assignment]
               (pspy :metronome-cue
@@ -90,13 +91,14 @@
            {}
            sparkles))))
 
-;; TODO add off-beat-penalty that slopes the chance downwards as the beat passes,
+;; TODO: add off-beat-penalty that slopes the chance downwards as the beat passes,
 ;; same for off-bar-penalty, so can prioritize beats and bars, perhaps pass an oscillator
 ;; so they can be scaled in time too. Eventually allow randomization of fade time and perhaps
 ;; hue and peak brightness, with control over how much they vary?
 (defn sparkle
   "A random sparkling effect like a particle generator over the supplied fixture heads."
-  [show fixtures & {:keys [color chance fade-time] :or {color default-sparkle-color chance 0.001 fade-time 500}}]
+  [fixtures & {:keys [color chance fade-time] :or {color default-sparkle-color chance 0.001 fade-time 500}}]
+  {:pre [(some? *show*)]}
   (let [color (params/bind-keyword-param color :com.evocomputing.colors/color default-sparkle-color)
         chance (params/bind-keyword-param chance Number 0.001)
         fade-time (params/bind-keyword-param fade-time Number 500)]
@@ -106,10 +108,10 @@
     (let [heads (find-rgb-heads fixtures)
           running (atom true)
           sparkles (atom {})  ; Currently a map from head ID to creation timestamp for active sparkles
-          snapshot (rhythm/metro-snapshot (:metronome show))
-          color (params/resolve-unless-frame-dynamic color show snapshot)
-          chance (params/resolve-unless-frame-dynamic chance show snapshot)
-          fade-time (params/resolve-unless-frame-dynamic fade-time show snapshot)]
+          snapshot (rhythm/metro-snapshot (:metronome *show*))
+          color (params/resolve-unless-frame-dynamic color *show* snapshot)
+          chance (params/resolve-unless-frame-dynamic chance *show* snapshot)
+          fade-time (params/resolve-unless-frame-dynamic fade-time *show* snapshot)]
       (Effect. "Sparkle"
               (fn [show snapshot]
                 ;; Continue running until all existing sparkles fade
