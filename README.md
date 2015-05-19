@@ -125,7 +125,15 @@ But for dimmer channels, there is an even better way of doing that:
 > So the above command dims the lights to 80% of their possible
 > brightness, no matter what else the cues are trying to do. See the
 > [dimmer effects API documentation](http://deepsymmetry.org/afterglow/doc/afterglow.effects.dimmer.html)
-> for more details.
+> for more details. Here is an example of what I call right away when
+> testing effects in my office with the little Korg nanoKONTROL 2
+> plugged in:
+
+```clojure
+(show/add-midi-control-to-master-mapping "slider" 0 7)
+```
+> And then the last fader acts as my grand master dimmer, and I can
+> quickly get relief from overly bright lights.
     
 Change the color to orange:
 
@@ -235,7 +243,7 @@ TODO: listing of options this app accepts once it can run as a standalone app.
 - [ ] Consider having patched fixture hold a reference to the show.
   That way we could stop having to pass it so many places, though it
   would make printing fixtures less useful.
-- [ ] Rename IEffect and other protocols to Clojure names.
+- [ ] Make pass over all source, flesh out API doc and preconditions.
 - [ ] Sparkle effect, essentially a particle generator with
   configurable maximum brightness, fade time, distribution.
   - [x] Get basic effect working until spatial features are available.
@@ -247,6 +255,10 @@ TODO: listing of options this app accepts once it can run as a standalone app.
     step can scale the output.
   - [x] All dimmer cues are assigned a master chain, defaulting to the
     grand master if none supplied.
+- [ ] Add button color method to IEffect so mapped RGB controllers can
+  have animated feedback, e.g. dim version of current effect color if
+  off, bright when on; flash it while ending. Update MIDI feedback
+  around ten times per second?
 - [ ] Compound effects: Have effect functions pass a context map to
     children with show, snapshot, own stuff? For example, so the
     children can be aware of build, duration, a shared palette, other
