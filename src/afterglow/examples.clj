@@ -94,7 +94,7 @@
   (let [hue-param (params/build-oscillated-param (oscillators/sawtooth-phrase) :max 360)]
     (show/add-function! :color
                         (global-color-cue
-                         (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
+                         (params/build-color-param :s 100 :l 50 :h hue-param)))
     (show/add-function! :sparkle
                         (fun/sparkle sample-show (show/all-fixtures sample-show) :chance 0.05 :fade-time 50))))
 
@@ -107,10 +107,10 @@
   (show/add-midi-control-to-var-mapping  "Slider" 0 17 :sparkle-fade :min 10 :max 2000)
   (show/add-midi-control-to-var-mapping  "Slider" 0 1 :sparkle-chance :max 0.3)
   (let [hue-param (params/build-oscillated-param (oscillators/sawtooth-phrase) :max 360)
-        sparkle-color-param (params/build-color-param sample-show :s 100 :l :sparkle-lightness :h :sparkle-hue)]
+        sparkle-color-param (params/build-color-param :s 100 :l :sparkle-lightness :h :sparkle-hue)]
     (show/add-function! :color
                         (global-color-cue
-                         (params/build-color-param sample-show :s 100 :l 50 :h hue-param)))
+                         (params/build-color-param :s 100 :l 50 :h hue-param)))
     (show/add-function! :sparkle
                         (fun/sparkle sample-show (show/all-fixtures)
                                      :color sparkle-color-param

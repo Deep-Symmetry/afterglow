@@ -56,8 +56,9 @@
 
 (defmacro validate-param-type
   "Ensure that a parameter satisfies a predicate, or that it satisfies
-  IParam and, when evaluated, returns a type that passes that predicate,
+  [[IParam]] and, when evaluated, returns a type that passes that predicate,
   throwing an exception otherwise."
+  {:doc/format :markdown}
   ([value type-expected]
    (let [arg value]
      `(check-type ~value ~type-expected ~(str arg))))
@@ -65,9 +66,10 @@
    `(check-type ~value ~type-expected ~name)))
 
 (defmacro validate-optional-param-type
-  "Ensure that a parameter, if not nil, satisfies a predicate, or that
-  it satisfies IParam and, when evaluated, returns a type that passes
+  "Ensure that a parameter, if not `nil`, satisfies a predicate, or that
+  it satisfies [[IParam]] and, when evaluated, returns a type that passes
   that predicate, throwing an exception otherwise."
+  {:doc/format :markdown}
   ([value type-expected]
    (let [arg value]
      `(validate-optional-param-type ~value ~type-expected ~(str arg))))
@@ -89,16 +91,19 @@
     have been resolved."))
 
 (defn head-param?
-  "Checks whether the argument is an IParam which also satisfies IHeadParam"
+  "Checks whether the argument is an [[IParam]] which also
+  satisfies [[IHeadParam]]."
+  {:doc/format :markdown}
   [arg]
   (and (satisfies? IParam arg) (satisfies? IHeadParam arg)))
 
 (defn resolve-param
-  "Takes an argument which may be a raw value, or may be an IParam. If
-  it is the latter, evaluates it and returns the resulting number.
-  Otherwise just returns the value that was passed in. If head is
-  supplied, and the parameter can use it at resolution time, then pass
-  it along."
+  "Takes an argument which may be a raw value, or may be
+  an [[IParam]]. If it is the latter, evaluates it and returns the
+  resulting value. Otherwise just returns the value that was passed
+  in. If `head` is supplied, and the parameter can use it at
+  resolution time, then pass it along."
+  {:doc/format :markdown}
   ([arg show snapshot]
    (resolve-param arg show snapshot nil))
   ([arg show snapshot head]
@@ -109,7 +114,9 @@
      arg)))
 
 (defn frame-dynamic-param?
-  "Checks whether the argument is an IParam which is dynamic to the frame level."
+  "Checks whether the argument is an [[IParam]] which is dynamic to
+  the frame level."
+  {:doc/format :markdown}
   [arg]
   (and (satisfies? IParam arg) (frame-dynamic? arg)))
 
@@ -127,12 +134,12 @@
       (+ min (* range (osc osc-snapshot))))))
 
 (defn resolve-unless-frame-dynamic
-  "If the first argument is a dynamic parameter which is not dynamic
-  all the way to the frame level, return the result of resolving it
-  now. If it is dynamic to the frame level, ask it to resolve any non
-  frame-dynamic elements. Otherwise return it unchanged. If head is
+  "If the first argument is an [[IParam]] which is not dynamic all the
+  way to the frame level, return the result of resolving it now. If it
+  is dynamic to the frame level, ask it to resolve any non
+  frame-dynamic elements. Otherwise return it unchanged. If `head` is
   supplied, and the parameter can use it at resolution time, then pass
-  it along."
+  it along." {:doc/format :markdown}
   ([arg show snapshot]
    (resolve-unless-frame-dynamic arg show snapshot nil))
   ([arg show snapshot head]
@@ -241,7 +248,7 @@
   "Returns a number parameter that is driven by
   an [oscillator](https://github.com/brunchboy/afterglow/wiki/Oscillators).
   By default will be frame-dynamic, since it oscillates, but if you
-  pass a `false` value for `:frame-dynamic', the value will be fixed
+  pass a `false` value for `:frame-dynamic`, the value will be fixed
   once it is assigned to an effect, acting like a random number
   generator with the oscillator's range. If you don't specify a
   `:metronome` to use, the
@@ -270,7 +277,6 @@
             this)))
       ;; Support the general case where we have an incoming variable parameter
       (let [dyn (boolean frame-dynamic)
-            bound-show *show*  ; Bind it now so we can pass it to other threads
             eval-fn (if (some? metronome)
                       (fn [show snapshot]
                         (resolve-oscillator show snapshot min max osc
@@ -282,18 +288,21 @@
           (frame-dynamic? [this] dyn)
           (result-type [this] Number)
           (resolve-non-frame-dynamic-elements [this show snapshot]
-            (with-show bound-show
-              (build-oscillated-param osc :min (resolve-unless-frame-dynamic min bound-show snapshot)
-                                      :max (resolve-unless-frame-dynamic max bound-show snapshot)
+            (with-show show
+              (build-oscillated-param osc :min (resolve-unless-frame-dynamic min show snapshot)
+                                      :max (resolve-unless-frame-dynamic max show snapshot)
                                       :metronome metronome :frame-dynamic dyn))))))))
 
 ;; TODO metronome parameters, with access to the show metronome and other metronome variables
 
 
 (defn interpret-color
-  "Accept a color as either a jolby/colors object, an IParam which will produce a color,
-  a keyword, which will be bound to a show variable by the caller, or a string which is
-  passed to the jolby/colors create-color function."
+  "Accept a color as either
+  a [jolby/colors](https://github.com/jolby/colors) object,
+  an [[IParam]] which will produce a color, a keyword, which will be
+  bound to a show variable by the caller, or a string which is passed
+  to the jolby/colors create-color function."
+  {:doc/format :markdown}
   [color]
   (cond (string? color)
         (colors/create-color color)
@@ -308,33 +317,40 @@
         color
 
         :else
-        (throw (IllegalArgumentException. (str "Unable to interpret color parameter")))))
+        (throw (IllegalArgumentException. (str "Unable to interpret color parameter:" color)))))
 
-(def ^:private default-color (colors/create-color [0 0 0]))
+  (def ^:private default-color "The default color for build-color-param."
+    (colors/create-color [0 0 0]))
 
-;; Someday it may be desirable to add parameters hue-delta,
-;; saturation-delta, lightness-delta, for adding to the base
-;; color values, and hue-scale, saturation-scale, and
-;; lightness-scale, for multiplying by the base values. For now,
-;; leaving these out, because they can perhaps be achieved in
-;; the setup of oscillators and/or controller mappings.
 (defn build-color-param
-  "Returns a dynamic color parameter. If supplied, color establishes
-  the base color to which other arguments are applied. The default
-  base color is black, in the form of all zero values for r, g, b, h,
-  s, and l. To this base it will then assign values for individual
-  color parameters. Not all combinations make sense, of course: you
-  will probably want to stick with some of h, s, and l, or r, g, and
-  b. If values from both are supplied, the r, g, and/or b assignments
-  will occur first, then then any h, s, and l assignments will be
-  applied to the resulting color. Finally, if any adjustment values
-  have been supplied for hue, saturation or lightness, they will be
-  added to the corresponding values (rotating around the hue circle,
-  clamped to the legal range for the others). If you do not specify a
-  value for frame-dynamic, this color parameter will be frame dynamic
-  if it has any incoming parameters which are."
-  [show & {:keys [color r g b h s l adjust-hue adjust-saturation adjust-lightness frame-dynamic]
+  "Returns a dynamic color parameter. If supplied, `:color` is passed
+  to [[interpret-color]] to establish the base color to which other
+  arguments are applied. The default base color is black, in the form
+  of all zero values for `r`, `g`, `b`, `h`, `s`, and `l`. To this
+  base it will then assign values passed in for individual color
+  parameters.
+
+  All incoming parameter values may be literal or dynamic, and may be
+  keywords, which will be dynamically bound to variables
+  in [[*show*]].
+
+  Not all parameter combinations make sense, of course: you will
+  probably want to stick with either some of `:h`, `:s`, and `:l`, or
+  some of `:r`, `:g`, and `:b`. If values from both are supplied, the
+  `:r`, `:g`, and/or `:b` assignments will occur first, then then any
+  `:h`, `:s`, and `:l` assignments will be applied to the resulting
+  color.
+
+  Finally, if any adjustment values have been supplied for hue,
+  saturation or lightness, they will be added to the corresponding
+  values (rotating around the hue circle, clamped to the legal range
+  for the others). If you do not specify an explicit value for
+  `:frame-dynamic`, this color parameter will be frame dynamic if it
+  has any incoming parameters which themselves are."
+  {:doc/format :markdown}
+  [& {:keys [color r g b h s l adjust-hue adjust-saturation adjust-lightness frame-dynamic]
       :or {color default-color frame-dynamic :default}}]
+  {:pre [(some? *show*)]}
   (let [c (bind-keyword-param (interpret-color color) :com.evocomputing.colors/color default-color "color")
         r (bind-keyword-param r Number 0)
         g (bind-keyword-param g Number 0)
@@ -401,18 +417,18 @@
                                   (swap! result-color #(colors/lighten % (float (resolve-param adjust-lightness show snapshot head)))))
                                 @result-color))
             resolve-fn (fn [show snapshot head]
-                         (build-color-param show
-                                            :color (resolve-unless-frame-dynamic c show snapshot head)
-                                            :r (resolve-unless-frame-dynamic r show snapshot head)
-                                            :g (resolve-unless-frame-dynamic g show snapshot head)
-                                            :b (resolve-unless-frame-dynamic b show snapshot head)
-                                            :h (resolve-unless-frame-dynamic h show snapshot head)
-                                            :s (resolve-unless-frame-dynamic s show snapshot head)
-                                            :l (resolve-unless-frame-dynamic l show snapshot head)
-                                            :adjust-hue (resolve-unless-frame-dynamic adjust-hue show snapshot head)
-                                            :adjust-saturation (resolve-unless-frame-dynamic adjust-saturation show snapshot head)
-                                            :adjust-lightness (resolve-unless-frame-dynamic adjust-lightness show snapshot head)
-                                            :frame-dynamic dyn))]
+                         (with-show show
+                           (build-color-param :color (resolve-unless-frame-dynamic c show snapshot head)
+                                              :r (resolve-unless-frame-dynamic r show snapshot head)
+                                              :g (resolve-unless-frame-dynamic g show snapshot head)
+                                              :b (resolve-unless-frame-dynamic b show snapshot head)
+                                              :h (resolve-unless-frame-dynamic h show snapshot head)
+                                              :s (resolve-unless-frame-dynamic s show snapshot head)
+                                              :l (resolve-unless-frame-dynamic l show snapshot head)
+                                              :adjust-hue (resolve-unless-frame-dynamic adjust-hue show snapshot head)
+                                              :adjust-saturation (resolve-unless-frame-dynamic adjust-saturation show snapshot head)
+                                              :adjust-lightness (resolve-unless-frame-dynamic adjust-lightness show snapshot head)
+                                              :frame-dynamic dyn)))]
         (reify
           IParam
           (evaluate [this show snapshot] (eval-fn show snapshot nil))
