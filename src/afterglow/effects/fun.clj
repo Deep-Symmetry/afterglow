@@ -36,9 +36,9 @@
                     :or {down-beat-color default-down-beat-color
                          other-beat-color default-other-beat-color
                          metronome (:metronome show)}}]
-  (let [down-beat-color (params/bind-keyword-param down-beat-color show :com.evocomputing.colors/color default-down-beat-color)
-        other-beat-color (params/bind-keyword-param other-beat-color show :com.evocomputing.colors/color default-other-beat-color)
-        metronome (params/bind-keyword-param metronome show Metronome (:metronome show))]
+  (let [down-beat-color (params/bind-keyword-param down-beat-color :com.evocomputing.colors/color default-down-beat-color)
+        other-beat-color (params/bind-keyword-param other-beat-color :com.evocomputing.colors/color default-other-beat-color)
+        metronome (params/bind-keyword-param metronome Metronome (:metronome show))]
     (params/validate-param-type down-beat-color :com.evocomputing.colors/color)
     (params/validate-param-type other-beat-color :com.evocomputing.colors/color)
     (params/validate-param-type metronome Metronome)
@@ -97,9 +97,9 @@
 (defn sparkle
   "A random sparkling effect like a particle generator over the supplied fixture heads."
   [show fixtures & {:keys [color chance fade-time] :or {color default-sparkle-color chance 0.001 fade-time 500}}]
-  (let [color (params/bind-keyword-param color show :com.evocomputing.colors/color default-sparkle-color)
-        chance (params/bind-keyword-param chance show Number 0.001)
-        fade-time (params/bind-keyword-param fade-time show Number 500)]
+  (let [color (params/bind-keyword-param color :com.evocomputing.colors/color default-sparkle-color)
+        chance (params/bind-keyword-param chance Number 0.001)
+        fade-time (params/bind-keyword-param fade-time Number 500)]
     (params/validate-param-type color :com.evocomputing.colors/color)
     (params/validate-param-type chance Number)
     (params/validate-param-type fade-time Number)

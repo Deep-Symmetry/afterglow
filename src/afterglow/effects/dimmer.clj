@@ -114,8 +114,8 @@
   If none is supplied when creating the dimmer cue, the show's grand
   master is used."
   [level show fixtures & {:keys [htp? master] :or {htp? true master (:grand-master show)}}]
-  (let [level (params/bind-keyword-param level show Number 255)
-        master (params/bind-keyword-param master show Master (:grand-master show))]
+  (let [level (params/bind-keyword-param level Number 255)
+        master (params/bind-keyword-param master Master (:grand-master show))]
     (let [dimmers (gather-dimmer-channels fixtures)
           snapshot (metro-snapshot (:metronome show))
           level (params/resolve-unless-frame-dynamic level show snapshot)

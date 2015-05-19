@@ -266,7 +266,7 @@
   [midi-device-name channel control-number & {:keys [master min max] :or {master (:grand-master *show*) min 0 max 100}}]
   {:pre [(some? *show*) (some? midi-device-name) (number? min) (number? max) (not= min max) (<= 0 min 100) (<= 0 max 100)
          (integer? channel) (<= 0 channel 15) (integer? control-number) (<= 0 control-number 127)]}
-  (let [bound (bind-keyword-param master *show* Master (:grand-master *show*))
+  (let [bound (bind-keyword-param master Master (:grand-master *show*))
         master (resolve-param bound *show* (metro-snapshot (:metronome *show*)))
         calc-fn (if (< min max)
                   (let [range (- max min)]
@@ -283,7 +283,7 @@
   [midi-device-name channel control-number & {:keys [master] :or {master (:grand-master *show*)}}]
   {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
          (integer? control-number) (<= 0 control-number 127)]}
-  (let [bound (bind-keyword-param master *show* Master (:grand-master *show*))
+  (let [bound (bind-keyword-param master Master (:grand-master *show*))
         master (resolve-param bound *show* (metro-snapshot (:metronome *show*)))]
     (midi/remove-control-mapping midi-device-name channel control-number (str "show:" (:id *show*) ":master" (.hashCode master)))))
 
@@ -294,7 +294,7 @@
   [midi-device-name channel control-number metronome mapped-fn]
   {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
          (integer? control-number) (<= 0 control-number 127) (ifn? mapped-fn)]}
-  (let [bound (bind-keyword-param metronome *show* Metronome (:metronome *show*))
+  (let [bound (bind-keyword-param metronome Metronome (:metronome *show*))
         metronome (resolve-param bound *show* metro-snapshot (:metronome *show*))]
     (midi/add-control-mapping midi-device-name channel control-number
                               (str "show:" (:id *show*) ":metronome" (.hashCode metronome))
@@ -327,7 +327,7 @@
   [midi-device-name channel control-number & {:keys [metronome] :or {metronome (:metronome *show*)}}]
   {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
          (integer? control-number) (<= 0 control-number 127)]}
-  (let [bound (bind-keyword-param metronome *show* Metronome (:metronome *show*))
+  (let [bound (bind-keyword-param metronome Metronome (:metronome *show*))
         metronome (resolve-param bound *show* metro-snapshot (:metronome *show*))]
     (midi/remove-control-mapping midi-device-name channel control-number
                                  (str "show:" (:id *show*) ":metronome" (.hashCode metronome)))))

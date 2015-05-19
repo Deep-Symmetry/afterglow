@@ -7,6 +7,7 @@
   and MIDI mappings), and other, not-yet-imagined things."
   {:author "James Elliott"}
   (:require [afterglow.rhythm :refer [metro-snapshot]]
+            [afterglow.show-context :refer [*show* with-show]]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
             [taoensso.timbre :refer [error]])
@@ -38,6 +39,7 @@
   predicate, throwing an exception otherwise. Used by the
   validate-param-type macros to do the actual type checking."
   [value type-expected name]
+  {:pre [(some? value) (some? type-expected) (some? name)]}
   (cond (class? type-expected)
         (when-not (or (instance? type-expected value)
                       (and (satisfies? IParam value)  (.isAssignableFrom type-expected (result-type value))))
@@ -134,6 +136,7 @@
   ([arg show snapshot]
    (resolve-unless-frame-dynamic arg show snapshot nil))
   ([arg show snapshot head]
+   {:pre [(some? arg) (some? show)]}
    (if (satisfies? IParam arg)
      (if-not (frame-dynamic? arg)
        (resolve-param arg show snapshot head)
@@ -144,25 +147,30 @@
 
 (defn build-variable-param
   "Create a dynamic parameter whose value is determined by the value
-  held in a show variable at the time evaluation is performed. Unless
-  :frame-dynamic is passed a false value, this evaluation will happen
-  every frame. If no type-compatible value is found in the show
-  variable, a default value is returned. That will be the number zero,
-  unless otherwise specified by :default. The type expected (and
-  returned) by this parameter will be numeric, unless a different
-  value is passed for :type, (in which case a new type-compatible
-  default value must be specified :default). If the show variable
-  already holds a dyamic parameter at the time this variable parameter
-  is created, the binding is short-circuited to return that existing
-  parameter rather than creating a new one, so the type must be
-  compatible. If adjust-fn is supplied, it will be called with the
-  value of the variable and its return value will be used as the value
-  of the dynamic parameter. It must return a compatible type or its
-  result will be discarded."
-  [show variable & {:keys [frame-dynamic type default adjust-fn] :or {frame-dynamic true type Number default 0}}]
+  held in a variable of [[*show*]] at the time evaluation is
+  performed. Unless `:frame-dynamic` is passed a false value, this
+  evaluation will happen every frame.
+
+  If no type-compatible value is found in the show variable, a default
+  value is returned. That will be the number zero, unless otherwise
+  specified by `:default`. The type expected (and returned) by this
+  parameter will be numeric, unless a different value is passed for
+  `:type`, (in which case a new type-compatible `:default` value must
+  be specified).
+
+  If the named show variable already holds a dyamic parameter at the
+  time this variable parameter is created, the binding is
+  short-circuited to return that existing parameter rather than
+  creating a new one, so the type must be compatible. If `:adjust-fn`
+  is supplied, it will be called with the value of the variable and
+  its return value will be used as the value of the dynamic parameter.
+  It must return a compatible type or its result will be discarded."
+  {:doc/format :markdown}
+  [variable & {:keys [frame-dynamic type default adjust-fn] :or {frame-dynamic true type Number default 0}}]
+  {:pre [(some? *show*)]}
   (validate-param-type default type)
   (let [key (keyword variable)
-        current (get @(:variables show) key)]
+        current (get @(:variables *show*) key)]
     (if (and (some? current) (satisfies? IParam current))
       ;; Found a parameter at the named variable, try to bind now.
       (do (validate-param-type current type key)
@@ -201,8 +209,20 @@
             this))))))
 
 (defn bind-keyword-param*
+  "Helper function that does the work of the [[bind-keyword-param]]
+  macro, which passes it the name of the parameter being bound for
+  nice error messages."
+  {:doc/format :markdown}
+  [param type-expected default param-name]
+  (when (some? param)
+    (if (keyword? param)
+      (build-variable-param param :type type-expected :default default)
+      ;; No keyword to bind to, just validate
+      (validate-param-type param type-expected param-name))))
+
+(defmacro bind-keyword-param
   "If an input to a dynamic parameter has been passed as a keyword,
-  treat that as a reference to a show variable. If that variable
+  treat that as a reference to a variable in [[*show*]]. If that variable
   currently holds a dynamic parameter, try to bind it directly (throw
   an exception if the types do not match). Otherwise, build a new
   variable param to bind to future values of that show variable, and
@@ -210,22 +230,12 @@
   show variable is of an incompatible type for the parameter being
   bound. If the input parameter is not a keyword, simply validate its
   type."
-  [param show type-expected default param-name]
-  (when (some? param)
-    (if (keyword? param)
-      (build-variable-param show param :type type-expected :default default)
-      ;; No keyword to bind to, just validate
-      (validate-param-type param type-expected param-name))))
-
-(defmacro bind-keyword-param
-  "If an input to a dynamic parameter has been passed as a keyword,
-  treat that as a reference to a show variable. If the input parameter
-  is not a keyword, simply validate its type."
-  ([value show type-expected default]
+  {:doc/format :markdown}
+  ([value type-expected default]
    (let [arg value]
-     `(bind-keyword-param* ~value ~show ~type-expected ~default ~(str arg))))
-  ([value show type-expected default param-name]
-   `(bind-keyword-param* ~value ~show ~type-expected ~default ~param-name)))
+     `(bind-keyword-param* ~value ~type-expected ~default ~(str arg))))
+  ([value type-expected default param-name]
+   `(bind-keyword-param* ~value ~type-expected ~default ~param-name)))
 
 (defn build-oscillated-param
   "Returns a number parameter that is driven by an oscillator. By
@@ -234,9 +244,9 @@
   an effect, acting like a random number generator with the
   oscillator's range."
   [show osc & {:keys [min max metronome frame-dynamic] :or {min 0 max 255 frame-dynamic true}}]
-  (let [min (bind-keyword-param min show Number 0)
-        max (bind-keyword-param max show Number 255)
-        metronome (bind-keyword-param metronome show Metronome (:metronome show))]
+  (let [min (bind-keyword-param min Number 0)
+        max (bind-keyword-param max Number 255)
+        metronome (bind-keyword-param metronome Metronome (:metronome show))]
     (if-not (some (partial satisfies? IParam) [min max metronome])
       ;; Optimize the simple case of all constant parameters
       (let [range (- max min)
@@ -317,16 +327,16 @@
   if it has any incoming parameters which are."
   [show & {:keys [color r g b h s l adjust-hue adjust-saturation adjust-lightness frame-dynamic]
       :or {color default-color frame-dynamic :default}}]
-  (let [c (bind-keyword-param (interpret-color color) show :com.evocomputing.colors/color default-color "color")
-        r (bind-keyword-param r show Number 0)
-        g (bind-keyword-param g show Number 0)
-        b (bind-keyword-param b show Number 0)
-        h (bind-keyword-param h show Number 0)
-        s (bind-keyword-param s show Number 0)
-        l (bind-keyword-param l show Number 0)
-        adjust-hue (bind-keyword-param adjust-hue show Number 0)
-        adjust-saturation (bind-keyword-param adjust-saturation show Number 0)
-        adjust-lightness (bind-keyword-param adjust-lightness show Number 0)]
+  (let [c (bind-keyword-param (interpret-color color) :com.evocomputing.colors/color default-color "color")
+        r (bind-keyword-param r Number 0)
+        g (bind-keyword-param g Number 0)
+        b (bind-keyword-param b Number 0)
+        h (bind-keyword-param h Number 0)
+        s (bind-keyword-param s Number 0)
+        l (bind-keyword-param l Number 0)
+        adjust-hue (bind-keyword-param adjust-hue Number 0)
+        adjust-saturation (bind-keyword-param adjust-saturation Number 0)
+        adjust-lightness (bind-keyword-param adjust-lightness Number 0)]
     (if-not (some (partial satisfies? IParam) [c r g b h s l adjust-hue adjust-saturation adjust-lightness])
       ;; Optimize the degenerate case of all constant parameters
       (let [result-color (atom c)]
