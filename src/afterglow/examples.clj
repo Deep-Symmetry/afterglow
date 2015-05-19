@@ -66,7 +66,7 @@
   "An effect which assigns all fixtures to a nice blue color."
   (global-color-cue "slateblue"))
 
-(defn master-cue
+(defn global-dimmer-cue
   "Return an effect function that sets all the dimmers in the sample
   rig. Originally this had to be to a static value, but now that
   dynamic parameters exist, it can vary in response to a MIDI mapped
@@ -77,11 +77,11 @@
 
 ;; Start simple with a cool blue color from all the lights
 (show/add-function! :color blue-cue)
-(show/add-function! :master (master-cue 255))
+(show/add-function! :dimmers (global-dimmer-cue 255))
 
 ;; Get a little fancier with a beat-driven fade
-;; (show/add-function! :master
-;;                     (master-cue (params/build-oscillated-param (oscillators/sawtooth-beat))))
+;; (show/add-function! :dimmers (global-dimmer-cue
+;;   (params/build-oscillated-param (oscillators/sawtooth-beat))))
 
 ;; To actually start the effects above (although only the last one assigned to any
 ;; given keyword will still be in effect), uncomment or evaluate the next line:
