@@ -538,7 +538,7 @@
       (throw (IllegalStateException. (str "Cannot complete patch: "
                                           (clojure.string/join ", " (vec (for [[k v] conflicts]
                                                                            (str "Channel " k " in use by fixture " v))))))))
-    (assoc fixtures key (assoc fixture :key key :id (next-id) :show show))))
+    (assoc fixtures key (assoc fixture :key key :id (next-id)))))
 
 (defn patch-fixture!
   "Patch a fixture to a universe in [[*show*]] at a starting DMX

@@ -3,10 +3,9 @@
   {:author "James Elliott"})
 
 (defn printable
-  "Strips a mapped fixture list of keys which make it impossible to
-  print, such as the back links from the heads to the entire fixture,
-  and from the fixture to show in which it is patched."
+  "Strips a mapped fixture list of keys which make it a pain to print,
+  such as the back links from the heads to the entire fixture."
   [fixtures]
-  (map (fn [fixture] (update-in (dissoc fixture :show) [:heads]
-                                #(map (fn [head] (dissoc head :fixture :show)) %)))
+  (map (fn [fixture] (update-in fixture [:heads]
+                                #(map (fn [head] (dissoc head :fixture)) %)))
        fixtures))
