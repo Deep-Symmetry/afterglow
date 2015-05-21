@@ -53,14 +53,14 @@
   (let [snapshot (rhythm/metro-snapshot (:metronome show))]
     (map #(build-color-parameter-assigner % param show snapshot) heads)))
 
-;; TODO support different kinds of color mixing, blending, HTP...
-;; TODO someday support color wheels too, optionally, with a tolerance level
-;; Then can combine with a conditional dimmer setting if a color was assigned.
+;; TODO: Support different kinds of color mixing, blending, HTP...
+;; TODO: Someday support color wheels too, optionally, with a tolerance level
+;;       Then can combine with a conditional dimmer setting if a color was assigned.
 (defn color-cue
   "Returns an effect which assigns a color parameter to all heads of
   the fixtures supplied when invoked."
   [name color fixtures]
-  {:pre [(some? name) (some? *show*)]}
+  {:pre [(some? name) (some? *show*) (seq? fixtures)]}
   (params/validate-param-type color :com.evocomputing.colors/color)
   (let [heads (filter #(= 3 (count (filter #{:red :green :blue} (map :color (:channels %))))) (channels/expand-heads fixtures))
         assigners (build-color-parameter-assigners heads color *show*)]

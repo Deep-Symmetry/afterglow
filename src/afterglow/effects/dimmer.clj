@@ -103,7 +103,7 @@
                                   (or previous-assignment 0))))
             (fn [show snapshot target previous-assignment]
               (clamp-rgb-int (master-scale master (params/resolve-param level show snapshot)))))
-        assigners (chan-fx/build-channel-assigners channels f)]
+        assigners (chan-fx/build-raw-channel-assigners channels f)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
 (defn dimmer-cue
@@ -152,4 +152,4 @@
             (fn [show snapshot target previous-assignment]
               (pspy :dimmer-oscillator
                     (+ min (* range (osc snapshot))))))]
-    (chan-fx/build-simple-channel-cue (str "Dimmer Oscillator " min "-" max (when htp? " (HTP)")) f chans)))
+    (chan-fx/raw-channel-cue (str "Dimmer Oscillator " min "-" max (when htp? " (HTP)")) f chans)))

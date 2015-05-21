@@ -3,6 +3,7 @@
   {:author "James Elliott"}
   (:require [afterglow.effects :refer [always-active end-immediately]]
             [afterglow.effects.params :as params]
+            [afterglow.show-context :refer [*show*]]
             [afterglow.util :refer [ubyte]]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :refer [clamp-rgb-int]])
@@ -25,7 +26,7 @@
   [channel f]
   (Assigner. :channel (keyword (str "u" (:universe channel) "a" (:address channel))) channel f))
 
-(defn build-channel-assigners
+(defn build-raw-channel-assigners
   "Returns a list of assigners which apply a channel assignment
   function to all the supplied channels."
   [channels f]
@@ -41,29 +42,32 @@
             (fn [show snapshot target previous-assignment]
               (max level (or (params/resolve-param previous-assignment show snapshot) 0)))
             (fn [show snapshot target previous-assignment] level))
-        assigners (build-channel-assigners channels f)]
+        assigners (build-raw-channel-assigners channels f)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
-(defn build-parameterized-channel-cue
+(defn channel-cue
   "Returns an effect which assigns a dynamic value to all the supplied
   channels. If htp? is true, applies highest-takes-precedence (i.e.
   compares the value to the previous assignment for the channel, and
   lets the highest value remain)."
   [name level channels & {:keys [htp?]}]
+  {:pre [(some? name) (some? *show*) (seq? channels)]}
   (let [f (if htp?
             (fn [show snapshot target previous-assignment]
               (max (clamp-rgb-int (params/resolve-param level show snapshot))
                    (or (params/resolve-param previous-assignment show snapshot) 0)))
             (fn [show snapshot target previous-assignment]
               (clamp-rgb-int (params/resolve-param level show snapshot))))
-        assigners (build-channel-assigners channels f)]
+        assigners (build-raw-channel-assigners channels f)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
-(defn build-simple-channel-cue
-  "Returns an effect which simply calls a function to obtain the current level for all the supplied channels,
-  runs forever, and ends immediately when requested."
+(defn raw-channel-cue
+  "Returns an effect which simply calls a function to obtain the
+  current non-dynamic level for all the supplied channels, runs
+  forever, and ends immediately when requested."
   [name f channels]
-  (let [assigners (build-channel-assigners channels f)]
+  {:pre [(some? name) (ifn? f) (seq? channels)]}
+  (let [assigners (build-raw-channel-assigners channels f)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
 (defn channel-assignment-resolver
