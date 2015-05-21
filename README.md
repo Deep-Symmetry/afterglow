@@ -291,6 +291,14 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   this [article](http://java.sys-con.com/node/99792).
   - [ ] Wow, this may be exactly what I need: Java code for converting Quaternions to Euler Angles:
   http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
+  The site is in general an amazing reference for the kind of geometry I need to learn.
+  - [ ] This seems to be the formula I need to figure out the angles
+    to send a light to make it face a particular direction (the
+    selected, top answer):
+    http://stackoverflow.com/questions/1251828/calculate-rotations-to-look-at-a-3d-point
+    and transform.clj has an implementation in invert-direction. Now I
+    just need to test it with an actual light!
+  - [ ] Remember that Vector3d has nice methods like angle (calculate angle to another Vector3d), length, cross, dot...
 - [ ] Use [claypoole](https://clojars.org/com.climate/claypoole) for parallelism.
 - [ ] Add OSC support (probably using [Overtone&rsquo;s implementation](https://github.com/rosejn/osc-clj)) for controller support, and MIDI as well.
 - [ ] Serious references for color manipulation, but in [Julia](https://github.com/timholy/Color.jl).
