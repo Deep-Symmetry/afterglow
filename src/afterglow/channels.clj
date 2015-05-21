@@ -58,20 +58,27 @@
 
 ;; TODO: is this a good range data structure for finding which one a value falls into?
 (defn full-range
-  "Returns a range spefication that encompasses all possible DMX values as a single variable setting."
-  [range-type label]
+  "Returns a function spefication that encompasses all
+  possible DMX values as a single range."
+  [range-type function-type label]
   {:start 0
    :end 255
-   :type range-type
+   :range range-type
+   :type function-type
    :label label})
 
 (defn fine-channel
-  "Defines a channel for which sometimes multi-byte values are desired, via a separate
-channel which specifies the fractional value to be added to the main channel."
-  [chan-type offset & {:keys [fine-offset range-label]}]
-  (let [base (assoc (channel offset)
+  "Defines a channel for which sometimes multi-byte values are
+  desired, via a separate channel which specifies the fractional value
+  to be added to the main channel."
+  [chan-type offset & {:keys [fine-offset function-type function-name] :or {function-type chan-type}}]
+  {:pre (some? chan-type) (integer? offset) (<= 1 offset 512)}
+  (let [chan-type (keyword chan-type)
+        function-type (keyword function-type)
+        function-name (or function-name (clojure.string/capitalize (name function-type)))
+        base (assoc (channel offset)
                     :type chan-type
-                    :ranges [(full-range :variable (or range-label (clojure.string/capitalize (name chan-type))))])]
+                    :functions [(full-range :variable function-type function-name)])]
     (if fine-offset
       (assoc base :fine-offset fine-offset)
       base)))
@@ -84,10 +91,13 @@ channel which specifies the fractional value to be added to the main channel."
    (fine-channel :dimmer offset :fine-offset fine-offset :range-label "Intensity")))
 
 (defn color
-  [offset kwd & {:keys [hue label]}]
-  (-> (fine-channel :color offset :range-label (or label (clojure.string/capitalize (name kwd))))
-      (assoc :color (keyword kwd))
-      (cond-> hue (assoc :hue hue))))
+  [offset color & {:keys [hue function-label fine-offset]}]
+  {:pre (some? color)}
+  (let [color (keyword color)]
+    (-> (fine-channel :color offset :fine-offset fine-offset
+                      :function-type color :function-label (or function-label (clojure.string/capitalize (name color))))
+        (assoc :color (keyword color))
+        (cond-> hue (assoc :hue hue)))))
 
 (defn pan
   ([offset]
