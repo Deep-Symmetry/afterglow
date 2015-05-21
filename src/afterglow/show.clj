@@ -87,7 +87,9 @@
 ;; TODO: Log warning if this takes longer than refresh-interval.
 (defn- send-dmx
   "Calculate and send the next frame of DMX values for the universes
-  and effects run by this show."
+  and effects run by this show, as described in
+  [The Rendering Loop](https://github.com/brunchboy/afterglow/wiki/The-Rendering-Loop)."
+  {:doc/format :markdown}
   [show buffers]
   (try
     (let [snapshot (metro-snapshot (:metronome show))]
