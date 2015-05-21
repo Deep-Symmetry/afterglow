@@ -54,6 +54,7 @@
 
   {:author "James Elliott"
    :doc/format :markdown}
+  (:require [afterglow.show-context :refer :all])
   (:import [javax.media.j3d Transform3D]
            [javax.vecmath Point3d Vector3d]))
 
@@ -156,9 +157,30 @@
     (taoensso.timbre/info "Euler transformed:\n" euler-point)
     (taoensso.timbre/info "Equal?" (.equals compound-point euler-point))))
 
-#_(defn show-head-positions
+(defn show-head-positions
   [fixture-key]
-  (map #(select-keys % [:x :y :z]) (:heads ((keyword fixture-key) @(:fixtures afterglow.examples/sample-show)))))
+  (map #(select-keys % [:x :y :z]) (:heads ((keyword fixture-key) @(:fixtures *show*)))))
+
+(defn transform-direction
+  [fixture-key]
+  (let [rotation (Transform3D. (:rotation ((keyword fixture-key) @(:fixtures *show*))))
+        direction (Vector3d. 0 0 1)]
+    (.transform rotation direction)
+    direction))
+
+(defn invert-direction
+  [fixture-key]
+  (let [rotation (Transform3D. (:rotation ((keyword fixture-key) @(:fixtures *show*))))
+        direction (Vector3d. 0 0 1)]
+    (.transform rotation direction)
+    (println "Inverted direction: " direction)
+    (let [rotx (Math/atan2 (. direction y) (. direction z))
+          roty (if (pos? (. direction z))
+                 (- (Math/atan2 (* (. direction x) (Math/cos rotx)) (. direction z)))
+                 (Math/atan2 (* (. direction x) (Math/cos rotx)) (. direction z)))]
+      (println "rotx: " rotx ", roty: " roty))))
+
+
 
 ;; Examples until I really write something
 (def foo (Transform3D.))
