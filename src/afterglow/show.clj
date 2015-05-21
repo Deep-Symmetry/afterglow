@@ -485,24 +485,25 @@
                                       :ending #{}}))
 
 (defn- address-map-internal
-  "Helper function which returns a map whose keys are all addresses in use in a given universe
-  within a fixture map, and whose values are the fixture key using that universe address."
+  "Helper function which returns a sorted map whose keys are all
+  addresses in use in a given universe within a fixture map, and whose
+  values are the fixture key using that universe address."
   [fixtures universe]
   (reduce (fn [addr-map [k v]] (if (= universe (:universe (first (:channels v))))
                                  (into addr-map (for [address (chan/all-addresses [v])]
                                                   [address (or (:key v) (:key (:fixture v)))]))
-                                 addr-map)) {} fixtures))
+                                 addr-map)) (sorted-map) fixtures))
 
 (defn address-map
-  "Returns a map whose keys are the IDs of the universes managed
-  by [[*show*]], and whose values are address maps for the
+  "Returns a sorted map whose keys are the IDs of the universes
+  managed by [[*show*]], and whose values are address maps for the
   corresponding universe. The address maps have keys for every channel
   in use by the show in that universe, and the value is the key of the
   fixture using that address."
   {:doc/format :markdown}
   []
   {:pre [(some? *show*)]}
-  (into {} (for [u (:universes *show*)]
+  (into (sorted-map) (for [u (:universes *show*)]
              [u (address-map-internal @(:fixtures *show*) u)])))
 
 (defn remove-fixture!
