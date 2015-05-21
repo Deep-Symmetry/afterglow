@@ -73,4 +73,5 @@
 (defn channel-assignment-resolver
   "Resolves the assignment of a level to a single DMX channel."
   [show buffers snapshot target assignment]
-  (apply-channel-value buffers target assignment))
+  (let [resolved params/resolve-param assignment show snapshot target]  ; In case it is frame dynamic
+    (apply-channel-value buffers target resolved)))
