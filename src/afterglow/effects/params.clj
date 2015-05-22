@@ -293,9 +293,6 @@
                                       :max (resolve-unless-frame-dynamic max show snapshot)
                                       :metronome metronome :frame-dynamic dyn))))))))
 
-;; TODO metronome parameters, with access to the show metronome and other metronome variables
-
-
 (defn interpret-color
   "Accept a color as either
   a [jolby/colors](https://github.com/jolby/colors) object,
@@ -439,4 +436,12 @@
           (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))
           (resolve-non-frame-dynamic-elements-for-head [this show snapshot head] (resolve-fn show snapshot head)))))))
 
-;; TODO some kind of random parameter?
+(defn build-linear-spatial-param
+  "Returns a dynamic number parameter related to the physical
+  arrangement of the supplied fixture heads."
+  {:doc/format :markdown}
+  [heads & {:keys [start end circular] :or {start 0 end 255 }}]
+  {:pre [(some? *show*) (seq? heads)]}
+)
+
+;; TODO: some kind of random parameter?
