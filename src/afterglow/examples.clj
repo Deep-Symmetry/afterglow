@@ -130,3 +130,26 @@
                         (snapshot-beat-phase snap 1) (snapshot-beat-phase snap 2) (snapshot-beat-phase snap 4)
                         (snapshot-beat-phase snap 1/2) (snapshot-beat-phase snap 1/4) (snapshot-beat-phase snap 3/4)))
        (Thread/sleep 33)))))
+
+;; Temporary for working on light aiming code
+(show/add-function!
+ :tilt-blade (afterglow.effects.channel/channel-cue
+              "Tilt Blade"
+              (params/build-variable-param :tilt)
+              (afterglow.channels/extract-channels (show/fixtures-named :blade) #(= (:type %) :tilt))))
+
+(show/add-function!
+ :pan-blade (afterglow.effects.channel/channel-cue
+             "Pan Blade"
+             (params/build-variable-param :pan)
+             (afterglow.channels/extract-channels (show/fixtures-named :blade) #(= (:type %) :pan))))
+
+(show/add-midi-control-to-var-mapping "Slider" 0 4 :tilt :max 255.99)
+(show/add-midi-control-to-var-mapping "Slider" 0 20 :pan :max 255.99)
+
+(require '(afterglow [transform :as transform]))
+(defn test-position
+  [fixture-key x y z]
+  (let [[pan tilt] (transform/calculate-position fixture-key x y z)]
+          (show/set-variable! :pan pan)
+      (show/set-variable! :tilt tilt)))

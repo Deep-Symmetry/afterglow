@@ -181,7 +181,7 @@
   [fixture-key x y z]
   (let [rotation (Transform3D. (:rotation ((keyword fixture-key) @(:fixtures *show*))))
         direction (Vector3d. x y z)]
-    #_(.invert rotation)
+    (.invert rotation)
     #_(.normalize direction)
     (.transform rotation direction)
     (println "Inverted direction: " direction)
@@ -217,24 +217,9 @@
                   a
                   b)) legal))))
 
-(show/add-function!
- :tilt-blade (afterglow.effects.channel/channel-cue
-              "Tilt Blade"
-              (params/build-variable-param :tilt)
-              (afterglow.channels/extract-channels (show/fixtures-named :blade) #(= (:type %) :tilt))))
-
-(show/add-function!
- :pan-blade (afterglow.effects.channel/channel-cue
-             "Pan Blade"
-             (params/build-variable-param :pan)
-             (afterglow.channels/extract-channels (show/fixtures-named :blade) #(= (:type %) :pan))))
-
-(show/add-midi-control-to-var-mapping "Slider" 0 4 :tilt :max 255.99)
-(show/add-midi-control-to-var-mapping "Slider" 0 20 :pan :max 255.99)
-
 (defn calculate-position
   [fixture-key x y z]
-  (let [direction (Vector3d. x y z)
+  (let [direction (invert-direction fixture-key x y z)
         rotation (Transform3D.)
         roty (Math/atan2 (. direction x) (. direction z))]
     (.rotY rotation (- roty))
@@ -244,10 +229,7 @@
           pan (find-closest-legal-dmx-value-for-angle roty (:pan-center fixture) (:pan-half-circle fixture))
           tilt (find-closest-legal-dmx-value-for-angle rotx (:tilt-center fixture) (:tilt-half-circle fixture))]
       (println "rotx: " (/ rotx Math/PI) " Pi, roty: " (/ roty Math/PI) " Pi.")
-      (afterglow.show/set-variable! :pan pan)
-      (afterglow.show/set-variable! :tilt tilt)
       [pan tilt])))
-
 
 
 ;; Examples until I really write something
