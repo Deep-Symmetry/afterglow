@@ -24,7 +24,7 @@
                                     (chan/dimmer 10)]})
           :name "Blizzard Blade RGBW"
           :mode mode
-          :pan-center 84 :pan-circle 170 :tilt-center 8 :tilt-circle -428)))
+          :pan-center 84 :pan-half-circle 85 :tilt-center 8 :tilt-half-circle -214)))
 
 (def ^:private ws-head-offsets
   "The X-axis positions of the eight weather system heads"
