@@ -54,7 +54,8 @@
 
   {:author "James Elliott"
    :doc/format :markdown}
-  (:require [afterglow.show-context :refer :all])
+  (:require [afterglow.show-context :refer :all]
+            [clojure.math.numeric-tower :as math])
   (:import [javax.media.j3d Transform3D]
            [javax.vecmath Point3d Vector3d]))
 
@@ -168,17 +169,68 @@
     (.transform rotation direction)
     direction))
 
+(def ^:private two-pi (* 2 Math/PI))
+
+(defn wrap-to-positive-rotation
+  [angle]
+  (if (neg? angle)
+    (+ angle two-pi)
+    angle))
+
 (defn invert-direction
-  [fixture-key]
+  [fixture-key x y z]
   (let [rotation (Transform3D. (:rotation ((keyword fixture-key) @(:fixtures *show*))))
-        direction (Vector3d. 0 0 1)]
+        direction (Vector3d. x y z)]
+    #_(.invert rotation)
+    #_(.normalize direction)
     (.transform rotation direction)
     (println "Inverted direction: " direction)
-    (let [rotx (Math/atan2 (. direction y) (. direction z))
-          roty (if (pos? (. direction z))
-                 (- (Math/atan2 (* (. direction x) (Math/cos rotx)) (. direction z)))
-                 (Math/atan2 (* (. direction x) (Math/cos rotx)) (. direction z)))]
-      (println "rotx: " rotx ", roty: " roty))))
+    direction))
+
+(defn angle-to-dmx-value
+  [angle center-value half-circle-value]
+  (+ center-value (* (/ angle Math/PI) half-circle-value)))
+
+(defn distance-from-legal-dmx-value
+  [value]
+  (if (neg? value)
+    (- value)
+    (- value 255)))
+
+(defn find-closest-legal-dmx-value-for-angle
+  [angle center-value half-circle-value]
+  (let [candidates (map #(angle-to-dmx-value % center-value half-circle-value) [angle (+ two-pi angle) (- two-pi angle)])
+        legal (filter #(<= 0 % 255.99) candidates)]
+    (taoensso.timbre/spy :info "candidates:" candidates)
+    (taoensso.timbre/spy :info "legal:" legal)
+    (if (empty? legal)
+      ;; No legal values, return the closest legal value to the candidate whose value
+      ;; is closest to the valid DMX range.
+      (let [closest (reduce (fn [a b]
+                              (if (< (distance-from-legal-dmx-value a) (distance-from-legal-dmx-value b))
+                                a
+                                b)) candidates)]
+        (if (neg? closest) 0 255.99))
+      ;; We have legal values, return the one cloest to the center value for the fixture
+      (reduce (fn [a b]
+                (if (< (math/abs (- a center-value)) (math/abs (- b center-value)))
+                  a
+                  b)) legal))))
+
+(defn calculate-position
+  [fixture-key x y z]
+  (let [direction (Vector3d. x y z)
+        roty (Math/atan2 (. direction x) (. direction z))
+        rotx (if (>= (. direction z) 0)
+               (- (Math/atan2 (* (. direction y) (Math/cos roty)) (. direction z)))
+               (Math/atan2 (* (. direction y) (Math/cos roty)) (- (. direction z))))
+        fixture ((keyword fixture-key) @(:fixtures *show*))
+        pan (find-closest-legal-dmx-value-for-angle roty (:pan-center fixture) (:pan-half-circle fixture))
+        tilt (find-closest-legal-dmx-value-for-angle rotx (:tilt-center fixture) (:tilt-half-circle fixture))]
+    (println "rotx: " (/ rotx Math/PI) " Pi, roty: " (/ roty Math/PI) " Pi.")
+    (afterglow.show/set-variable! :pan pan)
+    (afterglow.show/set-variable! :tilt tilt)
+    [pan tilt]))
 
 
 

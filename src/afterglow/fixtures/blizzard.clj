@@ -8,7 +8,8 @@
 
 (defn blade-rgbw
   "[Blade RGBW](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&layout=item&id=177&Itemid=157)
-  moving head."
+  moving head. The default mounting orientation is sitting on its feet with the LCD right side up and facing away
+  from the audience. In this orientation, at a pan of 0, the beam is straight into the audience."
   {:doc/format :markdown}
   ([]
    (blade-rgbw :15-channel))
@@ -22,7 +23,8 @@
                                     (chan/color 6 :red) (chan/color 7 :green) (chan/color 8 :blue) (chan/color 9 :white)
                                     (chan/dimmer 10)]})
           :name "Blizzard Blade RGBW"
-          :mode mode)))
+          :mode mode
+          :pan-center 84 :pan-circle 170 :tilt-center 8 :tilt-circle -428)))
 
 (def ^:private ws-head-offsets
   "The X-axis positions of the eight weather system heads"
