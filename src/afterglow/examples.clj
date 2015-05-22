@@ -152,6 +152,7 @@
 (require '(afterglow [transform :as transform]))
 (defn test-position
   [fixture-key x y z]
-  (let [[pan tilt] (transform/calculate-position fixture-key x y z)]
-          (show/set-variable! :pan pan)
-      (show/set-variable! :tilt tilt)))
+  (let [fixture ((keyword fixture-key) @(:fixtures *show*))
+        [pan tilt] (transform/calculate-position fixture x y z)]
+    (show/set-variable! :pan pan)
+    (show/set-variable! :tilt tilt)))
