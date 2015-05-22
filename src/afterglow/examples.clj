@@ -144,8 +144,10 @@
              (params/build-variable-param :pan)
              (afterglow.channels/extract-channels (show/fixtures-named :blade) #(= (:type %) :pan))))
 
-(show/add-midi-control-to-var-mapping "Slider" 0 4 :tilt :max 255.99)
-(show/add-midi-control-to-var-mapping "Slider" 0 20 :pan :max 255.99)
+(defn add-pan-tilt-controls
+  []
+  (show/add-midi-control-to-var-mapping "Slider" 0 4 :tilt :max 255.99)
+  (show/add-midi-control-to-var-mapping "Slider" 0 20 :pan :max 255.99))
 
 (require '(afterglow [transform :as transform]))
 (defn test-position
