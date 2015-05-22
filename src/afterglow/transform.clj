@@ -264,9 +264,9 @@
 
   If there is more than one legal solution, return the one that is
   closest to the specified target value. If no target value is
-  specified (using the keyword parameter :target-value), then use the
-  fixture's center position as the default target value to stay close
-  to."
+  specified (using the keyword parameters :target-pan
+  and :target-tilt), then use the fixture's center position as the
+  default target value to stay close to."
   [fixture x y z & {:keys [target-pan target-tilt] :or {target-pan (:pan-center fixture) target-tilt (:tilt-center fixture)}}]
   {:pre [(some? fixture) (number? x) (number? y) (number? z) (number? target-pan) (number? target-tilt)]}
   (let [direction (invert-direction fixture x y z)
