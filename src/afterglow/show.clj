@@ -548,7 +548,12 @@
 
 (defn patch-fixture!
   "Patch a fixture to a universe in [[*show*]] at a starting DMX
-  channel address."
+  channel address, at a particular point in space, with a particular
+  orientation. Coordinates and rotations are with respect to the [show
+  frame of
+  reference](https://github.com/brunchboy/afterglow/wiki/Show-Space),
+  and are in meters and degrees. You can use [[transform/inches]]
+  and [[transform/degrees]] to convert for you if desired."
   {:doc/format :markdown}
   [key fixture universe start-address & {:keys [x y z x-rotation y-rotation z-rotation]
                                          :or {x 0.0 y 0.0 z 0.0 x-rotation 0.0 y-rotation 0.0 z-rotation 0.0}}]
@@ -561,12 +566,15 @@
   nil)
 
 (defn patch-fixture-group!
-  "Patch a fixture group to a universe in [[*show*]] at a starting DMX channel address.
+  "*Deprecated until it supports positioning each fixture.*
+
+  Patch a fixture group to a universe in [[*show*]] at a starting DMX channel address.
   Names will be assigned by adding a hyphen and numeric suffix, starting with 1,
   to the key supplied. If an offset is supplied, it will be added to the starting
   address for each subsequent fixture; if not, the largest offset used by the
   fixture will be used to calculate a suitable offset."
-  {:doc/format :markdown}
+  {:doc/format :markdown
+   :deprecated true}
   ([key fixture universe start-address count]
    (patch-fixture-group! key fixture universe start-address count (apply max (map :offset (:channels fixture)))))
   ([key fixture universe start-address count offset]
