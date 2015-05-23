@@ -249,12 +249,14 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   - [x] Get basic effect working until spatial features are available.
   - [ ] Work both with arbitrary head list, and with spatially mapped origin/density.
   - [ ] Work as single intensity, or spatially mapped hue/saturation patterns.
-- [x] Implement a grand master dimmer in the show which imposes a ceiling on all dimmer cues.
+  - [x] Implement a grand master dimmer in the show which imposes a
+    ceiling on all dimmer cues.
   - [x] Also allow custom sub-master dimmer variables, chained off
     each other and ultimately the grand master, assigned to cues. Each
     step can scale the output.
   - [x] All dimmer cues are assigned a master chain, defaulting to the
-    grand master if none supplied.
+  grand master if none supplied.
+- [x] Get geometry engine and head-movement cues working.
 - [ ] Add button color method to IEffect so mapped RGB controllers can
   have animated feedback, e.g. dim version of current effect color if
   off, bright when on; flash it while ending. Update MIDI feedback
@@ -279,29 +281,26 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   
 ### Ideas
 
-- [ ] Model moving head location and position, so they can be panned and aimed in a coordinated way.
-  - [ ] [Wikipedia](http://en.wikipedia.org/wiki/Rotation_formalisms_in_three_dimensions) has the most promising overview of what I need to do.
-  - [ ] If I can’t find anything Clojure or Java native, [this C# library](http://www.codeproject.com/Articles/17425/A-Vector-Type-for-C) might serve as a guide.
-  - [ ] Or perhaps [this paper](https://www.fastgraph.com/makegames/3drotation/) with its associated C++ source.
-  - [ ] Or [this one](http://inside.mines.edu/fs_home/gmurray/ArbitraryAxisRotation/) which is already Java but seems to only perform, not calculate, rotations.
+- [x] Model moving head location and position, so they can be panned and aimed in a coordinated way.
+  - [x] [Wikipedia](http://en.wikipedia.org/wiki/Rotation_formalisms_in_three_dimensions) has the most promising overview of what I need to do.
   - [ ] Use iOS device to help determine orientation of fixture: Hold phone upright facing stage from audience perspective to set reference attitude; move to match a landmark on the fixture (documented in the fixture definition), and have phone use [CoreMotion](https://developer.apple.com/library/ios/documentation/CoreMotion/Reference/CMAttitude_Class/index.html#//apple_ref/occ/instm/CMAttitude/multiplyByInverseOfAttitude:) `CMAttitude` `multiplyByInverseOfAttitude` to determine the difference.
-  - [ ] The more I investigate, the more it looks like [Java3D’s](http://docs.oracle.com/cd/E17802_01/j2se/javase/technologies/desktop/java3d/forDevelopers/J3D_1_3_API/j3dapi/) [Transform3D](http://docs.oracle.com/cd/E17802_01/j2se/javase/technologies/desktop/java3d/forDevelopers/J3D_1_3_API/j3dapi/javax/media/j3d/Transform3D.html) object is going to handle it for me, which is very convenient, as it is already available in Clojure. To combine transformations, just multiply them together (with the `mul` method).
-  - [ ] Use `setEuler` to set a `Transform3D` to a specific set of rotation angles.
-  - [ ] If this leads to accuracy issues or loss of a degree of freedom, consider Quaternions, as recommended in
+  - [x] The more I investigate, the more it looks like [Java3D’s](http://docs.oracle.com/cd/E17802_01/j2se/javase/technologies/desktop/java3d/forDevelopers/J3D_1_3_API/j3dapi/) [Transform3D](http://docs.oracle.com/cd/E17802_01/j2se/javase/technologies/desktop/java3d/forDevelopers/J3D_1_3_API/j3dapi/javax/media/j3d/Transform3D.html) object is going to handle it for me, which is very convenient, as it is already available in Clojure. To combine transformations, just multiply them together (with the `mul` method).
+  - [x] Use `setEuler` to set a `Transform3D` to a specific set of rotation angles.
+  - [x] If this leads to accuracy issues or loss of a degree of freedom, consider Quaternions, as recommended in
   this [article](http://java.sys-con.com/node/99792).
-  - [ ] Wow, this may be exactly what I need: Java code for converting Quaternions to Euler Angles:
+  - [x] Wow, this may be exactly what I need: Java code for converting Quaternions to Euler Angles:
   http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
   The site is in general an amazing reference for the kind of geometry I need to learn.
-  - [ ] This seems to be the formula I need to figure out the angles
+  - [x] This seems to be the formula I need to figure out the angles
     to send a light to make it face a particular direction (the
     selected, top answer):
     http://stackoverflow.com/questions/1251828/calculate-rotations-to-look-at-a-3d-point
     and transform.clj has an implementation in invert-direction. Now I
     just need to test it with an actual light!
-  - [ ] Remember that Vector3d has nice methods like angle (calculate angle to another Vector3d), length, cross, dot...
+  - [x] Remember that Vector3d has nice methods like angle (calculate angle to another Vector3d), length, cross, dot...
 - [ ] Use [claypoole](https://clojars.org/com.climate/claypoole) for parallelism.
 - [ ] Add OSC support (probably using [Overtone&rsquo;s implementation](https://github.com/rosejn/osc-clj)) for controller support, and MIDI as well.
-- [ ] Serious references for color manipulation, but in [Julia](https://github.com/timholy/Color.jl).
+- [x] Serious references for color manipulation, but in [Julia](https://github.com/timholy/Color.jl).
 - [ ] Absolutely amazing reference on [color vision](http://handprint.com/LS/CVS/color.html)! Send him a note asking if he knows where I can find an algorithm for using arbitrary LEDs to make an HSL color!
 - [ ] When it is time to optimize performance, study the [type hints](http://clojure.org/java_interop#Java%20Interop-Type%20Hints) interop information looks very informative and helpful.
 - [ ] Eventually create a leiningen task that can build a standalone jar with Afterglow and a custom show definition file and its supporting resources, so developers can easily deploy and share shows with non-Clojurists.
