@@ -2,11 +2,9 @@
   "A collection of neat effects that are both useful in shows, and
   examples of how to create such things."
   {:author "James Elliott"}
-  (:require [afterglow.effects.color :refer [build-color-assigner
-                                             build-color-assigners
-                                             htp-merge
+  (:require [afterglow.effects :refer [build-head-assigner build-head-assigners]]
+            [afterglow.effects.color :refer [htp-merge
                                              find-rgb-heads]]
-            [afterglow.effects]
             [afterglow.effects.params :as params]
             [afterglow.rhythm :as rhythm :refer [snapshot-bar-phase
                                                  snapshot-beat-phase
@@ -61,7 +59,7 @@
                       (colors/create-color {:h (colors/hue base-color)
                                             :s (colors/saturation base-color)
                                             :l (* (colors/lightness base-color) intensity)}))))
-          assigners (build-color-assigners heads f)]
+          assigners (build-head-assigners :color heads f)]
       (Effect. "Metronome"
                (fn [snow snapshot]  ;; Continue running until the end of a measure
                  ;; Also need to set up the local snapshot based on our private metronome
@@ -133,9 +131,10 @@
                                 fade-time (max 10 (params/resolve-param fade-time show snapshot head))
                                 fraction (/ (- now creation-time) fade-time)
                                 faded (colors/darken color (* fraction (colors/lightness color)))]
-                            (build-color-assigner head (fn [show snapshot target previous-assignment]
-                                                         (htp-merge (params/resolve-param previous-assignment show snapshot head)
-                                                                    faded))))))))
+                            (build-head-assigner :color head
+                                                 (fn [show snapshot target previous-assignment]
+                                                   (htp-merge (params/resolve-param previous-assignment show snapshot head)
+                                                              faded))))))))
               (fn [show snapshot]
                 ;; Arrange to shut down once all existing sparkles fade out.
                 (reset! running false))))))

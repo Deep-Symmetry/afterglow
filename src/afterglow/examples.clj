@@ -1,7 +1,8 @@
 (ns afterglow.examples
   "Show some simple ways to use Afterglow, and hopefully inspire
   exploration." {:author "James Elliott"}
-  (:require [afterglow.effects.color :refer [color-cue]]
+  (:require [afterglow.transform :as tf]
+            [afterglow.effects.color :refer [color-cue]]
             [afterglow.effects.dimmer :refer [dimmer-cue master-set-level]]
             [afterglow.effects.fun :as fun]
             [afterglow.effects.oscillators :as oscillators]
@@ -43,7 +44,8 @@
 ;; Throw a couple of fixtures in there to play with. For better fun, use
 ;; fixtures and addresses that correspond to your actual hardware.
 (show/patch-fixture! :hex-1 (chauvet/slimpar-hex3-irc) 1 129)
-(show/patch-fixture! :blade-1 (blizzard/blade-rgbw) 1 270)
+(show/patch-fixture! :blade-1 (blizzard/blade-rgbw) 1 270 :y (tf/inches 9) :y-rotation (tf/degrees 90))
+(show/patch-fixture! :blade-2 (blizzard/blade-rgbw) 1 240 :x (tf/inches 32) :y (tf/inches 26))
 (show/patch-fixture! :ws-1 (blizzard/weather-system) 1 161 :x 1.0 :y 1.5)
 
 (defn global-color-cue
@@ -132,22 +134,30 @@
        (Thread/sleep 33)))))
 
 ;; Temporary for working on light aiming code
-(show/add-function!
- :tilt-blade (afterglow.effects.channel/channel-cue
-              "Tilt Blade"
-              (params/build-variable-param :tilt)
-              (afterglow.channels/extract-channels (show/fixtures-named :blade) #(= (:type %) :tilt))))
-
-(show/add-function!
- :pan-blade (afterglow.effects.channel/channel-cue
-             "Pan Blade"
-             (params/build-variable-param :pan)
-             (afterglow.channels/extract-channels (show/fixtures-named :blade) #(= (:type %) :pan))))
 
 (defn add-pan-tilt-controls
   []
   (show/add-midi-control-to-var-mapping "Slider" 0 4 :tilt :max 255.99)
-  (show/add-midi-control-to-var-mapping "Slider" 0 20 :pan :max 255.99))
+  (show/add-midi-control-to-var-mapping "Slider" 0 20 :pan :max 255.99)
+  (show/add-function!
+   :pan-blade (afterglow.effects.channel/channel-cue
+               "Pan Blade"
+               (params/build-variable-param :pan)
+               (afterglow.channels/extract-channels (show/fixtures-named :blade) #(= (:type %) :pan))))
+  (show/add-function!
+   :tilt-blade (afterglow.effects.channel/channel-cue
+              "Tilt Blade"
+              (params/build-variable-param :tilt)
+              (afterglow.channels/extract-channels (show/fixtures-named :blade) #(= (:type %) :tilt)))))
+
+(defn add-xyz-controls
+  []
+  (show/add-midi-control-to-var-mapping "Slider" 0 4 :x)
+  (show/add-midi-control-to-var-mapping "Slider" 0 5 :y)
+  (show/add-midi-control-to-var-mapping "Slider" 0 6 :z)
+  (show/add-function! :position
+                      (afterglow.effects.movement/direction-cue
+                       "Pointer" (params/build-direction-param :x :x :y :y :z :z) (show/all-fixtures))))
 
 (require '(afterglow [transform :as transform]))
 (defn test-position

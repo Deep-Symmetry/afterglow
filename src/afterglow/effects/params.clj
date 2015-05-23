@@ -11,7 +11,8 @@
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
             [taoensso.timbre :refer [error]])
-  (:import [afterglow.rhythm Metronome]))
+  (:import [afterglow.rhythm Metronome]
+           [javax.vecmath Point3d Vector3d]))
 
 (defprotocol IParam
   "A dynamic parameter which gets evaluated during the run of a light show,
@@ -341,9 +342,11 @@
   Finally, if any adjustment values have been supplied for hue,
   saturation or lightness, they will be added to the corresponding
   values (rotating around the hue circle, clamped to the legal range
-  for the others). If you do not specify an explicit value for
-  `:frame-dynamic`, this color parameter will be frame dynamic if it
-  has any incoming parameters which themselves are."
+  for the others).
+
+  If you do not specify an explicit value for `:frame-dynamic`, this
+  color parameter will be frame dynamic if it has any incoming
+  parameters which themselves are."
   {:doc/format :markdown}
   [& {:keys [color r g b h s l adjust-hue adjust-saturation adjust-lightness frame-dynamic]
       :or {color default-color frame-dynamic :default}}]
@@ -431,6 +434,56 @@
           (evaluate [this show snapshot] (eval-fn show snapshot nil))
           (frame-dynamic? [this] dyn)
           (result-type [this] :com.evocomputing.colors/color)
+          (resolve-non-frame-dynamic-elements [this show snapshot] (resolve-fn show snapshot nil))
+          IHeadParam
+          (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))
+          (resolve-non-frame-dynamic-elements-for-head [this show snapshot head] (resolve-fn show snapshot head)))))))
+
+;; TODO: Draw a diagram of the light show coordinate system, so it can be linked
+;;       to in places like this.
+(defn build-direction-param
+  "Returns a dynamic direction parameter. If no arguments are
+  supplied, returns a static direction facing directly out towards the
+  audience. Keywords `:x`, `:y`, and `:z` can be used to specify a
+  vector in the frame of reference of the light show.
+
+  All incoming parameter values may be literal or dynamic, and may be
+  keywords, which will be dynamically bound to variables
+  in [[*show*]].
+
+  If you do not specify an explicit value for `:frame-dynamic`, this
+  direction parameter will be frame dynamic if it has any incoming
+  parameters which themselves are."
+  {:doc/format :markdown}
+  [& {:keys [x y z frame-dynamic] :or {x 0 y 0 z 1 frame-dynamic :default}}]
+  {:pre [(some? *show*)]}
+  (let [x (bind-keyword-param x Number 0)
+        y (bind-keyword-param y Number 0)
+        z (bind-keyword-param z Number 1)]
+    (if-not (some (partial satisfies? IParam) [x y z])
+      ;; Optimize the degenerate case of all constant parameters
+      (Vector3d. x y z)
+      ;; Handle the general case of some dynamic parameters
+      (let [dyn (if (= :default frame-dynamic)
+                  ;; Default means incoming args control how dynamic we should be
+                  (boolean (some frame-dynamic-param? [x y z]))
+                  ;; We were given an explicit value for frame-dynamic
+                  (boolean frame-dynamic))
+            eval-fn (fn [show snapshot head]
+                      (Vector3d. (resolve-param x show snapshot head)
+                                 (resolve-param y show snapshot head)
+                                 (resolve-param z show snapshot head)))
+            resolve-fn (fn [show snapshot head]
+                         (with-show show
+                           (build-direction-param :x (resolve-unless-frame-dynamic x show snapshot head)
+                                                  :y (resolve-unless-frame-dynamic y show snapshot head)
+                                                  :z (resolve-unless-frame-dynamic z show snapshot head)
+                                                  :frame-dynamic dyn)))]
+        (reify
+          IParam
+          (evaluate [this show snapshot] (eval-fn show snapshot nil))
+          (frame-dynamic? [this] dyn)
+          (result-type [this] Vector3d)
           (resolve-non-frame-dynamic-elements [this show snapshot] (resolve-fn show snapshot nil))
           IHeadParam
           (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))

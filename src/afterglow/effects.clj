@@ -2,7 +2,8 @@
   "Support functions for building the effects pipeline."
   {:author "James Elliott"}
   (:require [afterglow.channels :as channels]
-            [afterglow.rhythm :refer :all]
+            [afterglow.effects.params :as params]
+            [afterglow.rhythm :as rhythm]
             [com.evocomputing.colors :as colors]
             [taoensso.timbre :as timbre :refer [error warn info debug]]
             [taoensso.timbre.profiling :as profiling :refer [pspy profile]])
@@ -86,3 +87,31 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
   "An effect end function which simply says the effect is now finished."
   [show snapshot]
   true)
+
+(defn build-head-assigner
+  "Returns an assigner of the specified type which applies the
+  specified assignment function to the provided head or fixture."
+  [kind head f]
+  (Assigner. kind (keyword (str "i" (:id head))) head f))
+
+(defn build-head-assigners
+  "Returns a list of assigners of the specified type which apply a
+  fixed assignment function to all the supplied heads or fixtures."
+  [kind heads f]
+  (map #(build-head-assigner kind % f) heads))
+
+(defn build-head-parameter-assigner
+  "Returns an assigner of the specified kind which applies a parameter
+  to the supplied head or fixture. If the parameter is not
+  frame-dynamic, it gets resolved when creating this assigner.
+  Otherwise, resolution is deferred to frame rendering time."
+  [kind head param show snapshot]
+  (let [resolved (params/resolve-unless-frame-dynamic param show snapshot head)]
+    (build-head-assigner kind head (fn [show snapshot target previous-assignment] resolved))))
+
+(defn build-head-parameter-assigners
+  "Returns a list of assigners of the specified kind which apply a
+  parameter to all the supplied heads or fixtures."
+  [kind heads param show]
+  (let [snapshot (rhythm/metro-snapshot (:metronome show))]
+    (map #(build-head-parameter-assigner kind % param show snapshot) heads)))

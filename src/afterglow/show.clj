@@ -25,8 +25,8 @@
             [afterglow.effects.channel :refer [channel-assignment-resolver]]
             [afterglow.effects.color :refer [color-assignment-resolver]]
             [afterglow.effects.dimmer :refer [master master-set-level]]
-            [afterglow.effects.params :refer [bind-keyword-param
-                                              resolve-param]]
+            [afterglow.effects.movement :refer [direction-assignment-resolver]]
+            [afterglow.effects.params :refer [bind-keyword-param resolve-param]]
             [afterglow.midi :as midi]
             [afterglow.ola-service :as ola]
             [afterglow.rhythm :refer :all]
@@ -57,7 +57,8 @@
   identify the assigner type key, and the function to invoke for such
   assigners."
   [[:channel channel-assignment-resolver]
-   [:color color-assignment-resolver]])
+   [:color color-assignment-resolver]
+   [:direction direction-assignment-resolver]])
 
 (defn- gather-assigners
   "Collect all of the assigners that are in effect at the current

@@ -1,8 +1,9 @@
 (ns afterglow.effects.color
-  "Effects pipeline functions for working with color assignments to fixtures and heads."
+  "Effects pipeline functions for working with color assignments to
+  fixtures and heads."
   {:author "James Elliott"}
   (:require [afterglow.channels :as channels]
-            [afterglow.effects :refer [always-active end-immediately]]
+            [afterglow.effects :refer :all]
             [afterglow.effects.channel :refer [apply-channel-value]]
             [afterglow.effects.params :as params]
             [afterglow.rhythm :as rhythm]
@@ -25,33 +26,12 @@
       (colors/create-color :r red :g green :b blue))
     current))
 
-(defn build-color-assigner
-  "Returns an assigner which applies the specified assignment function
-  to the supplied head or fixture."
-  [head f]
-  (Assigner. :color (keyword (str "i" (:id head))) head f))
-
-(defn build-color-assigners
-  "Returns a list of assigners which apply a fixed color assignment
-  function to all the supplied heads or fixtures."
-  [heads f]
-  (map #(build-color-assigner % f) heads))
-
-(defn build-color-parameter-assigner
-  "Returns an assigner which applies a color parameter to the supplied
-  head or fixture. If the parameter is not frame-dynamic, it gets
-  resolved when creating this assigner. Otherwise, resolution is
-  deferred to frame rendering time."
-  [head param show snapshot]
-  (let [resolved (params/resolve-unless-frame-dynamic param show snapshot head)]
-    (build-color-assigner head (fn [show snapshot target previous-assignment] resolved))))
-
-(defn build-color-parameter-assigners
-  "Returns a list of assigners which apply a color parameter to all
-  the supplied heads or fixtures."
-  [heads param show]
-  (let [snapshot (rhythm/metro-snapshot (:metronome show))]
-    (map #(build-color-parameter-assigner % param show snapshot) heads)))
+(defn find-rgb-heads
+  "Returns all heads of the supplied fixtures which are capable of
+  mixing RGB color, in other words they have at least a red, green,
+  and blue color channel."
+  [fixtures]
+  (filter #(= 3 (count (filter #{:red :green :blue} (map :color (:channels %))))) (channels/expand-heads fixtures)))
 
 ;; TODO: Support different kinds of color mixing, blending, HTP...
 ;; TODO: Someday support color wheels too, optionally, with a tolerance level
@@ -62,16 +42,9 @@
   [name color fixtures]
   {:pre [(some? name) (some? *show*) (seq? fixtures)]}
   (params/validate-param-type color :com.evocomputing.colors/color)
-  (let [heads (filter #(= 3 (count (filter #{:red :green :blue} (map :color (:channels %))))) (channels/expand-heads fixtures))
-        assigners (build-color-parameter-assigners heads color *show*)]
+  (let [heads (find-rgb-heads fixtures)
+        assigners (build-head-parameter-assigners :color heads color *show*)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
-
-(defn find-rgb-heads
-  "Returns all heads of the supplied fixtures which are capable of
-  mixing RGB color, in other words they have at least a red, green,
-  and blue color channel."
-  [fixtures]
-  (filter #(= 3 (count (filter #{:red :green :blue} (map :color (:channels %))))) (channels/expand-heads fixtures)))
 
 ;; Deprecated in favor of new composable dynamic parameter mechanism
 (defn hue-oscillator
@@ -91,12 +64,12 @@
                   (let [phase (osc snapshot)
                         new-hue (+ min (* range phase))]
                     (colors/create-color {:h new-hue :s saturation :l lightness}))))
-        assigners (build-color-assigners heads f)]
+        assigners (build-head-assigners :color heads f)]
     (Effect. "Hue Oscillator" always-active (fn [show snapshot] assigners) end-immediately)))
 
 ;; TODO handle color wheels
 (defn color-assignment-resolver
-  "Resolves the assignmnet of a color to a fixture or a head."
+  "Resolves the assignment of a color to a fixture or a head."
   [show buffers snapshot target assignment]
   (let [resolved (params/resolve-param assignment show snapshot target)]  ; In case it is frame dynamic
     (doseq [c (filter #(= (:color %) :red) (:channels target))]

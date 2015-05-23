@@ -56,7 +56,8 @@
    :doc/format :markdown}
   (:require [afterglow.channels :as chan]
             [afterglow.show-context :refer :all]
-            [clojure.math.numeric-tower :as math])
+            [clojure.math.numeric-tower :as math]
+            [taoensso.timbre :refer [debug]])
   (:import [javax.media.j3d Transform3D]
            [javax.vecmath Point3d Vector3d]))
 
@@ -136,13 +137,13 @@
 (defn invert-direction
   "Transform a direction vector in show coordinate space to the way it 
   appears to a head or fixture that has been rotated when hanging."
-  [fixture x y z]
+  [fixture direction]
   (let [rotation (Transform3D. (:rotation fixture))
-        direction (Vector3d. x y z)]
+        direction (Vector3d. direction)]  ;; Copy since it is mutable
     (.invert rotation)
     #_(.normalize direction)
     (.transform rotation direction)
-    (taoensso.timbre/debug "Inverted direction:" direction)
+    (debug "Inverted direction:" direction)
     direction))
 
 (defn angle-to-dmx-value
@@ -186,9 +187,9 @@
   [angle center-value half-circle-value & {:keys [target-value] :or {target-value center-value}}]
   (let [candidates (map #(angle-to-dmx-value % center-value half-circle-value) [angle (+ two-pi angle) (- two-pi angle)])
         legal (filter #(<= 0 % 255.99) candidates)]
-    (taoensso.timbre/spy :debug "candidates:" candidates)
-    (taoensso.timbre/spy :debug "legal:" legal)
-    (taoensso.timbre/spy :debug "target-value:" target-value)
+    (debug "candidates:" candidates)
+    (debug "legal:" legal)
+    (debug "target-value:" target-value)
     (if (empty? legal)
       ;; No legal values, return the closest legal value to the candidate whose value
       ;; is closest to the valid DMX range.
@@ -211,7 +212,7 @@
 
   If there is more than one legal solution, return the one that is
   closest to the specified target value."
-  [fixture x y z direction rot-y target-pan target-tilt]
+  [fixture direction rot-y target-pan target-tilt]
   (let [direction (Vector3d. direction)  ; Make a copy since we are going to mutate it
         rotation (Transform3D.)]
     (.rotY rotation (- rot-y))  ; Determine what the aiming vector looks like after we have panned
@@ -222,7 +223,7 @@
                                                                :target-value target-pan)
           tilt-solution (find-closest-legal-dmx-value-for-angle rot-x (:tilt-center fixture) (:tilt-half-circle fixture)
                                                                 :target-value target-tilt)]
-      (taoensso.timbre/debug "For pan of" (/ rot-y Math/PI) "Pi, we get tilt:" (/ rot-x Math/PI) "Pi," [pan-solution tilt-solution])
+      (debug "For pan of" (/ rot-y Math/PI) "Pi, we get tilt:" (/ rot-x Math/PI) "Pi," [pan-solution tilt-solution])
       [pan-solution tilt-solution])))
 
 (defn- success-score
@@ -235,9 +236,10 @@
 
 (defn- target-distance
   "Given a pan and tilt solution, measure how close it is to the
-  target pan and tilt."
+  target pan and tilt. Consider pan changes to be twice as disruptive
+  as tilt changes, since they are more obvious."
   [[[pan _] [tilt _]] target-pan target-tilt]
-  (math/sqrt (+ (math/expt (math/abs (- pan target-pan)) 2)
+  (math/sqrt (+ (math/expt (* 2 (math/abs (- pan target-pan))) 2)
                 (math/expt (math/abs (- tilt target-tilt)) 2))))
 
 (defn- pick-best-solution
@@ -258,25 +260,28 @@
           solution-b)))))
 
 (defn calculate-position
-  "Given a fixture and vector representing a direction in the frame of
-  reference of the light show, calculate the best pan and tilt values
-  to send to that fixture in order to aim it in that direction.
+  "Given a fixture or head and vector representing a direction in the
+  frame of reference of the light show, calculate the best pan and
+  tilt values to send to that fixture or head in order to aim it in
+  that direction.
 
   If there is more than one legal solution, return the one that is
   closest to the specified target value. If no target value is
   specified (using the keyword parameters :target-pan
   and :target-tilt), then use the fixture's center position as the
   default target value to stay close to."
-  [fixture x y z & {:keys [target-pan target-tilt] :or {target-pan (:pan-center fixture) target-tilt (:tilt-center fixture)}}]
-  {:pre [(some? fixture) (number? x) (number? y) (number? z) (number? target-pan) (number? target-tilt)]}
-  (let [direction (invert-direction fixture x y z)
-        rot-y (Math/atan2 (. direction x) (. direction z))
-        ;; Try both our calculated pan, and flips halfway around the circle in both directions, hunting for best solution.
-        candidates (map #(solve-for-tilt-given-pan fixture x y z direction % target-pan target-tilt)
+  [fixture direction & {:keys [target-pan target-tilt]
+                        :or {target-pan (:pan-center fixture) target-tilt (:tilt-center fixture)}}]
+  {:pre [(some? fixture) (some? direction) (number? target-pan) (number? target-tilt)]}
+  (let [direction (invert-direction fixture direction)  ;; Transform to perspective of hung fixture
+        rot-y (Math/atan2 (. direction x) (. direction z))  ;; Calculate pan
+        ;; Try both our calculated pan, and flips halfway around the circle in both directions,
+        ;; hunting for the best solution.
+        candidates (map #(solve-for-tilt-given-pan fixture direction % target-pan target-tilt)
                         [rot-y (+ rot-y Math/PI) (- rot-y Math/PI)])
         best (reduce (partial pick-best-solution target-pan target-tilt) candidates)]
-    (taoensso.timbre/debug "All solutions found: " candidates)
-    (taoensso.timbre/debug "Best solution found: " best)
+    (debug "All solutions found: " candidates)
+    (debug "Best solution found: " best)
     (let [[[pan _] [tilt _]] best]
       [pan tilt])))
 
@@ -298,9 +303,9 @@
         matrix (javax.vecmath.Matrix3d.)]
     (.setEuler rotation euler)
     (.get rotation matrix)
-    (taoensso.timbre/debug "phi:" (Math/atan2 (.-m20 matrix) (.-m21 matrix)))
-    (taoensso.timbre/debug "theta" (Math/acos (.m22 matrix)))
-    (taoensso.timbre/debug "psi:" (Math/atan2 (.-m02 matrix) (.-m12 matrix)))))
+    (debug "phi:" (Math/atan2 (.-m20 matrix) (.-m21 matrix)))
+    (debug "theta" (Math/acos (.m22 matrix)))
+    (debug "psi:" (Math/atan2 (.-m02 matrix) (.-m12 matrix)))))
 
 #_(defn compare-euler
   "Test whether setting euler angles is the same as what I am doing
@@ -319,12 +324,12 @@
     (.mul rotation axis)
     (.rotZ axis z-rotation)
     (.mul rotation axis)
-    (taoensso.timbre/debug "Compound rotation:\n" rotation)
+    (debug "Compound rotation:\n" rotation)
     (.setEuler from-euler euler)
-    (taoensso.timbre/debug "Euler angle rotation:\n" from-euler)
-    (taoensso.timbre/debug "Equal?" (.equals rotation from-euler))
+    (debug "Euler angle rotation:\n" from-euler)
+    (debug "Equal?" (.equals rotation from-euler))
     (.transform rotation compound-point)
     (.transform from-euler euler-point)
-    (taoensso.timbre/debug "Compound transformed:\n" compound-point)
-    (taoensso.timbre/debug "Euler transformed:\n" euler-point)
-    (taoensso.timbre/debug "Equal?" (.equals compound-point euler-point))))
+    (debug "Compound transformed:\n" compound-point)
+    (debug "Euler transformed:\n" euler-point)
+    (debug "Equal?" (.equals compound-point euler-point))))
