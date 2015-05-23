@@ -552,7 +552,7 @@
   orientation. Coordinates and rotations are with respect to the [show
   frame of
   reference](https://github.com/brunchboy/afterglow/wiki/Show-Space),
-  and are in meters and degrees. You can use [[transform/inches]]
+  and are in meters and radians. You can use [[transform/inches]]
   and [[transform/degrees]] to convert for you if desired."
   {:doc/format :markdown}
   [key fixture universe start-address & {:keys [x y z x-rotation y-rotation z-rotation]
