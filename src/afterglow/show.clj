@@ -106,7 +106,8 @@
               (p :resolve-value (handler show buffers snapshot target value))))))
       (p :send-dmx-data (doseq [universe (keys buffers)]
                           (let [levels (get buffers universe)]
-                            (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} nil)))))
+                            (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} nil))))
+      (swap! (:movement *show*) #(dissoc (assoc % :previous (:current %)) :current)))
     (catch Exception e
       (error e "Problem trying to run cues"))))
 
@@ -171,6 +172,7 @@
     :variables (atom {})
     :grand-master (master nil)  ; Only the grand master can have no show, or parent.
     :fixtures (atom {})
+    :movement (atom {})  ; Used to smooth head motion between frames
     :task (atom nil)}))
 
 (defn stop-all!

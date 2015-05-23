@@ -158,11 +158,3 @@
   (show/add-function! :position
                       (afterglow.effects.movement/direction-cue
                        "Pointer" (params/build-direction-param :x :x :y :y :z :z) (show/all-fixtures))))
-
-(require '(afterglow [transform :as transform]))
-(defn test-position
-  [fixture-key x y z]
-  (let [fixture ((keyword fixture-key) @(:fixtures *show*))
-        [pan tilt] (transform/calculate-position fixture x y z)]
-    (show/set-variable! :pan pan)
-    (show/set-variable! :tilt tilt)))

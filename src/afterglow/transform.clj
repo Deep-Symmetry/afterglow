@@ -185,7 +185,7 @@
   fixture's center position as the default target value to stay close
   to."
   [angle center-value half-circle-value & {:keys [target-value] :or {target-value center-value}}]
-  (let [candidates (map #(angle-to-dmx-value % center-value half-circle-value) [angle (+ two-pi angle) (- two-pi angle)])
+  (let [candidates (map #(angle-to-dmx-value % center-value half-circle-value) [angle (+ two-pi angle)])
         legal (filter #(<= 0 % 255.99) candidates)]
     (debug "candidates:" candidates)
     (debug "legal:" legal)
@@ -266,15 +266,14 @@
   that direction.
 
   If there is more than one legal solution, return the one that is
-  closest to the specified target value. If no target value is
-  specified (using the keyword parameters :target-pan
-  and :target-tilt), then use the fixture's center position as the
+  closest to the former values supplied. If no former values were
+  specified, then use the fixture's center position as the
   default target value to stay close to."
-  [fixture direction & {:keys [target-pan target-tilt]
-                        :or {target-pan (:pan-center fixture) target-tilt (:tilt-center fixture)}}]
-  {:pre [(some? fixture) (some? direction) (number? target-pan) (number? target-tilt)]}
+  [fixture direction former-values]
+  {:pre [(some? fixture) (some? direction)]}
   (let [direction (invert-direction fixture direction)  ;; Transform to perspective of hung fixture
         rot-y (Math/atan2 (. direction x) (. direction z))  ;; Calculate pan
+        [target-pan target-tilt] (or former-values [(:pan-center fixture) (:tilt-center fixture)])
         ;; Try both our calculated pan, and flips halfway around the circle in both directions,
         ;; hunting for the best solution.
         candidates (map #(solve-for-tilt-given-pan fixture direction % target-pan target-tilt)

@@ -39,10 +39,12 @@
   "Resolves the assignment of a direction to a fixture or a head."
   [show buffers snapshot target assignment]
   (let [direction (params/resolve-param assignment show snapshot target)  ; In case it is frame dynamic
-        [pan tilt] (calculate-position target direction)]
-    ;; TODO: Track and pass in current pan and tilt as targets, to smooth movement
+        direction-key (keyword (str "pan-tilt-" (:id target)))
+        former-values (direction-key (:previous @(:movement *show*)))
+        [pan tilt] (calculate-position target direction former-values)]
     (debug "Resolver pan:" pan "tilt:" tilt)
     (doseq [c (filter #(= (:type %) :pan) (:channels target))]
       (apply-channel-value buffers c pan))
     (doseq [c (filter #(= (:type %) :tilt) (:channels target))]
-      (apply-channel-value buffers c tilt))))
+      (apply-channel-value buffers c tilt))
+    (swap! (:movement *show*) #(assoc-in % [:current direction-key] [pan tilt]))))
