@@ -185,7 +185,7 @@
   fixture's center position as the default target value to stay close
   to."
   [angle center-value half-circle-value & {:keys [target-value] :or {target-value center-value}}]
-  (let [candidates (map #(angle-to-dmx-value % center-value half-circle-value) [angle (+ two-pi angle)])
+  (let [candidates (map #(angle-to-dmx-value % center-value half-circle-value) [angle (+ angle two-pi) (- angle two-pi)])
         legal (filter #(<= 0 % 255.99) candidates)]
     (debug "candidates:" candidates)
     (debug "legal:" legal)
