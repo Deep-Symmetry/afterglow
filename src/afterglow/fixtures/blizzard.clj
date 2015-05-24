@@ -39,7 +39,7 @@
   the head straight out at the audience. At this position, it takes a
   change of -214 in the tilt channel to rotate a half circle
   counterclockwise around the X axis. (In other words, it can
-  essentially only tilt clockwise from here."
+  essentially only tilt clockwise from here.)"
   {:doc/format :markdown}
   ([]
    (blade-rgbw :15-channel))
