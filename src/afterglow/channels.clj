@@ -143,7 +143,7 @@
   that in turn by calling expand-function-spec. If start is not a
   sequence, simply passes its arguments on to expand-function-spec."
   [[start spec]]
-  (if (seq? start)
+  (if (sequential? start)
     (map-indexed (fn [index start]
                    (cond (string? spec)
                          (expand-function-spec [start (str spec "-" (inc index))])
@@ -177,9 +177,9 @@
   (let [chan-type (keyword chan-type)]
     (assoc (channel offset)
            :type chan-type
-           :functions (into [] (map assign-ends
-                                    (partition 2 1 [:end] (mapcat expand-function-range
-                                                                  (partition 2 functions))))))))
+           :functions (vec (map assign-ends
+                                (partition 2 1 [:end] (mapcat expand-function-range
+                                                              (partition 2 functions))))))))
 
 (defn dimmer
   "A channel which controls a dimmer, with an optional second channel
