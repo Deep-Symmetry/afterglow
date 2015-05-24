@@ -34,6 +34,7 @@ ready for a first release.
 2. For now set up a Clojure project using [Leiningen](http://leiningen.org).
 3. Add this project as a dependency:
    [![Clojars Project](http://clojars.org/afterglow/latest-version.svg)](http://clojars.org/afterglow)
+   [![Dependencies Status](http://jarkeeper.com/brunchboy/afterglow/status.png)](http://jarkeeper.com/brunchboy/afterglow)
 
 Eventually you may be able to download binary distributions from somewhere.
 
@@ -298,7 +299,7 @@ TODO: listing of options this app accepts once it can run as a standalone app.
     and transform.clj has an implementation in invert-direction. Now I
     just need to test it with an actual light!
   - [x] Remember that Vector3d has nice methods like angle (calculate angle to another Vector3d), length, cross, dot...
-- [ ] Use [claypoole](https://clojars.org/com.climate/claypoole) for parallelism.
+- [x] Use [claypoole](https://clojars.org/com.climate/claypoole) for parallelism.
 - [ ] Add OSC support (probably using [Overtone&rsquo;s implementation](https://github.com/rosejn/osc-clj)) for controller support, and MIDI as well.
 - [x] Serious references for color manipulation, but in [Julia](https://github.com/timholy/Color.jl).
 - [ ] Absolutely amazing reference on [color vision](http://handprint.com/LS/CVS/color.html)! Send him a note asking if he knows where I can find an algorithm for using arbitrary LEDs to make an HSL color!

@@ -33,6 +33,7 @@
             [afterglow.rhythm :refer :all]
             [afterglow.show-context :refer [*show* with-show]]
             [afterglow.transform :refer [transform-fixture]]
+            [com.climate.claypoole :as cp]
             [overtone.at-at :as at-at]
             [taoensso.timbre :refer [error]]
             [taoensso.timbre.profiling :refer [p profile pspy]])
@@ -72,7 +73,8 @@
                   (let [key-path [(:kind assigner) (:target-id assigner)]]
                     (assoc-in altered-map key-path (conj (get-in altered-map key-path []) assigner))))
                 {}
-                (mapcat #(fx/generate % show snapshot) (:functions @(:active-functions show))))))
+                (apply concat (cp/pmap @(:pool show) #(fx/generate % show snapshot)
+                                       (:functions @(:active-functions show)))))))
 
 (defn- run-assigners
   "Returns a tuple of the target to be assigned, and the final value
@@ -110,7 +112,8 @@
     (let [began (at-at/now)
           snapshot (metro-snapshot (:metronome show))]
       (p :clear-buffers (doseq [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
-      (p :clean-finished-effects (let [indexed (map vector (iterate inc 0) (:functions @(:active-functions show)))]
+      (p :clean-finished-effects (let [indexed (cp/pmap @(:pool show) vector (iterate inc 0)
+                                                        (:functions @(:active-functions show)))]
                                    (doseq [[index effect] indexed]
                                      (when-not (fx/still-active? effect show snapshot)
                                        (end-function! (get (:keys @(:active-functions show)) index) true)))))
@@ -129,12 +132,13 @@
 
 (defn stop!
   "Shuts down and removes the scheduled task which is sending DMX
-  values for [[*show*]]."
+  values for [[*show*]], and cleans up the show's thread pool."
   {:doc/format :markdown}
   []
   {:pre [(some? *show*)]}
-  (swap! (:task *show*) #(when % (at-at/stop %)))
-  nil)
+  (swap! (:task *show*) #(do (when % (at-at/stop %)) nil))
+  (swap! (:pool *show*) #(do (when % (cp/shutdown %)) nil))
+  @(:statistics *show*))
 
 (defn- create-buffers
   "Create the map of universe IDs to byte arrays used to calculate DMX
@@ -151,6 +155,7 @@
   {:pre [(some? *show*)]}
   (stop!)
   (let [buffers (create-buffers *show*)]
+    (swap! (:pool *show*) #(if % % (cp/threadpool (cp/ncpus))))
     (swap! (:task *show*) #(do (when % (at-at/stop %))
                              (at-at/every (:refresh-interval *show*)
                                           (fn [] (send-dmx *show* buffers))
@@ -190,11 +195,15 @@
     :fixtures (atom {})
     :movement (atom {})  ; Used to smooth head motion between frames
     :statistics (atom {})
-    :task (atom nil)}))
+    :task (atom nil)
+    :pool (atom nil)}))
 
 (defn stop-all!
   "Kills all scheduled tasks which shows may have created to output
-  their DMX values."
+  their DMX values. You should still call stop! on each show you have
+  started in order to clean up that show's thread pool. But this can
+  quickly stop a runaway train if you don't know which show is to
+  blame."
   []
   (at-at/stop-and-reset-pool! scheduler))
 

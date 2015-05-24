@@ -11,6 +11,7 @@
                  [overtone/at-at "1.2.0"]
                  [overtone/midi-clj "0.5.0"]
                  [amalloy/ring-buffer "1.1"]
+                 [com.climate/claypoole "1.0.0"]
                  ;; [overtone "0.9.1"]
                  [org.flatland/protobuf "0.8.1"]
                  [selmer "0.8.2"]
