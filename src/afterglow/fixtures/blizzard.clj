@@ -10,9 +10,9 @@
   "[Blade
   RGBW](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&layout=item&id=177&Itemid=157)
   moving head. The default mounting orientation is sitting on its feet
-  with the LCD and control panel right side up and facing away from
-  the audience. In this orientation, at a pan of 0, the beam is nearly
-  straight into the audience.
+  with the LCD and control panel right side up and facing the
+  audience. In this orientation, at a pan of 0, the beam is straight
+  into the audience.
 
   The origin of the light is, as for all moving heads, at the
   intersection of the pan and tilt axes. That is the point that you
@@ -26,16 +26,16 @@
   has been rotated around each of the axes when hanging:
 
   ![Blade
-  axes](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/blade.png)
+  axes](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/Blade.png)
 
   The center pan value (aimed straight at the audience when hung in
-  the default orientation described above), is defined as 85, a full
+  the default orientation described above), is defined as 84, a full
   revolution around from that, so that it has room to move in both
-  directions from its resting point. It takes a change of +85 in the
+  directions from its resting point. It takes a change of +84 in the
   pan channel to rotate a half circle counterclockwise around the Y
   axis.
 
-  At the center pan setting of 85, the center tilt value is 8, aiming
+  At the center pan setting of 84, the center tilt value is 8, aiming
   the head straight out at the audience. At this position, it takes a
   change of -214 in the tilt channel to rotate a half circle
   counterclockwise around the X axis. (In other words, it can
@@ -54,7 +54,7 @@
                                     (chan/dimmer 10)]})
           :name "Blizzard Blade RGBW"
           :mode mode
-          :pan-center 84 :pan-half-circle 85 :tilt-center 8 :tilt-half-circle -214)))
+          :pan-center 84 :pan-half-circle 84 :tilt-center 8 :tilt-half-circle -214)))
 
 (def ^:private ws-head-offsets
   "The X-axis positions of the eight weather system heads"

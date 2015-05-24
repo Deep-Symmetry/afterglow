@@ -58,12 +58,13 @@
   (filter #(some pred (:channels %)) (expand-heads fixtures)))
 
 ;; TODO: is this a good range data structure for finding which one a value falls into?
-(defn full-range
-  "Returns a function spefication that encompasses all
-  possible DMX values as a single range."
-  [range-type function-type label]
-  {:start 0
-   :end 255
+(defn function
+  "Returns a function spefication that encompasses a range of possible
+  DMX values for a channel. If start and end are not specified, the
+  function uses the full range of the channel."
+  [range-type function-type label & {:keys [start end] :or {start 0 end 255}}]
+  {:start start
+   :end end
    :range range-type
    :type function-type
    :label label})
@@ -79,19 +80,23 @@
         function-name (or function-name (clojure.string/capitalize (name function-type)))
         base (assoc (channel offset)
                     :type chan-type
-                    :functions [(full-range :variable function-type function-name)])]
+                    :functions [(function :variable function-type function-name)])]
     (if fine-offset
       (assoc base :fine-offset fine-offset)
       base)))
 
 
 (defn dimmer
+  "A channel which controls a dimmer, with an optional second channel
+  for fine control."
   ([offset]
    (dimmer offset nil))
   ([offset fine-offset]
    (fine-channel :dimmer offset :fine-offset fine-offset :range-label "Intensity")))
 
 (defn color
+  "A channel which controls a color component, with an optional second
+  channel for fine control."
   [offset color & {:keys [hue function-label fine-offset]}]
   {:pre (some? color)}
   (let [color (keyword color)]
@@ -101,36 +106,48 @@
         (cond-> hue (assoc :hue hue)))))
 
 (defn pan
+  "A channel which pans a moving head, with an optional second channel
+  for fine control."
   ([offset]
    (pan offset nil))
   ([offset fine-offset]
    (fine-channel :pan offset :fine-offset fine-offset)))
 
 (defn tilt
+  "A channel which tilts a moving head, with an optional second channel
+  for fine control."
   ([offset]
    (tilt offset nil))
   ([offset fine-offset]
    (fine-channel :tilt offset :fine-offset fine-offset)))
 
 (defn focus
+  "A channel which adjusts focus, with an optional second channel for
+  fine control."
   ([offset]
    (focus offset nil))
   ([offset fine-offset]
    (fine-channel :focus offset :fine-offset fine-offset)))
 
 (defn iris
+  "A channel which controls an iris, with an optional second channel
+  for fine control."
   ([offset]
    (iris offset nil))
   ([offset fine-offset]
    (fine-channel :iris offset :fine-offset fine-offset)))
 
 (defn zoom
+  "A channel which adjusts zoom, with an optional second channel for
+  fine control."
   ([offset]
    (zoom offset nil))
   ([offset fine-offset]
    (fine-channel :zoom offset :fine-offset fine-offset)))
 
 (defn frost
+  "A channel which adjusts frost, with an optional second channel for
+  fine control."
   ([offset]
    (frost offset nil))
   ([offset fine-offset]
