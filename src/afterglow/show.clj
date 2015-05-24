@@ -25,7 +25,8 @@
             [afterglow.effects.channel :refer [channel-assignment-resolver]]
             [afterglow.effects.color :refer [color-assignment-resolver]]
             [afterglow.effects.dimmer :refer [master master-set-level]]
-            [afterglow.effects.movement :refer [direction-assignment-resolver]]
+            [afterglow.effects.movement :refer [direction-assignment-resolver
+                                                aim-assignment-resolver]]
             [afterglow.effects.params :refer [bind-keyword-param resolve-param]]
             [afterglow.midi :as midi]
             [afterglow.ola-service :as ola]
@@ -58,7 +59,8 @@
   assigners."
   [[:channel channel-assignment-resolver]
    [:color color-assignment-resolver]
-   [:direction direction-assignment-resolver]])
+   [:direction direction-assignment-resolver]
+   [:aim aim-assignment-resolver]])
 
 (defn- gather-assigners
   "Collect all of the assigners that are in effect at the current
@@ -85,7 +87,19 @@
 
 (declare end-function!)
 
-;; TODO: Log warning if this takes longer than refresh-interval.
+(defn- update-stats
+  "Update the count of how many frames have been sent, total and
+  average time computing them, and warn if the most recent one took
+  longer than the frame interval."
+  [stats began refresh-interval]
+  (let [duration (- (at-at/now) began)
+        total-time (+ duration (:total-time stats 0))
+        frames-sent (inc (:frames-sent stats 0))
+        average-duration (float (/ total-time frames-sent))]
+    (when (> duration refresh-interval)
+      (taoensso.timbre/warn "Frame took" duration "ms to generate, refresh interval is" refresh-interval "ms."))
+    (assoc stats :total-time total-time :frames-sent frames-sent :average-duration average-duration)))
+
 (defn- send-dmx
   "Calculate and send the next frame of DMX values for the universes
   and effects run by this show, as described in
@@ -93,7 +107,8 @@
   {:doc/format :markdown}
   [show buffers]
   (try
-    (let [snapshot (metro-snapshot (:metronome show))]
+    (let [began (at-at/now)
+          snapshot (metro-snapshot (:metronome show))]
       (p :clear-buffers (doseq [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
       (p :clean-finished-effects (let [indexed (map vector (iterate inc 0) (:functions @(:active-functions show)))]
                                    (doseq [[index effect] indexed]
@@ -107,9 +122,10 @@
       (p :send-dmx-data (doseq [universe (keys buffers)]
                           (let [levels (get buffers universe)]
                             (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} nil))))
-      (swap! (:movement *show*) #(dissoc (assoc % :previous (:current %)) :current)))
-    (catch Exception e
-      (error e "Problem trying to run cues"))))
+      (swap! (:movement *show*) #(dissoc (assoc % :previous (:current %)) :current))
+      (swap! (:statistics *show*) update-stats began (:refresh-interval show)))
+    (catch Throwable t
+      (error t "Problem trying to run cues"))))
 
 (defn stop!
   "Shuts down and removes the scheduled task which is sending DMX
@@ -173,6 +189,7 @@
     :grand-master (master nil)  ; Only the grand master can have no show, or parent.
     :fixtures (atom {})
     :movement (atom {})  ; Used to smooth head motion between frames
+    :statistics (atom {})
     :task (atom nil)}))
 
 (defn stop-all!

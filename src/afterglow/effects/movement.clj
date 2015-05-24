@@ -8,7 +8,7 @@
             [afterglow.effects.params :as params]
             [afterglow.rhythm :as rhythm]
             [afterglow.show-context :refer [*show*]]
-            [afterglow.transform :refer [calculate-position]]
+            [afterglow.transform :refer [calculate-position calculate-aim]]
             [clojure.math.numeric-tower :as math]
             [taoensso.timbre :refer [debug]]
             [taoensso.timbre.profiling :refer [pspy]])
@@ -34,7 +34,6 @@
         assigners (build-head-parameter-assigners :direction heads direction *show*)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
-
 (defn direction-assignment-resolver
   "Resolves the assignment of a direction to a fixture or a head."
   [show buffers snapshot target assignment]
@@ -42,7 +41,36 @@
         direction-key (keyword (str "pan-tilt-" (:id target)))
         former-values (direction-key (:previous @(:movement *show*)))
         [pan tilt] (calculate-position target direction former-values)]
-    (debug "Resolver pan:" pan "tilt:" tilt)
+    (debug "Direction resolver pan:" pan "tilt:" tilt)
+    (doseq [c (filter #(= (:type %) :pan) (:channels target))]
+      (apply-channel-value buffers c pan))
+    (doseq [c (filter #(= (:type %) :tilt) (:channels target))]
+      (apply-channel-value buffers c tilt))
+    (swap! (:movement *show*) #(assoc-in % [:current direction-key] [pan tilt]))))
+
+(defn aim-cue
+  "Returns an effect which assigns an aim parameter to all moving
+  heads of the fixtures supplied when invoked. The direction is a
+  point in the frame of reference of the show, so standing in the
+  audience facing the show, x increases to the left, y away from the
+  ground, and z towards the audience, and the origin is the center of
+  the show."
+  [name target-point fixtures]
+  {:pre [(some? name) (some? *show*) (seq? fixtures)]}
+  (params/validate-param-type target-point Point3d)
+  (let [heads (find-moving-heads fixtures)
+        assigners (build-head-parameter-assigners :aim heads target-point *show*)]
+    (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
+
+(defn aim-assignment-resolver
+  "Resolves the assignment of an aiming point to a fixture or a
+  head."
+  [show buffers snapshot target assignment]
+  (let [target-point (params/resolve-param assignment show snapshot target)  ; In case it is frame dynamic
+        direction-key (keyword (str "pan-tilt-" (:id target)))
+        former-values (direction-key (:previous @(:movement *show*)))
+        [pan tilt] (calculate-aim target target-point former-values)]
+    (debug "Aim resolver pan:" pan "tilt:" tilt)
     (doseq [c (filter #(= (:type %) :pan) (:channels target))]
       (apply-channel-value buffers c pan))
     (doseq [c (filter #(= (:type %) :tilt) (:channels target))]

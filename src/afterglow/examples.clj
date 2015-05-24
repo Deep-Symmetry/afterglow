@@ -155,6 +155,11 @@
   (show/add-midi-control-to-var-mapping "Slider" 0 4 :x)
   (show/add-midi-control-to-var-mapping "Slider" 0 5 :y)
   (show/add-midi-control-to-var-mapping "Slider" 0 6 :z)
-  (show/add-function! :position
+  #_(show/add-function! :position
                       (afterglow.effects.movement/direction-cue
-                       "Pointer" (params/build-direction-param :x :x :y :y :z :z) (show/all-fixtures))))
+                       "Pointer" (params/build-direction-param :x :x :y :y :z :z) (show/all-fixtures)))
+  (show/add-function! :position
+                      (afterglow.effects.movement/aim-cue
+                       "Pointer" (params/build-aim-param :x :x :y :y :z :z) (show/all-fixtures)))
+  (show/set-variable! :y  2.6416)  ; Approximate height of ceiling
+  )

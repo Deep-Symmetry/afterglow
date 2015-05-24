@@ -270,7 +270,7 @@
   specified, then use the fixture's center position as the
   default target value to stay close to."
   [fixture direction former-values]
-  {:pre [(some? fixture) (some? direction)]}
+  {:pre [(some? fixture) (instance? Vector3d direction)]}
   (let [direction (invert-direction fixture direction)  ;; Transform to perspective of hung fixture
         rot-y (Math/atan2 (. direction x) (. direction z))  ;; Calculate pan
         [target-pan target-tilt] (or former-values [(:pan-center fixture) (:tilt-center fixture)])
@@ -283,6 +283,24 @@
     (debug "Best solution found: " best)
     (let [[[pan _] [tilt _]] best]
       [pan tilt])))
+
+(defn calculate-aim
+  "Given a fixture or head and a point in the frame of reference of
+  the light show, calculate the best pan and tilt values to send to
+  that fixture or head in order to aim it at that point.
+
+  If there is more than one legal solution, return the one that is
+  closest to the former values supplied. If no former values were
+  specified, then use the fixture's center position as the
+  default target value to stay close to."
+  [fixture target-point former-values]
+  {:pre [(some? fixture) (instance? Point3d target-point)]}
+  ;; Find direction from fixture to point
+  (let [direction (Vector3d. (- (. target-point x) (:x fixture))
+                            (- (. target-point y) (:y fixture))
+                            (- (. target-point z) (:z fixture)))]
+    (debug "Calculating aim as direction" direction)
+    (calculate-position fixture direction former-values)))
 
 
 ;; Experimental functions which are no longer needed. I will probably just go ahead

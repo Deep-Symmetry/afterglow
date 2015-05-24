@@ -35,10 +35,10 @@
 ;; TODO add things like MIDIParam, OpenSoundParam? Or more likely those come from ShowVariableParam...
 
 (defn check-type
-  "Ensure that a parameter satisfies a predicate, or that it satisfies
-  IParam and, when evaluated, returns a type that passes that
-  predicate, throwing an exception otherwise. Used by the
-  validate-param-type macros to do the actual type checking."
+  "Ensure that a parameter is of a particular type, or that it
+  satisfies IParam and, when evaluated, returns that type, throwing an
+  exception otherwise. Used by the validate-param-type macros to do
+  the actual type checking."
   [value type-expected name]
   {:pre [(some? value) (some? type-expected) (some? name)]}
   (cond (class? type-expected)
@@ -489,6 +489,56 @@
           (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))
           (resolve-non-frame-dynamic-elements-for-head [this show snapshot head] (resolve-fn show snapshot head)))))))
 
+(defn build-aim-param
+  "Returns a dynamic aiming parameter. If no arguments are supplied,
+  returns a static direction aiming towards a spot on the floor two
+  meters towards the audience from the center of the light show.
+  Keywords `:x`, `:y`, and `:z` can be used to specify a target point
+  in the frame of reference of the light show.
+
+  All incoming parameter values may be literal or dynamic, and may be
+  keywords, which will be dynamically bound to variables
+  in [[*show*]].
+
+  If you do not specify an explicit value for `:frame-dynamic`, this
+  direction parameter will be frame dynamic if it has any incoming
+  parameters which themselves are."
+  {:doc/format :markdown}
+  [& {:keys [x y z frame-dynamic] :or {x 0 y 0 z 2 frame-dynamic :default}}]
+  {:pre [(some? *show*)]}
+  (let [x (bind-keyword-param x Number 0)
+        y (bind-keyword-param y Number 0)
+        z (bind-keyword-param z Number 2)]
+    (if-not (some (partial satisfies? IParam) [x y z])
+      ;; Optimize the degenerate case of all constant parameters
+      (Point3d. x y z)
+      ;; Handle the general case of some dynamic parameters
+      (let [dyn (if (= :default frame-dynamic)
+                  ;; Default means incoming args control how dynamic we should be
+                  (boolean (some frame-dynamic-param? [x y z]))
+                  ;; We were given an explicit value for frame-dynamic
+                  (boolean frame-dynamic))
+            eval-fn (fn [show snapshot head]
+                      (Point3d. (resolve-param x show snapshot head)
+                                (resolve-param y show snapshot head)
+                                (resolve-param z show snapshot head)))
+            resolve-fn (fn [show snapshot head]
+                         (with-show show
+                           (build-aim-param :x (resolve-unless-frame-dynamic x show snapshot head)
+                                            :y (resolve-unless-frame-dynamic y show snapshot head)
+                                            :z (resolve-unless-frame-dynamic z show snapshot head)
+                                            :frame-dynamic dyn)))]
+        (reify
+          IParam
+          (evaluate [this show snapshot] (eval-fn show snapshot nil))
+          (frame-dynamic? [this] dyn)
+          (result-type [this] Point3d)
+          (resolve-non-frame-dynamic-elements [this show snapshot] (resolve-fn show snapshot nil))
+          IHeadParam
+          (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))
+          (resolve-non-frame-dynamic-elements-for-head [this show snapshot head] (resolve-fn show snapshot head)))))))
+
+;; TODO: Implement
 (defn build-linear-spatial-param
   "Returns a dynamic number parameter related to the physical
   arrangement of the supplied fixture heads."
