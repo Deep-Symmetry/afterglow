@@ -95,12 +95,7 @@
             :7-channel {:channels [(chan/dimmer 1) (chan/color 2 :red) (chan/color 3 :green) (chan/color 4 :blue)
                                    (chan/functions :control 5
                                                    0 nil 8 "red" 16 "yellow" 24 "green" 32 "cyan" 40 "blue"
-                                                   48 "purple" 56 "white" 64 "program-1" 72 "program-2"
-                                                   80 "program-3" 88 "program-4" 96 "program-5" 104 "program-6"
-                                                   112 "program-7" 120 "program-8" 128 "program-9" 136 "program-10"
-                                                   144 "program-11" 152 "program-12" 160 "program-13" 168 "program-14"
-                                                   176 "program-15" 184 "program-16" 192 "program-17" 200 "program-18"
-                                                   208 "program-19" 216 "program-20" 224 "program-21"
+                                                   48 "purple" 56 "white" (range 64 232 8) "program"
                                                    232 "sound-active")
                                    (chan/fine-channel :mic-sensitivity 6)
                                    (chan/functions :strobe 7 0 nil 10 :strobe)]}

@@ -85,13 +85,14 @@
       (assoc base :fine-offset fine-offset)
       base)))
 
-(defn- expand-function
-  "Expands the specification for a function range. If a simple keyword
-  was given for it, creates a map with default contents for a
-  variable-value range. A string is turned into a keyword, but creates
-  a fixed-value range. A nil specification is expanded into a
-  no-function range. Otherwise, adds any missing pieces to the
-  supplied map. In either case, assigns the range's starting value."
+(defn- expand-function-spec
+  "Expands the specification for a function at a particular starting
+  address. If a simple keyword was given for it, creates a map with
+  default contents for a variable-value range. A string is turned into
+  a keyword, but creates a fixed-value range. A nil specification is
+  expanded into a no-function range. Otherwise, adds any missing
+  pieces to the supplied map. In either case, assigns the range's
+  starting value."
   [[start spec]]
   (cond (keyword? spec)
         {:start start
@@ -135,6 +136,27 @@
           (assoc current :end end :range :fixed)
           (throw (IllegalArgumentException. "No range values available for function " (:type current))))))))
 
+(defn- expand-function-range
+  "Expands a sequence of function ranges. If a sequence was passed for
+  the starting point, expands it, appending a sequential index to the
+  spec, which must either be a keyword or string, and then expanding
+  that in turn by calling expand-function-spec. If start is not a
+  sequence, simply passes its arguments on to expand-function-spec."
+  [[start spec]]
+  (if (seq? start)
+    (map-indexed (fn [index start]
+                   (cond (string? spec)
+                         (expand-function-spec [start (str spec "-" (inc index))])
+
+                         (keyword? spec)
+                         (expand-function-spec [start (keyword (str (name spec) "-" (inc index)))])
+
+                         :else
+                         (throw (IllegalArgumentException.
+                                 (str "Don't know how to expand function range for spec " spec)))))
+                 start)
+    [(expand-function-spec [start spec])]))
+
 (defn functions
   "Defines a channel whose values are divided up into different ranges
   which perform different functions. After the channel type and DMX
@@ -155,7 +177,9 @@
   (let [chan-type (keyword chan-type)]
     (assoc (channel offset)
            :type chan-type
-           :functions (into [] (map assign-ends (partition 2 1 [:end] (map expand-function (partition 2 functions))))))))
+           :functions (into [] (map assign-ends
+                                    (partition 2 1 [:end] (mapcat expand-function-range
+                                                                  (partition 2 functions))))))))
 
 (defn dimmer
   "A channel which controls a dimmer, with an optional second channel
