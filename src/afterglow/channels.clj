@@ -58,7 +58,7 @@
   (filter #(some pred (:channels %)) (expand-heads fixtures)))
 
 ;; TODO: is this a good range data structure for finding which one a value falls into?
-(defn function
+(defn build-function
   "Returns a function spefication that encompasses a range of possible
   DMX values for a channel. If start and end are not specified, the
   function uses the full range of the channel."
@@ -80,11 +80,82 @@
         function-name (or function-name (clojure.string/capitalize (name function-type)))
         base (assoc (channel offset)
                     :type chan-type
-                    :functions [(function :variable function-type function-name)])]
+                    :functions [(build-function :variable function-type function-name)])]
     (if fine-offset
       (assoc base :fine-offset fine-offset)
       base)))
 
+(defn- expand-function
+  "Expands the specification for a function range. If a simple keyword
+  was given for it, creates a map with default contents for a
+  variable-value range. A string is turned into a keyword, but creates
+  a fixed-value range. A nil specification is expanded into a
+  no-function range. Otherwise, adds any missing pieces to the
+  supplied map. In either case, assigns the range's starting value."
+  [[start spec]]
+  (cond (keyword? spec)
+        {:start start
+         :range :variable
+         :type spec
+         :label (clojure.string/capitalize (name spec))}
+
+        (string? spec)
+        {:start start
+         :range :fixed
+         :type (keyword spec)
+         :label (clojure.string/capitalize (name spec))}
+
+        (nil? spec)
+        {:start start
+         :range :fixed
+         :type :no-function
+         :label "No function"}
+        
+        (map? spec)
+        (merge {:range :variable
+                :label (clojure.string/capitalize (name (:type spec)))}
+               spec
+               {:start start})
+
+        :else
+        (throw (IllegalArgumentException.
+                (str "Don't know how to build a function specification from " spec)))))
+
+(defn- assign-ends
+  "Used to figure out the ends of the ranges that make up a function
+  channel, by ending each range at the value one less than where the
+  next range begins."
+  [[current next]]
+  (if (= :end next)
+    (assoc current :end 255)
+    (let [end (dec (:start next))]
+      (if (< (:start current) end)
+        (assoc current :end end)
+        (if (= (:start current) end)
+          (assoc current :end end :range :fixed)
+          (throw (IllegalArgumentException. "No range values available for function " (:type current))))))))
+
+(defn functions
+  "Defines a channel whose values are divided up into different ranges
+  which perform different functions. After the channel type and DMX
+  offset, pass a list of starting values and function specifications.
+  The simplest form of specification is a keyword identifying the
+  function type; this will be expanded into a variable-range function
+  of that type. For more complex functions, pass in a map containing
+  the :type keyword and any other settings you need to
+  make (e.g. :label), and the rest will be filled in for you. The
+  ranges need to be in order of increasing starting values, and the
+  ending values for each will be figured out by context, e.g.
+  (functions :strobe 40
+             0 nil
+             10 \"strobe-on\"
+             20 :strobe-variable-speed)"
+  [chan-type offset & functions]
+  {:pre (some? chan-type) (integer? offset) (<= 1 offset 512)}
+  (let [chan-type (keyword chan-type)]
+    (assoc (channel offset)
+           :type chan-type
+           :functions (into [] (map assign-ends (partition 2 1 [:end] (map expand-function (partition 2 functions))))))))
 
 (defn dimmer
   "A channel which controls a dimmer, with an optional second channel
