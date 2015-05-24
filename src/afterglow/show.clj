@@ -155,7 +155,7 @@
   {:pre [(some? *show*)]}
   (stop!)
   (let [buffers (create-buffers *show*)]
-    (swap! (:pool *show*) #(if % % (cp/threadpool (cp/ncpus))))
+    (swap! (:pool *show*) #(or % (cp/threadpool (cp/ncpus))))
     (swap! (:task *show*) #(do (when % (at-at/stop %))
                              (at-at/every (:refresh-interval *show*)
                                           (fn [] (send-dmx *show* buffers))

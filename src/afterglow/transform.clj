@@ -218,7 +218,7 @@
     (.rotY rotation (- rot-y))  ; Determine what the aiming vector looks like after we have panned
     (.transform rotation direction)
     ;; Now figure out the tilt angle
-    (let [rot-x (- (Math/atan2 (. direction y) (. direction z)))
+    (let [rot-x (- (Math/atan2 (.y direction) (.z direction)))
           pan-solution (find-closest-legal-dmx-value-for-angle rot-y (:pan-center fixture) (:pan-half-circle fixture)
                                                                :target-value target-pan)
           tilt-solution (find-closest-legal-dmx-value-for-angle rot-x (:tilt-center fixture) (:tilt-half-circle fixture)
@@ -272,7 +272,7 @@
   [fixture direction former-values]
   {:pre [(some? fixture) (instance? Vector3d direction)]}
   (let [direction (invert-direction fixture direction)  ;; Transform to perspective of hung fixture
-        rot-y (Math/atan2 (. direction x) (. direction z))  ;; Calculate pan
+        rot-y (Math/atan2 (.x direction) (.z direction))  ;; Calculate pan
         [target-pan target-tilt] (or former-values [(:pan-center fixture) (:tilt-center fixture)])
         ;; Try both our calculated pan, and flips halfway around the circle in both directions,
         ;; hunting for the best solution.
@@ -296,9 +296,9 @@
   [fixture target-point former-values]
   {:pre [(some? fixture) (instance? Point3d target-point)]}
   ;; Find direction from fixture to point
-  (let [direction (Vector3d. (- (. target-point x) (:x fixture))
-                            (- (. target-point y) (:y fixture))
-                            (- (. target-point z) (:z fixture)))]
+  (let [direction (Vector3d. (- (.x target-point) (:x fixture))
+                             (- (.y target-point) (:y fixture))
+                             (- (.z target-point) (:z fixture)))]
     (debug "Calculating aim as direction" direction)
     (calculate-position fixture direction former-values)))
 
