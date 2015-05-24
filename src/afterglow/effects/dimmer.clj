@@ -140,7 +140,7 @@
   of assigning the value to the DMX channels."
   {:deprecated true}
   [osc fixtures & {:keys [min max htp?] :or {min 0 max 255 htp? true}}]
-  {:pre [(valid-dmx-value? min) (valid-dmx-value? max) (< min max) (seq? fixtures) (ifn? osc)]}
+  {:pre [(valid-dmx-value? min) (valid-dmx-value? max) (< min max) (sequential? fixtures) (ifn? osc)]}
   (let [range (long (- max min))
         chans (channels/extract-channels fixtures #(= (:type %) :dimmer))
         f (if htp?

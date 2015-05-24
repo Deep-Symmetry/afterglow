@@ -4,7 +4,7 @@
   (:require [afterglow.channels :as channels]
             [afterglow.effects.params :as params]
             [afterglow.rhythm :as rhythm]
-            [com.evocomputing.colors :as colors]
+            [afterglow.show-context :refer [*show*]]
             [taoensso.timbre :as timbre :refer [error warn info debug]]
             [taoensso.timbre.profiling :as profiling :refer [pspy profile]])
   (:import [afterglow.rhythm MetronomeSnapshot]))
@@ -95,8 +95,8 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
   (Assigner. kind (keyword (str "i" (:id head))) head f))
 
 (defn build-head-assigners
-  "Returns a list of assigners of the specified type which apply a
-  fixed assignment function to all the supplied heads or fixtures."
+  "Returns a list of assigners of the specified type which apply an
+  assignment function to all the supplied heads or fixtures."
   [kind heads f]
   (map #(build-head-assigner kind % f) heads))
 

@@ -2,8 +2,7 @@
   "Models for fixtures provided by [Blizzard
   Lighting](http://www.blizzardlighting.com)."
   {:doc/format :markdown}
-  (:require [afterglow.channels :as chan]
-            [afterglow.fixtures :refer [index-functions]]))
+  (:require [afterglow.channels :as chan]))
 
 (defn blade-rgbw
   "[Blade
@@ -68,7 +67,7 @@
                                         (chan/color 6 :red) (chan/color 7 :green)
                                         (chan/color 8 :blue) (chan/color 9 :white)
                                         (chan/dimmer 10) (chan/fine-channel :custom-color 11)]})]
-     (assoc (index-functions base)
+     (assoc base
       :name "Blizzard Blade RGBW"
       :mode mode
       :pan-center 84 :pan-half-circle 84 :tilt-center 8 :tilt-half-circle -214))))
@@ -111,6 +110,6 @@
                                                     0 nil
                                                     10 {:type :strobe :label "Strobe (slow->fast)"})]
                          :heads (map ws-head (range 8))})]
-     (assoc (index-functions base)
+     (assoc base
             :name "Blizzard Weather System"
             :mode mode))))

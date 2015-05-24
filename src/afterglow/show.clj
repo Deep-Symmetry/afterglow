@@ -22,12 +22,14 @@
    :doc/format :markdown}
   (:require [afterglow.channels :as chan]
             [afterglow.effects :as fx]
-            [afterglow.effects.channel :refer [channel-assignment-resolver]]
+            [afterglow.effects.channel :refer [channel-assignment-resolver
+                                               function-assignment-resolver]]
             [afterglow.effects.color :refer [color-assignment-resolver]]
             [afterglow.effects.dimmer :refer [master master-set-level]]
             [afterglow.effects.movement :refer [direction-assignment-resolver
                                                 aim-assignment-resolver]]
             [afterglow.effects.params :refer [bind-keyword-param resolve-param]]
+            [afterglow.fixtures :refer [index-functions]]
             [afterglow.midi :as midi]
             [afterglow.ola-service :as ola]
             [afterglow.rhythm :refer :all]
@@ -61,7 +63,8 @@
   [[:channel channel-assignment-resolver]
    [:color color-assignment-resolver]
    [:direction direction-assignment-resolver]
-   [:aim aim-assignment-resolver]])
+   [:aim aim-assignment-resolver]
+   [:function function-assignment-resolver]])
 
 (defn- gather-assigners
   "Collect all of the assigners that are in effect at the current
@@ -82,8 +85,9 @@
   [show snapshot assigners]
   (pspy :run-assigners
         (reduce (fn [result-so-far assigner]
-                  [(:target assigner) (fx/assign assigner show snapshot (:target assigner)
-                                                      (get result-so-far 1))])
+                  [(:target assigner) (:target-id assigner)
+                   (fx/assign assigner show snapshot (:target assigner)
+                              (get result-so-far 1))])
                 []
                 assigners)))
 
@@ -120,8 +124,8 @@
       (let [all-assigners (gather-assigners show snapshot)]
         (doseq [[kind handler] resolution-handlers]
           (doseq [assigners (vals (get all-assigners kind))]
-            (let [[target value] (run-assigners show snapshot assigners)]
-              (p :resolve-value (handler show buffers snapshot target value))))))
+            (let [[target target-id value] (run-assigners show snapshot assigners)]
+              (p :resolve-value (handler show buffers snapshot target value target-id))))))
       (p :send-dmx-data (doseq [universe (keys buffers)]
                           (let [levels (get buffers universe)]
                             (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} nil))))
@@ -178,7 +182,7 @@
   ([universe]
    (show (metronome 120) default-refresh-interval universe))
   ([metronome refresh-interval & universes]
-  {:pre [(seq? universes) (number? refresh-interval) (pos? refresh-interval)]}
+  {:pre [(sequential? universes) (number? refresh-interval) (pos? refresh-interval)]}
    {:id (swap! show-counter inc)
     :metronome metronome
     :sync (atom nil)
@@ -570,7 +574,7 @@
       (throw (IllegalStateException. (str "Cannot complete patch: "
                                           (clojure.string/join ", " (vec (for [[k v] conflicts]
                                                                            (str "Channel " k " in use by fixture " v))))))))
-    (assoc fixtures key (assoc fixture :key key :id (next-id)))))
+    (assoc fixtures key (assoc (index-functions fixture) :key key :id (next-id)))))
 
 (defn patch-fixture!
   "Patch a fixture to a universe in [[*show*]] at a starting DMX

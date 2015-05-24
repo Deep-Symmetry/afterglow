@@ -544,7 +544,7 @@
   arrangement of the supplied fixture heads."
   {:doc/format :markdown}
   [heads & {:keys [start end circular] :or {start 0 end 255 }}]
-  {:pre [(some? *show*) (seq? heads)]}
+  {:pre [(some? *show*) (sequential? heads)]}
 )
 
 ;; TODO: some kind of random parameter?

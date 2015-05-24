@@ -28,7 +28,7 @@
   audience facing the show, x increases to the left, y away from the
   ground, and z towards the audience."
   [name direction fixtures]
-  {:pre [(some? name) (some? *show*) (seq? fixtures)]}
+  {:pre [(some? name) (some? *show*) (sequential? fixtures)]}
   (params/validate-param-type direction Vector3d)
   (let [heads (find-moving-heads fixtures)
         assigners (build-head-parameter-assigners :direction heads direction *show*)]
@@ -36,7 +36,7 @@
 
 (defn direction-assignment-resolver
   "Resolves the assignment of a direction to a fixture or a head."
-  [show buffers snapshot target assignment]
+  [show buffers snapshot target assignment _]
   (let [direction (params/resolve-param assignment show snapshot target)  ; In case it is frame dynamic
         direction-key (keyword (str "pan-tilt-" (:id target)))
         former-values (direction-key (:previous @(:movement *show*)))
@@ -56,7 +56,7 @@
   ground, and z towards the audience, and the origin is the center of
   the show."
   [name target-point fixtures]
-  {:pre [(some? name) (some? *show*) (seq? fixtures)]}
+  {:pre [(some? name) (some? *show*) (sequential? fixtures)]}
   (params/validate-param-type target-point Point3d)
   (let [heads (find-moving-heads fixtures)
         assigners (build-head-parameter-assigners :aim heads target-point *show*)]
@@ -65,7 +65,7 @@
 (defn aim-assignment-resolver
   "Resolves the assignment of an aiming point to a fixture or a
   head."
-  [show buffers snapshot target assignment]
+  [show buffers snapshot target assignment _]
   (let [target-point (params/resolve-param assignment show snapshot target)  ; In case it is frame dynamic
         direction-key (keyword (str "pan-tilt-" (:id target)))
         former-values (direction-key (:previous @(:movement *show*)))

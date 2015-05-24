@@ -40,7 +40,7 @@
   "Returns an effect which assigns a color parameter to all heads of
   the fixtures supplied when invoked."
   [name color fixtures]
-  {:pre [(some? name) (some? *show*) (seq? fixtures)]}
+  {:pre [(some? *show*) (some? name) (sequential? fixtures)]}
   (params/validate-param-type color :com.evocomputing.colors/color)
   (let [heads (find-rgb-heads fixtures)
         assigners (build-head-parameter-assigners :color heads color *show*)]
@@ -56,7 +56,7 @@
   and :lightness."
   {:deprecated true}
   [osc fixtures & {:keys [min max saturation lightness] :or {min 0 max 359 saturation 100 lightness 50}}]
-  {:pre [(<= 0 saturation 100) (<= 0 lightness 100) (< min max) (seq? fixtures) (ifn? osc)]}
+  {:pre [(<= 0 saturation 100) (<= 0 lightness 100) (< min max) (sequential? fixtures) (ifn? osc)]}
   (let [range (long (- max min))
         heads (find-rgb-heads fixtures)
         f (fn [show snapshot target previous-assignment]
@@ -70,7 +70,7 @@
 ;; TODO handle color wheels
 (defn color-assignment-resolver
   "Resolves the assignment of a color to a fixture or a head."
-  [show buffers snapshot target assignment]
+  [show buffers snapshot target assignment _]
   (let [resolved (params/resolve-param assignment show snapshot target)]  ; In case it is frame dynamic
     (doseq [c (filter #(= (:color %) :red) (:channels target))]
       (apply-channel-value buffers c (colors/red resolved)))

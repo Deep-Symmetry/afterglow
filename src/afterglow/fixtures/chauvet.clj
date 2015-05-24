@@ -1,8 +1,7 @@
 (ns afterglow.fixtures.chauvet
   "Models for fixtures provided by [Chauvet Lighting](http://www.chauvetlighting.com)."
   {:doc/format :markdown}
-  (:require [afterglow.channels :as chan]
-            [afterglow.fixtures :refer [index-functions]]))
+  (:require [afterglow.channels :as chan]))
 
 ;; TODO: functions for rotational tranformatons
 
@@ -24,6 +23,6 @@
             :6-channel {:channels [(chan/color 1 :red) (chan/color 2 :green) (chan/color 3 :blue)
                                    (chan/color 4 :amber :hue (when mix-amber 45)) (chan/color 5 :white)
                                    (chan/color 6 :uv :label "UV" :hue (when mix-uv 270))]})]
-     (assoc (index-functions base)
+     (assoc base
             :name "Chauvet SlimPAR Hex 3 IRC"
             :mode mode))))
