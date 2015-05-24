@@ -44,8 +44,9 @@
 ;; Throw a couple of fixtures in there to play with. For better fun, use
 ;; fixtures and addresses that correspond to your actual hardware.
 (show/patch-fixture! :hex-1 (chauvet/slimpar-hex3-irc) 1 129)
-(show/patch-fixture! :blade-1 (blizzard/blade-rgbw) 1 270 :y (tf/inches 9) :y-rotation (tf/degrees 90))
-(show/patch-fixture! :blade-2 (blizzard/blade-rgbw) 1 240 :x (tf/inches 32) :y (tf/inches 26))
+(show/patch-fixture! :blade-1 (blizzard/blade-rgbw) 1 270 :y (tf/inches 9))
+(show/patch-fixture! :blade-2 (blizzard/blade-rgbw) 1 240 :x (tf/inches 39) :y (tf/inches 58) :z (tf/inches -15)
+                     :y-rotation (tf/degrees -45))
 (show/patch-fixture! :ws-1 (blizzard/weather-system) 1 161 :x 1.0 :y 1.5)
 
 (defn global-color-cue

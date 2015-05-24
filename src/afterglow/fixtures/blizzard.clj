@@ -15,12 +15,15 @@
   straight into the audience.
 
   The origin of the light is, as for all moving heads, at the
-  intersection of the pan and tilt axes. The image below shows this
-  default orientation, and the axes, for the fixture. If it is hung
-  with this side of the base facing the audience, right side up, then
-  you do not need to specify any rotations when you patch it.
-  Otherwise, tell afterglow how far it has been rotated around each of
-  the axes when hanging:
+  intersection of the pan and tilt axes. That is the point that you
+  need to reference when patching the fixture and telling Afterglow
+  where it has been hung within [show
+  space](https://github.com/brunchboy/afterglow/wiki/Show-Space). The
+  image below shows this default orientation, and the axes, for the
+  fixture. If it is hung with this side of the base facing the
+  audience, right side up, then you do not need to specify any
+  rotations when you patch it. Otherwise, tell Afterglow how far it
+  has been rotated around each of the axes when hanging:
 
   ![Blade
   axes](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/blade.png)
