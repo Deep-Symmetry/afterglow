@@ -191,6 +191,13 @@ How about a nice cycling rainbow color fade?
   (params/build-color-param :s 100 :l 50 :h hue-param)))
 ```
 
+Or, if you need to be woken up a bit,
+
+```clojure
+(show/add-function! :strobe (afterglow.effects.channel/function-cue
+  "Fast blast!" :strobe 100 (show/all-fixtures)))
+```
+
 > The Wiki has more examples of
 > [building effects](https://github.com/brunchboy/afterglow/wiki/effect-examples),
 > and
