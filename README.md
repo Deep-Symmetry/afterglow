@@ -11,16 +11,14 @@ via its
 
 ## Status
 
-I am very rapidly fleshing this out; it has started to develop some
-really fun features, but a majority remains in my to-do lists and in
-my head. The examples are already starting to be intriguing and
-informative, and the
-[documentation](https://github.com/brunchboy/afterglow/wiki)
-is getting substantial. But the modeling of fixtures, channels, etc.
-is in an early form now, and there have been drastic changes as I gain
-experience with how I want to use them. Things are starting to feel
-about right, but I need to flesh out a few more pieces before it is
-ready for a first release.
+We getting close to an initial release, probably in early June. Most
+of the crazy ideas have panned out and been implemented, and I am just
+circling back and fleshing out the basic details needed for everyday
+use. The examples are starting to be intriguing and informative, and
+the [documentation](https://github.com/brunchboy/afterglow/wiki) is
+getting substantial. The modeling of fixtures, channels, etc. is
+coming together nicely, though there have been drastic changes as I
+gained experience with how I want to use them.
 
 ## Installation
 
@@ -244,6 +242,15 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   That way we could stop having to pass it so many places, though it
   would make printing fixtures less useful. (Not needed; dynamic
   binding works better.)
+- [x] Add support for named fixture functions which exist as a value
+  range subset of a channel, and effects which set them to particular
+  values.
+- [x] Allow scaling of named fixture functions, for example to allow a
+  strobe effect to be set to a rough Hz value despite differences in
+  fixture implementation.
+- [ ] Review existing fixture definitions for consistency of function
+  names, start a style guide on the Wiki for others creating fixture
+  definitions.
 - [ ] Make pass over all source, flesh out API doc and preconditions.
 - [ ] Sparkle effect, essentially a particle generator with
   configurable maximum brightness, fade time, distribution.

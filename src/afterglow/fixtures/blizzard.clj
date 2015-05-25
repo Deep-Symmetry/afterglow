@@ -5,6 +5,71 @@
   (:require [afterglow.channels :as chan]
             [afterglow.effects.channel :refer [function-value-scaler]]))
 
+;; TODO: Figure out how to integrate color wheel into color assigner.
+;;       For now, just mapped as a function channel.
+(defn torrent-f3
+  "[Torrent F3](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&id=174:torrent-f3™&Itemid=71)
+  moving head."
+  {:doc/format :markdown}
+  []
+  {:channels [(chan/pan 1 2) (chan/tilt 3 4)
+              (chan/functions :color 5 0 "color-open" 16 "red" 32 "blue" 48 "green" 64 "yellow"
+                              80 "magenta" 96 "cyan" 112 "orange"
+                              128 {:type :color-clockwise
+                                   :label "Color Wheel Clockwise (fast->slow)"}
+                              190 "color-stop" 194 {:type :color-counterclockwise
+                                                    :label "Color Wheel Counterclockwise (slow->fast)"})
+              (chan/functions :gobo-moving 6 0 "gobo-moving-open" 10 "gobo-moving-rings"
+                              20 "gobo-moving-color-swirl" 30 "gobo-moving-stars"
+                              40 "gobo-moving-optical-tube" 50 "gobo-moving-magenta-bundt"
+                              60 "gobo-moving-blue-megahazard" 70 "gobo-moving-turbine"
+                              80 :gobo-moving-rings-shake 100 :gobo-moving-color-swirl-shake
+                              120 :gobo-moving-stars-shake 140 :gobo-moving-optical-tube-shake
+                              160 :gobo-moving-magenta-bundt-shake
+                              180 :gobo-moving-blue-megahazard-shake
+                              200 :gobo-moving-turbine-shake
+                              220 :gobo-moving-clockwise)
+              (chan/functions :gobo-rotation 7 0 nil
+                              4 {:type :gobo-rotation-clockwise
+                                 :label "Gobo Rotation Clockwise (fast->slow)"}
+                              128 "gobo-rotation-stop"
+                              192 {:type :gobo-rotation-counterclockwise
+                                   :label "Gobo Rotation Counterlockwise (slow->fast)"})
+              (chan/functions :gobo-fixed 8 0 "gobo-fixed-open" 10 "gobo-fixed-mortar"
+                              20 "gobo-fixed-4-rings" 30 "gobo-fixed-atom"
+                              40 "gobo-fixed-jacks" 50 "gobo-fixed-saw"
+                              60 "gobo-fixed-sunflower" 70 "gobo-fixed-45-adapter"
+                              80 "gobo-fixed-star" 90 "gobo-fixed-fose-fingerprint"
+                              100 :gobo-fixed-mortar-shake 112 :gobo-fixed-4-rings-shake
+                              124 :gobo-fixed-atom-shake 136 :gobo-fixed-jacks-shake
+                              148 :gobo-fixed-saw-shake 160 :gobo-fixed-sunflower-shake
+                              172 :gobo-fixed-45-adapter-shake 184 :gobo-fixed-star-shake
+                              196 :gobo-fixed-rose-fingerprint-shake
+                              208 :gobo-fixed-clockwise)
+              (chan/functions :shutter 9 0 "shutter-closed" 32 "shutter-open"
+                              64 :strobe
+                              96 "shutter-open-2" 128 :pulse-strobe 160 "shutter-open-3"
+                              192 :random-strobe
+                              224 "shutter-open-4")
+              (chan/dimmer 10)
+              (chan/focus 11)
+              (chan/functions :prism 12 0 "prism-out" 6 "prism-in"
+                              128 {:type :prism-clockwise
+                                   :label "Prism Clockwise (fast->slow)"}
+                              190 "prism-stop"
+                              194 {:type :prism-counterclockwise
+                                   :label "Prism Counterclockwsie (slow->fast)"})
+              (chan/functions :pan-tilt-speed 13 0 "pan-tilt-speed-normal"
+                              1 :pan-tilt-speed-slow
+                              226 "blackout-when-head-moving"
+                              236 "blackout-when-wheels-changing"
+                              246 nil)
+              (chan/functions :control 14 0 "normal-color-change-mode"
+                              20 "split-colors-possible" 30 "split-colors-and-gobos"
+                              40 nil 80 "motor-reset" (range 100 255 20) "program")]
+   :name "Blizzard Torrent F3"
+   :pan-center 85.5 :pan-half-circle -85.5 :tilt-center 25 :tilt-half-circle -203})
+
 (defn blade-rgbw
   "[Blade
   RGBW](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&layout=item&id=177&Itemid=157)

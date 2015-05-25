@@ -43,9 +43,11 @@
 
 ;; Throw a couple of fixtures in there to play with. For better fun, use
 ;; fixtures and addresses that correspond to your actual hardware.
+(show/patch-fixture! :torrent-1 (blizzard/torrent-f3) 1 1 :x (tf/inches 49) :y (tf/inches 61.5) :z (tf/inches 6)
+                     :y-rotation (tf/degrees -45))
 (show/patch-fixture! :hex-1 (chauvet/slimpar-hex3-irc) 1 129)
 (show/patch-fixture! :blade-1 (blizzard/blade-rgbw) 1 270 :y (tf/inches 9))
-(show/patch-fixture! :blade-2 (blizzard/blade-rgbw) 1 240 :x (tf/inches 39) :y (tf/inches 58) :z (tf/inches -15)
+(show/patch-fixture! :blade-2 (blizzard/blade-rgbw) 1 240 :x (tf/inches 40) :y (tf/inches 58) :z (tf/inches -15)
                      :y-rotation (tf/degrees -45))
 (show/patch-fixture! :ws-1 (blizzard/weather-system) 1 161 :x 1.0 :y 1.5)
 
@@ -81,6 +83,9 @@
 ;; Start simple with a cool blue color from all the lights
 (show/add-function! :color blue-cue)
 (show/add-function! :dimmers (global-dimmer-cue 255))
+(show/add-function! :torrent-shutter
+                    (afterglow.effects.channel/function-cue
+                     "Torrent Shutter Open" :shutter-open 50 (show/fixtures-named "torrent")))
 
 ;; Get a little fancier with a beat-driven fade
 ;; (show/add-function! :dimmers (global-dimmer-cue
@@ -138,18 +143,18 @@
 
 (defn add-pan-tilt-controls
   []
-  (show/add-midi-control-to-var-mapping "Slider" 0 4 :tilt :max 255.99)
-  (show/add-midi-control-to-var-mapping "Slider" 0 20 :pan :max 255.99)
+  (show/add-midi-control-to-var-mapping "Slider" 0 0 :tilt :max 255.99)
+  (show/add-midi-control-to-var-mapping "Slider" 0 16 :pan :max 255.99)
   (show/add-function!
-   :pan-blade (afterglow.effects.channel/channel-cue
-               "Pan Blade"
-               (params/build-variable-param :pan)
-               (afterglow.channels/extract-channels (show/fixtures-named :blade) #(= (:type %) :pan))))
+   :pan-torrent (afterglow.effects.channel/channel-cue
+                 "Pan Torrent"
+                 (params/build-variable-param :pan)
+                 (afterglow.channels/extract-channels (show/fixtures-named :torrent) #(= (:type %) :pan))))
   (show/add-function!
-   :tilt-blade (afterglow.effects.channel/channel-cue
-              "Tilt Blade"
-              (params/build-variable-param :tilt)
-              (afterglow.channels/extract-channels (show/fixtures-named :blade) #(= (:type %) :tilt)))))
+   :tilt-torrent (afterglow.effects.channel/channel-cue
+                  "Tilt Torrent"
+                  (params/build-variable-param :tilt)
+                  (afterglow.channels/extract-channels (show/fixtures-named :torrent) #(= (:type %) :tilt)))))
 
 (defn add-xyz-controls
   []
@@ -161,6 +166,6 @@
                        "Pointer" (params/build-direction-param :x :x :y :y :z :z) (show/all-fixtures)))
   (show/add-function! :position
                       (afterglow.effects.movement/aim-cue
-                       "Pointer" (params/build-aim-param :x :x :y :y :z :z) (show/all-fixtures)))
+                       "Aimer" (params/build-aim-param :x :x :y :y :z :z) (show/all-fixtures)))
   (show/set-variable! :y  2.6416)  ; Approximate height of ceiling
   )
