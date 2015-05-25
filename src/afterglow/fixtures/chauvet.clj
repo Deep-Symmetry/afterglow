@@ -3,8 +3,6 @@
   {:doc/format :markdown}
   (:require [afterglow.channels :as chan]))
 
-;; TODO: functions for rotational tranformatons
-
 (defn slimpar-hex3-irc
   "[SlimPAR HEX 3 IRC](http://www.chauvetlighting.com/slimpar-hex3irc.html)
   six-color low-profile LED PAR."
@@ -12,17 +10,24 @@
   ([]
    (slimpar-hex3-irc :12-channel))
   ([mode & {:keys [mix-amber mix-uv] :or {mix-amber true mix-uv true}}]
-   (let [base (case mode
-            ;; TODO: missing channels once we have definition support for them
+   (assoc (case mode
             :12-channel {:channels [(chan/dimmer 1) (chan/color 2 :red) (chan/color 3 :green) (chan/color 4 :blue)
                                     (chan/color 5 :amber :hue (when mix-amber 45)) (chan/color 6 :white)
-                                    (chan/color 7 :uv :label "UV" :hue (when mix-uv 270))]}
+                                    (chan/color 7 :uv :label "UV" :hue (when mix-uv 270))
+                                    (chan/functions :strobe 8 0 nil 11 :strobe)
+                                    (chan/functions :color-macros 9 0 nil 16 :color-macros)
+                                    (chan/functions :control 10 0 nil (range 11 200 50) "program"
+                                                    201 :sound-active-6-color 226 :sound-active)
+                                    (chan/functions :program-speed 11 0 :program-speed)
+                                    (chan/functions :dimmer-mode 12 0 "dimmer-mode-manual" 52 "dimmer-mode-off"
+                                                    102 "dimmer-mode-fast" 153 "dimmer-mode-medium"
+                                                    204 "dimmer-mode-slow")]}
             :8-channel {:channels [(chan/dimmer 1) (chan/color 2 :red) (chan/color 3 :green) (chan/color 4 :blue)
                                    (chan/color 5 :amber :hue (when mix-amber 45)) (chan/color 6 :white)
-                                   (chan/color 7 :uv :label "UV" :hue (when mix-uv 270))]}
+                                   (chan/color 7 :uv :label "UV" :hue (when mix-uv 270))
+                                   (chan/functions :strobe 8 0 nil 11 :strobe)]}
             :6-channel {:channels [(chan/color 1 :red) (chan/color 2 :green) (chan/color 3 :blue)
                                    (chan/color 4 :amber :hue (when mix-amber 45)) (chan/color 5 :white)
-                                   (chan/color 6 :uv :label "UV" :hue (when mix-uv 270))]})]
-     (assoc base
-            :name "Chauvet SlimPAR Hex 3 IRC"
-            :mode mode))))
+                                   (chan/color 6 :uv :label "UV" :hue (when mix-uv 270))]})
+          :name "Chauvet SlimPAR Hex 3 IRC"
+          :mode mode)))

@@ -47,30 +47,29 @@
   ([]
    (blade-rgbw :15-channel))
   ([mode]
-   (let [base (case mode
-                :15-channel {:channels [(chan/pan 1 3) (chan/tilt 2 4)
-                                        (chan/fine-channel :movement-speed 5
-                                                           :function-name "Movement Speed (fast->slow)")
-                                        (chan/color 6 :red) (chan/color 7 :green)
-                                        (chan/color 8 :blue) (chan/color 9 :white)
-                                        (chan/fine-channel :custom-color 10)
-                                        (chan/functions :strobe 11 0 nil 1 :strobe)
-                                        (chan/dimmer 12)
-                                        (chan/functions :control 13
-                                                        0 :linear-dimming 26 :fade-step-increase
-                                                        51 :color-macros 91 :color-fade-in-out
-                                                        131 :color-snap 171 :color-fade
-                                                        211 :auto 251 :sound-active)]}
-                :11-channel {:channels [(chan/pan 1 3) (chan/tilt 2 4)
-                                        (chan/fine-channel :movement-speed 5
-                                                           :function-name "Movement Speed (fast->slow)")
-                                        (chan/color 6 :red) (chan/color 7 :green)
-                                        (chan/color 8 :blue) (chan/color 9 :white)
-                                        (chan/dimmer 10) (chan/fine-channel :custom-color 11)]})]
-     (assoc base
-      :name "Blizzard Blade RGBW"
-      :mode mode
-      :pan-center 84 :pan-half-circle 84 :tilt-center 8 :tilt-half-circle -214))))
+   (assoc (case mode
+            :15-channel {:channels [(chan/pan 1 3) (chan/tilt 2 4)
+                                    (chan/fine-channel :movement-speed 5
+                                                       :function-name "Movement Speed (fast->slow)")
+                                    (chan/color 6 :red) (chan/color 7 :green)
+                                    (chan/color 8 :blue) (chan/color 9 :white)
+                                    (chan/fine-channel :custom-color 10)
+                                    (chan/functions :strobe 11 0 nil 1 :strobe)
+                                    (chan/dimmer 12)
+                                    (chan/functions :control 13
+                                                    0 :linear-dimming 26 :fade-step-increase
+                                                    51 :color-macros 91 :color-fade-in-out
+                                                    131 :color-snap 171 :color-fade
+                                                    211 :auto 251 :sound-active)]}
+            :11-channel {:channels [(chan/pan 1 3) (chan/tilt 2 4)
+                                    (chan/fine-channel :movement-speed 5
+                                                       :function-name "Movement Speed (fast->slow)")
+                                    (chan/color 6 :red) (chan/color 7 :green)
+                                    (chan/color 8 :blue) (chan/color 9 :white)
+                                    (chan/dimmer 10) (chan/fine-channel :custom-color 11)]})
+          :name "Blizzard Blade RGBW"
+          :mode mode
+          :pan-center 84 :pan-half-circle 84 :tilt-center 8 :tilt-half-circle -214)))
 
 ;; TODO: Someday play with channels 13 and 14 more to see if there is anything worth modeling.
 ;;       Not urgent, though, the main point of Afterglow is custom effects using raw colors and
@@ -97,19 +96,18 @@
   ([]
    (weather-system :26-channel))
   ([mode]
-   (let [base (case mode
+   (assoc (case mode
             :7-channel {:channels [(chan/dimmer 1) (chan/color 2 :red) (chan/color 3 :green) (chan/color 4 :blue)
                                    (chan/functions :control 5
                                                    0 nil 8 "red" 16 "yellow" 24 "green" 32 "cyan" 40 "blue"
                                                    48 "purple" 56 "white" (range 64 232 8) "program"
                                                    232 "sound-active")
                                    (chan/fine-channel :mic-sensitivity 6)
-                                   (chan/functions :strobe 7 0 nil 10 :strobe)]}
+                                   (chan/functions :strobe 7 0 nil 11 :strobe)]}
             :26-channel {:channels [(chan/dimmer 1)
                                     (chan/functions :strobe 26
                                                     0 nil
-                                                    10 {:type :strobe :label "Strobe (slow->fast)"})]
-                         :heads (map ws-head (range 8))})]
-     (assoc base
-            :name "Blizzard Weather System"
-            :mode mode))))
+                                                    11 {:type :strobe :label "Strobe (slow->fast)"})]
+                         :heads (map ws-head (range 8))})
+          :name "Blizzard Weather System"
+          :mode mode)))
