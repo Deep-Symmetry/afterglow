@@ -44,12 +44,13 @@
 
   If you are wondering why you are getting no light from a torrent,
   note that you need to explicitly set the shutter to open before the
-  dinner has any effect. Try something like:
+  dimmer has any effect. Try something like:
 
 ```clojure
 (show/add-function! :torrent-shutter
                     (afterglow.effects.channel/function-cue
-                     \"Torrent Shutter Open\" :shutter-open 50 (show/fixtures-named \"torrent\")))
+                    \"Torrent Shutter Open\" :shutter-open 50
+                    (show/fixtures-named \"torrent\")))
 ```" 
   {:doc/format :markdown}
   []
