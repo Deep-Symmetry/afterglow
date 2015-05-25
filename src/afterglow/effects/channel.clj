@@ -173,7 +173,7 @@
   [show buffers snapshot target assignment target-id]
   ;; Resolve in case it is frame dynamic
   (let [resolved (clamp-percent-float (params/resolve-param assignment show snapshot target))
-        function-key (keyword (clojure.string/join
-                               "-" (second (split-at 1 (clojure.string/split (name target-id) #"-")))))
+        target-name (name target-id)
+        function-key (keyword (subs target-name (inc (.indexOf target-name "-"))))
         [channel function-spec] (function-key (:function-map target))]
     (apply-channel-value buffers channel (function-percentage-to-dmx resolved function-spec))))
