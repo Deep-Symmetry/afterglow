@@ -9,7 +9,48 @@
 ;;       For now, just mapped as a function channel.
 (defn torrent-f3
   "[Torrent F3](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&id=174:torrent-f3™&Itemid=71)
-  moving head."
+  moving head effects spotlight. The default patching orientation is sitting on its feet
+  with the LCD and control panel right side up and facing the
+  audience. In this orientation, at a pan of 0, the beam is straight
+  into the audience.
+
+  The origin of the light is, as for all moving heads, at the
+  intersection of the pan and tilt axes. That is the point that you
+  need to reference when patching the fixture and telling Afterglow
+  where it has been hung within [show
+  space](https://github.com/brunchboy/afterglow/wiki/Show-Space). The
+  image below shows this default orientation, and the axes, for the
+  fixture. If it is hung with this side of the base facing the
+  audience, right side up, then you do not need to specify any
+  rotations when you patch it. Otherwise, tell Afterglow how far it
+  has been rotated around each of the axes when hanging:
+
+  ![F3
+  axes](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/F3.png)
+
+  The center pan value (aimed straight at the audience when hung in
+  the default orientation described above), is defined as 85.5, half a
+  revolution around from that, so that it has room to move in both
+  directions from its resting point. It takes a change of -85.5 in the
+  pan channel to rotate a half circle counterclockwise around the Y
+  axis.
+
+  At the center pan setting of 85.5, the center tilt value is 25,
+  aiming the head straight out at the audience. At this position, it
+  takes a change of -203 in the tilt channel to rotate a half circle
+  counterclockwise around the X axis. (In other words, it can only
+  tilt a little counterclockwise from here, but can flip right over in
+  the clockwise direction.)
+
+  If you are wondering why you are getting no light from a torrent,
+  note that you need to explicitly set the shutter to open before the
+  dinner has any effect. Try something like:
+
+```clojure
+(show/add-function! :torrent-shutter
+                    (afterglow.effects.channel/function-cue
+                     "Torrent Shutter Open" :shutter-open 50 (show/fixtures-named "torrent")))
+```" 
   {:doc/format :markdown}
   []
   {:channels [(chan/pan 1 2) (chan/tilt 3 4)
@@ -73,7 +114,7 @@
 (defn blade-rgbw
   "[Blade
   RGBW](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&layout=item&id=177&Itemid=157)
-  moving head. The default mounting orientation is sitting on its feet
+  moving head. The default patching orientation is sitting on its feet
   with the LCD and control panel right side up and facing the
   audience. In this orientation, at a pan of 0, the beam is straight
   into the audience.
@@ -93,7 +134,7 @@
   axes](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/Blade.png)
 
   The center pan value (aimed straight at the audience when hung in
-  the default orientation described above), is defined as 84, a full
+  the default orientation described above), is defined as 84, a half
   revolution around from that, so that it has room to move in both
   directions from its resting point. It takes a change of +84 in the
   pan channel to rotate a half circle counterclockwise around the Y

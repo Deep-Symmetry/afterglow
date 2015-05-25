@@ -277,6 +277,10 @@ TODO: listing of options this app accepts once it can run as a standalone app.
 - [ ] Provide a mechanism for creating and controlling/monitoring
   effects via OSC messages. Probably essentially a special-purpose OSC
   REPL.
+- [ ] Add show status query, reports statistics as well as list of
+  current effects and priorities, perhaps when they were added, the
+  list of targets each is currently assigning, other stuff? Could turn
+  into the start of a web interface.
 - [ ] See if I can get Traktor to just send beat notes for master
   track; if so, add mode for MIDI sync to ride them like DJ link
   - [ ] See example on page 166 of Traktor Bible; it is close, but I
