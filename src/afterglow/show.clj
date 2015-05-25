@@ -61,10 +61,10 @@
   identify the assigner type key, and the function to invoke for such
   assigners."
   [[:channel channel-assignment-resolver]
+   [:function function-assignment-resolver]
    [:color color-assignment-resolver]
    [:direction direction-assignment-resolver]
-   [:aim aim-assignment-resolver]
-   [:function function-assignment-resolver]])
+   [:aim aim-assignment-resolver]])
 
 (defn- gather-assigners
   "Collect all of the assigners that are in effect at the current

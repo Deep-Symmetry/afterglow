@@ -247,8 +247,3 @@
    (frost offset nil))
   ([offset fine-offset]
    (fine-channel :zoom offset :fine-offset fine-offset)))
-
-
-;; TODO: control channels
-
-;; TODO: gobo wheel and color wheel channels special variants of control channels?

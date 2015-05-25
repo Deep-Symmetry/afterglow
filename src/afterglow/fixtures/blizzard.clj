@@ -2,7 +2,8 @@
   "Models for fixtures provided by [Blizzard
   Lighting](http://www.blizzardlighting.com)."
   {:doc/format :markdown}
-  (:require [afterglow.channels :as chan]))
+  (:require [afterglow.channels :as chan]
+            [afterglow.effects.channel :refer [function-value-scaler]]))
 
 (defn blade-rgbw
   "[Blade
@@ -54,7 +55,10 @@
                                     (chan/color 6 :red) (chan/color 7 :green)
                                     (chan/color 8 :blue) (chan/color 9 :white)
                                     (chan/fine-channel :custom-color 10)
-                                    (chan/functions :strobe 11 0 nil 1 :strobe)
+                                    (chan/functions :strobe 11 0 nil
+                                                    1 {:type :strobe
+                                                       :scale-fn (partial function-value-scaler 1.8 27)
+                                                       :label "Strobe (1.8Hz->27Hz)"})
                                     (chan/dimmer 12)
                                     (chan/functions :control 13
                                                     0 :linear-dimming 26 :fade-step-increase
@@ -103,11 +107,16 @@
                                                    48 "purple" 56 "white" (range 64 232 8) "program"
                                                    232 "sound-active")
                                    (chan/fine-channel :mic-sensitivity 6)
-                                   (chan/functions :strobe 7 0 nil 11 :strobe)]}
+                                   (chan/functions :strobe 7 0 nil
+                                                   11 {:type :strobe
+                                                       :scale-fn (partial function-value-scaler 0.66 25)
+                                                       :label "Strobe (0.66Hz->25Hz)"})]}
             :26-channel {:channels [(chan/dimmer 1)
                                     (chan/functions :strobe 26
                                                     0 nil
-                                                    11 {:type :strobe :label "Strobe (slow->fast)"})]
+                                                    11 {:type :strobe
+                                                        :scale-fn (partial function-value-scaler 0.66 25)
+                                                        :label "Strobe (0.66Hz->25Hz)"})]
                          :heads (map ws-head (range 8))})
           :name "Blizzard Weather System"
           :mode mode)))

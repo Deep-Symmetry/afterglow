@@ -151,20 +151,41 @@
             ;; We need to resolve any dynamic parameters at this point so we can apply the
             ;; highest-take-precedence rule.
             (fn [show snapshot target previous-assignment]
-              (max (clamp-percent-float (params/resolve-param level show snapshot target))
-                   (or (clamp-percent-float (params/resolve-param previous-assignment show snapshot target)) 0)))
+              (max (params/resolve-param level show snapshot target)
+                   (or (params/resolve-param previous-assignment show snapshot target) 0)))
             ;; We can defer parameter resolution until the final DMX level assignment stage.
             (fn [show snapshot target previous-assignment]
               level))
         assigners (build-head-function-assigners function heads f)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
+(defn function-value-scaler
+  "Converts a named function value from an arbitrary range to a
+  percentage along that range. Designed to be partially applied in a
+  fixture definition, so [[function-percentage-to-dmx]] can pass the
+  value being resolved as the last parameter."
+  {:doc/format :markdown}
+  [range-min range-max value]
+  {:pre [(< range-min range-max)]}
+  (if (< value range-min)
+    0
+    (if (> value range-max)
+      100
+      (* (- value range-min) (/ 100 (- range-max range-min))))))
+
 (defn function-percentage-to-dmx
   "Given a percentage value and a named function specfication which
-  identifies a range of DMX channel values, scales the percentage
-  into that range."
+  identifies a range of DMX channel values, scales the percentage into
+  that range. If the function spec has a value scaler function
+  attached to it (via the key `:scale-fn`), call that with the value
+  to get the percentage before scaling it to the DMX range."
+  {:doc/format :markdown}
   [percent function-spec]
-  (let [range (- (:end function-spec) (:start function-spec))]
+  (let [range (- (:end function-spec) (:start function-spec))
+        scaler (:scale-fn function-spec)
+        percent (clamp-percent-float (if (ifn? scaler)
+                                       (scaler percent)
+                                       percent))]
     (math/round (+ (:start function-spec) (* (/ percent 100) range)))))
 
 (defn function-assignment-resolver
@@ -172,7 +193,7 @@
   fixture."
   [show buffers snapshot target assignment target-id]
   ;; Resolve in case it is frame dynamic
-  (let [resolved (clamp-percent-float (params/resolve-param assignment show snapshot target))
+  (let [resolved (params/resolve-param assignment show snapshot target)
         target-name (name target-id)
         function-key (keyword (subs target-name (inc (.indexOf target-name "-"))))
         [channel function-spec] (function-key (:function-map target))]
