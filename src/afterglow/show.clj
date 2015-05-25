@@ -77,7 +77,7 @@
                     (assoc-in altered-map key-path (conj (get-in altered-map key-path []) assigner))))
                 {}
                 (apply concat (cp/pmap @(:pool show) #(fx/generate % show snapshot)
-                                       (:functions @(:active-functions show)))))))
+                                       (:effects @(:active-effects show)))))))
 
 (defn- run-assigners
   "Returns a tuple of the target to be assigned, and the final value
@@ -91,7 +91,7 @@
                 []
                 assigners)))
 
-(declare end-function!)
+(declare end-effect!)
 
 (defn- update-stats
   "Update the count of how many frames have been sent, total and
@@ -117,10 +117,10 @@
           snapshot (metro-snapshot (:metronome show))]
       (p :clear-buffers (doseq [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
       (p :clean-finished-effects (let [indexed (cp/pmap @(:pool show) vector (iterate inc 0)
-                                                        (:functions @(:active-functions show)))]
+                                                        (:effects @(:active-effects show)))]
                                    (doseq [[index effect] indexed]
                                      (when-not (fx/still-active? effect show snapshot)
-                                       (end-function! (get (:keys @(:active-functions show)) index) true)))))
+                                       (end-effect! (get (:keys @(:active-effects show)) index) true)))))
       (let [all-assigners (gather-assigners show snapshot)]
         (doseq [[kind handler] resolution-handlers]
           (doseq [assigners (vals (get all-assigners kind))]
@@ -189,11 +189,11 @@
     :refresh-interval refresh-interval
     :universes (set universes)
     :next-id (atom 0)
-    :active-functions (atom {:functions []
-                             :indices {}
-                             :keys []
-                             :priorities []
-                             :ending #{}})
+    :active-effects (atom {:effects []
+                           :indices {}
+                           :keys []
+                           :priorities []
+                           :ending #{}})
     :variables (atom {})
     :grand-master (master nil)  ; Only the grand master can have no show, or parent.
     :fixtures (atom {})
@@ -406,12 +406,12 @@
   [m key index]
   (into {} (for [[k v] (dissoc m key)] [k (if (>= v index) (dec v) v)])))
 
-(defn- remove-function-internal
-  "Helper function which removes the function with the specified key from the priority list
+(defn- remove-effect-internal
+  "Helper function which removes the effect with the specified key from the priority list
   structure maintained for the show."
   [fns key]
   (if-let [index (get (:indices fns) key)]
-    {:functions (vec-remove (:functions fns) index)
+    {:effects (vec-remove (:effects fns) index)
      :indices (remove-key (:indices fns) key index)
      :keys (vec-remove (:keys fns) index)
      :priorities (vec-remove (:priorities fns) index)
@@ -421,7 +421,7 @@
 (defn- find-insertion-index
   "Determines where in the priority array the current priority should be inserted: Starting at
   the end, look backwards for a priority that is equal to or less than the value being inserted,
-  since later functions take priority over earlier ones."
+  since later effects take priority over earlier ones."
   [coll priority]
   (loop [pos (count coll)]
     (cond (zero? pos)
@@ -444,24 +444,24 @@
   (assoc (into {} (for [[k v] m] [k (if (>= v index) (inc v) v)]))
          key index))
 
-(defn- add-function-internal
-  "Helper function which adds a function with a specified key and priority to the priority
-  list structure maintained for the show, replacing any existing function with the same key."
+(defn- add-effect-internal
+  "Helper function which adds an effect with a specified key and priority to the priority
+  list structure maintained for the show, replacing any existing effect with the same key."
   [fns key f priority]
-  (let [base (remove-function-internal fns key)
+  (let [base (remove-effect-internal fns key)
         index (find-insertion-index (:priorities base) priority)]
-    {:functions (vec-insert (:functions base) index f)
+    {:effects (vec-insert (:effects base) index f)
      :indices (insert-key (:indices base) key index)
      :keys (vec-insert (:keys base) index key)
      :priorities (vec-insert (:priorities base) index priority)
      :ending (:ending base)}))
 
-(defn add-function!
+(defn add-effect!
   "Add an effect function or cue to the active set which are affecting
   DMX outputs for [[show-context/*show*]]. If no priority is
-  specified, zero is used. This function is added after all existing
-  functions with equal or lower priority, and replaces any existing
-  function with the same key. Since the functions are executed in
+  specified, zero is used. This effect is added after all existing
+  effects with equal or lower priority, and replaces any existing
+  effect with the same key. Since the effects are executed in
   order, ones which come later will win when setting DMX values for
   the same channel if that channel uses latest-takes-priority mode;
   for channels using highest-takes priority, the order does not
@@ -470,54 +470,54 @@
   always gets to decide what to do."
  {:doc/format :markdown}
   ([key f]
-   (add-function! key f 0))
+   (add-effect! key f 0))
   ([key f priority]
    {:pre [(some? *show*) (some? key) (instance? Effect f) (integer? priority)]}
-   (swap! (:active-functions *show*) #(add-function-internal % (keyword key) f priority))))
+   (swap! (:active-effects *show*) #(add-effect-internal % (keyword key) f priority))))
 
 (defn- vec-remove
   "Remove the element at the specified index from the collection."
   [coll pos]
   (vec (concat (subvec coll 0 pos) (subvec coll (inc pos)))))
 
-(defn find-function
-  "Looks up the specified function in list of active effect
+(defn find-effect
+  "Looks up the specified effect in list of active effect
   functions for [[*show*]]."
   {:doc/format :markdown}
   [key]
   {:pre [(some? *show*) (some? key)]}
-  (get (:functions @(:active-functions *show*)) (get (:indices @(:active-functions *show*)) (keyword key))))
+  (get (:effects @(:active-effects *show*)) (get (:indices @(:active-effects *show*)) (keyword key))))
 
-(defn end-function!
+(defn end-effect!
   "Shut down an effect function that is running in [[*show*]]. Unless
   a `true` value is passed for force, this is done by asking the
-  function to end (and waiting until it reports completion). Forcibly
+  effect to end (and waiting until it reports completion). Forcibly
   stopping it simply immediately removes it from the show."
   {:doc/format :markdown}
   ([key]
-   (end-function! key false))
+   (end-effect! key false))
   ([key force]
   {:pre [(some? *show*) (some? key)]}
-  (let [effect (find-function key)
+  (let [effect (find-effect key)
         key (keyword key)] 
     (if (and effect
-             (or force ((:ending @(:active-functions *show*)) key)
+             (or force ((:ending @(:active-effects *show*)) key)
                  (fx/end effect *show* (metro-snapshot (:metronome *show*)))))
-       (swap! (:active-functions *show*) #(remove-function-internal % key))
-       (swap! (:active-functions *show*) #(update-in % [:ending] conj key))))))
+       (swap! (:active-effects *show*) #(remove-effect-internal % key))
+       (swap! (:active-effects *show*) #(update-in % [:ending] conj key))))))
 
-(defn clear-functions!
+(defn clear-effects!
   "Remove all effect functions currently active in [[*show*]], leading
   to a blackout state in all controlled universes (if the show is
-  running) until new functions are added."
+  running) until new effects are added."
   {:doc/format :markdown}
   []
   {:pre [(some? *show*)]}
-  (reset! (:active-functions *show*) {:functions [],
-                                      :indices {},
-                                      :keys [],
-                                      :priorities []
-                                      :ending #{}}))
+  (reset! (:active-effects *show*) {:effects [],
+                                    :indices {},
+                                    :keys [],
+                                    :priorities []
+                                    :ending #{}}))
 
 (defn- address-map-internal
   "Helper function which returns a sorted map whose keys are all
@@ -658,7 +658,7 @@
 (defn blackout-show
   "Sends zero to every channel of every universe associated
   with [[*show*]]. Will quickly be overwritten if the show is running
-  and there are any active functions, so this is mostly useful when a
+  and there are any active effects, so this is mostly useful when a
   show has been suspended and you want to darken the lights it left
   on."
   {:doc/format :markdown}

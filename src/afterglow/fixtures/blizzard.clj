@@ -47,7 +47,7 @@
   dimmer has any effect. Try something like:
 
 ```clojure
-(show/add-function! :torrent-shutter
+(show/add-effect! :torrent-shutter
   (afterglow.effects.channel/function-cue
     \"Torrent Shutter Open\" :shutter-open 50
     (show/fixtures-named \"torrent\")))

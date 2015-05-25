@@ -67,8 +67,8 @@ blue color to all lights in the sample show and set their dimmers to
 full, using these two lines:
 
 ```clojure
-(show/add-function! :color blue-cue)
-(show/add-function! :dimmers (global-dimmer-cue 255))
+(show/add-effect! :color blue-cue)
+(show/add-effect! :dimmers (global-dimmer-cue 255))
 ```
 
 So if you happened to have the same fixtures hooked up, assigned the
@@ -84,8 +84,8 @@ set up a Universe with ID 1.
 ```clojure
 (with-show sample-show
   (show/start!)
-  (show/add-function! :color blue-cue)
-  (show/add-function! :dimmers (global-dimmer-cue 255)))
+  (show/add-effect! :color blue-cue)
+  (show/add-effect! :dimmers (global-dimmer-cue 255)))
 ```
 
 > However, the examples namespace assumes you are just using one,
@@ -105,7 +105,7 @@ set up a Universe with ID 1.
 We can make the lights a little dimmer...
 
 ```clojure
-(show/add-function! :dimmers (global-dimmer-cue 200))
+(show/add-effect! :dimmers (global-dimmer-cue 200))
 ```
 
 > Adding a function with the same keyword as an existing function
@@ -137,7 +137,7 @@ But for dimmer channels, there is an even better way of doing that:
 Change the color to orange:
 
 ```clojure
-(show/add-function! :color (global-color-cue :orange))
+(show/add-effect! :color (global-color-cue :orange))
 ```
 
 > The color channel values change.
@@ -145,9 +145,9 @@ Change the color to orange:
 Let's get a little fancy and ramp the dimmers up on a sawtooth curve each beat:
 
 ```clojure
-(show/add-function! :dimmers
-                    (global-dimmer-cue (params/build-oscillated-param
-                                       (oscillators/sawtooth-beat))))
+(show/add-effect! :dimmers
+                  (global-dimmer-cue (params/build-oscillated-param
+                                     (oscillators/sawtooth-beat))))
 ```
 
 Slow that down a little:
@@ -187,14 +187,14 @@ How about a nice cycling rainbow color fade?
 
 ```clojure
 (def hue-param (params/build-oscillated-param (oscillators/sawtooth-bar) :max 360))
-(show/add-function! :color (global-color-cue
+(show/add-effect! :color (global-color-cue
   (params/build-color-param :s 100 :l 50 :h hue-param)))
 ```
 
 Or, if you need to be woken up a bit,
 
 ```clojure
-(show/add-function! :strobe (afterglow.effects.channel/function-cue
+(show/add-effect! :strobe (afterglow.effects.channel/function-cue
   "Fast blast!" :strobe 100 (show/all-fixtures)))
 ```
 
@@ -220,7 +220,7 @@ And darken the universe you were playing with.
 ```
 
 > An alternate way of accomplishing those last two steps would have been to call
-> `(show/clear-functions!)` before `(show/stop!)` because once there were
+> `(show/clear-effects!)` before `(show/stop!)` because once there were
 > were no active effect functions, all the DMX values would settle back at zero
 > and stay there until you stopped the show.
 

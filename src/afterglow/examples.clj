@@ -81,14 +81,14 @@
   (dimmer-cue level (show/all-fixtures)))
 
 ;; Start simple with a cool blue color from all the lights
-(show/add-function! :color blue-cue)
-(show/add-function! :dimmers (global-dimmer-cue 255))
-(show/add-function! :torrent-shutter
-                    (afterglow.effects.channel/function-cue
-                     "Torrent Shutter Open" :shutter-open 50 (show/fixtures-named "torrent")))
+(show/add-effect! :color blue-cue)
+(show/add-effect! :dimmers (global-dimmer-cue 255))
+(show/add-effect! :torrent-shutter
+                  (afterglow.effects.channel/function-cue
+                   "Torrent Shutter Open" :shutter-open 50 (show/fixtures-named "torrent")))
 
 ;; Get a little fancier with a beat-driven fade
-;; (show/add-function! :dimmers (global-dimmer-cue
+;; (show/add-effect! :dimmers (global-dimmer-cue
 ;;   (params/build-oscillated-param (oscillators/sawtooth-beat))))
 
 ;; To actually start the effects above (although only the last one assigned to any
@@ -100,11 +100,11 @@
   effect mixing."
   []
   (let [hue-param (params/build-oscillated-param (oscillators/sawtooth-phrase) :max 360)]
-    (show/add-function! :color
-                        (global-color-cue
-                         (params/build-color-param :s 100 :l 50 :h hue-param)))
-    (show/add-function! :sparkle
-                        (fun/sparkle sample-show (show/all-fixtures sample-show) :chance 0.05 :fade-time 50))))
+    (show/add-effect! :color
+                      (global-color-cue
+                       (params/build-color-param :s 100 :l 50 :h hue-param)))
+    (show/add-effect! :sparkle
+                      (fun/sparkle sample-show (show/all-fixtures sample-show) :chance 0.05 :fade-time 50))))
 
 (defn mapped-sparkle-test
   "A verion of the sparkle test that creates a bunch of MIDI-mapped
@@ -116,12 +116,12 @@
   (show/add-midi-control-to-var-mapping  "Slider" 0 1 :sparkle-chance :max 0.3)
   (let [hue-param (params/build-oscillated-param (oscillators/sawtooth-phrase) :max 360)
         sparkle-color-param (params/build-color-param :s 100 :l :sparkle-lightness :h :sparkle-hue)]
-    (show/add-function! :color
-                        (global-color-cue
-                         (params/build-color-param :s 100 :l 50 :h hue-param)))
-    (show/add-function! :sparkle
-                        (fun/sparkle (show/all-fixtures) :color sparkle-color-param
-                                     :chance :sparkle-chance :fade-time :sparkle-fade))))
+    (show/add-effect! :color
+                      (global-color-cue
+                       (params/build-color-param :s 100 :l 50 :h hue-param)))
+    (show/add-effect! :sparkle
+                      (fun/sparkle (show/all-fixtures) :color sparkle-color-param
+                                   :chance :sparkle-chance :fade-time :sparkle-fade))))
 
 (defn ^:deprecated test-phases
   "This is for testing the enhanced multi-beat and fractional-beat
@@ -145,12 +145,12 @@
   []
   (show/add-midi-control-to-var-mapping "Slider" 0 0 :tilt :max 255.99)
   (show/add-midi-control-to-var-mapping "Slider" 0 16 :pan :max 255.99)
-  (show/add-function!
+  (show/add-effect!
    :pan-torrent (afterglow.effects.channel/channel-cue
                  "Pan Torrent"
                  (params/build-variable-param :pan)
                  (afterglow.channels/extract-channels (show/fixtures-named :torrent) #(= (:type %) :pan))))
-  (show/add-function!
+  (show/add-effect!
    :tilt-torrent (afterglow.effects.channel/channel-cue
                   "Tilt Torrent"
                   (params/build-variable-param :tilt)
@@ -161,11 +161,10 @@
   (show/add-midi-control-to-var-mapping "Slider" 0 4 :x)
   (show/add-midi-control-to-var-mapping "Slider" 0 5 :y)
   (show/add-midi-control-to-var-mapping "Slider" 0 6 :z)
-  #_(show/add-function! :position
-                      (afterglow.effects.movement/direction-cue
-                       "Pointer" (params/build-direction-param :x :x :y :y :z :z) (show/all-fixtures)))
-  (show/add-function! :position
-                      (afterglow.effects.movement/aim-cue
-                       "Aimer" (params/build-aim-param :x :x :y :y :z :z) (show/all-fixtures)))
-  (show/set-variable! :y  2.6416)  ; Approximate height of ceiling
-  )
+  #_(show/add-effect! :position
+                    (afterglow.effects.movement/direction-cue
+                     "Pointer" (params/build-direction-param :x :x :y :y :z :z) (show/all-fixtures)))
+  (show/add-effect! :position
+                    (afterglow.effects.movement/aim-cue
+                     "Aimer" (params/build-aim-param :x :x :y :y :z :z) (show/all-fixtures)))
+  (show/set-variable! :y  2.6416))  ; Approximate height of ceiling
