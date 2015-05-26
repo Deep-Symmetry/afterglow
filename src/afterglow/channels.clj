@@ -1,6 +1,7 @@
 (ns afterglow.channels
   "Functions for modeling DMX channels"
-  {:author "James Elliott"})
+  {:author "James Elliott"}
+  (:require [com.evocomputing.colors :as colors]))
 
 (defn channel [offset]
   {:offset offset})
@@ -134,27 +135,32 @@
         (assoc current :end end)
         (if (= (:start current) end)
           (assoc current :end end :range :fixed)
-          (throw (IllegalArgumentException. "No range values available for function " (:type current))))))))
+          (throw (IllegalArgumentException.
+                  (str "No range values available for function " (:type current)))))))))
 
 (defn- expand-function-range
   "Expands a sequence of function ranges. If a sequence was passed for
-  the starting point, expands it, appending a sequential index to the
-  spec, which must either be a keyword or string, and then expanding
-  that in turn by calling expand-function-spec. If start is not a
-  sequence, simply passes its arguments on to expand-function-spec."
+  the starting point, expands it, either appending a sequential index
+  to the spec (if it is a keyword or string), or pairing up successive
+  values if the spec is itself a sequence. The starting value and spec
+  pairs are then expanded in turn by calling expand-function-spec. If
+  start is not a sequence, expand-function-range simply delegates to
+  expand-function-spec."
   [[start spec]]
   (if (sequential? start)
-    (map-indexed (fn [index start]
-                   (cond (string? spec)
-                         (expand-function-spec [start (str spec "-" (inc index))])
+    (if (sequential? spec)
+      (map #(expand-function-spec [%1 %2]) start spec)
+      (map-indexed (fn [index start]
+                     (cond (string? spec)
+                           (expand-function-spec [start (str spec "-" (inc index))])
 
-                         (keyword? spec)
-                         (expand-function-spec [start (keyword (str (name spec) "-" (inc index)))])
+                           (keyword? spec)
+                           (expand-function-spec [start (keyword (str (name spec) "-" (inc index)))])
 
-                         :else
-                         (throw (IllegalArgumentException.
-                                 (str "Don't know how to expand function range for spec " spec)))))
-                 start)
+                           :else
+                           (throw (IllegalArgumentException.
+                                   (str "Don't know how to expand function range for spec " spec)))))
+                   start))
     [(expand-function-spec [start spec])]))
 
 (defn functions
@@ -180,6 +186,49 @@
            :functions (vec (map assign-ends
                                 (partition 2 1 [:end] (mapcat expand-function-range
                                                               (partition 2 functions))))))))
+
+(defn color-wheel-hue
+  "Creates a function specification which identifies a color wheel
+  position with a particular hue, so it can participate in Afterglow's
+  color effects. The hue can be specified as a number,
+  a [jolby/colors](https://github.com/jolby/colors) object, or a
+  string which is passed to the jolby/colors `create-color` function.
+
+  The label to assign the function spec can be passed via the `:label`
+  optional keyword argument, or it will be inferred from the hue value
+  supplied. The function spec will be considered a fixed range unless
+  you specify `:range :variable`.
+
+  If hue is a sequence, then returns a sequence of the results of
+  calling `color-wheel-hue` on each of the elements in that sequence,
+  with the same optional arguments."
+  {:doc/format :markdown}
+  [hue & {:keys [range label] :or {range :fixed}}]
+  {:pre [(some? hue)]}
+  (if (sequential? hue)
+    (if (some? label)
+      (map #(color-wheel-hue % :range range :label label) hue)
+      (map #(color-wheel-hue % :range range) hue))
+    ;; Was not a sequence, so return a single function spec
+    (assoc (cond (number? hue)
+                 {:color-wheel-hue (colors/clamp-hue hue)
+                  :label (or label (str "Color wheel hue " (colors/clamp-hue hue)))
+                  :type (keyword (str "color-wheel-hue-" (colors/clamp-hue hue)))}
+
+                 (string? hue)
+                 {:color-wheel-hue (colors/hue (colors/create-color hue))
+                  :label (or label (str "Color wheel hue " hue))
+                  :type (keyword (str "color-wheel-hue-" hue))}
+
+                 (instance? com.evocomputing.colors/color hue)
+                 {:color-wheel-hue (colors/hue hue)
+                  :label (or label (str "Color wheel hue " hue))
+                  :type (keyword (str "color-wheel-hue-" (colors/hue hue)))}
+
+                 :else
+                 (throw (IllegalArgumentException.
+                         (str "Don't know how to create hue from " hue))))
+           :range range)))
 
 (defn dimmer
   "A channel which controls a dimmer, with an optional second channel

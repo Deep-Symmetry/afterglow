@@ -55,21 +55,23 @@
   {:doc/format :markdown}
   []
   {:channels [(chan/pan 1 2) (chan/tilt 3 4)
-              (chan/functions :color 5 0 "color-open" 16 "red" 32 "blue" 48 "green" 64 "yellow"
-                              80 "magenta" 96 "cyan" 112 "orange"
+              (chan/functions :color 5 0 "color-wheel-open"
+                              (range 16 128 16) (chan/color-wheel-hue ["red" "blue" "green" "yellow"
+                                                                       "magenta" "cyan" "orange"])
                               128 {:type :color-clockwise
                                    :label "Color Wheel Clockwise (fast->slow)"}
                               190 "color-stop" 194 {:type :color-counterclockwise
                                                     :label "Color Wheel Counterclockwise (slow->fast)"})
-              (chan/functions :gobo-moving 6 0 "gobo-moving-open" 10 "gobo-moving-rings"
-                              20 "gobo-moving-color-swirl" 30 "gobo-moving-stars"
-                              40 "gobo-moving-optical-tube" 50 "gobo-moving-magenta-bundt"
-                              60 "gobo-moving-blue-megahazard" 70 "gobo-moving-turbine"
-                              80 :gobo-moving-rings-shake 100 :gobo-moving-color-swirl-shake
-                              120 :gobo-moving-stars-shake 140 :gobo-moving-optical-tube-shake
-                              160 :gobo-moving-magenta-bundt-shake
-                              180 :gobo-moving-blue-megahazard-shake
-                              200 :gobo-moving-turbine-shake
+              (chan/functions :gobo-moving 6
+                              (range 0 80 10) ["gobo-moving-open" "gobo-moving-rings"
+                                               "gobo-moving-color-swirl" "gobo-moving-stars"
+                                               "gobo-moving-optical-tube" "gobo-moving-magenta-bundt"
+                                               "gobo-moving-blue-megahazard" "gobo-moving-turbine"]
+                              (range 80 220 20) [:gobo-moving-rings-shake :gobo-moving-color-swirl-shake
+                                                 :gobo-moving-stars-shake :gobo-moving-optical-tube-shake
+                                                 :gobo-moving-magenta-bundt-shake
+                                                 :gobo-moving-blue-megahazard-shake
+                                                 :gobo-moving-turbine-shake]
                               220 :gobo-moving-clockwise)
               (chan/functions :gobo-rotation 7 0 nil
                               4 {:type :gobo-rotation-clockwise
@@ -77,16 +79,17 @@
                               128 "gobo-rotation-stop"
                               192 {:type :gobo-rotation-counterclockwise
                                    :label "Gobo Rotation Counterlockwise (slow->fast)"})
-              (chan/functions :gobo-fixed 8 0 "gobo-fixed-open" 10 "gobo-fixed-mortar"
-                              20 "gobo-fixed-4-rings" 30 "gobo-fixed-atom"
-                              40 "gobo-fixed-jacks" 50 "gobo-fixed-saw"
-                              60 "gobo-fixed-sunflower" 70 "gobo-fixed-45-adapter"
-                              80 "gobo-fixed-star" 90 "gobo-fixed-fose-fingerprint"
-                              100 :gobo-fixed-mortar-shake 112 :gobo-fixed-4-rings-shake
-                              124 :gobo-fixed-atom-shake 136 :gobo-fixed-jacks-shake
-                              148 :gobo-fixed-saw-shake 160 :gobo-fixed-sunflower-shake
-                              172 :gobo-fixed-45-adapter-shake 184 :gobo-fixed-star-shake
-                              196 :gobo-fixed-rose-fingerprint-shake
+              (chan/functions :gobo-fixed 8
+                              (range 0 100 10) ["gobo-fixed-open" "gobo-fixed-mortar"
+                                                "gobo-fixed-4-rings" "gobo-fixed-atom"
+                                                "gobo-fixed-jacks" "gobo-fixed-saw"
+                                                "gobo-fixed-sunflower" "gobo-fixed-45-adapter"
+                                                "gobo-fixed-star" "gobo-fixed-fose-fingerprint"]
+                              (range 100 208 12) [:gobo-fixed-mortar-shake :gobo-fixed-4-rings-shake
+                                                  :gobo-fixed-atom-shake :gobo-fixed-jacks-shake
+                                                  :gobo-fixed-saw-shake :gobo-fixed-sunflower-shake
+                                                  :gobo-fixed-45-adapter-shake :gobo-fixed-star-shake
+                                                  :gobo-fixed-rose-fingerprint-shake]
                               208 :gobo-fixed-clockwise)
               (chan/functions :shutter 9 0 "shutter-closed" 32 "shutter-open"
                               64 :strobe

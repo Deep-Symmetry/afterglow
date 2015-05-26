@@ -4,10 +4,12 @@
   {:author "James Elliott"}
   (:require [afterglow.channels :as channels]
             [afterglow.effects :refer :all]
-            [afterglow.effects.channel :refer [apply-channel-value]]
+            [afterglow.effects.channel :refer [apply-channel-value
+                                               function-percentage-to-dmx]]
             [afterglow.effects.params :as params]
             [afterglow.rhythm :as rhythm]
             [afterglow.show-context :refer [*show*]]
+            [afterglow.util :as util]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
             [taoensso.timbre.profiling :refer [pspy]])
@@ -30,8 +32,13 @@
   "Returns all heads of the supplied fixtures which are capable of
   mixing RGB color, in other words they have at least a red, green,
   and blue color channel."
-  [fixtures]
-  (filter #(= 3 (count (filter #{:red :green :blue} (map :color (:channels %))))) (channels/expand-heads fixtures)))
+  ([fixtures]
+   (find-rgb-heads fixtures false))
+  ([fixtures include-color-wheels]
+   (filter #(or (= 3 (count (filter #{:red :green :blue} (map :color (:channels %)))))
+                (and include-color-wheels (seq (:color-wheel-hue-map %))))
+           (channels/expand-heads fixtures))
+   ))
 
 ;; TODO: Support different kinds of color mixing, blending, HTP...
 ;; TODO: Someday support color wheels too, optionally, with a tolerance level
@@ -39,10 +46,10 @@
 (defn color-cue
   "Returns an effect which assigns a color parameter to all heads of
   the fixtures supplied when invoked."
-  [name color fixtures]
+  [name color fixtures & {:keys [include-color-wheels]}]
   {:pre [(some? *show*) (some? name) (sequential? fixtures)]}
   (params/validate-param-type color :com.evocomputing.colors/color)
-  (let [heads (find-rgb-heads fixtures)
+  (let [heads (find-rgb-heads fixtures include-color-wheels)
         assigners (build-head-parameter-assigners :color heads color *show*)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
@@ -67,11 +74,11 @@
         assigners (build-head-assigners :color heads f)]
     (Effect. "Hue Oscillator" always-active (fn [show snapshot] assigners) end-immediately)))
 
-;; TODO handle color wheels
 (defn color-assignment-resolver
   "Resolves the assignment of a color to a fixture or a head."
   [show buffers snapshot target assignment _]
   (let [resolved (params/resolve-param assignment show snapshot target)]  ; In case it is frame dynamic
+    ;; Start with RGB mixing
     (doseq [c (filter #(= (:color %) :red) (:channels target))]
       (apply-channel-value buffers c (colors/red resolved)))
     (doseq [c (filter #(= (:color %) :green) (:channels target))]
@@ -89,4 +96,11 @@
     ;; Even more experimental: Support other arbitrary color channels
     (doseq [c (filter :hue (:channels target))]
       (let [as-if-red (colors/adjust-hue resolved (- (:hue c)))]
-        (apply-channel-value buffers c (colors/red as-if-red))))))
+        (apply-channel-value buffers c (colors/red as-if-red))))
+    ;; Finally, see if there is a color wheel color close enough to select
+    (when (seq (:color-wheel-hue-map target))
+      (let [found (util/find-closest-key (:color-wheel-hue-map target) (colors/hue resolved))
+            [channel function-spec] (get (:color-wheel-hue-map target) found)]
+        ;; TODO: make color tolerance configurable, figure out null pointer exceptions
+        (when (< (math/abs (- (colors/hue resolved) found)) 30)
+          (apply-channel-value buffers channel (function-percentage-to-dmx 50 function-spec)))))))

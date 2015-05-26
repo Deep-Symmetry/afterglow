@@ -55,7 +55,7 @@
   "Make a color cue which affects all lights in the sample show. This
   became vastly more useful once I implemented dynamic color
   parameters."
-  [color]
+  [color & {:keys [include-color-wheels]}]
   (try
     (let [[c desc] (cond (= (type color) :com.evocomputing.colors/color)
                        [color (color-name color)]
@@ -63,13 +63,13 @@
                        [color "variable"]
                        :else
                        [(create-color color) color])]
-      (color-cue (str "Color: " desc) c (show/all-fixtures)))
+      (color-cue (str "Color: " desc) c (show/all-fixtures) :include-color-wheels include-color-wheels))
     (catch Exception e
       (throw (Exception. (str "Can't figure out how to create color from " color) e)))))
 
 (def blue-cue
   "An effect which assigns all fixtures to a nice blue color."
-  (global-color-cue "slateblue"))
+  (global-color-cue "slateblue" :include-color-wheels true))
 
 (defn global-dimmer-cue
   "Return an effect function that sets all the dimmers in the sample

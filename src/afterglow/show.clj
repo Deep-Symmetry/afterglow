@@ -29,7 +29,7 @@
             [afterglow.effects.movement :refer [direction-assignment-resolver
                                                 aim-assignment-resolver]]
             [afterglow.effects.params :refer [bind-keyword-param resolve-param]]
-            [afterglow.fixtures :refer [index-functions]]
+            [afterglow.fixtures :refer [index-functions index-color-wheel-hues]]
             [afterglow.midi :as midi]
             [afterglow.ola-service :as ola]
             [afterglow.rhythm :refer :all]
@@ -574,7 +574,7 @@
       (throw (IllegalStateException. (str "Cannot complete patch: "
                                           (clojure.string/join ", " (vec (for [[k v] conflicts]
                                                                            (str "Channel " k " in use by fixture " v))))))))
-    (assoc fixtures key (assoc (index-functions fixture) :key key :id (next-id)))))
+    (assoc fixtures key (assoc (index-color-wheel-hues (index-functions fixture)) :key key :id (next-id)))))
 
 (defn patch-fixture!
   "Patch a fixture to a universe in [[*show*]] at a starting DMX

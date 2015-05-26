@@ -299,7 +299,7 @@
   a [jolby/colors](https://github.com/jolby/colors) object,
   an [[IParam]] which will produce a color, a keyword, which will be
   bound to a show variable by the caller, or a string which is passed
-  to the jolby/colors create-color function."
+  to the jolby/colors `create-color` function."
   {:doc/format :markdown}
   [color]
   (cond (string? color)
