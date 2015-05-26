@@ -73,7 +73,13 @@
     (Effect. "Hue Oscillator" always-active (fn [show snapshot] assigners) end-immediately)))
 
 (defn color-assignment-resolver
-  "Resolves the assignment of a color to a fixture or a head."
+  "Resolves the assignment of a color to a fixture or a head,
+  performing color mixing with any color component channels found in
+  the target head. If color wheel heads were included in the cue, will
+  find the closest matching hue on the wheel, as long as it is within
+  tolerance. The default tolerance is 60 degrees around the hue wheel,
+  which is very lenient. If you want to tighten that up, you can set a
+  lower value in the show variable :color-wheel-hue-tolerance"
   [show buffers snapshot target assignment _]
   (let [resolved (params/resolve-param assignment show snapshot target)]  ; In case it is frame dynamic
     ;; Start with RGB mixing
