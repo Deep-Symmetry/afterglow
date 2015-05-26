@@ -131,6 +131,9 @@
   (if (= :end next)
     (assoc current :end 255)
     (let [end (dec (:start next))]
+      (when-not (<= 0 end 255)
+        (throw (IllegalArgumentException.
+                (str "Function ends outside of legal DMX range: " end))))
       (if (< (:start current) end)
         (assoc current :end end)
         (if (= (:start current) end)

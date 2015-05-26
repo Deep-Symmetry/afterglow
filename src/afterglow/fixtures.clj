@@ -1,6 +1,7 @@
 (ns afterglow.fixtures
   "Utility functions common to fixture definitions."
-  {:author "James Elliott"})
+  {:author "James Elliott"}
+  (:require [afterglow.channels :as chan]))
 
 (defn- build-function-map
   "Gathers all the functions defined on the channels a fixture or head
@@ -47,3 +48,27 @@
                                   #(map (fn [head] (dissoc head :fixture :function-map)) %)))
          fixture-or-fixture-list)
     (printable [fixture-or-fixture-list])))
+
+(defn generic-dimmmer
+  "A fixture definition where a single channel controls the power
+  level of a socket to which an incandescent light source can be
+  connected. If you are using a product such as the [Chauvet
+  DMX-4](http://www.chauvetlighting.com/dmx-4.html), its channels can
+  be patched as four of these, or four [[generic-switch]], or some
+  combination."
+  {:doc/format :markdown}
+  []
+  {:channels [(chan/dimmer 1)]
+   :name "Generic dimmer"})
+
+(defn generic-switch
+  "A fixture definition where a single channel turns on or off the
+  power at a socket to which an incandescent light source or other
+  non-DMX-enabled equipment can be connected. If you are using a
+  product such as the [Chauvet
+  DMX-4](http://www.chauvetlighting.com/dmx-4.html), its channels can
+  be patched as four of these, or four [[generic-dimmer]], or some
+  combination." {:doc/format :markdown}
+  []
+  {:channels [(chan/functions :switch 1 0 "off" 1 nil 255 "on")]
+   :name "Generic switch"})
