@@ -41,8 +41,6 @@
    ))
 
 ;; TODO: Support different kinds of color mixing, blending, HTP...
-;; TODO: Someday support color wheels too, optionally, with a tolerance level
-;;       Then can combine with a conditional dimmer setting if a color was assigned.
 (defn color-cue
   "Returns an effect which assigns a color parameter to all heads of
   the fixtures supplied when invoked."
@@ -101,6 +99,5 @@
     (when (seq (:color-wheel-hue-map target))
       (let [found (util/find-closest-key (:color-wheel-hue-map target) (colors/hue resolved))
             [channel function-spec] (get (:color-wheel-hue-map target) found)]
-        ;; TODO: make color tolerance configurable, figure out null pointer exceptions
-        (when (< (math/abs (- (colors/hue resolved) found)) 30)
+        (when (< (math/abs (- (colors/hue resolved) found)) (:color-wheel-hue-tolerance @(:variables show) 60))
           (apply-channel-value buffers channel (function-percentage-to-dmx 50 function-spec)))))))

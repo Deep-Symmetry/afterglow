@@ -255,7 +255,7 @@ TODO: listing of options this app accepts once it can run as a standalone app.
 - [x] Allow scaling of named fixture functions, for example to allow a
   strobe effect to be set to a rough Hz value despite differences in
   fixture implementation.
-- [ ] Add color wheel support.
+- [x] Add color wheel support.
 - [ ] Review existing fixture definitions for consistency of function
   names, start a style guide on the Wiki for others creating fixture
   definitions.

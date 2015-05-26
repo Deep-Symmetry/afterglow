@@ -33,6 +33,7 @@
           (let [b (key b)]
             (if (< (math/abs (- k b)) (math/abs (- k a)))
               b
-              a)))))
+              a))
+          a)))
     (when-let [found (first (subseq sm >= k))]
       (key found))))
