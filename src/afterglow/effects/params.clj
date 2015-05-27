@@ -6,8 +6,10 @@
   show metronome snapshot, show variables (which can be bound to OSC
   and MIDI mappings), and other, not-yet-imagined things."
   {:author "James Elliott"}
-  (:require [afterglow.rhythm :refer [metro-snapshot]]
+  (:require [afterglow.channels :as chan]
+            [afterglow.rhythm :refer [metro-snapshot]]
             [afterglow.show-context :refer [*show* with-show]]
+            [afterglow.fixtures :refer [printable]]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
             [taoensso.timbre :refer [error]])
@@ -534,15 +536,104 @@
           (resolve-non-frame-dynamic-elements [this show snapshot] (resolve-fn show snapshot nil))
           IHeadParam
           (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))
-          (resolve-non-frame-dynamic-elements-for-head [this show snapshot head] (resolve-fn show snapshot head)))))))
+          (resolve-non-frame-dynamic-elements-for-head [this show snapshot head]
+            (resolve-fn show snapshot head)))))))
 
-;; TODO: Implement
-(defn build-linear-spatial-param
+(defn- scale-spatial-result
+  [value smallest value-range start target-range]
+  (if (zero? value-range)
+    (+ start (/ target-range 2))  ; All values are the same, map to middle of range
+    (+ start (* target-range (/ (- value smallest) value-range)))))
+
+(defn- build-spatial-eval-fn
+  [results start target-range]
+  (if-not (some (partial satisfies? IParam) (vals results))
+    ;; Optimize the case of all constant results
+    (let [smallest (apply min (vals results))
+          largest (apply max (vals results))
+          value-range (- largest smallest)
+          precalculated (reduce (fn [altered-map [k v]]
+                                  (assoc altered-map k (scale-spatial-result
+                                                        v smallest value-range start target-range)))
+                                {} results)]
+      (fn [show snapshot head] (get precalculated (:id head))))
+
+    ;; Handle the general case of some dynamic results
+    (fn [show snapshot head]
+      (let [resolved (reduce (fn [altered-map [k v]]
+                               (assoc altered-map k (resolve-param v show snapshot head))))
+            smallest (apply min (vals resolved))
+            largest (apply max (vals resolved))]
+        (scale-spatial-result (get resolved (:id head)) smallest largest)))))
+
+;; TODO: Is there some way to pass in a circular flag to deal with
+;;       values like hue or angle, where the max and min yield the
+;;       same result? It would work if the heads are linearly spaced,
+;;       but without that, the caller may be responsible for picking
+;;       a good end value.
+(defn build-spatial-param
   "Returns a dynamic number parameter related to the physical
-  arrangement of the supplied fixture heads."
+  arrangement of the supplied fixtures or heads. First the heads of
+  any fixtures passed in `fixtures-or-heads` are included. Then
+  function `f` is called for all fixtures or heads, passing in the
+  fixture or head. It must return a literal number or dynamic number
+  parameter.
+
+  When it comes time to evaluate this parameter, any dynamic number
+  parameters are evaluated, and the resulting numbers are scaled so
+  they fall within the range [`start`-`end`].
+
+  Useful things that `f` can do include calculating the distance of
+  the head from some point, either in 3D or along an axis, its angle
+  from some line, and so on. These can allow the creation of lighting
+  gradients across all or part of a show.
+
+  If you do not specify an explicit value for `:frame-dynamic`, this
+  spatial parameter will be frame dynamic if any values returned by
+  `f` are dynamic parameters which themselves are frame dynamic."
   {:doc/format :markdown}
-  [heads & {:keys [start end circular] :or {start 0 end 255 }}]
-  {:pre [(some? *show*) (sequential? heads)]}
-)
+  [fixtures-or-heads f & {:keys [start end frame-dynamic]
+                          :or {start 0 end 255 frame-dynamic :default}}]
+  {:pre [(some? *show*) (sequential? fixtures-or-heads) (ifn? f)
+         (number? start) (number? end) (< start end)]}
+  (let [heads (chan/expand-heads fixtures-or-heads)
+        results (zipmap (map :id heads) (map f heads))
+        target-range (math/abs (- start end))]
+    (doseq [v (vals results)] check-type v Number "spatial-param function result")
+    (let [dyn (if (= :default frame-dynamic)
+                ;; Default means results of head function control how dynamic to be
+                (boolean (some frame-dynamic-param? results))
+                ;; We were given an explicit value for frame-dynamic-param
+                (boolean frame-dynamic))
+          eval-fn (build-spatial-eval-fn results start target-range)
+          resolve-fn (fn [show snapshot head]
+                       (with-show show
+                         (let [resolved (reduce (fn [altered-map [k v]]
+                                                  (assoc altered-map k (resolve-unless-frame-dynamic
+                                                                        v show snapshot head))))
+                               resolved-eval-fn (build-spatial-eval-fn resolved start target-range)]
+                           (reify
+                             IParam
+                             (evaluate [this show snapshot] start) ; Needs head to do anything
+                             (frame-dynamic? [this] dyn)
+                             (result-type [this] Number)
+                             (resolve-non-frame-dynamic-elements [this show snapshot]
+                               this) ; Already resolved
+                             IHeadParam
+                             (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))
+                             (resolve-non-frame-dynamic-elements-for-head [this show snapshot head]
+                               this)))))] ; Already resolved
+      (reify
+        IParam
+        (evaluate [this show snapshot] start) ; Needs head to do anything
+        (frame-dynamic? [this] dyn)
+        (result-type [this] Number)
+        (resolve-non-frame-dynamic-elements [this show snapshot]
+          resolve-fn show snapshot nil)
+        IHeadParam
+        (evaluate-for-head [this show snapshot head]
+          (eval-fn show snapshot head))
+        (resolve-non-frame-dynamic-elements-for-head [this show snapshot head]
+          resolve-fn show snapshot head)))))
 
 ;; TODO: some kind of random parameter?
