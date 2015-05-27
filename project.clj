@@ -12,10 +12,10 @@
                  [overtone/midi-clj "0.5.0"]
                  [amalloy/ring-buffer "1.1"]
                  [com.climate/claypoole "1.0.0"]
-                 ;; [overtone "0.9.1"]
                  [org.flatland/protobuf "0.8.1"]
                  [selmer "0.8.2"]
                  [org.clojars.brunchboy/colors "1.0.2-SNAPSHOT"]
+                 [environ "1.0.0"]
                  [com.taoensso/timbre "3.4.0"]]
   :source-paths ["src" "target/generated"]
   :prep-tasks [["with-profile" "+gen,+dev" "run" "-m" "afterglow.src-generator"] "protobuf" "javac" "compile"]
@@ -25,9 +25,10 @@
                    :resource-paths ["dev_resources"]}
              :gen {:prep-tasks ^:replace ["protobuf" "javac" "compile"]}
              :uberjar {:aot :all}}
-  :plugins [[lein-ancient "0.6.5"]
-            [lein-protobuf "0.4.2" :exclusions [leinjacker]]
-            [codox "0.8.12"]]
+  :plugins [[lein-protobuf "0.4.2" :exclusions [leinjacker]]
+            [codox "0.8.12"]
+            [environ "1.0.0"]
+            [lein-ancient "0.6.5"]]
   :aliases {"gen" ["with-profile" "+gen,+dev" "run" "-m" "afterglow.src-generator"]}
   :repl-options {:init-ns afterglow.examples
                  :welcome (println "Afterglow loaded.")}

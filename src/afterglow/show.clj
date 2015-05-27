@@ -36,6 +36,7 @@
             [afterglow.show-context :refer [*show* with-show]]
             [afterglow.transform :refer [transform-fixture]]
             [com.climate.claypoole :as cp]
+            [environ.core :refer [env]]
             [overtone.at-at :as at-at]
             [taoensso.timbre :refer [error]]
             [taoensso.timbre.profiling :refer [p profile pspy]])
@@ -198,7 +199,7 @@
     :grand-master (master nil)  ; Only the grand master can have no show, or parent.
     :fixtures (atom {})
     :movement (atom {})  ; Used to smooth head motion between frames
-    :statistics (atom {})
+    :statistics (atom { :afterglow-version (env :afterglow-version)})
     :dimensions (atom {})
     :task (atom nil)
     :pool (atom nil)}))
