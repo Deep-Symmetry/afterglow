@@ -199,6 +199,7 @@
     :fixtures (atom {})
     :movement (atom {})  ; Used to smooth head motion between frames
     :statistics (atom {})
+    :dimensions (atom {})
     :task (atom nil)
     :pool (atom nil)}))
 
@@ -576,6 +577,25 @@
                                                                            (str "Channel " k " in use by fixture " v))))))))
     (assoc fixtures key (assoc (index-color-wheel-hues (index-functions fixture)) :key key :id (next-id)))))
 
+(defn- calculate-dimensions
+  "Determine the center and bounding cube of the show, as defined by
+  the minimum and maximum coordinates in all three dimensions of all
+  patched fixtures and heads."
+  [show]
+  (let [all-heads (chan/expand-heads (vals @(:fixtures show)))
+        min-x (apply min (map :x all-heads))
+        min-y (apply min (map :y all-heads))
+        min-z (apply min (map :z all-heads))
+        max-x (apply max (map :x all-heads))
+        max-y (apply max (map :y all-heads))
+        max-z (apply max (map :z all-heads))
+        center-x (/ (+ min-x max-x) 2)
+        center-y (/ (+ min-y max-y) 2)
+        center-z (/ (+ min-z max-z) 2)]
+    {:min-x min-x :min-y min-y :min-z min-z
+     :max-x max-x :max-y max-y :max-z max-z
+     :center-x center-x :center-y center-y :center-z center-z}))
+
 (defn patch-fixture!
   "Patch a fixture to a universe in [[*show*]] at a starting DMX
   channel address, at a particular point in space, with a particular
@@ -593,7 +613,7 @@
   (let [positioned (transform-fixture fixture x y z x-rotation y-rotation z-rotation)]
     (swap! (:fixtures *show*) #(patch-fixture-internal *show* % (keyword key)
                                                        (chan/patch-fixture positioned universe start-address next-id))))
-  nil)
+  (swap! (:dimensions *show*) (constantly (calculate-dimensions *show*))))
 
 (defn patch-fixture-group!
   "*Deprecated until it supports positioning each fixture.*

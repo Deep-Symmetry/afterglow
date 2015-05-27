@@ -32,8 +32,6 @@
     returns a version of itself where any non frame-dynamic input
     parameters have been resolved."))
 
-;; TODO add things like MIDIParam, OpenSoundParam? Or more likely those come from ShowVariableParam...
-
 (defn check-type
   "Ensure that a parameter is of a particular type, or that it
   satisfies IParam and, when evaluated, returns that type, throwing an
