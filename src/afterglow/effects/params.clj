@@ -585,7 +585,7 @@
   When it comes time to evaluate this parameter, any dynamic number
   parameters are evaluated, and the resulting numbers are scaled as a
   group (after evaluating `f` for every participating head or fixture)
-  so they fall within the range [`start`-`end`], which defaults
+  so they fall within the range [`:start`-`:end`], which defaults
   to [0-255].
 
   Useful things that `f` can do include calculating the distance of
@@ -593,8 +593,8 @@
   from some line, and so on. These can allow the creation of lighting
   gradients across all or part of a show. Spatial parameters make
   excellent building blocks
-  for [color](#build-color-param), [direction](#build-direction-param)
-  and [aim](#build-aim-param) parameters, as shown in the [wiki
+  for [color](#var-build-color-param), [direction](#var-build-direction-param)
+  and [aim](#var-build-aim-param) parameters, as shown in the [wiki
   examples](https://github.com/brunchboy/afterglow/wiki/Effect-Examples#spatial-effects).
 
   If you do not specify an explicit value for `:frame-dynamic`, this
