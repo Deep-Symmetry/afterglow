@@ -45,11 +45,11 @@
 ;; fixtures and addresses that correspond to your actual hardware.
 (show/patch-fixture! :torrent-1 (blizzard/torrent-f3) 1 1 :x (tf/inches 49) :y (tf/inches 61.5) :z (tf/inches 6)
                      :y-rotation (tf/degrees -45))
-(show/patch-fixture! :hex-1 (chauvet/slimpar-hex3-irc) 1 129)
+(show/patch-fixture! :hex-1 (chauvet/slimpar-hex3-irc) 1 129 :y (tf/inches 4) :z (tf/inches 10))
 (show/patch-fixture! :blade-1 (blizzard/blade-rgbw) 1 270 :y (tf/inches 9))
 (show/patch-fixture! :blade-2 (blizzard/blade-rgbw) 1 240 :x (tf/inches 40) :y (tf/inches 58) :z (tf/inches -15)
                      :y-rotation (tf/degrees -45))
-(show/patch-fixture! :ws-1 (blizzard/weather-system) 1 161 :x 1.0 :y 1.5)
+(show/patch-fixture! :ws-1 (blizzard/weather-system) 1 161 :x (tf/inches 22) :y (tf/inches 7) :z (tf/inches 7))
 
 (defn global-color-cue
   "Make a color cue which affects all lights in the sample show. This
