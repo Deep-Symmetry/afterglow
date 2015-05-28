@@ -540,12 +540,20 @@
             (resolve-fn show snapshot head)))))))
 
 (defn- scale-spatial-result
+  "Map an individual spatial parameter function result into the range
+  desired for all results, given the smallest result value, the size
+  of the range in which all result values fell, the start of the
+  desired output range, and the size of the desired output range."
   [value smallest value-range start target-range]
   (if (zero? value-range)
     (+ start (/ target-range 2))  ; All values are the same, map to middle of range
     (+ start (* target-range (/ (- value smallest) value-range)))))
 
 (defn- build-spatial-eval-fn
+  "Create the function which evaluates a dynamic spatial parameter for
+  a given point in show time. If any of the parameters are dynamic,
+  they must be evaluated each time. Otherwise we can precompute them
+  now, for fast lookup as each DMX frame is rendered."
   [results start target-range]
   (if-not (some (partial satisfies? IParam) (vals results))
     ;; Optimize the case of all constant results
@@ -566,11 +574,6 @@
             largest (apply max (vals resolved))]
         (scale-spatial-result (get resolved (:id head)) smallest largest)))))
 
-;; TODO: Is there some way to pass in a circular flag to deal with
-;;       values like hue or angle, where the max and min yield the
-;;       same result? It would work if the heads are linearly spaced,
-;;       but without that, the caller may be responsible for picking
-;;       a good end value.
 (defn build-spatial-param
   "Returns a dynamic number parameter related to the physical
   arrangement of the supplied fixtures or heads. First the heads of
@@ -580,13 +583,19 @@
   parameter.
 
   When it comes time to evaluate this parameter, any dynamic number
-  parameters are evaluated, and the resulting numbers are scaled so
-  they fall within the range [`start`-`end`].
+  parameters are evaluated, and the resulting numbers are scaled as a
+  group (after evaluating `f` for every participating head or fixture)
+  so they fall within the range [`start`-`end`], which defaults
+  to [0-255].
 
   Useful things that `f` can do include calculating the distance of
   the head from some point, either in 3D or along an axis, its angle
   from some line, and so on. These can allow the creation of lighting
-  gradients across all or part of a show.
+  gradients across all or part of a show. Spatial parameters make
+  excellent building blocks
+  for [color](#build-color-param), [direction](#build-direction-param)
+  and [aim](#build-aim-param) parameters, as shown in the [wiki
+  examples](https://github.com/brunchboy/afterglow/wiki/Effect-Examples#spatial-effects).
 
   If you do not specify an explicit value for `:frame-dynamic`, this
   spatial parameter will be frame dynamic if any values returned by
