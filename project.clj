@@ -17,7 +17,7 @@
                  [org.clojars.brunchboy/colors "1.0.2-SNAPSHOT"]
                  [environ "1.0.0"]
                  [com.taoensso/timbre "3.4.0"]]
-  :source-paths ["src" "target/generated"]
+  :source-paths ["src" "generated"]
   :prep-tasks [["with-profile" "+gen,+dev" "run" "-m" "afterglow.src-generator"] "protobuf" "javac" "compile"]
   :main afterglow.core
   :target-path "target/%s"

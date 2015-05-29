@@ -24,7 +24,7 @@
   "Render the service source file template into the right place."
   [class-name file-type context]
   (let [lc-name (clojure.string/lower-case class-name)
-        dest (file "target" "generated" "afterglow" (str lc-name "_" file-type ".clj"))]
+        dest (file "generated" "afterglow" (str lc-name "_" file-type ".clj"))]
     (.mkdirs (.getParentFile dest))
     (spit dest (render-file (str "afterglow/" file-type "_template.clj") context))))
 
