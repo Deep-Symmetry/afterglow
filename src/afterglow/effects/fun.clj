@@ -138,3 +138,13 @@
               (fn [show snapshot]
                 ;; Arrange to shut down once all existing sparkles fade out.
                 (reset! running false))))))
+
+(defn blast
+  "An effect which creates a sphere of light which expands from a
+  point, then hollows out as it continues to grow and fade."
+  [fixtures & {:keys [color x y grow-time max-solid-diameter]
+               :or {color default-sparkle-color x (:center-x @(:dimensions *show*))
+                    y (:center-y @(:dimensions *show*)) grow-time 1000
+                    max-solid-diameter 0.2}}]
+  ;; Some kind of gradient slope for edges too?
+  )
