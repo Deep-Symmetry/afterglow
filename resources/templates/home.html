@@ -1,9 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
   <div class="jumbotron">
-    <h1>Welcome to my-app</h1>
-    <p>Time to start building your site!</p>
-    <p><a class="btn btn-primary btn-lg" href="http://luminusweb.net">Learn more &raquo;</a></p>
+    <h1>Afterglow</h1>
+    <p>A functional lighting environment.
+    <p>
+      <a class="btn btn-primary btn-lg" href="{{servlet-context}}/visualizer" target="_blank">Open visualizer &raquo;</a>
+      <a class="btn btn-primary btn-lg" href="http://localhost:9090/new/" target="_blank">Open OLA &raquo;</a>
+      <a class="btn btn-info btn-lg" href="http://luminusweb.net">Luminus help &raquo;</a>
+    </p>
   </div>
 
   <div class="row">

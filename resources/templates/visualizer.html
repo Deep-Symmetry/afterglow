@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <style>
+      body { margin: 0; padding: 0; }
+    </style>
+    <title>Afterglow Visualizer</title>
+  </head>
+  <body>
+
+  <div id="container">
+  </div>
+
+  <script src="//code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script>
+  <script src="js/three.min.js"></script>
+  <script>
+    // Helper for synchronously loading shader source
+    var getSourceSynch = function(url) {
+      var req = new XMLHttpRequest();
+      req.open("GET", url, false);
+      req.send(null);
+      return (req.status == 200) ? req.responseText : null;
+    };
+
+    // Set the size of the "screen" on which we are projecting the volumetric rendering.
+    // This doesn't really matter because our fragment shader will happily render pixels
+    // outside these boundaries, but it is used for camera positioning.
+    var WIDTH = 100, HEIGHT = 100;
+    
+    // set some camera attributes
+    var DISTANCE = 300, ASPECT = WIDTH / HEIGHT, NEAR = 0.1, FAR = 10000;
+    
+    // get the DOM element to attach to
+    // - assume we've got jQuery to hand
+    var $container = $('#container');
+
+    var tuniform = {
+      iGlobalTime: { type: 'f', value: 0.1 },
+      iChannel0:   { type: 't', value: THREE.ImageUtils.loadTexture('textures/noise.png') },
+      iResolution: { type: 'v3', value: new THREE.Vector3(window.innerWidth, window.innerHeight, 0) },
+      iNumSpots:   { type: 'i', value: 2 },
+    };
+    tuniform.iChannel0.value.wrapS = tuniform.iChannel0.value.wrapT = THREE.RepeatWrapping;
+
+    var scene, camera, renderer;
+    var geometry, material, mesh;
+    var clock;
+
+    init();
+    animate();
+
+    function init() {
+    
+      scene = new THREE.Scene();
+      var view_angle = 2 * Math.atan((WIDTH / ASPECT) / (2 * DISTANCE)) * (180 / Math.PI);
+      camera = new THREE.PerspectiveCamera(view_angle, ASPECT, NEAR, FAR);
+      camera.position.z = DISTANCE;
+
+      material = new THREE.ShaderMaterial( {
+        uniforms: tuniform,
+        vertexShader:   getSourceSynch("shaders/vertex.glsl"),
+        fragmentShader: getSourceSynch("shaders/fragment.glsl"),
+        side:THREE.DoubleSide
+      });
+
+      mesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(WIDTH,HEIGHT,1,1), material);
+      scene.add(mesh);
+
+      renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+
+      clock = new THREE.Clock(false);
+      clock.start();
+
+      $container.append(renderer.domElement);
+    }
+
+    function animate() {
+      requestAnimationFrame( animate );
+
+      delta = clock.getDelta();
+      tuniform.iGlobalTime.value += delta;
+      tuniform.iResolution.value = new THREE.Vector3(window.innerWidth, window.innerHeight, 0);
+
+      renderer.render(scene, camera);
+    }
+
+    // Arrange things so that when the user is done resizing the window, the renderer
+    // gets updated to take up all of it again.
+    function resizeRenderer() {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    var resizeTimer;
+    $(window).resize(function() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(resizeRenderer, 100);
+    });
+
+
+  </script>
+</body>
+<html>

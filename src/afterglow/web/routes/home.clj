@@ -11,7 +11,11 @@
 (defn about-page []
   (layout/render "about.html"))
 
+(defn visualizer-page []
+  (layout/render "visualizer.html"))
+
 (defroutes home-routes
   (GET "/" [] (home-page))
-  (GET "/about" [] (about-page)))
+  (GET "/about" [] (about-page))
+  (GET "/visualizer" [] (visualizer-page)))
 

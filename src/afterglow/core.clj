@@ -10,6 +10,7 @@
     [environ.core :refer [env]]
     [clojure.tools.cli :refer [parse-opts]]
     [clojure.tools.nrepl.server :as nrepl]
+    [clojure.java.browse :as browse]
     [selmer.parser :as parser]
     [taoensso.timbre :as timbre]
     [taoensso.timbre.appenders.rotor :as rotor])
@@ -137,6 +138,7 @@
     (.addShutdownHook (Runtime/getRuntime) (Thread. stop-servers))
     (clojure.pprint/pprint options)
     (start-web-server (:web-port options))
-    (timbre/info "\n-=[ afterglow started successfully"
-                 (when (env :dev) "using the development profile") "]=-")
-    (timbre/info "Web UI server on port:" (:web-port options))))
+    (timbre/info (str "\n-=[ afterglow started successfully"
+                      (when (env :dev) "using the development profile") "]=-"))
+    (timbre/info "Web UI server on port:" (:web-port options))
+    (browse/browse-url (str "http://localhost:" (:web-port options)))))
