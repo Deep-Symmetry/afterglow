@@ -1,7 +1,8 @@
 (ns afterglow.examples
   "Show some simple ways to use Afterglow, and hopefully inspire
   exploration." {:author "James Elliott"}
-  (:require [afterglow.transform :as tf]
+  (:require [afterglow.core :as core]
+            [afterglow.transform :as tf]
             [afterglow.effects.color :refer [color-cue]]
             [afterglow.effects.dimmer :refer [dimmer-cue master-set-level]]
             [afterglow.effects.fun :as fun]
@@ -13,25 +14,11 @@
             [afterglow.show :as show]
             [afterglow.show-context :refer :all]
             [com.evocomputing.colors :refer [color-name create-color hue adjust-hue]]
-            [taoensso.timbre :as timbre]
-            [taoensso.timbre.appenders.rotor :as rotor]))
+            [taoensso.timbre :as timbre]))
 
-;; Make sure the experimenter does not get blasted with a ton of debug messages
-(timbre/set-level! :info)
-
-;; Provide a nice, organized set of log files to help hunt down problems, especially
-;; for exceptions which occur on background threads.
-(timbre/set-config!
- [:appenders :rotor]
- {:min-level :info
-  :enabled? true
-  :async? false ; should be always false for rotor
-  :max-message-per-msecs nil
-  :fn rotor/appender-fn})
-
-(timbre/set-config!
- [:shared-appender-config :rotor]
- {:path "logs/afterglow.log" :max-size 100000 :backlog 5})
+;; Since this class is an entry point for interactive REPL usage,
+;; make sure a sane logging environment is established.
+(core/init-logging)
 
 ;; Create a show that runs on OLA universe 1, for demonstration purposes.
 (defonce ^{:doc "An example show which controls only the OLA universe with ID 1."}

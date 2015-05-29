@@ -8,6 +8,7 @@ pom.xml.asc
 *.class
 /.lein-*
 /.nrepl-port
+/.env
 .hgignore
 .hg/
 logs/*.log*

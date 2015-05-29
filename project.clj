@@ -16,22 +16,53 @@
                  [selmer "0.8.2"]
                  [org.clojars.brunchboy/colors "1.0.2-SNAPSHOT"]
                  [environ "1.0.0"]
-                 [com.taoensso/timbre "3.4.0"]]
+                 [com.taoensso/timbre "3.4.0"]
+                 [com.taoensso/tower "3.0.2"]
+                 [markdown-clj "0.9.66"]
+                 [environ "1.0.0"]
+                 [compojure "1.3.4"]
+                 [ring/ring-defaults "0.1.5"]
+                 [ring/ring-session-timeout "0.1.0"]
+                 [metosin/ring-middleware-format "0.6.0"]
+                 [metosin/ring-http-response "0.6.2"]
+                 [bouncer "0.3.2"]
+                 [prone "0.8.2"]
+                 [org.clojure/tools.nrepl "0.2.10"]
+                 [org.clojure/tools.cli "0.3.1"]
+                 [buddy "0.5.4"]
+                 [instaparse "1.4.0"]
+                 [http-kit "2.1.19"]]
   :source-paths ["src" "generated"]
   :prep-tasks [["with-profile" "+gen,+dev" "run" "-m" "afterglow.src-generator"] "protobuf" "javac" "compile"]
+
   :main afterglow.core
+
   :target-path "target/%s"
-  :profiles {:dev {:source-paths ["dev_src"]
-                   :resource-paths ["dev_resources"]}
+  :uberjar-name "afterglow.jar"
+  :jvm-opts ["-server"]
+
+  ;; enable to start the nREPL server when the application launches
+  ;; :env {:repl-port 16002}
+
+  :profiles {:dev {:dependencies [[ring-mock "0.1.5"]
+                                  [ring/ring-devel "1.3.2"]]
+                   :source-paths ["dev_src"]
+                   :resource-paths ["dev_resources"]
+                   :repl-options {:init-ns afterglow.examples
+                                  :welcome (println "Afterglow loaded.")}
+                   :env {:dev true}}
+
              :gen {:prep-tasks ^:replace ["protobuf" "javac" "compile"]}
-             :uberjar {:aot :all}}
+
+             :uberjar {:env {:production true}
+                       :aot :all}}
   :plugins [[lein-protobuf "0.4.2" :exclusions [leinjacker]]
             [codox "0.8.12"]
-            [environ "1.0.0"]
+            [lein-environ "1.0.0"]
             [lein-ancient "0.6.5"]]
+
   :aliases {"gen" ["with-profile" "+gen,+dev" "run" "-m" "afterglow.src-generator"]}
-  :repl-options {:init-ns afterglow.examples
-                 :welcome (println "Afterglow loaded.")}
+
   :codox {:src-dir-uri "http://github.com/brunchboy/afterglow/blob/master/"
           :src-linenum-anchor-prefix "L"
           :output-dir "target/doc"}
