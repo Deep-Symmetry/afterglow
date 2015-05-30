@@ -4,6 +4,19 @@
             [afterglow.show :as show]
             [afterglow.show-context :refer [*show*]]))
 
+(defn show-span
+  "Determine the degree to which a show spreads over an axis. For the
+  X and Z axes, this is simply the difference in bounding box
+  coordinates. For Y, we want to preserve height from the floor, so we
+  use zero as a lower bound on the minimum coordinate."
+  [show axis]
+  (let [dim @(:dimensions show)
+        min-val ((keyword (str "min-" axis)) dim)
+        lower-bound (if (= axis "y")
+                      (min 0 min-val)
+                      min-val)]
+    (- ((keyword (str "max-" axis)) dim) lower-bound)))
+
 (defn shader-scale
   "Determine how much we need to scale the show so it fits in the
   shader's bounding cube which has a width of 1.0, a height of 0.5,
@@ -12,29 +25,31 @@
   [show]
   (double (apply min (map / [1 0.5 0.5]
                           (for [axis ["x" "y" "z"]]
-                            (max 0.0001 (- ((keyword (str "max-" axis)) @(:dimensions show))
-                                           (if (= axis "y")
-                                             0
-                                             ((keyword (str "min-" axis)) @(:dimensions show))))))))))
+                            (max 0.0001 (show-span show axis)))))))
 
 (defn axis-shift
   "Determine how much we need to translate show space points along an
   axis after they have been scaled to move them into the shader's
-  bounding cube."
-  [show axis origin scale]
-  [(keyword (str axis "-offset"))
-   (double (- origin (* scale (if (= axis "y")
-                                0
-                                ((keyword (str "min-" axis)) @(:dimensions show))))))])
+  bounding cube. If there is extra room for this axis, center it
+  within the bounding cube."
+  [show axis origin available-span scale]
+  (let [scaled-span (* scale (show-span show axis))
+        padding (/ (- available-span scaled-span) 2)
+        scaled-smallest-value (* scale (if (= axis "y")
+                                         0
+                                         ((keyword (str "min-" axis)) @(:dimensions show))))
+        full-shift (double (- origin scaled-smallest-value))]
+    (println axis "ssv:" scaled-smallest-value "origin:" origin "padding:" padding)
+    [(keyword (str axis "-offset"))
+     (+ full-shift padding)]))
 
-;; TODO: Center the fixtures, don't put them flush to the bottom left.
 (defn shader-offsets
   "Determine the values to add to the coordinates of scaled light positions
   to move them inside the shader's bounding cube, whose origin is
   [-0.5, -0.25, 0]."
   [show scale]
-  (into {} (for [[axis origin] [["x" -0.5] ["y" -0.25] ["z" 0]]]
-             (axis-shift show axis origin scale))))
+  (into {} (for [[axis origin available-span] [["x" -0.5 1.0] ["y" -0.25 0.5] ["z" 0 0.5]]]
+             (axis-shift show axis origin available-span scale))))
 
 (defn adjusted-positions
   "Move the spotlights so they all fit within the shader's bounding
