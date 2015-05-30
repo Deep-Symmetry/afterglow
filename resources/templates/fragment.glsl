@@ -11,7 +11,7 @@ uniform vec3 iResolution;
 uniform int iNumSpots;
 uniform vec3 iSpotPosition[MAX_SPOTS];
 uniform vec4 iSpotColor[MAX_SPOTS];
-// uniform mat3 iSpotRotation[MAX_SPOTS];
+uniform vec3 iSpotRotation[MAX_SPOTS*3];
 
 
 //////
@@ -82,7 +82,11 @@ vec2 maplight(vec3 orp, out bool spot_hit[MAX_SPOTS]) {
       vec3 rp = orp;
       vec3 _rp = rp;
       rp += iSpotPosition[i];
-      // rp *= SPOT_ROTATION[i];
+      mat3 rotation;
+      rotation[0] = iSpotRotation[i*3];
+      rotation[1] = iSpotRotation[i*3+1];
+      rotation[2] = iSpotRotation[i*3+2];
+      rp *= rotation;
       
       float m = sdCappedCylinder(rp, vec2(CONE_W, 1.0));
       

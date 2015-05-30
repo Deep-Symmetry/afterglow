@@ -2,7 +2,9 @@
   (:require [afterglow.web.layout :as layout]
             [afterglow.fixtures :as fixtures]
             [afterglow.show :as show]
-            [afterglow.show-context :refer [*show*]]))
+            [afterglow.show-context :refer [*show*]])
+  (:import [javax.media.j3d Transform3D]
+           [javax.vecmath Matrix3d]))
 
 (defn show-span
   "Determine the degree to which a show spreads over an axis. For the
@@ -56,10 +58,27 @@
   cube, which extends from [-0.5, 0.25, 0.5] to [0.5, -0.25, 0]."
   [show scale]
   (let [offsets (shader-offsets show scale)]
-    (partition 3 (for [[id head] (:visualizer-visible @(:dimensions *show*))
+    (partition 3 (for [[_ head] (:visualizer-visible @(:dimensions *show*))
                        [axis flip] [["x" -1] ["y" -1] ["z" 1]]]
                    (* flip (+ (* ((keyword axis) head) scale)
                               ((keyword (str axis "-offset")) offsets)))))))
+
+(defn adjusted-rotations
+  "Get the current orientations of the active spotlights for the visualizer.
+  Return as a series of columns of the rotation matrices, since it
+  looks like WebGL or THREE.js is a lot happier passing vectors than
+  matrices as uniforms."
+  [show]
+  (apply concat (for [[_ head] (:visualizer-visible @(:dimensions *show*))]
+                  (let [rot (Matrix3d.)
+                        adjust (Matrix3d.)]
+                    ;; Transform from show orientation to shader orientation
+                    (.rotX adjust (/ Math/PI 2))
+                    (.get (:rotation head) rot)
+                    (.mulNormalize rot adjust)
+                    [[(.-m00 rot) (.-m10 rot) (.-m20 rot)]
+                     [(.-m01 rot) (.-m11 rot) (.-m21 rot)]
+                     [(.-m02 rot) (.-m12 rot) (.-m22 rot)]]))))
 
 ;; TODO: These need to be parameterized by show, once we are managing a list of shows.
 (defn page
@@ -68,7 +87,8 @@
   (let [scale (shader-scale *show*)]
     (layout/render
      "visualizer.html" {:timestamp (:timestamp @(:dimensions *show*))
-                        :positions (adjusted-positions *show* scale)})))
+                        :positions (adjusted-positions *show* scale)
+                        :rotations (adjusted-rotations *show*)})))
 
 (defn shader
   "Render a GLSL shader capable of volumetric rendering of enough

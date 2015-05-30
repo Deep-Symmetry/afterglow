@@ -48,6 +48,10 @@
         {% for pos in positions %}new THREE.Vector3({%
            for val in pos %}{{val}}{% if not forloop.last %}, {% endif %}{% endfor %}){% if not forloop.last %},
         {% endif %}{% endfor %} ] },
+      iSpotRotation: { type: 'v3v', value: [ 
+        {% for col in rotations %}new THREE.Vector3({%
+           for val in col %}{{val}}{% if not forloop.last %}, {% endif %}{% endfor %}){% if not forloop.last %},
+        {% endif %}{% endfor %} ] },
       iSpotColor: { type: 'v4v', value: [ 
         {% for pos in positions %}new THREE.Vector4(1.0,0.9,0.6,1.0){% if not forloop.last %},
         {% endif %}{% endfor %} ] },
