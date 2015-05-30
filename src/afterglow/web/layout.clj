@@ -14,7 +14,7 @@
 (parser/add-tag! :csrf-field (fn [_ _] (anti-forgery-field)))
 (filters/add-filter! :markdown (fn [content] [:safe (md-to-html-string content)]))
 
-(defn render [template & [params]]
+(defn render-with-type [template mime-type & [params]]
   (-> template
       (parser/render-file
         (assoc params
@@ -24,4 +24,7 @@
           :servlet-context *servlet-context*
           :identity *identity*))
       response
-      (content-type "text/html; charset=utf-8")))
+      (content-type mime-type)))
+
+(defn render [template & [params]]
+  (render-with-type template "text/html; charset=utf-8" params))

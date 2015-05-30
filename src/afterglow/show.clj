@@ -29,7 +29,7 @@
             [afterglow.effects.movement :refer [direction-assignment-resolver
                                                 aim-assignment-resolver]]
             [afterglow.effects.params :refer [bind-keyword-param resolve-param]]
-            [afterglow.fixtures :refer [index-functions index-color-wheel-hues]]
+            [afterglow.fixtures :as fixtures]
             [afterglow.midi :as midi]
             [afterglow.ola-service :as ola]
             [afterglow.rhythm :refer :all]
@@ -576,12 +576,16 @@
       (throw (IllegalStateException. (str "Cannot complete patch: "
                                           (clojure.string/join ", " (vec (for [[k v] conflicts]
                                                                            (str "Channel " k " in use by fixture " v))))))))
-    (assoc fixtures key (assoc (index-color-wheel-hues (index-functions fixture)) :key key :id (next-id)))))
+    (assoc fixtures
+           key (assoc (fixtures/index-color-wheel-hues
+                       (fixtures/index-functions fixture)) :key key :id (next-id)))))
 
 (defn- calculate-dimensions
   "Determine the center and bounding cube of the show, as defined by
   the minimum and maximum coordinates in all three dimensions of all
-  patched fixtures and heads."
+  patched fixtures and heads. Also enumerate the fixtures which might
+  and heads which might participate in a visualization, in a map whose
+  keys are their sorted IDs."
   [show]
   (let [all-heads (chan/expand-heads (vals @(:fixtures show)))
         min-x (apply min (map :x all-heads))
@@ -595,7 +599,11 @@
         center-z (/ (+ min-z max-z) 2)]
     {:min-x min-x :min-y min-y :min-z min-z
      :max-x max-x :max-y max-y :max-z max-z
-     :center-x center-x :center-y center-y :center-z center-z}))
+     :center-x center-x :center-y center-y :center-z center-z
+     :visualizer-visible (into (sorted-map)
+                               (map (fn [head] [(:id head) head])
+                                    (fixtures/visualizer-relevant (vals @(:fixtures show)))))
+     :timestamp (at-at/now)}))
 
 (defn patch-fixture!
   "Patch a fixture to a universe in [[*show*]] at a starting DMX

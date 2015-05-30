@@ -49,6 +49,19 @@
          fixture-or-fixture-list)
     (printable [fixture-or-fixture-list])))
 
+(defn visualizer-relevant
+ "Returns all the fixtures or heads which might appear in the
+ visualizer. If the fixture or head has an  explicit
+ :visualizer-visible boolean, that is honored, otherwise it is assumed
+ that fixtures without heads are themselves relevant, while for
+ fixtures with heads, only the heads are relevant."
+ [fixtures-or-heads]
+ (mapcat #(if-let [heads (seq (:heads %))]
+         (concat (visualizer-relevant heads)
+                 (when (:visualizer-visible %) [%]))
+         (when (:visualizer-visible % true) [%]))
+      fixtures-or-heads))
+
 (defn generic-dimmmer
   "A fixture definition where a single channel controls the power
   level of a socket to which an incandescent light source can be

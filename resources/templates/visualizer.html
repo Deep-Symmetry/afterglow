@@ -15,6 +15,10 @@
   <script src="//code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script>
   <script src="js/three.min.js"></script>
   <script>
+    // When was the fixture arrangement last modified, to see if we need to reload
+    // our fragment shader.
+    var SHOW_TIMESTAMP = {{timestamp}};
+    
     // Helper for synchronously loading shader source
     var getSourceSynch = function(url) {
       var req = new XMLHttpRequest();
@@ -39,7 +43,14 @@
       iGlobalTime: { type: 'f', value: 0.1 },
       iChannel0:   { type: 't', value: THREE.ImageUtils.loadTexture('textures/noise.png') },
       iResolution: { type: 'v3', value: new THREE.Vector3(window.innerWidth, window.innerHeight, 0) },
-      iNumSpots:   { type: 'i', value: 2 },
+      iNumSpots:   { type: 'i', value: 12 },
+      iSpotPosition: { type: 'v3v', value: [ 
+        {% for pos in positions %}new THREE.Vector3({%
+           for val in pos %}{{val}}{% if not forloop.last %}, {% endif %}{% endfor %}){% if not forloop.last %},
+        {% endif %}{% endfor %} ] },
+      iSpotColor: { type: 'v4v', value: [ 
+        {% for pos in positions %}new THREE.Vector4(1.0,0.9,0.6,1.0){% if not forloop.last %},
+        {% endif %}{% endfor %} ] },
     };
     tuniform.iChannel0.value.wrapS = tuniform.iChannel0.value.wrapT = THREE.RepeatWrapping;
 

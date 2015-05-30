@@ -1,5 +1,6 @@
 (ns afterglow.web.routes.home
   (:require [afterglow.web.layout :as layout]
+            [afterglow.web.routes.visualizer :as visualizer]
             [compojure.core :refer [defroutes GET]]
             [ring.util.http-response :refer [ok]]
             [clojure.java.io :as io]))
@@ -17,5 +18,9 @@
 (defroutes home-routes
   (GET "/" [] (home-page))
   (GET "/about" [] (about-page))
-  (GET "/visualizer" [] (visualizer-page)))
+  (GET "/visualizer" [] (visualizer/page))
+  (GET "/shaders/fragment.glsl" [] (visualizer/shader)))
+
+
+
 
