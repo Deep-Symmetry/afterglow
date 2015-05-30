@@ -4,7 +4,7 @@
             [afterglow.show :as show]
             [afterglow.show-context :refer [*show*]])
   (:import [javax.media.j3d Transform3D]
-           [javax.vecmath Matrix3d]))
+           [javax.vecmath Matrix3d Vector3d]))
 
 (defn show-span
   "Determine the degree to which a show spreads over an axis. For the
@@ -80,6 +80,51 @@
                      [(.-m01 rot) (.-m11 rot) (.-m21 rot)]
                      [(.-m02 rot) (.-m12 rot) (.-m22 rot)]]))))
 
+(defn current-rotation
+  "Given a head and pan and tilt values, calculate the current
+  orientation of the head."
+  [head pan tilt]
+  (let [rotation (Transform3D. (:rotation head))]
+    (when-let [pan-scale (:pan-half-circle head)]
+      (let [dmx-pan (/ (- pan (:pan-center head)) pan-scale)
+            adjust (Transform3D.)]
+        (.rotY adjust (* Math/PI dmx-pan))
+        (.mul rotation adjust)))
+    (when-let [tilt-scale (:tilt-half-circle head)]
+      (let [dmx-tilt (/ (- tilt (:tilt-center head) tilt-scale))
+            adjust (Transform3D.)]
+        (.rotX adjust (* Math/PI dmx-tilt))
+        (.mul rotation adjust)))
+    rotation))
+
+(defn visualizer-pan-tilt
+  "Given a head and DMX pan and tilt values, calculate the pan
+  and tilt angles to send the visualizer"
+  [head pan tilt]
+  (let [rotation (current-rotation head pan tilt)
+        visualizer-perspective (Transform3D.)
+        direction (Vector3d. 0 0 1)]
+    ;; Add a rotation so we are seeing the rotation from the
+    ;; default perspectve of the visualizer.
+    (.rotX visualizer-perspective (/ Math/PI 2))
+    (.mul rotation visualizer-perspective)
+    
+    (.transform rotation direction)
+    (let [rot-y (Math/atan2 (.x direction) (.z direction)) ;; Get pan
+          new-direction (Vector3d. direction)] ;; Determine aiming vector after pan
+      (.rotY visualizer-perspective (- rot-y))
+      (.transform visualizer-perspective new-direction)
+      [rot-y (- (Math/atan2 (.y direction) (.z direction)))])))
+
+(defn current-pan-tilts
+  "Get the current pan and tilt values of the active spotlights for the visualizer.
+  Return as a series of two-element vectors of pan and tilt angles in
+  the perspective of the visualizer, to save space compared to sending actual
+  rotation matrices."
+  [show]
+  (for [[_ head] (:visualizer-visible @(:dimensions *show*))]
+    (visualizer-pan-tilt head 0 0)))
+
 ;; TODO: These need to be parameterized by show, once we are managing a list of shows.
 (defn page
   "Render the real-time show preview."
@@ -88,7 +133,7 @@
     (layout/render
      "visualizer.html" {:timestamp (:timestamp @(:dimensions *show*))
                         :positions (adjusted-positions *show* scale)
-                        :rotations (adjusted-rotations *show*)})))
+                        :rotations (current-pan-tilts *show*)})))
 
 (defn shader
   "Render a GLSL shader capable of volumetric rendering of enough
