@@ -2,7 +2,8 @@
   (:require [afterglow.web.layout :as layout]
             [afterglow.fixtures :as fixtures]
             [afterglow.show :as show]
-            [afterglow.show-context :refer [*show*]])
+            [afterglow.show-context :refer [*show*]]
+            [com.evocomputing.colors :as colors])
   (:import [javax.media.j3d Transform3D]
            [javax.vecmath Matrix3d Vector3d]))
 
@@ -53,12 +54,16 @@
   (into {} (for [[axis origin available-span] [["x" -0.5 1.0] ["y" -0.25 0.5] ["z" 0 0.5]]]
              (axis-shift show axis origin available-span scale))))
 
+;; TODO: There is actually some kind of rotation going on that I need to
+;;       figure out and get right, because much craziness is happening with
+;;       the current approach.
+
 (defn adjusted-positions
   "Move the spotlights so they all fit within the shader's bounding
   cube, which extends from [-0.5, 0.25, 0.5] to [0.5, -0.25, 0]."
-  [show scale]
+  [lights show scale]
   (let [offsets (shader-offsets show scale)]
-    (partition 3 (for [[_ head] (:visualizer-visible @(:dimensions *show*))
+    (partition 3 (for [[_ head] lights
                        [axis flip] [["x" -1] ["y" -1] ["z" 1]]]
                    (* flip (+ (* ((keyword axis) head) scale)
                               ((keyword (str axis "-offset")) offsets)))))))
@@ -116,24 +121,61 @@
       (.transform visualizer-perspective new-direction)
       [rot-y (- (Math/atan2 (.y direction) (.z direction)))])))
 
+;; TODO: Need to take into account dimmers, and someday be based on raw DMX
+;;       values rather than the current higher-level abstractions.
+(defn active?
+  "Check whether the given fixture (represented as a tuple of [id
+  spec], as found in a show's :visualizer-visible map) should be
+  included in the current visualizer frame, because it is emitting
+  light."
+  [show [id fixture-or-head]]
+  (when-let [color ((keyword (str "color-" id)) (:previous @(:movement show)))]
+    (> (colors/lightness color) 0)))
+
+(defn active-fixtures
+  "Return the fixtures which should currently be rendered, because they
+  are emitting light."
+  [show]
+  (filter (partial active? show) (:visualizer-visible @(:dimensions *show*))))
+
 (defn current-pan-tilts
   "Get the current pan and tilt values of the active spotlights for the visualizer.
   Return as a series of two-element vectors of pan and tilt angles in
   the perspective of the visualizer, to save space compared to sending actual
   rotation matrices."
-  [show]
-  (for [[_ head] (:visualizer-visible @(:dimensions *show*))]
-    (visualizer-pan-tilt head 0 0)))
+  [lights show]
+  (for [[id head] lights]
+    (let [[pan tilt] ((keyword (str "pan-tilt-" id)) (:previous @(:movement show)) [0 0])]
+      (visualizer-pan-tilt head pan tilt))))
+
+(defn byte-to-float
+  "Convert a one-byte color component, as used in Afterglow, to a
+  floating point color component as used in OpenGL, where 255 becomes
+  1.0."
+  [val]
+  (double (/ val 255)))
+
+(defn current-colors
+  "Get the current color values of the active spotlights for the visualizer.
+  Return as a series of four-element vectors of red, green, blue, and alpha."
+  [lights show]
+  (for [[id head] lights]
+    (let [color ((keyword (str "color-" id)) (:previous @(:movement show)))]
+      [(byte-to-float (colors/red color)) (byte-to-float (colors/green color))
+       (byte-to-float (colors/blue color)) (byte-to-float (colors/alpha color))])))
 
 ;; TODO: These need to be parameterized by show, once we are managing a list of shows.
 (defn page
   "Render the real-time show preview."
   []
-  (let [scale (shader-scale *show*)]
+  (let [scale (shader-scale *show*)
+        lights (active-fixtures *show*)]
     (layout/render
      "visualizer.html" {:timestamp (:timestamp @(:dimensions *show*))
-                        :positions (adjusted-positions *show* scale)
-                        :rotations (current-pan-tilts *show*)})))
+                        :count (count lights)
+                        :positions (adjusted-positions lights *show* scale)
+                        :colors (current-colors lights *show*)
+                        :rotations (current-pan-tilts lights *show*)})))
 
 (defn shader
   "Render a GLSL shader capable of volumetric rendering of enough
@@ -144,3 +186,15 @@
      "fragment.glsl" "x-shader/x-fragment"
      {:scale scale
       :max-lights (count (:visualizer-visible @(:dimensions *show*)))})))
+
+(defn update
+  "Render updated lighting information for the preview."
+  []
+  (let [scale (shader-scale *show*)
+        lights (active-fixtures *show*)]
+    (layout/render
+     "current-scene.json" {:timestamp (:timestamp @(:dimensions *show*))
+                           :count (count lights)
+                           :positions (adjusted-positions lights *show* scale)
+                           :colors (current-colors lights *show*)
+                           :rotations (current-pan-tilts lights *show*)})))

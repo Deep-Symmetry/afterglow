@@ -43,27 +43,29 @@
       iGlobalTime: { type: 'f', value: 0.1 },
       iChannel0:   { type: 't', value: THREE.ImageUtils.loadTexture('textures/noise.png') },
       iResolution: { type: 'v3', value: new THREE.Vector3(window.innerWidth, window.innerHeight, 0) },
-      iNumSpots:   { type: 'i', value: 12 },
-      iSpotPosition: { type: 'v3v', value: [ 
-        {% for pos in positions %}new THREE.Vector3({%
-           for val in pos %}{{val}}{% if not forloop.last %}, {% endif %}{% endfor %}){% if not forloop.last %},
-        {% endif %}{% endfor %} ] },
-      iSpotRotation: { type: 'v2v', value: [ 
-        {% for rot in rotations %}new THREE.Vector2({%
-           for val in rot %}{{val}}{% if not forloop.last %}, {% endif %}{% endfor %}){% if not forloop.last %},
-        {% endif %}{% endfor %} ] },
-      iSpotColor: { type: 'v4v', value: [ 
-        {% for pos in positions %}new THREE.Vector4(1.0,0.9,0.6,1.0){% if not forloop.last %},
-        {% endif %}{% endfor %} ] },
+{% include "current-scene-fragment.js" %}    
     };
     tuniform.iChannel0.value.wrapS = tuniform.iChannel0.value.wrapT = THREE.RepeatWrapping;
 
     var scene, camera, renderer;
     var geometry, material, mesh;
     var clock;
+    var vertexShader;
+    var fragmentShader;
 
-    init();
-    animate();
+    $.ajax({
+      url: 'shaders/vertex.glsl',
+        success: function(response) {
+          vertexShader = response;
+          $.ajax({
+            url: 'shaders/fragment.glsl',
+              success: function(response) {
+                fragmentShader = response;
+                init();
+              }
+          });
+        }
+    });
 
     function init() {
     
@@ -74,8 +76,8 @@
 
       material = new THREE.ShaderMaterial( {
         uniforms: tuniform,
-        vertexShader:   getSourceSynch("shaders/vertex.glsl"),
-        fragmentShader: getSourceSynch("shaders/fragment.glsl"),
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
         side:THREE.DoubleSide
       });
 
@@ -89,6 +91,8 @@
       clock.start();
 
       $container.append(renderer.domElement);
+      animate();
+      setInterval(updateLights, 50);
     }
 
     function animate() {
@@ -113,6 +117,25 @@
       resizeTimer = setTimeout(resizeRenderer, 100);
     });
 
+    function updateLights() {
+      $.ajax({
+        url: 'visualizer-update',
+        success: function(response) {
+          var new_values;
+          eval("new_values=" + response);
+
+          if (new_values.timestamp != SHOW_TIMESTAMP) {
+            console.log("Forcing reload because show geometry has changed.");
+            location.reload(true);
+          } else {
+            tuniform.iNumSpots.value = new_values.iNumSpots.value;
+            tuniform.iSpotPosition.value = new_values.iSpotPosition.value;
+            tuniform.iSpotRotation.value = new_values.iSpotRotation.value;
+            tuniform.iSpotColor.value = new_values.iSpotColor.value;
+          }
+        }
+      });
+    }
 
   </script>
 </body>

@@ -81,7 +81,8 @@
   which is very lenient. If you want to tighten that up, you can set a
   lower value in the show variable :color-wheel-hue-tolerance"
   [show buffers snapshot target assignment _]
-  (let [resolved (params/resolve-param assignment show snapshot target)]  ; In case it is frame dynamic
+  (let [resolved (params/resolve-param assignment show snapshot target) ; In case it is frame dynamic
+        color-key (keyword (str "color-" (:id target)))]
     ;; Start with RGB mixing
     (doseq [c (filter #(= (:color %) :red) (:channels target))]
       (apply-channel-value buffers c (colors/red resolved)))
@@ -89,6 +90,7 @@
       (apply-channel-value buffers c (colors/green resolved)))
     (doseq [c (filter #(= (:color %) :blue) (:channels target))]
       (apply-channel-value buffers c (colors/blue resolved)))
+    (swap! (:movement *show*) #(assoc-in % [:current color-key] resolved))
     ;; Expermental: Does this work well in bringing in the white channel?
     (when-let [whites (filter #(= (:color %) :white) (:channels target))]
       (let [l (/ (colors/lightness resolved) 100)

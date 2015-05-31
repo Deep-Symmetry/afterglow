@@ -1,0 +1,4 @@
+{
+    timestamp: {{ timestamp }},
+{% include "current-scene-fragment.js" %}
+}

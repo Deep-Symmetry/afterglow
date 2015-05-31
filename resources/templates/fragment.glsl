@@ -67,8 +67,8 @@ float sdCappedCylinder(vec3 p, vec2 h) {
 
 const float NOTHING = -0.1;
 
-const float LIGHT_BASE_W = 0.2;
-const float CONE_W = 0.22;
+const float LIGHT_BASE_W = 0.1;
+const float CONE_W = 0.11;
 
 vec2 maplight(vec3 orp, out bool spot_hit[MAX_SPOTS]) {
   float t = iGlobalTime * 0.025;
@@ -82,8 +82,8 @@ vec2 maplight(vec3 orp, out bool spot_hit[MAX_SPOTS]) {
       vec3 rp = orp;
       vec3 _rp = rp;
       rp += iSpotPosition[i];
-      mat3 rotation = roty(iSpotRotation[i].x);
-      rotation *= rotx(-iSpotRotation[i].y);
+      mat3 rotation = rotx(iSpotRotation[i].y);
+      rotation *= roty(iSpotRotation[i].x);
       rp *= rotation;
       
       float m = sdCappedCylinder(rp, vec2(CONE_W, 1.0));
