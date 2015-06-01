@@ -335,7 +335,9 @@ TODO: listing of options this app accepts once it can run as a standalone app.
     and transform.clj has an implementation in invert-direction. Now I
     just need to test it with an actual light!
   - [x] Remember that Vector3d has nice methods like angle (calculate angle to another Vector3d), length, cross, dot...
-- [x] See if it's possible to render a live show preview using WebGL.
+- [ ] Render preview animations of a light show using WebGL.
+  - [x] This [shader](https://www.shadertoy.com/view/Mlj3W1) looks nearly perfect, if I can figure out how to adopt it.
+  - [x] Looks like a nice intro to 3D, linear algebra, shaders: [Making WebGL Dance](http://acko.net/files/fullfrontal/fullfrontal/webglmath/online.html). Has interesting references too, such as  [Interactive 3D Graphics Course](https://www.udacity.com/course/interactive-3d-graphics--cs291), Eric Haines, Udacity.com. And the [Aerotwist tutorials](https://aerotwist.com/tutorials/), in particular Three.js and shaders.
   - [ ] Fix the transform of lights into the WebGL shader space; currently inconsistent.
   - [ ] See if someone can come up with a more bare bones but scalable preview, probably building a geometry of the light cones instead of ray marching through them.
 - [x] Use [claypoole](https://clojars.org/com.climate/claypoole) for parallelism.
@@ -345,9 +347,6 @@ TODO: listing of options this app accepts once it can run as a standalone app.
 - [ ] When it is time to optimize performance, study the [type hints](http://clojure.org/java_interop#Java%20Interop-Type%20Hints) interop information looks very informative and helpful.
   - [ ] Do a pass through all files with *warn-on-reflection* set to true, see what hinting can help.
 - [ ] Eventually create a leiningen task that can build a standalone jar with Afterglow and a custom show definition file and its supporting resources, so developers can easily deploy and share shows with non-Clojurists.
-- [ ] Render preview animations of a light show using WebGL.
-  - [ ] This [shader](https://www.shadertoy.com/view/Mlj3W1) looks nearly perfect, if I can figure out how to adopt it.
-  - [ ] Looks like a nice intro to 3D, linear algebra, shaders: [Making WebGL Dance](http://acko.net/files/fullfrontal/fullfrontal/webglmath/online.html). Has interesting references too, such as  [Interactive 3D Graphics Course](https://www.udacity.com/course/interactive-3d-graphics--cs291), Eric Haines, Udacity.com. And the [Aerotwist tutorials](https://aerotwist.com/tutorials/), in particular Three.js and shaders.
 - [ ] Once I release the first version, answer this StackOverflow [question](http://stackoverflow.com/questions/9582192/dmx-software-to-control-lights-with-programmable-interface).
 
 ### References
