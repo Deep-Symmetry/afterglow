@@ -501,7 +501,7 @@
   in [[*show*]].
 
   If you do not specify an explicit value for `:frame-dynamic`, this
-  direction parameter will be frame dynamic if it has any incoming
+  aim parameter will be frame dynamic if it has any incoming
   parameters which themselves are."
   {:doc/format :markdown}
   [& {:keys [x y z frame-dynamic] :or {x 0 y 0 z 2 frame-dynamic :default}}]
