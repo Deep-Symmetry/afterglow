@@ -5,7 +5,13 @@
             [com.evocomputing.colors :as colors]
             [overtone.midi :as midi]))
 
-(defonce user-port-out (midi/midi-out "Ableton Push User Port"))
+(defonce user-port-out (atom nil))
+
+(defn connect-to-push
+  "Try to establish the connection to the Ableton Push, if that has
+  not already been made."
+  []
+  (swap! user-port-out #(or % (midi/midi-out "Ableton Push User Port"))))
 
 (defn velocity-for-color
   "Given a target color, calculate the MIDI note velocity which will
@@ -42,5 +48,5 @@
   [x y color]
   {:pre [(<= 0 x 7) (<= 0 y 7)]}
   (let [note (+ 36 x (* y 8))]  ;; Calculate note from grid coordinates
-    (midi/midi-note-on user-port-out note (velocity-for-color color))))
+    (midi/midi-note-on @user-port-out note (velocity-for-color color))))
 
