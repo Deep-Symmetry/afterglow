@@ -20,6 +20,22 @@ getting substantial. The modeling of fixtures, channels, etc. is
 coming together nicely, though there have been drastic changes as I
 gained experience with how I want to use them.
 
+There is now an embedded web application, which will grow into a user
+interface for people who are not Clojure hackers. It is mostly empty
+so far, but does include the beginnings of a show visualizer for
+designing and working on effects without having to physically hook up
+lights. This is implemented in WebGL using a volumetric ray tracer and
+looks quite promising, at least for a small number of fixtures; it
+will probably overwhelm the graphics processor on most systems once
+you add too many lights. However, the framework can be used by someone
+who actually knows OpenGL programming to build a more scalable preview
+(albeit one that probably doesn't look quite so photo-realistic with
+beams impacting drifting fog).
+
+> Be wary of running the web application for now, though, as it
+> aggressively reloads namespaces, and not all of the core Afterglow
+> namespaces deal well with this yet.
+
 ## Installation
 
 1. [Install OLA](https://www.openlighting.org/ola/getting-started/downloads/);
@@ -319,6 +335,9 @@ TODO: listing of options this app accepts once it can run as a standalone app.
     and transform.clj has an implementation in invert-direction. Now I
     just need to test it with an actual light!
   - [x] Remember that Vector3d has nice methods like angle (calculate angle to another Vector3d), length, cross, dot...
+- [x] See if it's possible to render a live show preview using WebGL.
+  - [ ] Fix the transform of lights into the WebGL shader space; currently inconsistent.
+  - [ ] See if someone can come up with a more bare bones but scalable preview, probably building a geometry of the light cones instead of ray marching through them.
 - [x] Use [claypoole](https://clojars.org/com.climate/claypoole) for parallelism.
 - [ ] Add OSC support (probably using [Overtone&rsquo;s implementation](https://github.com/rosejn/osc-clj)) for controller support, and MIDI as well.
 - [x] Serious references for color manipulation, but in [Julia](https://github.com/timholy/Color.jl).
