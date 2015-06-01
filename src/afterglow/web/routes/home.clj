@@ -19,7 +19,7 @@
   (GET "/" [] (home-page))
   (GET "/about" [] (about-page))
   (GET "/visualizer" [] (visualizer/page))
-  (GET "/visualizer-update" [] (visualizer/update))
+  (GET "/visualizer-update" [] (visualizer/update-preview))
   (GET "/shaders/fragment.glsl" [] (visualizer/shader)))
 
 

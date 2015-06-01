@@ -187,7 +187,7 @@
      {:scale scale
       :max-lights (count (:visualizer-visible @(:dimensions *show*)))})))
 
-(defn update
+(defn update-preview
   "Render updated lighting information for the preview."
   []
   (let [scale (shader-scale *show*)
