@@ -357,6 +357,7 @@ TODO: listing of options this app accepts once it can run as a standalone app.
 ### Related Work
 
 - [ ] Rich controller support for [Ableton Push](https://forum.ableton.com/viewtopic.php?f=55&t=193744)!
+  - [ ] [Color chart](https://forum.ableton.com/viewtopic.php?f=55&t=192920), post a followup if my hue theory pans out.
 - [ ] Add a user interface using [Luminus](http://www.luminusweb.net/docs).
 
 ## License

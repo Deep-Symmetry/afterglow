@@ -204,7 +204,7 @@
    (open-inputs-if-needed!)
    (let [result (promise)
          message-finder (fn [msg]
-                          (when (#{:note :control-change} (:status msg))
+                          (when (#{:note-on :note-off :control-change} (:status msg))
                             (deliver result msg)))]
      (swap! global-handlers conj message-finder)
      (let [found (deref result timeout nil)]
