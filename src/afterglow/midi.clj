@@ -189,7 +189,6 @@
          (throw (IllegalArgumentException. (str "More than one MIDI clock source " (describe-name-filter name-filter)
                                                 "was found."))))))))
 
-;; TODO function to return next control or note message received, to aid mapping
 (defn identify-mapping
   "Report on the next MIDI control or note message received, to aid in
   setting up a mapping to a button, fader, or knob. Call this, then
