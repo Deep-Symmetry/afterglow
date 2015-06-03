@@ -59,7 +59,7 @@
   :plugins [[lein-protobuf "0.4.2" :exclusions [leinjacker]]
             [codox "0.8.12"]
             [lein-environ "1.0.0"]
-            [lein-ancient "0.6.5"]]
+            [lein-ancient "0.6.7"]]
 
   :aliases {"gen" ["with-profile" "+gen,+dev" "run" "-m" "afterglow.src-generator"]}
 
