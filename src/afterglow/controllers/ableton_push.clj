@@ -62,41 +62,86 @@
   {:off 0 :dim 1 :dim-slow-blink 2 :dim-fast-blink 3
    :bright 4 :bright-slow-blink 5 :bright-fast-blink 6})
 
+(def color-button-colors
+  "The control values and modes for a labeled button which changes
+  color. These are added to the monocrome states (except for off)
+  to obtain the color and brightness/behavior."
+  {:red 0 :amber 6 :yellow 12 :green 18})
+
 (def control-buttons
   "The labeled buttons which send and respond to Control Change
   events."
-  {:tap-tempo {:control 3 :states monochrome-button-states}
-   :metronome {:control 9 :states monochrome-button-states}
-   :left-arrow {:control 44 :states monochrome-button-states}
-   :right-arrow {:control 45 :states monochrome-button-states}
-   :up-arrow {:control 46 :states monochrome-button-states}
-   :down-arrow {:control 47 :states monochrome-button-states}
-   :select {:control 48 :states monochrome-button-states}
-   :shift {:control 49 :states monochrome-button-states}
-   :note {:control 50 :states monochrome-button-states}
-   :session {:control 51 :states monochrome-button-states}
-   :add-device {:control 52 :states monochrome-button-states}
-   :add-track {:control 53 :states monochrome-button-states}
-   :octave-down {:control 54 :states monochrome-button-states}
-   :octave-up {:control 55 :states monochrome-button-states}
-   :repeat {:control 56 :states monochrome-button-states}
-   :accent {:control 57 :states monochrome-button-states}
-   :scales {:control 58 :states monochrome-button-states}
-   :user-mode {:control 59 :states monochrome-button-states}
-   :mute {:control 60 :states monochrome-button-states}
-   :solo {:control 61 :states monochrome-button-states}
-   :in {:control 62 :states monochrome-button-states}
-   :out {:control 63 :states monochrome-button-states}
+  {:tap-tempo {:control 3 :kind :monochrome}
+   :metronome {:control 9 :kind :monochrome}
 
-   :play {:control 85 :states monochrome-button-states}
-   :record {:control 86 :states monochrome-button-states}
-   :new {:control 87 :states monochrome-button-states}
-   :duplicate {:control 88 :states monochrome-button-states}
-   :automation {:control 89 :states monochrome-button-states}
-   :fixed-length {:control 90 :states monochrome-button-states}
+   :master {:control 28 :kind :monochrome}
+   :stop   {:control 29 :kind :monochrome}
 
+   :quarter               {:control 36 :kind :color}
+   :quarter-triplet       {:control 37 :kind :color}
+   :eighth                {:control 38 :kind :color}
+   :eighth-triplet        {:control 39 :kind :color}
+   :sixteenth             {:control 40 :kind :color}
+   :sixteenth-triplet     {:control 41 :kind :color}
+   :thirty-second         {:control 42 :kind :color}
+   :thirty-second-triplet {:control 43 :kind :color}
 
+   :left-arrow  {:control 44 :kind :monochrome}
+   :right-arrow {:control 45 :kind :monochrome}
+   :up-arrow    {:control 46 :kind :monochrome}
+   :down-arrow  {:control 47 :kind :monochrome}
+
+   :select      {:control 48 :kind :monochrome}
+   :shift       {:control 49 :kind :monochrome}
+   :note        {:control 50 :kind :monochrome}
+   :session     {:control 51 :kind :monochrome}
+   :add-device  {:control 52 :kind :monochrome}
+   :add-track   {:control 53 :kind :monochrome}
+
+   :octave-down {:control 54 :kind :monochrome}
+   :octave-up   {:control 55 :kind :monochrome}
+   :repeat      {:control 56 :kind :monochrome}
+   :accent      {:control 57 :kind :monochrome}
+   :scales      {:control 58 :kind :monochrome}
+   :user-mode   {:control 59 :kind :monochrome}
+   :mute        {:control 60 :kind :monochrome}
+   :solo        {:control 61 :kind :monochrome}
+   :in          {:control 62 :kind :monochrome}
+   :out         {:control 63 :kind :monochrome}
+
+   :play         {:control 85 :kind :monochrome}
+   :record       {:control 86 :kind :monochrome}
+   :new          {:control 87 :kind :monochrome}
+   :duplicate    {:control 88 :kind :monochrome}
+   :automation   {:control 89 :kind :monochrome}
+   :fixed-length {:control 90 :kind :monochrome}
+
+   :device-mode   {:control 110 :kind :monochrome}
+   :browse-mode   {:control 111 :kind :monochrome}
+   :track-mode    {:control 112 :kind :monochrome}
+   :clip-mode     {:control 113 :kind :monochrome}
+   :volume-mode   {:control 114 :kind :monochrome}
+   :pan-send-mode {:control 115 :kind :monochrome}
+
+   :quantize {:control 116 :kind :monochrome}
+   :double   {:control 117 :kind :monochrome}
+   :delete   {:control 118 :kind :monochrome}
+   :undo     {:control 119 :kind :monochrome}
+   
    })
+
+(defn set-button-state
+  "Set one of the labeled buttons to a particular state, and, if
+  supported, color."
+  ([button state]
+   (set-button-state button state :amber))
+  ([button state color]
+   (let [base-value ((keyword state) monochrome-button-states)
+         color-shift (or (when (= (:kind button) :color)
+                           ((keyword color) color-button-colors))
+                         0)]
+     (midi/midi-control @user-port-out (:control button)
+                        (+ base-value color-shift)))))
 
 (defn set-display-line
   "Sets a line of the text display."
@@ -122,20 +167,19 @@
           y (range 8)]
     (set-pad-color x y (com.evocomputing.colors/create-color :pink #_:black)))
   (doseq [[k button] control-buttons]
-    (midi/midi-control @user-port-out (:control button)
-                       (get-in button [:states :bright-fast-blink #_:off]))))
+    (set-button-state button :bright-fast-blink :green)))
+
 
 (defn connect-to-push
   "Try to establish the connection to the Ableton Push, if that has
   not already been made, initialize the display, and start the UI
   updater thread. Since SysEx messages are required for updating the
   display, assumes that if you are on a Mac, you have installed
-  [osxmidi4j](https://github.com/locurasoft/osxmidi4j) to provide a
-  working implementation. You probably want that anyway so you can
-  live-plug your MIDI interfaces."
+  [mmj](http://www.humatic.de/htools/mmj.htm) to provide a
+  working implementation."
   {:doc/format :markdown}
   [& {:keys [prefix] :or {prefix (when (re-find #"Mac" (System/getProperty "os.name"))
-                                   "CoreMidi - ")}}]
+                                   "Ableton Push - ")}}]
   (swap! user-port-out #(or % (midi/midi-out (str prefix "User Port"))))
   (swap! live-port-out #(or % (midi/midi-out (str prefix "Live Port"))))
   (clear-interface))
