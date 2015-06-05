@@ -3,10 +3,13 @@
   Afterglow."
   {:author "James Elliott"
    :doc/format :markdown}
-  (:require [afterglow.util :as util]
+  (:require [afterglow.show :as show]
+            [afterglow.util :as util]
             [clojure.math.numeric-tower :as math]
+            [environ.core :refer [env]]
             [com.evocomputing.colors :as colors]
-            [overtone.midi :as midi]))
+            [overtone.midi :as midi]
+            [overtone.at-at :as at-at]))
 
 (defonce user-port-out (atom nil))
 (defonce live-port-out (atom nil))
@@ -135,20 +138,42 @@
   supported, color."
   ([button state]
    (set-button-state button state :amber))
-  ([button state color]
+  ([button state color-key]
    (let [base-value ((keyword state) monochrome-button-states)
-         color-shift (or (when (= (:kind button) :color)
-                           ((keyword color) color-button-colors))
+         color-shift (or (when (and (= (:kind button) :color)
+                                    (not= state :off))
+                           ((keyword color-key) color-button-colors))
                          0)]
      (midi/midi-control @user-port-out (:control button)
                         (+ base-value color-shift)))))
+
+(defn set-track-select-state
+  "Set one of the top-row pads to a particular state and color."
+  ([x state]
+   (set-track-select-state x state :amber))
+  ([x state color-key]
+   {:pre [(<= 0 x 7)]}
+   (let [base-value ((keyword state) monochrome-button-states)
+         color-shift (or (when-not (= state :off)
+                           ((keyword color-key) color-button-colors))
+                         0)]
+     (midi/midi-control @user-port-out (+ x 20) (+ base-value color-shift)))))
+
+(defn set-scene-launch-color
+  "Set the color of one of the 8 scene-launch touch pads (right above
+  the 8x8 pad of larger, velocity sensitive, pads) to the closest
+  approximation available for a desired color."
+  [x color]
+  {:pre [(<= 0 x 7)]}
+  (let [control (+ 102 x)]  ;; Calculate controller number
+    (midi/midi-control @user-port-out control (velocity-for-color color))))
 
 (defn set-display-line
   "Sets a line of the text display."
   [line bytes]
   {:pre [(<= 1 line 4)]}
   (let [message (concat [240 71 127 21 (+ line 23) 0 69 0]
-                        (take 68 (concat (seq bytes) (repeat 32)))
+                        (take 68 (concat (map int bytes) (repeat 32)))
                         [247])]
     (midi/midi-sysex @live-port-out message)))
  
@@ -158,16 +183,115 @@
   {:pre [(<= 1 line 4)]}
   (midi/midi-sysex @live-port-out [240 71 127 21 (+ line 27) 0 0 247]))
 
+(defn show-labels
+  "Illuminates all buttons with text labels"
+  ([]
+   (show-labels :bright :amber))
+  ([state]
+   (show-labels state :amber))
+  ([state color]
+   (doseq [[_ button] control-buttons]
+     (set-button-state button state color))))
+
+(declare clear-interface)
+
+(defn welcome-frame
+  "Render a frame of the welcome animation, or if it is done, start
+  the main interface update thread, and terminate the task running the
+  animation."
+  [counter task]
+  (try
+    (cond
+      (< @counter 8)
+      (doseq [y (range 0 (inc @counter))]
+        (let [color (com.evocomputing.colors/create-color
+                     :h 0 :s 0 :l (max 10 (- 50 (/ (* 50 (- @counter y)) 4))))]
+          (set-pad-color 3 y color)
+          (set-pad-color 4 y color)))
+
+      (< @counter 12)
+      (doseq [x (range 0 (- @counter 7))
+              y (range 0 8)]
+        (let [color (com.evocomputing.colors/create-color
+                     :h 340 :s 100 :l (if (= x (- @counter 8)) 75 50))]
+          (set-pad-color (- 3 x) y color)
+          (set-pad-color (+ 4 x) y color)))
+
+      (< @counter 15)
+      (doseq [y (range 0 8)]
+        (let [color (com.evocomputing.colors/create-color
+                     :h (* 13 (- @counter 11)) :s 100 :l 50)]
+          (set-pad-color (- @counter 7) y color)
+          (set-pad-color (- 14 @counter) y color)))
+
+      (= @counter 15)
+      (show-labels :bright :amber)
+      
+      (= @counter 16)
+      (doseq [x (range 0 8)]
+        (set-track-select-state x :bright :amber))
+      
+      (= @counter 17)
+      (doseq [x (range 0 8)]
+        (set-scene-launch-color x (com.evocomputing.colors/create-color :h 45 :s 100 :l 50))
+        (set-track-select-state x :bright :red))
+
+      (< @counter 26)
+      (doseq [x (range 0 8)]
+        (let [color (com.evocomputing.colors/create-color
+                     :h (+ 60 (* 40 (- @counter 18))) :s 100 :l 50)]
+          (set-pad-color x (- 25 @counter) color)))
+      
+      (= @counter 26)
+      (do
+        (show-labels :dim :amber)
+        (doseq [x (range 0 8)]
+          (set-track-select-state x :off)))
+
+      (= @counter 27)
+      (doseq [x (range 0 8)]
+          (set-scene-launch-color x off-color))
+
+      (< @counter 37)
+      (doseq [x (range 0 8)]
+        (set-pad-color x (- 35 @counter) off-color))
+      
+      :else
+      (do
+        (clear-interface)
+        ;; 
+        (at-at/kill @task)))
+    (catch Throwable t
+      (taoensso.timbre/warn t "Animation frame failed")))
+
+  (swap! counter inc))
+
+
+(defn welcome-animation
+  "Provide a fun animation to make it clear the Push is online."
+  []
+  (set-display-line 1 (concat (repeat 24 \space) (seq "Welcome toAfterglow")))
+  (set-display-line 3 (concat (repeat 27 \space)
+                              (seq (str "version" (env  :afterglow-version)))))
+  (let [counter (atom 0)
+        task (atom nil)]
+    (reset! task (at-at/every 30 #(welcome-frame counter task)
+                              show/scheduler))))
+
+(defonce off-color (com.evocomputing.colors/create-color :black))
+
 (defn clear-interface
   "Clears the text display and all illuminated buttons and pads."
   []
   (doseq [line (range 1 5)]
     (clear-display-line line))
-  (doseq [x (range 8)
-          y (range 8)]
-    (set-pad-color x y (com.evocomputing.colors/create-color :pink #_:black)))
-  (doseq [[k button] control-buttons]
-    (set-button-state button :bright-fast-blink :green)))
+  (doseq [x (range 8)]
+    (set-track-select-state x :off)
+    (set-scene-launch-color x off-color)
+    (doseq [y (range 8)]
+      (set-pad-color x y off-color)))
+  (doseq [[_ button] control-buttons]
+    (set-button-state button :off)))
 
 
 (defn connect-to-push
@@ -182,4 +306,5 @@
                                    "Ableton Push - ")}}]
   (swap! user-port-out #(or % (midi/midi-out (str prefix "User Port"))))
   (swap! live-port-out #(or % (midi/midi-out (str prefix "Live Port"))))
-  (clear-interface))
+  (clear-interface)
+  (welcome-animation))

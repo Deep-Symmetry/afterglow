@@ -353,6 +353,8 @@ TODO: listing of options this app accepts once it can run as a standalone app.
 
 * Clojure implementation of Protocol Buffers via [lein-protobuf](https://github.com/flatland/lein-protobuf) and [clojure-protobuf](https://github.com/flatland/clojure-protobuf).
 * The incomplete [Java OLA client](https://github.com/OpenLightingProject/ola/tree/master/java).
+* If I decide to use JNA to work around problems in tne Mac Java MIDI implementation someday, see
+  [clj-native](https://github.com/bagucode/clj-native).
 
 ### Related Work
 

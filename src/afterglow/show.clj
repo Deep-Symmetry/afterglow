@@ -51,8 +51,7 @@
   default-refresh-interval
   (/ 1000 30))
 
-(defonce ^{:doc "Provides thread scheduling for all shows' DMX data genration."
-           :private true}
+(defonce ^{:doc "Provides thread scheduling for all shows' DMX data generation."}
   scheduler
   (at-at/mk-pool))
 
