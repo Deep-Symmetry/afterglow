@@ -3,13 +3,14 @@
   Afterglow."
   {:author "James Elliott"
    :doc/format :markdown}
-  (:require [afterglow.show :as show]
+  (:require [afterglow.controllers :as controllers]
             [afterglow.util :as util]
             [clojure.math.numeric-tower :as math]
             [environ.core :refer [env]]
             [com.evocomputing.colors :as colors]
             [overtone.midi :as midi]
-            [overtone.at-at :as at-at]))
+            [overtone.at-at :as at-at]
+            [taoensso.timbre :refer [warn]]))
 
 (defonce user-port-out (atom nil))
 (defonce live-port-out (atom nil))
@@ -50,6 +51,9 @@
           :else
           (let [hue-section (+ 4 (* 4 (math/floor (* 13 (/ (colors/hue color) 360)))))]
             (+ hue-section brightness-shift)))))
+
+(defonce ^{:doc "The color of buttons that are completely off."}
+  off-color (com.evocomputing.colors/create-color :black))
 
 (defn set-pad-color
   "Set the color of one of the 64 touch pads to the closest
@@ -262,7 +266,7 @@
         ;; 
         (at-at/kill @task)))
     (catch Throwable t
-      (taoensso.timbre/warn t "Animation frame failed")))
+      (warn t "Animation frame failed")))
 
   (swap! counter inc))
 
@@ -276,9 +280,7 @@
   (let [counter (atom 0)
         task (atom nil)]
     (reset! task (at-at/every 30 #(welcome-frame counter task)
-                              show/scheduler))))
-
-(defonce off-color (com.evocomputing.colors/create-color :black))
+                              controllers/pool))))
 
 (defn clear-interface
   "Clears the text display and all illuminated buttons and pads."
