@@ -39,7 +39,7 @@
 
   :target-path "target/%s"
   :uberjar-name "afterglow.jar"
-  :jvm-opts ["-server"]
+;;  :jvm-opts ["-server"]
 
   ;; enable to start the nREPL server when the application launches
   ;; :env {:repl-port 16002}
