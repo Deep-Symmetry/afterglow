@@ -278,8 +278,11 @@
     ;; TODO: Loop over the most recent four active cues, rendering information
     ;;       about them.
 
-    (let [metronome-button (:metronome control-buttons)
+    (let [metronome (:metronome (:show controller))
+          metronome-button (:metronome control-buttons)
+          tap-tempo-button (:tap-tempo control-buttons)
           metronome-mode @(:metronome-mode controller)]
+      ;; Should the first cell display metronome information?
       (if (seq metronome-mode)
         (let [metronome (:metronome (:show controller))
               marker (rhythm/metro-marker metronome)
@@ -295,7 +298,13 @@
           (when (:adjusting-bpm metronome-mode)
             (aset (get (:next-display controller) 2) 16 (byte 1))))
         (swap! (:next-text-buttons controller)
-               assoc metronome-button (button-state metronome-button :dim))))
+               assoc metronome-button (button-state metronome-button :dim)))
+      ;; Regardless, flash the tap tempo button on beats
+      (swap! (:next-text-buttons controller)
+             assoc tap-tempo-button
+             (button-state tap-tempo-button
+                           (if (< (rhythm/metro-beat-phase metronome) 0.15)
+                             :bright :dim))))
     
     (update-text controller)
     (update-text-buttons controller)
@@ -428,6 +437,12 @@
                                              (dissoc % :showing)
                                              (assoc % :showing :true))))
 
+    14 ; Beat encoder
+    (let [delta (sign-velocity (:velocity message))
+          snapshot (rhythm/metro-snapshot (:metronome (:show controller)))]
+      (rhythm/metro-start (:metronome (:show controller)) (+ (:beat snapshot) delta))
+      (rhythm/metro-beat-phase (:metronome (:show controller) (:beat-phase snapshot))))
+    
     15 ; BPM encoder
     (let [delta (/ (sign-velocity (:velocity message)) 10)
           bpm (rhythm/metro-bpm (:metronome (:show controller)))]
