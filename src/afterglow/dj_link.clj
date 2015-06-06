@@ -52,15 +52,19 @@
                                         beat (aget data 92)]
                                     (metro-bpm metronome bpm)
                                     (metro-beat-phase metronome 0)
-                                    ;; TODO had to give up for now on the following line because the mixer
-                                    ;; does not update its measure position based on that of the master player.
-                                    ;; Consider figuring out how to tell what the master player is from the UDP
-                                    ;; traffic, and using that. But this should probably be an option anyway
-                                    ;; because a lot of DJs do not beat grid that carefully, and the light show
-                                    ;; operator will in those cases need to be able to override the down beat,
-                                    ;; which will not be possible if this code is resyncing the bar start on each
-                                    ;; beat from the Pioneer equipment. If/when that mode is figured out and made
-                                    ;; an option, the following line will be invoked INSTEAD of the one above.
+                                    ;; TODO: Had to give up for now on the following line because the mixer
+                                    ;;       does not update its measure position based on that of the master
+                                    ;;       player.
+                                    ;;
+                                    ;;       Consider figuring out how to tell what the master player is from
+                                    ;;       the UDP traffic, and using that. But this should probably be an
+                                    ;;       option anyway because a lot of DJs do not beat grid that carefully,
+                                    ;;       and the light show operator will in those cases need to be able to
+                                    ;;       override the down beat, which will not be possible if this code is
+                                    ;;       resyncing the bar start on each beat from the Pioneer equipment.
+                                    ;;
+                                    ;;       If/when that mode is figured out and made an option, the following
+                                    ;;       line will be invoked INSTEAD of the one above.
                                     #_(metro-bar-phase metronome (/ (dec beat) 4))))))))))
   (sync-stop [this]
     (swap! watcher (fn [w]
