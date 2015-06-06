@@ -4,7 +4,8 @@
   {:author "James Elliott"
    :doc/format :markdown}
   (:require [afterglow.controllers :as controllers]
-            [afterglow.rhythm :refer :all]
+            [afterglow.midi :as amidi]
+            [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
             [afterglow.util :as util]
             [clojure.math.numeric-tower :as math]
@@ -12,7 +13,7 @@
             [com.evocomputing.colors :as colors]
             [overtone.midi :as midi]
             [overtone.at-at :as at-at]
-            [taoensso.timbre :refer [warn]])
+            [taoensso.timbre :refer [info warn]])
   (:import [java.util Arrays]))
 
 ;; TODO: Move globals into a map allocated when binding to a show, so
@@ -62,7 +63,7 @@
   [controller x y color]
   {:pre [(<= 0 x 7) (<= 0 y 7)]}
   (let [note (+ 36 x (* y 8))]  ;; Calculate note from grid coordinates
-    (midi/midi-note-on (:user-port-out controller) note (velocity-for-color color))))
+    (midi/midi-note-on (:port-out controller) note (velocity-for-color color))))
 
 (def monochrome-button-states
   "The control values and modes for a labeled button which does not
@@ -162,7 +163,7 @@
    (let [state (if (number? state)
                  state
                  (button-state button state color-key))]
-     (midi/midi-control (:user-port-out controller) (:control button) state))))
+     (midi/midi-control (:port-out controller) (:control button) state))))
 
 (defn track-select-state
   "Calculate the numeric value that corresponds to a particular
@@ -189,7 +190,7 @@
    (let [state (if (number? state)
                  state
                  (track-select-state x state color-key))]
-     (midi/midi-control (:user-port-out controller) (+ x 20) state))))
+     (midi/midi-control (:port-out controller) (+ x 20) state))))
 
 (defn set-scene-launch-color
   "Set the color of one of the 8 scene-launch touch pads (right above
@@ -198,7 +199,7 @@
   [controller x color]
   {:pre [(<= 0 x 7)]}
   (let [control (+ 102 x)]  ;; Calculate controller number
-    (midi/midi-control (:user-port-out controller) control (velocity-for-color color))))
+    (midi/midi-control (:port-out controller) control (velocity-for-color color))))
 
 (defn set-display-line
   "Sets a line of the text display."
@@ -207,13 +208,13 @@
   (let [message (concat [240 71 127 21 (+ line 24) 0 69 0]
                         (take 68 (concat (map int bytes) (repeat 32)))
                         [247])]
-    (midi/midi-sysex (:live-port-out controller) message)))
+    (midi/midi-sysex (:port-out controller) message)))
  
 (defn clear-display-line
   "Clears a line of the text display."
   [controller line]
   {:pre [(<= 0 line 3)]}
-  (midi/midi-sysex (:live-port-out controller) [240 71 127 21 (+ line 28) 0 0 247]))
+  (midi/midi-sysex (:port-out controller) [240 71 127 21 (+ line 28) 0 0 247]))
 
 (defn- show-labels
   "Illuminates all buttons with text labels, for development assistance."
@@ -270,19 +271,29 @@
   [controller]
   (try
     ;; Assume we are starting out with a blank interface.
-    (for [row (range 4)]
+    (doseq [row (range 4)]
       (Arrays/fill (get (:next-display controller) row) (byte 32)))
     (reset! (:next-text-buttons controller) {})
 
     ;; TODO: Loop over the most recent four active cues, rendering information
     ;;       about them.
 
-    (let [metronome-button (:metronome control-buttons)]
-      (if @(:metronome-mode controller)
-        (let [metronome (:metronome (:show controller))]
+    (let [metronome-button (:metronome control-buttons)
+          metronome-mode @(:metronome-mode controller)]
+      (if (seq metronome-mode)
+        (let [metronome (:metronome (:show controller))
+              marker (rhythm/metro-marker metronome)
+              bpm (format "%.1f" (float (rhythm/metro-bpm metronome)))
+              chars (+ (count marker) (count bpm))
+              padding (apply str (take (- 17 chars) (repeat " ")))]
           (swap! (:next-text-buttons controller)
                  assoc metronome-button (button-state metronome-button :bright))
-          (write-display-cell controller 3 0 (metro-marker metronome)))
+          (write-display-cell controller 3 0 (str marker padding bpm))
+          (write-display-cell controller 2 0 "Beat        BPM  ")
+          (when (:adjusting-beat metronome-mode)
+            (aset (get (:next-display controller) 2) (dec (count marker)) (byte 1)))
+          (when (:adjusting-bpm metronome-mode)
+            (aset (get (:next-display controller) 2) 16 (byte 1))))
         (swap! (:next-text-buttons controller)
                assoc metronome-button (button-state metronome-button :dim))))
     
@@ -358,6 +369,7 @@
       :else
       (do
         (clear-interface controller)
+        (amidi/add-global-handler! @(:midi-handler controller))
         (reset! (:task controller) (at-at/every (:refresh-interval controller)
                                                 #(update-interface controller)
                                                 controllers/pool))
@@ -399,31 +411,110 @@
   indexed by the controller binding ID."}
   active-bindings (atom {}))
 
+(defn sign-velocity
+  "Convert a midi velocity to its signed equivalent, to translate
+  encoder rotations, which are twos-complement seven bit numbers."
+  [val]
+   (if (>= val 64)
+     (- val 128)
+     val))
+
+(defn control-change-received
+  [controller message]
+  (case (:note message)
+    9 ; Metronome button
+    (when (> (:velocity message) 0)
+      (swap! (:metronome-mode controller) #(if (:showing %)
+                                             (dissoc % :showing)
+                                             (assoc % :showing :true))))
+
+    15 ; BPM encoder
+    (let [delta (/ (sign-velocity (:velocity message)) 10)
+          bpm (rhythm/metro-bpm (:metronome (:show controller)))]
+      (rhythm/metro-bpm (:metronome (:show controller)) (+ bpm delta)))
+
+    ;; Something we don't care about
+    nil))
+
+(defn note-on-received
+  [controller message]
+  (case (:note message)
+    9 ; BPM encoder
+    (swap! (:metronome-mode controller) #(assoc % :adjusting-bpm :true))
+
+    10 ; Beat encoder
+    (swap! (:metronome-mode controller) #(assoc % :adjusting-beat :true))
+
+    ;; Something we don't care about
+    nil))
+
+(defn note-off-received
+  [controller message]
+  (case (:note message)
+    9 ; BPM encoder
+    (swap! (:metronome-mode controller) #(dissoc % :adjusting-bpm))
+
+    10 ; Beat encoder
+    (swap! (:metronome-mode controller) #(dissoc % :adjusting-beat))
+
+    ;; Something we don't care about
+    nil))
+
+(defn midi-received
+  "Called whenever a MIDI message is received while the controller is
+  active; checks if it came in on the right port, and if so, decides
+  what should be done."
+  [controller message]
+  (when (= (:device message) (:port-in controller))
+    ;(info message)
+    (when (= (:status message) :control-change)
+      (control-change-received controller message))
+    (when (= (:command message) :note-on)
+      (note-on-received controller message))
+        (when (= (:command message) :note-off)
+      (note-off-received controller message))))
+
 (defn bind-to-show
-  "Establish a connection to the Ableton Push, for managing the
-  given show. Initialize the display, and start the UI
-  updater thread. Since SysEx messages are required for updating the
-  display, assumes that if you are on a Mac, you have installed
+  "Establish a connection to the Ableton Push, for managing the given
+  show.
+
+  Initializes the display, and starts the UI updater thread. Since
+  SysEx messages are required for updating the display, if you are on
+  a Mac, you must install
   [mmj](http://www.humatic.de/htools/mmj.htm) to provide a
-  working implementation."
+  working implementation.
+
+  If you have more than one Ableton Push connected, or have renamed
+  how it appears in your list of MIDI devices, you need to supply a
+  value after `:device-name` which identifies the ports to be used to
+  communicate with the Push you want this function to use. The values
+  returned by [[afterglow.midi/open-inputs-if-needed!]]
+  and [[afterglow.midi/open-outputs-if-needed!]] will be searched, and
+  the first port whose name or description contains the supplied
+  string will be used.
+
+  If you want the user interface to be refreshed at a different rate
+  than the default of thirty times per second, pass your desired
+  number of milliseconds after `:refresh-interval`."
   {:doc/format :markdown}
-  [show & {:keys [prefix refresh-interval]
-           :or {prefix (when (re-find #"Mac" (System/getProperty "os.name"))
-                         "Ableton Push - ")
+  [show & {:keys [device-name refresh-interval]
+           :or {device-name "User Port"
                 refresh-interval show/default-refresh-interval}}]
   (let [controller
         {:id (swap! controller-counter inc)
          :show show
          :refresh-interval refresh-interval
-         :user-port-out (midi/midi-out (str prefix "User Port"))
-         :live-port-out (midi/midi-out (str prefix "Live Port"))
+         :port-in (midi/midi-find-device (amidi/open-inputs-if-needed!) device-name)
+         :port-out (midi/midi-find-device (amidi/open-outputs-if-needed!) device-name)
          :task (atom nil)
          :last-display (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
          :next-display (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
          :last-text-buttons (atom {})
          :next-text-buttons (atom {})
-         :metronome-mode (atom true)
+         :metronome-mode (atom {:showing true})
+         :midi-handler (atom nil)
          }]
+    (reset! (:midi-handler controller) (partial midi-received controller))
     (clear-interface controller)
     (welcome-animation controller)
     (swap! active-bindings assoc (:id controller) controller)
@@ -437,7 +528,8 @@
                               (when task (at-at/kill task))
                               nil))
   (clear-interface controller)
-  ;; TODO: Remove any MIDI listeners which have been set up.
+  (amidi/remove-global-handler! @(:midi-handler controller))
+  ;; TODO: Clear out any interface stacks, MIDI listeners, etc.
 
   (swap! active-bindings dissoc (:id controller)))
 

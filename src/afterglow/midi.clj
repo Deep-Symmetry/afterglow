@@ -3,7 +3,8 @@
   (:require [afterglow.rhythm :refer :all]
             [amalloy.ring-buffer :refer [ring-buffer]]
             [overtone.at-at :refer [now]]
-            [overtone.midi :as midi])
+            [overtone.midi :as midi]
+            [taoensso.timbre :refer [error]])
   (:import [java.util.regex Pattern]))
 
 ;; How many pulses should we average?
@@ -11,11 +12,26 @@
 
 (defonce ^:private midi-inputs (atom []))
 
+(defonce ^:private midi-outputs (atom []))
+
 (defonce ^:private synced-metronomes (atom {}))
 
 (defonce ^:private control-mappings (atom {}))
 
 (defonce ^:private global-handlers (atom #{}))
+
+(defn add-global-handler!
+  "Add a function to be called whenever any MIDI message is received.
+  The function will be called with the message, and must return
+  quickly, so as to not block delivery to other recipients."
+  [handler]
+  (swap! global-handlers conj handler))
+
+(defn remove-global-handler!
+  "Remove a function that was being called whenever any MIDI message is
+  received."
+  [handler]
+  (swap! global-handlers disj handler))
 
 (defn- clock-message-handler
   "Invoked whenever any midi input device being managed receives a
@@ -45,8 +61,12 @@
     (try
       (handler msg)
       (catch Exception e
-        (taoensso.timbre/error e "Problem runing global MIDI event handler"))))
+        (error e "Problem runing global MIDI event handler"))))
 
+  ;; Then call any registered port listeners for the port on which
+  ;; it arrived
+
+  ;; Finally, call specific message handlers
   (case (:status msg)
     (:timing-clock :start :stop) (clock-message-handler msg)
     :control-change (cc-message-handler msg)
@@ -57,16 +77,65 @@
   our event distribution handler."
   [device]
   (let [opened (midi/midi-in device)]
-    (taoensso.timbre/info "Opened MIDI device:" device)
+    (taoensso.timbre/info "Opened MIDI input:" device)
     (midi/midi-handle-events opened incoming-message-handler)
     opened))
 
-(defn open-inputs-if-needed!
-  "Make sure the MIDI input ports are open and ready to distribute events."
+(defn- connect-midi-out
+  "Open a MIDI output device."
+  [device]
+  (let [opened (midi/midi-out device)]
+    (taoensso.timbre/info "Opened MIDI output:" device)
+    opened))
+
+(defn mac?
+  "Return true if we seem to be running on a Mac."
   []
-  (let [result (swap! midi-inputs #(if (empty? %)
-                                     (map connect-midi-in (midi/midi-sources))
+  (re-find #"Mac" (System/getProperty "os.name")))
+
+(defn mmj-device?
+  "Checks whether a MIDI device was returned by the Humatic mmj
+  MIDI extension."
+  [device]
+  (re-find #"humatic" (str (:device device))))
+
+(defn mmj-installed?
+  "Return true if the Humatic mmj Midi extension is present."
+  []
+  (some mmj-device? (overtone.midi/midi-devices)))
+
+(defn create-midi-port-filter
+  "Return a filter which selects midi inputs and outputs we actually
+  want to use. If this is a Mac, and the Humatic MIDI extension has
+  been installed, create a filter which will accept only its ports.
+  Otherwise, return a filter which accepts all ports."
+  []
+  (if (and (mac?) (mmj-installed?))
+    mmj-device?
+    identity))
+
+;; TODO: This and open-outputs will have to change once hot-plugging works.
+(defn open-inputs-if-needed!
+  "Make sure the MIDI input ports are open and ready to distribute events.
+  Returns the opened inputs."
+  []
+  (let [port-filter (create-midi-port-filter)
+        result (swap! midi-inputs #(if (empty? %)
+                                     (map connect-midi-in
+                                          (filter port-filter (midi/midi-sources)))
                                      %))]
+    (doseq [_ result])  ;; Make it actually happen now
+    result))
+
+(defn open-outputs-if-needed!
+  "Make sure the MIDI output ports are open and ready to receive events.
+  Returns the opened outputs."
+  []
+  (let [port-filter (create-midi-port-filter)
+        result (swap! midi-outputs #(if (empty? %)
+                                      (map connect-midi-out
+                                           (filter port-filter (midi/midi-sinks)))
+                                      %))]
     (doseq [_ result])  ;; Make it actually happen now
     result))
 
@@ -174,9 +243,9 @@
          clock-finder (fn [msg]
                         (when (= (:status msg) :timing-clock)
                           (swap! clock-sources conj (:device msg))))]
-     (swap! global-handlers conj clock-finder)
+     (add-global-handler! clock-finder)
      (Thread/sleep 300)
-     (swap! global-handlers disj clock-finder)
+     (remove-global-handler! clock-finder)
      (let [result (filter-devices @clock-sources name-filter)]
        (case (count result)
          0 (throw (IllegalArgumentException. (str "No MIDI clock sources " (describe-name-filter name-filter)

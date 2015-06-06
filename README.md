@@ -300,6 +300,9 @@ TODO: listing of options this app accepts once it can run as a standalone app.
 - [ ] Provide a mechanism for creating and controlling/monitoring
   effects via OSC messages. Probably essentially a special-purpose OSC
   REPL.
+- [ ] Add web page for viewing/adjusting show variables; associate metadata
+      with the variables so the page can provide appropriate editing tools
+      and validation. Values live-update when controllers change them.
 - [ ] Add show status query, reports statistics as well as list of
   current effects and priorities, perhaps when they were added, the
   list of targets each is currently assigning, other stuff? Could turn
