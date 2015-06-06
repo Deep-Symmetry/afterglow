@@ -351,6 +351,7 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   - [ ] Do a pass through all files with *warn-on-reflection* set to true, see what hinting can help.
 - [ ] Eventually create a leiningen task that can build a standalone jar with Afterglow and a custom show definition file and its supporting resources, so developers can easily deploy and share shows with non-Clojurists.
 - [ ] Once I release the first version, answer this StackOverflow [question](http://stackoverflow.com/questions/9582192/dmx-software-to-control-lights-with-programmable-interface).
+- [ ] Also post a followup to this [article](http://radar.oreilly.com/2015/05/creative-computing-with-clojure.html) and reach out to some of the artists themselves.
 
 ### References
 
