@@ -428,9 +428,15 @@
      (- val 128)
      val))
 
-(defn control-change-received
+(defn- control-change-received
   [controller message]
   (case (:note message)
+    3 ; Tap tempo button
+    (when (> (:velocity message) 0)
+      ;; TODO: Do other things when synced.
+      ((:tap-tempo-handler controller))
+      (swap! (:metronome-mode controller) #(assoc % :showing true)))
+
     9 ; Metronome button
     (when (> (:velocity message) 0)
       (swap! (:metronome-mode controller) #(if (:showing %)
@@ -451,7 +457,7 @@
     ;; Something we don't care about
     nil))
 
-(defn note-on-received
+(defn- note-on-received
   [controller message]
   (case (:note message)
     9 ; BPM encoder
@@ -463,7 +469,7 @@
     ;; Something we don't care about
     nil))
 
-(defn note-off-received
+(defn- note-off-received
   [controller message]
   (case (:note message)
     9 ; BPM encoder
@@ -475,7 +481,7 @@
     ;; Something we don't care about
     nil))
 
-(defn midi-received
+(defn- midi-received
   "Called whenever a MIDI message is received while the controller is
   active; checks if it came in on the right port, and if so, decides
   what should be done."
@@ -528,6 +534,7 @@
          :next-text-buttons (atom {})
          :metronome-mode (atom {:showing true})
          :midi-handler (atom nil)
+         :tap-tempo-handler (amidi/create-tempo-tap-handler (:metronome show))
          }]
     (reset! (:midi-handler controller) (partial midi-received controller))
     (clear-interface controller)

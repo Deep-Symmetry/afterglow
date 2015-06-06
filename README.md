@@ -317,7 +317,7 @@ TODO: listing of options this app accepts once it can run as a standalone app.
     which beat pulses to pay attention to?
 - [ ] See if I can detect which Pro DJ Link device is the current
   master, and if so, add an option for down beat tracking using that.
-- [ ] Add tap tempo support for really low-end sync.
+- [x] Add tap tempo support for really low-end sync.
   
 ### Ideas
 

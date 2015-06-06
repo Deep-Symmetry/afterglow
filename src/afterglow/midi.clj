@@ -7,8 +7,18 @@
             [taoensso.timbre :refer [error]])
   (:import [java.util.regex Pattern]))
 
-;; How many pulses should we average?
-(def ^:private max-clock-intervals 12)
+(def ^:private max-clock-intervals
+  "How many MIDI clock pulses should be kept around for averaging?"
+  12)
+
+(def ^:private max-tempo-taps
+  "How many tempo taps should be kept around for averaging?"
+  4)
+
+(def ^:private max-tempo-tap-interval
+  "How long is too long for a tap to be considered part of
+  establishing a tempo?"
+  2000)
 
 (defonce ^:private midi-inputs (atom []))
 
@@ -155,6 +165,38 @@
                           (doseq [_ (map close-midi-device %)])
                           [])
                         %)))
+
+(defn- tap-handler
+  "Called when a tap tempo event has occurred for a tap tempo handler
+  created for a metronome. Set the beat phase of that metronome to
+  zero, and if this occurred close enough in time to the last tap,
+  update the ring buffer in which we are collecting timestamps, and if
+  we have enough, calculate a BPM value and update the associated
+  metronome. If there has been too much of a lag, reset the ring
+  buffer."
+  [buffer metronome]
+  (let [timestamp (now)]
+    (metro-beat-phase metronome 0)      ; Regardless, mark the beat
+    (if (and (some? (last @buffer))
+             (< (- timestamp (last @buffer)) max-tempo-tap-interval))
+      ;; We are considering this part of a series of taps.
+      (do
+        (swap! buffer conj timestamp)
+        (when (> (count @buffer) 2)
+          (let [passed (- timestamp (peek @buffer))
+                intervals (dec (count @buffer))
+                mean (/ passed intervals)]
+            (metro-bpm metronome (double (/ 60000 mean))))))
+      ;; This tap was isolated, but may start a new series.
+      (reset! buffer (conj (ring-buffer max-tempo-tap-interval) timestamp))))
+  nil)
+
+(defn create-tempo-tap-handler
+  "Returns a function which implements a simple tempo-tap algorithm on
+  the supplied metronome."
+  [metronome]
+  (let [buffer (atom (ring-buffer max-tempo-tap-interval))]
+    (fn [] (tap-handler buffer metronome))))
 
 ;; A simple protocol for our clock sync object, allowing it to be started and stopped,
 ;; and the status checked.
