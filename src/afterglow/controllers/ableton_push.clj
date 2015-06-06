@@ -135,9 +135,26 @@
    :quantize {:control 116 :kind :monochrome}
    :double   {:control 117 :kind :monochrome}
    :delete   {:control 118 :kind :monochrome}
-   :undo     {:control 119 :kind :monochrome}
-   
-   })
+   :undo     {:control 119 :kind :monochrome}})
+
+(def special-symbols
+  "The byte values which draw special-purpose characters on the Push
+  display."
+  {:up-arrow (byte 0)
+   :down-arrow (byte 1)
+   :pancake (byte 2)
+   :fader-left (byte 3)
+   :fader-right (byte 4)
+   :fader-center (byte 5)
+   :fader-empty (byte 6)
+   :folder (byte 7)
+   :split-vertical-line (byte 8)
+   :degree (byte 9)
+   :ellipsis (byte 28)
+   :solid-block (byte 29)
+   :right-arrow (byte 30)
+   :left-arrow (byte 31)
+   :selected-triangle (byte 127)})
 
 (defn button-state
   "Calculate the numeric value that corresponds to a particular
@@ -265,6 +282,41 @@
     (doseq [[i val] (map-indexed vector bytes)]
       (aset (get (:next-display controller) row) (+ (* cell 17) i) (util/ubyte val)))))
 
+(defn- update-metronome-section
+  "Updates the sections of the interface related to metronome
+  control."
+  [controller]
+  (let [metronome (:metronome (:show controller))
+        metronome-button (:metronome control-buttons)
+        tap-tempo-button (:tap-tempo control-buttons)
+        metronome-mode @(:metronome-mode controller)]
+    ;; Should the first cell display metronome information?
+    (if (seq metronome-mode)
+      (let [metronome (:metronome (:show controller))
+            marker (rhythm/metro-marker metronome)
+            bpm (format "%.1f" (float (rhythm/metro-bpm metronome)))
+            chars (+ (count marker) (count bpm))
+            padding (apply str (take (- 17 chars) (repeat " ")))]
+        (swap! (:next-text-buttons controller)
+               assoc metronome-button (button-state metronome-button :bright))
+        (write-display-cell controller 1 0 (str marker padding bpm))
+        (write-display-cell controller 0 0 "Beat        BPM  ")
+        (when (:adjusting-beat metronome-mode)
+          (let [arrow-pos (if @(:shift-mode controller)
+                            (dec (.indexOf marker "." (inc (.indexOf marker "."))))
+                            (dec (count marker)))]
+            (aset (get (:next-display controller) 2) arrow-pos (:up-arrow special-symbols))))
+        (when (:adjusting-bpm metronome-mode)
+          (aset (get (:next-display controller) 2) 16 (:up-arrow special-symbols))))
+      (swap! (:next-text-buttons controller)
+             assoc metronome-button (button-state metronome-button :dim)))
+    ;; Regardless, flash the tap tempo button on beats
+    (swap! (:next-text-buttons controller)
+           assoc tap-tempo-button
+           (button-state tap-tempo-button
+                         (if (< (rhythm/metro-beat-phase metronome) 0.15)
+                           :bright :dim)))))
+
 (defn update-interface
   "Determine the desired current state of the interface, and send any
   changes needed to get it to that state."
@@ -278,33 +330,13 @@
     ;; TODO: Loop over the most recent four active cues, rendering information
     ;;       about them.
 
-    (let [metronome (:metronome (:show controller))
-          metronome-button (:metronome control-buttons)
-          tap-tempo-button (:tap-tempo control-buttons)
-          metronome-mode @(:metronome-mode controller)]
-      ;; Should the first cell display metronome information?
-      (if (seq metronome-mode)
-        (let [metronome (:metronome (:show controller))
-              marker (rhythm/metro-marker metronome)
-              bpm (format "%.1f" (float (rhythm/metro-bpm metronome)))
-              chars (+ (count marker) (count bpm))
-              padding (apply str (take (- 17 chars) (repeat " ")))]
-          (swap! (:next-text-buttons controller)
-                 assoc metronome-button (button-state metronome-button :bright))
-          (write-display-cell controller 3 0 (str marker padding bpm))
-          (write-display-cell controller 2 0 "Beat        BPM  ")
-          (when (:adjusting-beat metronome-mode)
-            (aset (get (:next-display controller) 2) (dec (count marker)) (byte 1)))
-          (when (:adjusting-bpm metronome-mode)
-            (aset (get (:next-display controller) 2) 16 (byte 1))))
-        (swap! (:next-text-buttons controller)
-               assoc metronome-button (button-state metronome-button :dim)))
-      ;; Regardless, flash the tap tempo button on beats
-      (swap! (:next-text-buttons controller)
-             assoc tap-tempo-button
-             (button-state tap-tempo-button
-                           (if (< (rhythm/metro-beat-phase metronome) 0.15)
-                             :bright :dim))))
+    (update-metronome-section controller)
+
+    ;; Reflect the shift button state
+    (swap! (:next-text-buttons controller)
+           assoc (:shift control-buttons)
+           (button-state (:shift control-buttons)
+                         (if @(:shift-mode controller) :bright :dim)))
     
     (update-text controller)
     (update-text-buttons controller)
@@ -446,13 +478,21 @@
     14 ; Beat encoder
     (let [delta (sign-velocity (:velocity message))
           snapshot (rhythm/metro-snapshot (:metronome (:show controller)))]
-      (rhythm/metro-start (:metronome (:show controller)) (+ (:beat snapshot) delta))
-      (rhythm/metro-beat-phase (:metronome (:show controller) (:beat-phase snapshot))))
+      (if @(:shift-mode controller)
+        ;; User is adjusting the current bar
+        (rhythm/metro-bar-start (:metronome (:show controller)) (+ (:bar snapshot) delta))
+        ;; User is adjusting the current beat; keep the phase unchanged
+        (do
+          (rhythm/metro-start (:metronome (:show controller)) (+ (:beat snapshot) delta))
+          (rhythm/metro-beat-phase (:metronome (:show controller) (:beat-phase snapshot))))))
     
     15 ; BPM encoder
     (let [delta (/ (sign-velocity (:velocity message)) 10)
           bpm (rhythm/metro-bpm (:metronome (:show controller)))]
       (rhythm/metro-bpm (:metronome (:show controller)) (+ bpm delta)))
+
+    49 ; Shift button
+    (swap! (:shift-mode controller) (fn [_] (> (:velocity message) 0)))
 
     ;; Something we don't care about
     nil))
@@ -533,6 +573,7 @@
          :last-text-buttons (atom {})
          :next-text-buttons (atom {})
          :metronome-mode (atom {:showing true})
+         :shift-mode (atom false)
          :midi-handler (atom nil)
          :tap-tempo-handler (amidi/create-tempo-tap-handler (:metronome show))
          }]
