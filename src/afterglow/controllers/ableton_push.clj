@@ -16,8 +16,66 @@
             [taoensso.timbre :refer [info warn]])
   (:import [java.util Arrays]))
 
-;; TODO: Move globals into a map allocated when binding to a show, so
-;;       multiple controllers can be active at once.
+(defonce
+  ^{:private true
+    :doc "Protect protocols against namespace reloads"}
+  _PROTOCOLS_
+  (do
+    (defprotocol IOverlay
+  "An activity which takes over part of the user interface
+  while it is active."
+  (captured-controls [this]
+    "The MIDI control-change events that will be consumed by this
+  overlay while it is active, a set of integers.")
+  (captured-notes [this]
+    "The MIDI note events that will be consumed by this overlay while
+  it is active, a set of integers.")
+  (adjust-interface [this controller]
+    "Set values for the next frame of the controller interface; return
+  a falsey value if the overlay is finished and should be removed.")
+  (handle-control-change [this controller message]
+    "Called when a MIDI control-change event matching the
+  captured-controls lists has been received. Return a truthy value if
+  the overlay has consumed the event, so it should not be processed
+  further. If the special value :done is returned, it further
+  indicates the overlay is finished and should be removed.")
+  (handle-note-on [this controller message]
+    "Called when a MIDI note-on event matching the captured-notes
+  lists has been received. Return a truthy value if the overlay has
+  consumed the event, so it should not be processed further. If the
+  special value :done is returned, it further indicates the overlay is
+  finished and should be removed.")
+  (handle-note-off [this controller message]
+    "Called when a MIDI note-off event matching the captured-notes
+  lists has been received. Return a truthy value if the overlay has
+  consumed the event, so it should not be processed further. If the
+  special value :done is returned, it further indicates the overlay is
+  finished and should be removed."))))
+
+(defn add-overlay
+  "Add a temporary overlay to the interface."
+  [controller overlay]
+  (let [id (swap! (:next-overlay controller) inc)]
+    (swap! (:overlays controller) assoc id overlay)))
+
+(defn add-pad-held-feedback-overlay
+  "Builds a simple overlay which just adds something to the user
+  interface until a particular pad is released, and adds it to the
+  controller. The overlay will end when a control-change message with
+  value 0 is sent to the specified control number. Other than that,
+  all it does is call the supplied function every time the interface
+  is being updated."
+  [controller control-num f]
+  (add-overlay controller
+               (reify IOverlay
+                 (captured-controls [this] #{control-num})
+                 (captured-notes [this] #{})
+                 (adjust-interface [this controller] (f))
+                 (handle-control-change [this controller message]
+                   (when (= (:velocity message) 0)
+                     :done))
+                 (handle-note-off [this controller message])
+                 (handle-note-on [this controller message]))))
 
 (defn velocity-for-color
   "Given a target color, calculate the MIDI note velocity which will
@@ -182,35 +240,34 @@
                  (button-state button state color-key))]
      (midi/midi-control (:port-out controller) (:control button) state))))
 
-(defn track-select-state
+(defn top-pad-state
   "Calculate the numeric value that corresponds to a particular
   named state for the specified top-row pad, and (if supplied),
   named color."
-  ([x state]
-   (track-select-state x state :amber))
-  ([x state color-key]
-   {:pre [(<= 0 x 7)]}
+  ([state]
+   (top-pad-state state :amber))
+  ([state color-key]
    (let [base-value ((keyword state) monochrome-button-states)
          color-shift (or (when-not (= state :off)
                            ((keyword color-key) color-button-colors))
                          0)]
      (+ base-value color-shift))))
 
-(defn set-track-select-state
+(defn set-top-pad-state
   "Set one of the top-row pads to a particular state and color.
   If state is already a number, it is used as-is, otherwise it is
-  calculated using track-select-state."
+  calculated using top-pad-state."
   ([controller x state]
-   (set-track-select-state controller x state :amber))
+   (set-top-pad-state controller x state :amber))
   ([controller x state color-key]
    {:pre [(<= 0 x 7)]}
    (let [state (if (number? state)
                  state
-                 (track-select-state x state color-key))]
+                 (top-pad-state state color-key))]
      (midi/midi-control (:port-out controller) (+ x 20) state))))
 
-(defn set-scene-launch-color
-  "Set the color of one of the 8 scene-launch touch pads (right above
+(defn set-second-pad-color
+  "Set the color of one of the 8 second-row touch pads (right above
   the 8x8 pad of larger, velocity sensitive, pads) to the closest
   approximation available for a desired color."
   [controller x color]
@@ -255,6 +312,18 @@
       (System/arraycopy (get (:next-display controller) row) 0
                         (get (:last-display controller) row) 0 68))))
 
+(defn update-top-pads
+  "Sees if any of the top row of pads have changed state since
+  the interface was updated, and if so, sends the necessary MIDI
+  control values to update them on the Push."
+  [controller]
+  (doseq [x (range 8)]
+    (let [next-state (aget (:next-top-pads controller) x)]
+      (when (not= next-state
+                  (aget (:last-top-pads controller) x))
+        (set-top-pad-state controller x next-state)
+        (aset (:last-top-pads controller) x next-state)))))
+
 (defn update-text-buttons
   "Sees if any labeled buttons have changed state since the last time
   the interface was updated, and if so, sends the necessary MIDI
@@ -282,6 +351,64 @@
     (doseq [[i val] (map-indexed vector bytes)]
       (aset (get (:next-display controller) row) (+ (* cell 17) i) (util/ubyte val)))))
 
+(defn- interpret-tempo-tap
+  "React appropriately to a tempo tap, based on the sync mode of the
+  show metronome."
+  [controller]
+  ;; TODO: Do other things when synced.
+  ((:tap-tempo-handler controller)))
+
+(defn- enter-metronome-showing
+  "Activate the persistent metronome display, with sync and reset pads
+  illuminated."
+  [controller]
+  (swap! (:metronome-mode controller) assoc :showing true)
+  (add-overlay controller
+               (reify IOverlay
+                 (captured-controls [this] #{3 9 20 21})
+                 (captured-notes [this] #{})
+                 (adjust-interface [this controller]
+                   ;; Make the metronome button bright, since its information is active
+                   (swap! (:next-text-buttons controller)
+                          assoc (:metronome control-buttons)
+                          (button-state (:metronome control-buttons) :bright))
+
+                   ;; Add the labels for reset and sync, and light the pads
+                   (write-display-cell controller 3 0 "Reset    Manual")
+                   (aset (:next-top-pads controller) 0 (top-pad-state :dim :red))
+                   (aset (:next-top-pads controller) 1 (top-pad-state :dim :green)))
+                 (handle-control-change [this controller message]
+                   (case (:note message)
+                     3 ; Tap tempo button
+                     (when (> (:velocity message) 0)
+                       (interpret-tempo-tap controller)
+                       true)
+                     
+                     9 ; Metronome button
+                     (when (> (:velocity message) 0)
+                       (swap! (:metronome-mode controller) dissoc :showing)
+                       ;; Exit the overlay
+                       :done)
+
+                     20 ; Reset pad
+                     (when (> (:velocity message) 0)
+                       (rhythm/metro-phrase-start (:metronome (:show controller)) 1)
+                       (add-pad-held-feedback-overlay controller 20
+                                                      #(aset (:next-top-pads controller)
+                                                             0 (top-pad-state :bright :red)))
+                       true)
+                     21 ; Sync pad
+                     (when (> (:velocity message) 0)
+                       ;; TODO: Actually implement a new overlay
+                       (add-pad-held-feedback-overlay controller 21
+                                                      #(aset (:next-top-pads controller)
+                                                             1 (top-pad-state :bright :green)))
+                       true)))
+                 (handle-note-on [this controller message]
+                   false)
+                 (handle-note-off [this controller message]
+                   false))))
+
 (defn- update-metronome-section
   "Updates the sections of the interface related to metronome
   control."
@@ -292,22 +419,28 @@
         metronome-mode @(:metronome-mode controller)]
     ;; Should the first cell display metronome information?
     (if (seq metronome-mode)
+      ;; Draw the beat and BPM information
       (let [metronome (:metronome (:show controller))
             marker (rhythm/metro-marker metronome)
             bpm (format "%.1f" (float (rhythm/metro-bpm metronome)))
             chars (+ (count marker) (count bpm))
             padding (apply str (take (- 17 chars) (repeat " ")))]
-        (swap! (:next-text-buttons controller)
-               assoc metronome-button (button-state metronome-button :bright))
         (write-display-cell controller 1 0 (str marker padding bpm))
         (write-display-cell controller 0 0 "Beat        BPM  ")
+
+        ;; Draw the beat-adjustment arrow if that encoder is being held
         (when (:adjusting-beat metronome-mode)
           (let [arrow-pos (if @(:shift-mode controller)
                             (dec (.indexOf marker "." (inc (.indexOf marker "."))))
                             (dec (count marker)))]
             (aset (get (:next-display controller) 2) arrow-pos (:up-arrow special-symbols))))
+
+        ;; Draw the BPM adjustment arrow if that encoder is being held
+        ;; (and the BPM is not externally synced)
         (when (:adjusting-bpm metronome-mode)
           (aset (get (:next-display controller) 2) 16 (:up-arrow special-symbols))))
+
+      ;; The metronome section is not active, so make its button dim
       (swap! (:next-text-buttons controller)
              assoc metronome-button (button-state metronome-button :dim)))
     ;; Regardless, flash the tap tempo button on beats
@@ -326,6 +459,7 @@
     (doseq [row (range 4)]
       (Arrays/fill (get (:next-display controller) row) (byte 32)))
     (reset! (:next-text-buttons controller) {})
+    (Arrays/fill (:next-top-pads controller) 0)
 
     ;; TODO: Loop over the most recent four active cues, rendering information
     ;;       about them.
@@ -338,8 +472,16 @@
            (button-state (:shift control-buttons)
                          (if @(:shift-mode controller) :bright :dim)))
     
+    ;; Add any contributions from interface overlays, removing them
+    ;; if they report being finished.
+    (doseq [[k overlay] (reverse @(:overlays controller))]
+      (when-not (adjust-interface overlay controller)
+        (swap! (:overlays controller) dissoc k)))
+
     (update-text controller)
+    (update-top-pads controller)
     (update-text-buttons controller)
+
     (catch Throwable t
       (warn t "Problem updating Ableton Push Interface"))))
 
@@ -379,13 +521,13 @@
       
       (= @counter 16)
       (doseq [x (range 0 8)]
-        (set-track-select-state controller x :bright :amber))
+        (set-top-pad-state controller x :bright :amber))
       
       (= @counter 17)
       (doseq [x (range 0 8)]
-        (set-scene-launch-color controller x
+        (set-second-pad-color controller x
                                 (com.evocomputing.colors/create-color :h 45 :s 100 :l 50))
-        (set-track-select-state controller x :bright :red))
+        (set-top-pad-state controller x :bright :red))
 
       (< @counter 26)
       (doseq [x (range 0 8)]
@@ -397,11 +539,11 @@
       (do
         (show-labels controller :dim :amber)
         (doseq [x (range 0 8)]
-          (set-track-select-state controller x :off)))
+          (set-top-pad-state controller x :off)))
 
       (= @counter 27)
       (doseq [x (range 0 8)]
-          (set-scene-launch-color controller x off-color))
+          (set-second-pad-color controller x off-color))
 
       (< @counter 36)
       (doseq [x (range 0 8)]
@@ -411,6 +553,7 @@
       (do
         (clear-interface controller)
         (amidi/add-global-handler! @(:midi-handler controller))
+        (enter-metronome-showing controller)
         (reset! (:task controller) (at-at/every (:refresh-interval controller)
                                                 #(update-interface controller)
                                                 controllers/pool))
@@ -437,8 +580,8 @@
   (doseq [line (range 4)]
     (clear-display-line controller line))
   (doseq [x (range 8)]
-    (set-track-select-state controller x :off)
-    (set-scene-launch-color controller x off-color)
+    (set-top-pad-state controller x :off)
+    (set-second-pad-color controller x off-color)
     (doseq [y (range 8)]
       (set-pad-color controller x y off-color)))
   (doseq [[_ button] control-buttons]
@@ -460,20 +603,49 @@
      (- val 128)
      val))
 
+(defn- overlay-handled?
+  "See if there is an interface overlay active which wants to consume
+  this message; if so, send it, and see if the overlay consumes it.
+  Returns truthy if an overlay consumed the message, and it should
+  not be given to anyone else."
+  [controller message]
+  (case (:command message)
+    (:note-on :note-off)
+    (some (fn [[k overlay]]
+            (when (contains? (captured-notes overlay) (:note message))
+              (let [result (if (= :note-on (:command message))
+                             (handle-note-on overlay controller message)
+                             (handle-note-off overlay controller message))]
+                (when (= result :done)
+                  (swap! (:overlays controller) dissoc k))
+                result)))
+          (seq @(:overlays controller)))
+
+    :control-change
+    (some (fn [[k overlay]]
+            (when (contains? (captured-controls overlay) (:note message))
+              (let [result (handle-control-change overlay controller message)]
+                (when (= result :done)
+                  (swap! (:overlays controller) dissoc k))
+                result)))
+          (seq @(:overlays controller)))
+
+    ;; Nothing we process
+    false))
+
 (defn- control-change-received
+  "Process a control change message which was not handled by an
+  interface overlay."
   [controller message]
   (case (:note message)
     3 ; Tap tempo button
     (when (> (:velocity message) 0)
-      ;; TODO: Do other things when synced.
-      ((:tap-tempo-handler controller))
-      (swap! (:metronome-mode controller) #(assoc % :showing true)))
+      (interpret-tempo-tap controller)
+      (enter-metronome-showing controller))
 
     9 ; Metronome button
     (when (> (:velocity message) 0)
-      (swap! (:metronome-mode controller) #(if (:showing %)
-                                             (dissoc % :showing)
-                                             (assoc % :showing :true))))
+      (enter-metronome-showing controller))
 
     14 ; Beat encoder
     (let [delta (sign-velocity (:velocity message))
@@ -498,25 +670,29 @@
     nil))
 
 (defn- note-on-received
+  "Process a note-on message which was not handled by an interface
+  overlay."
   [controller message]
   (case (:note message)
     9 ; BPM encoder
-    (swap! (:metronome-mode controller) #(assoc % :adjusting-bpm :true))
+    (swap! (:metronome-mode controller) assoc :adjusting-bpm :true)
 
     10 ; Beat encoder
-    (swap! (:metronome-mode controller) #(assoc % :adjusting-beat :true))
+    (swap! (:metronome-mode controller) assoc :adjusting-beat :true)
 
     ;; Something we don't care about
     nil))
 
 (defn- note-off-received
+  "Process a note-off message which was not handled by an interface
+  overlay."
   [controller message]
   (case (:note message)
     9 ; BPM encoder
-    (swap! (:metronome-mode controller) #(dissoc % :adjusting-bpm))
+    (swap! (:metronome-mode controller) dissoc :adjusting-bpm)
 
     10 ; Beat encoder
-    (swap! (:metronome-mode controller) #(dissoc % :adjusting-beat))
+    (swap! (:metronome-mode controller) dissoc :adjusting-beat)
 
     ;; Something we don't care about
     nil))
@@ -528,12 +704,13 @@
   [controller message]
   (when (= (:device message) (:port-in controller))
     ;(info message)
-    (when (= (:status message) :control-change)
-      (control-change-received controller message))
-    (when (= (:command message) :note-on)
-      (note-on-received controller message))
-        (when (= (:command message) :note-off)
-      (note-off-received controller message))))
+    (when-not (overlay-handled? controller message)
+      (when (= (:status message) :control-change)
+        (control-change-received controller message))
+      (when (= (:command message) :note-on)
+        (note-on-received controller message))
+      (when (= (:command message) :note-off)
+        (note-off-received controller message)))))
 
 (defn bind-to-show
   "Establish a connection to the Ableton Push, for managing the given
@@ -572,11 +749,14 @@
          :next-display (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
          :last-text-buttons (atom {})
          :next-text-buttons (atom {})
-         :metronome-mode (atom {:showing true})
+         :last-top-pads (int-array 8)
+         :next-top-pads (int-array 8)
+         :metronome-mode (atom {})
          :shift-mode (atom false)
          :midi-handler (atom nil)
          :tap-tempo-handler (amidi/create-tempo-tap-handler (:metronome show))
-         }]
+         :overlays (atom (sorted-map-by >))
+         :next-overlay (atom 0)}]
     (reset! (:midi-handler controller) (partial midi-received controller))
     (clear-interface controller)
     (welcome-animation controller)
