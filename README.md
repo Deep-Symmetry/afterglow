@@ -11,11 +11,13 @@ via its
 
 ## Status
 
-We getting close to an initial release, probably in early June. Most
-of the crazy ideas have panned out and been implemented, and I am just
-circling back and fleshing out the basic details needed for everyday
-use. The examples are starting to be intriguing and informative, and
-the [documentation](https://github.com/brunchboy/afterglow/wiki) is
+We getting close to an initial release, perhaps in June, although bugs
+in the Mac Java MIDI implementation have caused some time-consuming
+detours. Most of the crazy ideas have panned out and been implemented,
+and I am just circling back and fleshing out the basic details needed
+for everyday use. The examples are starting to be intriguing and
+informative, and the
+[documentation](https://github.com/brunchboy/afterglow/wiki) is
 getting substantial. The modeling of fixtures, channels, etc. is
 coming together nicely, though there have been drastic changes as I
 gained experience with how I want to use them.
@@ -161,7 +163,7 @@ quickly get relief from overly bright lights.
 (def controller (push/bind-to-show *show*))
 ```
  ![Push
-  interface](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/PushIntro.png)
+  interface](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/PushIntro.jpg)
     
 Moving on, though... we can change the global color to orange:
 
