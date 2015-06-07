@@ -133,24 +133,37 @@ But for dimmer channels, there is an even better way of doing that:
 (master-set-level (:grand-master sample-show) 80)
 ```
 
-> All cues which set dimmer levels are tied to a dimmer master chain.
-> If none is specified when creating the cue, they are tied directly
-> to the show's dimmer grand master. Setting this to a value less than
-> 100 scales the dimmer values sent to the lights down by that amount.
-> So the above command dims the lights to 80% of their possible
-> brightness, no matter what else the cues are trying to do. See the
-> [dimmer effects API documentation](http://deepsymmetry.org/afterglow/doc/afterglow.effects.dimmer.html)
-> for more details. Here is an example of what I call right away when
-> testing effects in my office with the little Korg nanoKONTROL 2
-> plugged in:
+All cues which set dimmer levels are tied to a dimmer master chain.
+If none is specified when creating the cue, they are tied directly
+to the show's dimmer grand master. Setting this to a value less than
+100 scales the dimmer values sent to the lights down by that amount.
+So the above command dims the lights to 80% of their possible
+brightness, no matter what else the cues are trying to do. See the
+[dimmer effects API documentation](http://deepsymmetry.org/afterglow/doc/afterglow.effects.dimmer.html)
+for more details. Here is an example of what I call right away when
+testing effects in my office with the little Korg nanoKONTROL 2
+plugged in:
 
 ```clojure
 (show/add-midi-control-to-master-mapping "slider" 0 7)
 ```
-> And then the last fader acts as my grand master dimmer, and I can
-> quickly get relief from overly bright lights.
+And then the last fader acts as my grand master dimmer, and I can
+quickly get relief from overly bright lights.
+
+> If you have access to an Ableton Push, it is even easier to have
+> intutive control over your show's grand master dimmer. As soon as
+> you bind it to your show, the Master encoder is automatically bound
+> to it, with nice graphical feedback in the text area. Plus, you get
+> deep control over the show metronome right away too:
+
+```clojure
+(require '[afterglow.controllers.ableton-push :as push])
+(def controller (push/bind-to-show *show*))
+```
+ ![Push
+  interface](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/PushIntro.png)
     
-Change the color to orange:
+Moving on, though... we can change the global color to orange:
 
 ```clojure
 (show/add-effect! :color (global-color-cue :orange))
