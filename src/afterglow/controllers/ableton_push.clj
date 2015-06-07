@@ -4,6 +4,7 @@
   {:author "James Elliott"
    :doc/format :markdown}
   (:require [afterglow.controllers :as controllers]
+            [afterglow.effects.dimmer :refer [master-get-level master-set-level]]
             [afterglow.midi :as amidi]
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
@@ -351,6 +352,17 @@
     (doseq [[i val] (map-indexed vector bytes)]
       (aset (get (:next-display controller) row) (+ (* cell 17) i) (util/ubyte val)))))
 
+(defn make-gauge
+  "Create a graphical gauge taking up one display cell."
+  [value & {:keys [lowest highest] :or {lowest 0 highest 100}}]
+  (let [range (* 1.01 (- highest lowest))
+        scaled (int (* 34 (/ (- value lowest) range)))
+        filler (repeat (:fader-empty special-symbols))
+        marker ((if (even? scaled) :fader-left :fader-right) special-symbols)
+        leader (take (int (/ scaled 2)) filler)]
+    (println scaled range)
+    (take 17 (concat leader [marker] filler))))
+
 (defn- interpret-tempo-tap
   "React appropriately to a tempo tap, based on the sync mode of the
   show metronome."
@@ -628,6 +640,31 @@
     ;; Nothing we process
     false))
 
+(defn- master-encoder-touched
+  "Add a user interface overlay to give feedback when turning the
+  master encoder."
+  [controller]
+  (add-overlay controller
+               (reify IOverlay
+                 (captured-controls [this] #{79})
+                 (captured-notes [this] #{8})
+                 (adjust-interface [this controller]
+                   (let [level (master-get-level (get-in controller [:show :grand-master]))]
+                     (write-display-cell controller 0 3
+                                         (str "GrandMaster " (format "%5.1f" level)))
+                     (write-display-cell controller 1 3 (make-gauge level)))
+                   true)
+                 (handle-control-change [this controller message]
+                   ;; Adjust the BPM based on how the encoder was twisted
+                   (let [delta (/ (sign-velocity (:velocity message)) 2)
+                         level (master-get-level (get-in controller [:show :grand-master]))]
+                     (master-set-level (get-in controller [:show :grand-master]) (+ level delta))))
+                 (handle-note-on [this controller message]
+                   false)
+                 (handle-note-off [this controller message]
+                   ;; Exit the overlay
+                   :done))))
+
 (defn- bpm-encoder-touched
   "Add a user interface overlay to give feedback when turning the BPM
   encoder."
@@ -714,6 +751,9 @@
   overlay."
   [controller message]
   (case (:note message)
+    8 ; Master encoder
+    (master-encoder-touched controller)
+
     9 ; BPM encoder
     (bpm-encoder-touched controller)
 
