@@ -568,6 +568,11 @@
            (button-state (:shift control-buttons)
                          (if @(:shift-mode controller) :bright :dim)))
     
+    ;; Make the User button bright, since we live in User mode
+    (swap! (:next-text-buttons controller)
+           assoc (:user-mode control-buttons)
+           (button-state (:user-mode control-buttons) :bright))
+
     ;; Add any contributions from interface overlays, removing them
     ;; if they report being finished. Reverse the order so that the
     ;; most recent overlays run last, having the opportunity to
@@ -654,7 +659,9 @@
         (enter-metronome-showing controller)
         (reset! (:task controller) (at-at/every (:refresh-interval controller)
                                                 #(update-interface controller)
-                                                controllers/pool))
+                                                controllers/pool
+                                                :initial-delay 10
+                                                :desc "Push interface update"))
         (at-at/kill @task)))
     (catch Throwable t
       (warn t "Animation frame failed")))
@@ -676,14 +683,18 @@
   "Clears the text display and all illuminated buttons and pads."
   [controller]
   (doseq [line (range 4)]
-    (clear-display-line controller line))
+    (clear-display-line controller line)
+    (Arrays/fill (get (:last-display controller) line) (byte 32)))
+
   (doseq [x (range 8)]
     (set-top-pad-state controller x :off)
     (set-second-pad-color controller x off-color)
     (doseq [y (range 8)]
       (set-pad-color controller x y off-color)))
+  (Arrays/fill (:last-top-pads controller) 0)
   (doseq [[_ button] control-buttons]
-    (set-button-state controller button :off)))
+    (set-button-state controller button :off))
+  (reset! (:last-text-buttons controller) {}))
 
 (defonce ^{:doc "Counts the controller bindings which have been made,
   so each can be assigned a unique ID."}
@@ -798,6 +809,35 @@
                      (swap! (:metronome-mode controller) dissoc :adjusting-beat)
                      :done)))))
 
+(defn- leave-user-mode
+  "The user has asked to exit user mode, so suspend our display
+  updates, and prepare to restore our state when user mode is pressed
+  again."
+  [controller]
+  (swap! (:task controller) (fn [task]
+                              (when task (at-at/kill task))
+                              nil))
+  (add-overlay controller
+               (reify IOverlay
+                 (captured-controls [this] #{59})
+                 (captured-notes [this] #{})
+                 (adjust-interface [this controller]
+                   true)
+                 (handle-control-change [this controller message]
+                   (when (pos? (:velocity message))
+                     ;; We are returning to user mode, restore display
+                     (clear-interface controller)
+                     (reset! (:task controller) (at-at/every (:refresh-interval controller)
+                                                             #(update-interface controller)
+                                                             controllers/pool
+                                                             :initial-delay 250
+                                                             :desc "Push interface update"))
+                     :done))
+                 (handle-note-on [this controller message]
+                   false)
+                 (handle-note-off [this controller message]
+                   false))))
+
 (defn- control-change-received
   "Process a control change message which was not handled by an
   interface overlay."
@@ -814,6 +854,10 @@
 
     49 ; Shift button
     (swap! (:shift-mode controller) (fn [_] (pos? (:velocity message))))
+
+    59 ; User mode button
+    (when (pos? (:velocity message))
+      (leave-user-mode controller))
 
     ;; Something we don't care about
     nil))
@@ -905,6 +949,8 @@
          :overlays (atom (sorted-map-by >))
          :next-overlay (atom 0)}]
     (reset! (:midi-handler controller) (partial midi-received controller))
+    ;; Set controller in User mode
+    (midi/midi-sysex (:port-out controller) [240 71 127 21 98 0 1 1 247])
     (clear-interface controller)
     (welcome-animation controller)
     (swap! active-bindings assoc (:id controller) controller)
@@ -917,8 +963,14 @@
   (swap! (:task controller) (fn [task]
                               (when task (at-at/kill task))
                               nil))
-  (clear-interface controller)
+
   (amidi/remove-global-handler! @(:midi-handler controller))
+  
+  (clear-interface controller)
+  ;; Leave the User button bright, in case the user has Live
+  ;; running and wants to be able to see how to return to it.
+  (set-button-state controller (:user-mode control-buttons) :bright)
+
   ;; TODO: Clear out any interface stacks, MIDI listeners, etc.
 
   (swap! active-bindings dissoc (:id controller)))
