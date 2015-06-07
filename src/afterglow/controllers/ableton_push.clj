@@ -370,6 +370,93 @@
   ;; TODO: Do other things when synced.
   ((:tap-tempo-handler controller)))
 
+(defn- bpm-adjusting-interface
+  "Add an arrow showing the BPM is being adjusted."
+  [controller]
+  ;; TODO: Unless it is being externally synced...
+  (aset (get (:next-display controller) 2) 16 (:up-arrow special-symbols)))
+
+(defn sign-velocity
+  "Convert a midi velocity to its signed equivalent, to translate
+  encoder rotations, which are twos-complement seven bit numbers."
+  [val]
+   (if (>= val 64)
+     (- val 128)
+     val))
+
+(defn- adjust-bpm-from-encoder
+  "Adjust the current BPM based on how the encoder was twisted."
+  [controller message]
+  (let [delta (/ (sign-velocity (:velocity message)) 10)
+        bpm (rhythm/metro-bpm (:metronome (:show controller)))]
+    (rhythm/metro-bpm (:metronome (:show controller)) (+ bpm delta))))
+
+(defn- encoder-above-bpm-touched
+  "Add a user interface overlay to give feedback when turning the
+  encoder above the BPM display when metronome was already active,
+  since it is easy to grab that one rather than the actual BPM
+  encoder, being right above the display."
+  [controller]
+  (add-overlay controller
+               (reify IOverlay
+                 (captured-controls [this] #{72})
+                 (captured-notes [this] #{1 9})
+                 (adjust-interface [this controller]
+                   (bpm-adjusting-interface controller))
+                 (handle-control-change [this controller message]
+                   (adjust-bpm-from-encoder controller message))
+                 (handle-note-on [this controller message]
+                   ;; Suppress the actual BPM encoder while we are active.
+                   true)
+                 (handle-note-off [this controller message]
+                   (when (= (:note message) 1)
+                     ;; They released us, end the overlay.
+                     :done)))))
+
+(defn- beat-adjusting-interface
+  "Add an arrow showing the beat is being adjusted."
+  [controller]
+  (let [marker (rhythm/metro-marker (:metronome (:show controller)))
+                         arrow-pos (if @(:shift-mode controller)
+                                     (dec (.indexOf marker "." (inc (.indexOf marker "."))))
+                                     (dec (count marker)))]
+    (aset (get (:next-display controller) 2) arrow-pos (:up-arrow special-symbols))))
+
+(defn- adjust-beat-from-encoder
+  "Adjust the current beat based on how the encoder was twisted."
+  [controller message]
+  (let [delta (sign-velocity (:velocity message))
+                         snapshot (rhythm/metro-snapshot (:metronome (:show controller)))]
+                     (if @(:shift-mode controller)
+                       ;; User is adjusting the current bar
+                       (rhythm/metro-bar-start (:metronome (:show controller)) (+ (:bar snapshot) delta))
+                       ;; User is adjusting the current beat; keep the phase unchanged
+                       (do
+                         (rhythm/metro-start (:metronome (:show controller)) (+ (:beat snapshot) delta))
+                         (rhythm/metro-beat-phase (:metronome (:show controller) (:beat-phase snapshot)))))))
+
+(defn- encoder-above-beat-touched
+  "Add a user interface overlay to give feedback when turning the
+  encoder above the beat display when metronome was already active,
+  since it is easy to grab that one rather than the actual beat
+  encoder, being right above the display."
+  [controller]
+  (add-overlay controller
+               (reify IOverlay
+                 (captured-controls [this] #{71})
+                 (captured-notes [this] #{0 10})
+                 (adjust-interface [this controller]
+                   (beat-adjusting-interface controller))
+                 (handle-control-change [this controller message]
+                   (adjust-beat-from-encoder controller message))
+                 (handle-note-on [this controller message]
+                   ;; Suppress the actual beat encoder while we are active.
+                   true)
+                 (handle-note-off [this controller message]
+                   (when (= (:note message) 0)
+                     ;; They released us, end the overlay.
+                     :done)))))
+
 (defn- enter-metronome-showing
   "Activate the persistent metronome display, with sync and reset pads
   illuminated."
@@ -378,7 +465,7 @@
   (add-overlay controller
                (reify IOverlay
                  (captured-controls [this] #{3 9 20 21})
-                 (captured-notes [this] #{})
+                 (captured-notes [this] #{0 1})
                  (adjust-interface [this controller]
                    ;; Make the metronome button bright, since its information is active
                    (swap! (:next-text-buttons controller)
@@ -417,7 +504,11 @@
                                                              1 (top-pad-state :bright :green)))
                        true)))
                  (handle-note-on [this controller message]
-                   false)
+                   ;; Whoops, user grabbed encoder closest to beat or BPM display
+                   (case (:note message)
+                     0 (encoder-above-beat-touched controller)
+                     1 (encoder-above-bpm-touched controller))
+                   true)
                  (handle-note-off [this controller message]
                    false))))
 
@@ -602,14 +693,6 @@
   indexed by the controller binding ID."}
   active-bindings (atom {}))
 
-(defn sign-velocity
-  "Convert a midi velocity to its signed equivalent, to translate
-  encoder rotations, which are twos-complement seven bit numbers."
-  [val]
-   (if (>= val 64)
-     (- val 128)
-     val))
-
 (defn- overlay-handled?
   "See if there is an interface overlay active which wants to consume
   this message; if so, send it, and see if the overlay consumes it.
@@ -674,22 +757,21 @@
   (add-overlay controller
                (reify IOverlay
                  (captured-controls [this] #{15})
-                 (captured-notes [this] #{9})
+                 (captured-notes [this] #{9 1})
                  (adjust-interface [this controller]
-                   ;; Add the arrow showing the BPM is being adjusted
-                   ;; TODO: Unless it is being externally synced
-                   (aset (get (:next-display controller) 2) 16 (:up-arrow special-symbols)))
+                   (bpm-adjusting-interface controller))
                  (handle-control-change [this controller message]
-                   ;; Adjust the BPM based on how the encoder was twisted
-                   (let [delta (/ (sign-velocity (:velocity message)) 10)
-                         bpm (rhythm/metro-bpm (:metronome (:show controller)))]
-                     (rhythm/metro-bpm (:metronome (:show controller)) (+ bpm delta))))
+                   (adjust-bpm-from-encoder controller message))
                  (handle-note-on [this controller message]
-                   false)
+                   ;; Suppress the extra encoder above the BPM display.
+                   ;; We can't get a note on for the BPM encoder, because
+                   ;; that was the event that created this overlay.
+                   true)
                  (handle-note-off [this controller message]
-                   ;; Exit the overlay
-                   (swap! (:metronome-mode controller) dissoc :adjusting-bpm)
-                   :done))))
+                   (when (= (:note message) 9)
+                     ;; They released us, end the overlay
+                     (swap! (:metronome-mode controller) dissoc :adjusting-bpm)
+                     :done)))))
 
 (defn- beat-encoder-touched
   "Add a user interface overlay to give feedback when turning the beat
@@ -700,31 +782,21 @@
   (add-overlay controller
                (reify IOverlay
                  (captured-controls [this] #{14})
-                 (captured-notes [this] #{10})
+                 (captured-notes [this] #{10 0})
                  (adjust-interface [this controller]
-                   ;; Add the arrow showing the beat is being adjusted
-                   (let [marker (rhythm/metro-marker (:metronome (:show controller)))
-                         arrow-pos (if @(:shift-mode controller)
-                                     (dec (.indexOf marker "." (inc (.indexOf marker "."))))
-                                     (dec (count marker)))]
-                     (aset (get (:next-display controller) 2) arrow-pos (:up-arrow special-symbols))))
+                   (beat-adjusting-interface controller))
                  (handle-control-change [this controller message]
-                   ;; Adjust the current beat based on how the encoder was twisted
-                   (let [delta (sign-velocity (:velocity message))
-                         snapshot (rhythm/metro-snapshot (:metronome (:show controller)))]
-                     (if @(:shift-mode controller)
-                       ;; User is adjusting the current bar
-                       (rhythm/metro-bar-start (:metronome (:show controller)) (+ (:bar snapshot) delta))
-                       ;; User is adjusting the current beat; keep the phase unchanged
-                       (do
-                         (rhythm/metro-start (:metronome (:show controller)) (+ (:beat snapshot) delta))
-                         (rhythm/metro-beat-phase (:metronome (:show controller) (:beat-phase snapshot)))))))
+                   (adjust-beat-from-encoder controller message))
                  (handle-note-on [this controller message]
-                   false)
+                   ;; Suppress the extra encoder above the beat display.
+                   ;; We can't get a note on for the beat encoder, because
+                   ;; that was the event that created this overlay.
+                   true)
                  (handle-note-off [this controller message]
-                   ;; Exit the overlay
-                   (swap! (:metronome-mode controller) dissoc :adjusting-beat)
-                   :done))))
+                   (when (= (:note message) 10)
+                     ;; They released us, exit the overlay
+                     (swap! (:metronome-mode controller) dissoc :adjusting-beat)
+                     :done)))))
 
 (defn- control-change-received
   "Process a control change message which was not handled by an
