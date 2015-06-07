@@ -9,14 +9,34 @@
             [taoensso.timbre.profiling :as profiling :refer [pspy profile]])
   (:import [afterglow.rhythm MetronomeSnapshot]))
 
-(defprotocol IAssigner
+(defonce
+  ^{:private true
+    :doc "Protect protocols against namespace reloads"}
+  _PROTOCOLS_
+  (do
+    (defprotocol IAssigner
   "Assign some attribute (color, attitude, channel value) to an element of a light show at a given
   point in time. Any previous assignment to this element will be supplied as an argument, and may
   be tweaked or ignored as needs dictate. The target will be a subtree of the show's fixtures,
   currently either a head or channel."
   (assign [this show ^MetronomeSnapshot snapshot target previous-assignment]
     "Calculate the value the show element should have at this moment in time. Return a value
-appropriate for the kind of assignment, e.g. color object, channel value."))
+appropriate for the kind of assignment, e.g. color object, channel value."))    
+
+;; At each DMX frame generation, we will run through all the effects and ask them if they are still
+;; active. If not, they will be removed from the list of active effects. For the remaining ones,
+;; we obtain a list of assignments they want to make, and handle them as described above.
+(defprotocol IEffect
+    "Generates a list of assignments that should be in effect at a given moment in the show.
+  Can eventually end on its own, or be asked to end. When asked, may end immediately, or after
+  some final activity, such as a fade."
+    (still-active? [this show snapshot]
+      "Check whether this effect is finished, and can be cleaned up.")
+    (generate [this show snapshot]
+      "List the asignments needed to implement the desired effect at this moment in time.")
+    (end [this show snapshot]
+      "Arrange to finish as soon as possible; return true if can end immediately."))))
+
 
 ;; TODO: Really document this, both as API docs and on the Wiki.
 ;; So...
@@ -53,20 +73,6 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
     IAssignmentResolver
     (resolve-assignment [this show buffers target snapshot assignment]
                         (f show buffers target snapshot assignment)))
-
-;; At each DMX frame generation, we will run through all the effects and ask them if they are still
-;; active. If not, they will be removed from the list of active effects. For the remaining ones,
-;; we obtain a list of assignments they want to make, and handle them as described above.
-(defprotocol IEffect
-    "Generates a list of assignments that should be in effect at a given moment in the show.
-  Can eventually end on its own, or be asked to end. When asked, may end immediately, or after
-  some final activity, such as a fade."
-    (still-active? [this show snapshot]
-      "Check whether this effect is finished, and can be cleaned up.")
-    (generate [this show snapshot]
-      "List the asignments needed to implement the desired effect at this moment in time.")
-    (end [this show snapshot]
-      "Arrange to finish as soon as possible; return true if can end immediately."))
 
 (defrecord Effect [^String name ^clojure.lang.IFn active-fn
                    ^clojure.lang.IFn gen-fn ^clojure.lang.IFn end-fn]

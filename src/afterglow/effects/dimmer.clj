@@ -55,7 +55,12 @@
   (let [heads (channels/extract-heads-with-some-matching-channel fixtures dimmer-channel?)]
     (channels/extract-channels heads dimmer-channel?)))
 
-(defprotocol IDimmerMaster
+(defonce
+  ^{:private true
+    :doc "Protect protocols against namespace reloads"}
+  _PROTOCOLS_
+  (do
+    (defprotocol IDimmerMaster
   "A chainable limiter of dimmer cues."
   (master-set-level [master new-level]
     "Set the level of this master, as a percentage from 0 to 100. Any
@@ -65,7 +70,7 @@
     scale back the value in turn.")
   (master-scale [master value]
     "Scale down the value being sent to a dimmer according to this
-    master level, and any parent masters associated with it."))
+    master level, and any parent masters associated with it."))))
 
 (defrecord Master [level parent]
   IDimmerMaster

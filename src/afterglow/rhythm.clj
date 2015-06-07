@@ -6,7 +6,12 @@
   (:require [overtone.at-at :refer [now]]
             [clojure.math.numeric-tower :refer [round floor]]))
 
-(defprotocol IMetronome
+(defonce
+  ^{:private true
+    :doc "Protect protocols against namespace reloads"}
+  _PROTOCOLS_
+  (do
+    (defprotocol IMetronome
   "A time-keeping tool for music-related systems."
   (metro-start [metro] [metro start-beat]
     "Returns the start time of the metronome. Also restarts the
@@ -52,35 +57,7 @@
   (metro-marker [metro]
     "Returns the current time as phrase.bar.beat"))
 
-
-;; Rhythm
-
-;; * a resting heart rate is 60-80 bpm
-;; * around 150 induces an excited state
-
-;; A rhythm system should let us refer to time in terms of rhythmic units
-;; like beat, bar, measure, and it should convert these units to real time
-;; units (ms) based on the current BPM and signature settings.
-
-(defn beat-ms
-  "Convert 'b' beats to milliseconds at the given 'bpm'."
-  [b bpm] (* (/ 60000.0 bpm) b))
-
-(defn- marker-number
-  "Helper function to calculate the beat, bar, or phrase number in
-  effect at a given moment, given a starting point and beat, bar,
-  or phrase interval."
-  [instant start interval]
-  (inc (long (/ (- instant start) interval))))
-
-(defn- marker-phase
-  "Helper function to calculate the beat, bar, or phrase phase at a
-  given moment, given a starting point and beat interval."
-  [instant start interval]
-  (let [marker-ratio (/ (- instant start) interval)]
-    (- (double marker-ratio) (long marker-ratio))))
-
-(defprotocol ISnapshot
+    (defprotocol ISnapshot
   "A snapshot to support a series of beat and phase calculations with
   respect to a given instant in time. Used by Afterglow so that all
   phase computations run when updating a frame of DMX data have a
@@ -118,7 +95,34 @@
     Ranges from 1 to the bars-per-phrase of the metronome.")
   (snapshot-phrase-start? [snapshot]
     "True if the current beat is the first beat in the current
-    phrase."))
+    phrase."))))
+
+;; Rhythm
+
+;; * a resting heart rate is 60-80 bpm
+;; * around 150 induces an excited state
+
+;; A rhythm system should let us refer to time in terms of rhythmic units
+;; like beat, bar, measure, and it should convert these units to real time
+;; units (ms) based on the current BPM and signature settings.
+
+(defn beat-ms
+  "Convert 'b' beats to milliseconds at the given 'bpm'."
+  [b bpm] (* (/ 60000.0 bpm) b))
+
+(defn- marker-number
+  "Helper function to calculate the beat, bar, or phrase number in
+  effect at a given moment, given a starting point and beat, bar,
+  or phrase interval."
+  [instant start interval]
+  (inc (long (/ (- instant start) interval))))
+
+(defn- marker-phase
+  "Helper function to calculate the beat, bar, or phrase phase at a
+  given moment, given a starting point and beat interval."
+  [instant start interval]
+  (let [marker-ratio (/ (- instant start) interval)]
+    (- (double marker-ratio) (long marker-ratio))))
 
 (defn- enhanced-phase
   "Calculate a phase with respect to multiples or fractions of a

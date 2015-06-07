@@ -16,7 +16,12 @@
   (:import [afterglow.rhythm Metronome]
            [javax.vecmath Point3d Vector3d]))
 
-(defprotocol IParam
+(defonce
+  ^{:private true
+    :doc "Protect protocols against namespace reloads"}
+  _PROTOCOLS_
+  (do
+    (defprotocol IParam
   "A dynamic parameter which gets evaluated during the run of a light show,
   with access to the show and its metronome snapshot."
   (evaluate [this show snapshot]
@@ -33,6 +38,21 @@
     not frame-dynamic, returns its final resolution; otherwise,
     returns a version of itself where any non frame-dynamic input
     parameters have been resolved."))
+
+    (defprotocol IHeadParam
+  "An extension to IParam for parameters that are specific to a given
+  head (because they depend on things like its orientation or
+  location)."
+  (evaluate-for-head [this show snapshot head]
+    "Determine the value of this numeric parameter at a given moment
+    of the show, as applied to the specific fixture head.")
+    (resolve-non-frame-dynamic-elements-for-head [this show snapshot head]
+    "Called when an effect is created using this parameter and there
+    is head information available. If the parameter is not
+    frame-dynamic, returns its final resolution; otherwise, returns a
+    version of itself where any non frame-dynamic input parameters
+    have been resolved."))))
+
 
 (defn check-type
   "Ensure that a parameter is of a particular type, or that it
@@ -76,20 +96,6 @@
      `(validate-optional-param-type ~value ~type-expected ~(str arg))))
   ([value type-expected name]
    `(when (some? ~value) (check-type ~value ~type-expected ~name))))
-
-(defprotocol IHeadParam
-  "An extension to IParam for parameters that are specific to a given
-  head (because they depend on things like its orientation or
-  location)."
-  (evaluate-for-head [this show snapshot head]
-    "Determine the value of this numeric parameter at a given moment
-    of the show, as applied to the specific fixture head.")
-    (resolve-non-frame-dynamic-elements-for-head [this show snapshot head]
-    "Called when an effect is created using this parameter and there
-    is head information available. If the parameter is not
-    frame-dynamic, returns its final resolution; otherwise, returns a
-    version of itself where any non frame-dynamic input parameters
-    have been resolved."))
 
 (defn head-param?
   "Checks whether the argument is an [[IParam]] which also

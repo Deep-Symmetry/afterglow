@@ -198,12 +198,17 @@
   (let [buffer (atom (ring-buffer max-tempo-tap-interval))]
     (fn [] (tap-handler buffer metronome))))
 
-;; A simple protocol for our clock sync object, allowing it to be started and stopped,
-;; and the status checked.
-(defprotocol IClockSync
-  (sync-start [this])
-  (sync-stop [this])
-  (sync-status [this]))
+(defonce
+  ^{:private true
+    :doc "Protect protocols against namespace reloads"}
+  _PROTOCOLS_
+  (do
+    (defprotocol IClockSync
+  "A simple protocol for our clock sync object, allowing it to be
+  started and stopped, and the status checked."
+      (sync-start [this] "Start synchronizing your metronome.")
+      (sync-stop [this] "Stop synchronizing your metronome.")
+      (sync-status [this] "Report on how well synchronization is working."))))
 
 (defn- sync-handler
   "Called whenever a MIDI message is received for a synced metronome.
