@@ -479,6 +479,16 @@
                      ;; They released us, end the overlay.
                      :done)))))
 
+(defn- metronome-sync-label
+  "Determine the sync type label to display under the BPM section."
+  [controller]
+  (if-let [sync-in-effect @(:sync (:show controller))]
+    (case (:type (afterglow.midi/sync-status sync-in-effect))
+      :midi "MIDI"
+      :dj-link "DJ Link"
+      "Unknown")
+    "Manual"))
+
 (defn- enter-metronome-showing
   "Activate the persistent metronome display, with sync and reset pads
   illuminated."
@@ -495,7 +505,8 @@
                           (button-state (:metronome control-buttons) :bright))
 
                    ;; Add the labels for reset and sync, and light the pads
-                   (write-display-cell controller 3 0 "Reset    Manual")
+                   (write-display-cell controller 3 0
+                                       (str "Reset    " (metronome-sync-label controller)))
                    (aset (:next-top-pads controller) 0 (top-pad-state :dim :red))
                    (aset (:next-top-pads controller) 1 (top-pad-state :dim :green)))
                  (handle-control-change [this controller message]
