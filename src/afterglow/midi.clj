@@ -117,11 +117,18 @@
 (defn create-midi-port-filter
   "Return a filter which selects midi inputs and outputs we actually
   want to use. If this is a Mac, and the Humatic MIDI extension has
-  been installed, create a filter which will accept only its ports.
-  Otherwise, return a filter which accepts all ports."
+  been installed, create a filter which will accept only its versions
+  of ports which it offers in parallel with the standard
+  implementation. Otherwise, return a filter which accepts all ports."
   []
   (if (and (mac?) (mmj-installed?))
-    mmj-device?
+    (fn [device]
+      (let [mmj-descriptions (set (map :description (filter #(mmj-device? %)
+                                                            (overtone.midi/midi-sources))))]
+        (or (mmj-device? device)
+            ;; MMJ returns devices whose descriptions match the names of the
+            ;; broken devices returned by the broken Java MIDI implementation.
+            (not (mmj-descriptions (:name device))))))
     identity))
 
 ;; TODO: This and open-outputs will have to change once hot-plugging works.
@@ -208,7 +215,14 @@
   started and stopped, and the status checked."
       (sync-start [this] "Start synchronizing your metronome.")
       (sync-stop [this] "Stop synchronizing your metronome.")
-      (sync-status [this] "Report on how well synchronization is working."))))
+      (sync-status [this] "Report on how well synchronization is working."))
+
+    (defprotocol IClockFinder
+  "Allows a list of available MIDI clock sources to be gathered, for
+  presentation in a user interface, by monitoring for clock pulses on
+  all ports."
+  (finder-current-sources [this] "Return the set of sources seen so far.")
+  (finder-finished [this] "Stop listening for clock pulses and clean up."))))
 
 (defn- sync-handler
   "Called whenever a MIDI message is received for a synced metronome.
@@ -248,7 +262,8 @@
         {:type :midi,
          :status (cond
                    (empty? @buffer)           "Inactive, no clock pulses have been received."
-                   (< n  max-clock-intervals) (str "Stalled? Clock pulse buffer has " n " of " max-clock-intervals " pulses in it.")
+                   (< n  max-clock-intervals) (str "Stalled? Clock pulse buffer has " n " of "
+                                                   max-clock-intervals " pulses in it.")
                    :else                      "Running, clock pulse buffer is full.")})))
 
 (defn- describe-name-filter
@@ -270,6 +285,27 @@
                    (re-find pattern (:description %1)))
               devices))))
 
+;; A simple object to help provide a user interface for selecting between available MIDI
+;; clock sync sources
+(defrecord ClockFinder [listener results]
+  IClockFinder
+  (finder-current-sources [this] @results)
+  (finder-finished [this]
+    (remove-global-handler! listener)
+    (reset! results nil)))
+
+(defn watch-for-clock-sources
+  "Returns a clock finder that will watch for sources of MIDI clock
+  pulses until you tell it to stop."
+  []
+  (open-inputs-if-needed!)
+  (let [clock-sources (atom #{})
+        clock-listener (fn [msg]
+                         (when (= (:status msg) :timing-clock)
+                           (swap! clock-sources conj (:device msg))))]
+    (add-global-handler! clock-listener)
+    (ClockFinder. clock-listener clock-sources)))
+
 (defn sync-to-midi-clock
   "Returns a sync function that will cause the beats-per-minute
   setting of the supplied metronome to track the MIDI clock messages
@@ -285,15 +321,10 @@
   ([]
    (sync-to-midi-clock nil))
   ([name-filter]
-   (open-inputs-if-needed!)
-   (let [clock-sources (atom #{})
-         clock-finder (fn [msg]
-                        (when (= (:status msg) :timing-clock)
-                          (swap! clock-sources conj (:device msg))))]
-     (add-global-handler! clock-finder)
+   (let [clock-finder (watch-for-clock-sources)]
      (Thread/sleep 300)
-     (remove-global-handler! clock-finder)
-     (let [result (filter-devices @clock-sources name-filter)]
+     (let [result (filter-devices (finder-current-sources clock-finder) name-filter)]
+       (finder-finished clock-finder)
        (case (count result)
          0 (throw (IllegalArgumentException. (str "No MIDI clock sources " (describe-name-filter name-filter)
                                                   "were found.")))
@@ -304,6 +335,8 @@
 
          (throw (IllegalArgumentException. (str "More than one MIDI clock source " (describe-name-filter name-filter)
                                                 "was found."))))))))
+
+
 
 (defn identify-mapping
   "Report on the next MIDI control or note message received, to aid in
