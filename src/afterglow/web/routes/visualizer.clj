@@ -130,7 +130,7 @@
   light."
   [show [id fixture-or-head]]
   (when-let [color ((keyword (str "color-" id)) (:previous @(:movement show)))]
-    (> (colors/lightness color) 0)))
+    (pos? (colors/lightness color))))
 
 (defn active-fixtures
   "Return the fixtures which should currently be rendered, because they

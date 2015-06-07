@@ -73,7 +73,7 @@
                  (captured-notes [this] #{})
                  (adjust-interface [this controller] (f))
                  (handle-control-change [this controller message]
-                   (when (= (:velocity message) 0)
+                   (when (zero? (:velocity message))
                      :done))
                  (handle-note-off [this controller message])
                  (handle-note-on [this controller message]))))
@@ -453,7 +453,7 @@
                    ;; Suppress the actual beat encoder while we are active.
                    true)
                  (handle-note-off [this controller message]
-                   (when (= (:note message) 0)
+                   (when (zero? (:note message))
                      ;; They released us, end the overlay.
                      :done)))))
 
@@ -479,25 +479,25 @@
                  (handle-control-change [this controller message]
                    (case (:note message)
                      3 ; Tap tempo button
-                     (when (> (:velocity message) 0)
+                     (when (pos? (:velocity message))
                        (interpret-tempo-tap controller)
                        true)
                      
                      9 ; Metronome button
-                     (when (> (:velocity message) 0)
+                     (when (pos? (:velocity message))
                        (swap! (:metronome-mode controller) dissoc :showing)
                        ;; Exit the overlay
                        :done)
 
                      20 ; Reset pad
-                     (when (> (:velocity message) 0)
+                     (when (pos? (:velocity message))
                        (rhythm/metro-phrase-start (:metronome (:show controller)) 1)
                        (add-pad-held-feedback-overlay controller 20
                                                       #(aset (:next-top-pads controller)
                                                              0 (top-pad-state :bright :red)))
                        true)
                      21 ; Sync pad
-                     (when (> (:velocity message) 0)
+                     (when (pos? (:velocity message))
                        ;; TODO: Actually implement a new overlay
                        (add-pad-held-feedback-overlay controller 21
                                                       #(aset (:next-top-pads controller)
@@ -527,7 +527,7 @@
             marker (rhythm/metro-marker metronome)
             bpm (format "%.1f" (float (rhythm/metro-bpm metronome)))
             chars (+ (count marker) (count bpm))
-            padding (apply str (take (- 17 chars) (repeat " ")))]
+            padding (clojure.string/join (take (- 17 chars) (repeat " ")))]
         (write-display-cell controller 1 0 (str marker padding bpm))
         (write-display-cell controller 0 0 "Beat        BPM  ")
 
@@ -804,16 +804,16 @@
   [controller message]
   (case (:note message)
     3 ; Tap tempo button
-    (when (> (:velocity message) 0)
+    (when (pos? (:velocity message))
       (interpret-tempo-tap controller)
       (enter-metronome-showing controller))
 
     9 ; Metronome button
-    (when (> (:velocity message) 0)
+    (when (pos? (:velocity message))
       (enter-metronome-showing controller))
 
     49 ; Shift button
-    (swap! (:shift-mode controller) (fn [_] (> (:velocity message) 0)))
+    (swap! (:shift-mode controller) (fn [_] (pos? (:velocity message))))
 
     ;; Something we don't care about
     nil))

@@ -72,15 +72,16 @@
 (defn usage
   "Print message explaining command-line invocation options."
   [options-summary]
-  (->> ["Afterglow, a functional lighting control environment."
-        ""
-        "Usage: afterglow [options]"
-        ""
-        "Options:"
-        options-summary
-        ""
-        "Please see https://github.com/brunchboy/afterglow for more information."]
-       (clojure.string/join \newline)))
+  (clojure.string/join
+   \newline
+   ["Afterglow, a functional lighting control environment."
+    ""
+    "Usage: afterglow [options]"
+    ""
+    "Options:"
+    options-summary
+    ""
+    "Please see https://github.com/brunchboy/afterglow for more information."]))
 
 (defn error-msg [errors]
   "Format an error message related to command-line invocation."
