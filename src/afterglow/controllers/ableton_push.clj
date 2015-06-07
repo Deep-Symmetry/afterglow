@@ -353,15 +353,37 @@
       (aset (get (:next-display controller) row) (+ (* cell 17) i) (util/ubyte val)))))
 
 (defn make-gauge
-  "Create a graphical gauge taking up one display cell."
-  [value & {:keys [lowest highest] :or {lowest 0 highest 100}}]
+  "Create a graphical gauge with an indicator that fills a line.
+  The default range is from zero to a hundred, and the default size is
+  17 characters, or a full display cell."
+  [value & {:keys [lowest highest width] :or {lowest 0 highest 100 width 17}}]
+  (let [range (- highest lowest)
+        scaled (int (* 2 width (/ (- value lowest) range)))
+        marker ((if (< (- value lowest) 0.1)
+                  :fader-empty
+                  (if (even? scaled) :fader-left :fader-center))
+                special-symbols)
+        leader (take (int (/ scaled 2)) (repeat (:fader-center special-symbols)))]
+    (take width (concat leader [marker] (repeat (:fader-empty special-symbols))))))
+
+(defn make-pan-gauge
+  "Create a graphical gauge with an indicator that moves along a line.
+  The default range is from zero to a hundred, and the default size is
+  17 characters, or a full display cell. The centered display only
+  works for an odd width, so it is suppressed otherwise."
+  [value & {:keys [lowest highest width] :or {lowest 0 highest 100 width 17}}]
   (let [range (* 1.01 (- highest lowest))
-        scaled (int (* 34 (/ (- value lowest) range)))
+        midpoint (/ (- highest lowest) 2)
+        scaled (int (* 2 width (/ (- value lowest) range)))
         filler (repeat (:fader-empty special-symbols))
-        marker ((if (even? scaled) :fader-left :fader-right) special-symbols)
+        centered (and (odd? width)
+                      (< (math/abs (- (- value lowest) midpoint)) (/ range 200)))
+        marker ((if centered
+                   :fader-center
+                   (if (even? scaled) :fader-left :fader-right))
+                special-symbols)
         leader (take (int (/ scaled 2)) filler)]
-    (println scaled range)
-    (take 17 (concat leader [marker] filler))))
+    (take width (concat leader [marker] filler))))
 
 (defn- interpret-tempo-tap
   "React appropriately to a tempo tap, based on the sync mode of the
