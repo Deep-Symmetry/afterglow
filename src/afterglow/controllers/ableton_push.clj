@@ -8,6 +8,7 @@
             [afterglow.midi :as amidi]
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
+            [afterglow.show-context :refer [with-show]]
             [afterglow.util :as util]
             [clojure.math.numeric-tower :as math]
             [environ.core :refer [env]]
@@ -387,10 +388,17 @@
 
 (defn- interpret-tempo-tap
   "React appropriately to a tempo tap, based on the sync mode of the
-  show metronome."
+  show metronome. If it is manual, invoke the metronome tap-tempo
+  handler. If MIDI, align the current beat to the tap. If DJ Link, set
+  the current beat to be a down beat (first beat of a bar)."
   [controller]
-  ;; TODO: Do other things when synced.
-  ((:tap-tempo-handler controller)))
+  (with-show (:show controller)
+    (let [metronome (get-in controller [:show :metronome])]
+      (case (:type (show/sync-status))
+        :manual ((:tap-tempo-handler controller))
+        :midi (rhythm/metro-beat-phase metronome 0)
+        :dj-link (rhythm/metro-bar-start metronome (rhythm/metro-bar metronome))
+        (warn "Don't know how to tap tempo for sync type" (show/sync-status))))))
 
 (defn- bpm-adjusting-interface
   "Add an arrow showing the BPM is being adjusted."
@@ -482,12 +490,12 @@
 (defn- metronome-sync-label
   "Determine the sync type label to display under the BPM section."
   [controller]
-  (if-let [sync-in-effect @(:sync (:show controller))]
-    (case (:type (afterglow.midi/sync-status sync-in-effect))
+  (with-show (:show controller)
+    (case (:type (show/sync-status))
+      :manual "Manual"
       :midi "MIDI"
       :dj-link "DJ Link"
-      "Unknown")
-    "Manual"))
+      "Unknown")))
 
 (defn- enter-metronome-showing
   "Activate the persistent metronome display, with sync and reset pads
