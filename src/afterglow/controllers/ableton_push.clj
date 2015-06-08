@@ -456,14 +456,14 @@
   "Adjust the current beat based on how the encoder was twisted."
   [controller message]
   (let [delta (sign-velocity (:velocity message))
-                         snapshot (rhythm/metro-snapshot (:metronome (:show controller)))]
-                     (if @(:shift-mode controller)
-                       ;; User is adjusting the current bar
-                       (rhythm/metro-bar-start (:metronome (:show controller)) (+ (:bar snapshot) delta))
-                       ;; User is adjusting the current beat; keep the phase unchanged
-                       (do
-                         (rhythm/metro-start (:metronome (:show controller)) (+ (:beat snapshot) delta))
-                         (rhythm/metro-beat-phase (:metronome (:show controller) (:beat-phase snapshot)))))))
+        metronome (:metronome (:show controller))
+        units (if @(:shift-mode controller)
+                ;; User is adjusting the current bar
+                (rhythm/metro-tock metronome)
+                ;; User is adjusting the current beat
+                (rhythm/metro-tick metronome))
+        ms-delta (- (* delta units))]
+    (rhythm/metro-adjust metronome ms-delta)))
 
 (defn- encoder-above-beat-touched
   "Add a user interface overlay to give feedback when turning the

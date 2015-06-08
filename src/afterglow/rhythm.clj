@@ -22,6 +22,8 @@
   (metro-phrase-start [metro start-phrase]
     "Restarts the metronome at start-phrase, keeping the beat phase
     unchanged in case it is being synced to an external source.")
+  (metro-adjust [metro ms]
+    "Adds a number of milliseconds to the start time of the metronome.")
   (metro-tick [metro]
     "Returns the duration of one beat in milleseconds.")
   (metro-tock [metro]
@@ -181,6 +183,8 @@ as fast, 3/4 oscillates 4 times every three markers..."
           shift (* (metro-tick metro) (if (> phase 0.5) (dec phase) phase))
           new-phrase-start (round (- (now) shift (* (dec start-phrase) (metro-ding metro))))]
       (reset! start new-phrase-start)))
+  (metro-adjust [metro ms]
+    (swap! start + ms))
 
   (metro-tick [metro] (beat-ms 1 @bpm))
   (metro-tock [metro] (beat-ms @bpb @bpm))
