@@ -276,21 +276,21 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   - [x] Add phrase oscillators
   - [x] Finish wiki page
 - [x] Have metronome cue take metronome parameter and support dynamic
-  parameters.
+      parameters.
 - [x] Consider having patched fixture hold a reference to the show.
-  That way we could stop having to pass it so many places, though it
-  would make printing fixtures less useful. (Not needed; dynamic
-  binding works better.)
+      That way we could stop having to pass it so many places, though it
+      would make printing fixtures less useful. (Not needed; dynamic
+      binding works better.)
 - [x] Add support for named fixture functions which exist as a value
-  range subset of a channel, and effects which set them to particular
-  values.
+      range subset of a channel, and effects which set them to particular
+      values.
 - [x] Allow scaling of named fixture functions, for example to allow a
-  strobe effect to be set to a rough Hz value despite differences in
-  fixture implementation.
+      strobe effect to be set to a rough Hz value despite differences in
+      fixture implementation.
 - [x] Add color wheel support.
 - [ ] Review existing fixture definitions for consistency of function
-  names, start a style guide on the Wiki for others creating fixture
-  definitions.
+      names, start a style guide on the Wiki for others creating fixture
+      definitions.
 - [ ] Make pass over all source, flesh out API doc and preconditions.
 - [ ] Sparkle effect, essentially a particle generator with
   configurable maximum brightness, fade time, distribution.
@@ -298,42 +298,44 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   - [ ] Work both with arbitrary head list, and with spatially mapped origin/density.
   - [ ] Work as single intensity, or spatially mapped hue/saturation patterns.
   - [x] Implement a grand master dimmer in the show which imposes a
-    ceiling on all dimmer cues.
+        ceiling on all dimmer cues.
   - [x] Also allow custom sub-master dimmer variables, chained off
-    each other and ultimately the grand master, assigned to cues. Each
-    step can scale the output.
+        each other and ultimately the grand master, assigned to cues. Each
+        step can scale the output.
   - [x] All dimmer cues are assigned a master chain, defaulting to the
   grand master if none supplied.
 - [x] Get geometry engine and head-movement cues working.
 - [ ] Add button color method to IEffect so mapped RGB controllers can
-  have animated feedback, e.g. dim version of current effect color if
-  off, bright when on; flash it while ending. Update MIDI feedback
-  around ten times per second?
+      have animated feedback, e.g. dim version of current effect color if
+      off, bright when on; flash it while ending. Update MIDI feedback
+      around ten times per second?
 - [ ] Compound effects: Have effect functions pass a context map to
-    children with show, snapshot, own stuff? For example, so the
-    children can be aware of build, duration, a shared palette, other
-    things?
+      children with show, snapshot, own stuff? For example, so the
+      children can be aware of build, duration, a shared palette, other
+      things?
 - [ ] Provide a mechanism for creating and controlling/monitoring
-  effects via OSC messages. Probably essentially a special-purpose OSC
-  REPL.
+      effects via OSC messages. Probably essentially a special-purpose OSC
+      REPL.
 - [ ] Add web page for viewing/adjusting show variables; associate metadata
       with the variables so the page can provide appropriate editing tools
       and validation. Values live-update when controllers change them.
 - [ ] Add show status query, reports statistics as well as list of
-  current effects and priorities, perhaps when they were added, the
-  list of targets each is currently assigning, other stuff? Could turn
-  into the start of a web interface.
+      current effects and priorities, perhaps when they were added, the
+      list of targets each is currently assigning, other stuff? Could turn
+      into the start of a web interface.
 - [ ] See if I can get Traktor to just send beat notes for master
-  track; if so, add mode for MIDI sync to ride them like DJ link
+      track; if so, add mode for MIDI sync to ride them like DJ link
   - [ ] See example on page 166 of Traktor Bible; it is close, but I
-    want to add a condition that makes sure these pulses are sent only
-    for the deck which is currently the tempo master. Write to the
-    author for advice? Alternately, send separate messages when each
-    deck is set as the tempo master, and use those to keep track of
-    which beat pulses to pay attention to?
+        want to add a condition that makes sure these pulses are sent only
+        for the deck which is currently the tempo master. Write to the
+        author for advice? Alternately, send separate messages when each
+        deck is set as the tempo master, and use those to keep track of
+        which beat pulses to pay attention to?
 - [ ] See if I can detect which Pro DJ Link device is the current
-  master, and if so, add an option for down beat tracking using that.
+      master, and if so, add an option for down beat tracking using that.
 - [x] Add tap tempo support for really low-end sync.
+- [ ] Add machine-readable metronome sync status flag, so Push can
+      color code it; detect stalled clocks even without stop signals.
   
 ### Ideas
 
