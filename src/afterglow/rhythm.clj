@@ -1,8 +1,8 @@
 (ns afterglow.rhythm
-  "Functions to help work with musical time."
-  {:author "Jeff Rose, James Elliott",
-   :original
-   "https://github.com/overtone/overtone/blob/master/src/overtone/music/rhythm.clj"}
+  "Functions to help work with musical time, evolved from the original
+  version in [Overtone](https://github.com/overtone/overtone/blob/master/src/overtone/music/rhythm.clj)."
+ {:author "Jeff Rose, James Elliott",
+   :doc/format :markdown}
   (:require [overtone.at-at :refer [now]]
             [clojure.math.numeric-tower :refer [round floor]]))
 
