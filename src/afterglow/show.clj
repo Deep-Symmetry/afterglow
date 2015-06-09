@@ -81,14 +81,15 @@
                                        (:effects @(:active-effects show)))))))
 
 (defn- run-assigners
-  "Returns a tuple of the target to be assigned, and the final value
-  for that target, after iterating over an assigner list."
+  "Returns a tuple of the target to be assigned, the target ID of the
+  assigner, and the final value for that target, after iterating over
+  an assigner list."
   [show snapshot assigners]
   (pspy :run-assigners
         (reduce (fn [result-so-far assigner]
                   [(:target assigner) (:target-id assigner)
                    (fx/assign assigner show snapshot (:target assigner)
-                              (get result-so-far 1))])
+                              (get result-so-far 2))])
                 []
                 assigners)))
 
