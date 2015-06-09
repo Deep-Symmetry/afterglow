@@ -95,7 +95,7 @@
                       (global-color-cue
                        (params/build-color-param :s 100 :l 50 :h hue-param)))
     (show/add-effect! :sparkle
-                      (fun/sparkle sample-show (show/all-fixtures sample-show) :chance 0.05 :fade-time 50))))
+                      (fun/sparkle (show/all-fixtures) :chance 0.05 :fade-time 50))))
 
 (defn mapped-sparkle-test
   "A verion of the sparkle test that creates a bunch of MIDI-mapped
