@@ -61,7 +61,7 @@ linearly to 0.0
 |`:beat-ratio` |`1` |Runs the oscillator at the specified multiple or
 fraction of a beat
 
-|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+|`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 beat by the specified amount
 |=======================================================================
 
@@ -114,9 +114,9 @@ by using optional keyword parameters:
 linearly to 0.0
 
 |`:bar-ratio` |`1` |Runs the oscillator at the specified
-link:#ratios[multiple or fraction] of a bar
+<<ratios,multiple or fraction>> of a bar
 
-|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+|`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 bar by the specified amount
 |=======================================================================
 
@@ -139,9 +139,9 @@ wave by using optional keyword parameters:
 linearly to 0.0
 
 |`:phrase-ratio` |`1` |Runs the oscillator at the specified
-link:#ratios[multiple or fraction] of a phrase
+<<ratios,multiple or fraction>> of a phrase
 
-|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+|`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 phrase by the specified amount
 |=======================================================================
 
@@ -163,9 +163,9 @@ nature of the wave by using optional keyword parameters:
 |=======================================================================
 |Parameter |Default |Purpose
 |`:beat-ratio` |`1` |Runs the oscillator at the specified
-link:#ratios[multiple or fraction] of a beat
+<<ratios,multiple or fraction>> of a beat
 
-|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+|`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 beat by the specified amount
 |=======================================================================
 
@@ -186,9 +186,9 @@ parameters:
 |=======================================================================
 |Parameter |Default |Purpose
 |`:bar-ratio` |`1` |Runs the oscillator at the specified
-link:#ratios[multiple or fraction] of a bar
+<<ratios,multiple or fraction>> of a bar
 
-|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+|`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 bar by the specified amount
 |=======================================================================
 
@@ -209,9 +209,9 @@ keyword parameters:
 |=======================================================================
 |Parameter |Default |Purpose
 |`:phrase-ratio` |`1` |Runs the oscillator at the specified
-link:#ratios[multiple or fraction] of a phrase
+<<ratios,multiple or fraction>> of a phrase
 
-|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+|`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 phrase by the specified amount
 |=======================================================================
 
@@ -239,9 +239,9 @@ using optional keyword parameters:
 1.0 to 0.0, and therefore the width of the 1.0 pulse
 
 |`:beat-ratio` |`1` |Runs the oscillator at the specified
-link:#ratios[multiple or fraction] of a beat
+<<ratios,multiple or fraction>> of a beat
 
-|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+|`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 beat by the specified amount
 |=======================================================================
 
@@ -264,9 +264,9 @@ nature of the wave by using optional keyword parameters:
 1.0 to 0.0, and therefore the width of the 1.0 pulse
 
 |`:bar-ratio` |`1` |Runs the oscillator at the specified
-link:#ratios[multiple or fraction] of a bar
+<<ratios,multiple or fraction>> of a bar
 
-|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+|`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 bar by the specified amount
 |=======================================================================
 
@@ -289,9 +289,9 @@ the nature of the wave by using optional keyword parameters:
 1.0 to 0.0, and therefore the width of the 1.0 pulse
 
 |`:phrase-ratio` |`1` |Runs the oscillator at the specified
-link:#ratios[multiple or fraction] of a phrase
+<<ratios,multiple or fraction>> of a phrase
 
-|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+|`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 phrase by the specified amount
 |=======================================================================
 
@@ -320,9 +320,9 @@ of the wave by using optional keyword parameters:
 |=======================================================================
 |Parameter |Default |Purpose
 |`:beat-ratio` |`1` |Runs the oscillator at the specified
-link:#ratios[multiple or fraction] of a beat
+<<ratios,multiple or fraction>> of a beat
 
-|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+|`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 beat by the specified amount
 |=======================================================================
 
@@ -345,9 +345,9 @@ parameters:
 |=======================================================================
 |Parameter |Default |Purpose
 |`:bar-ratio` |`1` |Runs the oscillator at the specified
-link:#ratios[multiple or fraction] of a bar
+<<ratios,multiple or fraction>> of a bar
 
-|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+|`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 bar by the specified amount
 |=======================================================================
 
@@ -370,8 +370,8 @@ parameters:
 |=======================================================================
 |Parameter |Default |Purpose
 |`:phrase-ratio` |`1` |Runs the oscillator at the specified
-link:#ratios[multiple or fraction] of a phrase
+<<ratios,multiple or fraction>> of a phrase
 
-|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+|`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 phrase by the specified amount
 |=======================================================================
