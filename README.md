@@ -13,7 +13,7 @@ via its
 
 This page provides an introduction in how to install and use
 Afterglow. The main
-[documentation](doc/README.adoc#aferglow-documentation) goes much
+[documentation](doc/README.adoc#afterglow-documentation) goes much
 deeper, and there is also
 [API documentation](http://deepsymmetry.org/afterglow/doc/index.html).
 Finally, the project [wiki](wiki) offers a place for more-rapid
@@ -44,7 +44,7 @@ time-consuming detours. Most of the crazy ideas have panned out and
 been implemented, and I am just circling back and fleshing out the
 basic details needed for everyday use. The examples are starting to be
 intriguing and informative, and the
-[documentation](doc/README.adoc#aferglow-documentation) is getting
+[documentation](doc/README.adoc#afterglow-documentation) is getting
 substantial. The modeling of fixtures, channels, etc. is coming
 together nicely, though there have been drastic changes as I gained
 experience with how I want to use them.
