@@ -36,7 +36,6 @@ Then I can create a global color cue based on that variable:
 
 [source,clojure]
 ----
-code,clojure
 (show/add-effect! :color (global-color-cue
   (params/build-color-param :s 100 :l 50 :h :knob-1)))
 ----
@@ -110,37 +109,38 @@ in the Java MIDI API, only MIDI devices which were connected when the
 program started are available to it. Then, assuming you have only one
 device sending MIDI clock, you can just execute:
 
-code,clojure-----------------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (show/sync-to-external-clock (afterglow.midi/sync-to-midi-clock))
------------------------------------------------------------------
+----
 
 If there is ambiguity about which device’s MIDI clocks you want to
 process, Afterglow will complain. Resolve that by passing a substring
 which uniquely matches the name or description of the MIDI device that
 you want to sync to:
 
-code,clojure------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (show/sync-to-external-clock
   (afterglow.midi/sync-to-midi-clock "traktor"))
-------------------------------------------------
+----
 
 From then on, as the BPM of that device changes, Afterglow will track it
 automatically. To check on the sync status, you can invoke:
 
-code,clojure------------------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (show/sync-status)
 ; -> {:type :midi, :status "Running, clock pulse buffer is full."}
-------------------------------------------------------------------
+----
 
 The calculated BPM of the synced show can be displayed like this:
 
-code,clojure------------------------------------ code,clojure
+[source,clojure]
+----
 (metro-bpm (:metronome sample-show))
 ; -> 128.5046728971963
-------------------------------------
+----
 
 It will bounce up and down near the actual BPM as clock pulses are
 received, but overall track the beat quite well. To get a rock-solid
@@ -150,15 +150,14 @@ syncing, as described below.
 To shut down the syncing, just call `sync-to-external-clock` with no
 sync source:
 
-code,clojure----------------------------- code,clojure
+[source,clojure]
+----
 (show/sync-to-external-clock)
 (show/sync-status)
 ; -> {:type :manual}
------------------------------
+----
 
-[[syncing-to-pro-dj-link]]
-Syncing to Pro DJ Link
-~~~~~~~~~~~~~~~~~~~~~~
+== Syncing to Pro DJ Link
 
 If you are working with Pioneer club gear, such as the Nexus line of
 CDJs and mixers, you can use Pro DJ Link to sync much more precisely.
@@ -173,45 +172,43 @@ perform BPM analysis if a non-DJ-Link, or even non-digital, source is
 being played). Like with MIDI sync, you can give a unique substring of
 the device name in the sync call:
 
-code,clojure-------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (show/sync-to-external-clock
   (afterglow.dj-link/sync-to-dj-link "DJM-2000"))
--------------------------------------------------
+----
 
 As with MIDI, you can check on the sync status:
 
-code,clojure---------------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (show/sync-status)
 ; -> {:type :dj-link, :status "Running, 5 beats received."}
 ; -> {:type :dj-link,
 ;     :status "Network problems? No DJ Link packets received."}
----------------------------------------------------------------
+----
 
-_______________________________________________________________________________________________________________________________________________________________________________________________________________________
-If you are not getting any packets, you will need to put on your network
-troubleshooting hat, and figure out why UDP broadcast packets to port
-50001 from the mixer are not making it to the machine running Afterglow.
-_______________________________________________________________________________________________________________________________________________________________________________________________________________________
+TIP: If you are not getting any packets, you will need to put on your
+network troubleshooting hat, and figure out why UDP broadcast packets
+to port 50001 from the mixer are not making it to the machine running
+Afterglow.
 
-[[checking-your-sync]]
-Checking your Sync
-~~~~~~~~~~~~~~~~~~
+
+= Checking your Sync
 
 An easy way to see how well your show is syncing the beat is to use the
-metronome-cue, which flashes a bright pink pulse on the down beat, and a
+`metronome-cue`, which flashes a bright pink pulse on the down beat, and a
 less bright yellow pulse on all other beats of the show metronome. To
 set that up:
 
-code,clojure------------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (require 'afterglow.effects.fun)
 (show/add-effect! :color
   (afterglow.effects.fun/metronome-cue (show/all-fixtures)))
-------------------------------------------------------------
+----
 
-Then you can reset the metronome by hitting Return on the following
+Then you can reset the metronome by hitting kbd:[Return] on the following
 command, right on the down beat of a track playing through your
 synchronized gear, and watch how Afterglow tracks tempo changes made by
 the DJ from then on:
