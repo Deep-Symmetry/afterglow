@@ -1,16 +1,24 @@
 = Afterglow Documentation
 James Elliott <james@deepsymmetry.org>
-:toc2:
-:toc-placement: preamble
 :icons: font
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
 ifdef::env-github[:outfilesuffix: .adoc]
 
-Here is some preamble text.
+To keep page sizes manageable, the Afterglow documentation is split
+into several pages. This page provides an introduction and overview,
+and links to other sections as needed. If you know what you are
+looking for, you can also dive right into it by jumping to the page
+you want:
 
-Can I really get no preamble to show up?
+****
+
+.Pages
+<<effect_functions#effect-functions,Effect Functions>>:: The
+building blocks of a dynamic light show.
+
+****
 
 == What is Afterglow?
 
@@ -98,4 +106,3 @@ also designed to work with MIDI controllers, both to trigger effects,
 and to synchronize with music, as described in
 <<mapping_sync#midi-mapping-and-beat-sync,MIDI Mapping and Beat Sync>>.
 
-include::effect_functions.adoc[]
