@@ -526,5 +526,5 @@ combine them? Oh, but we can!
 NOTE: Now the rainbow drifts across the whole lighting rig. We left out color
 wheels this time, since the color is continually shifting.
 
-The <<effect-functions,Effect Functions>> section goes into more
+The <<Effect Types>> section goes into more
 detail about how these effects work.
