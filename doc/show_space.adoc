@@ -1,6 +1,6 @@
-[[show-space]]
-Show Space
-~~~~~~~~~~
+=Show Space
+James Elliott <james@deepsymmetry.org>
+:icons: font
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.

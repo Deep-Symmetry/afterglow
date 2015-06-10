@@ -45,9 +45,8 @@ display, color-changing pressure-sensitive pads, and touch-sensitive
 encoders, but that is slightly separate from the main Afterglow
 project.
 
-[[how-afterglow-works]]
-How Afterglow Works
-~~~~~~~~~~~~~~~~~~~
+
+== How Afterglow Works
 
 The fundamental task of Afterglow is to make light shows happen. It
 does this by controlling lights, communicating with them through the

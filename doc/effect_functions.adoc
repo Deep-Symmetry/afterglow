@@ -1,56 +1,69 @@
-Effect functions determine what a light or group of lights are doing at
-a given moment in time. When creating an effect function, you assign one
-or more [[Fixtures|fixture-definitions]] to it, and it will generate
-control values for only those fixtures. The fixture channels affected by
-the effect depend on the kind of effect it is, and are grouped into
-several primary categories. The simplest kinds of effects apply to a
-single channel per fixture, or perhaps per head, if the fixture has
-multiple independent light-emitting heads. A very common single-channel
-effect is the link:#dimmer-effects[dimmer effect].
+= Effect Functions
+James Elliott <james@deepsymmetry.org>
+:icons: font
+:toc:
+:toc-placement: preamble
 
-Many effects assign link:#color-effects[colors] to lights, which often
+// Set up support for relative links on GitHub; add more conditions
+// if you need to support other environments and extensions.
+ifdef::env-github[:outfilesuffix: .adoc]
+
+== Overview
+
+Effect functions determine what a light or group of lights are doing
+at a given moment in time. When creating an effect function, you
+assign one or more <<fixture_definitions#fixture-definitions,Fixtures>
+to it, and it will generate control values for only those fixtures.
+The fixture channels affected by the effect depend on the kind of
+effect it is, and are grouped into several primary categories. The
+simplest kinds of effects apply to a single channel per fixture, or
+perhaps per head, if the fixture has multiple independent
+light-emitting heads. A very common single-channel effect is the
+<<dimmer-effects,dimmer effect>>.
+
+Many effects assign <<color-effects,colors>> to lights, which often
 involves multiple channels. RGB fixtures will use three channels, one
 each for the red, green, and blue levels which make up the color. Some
 fixtures add other LED colors, such as amber, white, and even
 ultraviolet. Other fixtures simply use a rotating color wheel to pick
 from a fixed set of colors, using a single channel. Regardless of how
 the color is finally produced, at most stages of effect processing,
-Afterglow works in terms of the [[color itself|working-with-color]],
-allowing you to blend, lighten, darken, shift hue, and the like so you
-can produce interesting looks, without regard to details of fixture
-implementation. It is only at the [[final rendering
-stage|the-rendering-loop]] that the color is broken down into channel
-assignments.
+Afterglow works in terms of the
+<<working_with_color#working-with-color,color itself>>, allowing you
+to blend, lighten, darken, shift hue, and the like so you can produce
+interesting looks, without regard to details of fixture
+implementation. It is only at the
+<<rendering_loop#the-rendering-loop,final rendering stage>> that the
+color is broken down into channel assignments.
 
 Another important category of effects control the
-link:#direction-effects[direction] of moving-head fixtures. These work
-in terms of a desired 3D direction vector or link:#aim-effects[target
-point] with respect to the [[show frame of reference|show-space]], and
-at the last stage of rendering, convert that to pan and tilt channel
-values, with reference to the angle at which the fixture has actually
-been hung.
+<<direction-effects,direction>> of moving-head fixtures. These work in
+terms of a desired 3D direction vector or <<aim-effects,target point>>
+with respect to the <<show_space#show-space,show frame of reference>>,
+and at the last stage of rendering, convert that to pan and tilt
+channel values, with reference to the angle at which the fixture has
+actually been hung.
 
 You can also conveniently use features which are shared by a number of
 fixtures, or completely unique to a single fixture, through
-link:#function-effects[function effects], or drop right down to the
+<<function-effects,function effects>>, or drop right down to the
 level of individual DMX channel values with
-link:#channel-effects[channel effects].
+<<channel-effects,channel effects>>.
 
 Finally, Afterglow includes some examples of how to build up
-link:#complex-effects[special-purpose effects], which can be fun in
+<<complex-effects,special-purpose effects>>, which can be fun in
 themselves, and also serve as templates and inspiration for whole new
 kinds of effects you create on your own.
 
-[[dimmer-effects]]
-Dimmer Effects
-~~~~~~~~~~~~~~
+== Dimmer Effects
+
 
 To create an effect that will set the dimmer level of a fixture, use:
 
-code,clojure---------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (afterglow.effects.dimmer/dimmer-cue level fixtures htp?)
----------------------------------------------------------
+----
 
 This effect finds all the dimmer channels associated with the specified
 fixtures (there may be multiple, if the fixture has more than one
