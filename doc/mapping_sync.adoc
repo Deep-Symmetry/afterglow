@@ -209,7 +209,7 @@ set that up:
   (afterglow.effects.fun/metronome-cue (show/all-fixtures)))
 ----
 
-Then you can reset the metronome by hitting key:[Return] on the following
+Then you can reset the metronome by hitting kbd:[Return] on the following
 command, right on the down beat of a track playing through your
 synchronized gear, and watch how Afterglow tracks tempo changes made by
 the DJ from then on:
