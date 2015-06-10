@@ -85,7 +85,9 @@ time, you might find that someone has written a rich user interface
 binding for your controller, as is happening for the
 http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
 Push], which would let you jump right in without having to worry about
-such details.
+such details. These examples can still help explain how your
+controller's binding works, or encourage you to write and share a
+binding for a new controller that you happen to have.
 
 == Syncing to MIDI Clock
 
@@ -214,9 +216,10 @@ command, right on the down beat of a track playing through your
 synchronized gear, and watch how Afterglow tracks tempo changes made by
 the DJ from then on:
 
-code,clojure---------------------------------------- code,clojure
+[source,clojure]
+----
 (metro-start (:metronome sample-show) 1)
-----------------------------------------
+----
 
 When running live light shows you will almost certainly want to map a
 button on a MIDI controller to perform this beat resynchronization
@@ -225,10 +228,10 @@ synchronize with your mixer—but even then you will likely want the next
 two functions mapped, for realigning on bars and phrases). Here is how I
 do it for one of the buttons on my Korg nanoKontrol 2:
 
-code,clojure-------------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (show/add-midi-control-metronome-reset-mapping "slider" 0 45)
--------------------------------------------------------------
+----
 
 Then, whenever I press that button, the metronome is started at beat 1,
 bar 1, phrase 1.
@@ -254,12 +257,14 @@ DJ software.
 If the metronome flashes start driving you crazy, you can switch back to
 a static cue,
 
-code,clojure---------------------------------- code,clojure
+[source,clojure]
+----
 (show/add-effect! :color blue-cue)
-----------------------------------
+----
 
 or even black things out:
 
-code,clojure--------------------- code,clojure
+[source,clojure]
+----
 (show/clear-effects!)
----------------------
+----
