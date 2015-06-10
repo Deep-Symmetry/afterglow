@@ -1,6 +1,7 @@
 = MIDI Mapping and Beat Sync
 James Elliott <james@deepsymmetry.org>
 :icons: font
+:experimental:
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
