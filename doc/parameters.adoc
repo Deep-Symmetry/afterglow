@@ -42,10 +42,11 @@ and the current value stored in the show variable will be used. This is
 a convenience mechanism, you can also explicitly build a reference to a
 show variable like this:
 
-code,clojure----------------------------------------------------
+[source,clojure]
+----
 code,clojure
 (afterglow.effects.params/build-variable-param :key)
-----------------------------------------------------
+----
 
 The reason you might want to use the explicit creation function is that
 you can control details about the binding by passing in optional keyword
@@ -68,11 +69,12 @@ at at every frame, or just once
 
 As an example of using these parameters, consider:
 
-code,clojure---------------------------------------------------
+[source,clojure]
+----
 code,clojure
 (afterglow.effects.params/build-variable-param :key
   :type Number :default 0 :adjust-fn #(* % 2))
----------------------------------------------------
+----
 
 This would cause the dynamic parameter to have a numeric value which is
 twice the value found in the show variable.
@@ -81,33 +83,32 @@ When you use the keyword shorthand to bind to a show variable in
 building another dynamic parameter, the type and default are assumed
 from the context in which you are using the variable.
 
-[[oscillated-parameters]]
-Oscillated Parameters
-~~~~~~~~~~~~~~~~~~~~~
+== Oscillated Parameters
 
 Oscillated parameters vary over time, at a speed controlled by a
-[[Metronome|metronomes]] (usually the main show metronome, synced to DJ
-equipment) and so can make the lights appear to be reacting
-intelligently to the music being played. The timing information produced
-by the metronome is fed into an [[Oscillator|oscillators]], which
-determines the shape of the wave that controls its value, and the
-frequency at which it oscillates, related to beats, bars, or phrases of
-the underlying metronome. The resulting value can then be scaled to meet
-the needs of whatever is being generated (a dimmer level, color
-component, or light rotation). Oscillated parameters are created by
-calling:
+<<metronomes#metronomes,Metronome>> (usually the main show metronome,
+synced to DJ equipment) and so can make the lights appear to be
+reacting intelligently to the music being played. The timing
+information produced by the metronome is fed into an
+<<oscillators#oscillators,Oscillator>>, which determines the shape of
+the wave that controls its value, and the frequency at which it
+oscillates, related to beats, bars, or phrases of the underlying
+metronome. The resulting value can then be scaled to meet the needs of
+whatever is being generated (a dimmer level, color component, or light
+rotation). Oscillated parameters are created by calling:
 
-code,clojure------------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (afterglow.effects.params/build-oscillated-param oscillator)
-------------------------------------------------------------
+----
 
-The `oscillator` parameter is an [[oscillator|oscillators]] created by
-one of the functions in
+The `oscillator` parameter is an
+<<oscillators#oscillators,Oscillator>> created by one of the functions
+in
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.oscillators.html[afterglow.effects.oscillators]
 which, as described above, determines how to react to the time
-information provided by the metronome. Additionally, you can supply one
-of the following optional keyword parameters:
+information provided by the metronome. Additionally, you can supply
+one of the following optional keyword parameters:
 
 [cols=",,",options="header",]
 |=======================================================================
@@ -131,9 +132,7 @@ variable was created. The frame-dynamic setting of such variable
 bindings will be controlled by the frame-dynamic setting of the
 oscillated parameter being created.
 
-[[color-parameters]]
-Color Parameters
-~~~~~~~~~~~~~~~~
+== Color Parameters
 
 Color parameters are an extremely flexible way of dynamically assigning
 color. The basic way to create one is to call:
