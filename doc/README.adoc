@@ -15,7 +15,7 @@ and laser shows by avocation.) Currently, the
 link:effect_functions{outfilesuffix}#effect-functions[lighting
 effects] and
 link:fixture_definitions{outfilesuffix}#fixture-definitions[fixture
-efinitions] are written and organized through Clojure code, so you
+definitions] are written and organized through Clojure code, so you
 will either need to learn Clojure or work with a Clojure programmer to
 create new ones, but they are controlled through MIDI control surfaces
 or Open Sound Control, so once they are set up, there is great
