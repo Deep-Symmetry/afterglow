@@ -28,6 +28,9 @@ software.
 <<oscillators#oscillators,Oscillators>>:: Convert show timing
 information into waveforms that can drive your light show.
 
+<<fixture_definitions#fixture-definitions,Fixture Definitions>>:: Tell
+Afterglow how to work with different lighting hardware.
+
 <<show_space#show-space,Show Space>>:: Explores how to measure
 locations and orientations when hanging your lights so that Afterglow
 can properly calculate spatial and directional effects.
