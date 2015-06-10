@@ -1,4 +1,4 @@
-=Show Space
+= Show Space
 James Elliott <james@deepsymmetry.org>
 :icons: font
 

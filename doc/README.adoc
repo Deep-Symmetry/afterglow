@@ -28,6 +28,10 @@ software.
 <<oscillators#oscillators,Oscillators>>:: Convert show timing
 information into waveforms that can drive your light show.
 
+<<show_space#show-space,Show Space>>:: Explores how to measure
+locations and orientations when hanging your lights so that Afterglow
+can properly calculate spatial and directional effects.
+
 <<rendering_loop#the-rendering-loop,The Rendering Loop>>:: Explains in
 detail how a frame of lighting control data is calculated and sent to
 the lights in the show.
