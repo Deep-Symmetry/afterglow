@@ -7,7 +7,7 @@ The Rendering Loop
 ifdef::env-github[:outfilesuffix: .adoc]
 
 When an afterglow show is running, that is, from when
-link:api/afterglow.show.html#var-start.21[(show/start!)]
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-start.21[(show/start!)]
 has been called, until
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-stop.21[(show/stop!)]
 or
