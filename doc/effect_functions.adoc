@@ -12,14 +12,14 @@ ifdef::env-github[:outfilesuffix: .adoc]
 
 Effect functions determine what a light or group of lights are doing
 at a given moment in time. When creating an effect function, you
-assign one or more <<fixture_definitions#fixture-definitions,Fixtures>
-to it, and it will generate control values for only those fixtures.
-The fixture channels affected by the effect depend on the kind of
-effect it is, and are grouped into several primary categories. The
-simplest kinds of effects apply to a single channel per fixture, or
-perhaps per head, if the fixture has multiple independent
-light-emitting heads. A very common single-channel effect is the
-<<dimmer-effects,dimmer effect>>.
+assign one or more
+<<fixture_definitions#fixture-definitions,Fixtures>> to it, and it
+will generate control values for only those fixtures. The fixture
+channels affected by the effect depend on the kind of effect it is,
+and are grouped into several primary categories. The simplest kinds of
+effects apply to a single channel per fixture, or perhaps per head, if
+the fixture has multiple independent light-emitting heads. A very
+common single-channel effect is the <<dimmer-effects,dimmer effect>>.
 
 Many effects assign <<color-effects,colors>> to lights, which often
 involves multiple channels. RGB fixtures will use three channels, one
