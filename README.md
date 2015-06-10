@@ -11,12 +11,12 @@ via its
 
 ## Status
 
-We getting close to an initial release, perhaps in June, although bugs
-in the Mac Java MIDI implementation have caused some time-consuming
-detours. Most of the crazy ideas have panned out and been implemented,
-and I am just circling back and fleshing out the basic details needed
-for everyday use. The examples are starting to be intriguing and
-informative, and the
+We’re getting close to an initial release, perhaps in June,
+although bugs in the Mac Java MIDI implementation have caused some
+time-consuming detours. Most of the crazy ideas have panned out and
+been implemented, and I am just circling back and fleshing out the
+basic details needed for everyday use. The examples are starting to be
+intriguing and informative, and the
 [documentation](https://github.com/brunchboy/afterglow/wiki) is
 getting substantial. The modeling of fixtures, channels, etc. is
 coming together nicely, though there have been drastic changes as I
@@ -31,7 +31,7 @@ looks quite promising, at least for a small number of fixtures; it
 will probably overwhelm the graphics processor on most systems once
 you add too many lights. However, the framework can be used by someone
 who actually knows OpenGL programming to build a more scalable preview
-(albeit one that probably doesn't look quite so photo-realistic with
+(albeit one that probably doesn’t look quite so photo-realistic with
 beams impacting drifting fog).
 
 > Be wary of running the web application for now, though, as it
@@ -137,7 +137,7 @@ But for dimmer channels, there is an even better way of doing that:
 
 All cues which set dimmer levels are tied to a dimmer master chain.
 If none is specified when creating the cue, they are tied directly
-to the show's dimmer grand master. Setting this to a value less than
+to the show’s dimmer grand master. Setting this to a value less than
 100 scales the dimmer values sent to the lights down by that amount.
 So the above command dims the lights to 80% of their possible
 brightness, no matter what else the cues are trying to do. See the
@@ -174,7 +174,7 @@ Moving on, though... we can change the global color to orange:
 
 > The color channel values change.
     
-Let's get a little fancy and ramp the dimmers up on a sawtooth curve each beat:
+Let’s get a little fancy and ramp the dimmers up on a sawtooth curve each beat:
 
 ```clojure
 (show/add-effect! :dimmers
@@ -189,7 +189,7 @@ Slow that down a little:
 ```
 
 > If you have a web browser open on
-> [your OLA daemon](http://localhost:9090/ola.html)'s DMX monitor for
+> [your OLA daemon](http://localhost:9090/ola.html)’s DMX monitor for
 > Universe 1, you will see the values for channels changing, then
 > ramping up quickly, then a little more slowly after you change the
 > BPM. OLA 0.9.5 introduced a new, beta web UI based on AngularJS
@@ -207,7 +207,7 @@ Clojure seize control of your lights!
 ### Further Experiments
 
 If you have DJ software or a mixer sending you MIDI clock data, you
-can sync the show's BPM to it (see the
+can sync the show’s BPM to it (see the
 [wiki](https://github.com/brunchboy/afterglow/wiki/MIDI-Mapping-and-Beat-Sync#syncing-to-midi-clock)
 for details):
 
