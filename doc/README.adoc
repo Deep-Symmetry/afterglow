@@ -60,32 +60,38 @@ ___________________________________________________________________________
 
 
 When you just create a show and call `(show/start!)`, Afterglow will
-send a bunch of zero values to the show’s universes. To make interesting
-things happen you add [[Effect Functions|effect-functions]] to the show.
-The default namespace you are put into when you launch the Afterglow
-project using `lein repl` has some [[example effects|effect-examples]]
-that can help get a feel for this concept. To get a full understanding
-of how to use (and create) effect functions, learn about the [[Effect
-Function Lifecycle|effect-function-lifecycle]].
+send a bunch of zero values to the show’s universes. To make
+interesting things happen you add
+link:effect_functions{outfilesuffix}#effect-functions[Effect
+Functions] to the show. The default namespace you are put into when
+you launch the Afterglow project using `lein repl` has some
+link:example_effects{outfilesuffix}#effect-examples[Example
+Effects] that can help get a feel for this concept.
+To get a full understanding of how to use (and create)
+link:lifecycle{outfilesuffix}#effect-function-lifecycle[Effect
+Function Lifecycle].
 
 The effect functions need to know what lights they are supposed to
 control, what capabilities they have, and how they are connected (what
 universe, what channels), as well as how they are arranged in space.
-This is accomplished by patching [[Fixture
-Definitions|fixture-definitions]] to the show. To work with the actual
-lights you have available, you will need to create fixture definitions
-for them, unless they happen to be ones already available in the
-Afterglow project. Since there are so many kinds of lights, with more
-being created every month, that seems unlikely unless the project really
+This is accomplished by patching
+link:fixture_definitions{outfilesuffix}#fixture-definitions[Fixture
+Definitions] to the show. To work with the actual lights you have
+available, you will need to create fixture definitions for them,
+unless they happen to be ones already available in the Afterglow
+project. Since there are so many kinds of lights, with more being
+created every month, that seems unlikely unless the project really
 takes off… and, to that end, if you _do_ create definitions for your
 lights, please contribute them to the project!
 
 To learn how to install Afterglow and the Open Lighting Architecture,
 see the project https://github.com/brunchboy/afterglow[README].
 
-Since Afterglow was developed to create light shows for electronic music
-events, it is deeply driven by the notion of musical time, through its
-[[Metronomes|metronomes]], so it is worth learning how to configure and
-interact with them. It is also designed to work with MIDI controllers,
-both to trigger effects, and to synchronize with music, as described in
-[[MIDI Mapping and Beat Sync|midi-mapping-and-beat-sync]].
+Since Afterglow was developed to create light shows for electronic
+music events, it is deeply driven by the notion of musical time,
+through its link:metronomes{outfilesuffix}#metronomes[Metronomes], so
+it is worth learning how to configure and interact with them. It is
+also designed to work with MIDI controllers, both to trigger effects,
+and to synchronize with music, as described in
+link:mapping_sync{outfilesuffix}#midi-mapping-and-beat-sync[MIDI
+Mapping and Beat Sync].
