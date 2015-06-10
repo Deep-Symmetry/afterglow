@@ -13,7 +13,8 @@ can also dive right into it by jumping to the page you want:
 
 ****
 
-[horizontal] <<effect_functions#effect-functions,Effect Functions>>::
+[horizontal]
+ <<effect_functions#effect-functions,Effect Functions>>::
 The building blocks of a dynamic light show, which have a
 <<effect_functions#lifecycle,Lifecyle>> worth understanding.
 
