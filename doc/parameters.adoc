@@ -44,7 +44,6 @@ show variable like this:
 
 [source,clojure]
 ----
-code,clojure
 (afterglow.effects.params/build-variable-param :key)
 ----
 
@@ -71,7 +70,6 @@ As an example of using these parameters, consider:
 
 [source,clojure]
 ----
-code,clojure
 (afterglow.effects.params/build-variable-param :key
   :type Number :default 0 :adjust-fn #(* % 2))
 ----
@@ -137,9 +135,10 @@ oscillated parameter being created.
 Color parameters are an extremely flexible way of dynamically assigning
 color. The basic way to create one is to call:
 
-code,clojure-------------------------------------------- code,clojure
+[source,clojure]
+----
 (afterglow.effects.params/build-color-param)
---------------------------------------------
+----
 
 By itself this call would simply return a non-dynamic back color.
 However, you will use one or more of the following optional keyword
@@ -174,30 +173,35 @@ every frame, or just once
 |=======================================================================
 
 All of these parameters, except for `frame-dynamic`, can themselves be
-dynamic parameters, such as show link:#variable-parameters[variables]
+dynamic parameters, such as show <<variable-parameters,variables>>
 (with the convenience shorthand of just passing in the keyword by which
-the show variable was stored) or link:#oscillated-parameters[oscillated
-parameters].
+the show variable was stored) or <<oscillated-parameters,oscillated
+parameters>>.
 
-Refer to [[Working with Color|working-with-color]] for a refresher on
-the meaning of the basic color components. It would not make sense to
-pass all of these parameters, because some will override others, but
-here is how they are evaluated:
+Refer to <<color#working-with-color,Working with Color>> for a
+refresher on the meaning of the basic color components. It would not
+make sense to pass all of these parameters, because some will override
+others, but here is how they are evaluated:
 
-1.  The base color is established by the `:color` parameter.
-2.  If any of `:r`, `:g`, or `:b` have been supplied, the color is
+. The base color is established by the `:color` parameter.
+
+. If any of `:r`, `:g`, or `:b` have been supplied, the color is
 replaced by creating an RGB color with the values (or defaults)
 supplied.
-3.  If any of `:h`, `:s`, or `:l` have been supplied, the color is
+
+. If any of `:h`, `:s`, or `:l` have been supplied, the color is
 replaced by creating an HSL color with the values (or defaults)
 supplied.
-4.  If `:adjust-hue` was supplied, the hue of the color obtained so far
+
+. If `:adjust-hue` was supplied, the hue of the color obtained so far
 is shifted by adding that amount to it (and wrapping around the color
 circle if needed).
-5.  If `adjust-saturation` was supplied, the saturation of the color is
+
+. If `adjust-saturation` was supplied, the saturation of the color is
 adjusted by adding that amount to it, maxing out at 100.0, and bottoming
 out at 0.0. Lower saturations yield less colorful (more gray) colors.
-6.  If `adjust-lightness` was supplied, the lightness of the color is
+
+. If `adjust-lightness` was supplied, the lightness of the color is
 adjusted by adding that amount to it, maxing out at 100.0, and bottoming
 out at 0.0. A lightness of 50.0 allows for a fully saturated color,
 lightnesses above that start getting whitened, and a lightness of 100.0
@@ -208,13 +212,11 @@ Finally, the result of all this is the color that is returned by the
 dynamic parameter. Afterglow tries to be as efficient about this as
 possible, and do as much calculation as it can when the parameter is
 created. If there are no frame dynamic parameters, it will return a
-fixed color. But you can easily use frame-dynamic oscillated parameters
-and get lovely shifting rainbow cues, as shown in the [[effect
-examples|effect-examples#oscillator-effects]].
+fixed color. But you can easily use frame-dynamic oscillated
+parameters and get lovely shifting rainbow cues, as shown in the
+<<effect_functions#oscillator-effects,effect examples>>.
 
-[[direction-parameters]]
-Direction Parameters
-~~~~~~~~~~~~~~~~~~~~
+== Direction Parameters
 
 Direction parameters are a way to tell a group of fixtures to point in a
 particular direction, or move in unison or in a coordinated pattern. The
