@@ -3,7 +3,8 @@ James Elliott <james@deepsymmetry.org>
 :toc:
 :toc-placement: preamble
 
-[[what-is-afterglow]]
+Here is some preamble text.
+
 == What is Afterglow?
 
 // Set up support for relative links on GitHub; add more conditions
