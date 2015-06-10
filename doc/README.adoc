@@ -1,6 +1,7 @@
 = Afterglow Documentation
 James Elliott <james@deepsymmetry.org>
 :toc:
+:toc-placement: preamble
 
 [[what-is-afterglow]]
 == What is Afterglow?
@@ -54,12 +55,9 @@ interfaces you have hooked up to Afterglow. This is described in more
 detail in the
 <<rendering_loop#the-rendering-loop,Rendering Loop>> section.
 
-___________________________________________________________________________
-In principle you could have more than one show running at a time, each
+TIP: In principle you could have more than one show running at a time, each
 controlling a different set of OLA universes, but most people will not
 need this capability.
-___________________________________________________________________________
-
 
 When you just create a show and call `(show/start!)`, Afterglow will
 send a bunch of zero values to the show’s universes. To make
