@@ -9,34 +9,16 @@ to communicate with the `olad` process running on the local machine
 via its
 [RPC Service](https://docs.openlighting.org/doc/latest/rpc_system.html).
 
-## Status
+## Documentation
 
-We’re getting close to an initial release, perhaps in June,
-although bugs in the Mac Java MIDI implementation have caused some
-time-consuming detours. Most of the crazy ideas have panned out and
-been implemented, and I am just circling back and fleshing out the
-basic details needed for everyday use. The examples are starting to be
-intriguing and informative, and the
-[documentation](https://github.com/brunchboy/afterglow/wiki) is
-getting substantial. The modeling of fixtures, channels, etc. is
-coming together nicely, though there have been drastic changes as I
-gained experience with how I want to use them.
-
-There is now an embedded web application, which will grow into a user
-interface for people who are not Clojure hackers. It is mostly empty
-so far, but does include the beginnings of a show visualizer for
-designing and working on effects without having to physically hook up
-lights. This is implemented in WebGL using a volumetric ray tracer and
-looks quite promising, at least for a small number of fixtures; it
-will probably overwhelm the graphics processor on most systems once
-you add too many lights. However, the framework can be used by someone
-who actually knows OpenGL programming to build a more scalable preview
-(albeit one that probably doesn’t look quite so photo-realistic with
-beams impacting drifting fog).
-
-> Be wary of running the web application for now, though, as it
-> aggressively reloads namespaces, and not all of the core Afterglow
-> namespaces deal well with this yet.
+This page provides an introduction in how to install and use
+Afterglow. The main
+[documentation](doc/README.adoc#aferglow-documentation) goes much
+deeper, and there is also
+[API documentation](http://deepsymmetry.org/afterglow/doc/index.html).
+Finally, the project [wiki](wiki) offers a place for more-rapid
+discussion of ideas and sharing of code and discoveries among the
+entire user community.
 
 ## Installation
 
@@ -53,6 +35,31 @@ beams impacting drifting fog).
    [![Dependencies Status](http://jarkeeper.com/brunchboy/afterglow/status.png)](http://jarkeeper.com/brunchboy/afterglow)
 
 Eventually you may be able to download binary distributions from somewhere.
+
+## Status
+
+We’re getting close to an initial release, perhaps in June, although
+bugs in the Mac Java MIDI implementation have caused some
+time-consuming detours. Most of the crazy ideas have panned out and
+been implemented, and I am just circling back and fleshing out the
+basic details needed for everyday use. The examples are starting to be
+intriguing and informative, and the
+[documentation](doc/README.adoc#aferglow-documentation) is getting
+substantial. The modeling of fixtures, channels, etc. is coming
+together nicely, though there have been drastic changes as I gained
+experience with how I want to use them.
+
+There is now an embedded web application, which will grow into a user
+interface for people who are not Clojure hackers. It is mostly empty
+so far, but does include the beginnings of a show visualizer for
+designing and working on effects without having to physically hook up
+lights. This is implemented in WebGL using a volumetric ray tracer and
+looks quite promising, at least for a small number of fixtures; it
+will probably overwhelm the graphics processor on most systems once
+you add too many lights. However, the framework can be used by someone
+who actually knows OpenGL programming to build a more scalable preview
+(albeit one that probably doesn’t look quite so photo-realistic with
+beams impacting drifting fog).
 
 ## Usage
 
