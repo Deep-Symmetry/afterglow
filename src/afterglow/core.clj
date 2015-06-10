@@ -5,7 +5,6 @@
   (:require
     [afterglow.web.handler :refer [app]]
     [afterglow.web.session :as session]
-    [ring.middleware.reload :as reload]
     [org.httpkit.server :as http-kit]
     [environ.core :refer [env]]
     [clojure.tools.cli :refer [parse-opts]]
@@ -99,7 +98,7 @@
   (when @web-server (throw (IllegalStateException. "Web UI server is already running.")))
   (reset! web-server
           (http-kit/run-server
-           (if (env :dev) (reload/wrap-reload #'app) app)
+           app
            {:port port}))
   ;;Start the expired session cleanup job
   (reset! session-cleaner (session/start-cleanup-job!)))
