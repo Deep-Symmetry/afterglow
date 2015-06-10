@@ -31,8 +31,8 @@ You can add lighten it up by changing to something like `:l 70` in the
 `build-color-param` call, darken it a bunch with `:l 20` or desaturate
 it a touch with `:s 80`... For more options and ideas, delve into the
 colors library http://deepsymmetry.org/colors/doc/[API documentation],
-and the various [[oscillators|oscillators]] that Afterglow makes
-available to you.
+and the various <<oscillators#oscillators,oscillators>> that Afterglow
+makes available to you.
 
 Since working with colors is so fundamental to creating light shows,
 the mechanism for creating <<parameters#color-parameters,dynamic color
