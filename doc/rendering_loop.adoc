@@ -25,11 +25,8 @@ will want to configure your show to match it, so that you are getting
 the best results possible without wasting computation on frames that
 never get seen.
 
-___________________________________________________________________________
-Once a show has started running, you can get a sense of how heavily it
+TIP: Once a show has started running, you can get a sense of how heavily it
 is taxing your hardware by looking at the show’s `:statistics` atom:
-___________________________________________________________________________
-
 
 [source,clojure]
 ----
@@ -37,14 +34,14 @@ ___________________________________________________________________________
 ; -> {:total-time 382127, :frames-sent 87769, :average-duration 4.35378}
 ----
 
-___________________________________________________________________________
+____
 This tells you how many milliseconds have been spent in the rendering
 loop while the show is running, how many frames of DMX data have been
 sent to the show universes, and the average number of milliseconds spent
 in the rendering loop. If the duration of a rendering cycle ever exceeds
 the refresh interval, Afterglow will log a warning that it is unable to
 keep up with the effects you are trying to run.
-___________________________________________________________________________
+____
 
 
 When it is time to determine the next set of values to send to the
