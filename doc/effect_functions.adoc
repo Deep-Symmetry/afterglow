@@ -8,8 +8,6 @@ James Elliott <james@deepsymmetry.org>
 // if you need to support other environments and extensions.
 ifdef::env-github[:outfilesuffix: .adoc]
 
-== Overview
-
 Effect functions determine what a light or group of lights are doing
 at a given moment in time. When creating an effect function, you
 assign one or more
