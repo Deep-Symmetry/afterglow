@@ -17,7 +17,7 @@ can also dive right into it by jumping to the page you want:
  <<effect_functions#effect-functions,Effect Functions>>::
 The building blocks of a dynamic light show, which have a
 <<effect_functions#lifecycle,lifecyle>> worth understanding, and a few
-<<effect_examples#effect-examples,examples>> to get you started.
+<<effect_functions#effect-examples,examples>> to get you started.
 
 <<metronomes#metronomes,Metronomes>>:: Keep track of musical time, in
 terms of beats, bars, and phrases, and can be
