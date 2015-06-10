@@ -1,10 +1,19 @@
+= Oscillators
+James Elliott <james@deepsymmetry.org>
+:icons: font
+
+// Set up support for relative links on GitHub; add more conditions
+// if you need to support other environments and extensions.
+ifdef::env-github[:outfilesuffix: .adoc]
+
 Oscillators in Afterglow are a flexible way of turning the timing
-information tracked by [[metronomes|metronomes]] into waveforms that can
-be used to make lights do interesting things. They can be related to the
-beats, bars, or phrases of the metronome, or multiples or fractions
-thereof, and can create link:#sawtooth-oscillators[sawtooth],
-link:#triangle-oscillators[triangle], link:#square-oscillators[square],
-or link:#sine-oscillators[sine] waves.
+information tracked by <<metronomes#metronomes,metronomes>> into
+waveforms that can be used to make lights do interesting things. They
+can be related to the beats, bars, or phrases of the metronome, or
+multiples or fractions thereof, and can create
+<<#sawtooth-oscillators,sawtooth>>,
+<<#triangle-oscillators,triangle>>, <<#square-oscillators,square>>, or
+<<#sine-oscillators,sine>> waves.
 
 Metronomes keep track of musical time relative to some starting point,
 in terms of beats, bars (by default four beats to a bar), and phrases
@@ -17,7 +26,7 @@ beginning of the interval, and grows towards, but never quite reaches,
 interval.
 
 So, in a sense, by itself a metronome can give you a
-link:#sawtooth-oscillators[sawtooth] wave related to its intervals, just
+<<#sawtooth-oscillators,sawtooth>> wave related to its intervals, just
 by looking at the interval phase. The sawtooth oscillators build on that
 by letting you change the direction of oscillation, so it starts at 1.0
 and slides downward, the speed of oscillation, so it ramps over
@@ -29,13 +38,12 @@ output are synchronized and share the same notion of the current state
 of the metronome, Afterglow takes a _snapshot_ of the metronome at the
 start of the frame, and the oscillators work from that.
 
-[[sawtooth-oscillators]]
-Sawtooth Oscillators
-~~~~~~~~~~~~~~~~~~~~
+== Sawtooth Oscillators
 
-code,clojure--------------------------------------------- code,clojure
+[source,clojure]
+----
 (afterglow.effects.oscillators/sawtooth-beat)
----------------------------------------------
+----
 
 Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Sawtooth_wave[sawtooth wave] relative to
