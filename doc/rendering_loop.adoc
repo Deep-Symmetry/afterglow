@@ -1,3 +1,7 @@
+[[the-rendering-loop]]
+The Rendering Loop
+~~~~~~~~~~~~~~~~~~
+
 When an afterglow show is running, that is, from when
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-start.21[(show/start!)]
 has been called, until
@@ -17,16 +21,17 @@ will want to configure your show to match it, so that you are getting
 the best results possible without wasting computation on frames that
 never get seen.
 
-___________________________________________________________________________________________________________________________________________
+___________________________________________________________________________
 Once a show has started running, you can get a sense of how heavily it
 is taxing your hardware by looking at the show’s `:statistics` atom:
-___________________________________________________________________________________________________________________________________________
+___________________________________________________________________________
 
-code,clojure------------------------------------------------------------------------
-code,clojure
+
+[source,clojure]
+--
 @(:statistics *show*)
 ; -> {:total-time 382127, :frames-sent 87769, :average-duration 4.35378}
-------------------------------------------------------------------------
+--
 
 _____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
 This tells you how many milliseconds have been spent in the rendering
