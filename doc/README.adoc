@@ -3,13 +3,15 @@ James Elliott <james@deepsymmetry.org>
 :toc:
 :toc-placement: preamble
 
-Here is some preamble text.
-
-== What is Afterglow?
-
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
 ifdef::env-github[:outfilesuffix: .adoc]
+
+Here is some preamble text.
+
+Can I really get no preamble to show up?
+
+== What is Afterglow?
 
 Afterglow is a functional lighting controller, written in
 http://clojure.org[Clojure], intended to enable people to produce
