@@ -1,6 +1,9 @@
+= Afterglow Documentation
+James Elliott <james@deepsymmetry.org>
+:toc:
+
 [[what-is-afterglow]]
-What is Afterglow?
-~~~~~~~~~~~~~~~~~~
+== What is Afterglow?
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
@@ -24,13 +27,11 @@ Someday a user interface for building shows and fixture definitions may
 be created, either within Afterglow, or as a companion project, but that
 is not currently planned.
 
-___________________________________________________________________________
-Actually, that is a bit of a fib… James has an
-Ableton Push and is already exploring how to build a rich interface
-using its LCD display, color-changing pressure-sensitive pads, and
-touch-sensitive encoders, but that is slightly separate from the main
-Afterglow project.
-___________________________________________________________________________
+NOTE: Actually, that is a bit of a fib... James has an Ableton Push
+and is already exploring how to build a rich interface using its LCD
+display, color-changing pressure-sensitive pads, and touch-sensitive
+encoders, but that is slightly separate from the main Afterglow
+project.
 
 [[how-afterglow-works]]
 How Afterglow Works
