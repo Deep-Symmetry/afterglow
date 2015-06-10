@@ -1,3 +1,7 @@
+[[fixture-definitions]]
+Fixture Definitions
+~~~~~~~~~~~~~~~~~~~
+
 Fixture definitions tell afterglow what capabilities a given piece of
 lighting hardware has, and how to control it to get the effects that are
 being requested.
@@ -7,8 +11,10 @@ TODO: Write this page.
 * Document how to write them, analyzing examples like the
 http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.blizzard.html[Blizzard]
 definitions, with special attention on how to document default
-orientations and head positions with respect to [[show
-space|show-space]] so the geometry works out.
+orientations and head positions with respect to
+link:show_space{outfilesuffix}#show-space[show space] so the geometry
+works out.
+
 * Explain how to create function specifications in all their variations,
 with range helpers, etc., and list naming conventions established so
 far, so that new fixtures can participate when they have similar
