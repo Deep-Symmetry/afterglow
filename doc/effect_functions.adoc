@@ -9,8 +9,11 @@ James Elliott <james@deepsymmetry.org>
 ifdef::env-github[:outfilesuffix: .adoc]
 
 Effect functions determine what a light or group of lights are doing
-at a given moment in time. When creating an effect function, you
-assign one or more
+at a given moment in time.
+
+== Overview
+
+When creating an effect function, you assign one or more
 <<fixture_definitions#fixture-definitions,Fixtures>> to it, and it
 will generate control values for only those fixtures. The fixture
 channels affected by the effect depend on the kind of effect it is,
