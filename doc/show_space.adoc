@@ -12,24 +12,25 @@ coordinated way with respect to each other or people or objects near
 them, Afterglow needs to know where everything is, and how it is
 oriented in space. This means you need to be able to specify these
 things. When mounting a
-link:fixture_definitions{outfilesuffix}#fixture-definitions[fixture],
-you specify where it is and where it is facing. When creating a
-direction our aim cue, you specify a direction for lights to face, or
-a point for them to aim at. In order to be able to communicate such
-concepts, Afterglow has a standard frame of reference for the light
-show. The entire show has an __origin__, the zero point for the three
-spatial axes, which you decide on before you start patching fixtures,
-and an __orientation__, which is expressed in terms of the origin. The
-afterglow show orientation is chosen to make it easy to think in terms
-of the way effects will look for the audience. As shown in the diagram
-below, in the standard orientation, the X axis extends directly to the
-right of the origin. That is to say, X coordinates are zero at the
-origin, increase as you move to the right, and decrease as you move to
-the left. The Y axis extends straight up; Y coordinates grow from zero
-as you move up from the show origin, and decrease as you move down.
-The Z axis extends directly towards the audience, increasing in that
-direction from zero at the origin, decreasing as you move towards the
-back of the show.
+<<fixture_definitions#fixture_definitions,fixture>>, you specify where
+it is and where it is facing. When creating a
+<<effect_functions#direction-effects,direction>> or
+<<effect_functions#aim-effects,aim>> cue, you specify a direction for
+lights to face, or a point for them to aim at. In order to be able to
+communicate such concepts, Afterglow has a standard frame of reference
+for the light show. The entire show has an __origin__, the zero point
+for the three spatial axes, which you decide on before you start
+patching fixtures, and an __orientation__, which is expressed in terms
+of the origin. The afterglow show orientation is chosen to make it
+easy to think in terms of the way effects will look for the audience.
+As shown in the diagram below, in the standard orientation, the X axis
+extends directly to the right of the origin. That is to say, X
+coordinates are zero at the origin, increase as you move to the right,
+and decrease as you move to the left. The Y axis extends straight up;
+Y coordinates grow from zero as you move up from the show origin, and
+decrease as you move down. The Z axis extends directly towards the
+audience, increasing in that direction from zero at the origin,
+decreasing as you move towards the back of the show.
 
 image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/Show-Space.png[Afterglow
 show axes]
@@ -42,8 +43,8 @@ to convert them to meters for you.
 To express rotations, the same frame of reference is used. If a light
 has been hung upside down compared to its standard orientation (which
 should be documented in the
-link:fixture_definitions{outfilesuffix}#fixture-definitions[fixture
-definition]), you need to account for that when calling
+<<fixture_definitions#fixture-definitions,fixture definition>>), you
+need to account for that when calling
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-patch-fixture.21[show/patch-fixture].
 Rotations are expressed in terms of the axes as well. For example, if
 a fixture has been tumbled towards the audience by a quarter rotation,
