@@ -6,15 +6,14 @@ James Elliott <james@deepsymmetry.org>
 // if you need to support other environments and extensions.
 ifdef::env-github[:outfilesuffix: .adoc]
 
-To keep page sizes manageable, the Afterglow documentation is split
-into several pages. This page provides an introduction and overview,
-and links to other sections as needed. If you know what you are
-looking for, you can also dive right into it by jumping to the page
-you want:
+To keep page sizes manageable, this information is split into several
+pages. This page provides an introduction and overview, and links to
+other sections as needed. If you know what you are looking for, you
+can also dive right into it by jumping to the page you want:
 
 ****
 
-.Pages
+[horizontal]
 <<effect_functions#effect-functions,Effect Functions>>:: The
 building blocks of a dynamic light show.
 
