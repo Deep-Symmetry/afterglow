@@ -12,14 +12,13 @@ spectacular light shows using modern stage and effect lighting, and
 which are related in deep ways to the phrasing of music being played.
 (Its http://deepsymmetry.org[creator] is a DJ and producer of light
 and laser shows by avocation.) Currently, the
-link:effect_functions{outfilesuffix}#effect-functions[lighting
-effects] and
-link:fixture_definitions{outfilesuffix}#fixture-definitions[fixture
-definitions] are written and organized through Clojure code, so you
-will either need to learn Clojure or work with a Clojure programmer to
-create new ones, but they are controlled through MIDI control surfaces
-or Open Sound Control, so once they are set up, there is great
-flexibility in how you can perform them.
+<<effect_functions#effect-functions,lighting effects>> and
+<<fixture_definitions#fixture-definitions,fixture definitions>> are
+written and organized through Clojure code, so you will either need to
+learn Clojure or work with a Clojure programmer to create new ones,
+but they are controlled through MIDI control surfaces or Open Sound
+Control, so once they are set up, there is great flexibility in how
+you can perform them.
 
 Someday a user interface for building shows and fixture definitions may
 be created, either within Afterglow, or as a companion project, but that
@@ -52,8 +51,7 @@ second, but the interval is configurable within the show, and should
 be decided based on the fastest refresh rate of any physical
 interfaces you have hooked up to Afterglow. This is described in more
 detail in the
-link:rendering_loop{outfilesuffix}#the-rendering-loop[Rendering
-Loop] section.
+<<rendering_loop#the-rendering-loop,Rendering Loop>> section.
 
 ___________________________________________________________________________
 In principle you could have more than one show running at a time, each
@@ -65,36 +63,34 @@ ___________________________________________________________________________
 When you just create a show and call `(show/start!)`, Afterglow will
 send a bunch of zero values to the show’s universes. To make
 interesting things happen you add
-link:effect_functions{outfilesuffix}#effect-functions[Effect
-Functions] to the show. The default namespace you are put into when
-you launch the Afterglow project using `lein repl` has some
-link:effect_examples{outfilesuffix}#effect-examples[Example Effects]
+<<effect_functions#effect-functions,Effect Functions>> to the show.
+The default namespace you are put into when you launch the Afterglow
+project using `lein repl` has some
+<<effect_examples#effect-examples,Example Effects>>
 that can help get a feel for this concept. To get a full understanding
 of how to use (and create) effect functions, learn about the
-link:lifecycle{outfilesuffix}#effect-function-lifecycle[Effect
-Function Lifecycle].
+<<lifecycle#effect-function-lifecycle,Effect Function Lifecycle>>.
 
 The effect functions need to know what lights they are supposed to
 control, what capabilities they have, and how they are connected (what
 universe, what channels), as well as how they are arranged in space.
 This is accomplished by patching
-link:fixture_definitions{outfilesuffix}#fixture-definitions[Fixture
-Definitions] to the show. To work with the actual lights you have
-available, you will need to create fixture definitions for them,
-unless they happen to be ones already available in the Afterglow
-project. Since there are so many kinds of lights, with more being
-created every month, that seems unlikely unless the project really
-takes off… and, to that end, if you _do_ create definitions for your
-lights, please contribute them to the project!
+<<fixture_definitions#fixture-definitions,Fixture Definitions>> to the
+show. To work with the actual lights you have available, you will need
+to create fixture definitions for them, unless they happen to be ones
+already available in the Afterglow project. Since there are so many
+kinds of lights, with more being created every month, that seems
+unlikely unless the project really takes off… and, to that end, if you
+_do_ create definitions for your lights, please contribute them to the
+project!
 
 To learn how to install Afterglow and the Open Lighting Architecture,
 see the project https://github.com/brunchboy/afterglow[README].
 
 Since Afterglow was developed to create light shows for electronic
 music events, it is deeply driven by the notion of musical time,
-through its link:metronomes{outfilesuffix}#metronomes[Metronomes], so
+through its <<metronomes#metronomes,Metronomes>>, so
 it is worth learning how to configure and interact with them. It is
 also designed to work with MIDI controllers, both to trigger effects,
 and to synchronize with music, as described in
-link:mapping_sync{outfilesuffix}#midi-mapping-and-beat-sync[MIDI
-Mapping and Beat Sync].
+<<mapping_sync#midi-mapping-and-beat-sync,MIDI Mapping and Beat Sync>>.
