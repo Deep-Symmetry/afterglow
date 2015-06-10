@@ -1,0 +1,196 @@
+Metronomes play a fundamental role in coordinating the timing of
+Afterglow’s effects, and helping them relate to musical structure. They
+keep track of musical time relative to some starting point, in terms of
+beats, bars (by default four beats to a bar), and phrases (usually eight
+bars to a phrase). In addition to keeping track of the current beat,
+bar, and phrase, metronomes can also tell you the _phase_ of that beat,
+bar, or phrase, which is a measurement of progress through the beat,
+bar, or phrase. The phase starts out at 0.0 at the very beginning of the
+interval, and grows towards, but never quite reaches, 1.0, because at
+that point you have moved on to phase 0.0 of the following interval.
+
+Metronomes are generally combined with [[Oscillators|oscillators]] to
+generate wave shapes which drive the parameters sent to lights, creating
+color shifts, brightness pulses, or movements.
+
+Since they are so important, there is always a metronome associated with
+a show in Afterglow. It gets created when the show is created, and is
+used for the show’s timing unless you create a separate metronome and
+explicitly tell an effect to use it (which you might want to do if that
+effect is to run at a very different speed than the music). The main
+show metronome can be
+[[synchronized|MIDI-Mapping-and-Beat-Sync#syncing-to-midi-clock]] to
+external timing sources, such as DJ controllers and mixers, to keep the
+light show tightly in time with the music being played. You can access
+the the main show’s metronome through the `:metronome` keyword in the
+show map, for example:
+
+code,clojure------------------------ code,clojure
+(:metronome sample-show)
+------------------------
+
+To create a separate metronome, you call:
+
+code,clojure-------------------------------- code,clojure
+(afterglow.rhythm/metronome bpm)
+--------------------------------
+
+The `bpm` parameter tells the metronome what tempo to use, that is, how
+many beats happen per minute. You can also adjust the number of beats
+which make up a bar (or measure), and how many bars make up a phrase:
+
+[cols=",,",options="header",]
+|===================================================
+|Parameter |Default |Purpose
+|`:bpb` |`4` |How many beats make up a bar (measure)
+|`:bpp` |`8` |How many bars make up a phrase
+|===================================================
+
+The metronome starts counting from the moment it was created, and you
+can ask it for all the counts as a string by calling:
+
+code,clojure--------------------------------------------------------
+code,clojure
+(afterglow.rhythm/metro-marker (:metronome sample-show))
+; -> "15.1.4"
+--------------------------------------------------------
+
+For that metronome, the current count was phrase 15, bar 1, beat 4. You
+can determine those values as individual numbers as well, but you might
+end up with confusing results because time is moving on while you are
+calling the individual functions to ask for information, and you might
+be on a different beat, bar, or phrase for a later call than an earlier
+one. So the way to start is by asking the Metronome for a
+_http://deepsymmetry.org/afterglow/doc/afterglow.rhythm.html#var-ISnapshot[snapshot]_
+of its state at an instant in time, and then ask the snapshot for the
+individual pieces of information you want. Afterglow does this when it
+starts generating a frame of lighting effects, to make sure that all the
+effects share the same notion of the point at which they are being
+rendered, and create a consistent look:
+
+code,clojure----------------------------------------------------------------------------------------
+code,clojure
+(afterglow.rhythm/metro-snapshot (:metronome sample-show))
+; -> #afterglow.rhythm.MetronomeSnapshot{:start 1431727332206, :bpm 120, :bpb 4, :bpp 8,
+;    :instant 1431727683636, :beat 703, :bar 176, :phrase 22,
+;    :beat-phase 0.8600000000000136, :bar-phase 0.7150000000000034,
+;    :phrase-phase 0.9643750000000004}
+----------------------------------------------------------------------------------------
+
+Although this captures all of the information, it is not necessarily in
+the format you want it, for example the beat number and bar number are
+counted since the start of the metronome, and you usually want them
+since the start of the bar or phrase. The snapshot has ways of providing
+this information:
+
+code,clojure----------------------------------------------------------------------------------------------
+code,clojure
+(def snap (afterglow.rhythm/metro-snapshot (:metronome sample-show)))
+; -> #'afterglow.examples/snap
+
+snap
+; -> #afterglow.rhythm.MetronomeSnapshot{:start 1431727332206, :bpm 120, :bpb 4, :bpp 8,
+;    :instant 1431727967069, :beat 1270, :bar 318, :phrase 40, :beat-phase 0.7260000000001128,
+;    :bar-phase 0.4315000000000282, :phrase-phase 0.6789375000000035}
+
+(:beat snap)
+; -> 1270
+
+(afterglow.rhythm/snapshot-beat-within-bar snap)
+; -> 2
+----------------------------------------------------------------------------------------------
+
+Since the notion of a “down beat” (the first beat in a bar) is important
+in music and thus potentially to lighting effects, there is a snapshot
+function for checking that, too:
+
+code,clojure------------------------------------------- code,clojure
+(afterglow.rhythm/snapshot-down-beat? snap)
+; -> false
+-------------------------------------------
+
+_____________________________________
+The second beat is not the down beat.
+_____________________________________
+
+The metronome can be restarted at a particular beat by calling
+`metro-start` with a beat number. (Calling it with no argument returns
+the time at which the metronome was started.) This can be useful to
+resynchronize the metronome to the music if it has drifted, either
+because there is no BPM synchronization in place, or if MIDI clock sync
+is being used, and it’s been a long time, since that can drift, unlike
+Pro DJ Link sync:
+
+code,clojure---------------------------------------------------------
+code,clojure
+(afterglow.rhythm/metro-start (:metronome sample-show) 1)
+; -> 1431727642086
+---------------------------------------------------------
+
+______________________________________________
+The new metronome start timestamp is returned.
+______________________________________________
+
+If the beats are landing in the right place but the notion of the down
+beat (bar start) or phrase start is wrong, you can reset those by
+calling `metro-bar-start` or `metro-phrase-start` with the desired bar
+or phrase number (usually 1). These adjust the metronome so the larger
+intervals are resynchronized without changing the individual beats
+themselves.
+
+The metronome’s tempo (beats per minute) can be determined or changed by
+calling `metro-bpm`. Without an argument it returns the current BPM, and
+an argument is used as the new BPM value. The same can be done with the
+beats per bar (`metro-bpb`) and beats per phrase (`metro-bpp`).
+
+There are a number of other functions which can be called on metronomes
+and snapshots. The
+http://deepsymmetry.org/afterglow/doc/afterglow.rhythm.html#var-IMetronome[IMetronome]
+and
+http://deepsymmetry.org/afterglow/doc/afterglow.rhythm.html#var-ISnapshot[ISnapshot]
+protocols in
+http://deepsymmetry.org/afterglow/doc/afterglow.rhythm.html[afterglow.rhythm]
+specify and describe them.
+
+[[watching-metronomes]]
+Watching Metronomes
++++++++++++++++++++
+
+To help get a feeling for exactly what your metronome is doing, there is
+an effect function that flashes one bright color on the down beat, and
+another less-bright color on the rest of the beats. Running this while
+you change the metronome BPM, sync, beats per bar, and such can help
+drive a more visceral understanding. To run it for the main show
+metronome, you can do this:
+
+code,clojure--------------------------------------------------
+code,clojure
+(require 'afterglow.effects.fun)
+(show/add-effect! :color
+  (afterglow.effects.fun/metronome-cue sample-show
+    (show/all-fixtures sample-show)))
+--------------------------------------------------
+
+If you want to watch a different metronome, the invocation looks like
+this:
+
+code,clojure-------------------------------------------------------------
+code,clojure
+(show/set-variable :my-metro (afterglow.rhythm/metronome 50))
+(require 'afterglow.effects.fun)
+(show/add-effect! :color
+  (afterglow.effects.fun/metronome-cue sample-show
+    (show/all-fixtures) :metronome :my-metro))
+-------------------------------------------------------------
+
+__________________________________
+The lights are pulsing sedately...
+__________________________________
+
+code,clojure--------------------------------------------- code,clojure
+(metro-bpm (show/get-variable :my-metro) 400)
+---------------------------------------------
+
+__________________________________________
+...and now they are almost seizure-worthy!
+__________________________________________

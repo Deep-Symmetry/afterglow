@@ -1,0 +1,256 @@
+Afterglow is designed to work with MIDI controllers and DJ equipment.
+You can bind physical controller elements to show variables, and sync
+the BPM of the show master metronome to MIDI clock pulses from a DJ
+controller or mixer. (Although if you have professional Pioneer gear,
+you are better off syncing the metronome to the Pro DJ Link via an
+Ethernet cable.)
+
+_______________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+These examples assume you are in a Clojure REPL with Afterglow loaded,
+in the namespace `afterglow.examples`. This is the default namespace you
+get if you check out the project and run `lein repl`. The sample show is
+assumed to be running; if not, `(show/start!)`
+_______________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+[[mapping-a-control-to-a-variable]]
+Mapping a Control to a Variable
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here is an example of how I can have a knob on one of my MIDI
+controllers set the hue of all the lights. It shows up with a MIDI port
+name of `SLIDER/KNOB`, and its first rotary controller is control 16 on
+channel 0. I can map that to set a show variable `knob-1` to the values
+0-360 (the legal hue values):
+
+code,clojure------------------------------------- code,clojure
+(show/add-midi-control-to-var-mapping
+  "Slider" 0 16 :knob-1 :max 360)
+-------------------------------------
+
+Then I can create a global color cue based on that variable:
+
+code,clojure------------------------------------------------------
+code,clojure
+(show/add-effect! :color (global-color-cue
+  (params/build-color-param :s 100 :l 50 :h :knob-1)))
+------------------------------------------------------
+
+[[finding-mapping-details]]
+Finding Mapping Details
+^^^^^^^^^^^^^^^^^^^^^^^
+
+In the all-too likely event you don’t have all your MIDI port names and
+control channel and note numbers memorized, Afterglow can help. Just
+run…
+
+code,clojure--------------------------------- code,clojure
+(afterglow.midi/identify-mapping)
+---------------------------------
+
+…then twiddle the knob, slide the fader, or press the button you wish to
+map. Afterglow will report the first control-change or note message it
+receives:
+
+code,clojure--------------------------------------------------------------------
+code,clojure
+; -> {:command :control-change, :channel 0, :note 32, :velocity 127,
+;     :device {:name "SLIDER/KNOB",
+;              :description "nanoKONTROL2 SLIDER/KNOB"}}
+--------------------------------------------------------------------
+
+__________________________________________________________________________________________________________
+Notice that even for control changes, the controller number is
+identified as `:note` (32 in this example).
+__________________________________________________________________________________________________________
+
+If nothing is received for ten seconds, it will give up:
+
+code,clojure-------- code,clojure
+; -> nil
+--------
+
+If this happens, remember that you need to have all of your MIDI devices
+hooked up before you start Afterglow, because of limitations in the Java
+MIDI implementation. Try quitting and restarting Afterglow. If that
+doesn’t help, you will need to troubleshoot your MIDI setup.
+
+[[syncing-to-midi-clock]]
+Syncing to MIDI Clock
+~~~~~~~~~~~~~~~~~~~~~
+
+Many DJ mixers automatically send MIDI clock pulses to help synchronize
+to their BPM. Pioneer’s Nexus mixers send MIDI clock over both their
+physical MIDI connection, and over USB if you are connected that way,
+conveniently. But they offer far more useful sync information over the
+Ethernet port via Pro DJ Link packets, which Afterglow
+link:#syncing-to-pro-dj-link[can also process].
+
+If you are using a mixer or DJ software like Traktor which supports only
+MIDI clock sync, it is a lot better than nothing! Here is how to take
+advantage of it.
+
+_______________________________________________________
+TODO: Explain how to set Traktor up to send MIDI clock.
+_______________________________________________________
+
+Once you have your MIDI clock pulses reaching the system on which
+Afterglow is running, start Afterglow. Because of limitations inherent
+in the Java MIDI API, only MIDI devices which were connected when the
+program started are available to it. Then, assuming you have only one
+device sending MIDI clock, you can just execute:
+
+code,clojure-----------------------------------------------------------------
+code,clojure
+(show/sync-to-external-clock (afterglow.midi/sync-to-midi-clock))
+-----------------------------------------------------------------
+
+If there is ambiguity about which device’s MIDI clocks you want to
+process, Afterglow will complain. Resolve that by passing a substring
+which uniquely matches the name or description of the MIDI device that
+you want to sync to:
+
+code,clojure------------------------------------------------
+code,clojure
+(show/sync-to-external-clock
+  (afterglow.midi/sync-to-midi-clock "traktor"))
+------------------------------------------------
+
+From then on, as the BPM of that device changes, Afterglow will track it
+automatically. To check on the sync status, you can invoke:
+
+code,clojure------------------------------------------------------------------
+code,clojure
+(show/sync-status)
+; -> {:type :midi, :status "Running, clock pulse buffer is full."}
+------------------------------------------------------------------
+
+The calculated BPM of the synced show can be displayed like this:
+
+code,clojure------------------------------------ code,clojure
+(metro-bpm (:metronome sample-show))
+; -> 128.5046728971963
+------------------------------------
+
+It will bounce up and down near the actual BPM as clock pulses are
+received, but overall track the beat quite well. To get a rock-solid
+beat lock you need to have equipment that can provide Pro DJ Link
+syncing, as described below.
+
+To shut down the syncing, just call `sync-to-external-clock` with no
+sync source:
+
+code,clojure----------------------------- code,clojure
+(show/sync-to-external-clock)
+(show/sync-status)
+; -> {:type :manual}
+-----------------------------
+
+[[syncing-to-pro-dj-link]]
+Syncing to Pro DJ Link
+~~~~~~~~~~~~~~~~~~~~~~
+
+If you are working with Pioneer club gear, such as the Nexus line of
+CDJs and mixers, you can use Pro DJ Link to sync much more precisely.
+You just need to be on the same LAN as the gear (most easily by
+connecting an Ethernet cable between your laptop running Afterglow and
+the mixer, or a hub or router connected to the mixer. You don’t need to
+be connected to the Internet, the protocol works fine over self-assigned
+IP addresses. You just need to specify which device you want to use as
+the source of beat information, and that will generally be the mixer,
+since it will track whichever device is currently the tempo master (or
+perform BPM analysis if a non-DJ-Link, or even non-digital, source is
+being played). Like with MIDI sync, you can give a unique substring of
+the device name in the sync call:
+
+code,clojure-------------------------------------------------
+code,clojure
+(show/sync-to-external-clock
+  (afterglow.dj-link/sync-to-dj-link "DJM-2000"))
+-------------------------------------------------
+
+As with MIDI, you can check on the sync status:
+
+code,clojure---------------------------------------------------------------
+code,clojure
+(show/sync-status)
+; -> {:type :dj-link, :status "Running, 5 beats received."}
+; -> {:type :dj-link,
+;     :status "Network problems? No DJ Link packets received."}
+---------------------------------------------------------------
+
+_______________________________________________________________________________________________________________________________________________________________________________________________________________________
+If you are not getting any packets, you will need to put on your network
+troubleshooting hat, and figure out why UDP broadcast packets to port
+50001 from the mixer are not making it to the machine running Afterglow.
+_______________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+[[checking-your-sync]]
+Checking your Sync
+~~~~~~~~~~~~~~~~~~
+
+An easy way to see how well your show is syncing the beat is to use the
+metronome-cue, which flashes a bright pink pulse on the down beat, and a
+less bright yellow pulse on all other beats of the show metronome. To
+set that up:
+
+code,clojure------------------------------------------------------------
+code,clojure
+(require 'afterglow.effects.fun)
+(show/add-effect! :color
+  (afterglow.effects.fun/metronome-cue (show/all-fixtures)))
+------------------------------------------------------------
+
+Then you can reset the metronome by hitting Return on the following
+command, right on the down beat of a track playing through your
+synchronized gear, and watch how Afterglow tracks tempo changes made by
+the DJ from then on:
+
+code,clojure---------------------------------------- code,clojure
+(metro-start (:metronome sample-show) 1)
+----------------------------------------
+
+When running live light shows you will almost certainly want to map a
+button on a MIDI controller to perform this beat resynchronization
+(although it is not necessary when you are using Pro DJ Link to
+synchronize with your mixer—but even then you will likely want the next
+two functions mapped, for realigning on bars and phrases). Here is how I
+do it for one of the buttons on my Korg nanoKontrol 2:
+
+code,clojure-------------------------------------------------------------
+code,clojure
+(show/add-midi-control-metronome-reset-mapping "slider" 0 45)
+-------------------------------------------------------------
+
+Then, whenever I press that button, the metronome is started at beat 1,
+bar 1, phrase 1.
+
+You can add mappings to reset metronomes which are stored in show
+variables by adding the variable name as an additional parameter at the
+end of this function call. And there is a corresponding
+`remove-midi-control-metronome-mapping` function to break the binding.
+
+As noted above, even when you have a rock solid beat sync with your
+mixer, you sometimes want to adjust when bars or phrases begin,
+especially when tricky mixing has been taking place. You can accomplish
+this by mapping other buttons with
+`add-midi-control-metronome-align-bar-mapping` and
+`add-midi-control-metronome-align-phrase-mapping`. These cause the MIDI
+control to call `metro-bar-start` and `metro-phrase-start` on the
+associated metronome to restart the current bar or phrase on the nearest
+beat, without moving the beat. This means you do not need to be as
+precise in your timing with these functions, so you can stay beat-locked
+with your synch mechanism, much like the “beat jump” feature in modern
+DJ software.
+
+If the metronome flashes start driving you crazy, you can switch back to
+a static cue,
+
+code,clojure---------------------------------- code,clojure
+(show/add-effect! :color blue-cue)
+----------------------------------
+
+or even black things out:
+
+code,clojure--------------------- code,clojure
+(show/clear-effects!)
+---------------------

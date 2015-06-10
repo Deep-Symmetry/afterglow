@@ -1,0 +1,358 @@
+Dynamic parameters provide a way to turn a simple cue into something
+which changes over time and space, or reacts to operator input. Most
+cues which take simple values can also take dynamic parameters which
+evaluate to those values.
+
+[[frame-dynamic-parameters]]
+Frame Dynamic Parameters
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+When creating a dynamic parameter, you can control _how_ dynamic it is.
+The most dynamic, __frame dynamic__, are evaluated anew for every single
+frame of control values that are sent out to the lights. If, on the
+other hand, you want the value to be calculated when the effect is
+started, and then stay constant, you can create the parameter with a
+`false` value for `frame-dynamic?`
+
+[[variable-parameters]]
+Variable Parameters
+~~~~~~~~~~~~~~~~~~~
+
+Parameters can get their values from a __show variable__. Any number of
+values can be stored in the show, by assigning them a keyword with the
+function:
+
+code,clojure----------------------------------------- code,clojure
+(afterglow.show/set-variable! :key value)
+-----------------------------------------
+
+____________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+In addition to manually setting values in show variables, you can use
+[[MIDI
+mappings|midi-mapping-and-beat-sync|#mapping-a-control-to-a-variable]]
+to have them set by turning a knob or sliding a fader on a MIDI control
+surface.
+____________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+You can then refer to that stored value whenever you are creating a
+dynamic parameter by simply using the keyword (in this example, `:key`),
+and the current value stored in the show variable will be used. This is
+a convenience mechanism, you can also explicitly build a reference to a
+show variable like this:
+
+code,clojure----------------------------------------------------
+code,clojure
+(afterglow.effects.params/build-variable-param :key)
+----------------------------------------------------
+
+The reason you might want to use the explicit creation function is that
+you can control details about the binding by passing in optional keyword
+parameters:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:type` |`Number` |The type of value that is expected in the variable
+
+|`:default` |`0` |The value to assign the parameter if the variable is
+missing or has the wrong type
+
+|`:assign-fn` |none |If supplied, is called with the value of the show
+variable, and its return value is used as the value of the parameter
+
+|`:frame-dynamic` |`true` |Whether the variable value should be looked
+at at every frame, or just once
+|=======================================================================
+
+As an example of using these parameters, consider:
+
+code,clojure---------------------------------------------------
+code,clojure
+(afterglow.effects.params/build-variable-param :key
+  :type Number :default 0 :adjust-fn #(* % 2))
+---------------------------------------------------
+
+This would cause the dynamic parameter to have a numeric value which is
+twice the value found in the show variable.
+
+When you use the keyword shorthand to bind to a show variable in
+building another dynamic parameter, the type and default are assumed
+from the context in which you are using the variable.
+
+[[oscillated-parameters]]
+Oscillated Parameters
+~~~~~~~~~~~~~~~~~~~~~
+
+Oscillated parameters vary over time, at a speed controlled by a
+[[Metronome|metronomes]] (usually the main show metronome, synced to DJ
+equipment) and so can make the lights appear to be reacting
+intelligently to the music being played. The timing information produced
+by the metronome is fed into an [[Oscillator|oscillators]], which
+determines the shape of the wave that controls its value, and the
+frequency at which it oscillates, related to beats, bars, or phrases of
+the underlying metronome. The resulting value can then be scaled to meet
+the needs of whatever is being generated (a dimmer level, color
+component, or light rotation). Oscillated parameters are created by
+calling:
+
+code,clojure------------------------------------------------------------
+code,clojure
+(afterglow.effects.params/build-oscillated-param oscillator)
+------------------------------------------------------------
+
+The `oscillator` parameter is an [[oscillator|oscillators]] created by
+one of the functions in
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.oscillators.html[afterglow.effects.oscillators]
+which, as described above, determines how to react to the time
+information provided by the metronome. Additionally, you can supply one
+of the following optional keyword parameters:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:min` |`0` |The smallest value that the oscillated parameter will be
+assigned
+
+|`:max` |`255` |The largest value that the oscillated parameter will be
+assigned
+
+|`:metronome` |none |If supplied, is used instead of the main show
+metronome
+
+|`:frame-dynamic` |`true` |Whether the parameter should be calculated at
+every frame, or just once
+|=======================================================================
+
+The keyword parameters `:min`, `:max`, and `:metronome` can themselves
+be bound to show variables by passing in the keyword with which the show
+variable was created. The frame-dynamic setting of such variable
+bindings will be controlled by the frame-dynamic setting of the
+oscillated parameter being created.
+
+[[color-parameters]]
+Color Parameters
+~~~~~~~~~~~~~~~~
+
+Color parameters are an extremely flexible way of dynamically assigning
+color. The basic way to create one is to call:
+
+code,clojure-------------------------------------------- code,clojure
+(afterglow.effects.params/build-color-param)
+--------------------------------------------
+
+By itself this call would simply return a non-dynamic back color.
+However, you will use one or more of the following optional keyword
+parameters to get the dynamic color you want:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:color` |black |The base, starting color of this dynamic color
+
+|`:r` |`0` |Red brightness, from 0 to 255
+
+|`:g` |`0` |Green brightness, from 0 to 255
+
+|`:b` |`0` |Blue brightness, from 0 to 255
+
+|`:h` |`0.0` |Hue value, from 0.0 to 360.0
+
+|`:s` |`0.0` |Saturaion value, from 0.0 to 100.0
+
+|`:l` |`0.0` |Lightness value, from 0.0 to 100.0
+
+|`:adjust-hue` |`0.0` |Hue shift value, from -360.0 to 360.0
+
+|`:adjust-saturation` |`0.0` |Saturation shift value, from -100.0 to
+100.0
+
+|`:adjust-lightness` |`0.0` |Lightness shift value, from -100.0 to 100.0
+
+|`:frame-dynamic` |`true` |Whether the parameter should be calculated at
+every frame, or just once
+|=======================================================================
+
+All of these parameters, except for `frame-dynamic`, can themselves be
+dynamic parameters, such as show link:#variable-parameters[variables]
+(with the convenience shorthand of just passing in the keyword by which
+the show variable was stored) or link:#oscillated-parameters[oscillated
+parameters].
+
+Refer to [[Working with Color|working-with-color]] for a refresher on
+the meaning of the basic color components. It would not make sense to
+pass all of these parameters, because some will override others, but
+here is how they are evaluated:
+
+1.  The base color is established by the `:color` parameter.
+2.  If any of `:r`, `:g`, or `:b` have been supplied, the color is
+replaced by creating an RGB color with the values (or defaults)
+supplied.
+3.  If any of `:h`, `:s`, or `:l` have been supplied, the color is
+replaced by creating an HSL color with the values (or defaults)
+supplied.
+4.  If `:adjust-hue` was supplied, the hue of the color obtained so far
+is shifted by adding that amount to it (and wrapping around the color
+circle if needed).
+5.  If `adjust-saturation` was supplied, the saturation of the color is
+adjusted by adding that amount to it, maxing out at 100.0, and bottoming
+out at 0.0. Lower saturations yield less colorful (more gray) colors.
+6.  If `adjust-lightness` was supplied, the lightness of the color is
+adjusted by adding that amount to it, maxing out at 100.0, and bottoming
+out at 0.0. A lightness of 50.0 allows for a fully saturated color,
+lightnesses above that start getting whitened, and a lightness of 100.0
+is pure white; lightnesses below 50.0 start getting darkened, and a
+lightness of 0.0 is pure black.
+
+Finally, the result of all this is the color that is returned by the
+dynamic parameter. Afterglow tries to be as efficient about this as
+possible, and do as much calculation as it can when the parameter is
+created. If there are no frame dynamic parameters, it will return a
+fixed color. But you can easily use frame-dynamic oscillated parameters
+and get lovely shifting rainbow cues, as shown in the [[effect
+examples|effect-examples#oscillator-effects]].
+
+[[direction-parameters]]
+Direction Parameters
+~~~~~~~~~~~~~~~~~~~~
+
+Direction parameters are a way to tell a group of fixtures to point in a
+particular direction, or move in unison or in a coordinated pattern. The
+basic way to create one is to call:
+
+code,clojure------------------------------------------------
+code,clojure
+(afterglow.effects.params/build-direction-param)
+------------------------------------------------
+
+By itself this call would simply return a non-dynamic direction telling
+fixtures to point directly at the audience. However, you will use one or
+more of the following optional keyword parameters to get the dynamic
+direction you want:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:x` |`0` |The amount the light should point towards audience’s right
+
+|`:y` |`0` |The amount the light should point up
+
+|`:z` |`1` |The amount the light should point towards the audience
+
+|`:frame-dynamic` |`true` |Whether the parameter should be calculated at
+every frame, or just once
+|=======================================================================
+
+Collectively, `x`, `y`, and `z` specify a three-dimensional vector in
+the light show’s [[frame of reference|show-space]] telling the lights
+which direction they should point. The absolute magnitudes of the values
+are not important, it is their relative sizes that matter. The default
+of `[0, 0, 1]` means the lights point neither left nor right, neither up
+nor down, and straight towards the audience. `[1, 0, 0]` would be
+straight right, `[-1, 0, 0]` straight left, `[0, 1, 0]` straight up, and
+`[0, 1, -1]` up and away from the audience at a 45° angle.
+
+All of these parameters, except for `frame-dynamic`, can themselves be
+dynamic parameters, such as show link:#variable-parameters[variables]
+(with the convenience shorthand of just passing in the keyword by which
+the show variable was stored) or link:#oscillated-parameters[oscillated
+parameters].
+
+[[aim-parameters]]
+Aim Parameters
+~~~~~~~~~~~~~~
+
+Aim parameters are a way to tell a group of fixtures to aim at a
+particular point in space, or track something in unison or in a
+coordinated pattern. The basic way to create one is to call:
+
+code,clojure------------------------------------------ code,clojure
+(afterglow.effects.params/build-aim-param)
+------------------------------------------
+
+By itself this call would simply return a non-dynamic point telling
+fixtures to aim directly at a height of zero, centered on the X axis,
+two meters towards the audience. However, you will use one or more of
+the following optional keyword parameters to get the dynamic target
+point you want:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:x` |`0` |How many meters along the X axis the target point is found
+
+|`:y` |`0` |How high up or down the Y axis is the target point
+
+|`:z` |`2` |How far towards or away from the audience is the target
+point
+
+|`:frame-dynamic` |`true` |Whether the parameter should be calculated at
+every frame, or just once
+|=======================================================================
+
+Collectively, `x`, `y`, and `z` specify a three-dimensional point within
+the light show’s [[frame of reference|show-space]] telling the lights
+where to aim. If you need to convert inches to meters, which are the
+standard distance units in Afterglow, you can use
+http://deepsymmetry.org/afterglow/doc/afterglow.transform.html#var-inches[afterglow.transform/inches].
+
+All of these parameters, except for `frame-dynamic`, can themselves be
+dynamic parameters, such as show link:#variable-parameters[variables]
+(with the convenience shorthand of just passing in the keyword by which
+the show variable was stored) or link:#oscillated-parameters[oscillated
+parameters].
+
+[[spatial-parameters]]
+Spatial Parameters
+~~~~~~~~~~~~~~~~~~
+
+Spatial parameters allow you to base an effect parameter on the physical
+arrangement or relationships between fixtures in your light show. The
+way to create one is to call:
+
+code,clojure------------------------------------------------------------------
+code,clojure
+(afterglow.effects.params/build-spatial-param fixtures-or-heads f)
+------------------------------------------------------------------
+
+The required parameters are the fixtures and/or heads over which you
+want this parameter to be calculated, and a function which, when invoked
+with a fixture or head, returns a number or a dynamic `Number`
+parameter. The results returned for all included heads will be scaled to
+fall within a standard range, which defaults to `[0-255]`, but can be
+adjusted using optional keyword parameters:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:start` |`0` |The smallest value this dynamic parameter will hold.
+
+|`:end` |`255` |The largest value this dynamic parameter will hold.
+
+|`:frame-dynamic` |n/a |Whether the parameter should be calculated at
+every frame, or just once.
+|=======================================================================
+
+All of these parameters, except for `frame-dynamic`, can themselves be
+dynamic parameters, such as show link:#variable-parameters[variables]
+(with the convenience shorthand of just passing in the keyword by which
+the show variable was stored) or link:#oscillated-parameters[oscillated
+parameters]. If `frame-dynamic` is not explicitly set, the spatial
+parameter will be frame dynamic if either `start` or `end` is
+frame-dynamic.
+
+Useful things that `f` can do include calculating the distance of the
+head from some point, either in 3D or along an axis, its angle from some
+line, and so on. These can allow the creation of lighting gradients
+across all or part of a show. Spatial parameters make excellent building
+blocks for link:#color-parameters[color],
+link:#direction-parameters[direction] and link:#aim-parameters[aim]
+parameters, as shown in the [[effect
+examples|effect-examples#spatial-parameters]].
+
+[[digging-deeper]]
+Digging Deeper
+^^^^^^^^^^^^^^
+
+For more details, see the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html[API
+documentation].

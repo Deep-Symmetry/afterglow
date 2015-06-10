@@ -1,0 +1,31 @@
+Cues that assign color to lights are designed to leverage the
+https://github.com/jolby/colors[jolby/colors] library. In addition to
+creating colors by name, as in the Usage examples, you can create them
+by hex string, RGB values, and, most usefully when thinking about how to
+mix and fade them, http://en.wikipedia.org/wiki/HSL_and_HSV[HSL] (Hue,
+Saturation, and Lightness). So, if you wanted a cue that shifts back and
+forth around yellow, and don't remember the hue value of yellow, you
+could do something like this:
+
+code,clojure------------------------------------------------------------
+code,clojure
+(use 'com.evocomputing.colors)
+(def yellow (create-color "yellow"))
+(def hue-param (params/build-oscillated-param
+  (oscillators/sine-beat) :min (hue (adjust-hue yellow -5))
+                          :max (hue (adjust-hue yellow 5))))
+(show/add-effect! :color (global-color-cue
+  (params/build-color-param :s 100 :l 50 :h hue-param)))
+------------------------------------------------------------
+
+You can add lighten it up by changing to something like `:l 70` in the
+`build-color-param` call, darken it a bunch with `:l 20` or desaturate
+it a touch with `:s 80`... For more options and ideas, delve into the
+colors library http://deepsymmetry.org/colors/doc/[API documentation],
+and the various [[oscillators|oscillators]] that Afterglow makes
+available to you.
+
+Since working with colors is so fundamental to creating light shows, the
+mechanism for creating [[dynamic color
+parameters|Dynamic-Parameters#color-parameters]] is very well developed,
+and worth getting familiar with.

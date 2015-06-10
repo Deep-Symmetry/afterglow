@@ -1,0 +1,133 @@
+When an afterglow show is running, that is, from when
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-start.21[(show/start!)]
+has been called, until
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-stop.21[(show/stop!)]
+or
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-stop-all.21[(show/stop-all!)]
+is called, there is a background task scheduled to run many times per
+second, to calculate the next “frame” of control values to send to the
+universes controlled by the show, and then send those values. The rate
+at which this activity is scheduled is determined by the
+`refresh-interval` value established when the show was
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-show[created].
+If not explicitly set as a parameter to `(show/show)`, an interval of
+33⅓ milliseconds is used, causing the lights to be updated thirty times
+each second. If your DMX interface is running at a different rate, you
+will want to configure your show to match it, so that you are getting
+the best results possible without wasting computation on frames that
+never get seen.
+
+___________________________________________________________________________________________________________________________________________
+Once a show has started running, you can get a sense of how heavily it
+is taxing your hardware by looking at the show’s `:statistics` atom:
+___________________________________________________________________________________________________________________________________________
+
+code,clojure------------------------------------------------------------------------
+code,clojure
+@(:statistics *show*)
+; -> {:total-time 382127, :frames-sent 87769, :average-duration 4.35378}
+------------------------------------------------------------------------
+
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+This tells you how many milliseconds have been spent in the rendering
+loop while the show is running, how many frames of DMX data have been
+sent to the show universes, and the average number of milliseconds spent
+in the rendering loop. If the duration of a rendering cycle ever exceeds
+the refresh interval, Afterglow will log a warning that it is unable to
+keep up with the effects you are trying to run.
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+When it is time to determine the next set of values to send to the
+show’s patched fixtures, this is what happens:
+
+1.  The first thing Afterglow does is take a
+http://deepsymmetry.org/afterglow/doc/afterglow.rhythm.html#var-ISnapshot[snapshot]
+of the show
+https://github.com/brunchboy/afterglow/wiki/Metronomes[metronome] to
+identify a common point in time for all the effects to use in deciding
+how they should look. This enables a consistent, coordinated appearance
+for everything in the frame.
+2.  The next step is to zero out the buffers that will be used to send
+DMX data for each universe, so that if no effect tries to set a value
+for a particular channel on this frame, a zero value will be sent for
+it.
+3.  Then Afterglow loops over all [[Effect Functions]] that are
+currently active for the show, and asks if any are ready to end, as
+described in the [[Effect Function Lifecycle]] section. If any are, they
+are removed from the list of active effects.
+4.  Then it makes another loop over any functions that did not end, to
+see how they want to affect the lights. It does this by calling, in
+order, each effect’s
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-generate[generate]
+function, passing in the show and the metronome snapshot. In order to
+affect the lights, each function will return a list of
+[[Assigners|the-rendering-loop#assigners]] for the things it wants to
+affect. These are gathered in the order they were returned by each
+effect. Since the effects are run in priority order (lower priority
+first, with effects of the same priority running in the order in which
+they were added to the show), higher-priority and more recent effects’
+assigners will get the chance to modify or veto any assigners from
+earlier and lower-priority effects which are trying to control the same
+thing. If the effect doesn’t want to do anything this frame, it can
+simply return an empty assigner list.
+5.  Once all the assigners have been collected, Each assigner’s
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-assign[assign]
+function is called, again passing in the show and the metronome
+snapshot, the target which is being assigned (a DMX channel in a show
+universe, or a fixture or fixture head, depending on the assigner type),
+as well as the assignment value the effect function wanted to establish
+(a number, color, or head direction, again depending on the assigner
+type), and the previous assignment (if any) that an earlier effect
+wanted to set for this target. The assigner can decide what to do with
+the previous assignment: Ignore it, blend the current assignment with it
+somehow, or honor it, depending on the nature and configuration of the
+assigner. The `assign` function returns a single resolved value of the
+appropriate type for the assignment, and Afterglow records it,
+potentially to pass it to another assigner of the same type which wants
+to affect the same target. The input to `assign` might be a [[Dynamic
+Parameter|dynamic-parameters]], and the return value may be as well, or
+the assigner may choose to resolve it in order to decide between or
+blend competing assignments. At the end of this process, Afterglow is
+left with a single assigned value for every target which any effect
+wanted to affect for the current frame.
+6.  Afterglow uses these assignment results to establish actual DMX
+values for the frame. It splits them based on the kind of assignment
+they want to make, doing all of one type before moving on to the next
+type. The type ordering is established by
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-resolution-handlers[show/resolution-handlers]
+and starts with low-level, single channel `:channel` assigners, then
+moves up to more complex `:function`, `:color`, and `:direction`
+assigners. The resolution-handler functions finally resolve any
+remaining dynamic parameters, and then turn abstractions like color
+objects into appropriate DMX channel values for the target that is being
+assigned.
+7.  Finally, the resulting buffers of DMX values, with zeros in any
+channels which were not affected by assigners, are sent to their
+corresponding universes, causing the lights to produce the desired
+effects.
+
+[[assigners]]
+Assigners
+~~~~~~~~~
+
+TODO: Flesh out
+
+[[channel-assigners]]
+Channel Assigners
+^^^^^^^^^^^^^^^^^
+
+[[function-assigners]]
+Function Assigners
+^^^^^^^^^^^^^^^^^^
+
+[[color-assigners]]
+Color Assigners
+^^^^^^^^^^^^^^^
+
+[[direction-assigners]]
+Direction Assigners
+^^^^^^^^^^^^^^^^^^^
+
+[[aim-assigners]]
+Aim Assigners
+^^^^^^^^^^^^^

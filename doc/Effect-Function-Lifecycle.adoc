@@ -1,0 +1,45 @@
+When an effect function is added to a show via
+`(show/add-effect! :keyword effect-fn priority)` it immediately replaces
+any other effect which had been previously added with the same keyword.
+The former effect does not get a chance to gracefully finish its
+effects, it is simply gone. The new effect is added to the [[rendering
+loop|rendering-loop]] in a position determined by the priority value. If
+no priority argument is supplied, a priority of zero is defaulted in.
+The new effect is added after any other existing effects of the same (or
+lower) priority, but before any existing effects with higher priority.
+Since later effects get a chance to override earlier effects, this means
+that higher-priority effects, and effects added later, win.
+
+All effect functions implement the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-IEffect[afterglow.effects/IEffect]
+protocol. As each frame of lighting control values is rendered, a
+snapshot is created from the show metronome, so every effect shares the
+same notion of the point in time at which effects are being rendered.
+The priority-ordered list of effects is traversed, and each effect’s
+`(still-active? [this show snapshot])` function is invoked to determine
+if the effect has ended at this point. If this returns `true`, the
+effect is removed from the list of active effects, and is finished.
+Limited-time effects can use this mechanism to tell the show when they
+finish. Ongoing effects will simply always return `true`, or if they
+want to end gracefully, will return `true` until they have been asked to
+end, and their graceful ending has completed.
+
+Assuming the effect has not reported completion, its
+`(generate [this show snapshot])` function will be called, as described
+in the [[rendering loop|rendering-loop]] section, to create the effect
+it represents at this point in time.
+
+At some point, the show operator may indicate a desire for the effect to
+end, by calling `(show/end-effect! :keyword force)`. If `force` is true,
+the effect will simply be removed from the list of active effects. If it
+is omitted or false, the effect is asked to end gracefully by calling
+its `(end [this show snapshot])` function. If the effect is ready to end
+right away, it can return `true`, and will be removed at that point.
+Otherwise, if it wants to take a little while to animate an ending
+effect, it should set an internal flag so it knows it is ending and
+return `false`, and at some point in the not-so-distant future, conclude
+its ending and return `false` from `still-active?`.
+
+If `end-effect!` is called a second time for an effect which was already
+asked to end, even if `force` is false, it will be removed forcibly at
+that point.

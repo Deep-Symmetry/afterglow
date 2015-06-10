@@ -1,0 +1,347 @@
+Effect functions determine what a light or group of lights are doing at
+a given moment in time. When creating an effect function, you assign one
+or more [[Fixtures|fixture-definitions]] to it, and it will generate
+control values for only those fixtures. The fixture channels affected by
+the effect depend on the kind of effect it is, and are grouped into
+several primary categories. The simplest kinds of effects apply to a
+single channel per fixture, or perhaps per head, if the fixture has
+multiple independent light-emitting heads. A very common single-channel
+effect is the link:#dimmer-effects[dimmer effect].
+
+Many effects assign link:#color-effects[colors] to lights, which often
+involves multiple channels. RGB fixtures will use three channels, one
+each for the red, green, and blue levels which make up the color. Some
+fixtures add other LED colors, such as amber, white, and even
+ultraviolet. Other fixtures simply use a rotating color wheel to pick
+from a fixed set of colors, using a single channel. Regardless of how
+the color is finally produced, at most stages of effect processing,
+Afterglow works in terms of the [[color itself|working-with-color]],
+allowing you to blend, lighten, darken, shift hue, and the like so you
+can produce interesting looks, without regard to details of fixture
+implementation. It is only at the [[final rendering
+stage|the-rendering-loop]] that the color is broken down into channel
+assignments.
+
+Another important category of effects control the
+link:#direction-effects[direction] of moving-head fixtures. These work
+in terms of a desired 3D direction vector or link:#aim-effects[target
+point] with respect to the [[show frame of reference|show-space]], and
+at the last stage of rendering, convert that to pan and tilt channel
+values, with reference to the angle at which the fixture has actually
+been hung.
+
+You can also conveniently use features which are shared by a number of
+fixtures, or completely unique to a single fixture, through
+link:#function-effects[function effects], or drop right down to the
+level of individual DMX channel values with
+link:#channel-effects[channel effects].
+
+Finally, Afterglow includes some examples of how to build up
+link:#complex-effects[special-purpose effects], which can be fun in
+themselves, and also serve as templates and inspiration for whole new
+kinds of effects you create on your own.
+
+[[dimmer-effects]]
+Dimmer Effects
+~~~~~~~~~~~~~~
+
+To create an effect that will set the dimmer level of a fixture, use:
+
+code,clojure---------------------------------------------------------
+code,clojure
+(afterglow.effects.dimmer/dimmer-cue level fixtures htp?)
+---------------------------------------------------------
+
+This effect finds all the dimmer channels associated with the specified
+fixtures (there may be multiple, if the fixture has more than one
+light-emitting head), and assigns them a level. 0 is off, 255 is maximum
+brightness. If `htp?` is true, uses highest-takes-precedence rules when
+replacing any earlier or lower-priority effects which attempted to set
+this particular dimmer in the current rendering cycle. In other words,
+if an earlier effect chose a higher value, let it win, otherwise use the
+value this effect wants. If `htp?` is false, this effect will simply
+overwrite any previous assignments it finds for the dimmers it is
+controlling. Omitting `htp?` is the same as passing a `true` value.
+
+_________________________________________________________________________________________________________________________________
+If you want your dimmer cue to affect only one head of a fixture, you
+can pass it just that head, rather than the entire fixture.
+_________________________________________________________________________________________________________________________________
+
+For some fixtures, generally those with a single, white light source,
+the dimmer is the only thing that determines the amount of light output.
+For color-mixing fixtures like RGB LED lights, each color channel has
+its own separate brightness level, and then dimmer scales the actual
+output of the light, so the final brightness will be a combination of
+both. In other words, if the red channel is set to 50% brightness, and
+the dimmer is also set to 50% brightness, the final red output will be
+at 25% brightness.
+
+In addition to passing in a literal number for the `level` parameter,
+you can pass a [[Dynamic Parameter|dynamic parameters]] whose value
+depends on a [[Metronome|metronomes]], the physical location or
+orientation of the head, or a show variable, perhaps
+[[bound|midi-mapping-and-beat-sync#mapping-a-control-to-a-variable]] to
+a MIDI control surface. It often makes sense to use [[oscillated
+parameters|dynamic-parameters#oscillated-parameters]] with dimmer cues.
+
+__________________________________________________________________________________________________________________________________________________________
+If you have color effects running for a light and you aren’t seeing
+anything, make sure you have a dimmer effect setting the dimmer to some
+visible level.
+__________________________________________________________________________________________________________________________________________________________
+
+[[color-effects]]
+Color Effects
+~~~~~~~~~~~~~
+
+One of the most common basic effects you will be using to create the
+looks you want is the color cue. To create an effect that will assign a
+color to a fixture (which will assign colors to all of the fixture’s
+heads), or a single head of a fixture, pass the fixture or head to:
+
+code,clojure-------------------------------------------------------
+code,clojure
+(afterglow.effects.color/color-cue name color fixtures)
+-------------------------------------------------------
+
+The `name` parameter is intended to help identify the purpose of the
+effect, and shows up when examining the created effect. Put something
+descriptive in there, or use a function like
+`afterglow.examples/global-color-cue` which builds the cue for you,
+figuring out a reasonable name in many cases. This parameter may
+actually go away completely soon, as it is not clear how useful the name
+is.
+
+The `color` parameter is where you specify the color to assign to the
+lights. It can be a string, specifying the name of a color understood by
+the https://github.com/jolby/colors[jolby/colors] library, or an object
+returned by one of the factories in that library as described in
+[[Working with Color|working-with-color]].
+
+In addition to passing in a literal number for the `color` parameter,
+you can pass a [[Dynamic Parameter|dynamic-parameters]] whose value
+depends on a [[Metronome|metronomes]], the physical location or
+orientation of the head, or a show variable, perhaps
+[[bound|midi-mapping-and-beat-sync#mapping-a-control-to-a-variable]] to
+a MIDI control surface. The flexibility offered by [[dynamic color
+parameters|dynamic-parameters#color-parameters]] is huge, especially
+when combined with [[oscillated
+parameters|dynamic-parameters#oscillated-parameters]]. Learning how to
+effectively leverage these in combination with each other will enable
+you to create most of the basic lighting looks you need.
+
+_________________________________________________________________________________________________________________________________________________________________________________________
+Remember that if aren’t seeing anything when you have assigned color
+effects to a fixture to make sure you also have a dimmer effect setting
+that fixture’s dimmer to some visible level.
+_________________________________________________________________________________________________________________________________________________________________________________________
+
+[[direction-effects]]
+Direction Effects
+~~~~~~~~~~~~~~~~~
+
+Moving-head fixtures can create particularly exciting and dynamic shows.
+To create an effect that will tell a fixture or head what direction it
+should be pointing, pass the fixture or head to:
+
+code,clojure-----------------------------------------------------------------
+code,clojure
+(afterglow.effects.movement/directon-cue name direction fixtures)
+-----------------------------------------------------------------
+
+The `name` parameter is intended to help identify the purpose of the
+effect, and shows up when examining the created effect.
+
+The `direction` parameter is where you specify the direction the lights
+should be pointing. It is a `javax.vector.Vector3d` pointing in the
+direction the lights should, with respect to the show’s [[frame of
+reference|show-space]]. An easy way to create one is to call
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-direction-param[afterglow.effects.params.build-direction-param].
+This can create static vectors for you, but can also create [[Dynamic
+Parameter|dynamic-parameters]] whose value depends on a
+[[Metronome|metronomes]], the physical location or orientation of the
+head, or a show variable, perhaps
+[[bound|midi-mapping-and-beat-sync#mapping-a-control-to-a-variable]] to
+a MIDI control surface. Building dynamic direction parameters with
+[[oscillated parameters|dynamic-parameters#oscillated-parameters]] can
+create fascinating motions.
+
+[[aim-effects]]
+Aim Effects
+~~~~~~~~~~~
+
+These are very similar to link:#direction-effects[direction effects],
+except they tell each fixture to aim at a particular point in space,
+such as an object or person in front of the lighting rig, or perhaps
+another fixture. To create an effect that will tell a fixture or head
+what point it should be aiming at, pass the fixture or head to:
+
+code,clojure---------------------------------------------------------------
+code,clojure
+(afterglow.effects.movement/aim-cue name target-point fixtures)
+---------------------------------------------------------------
+
+The `name` parameter is intended to help identify the purpose of the
+effect, and shows up when examining the created effect.
+
+The `target-point` parameter is where you specify the point at which the
+lights should be aiming. It is a `javax.vector.Point3d` identifying a
+point within the show’s [[frame of reference|show-space]]. An easy way
+to create one is to call
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-aim-param[afterglow.effects.params.build-aim-param].
+This can create static points for you, but can also create [[Dynamic
+Parameter|dynamic-parameters]] whose value depends on a
+[[Metronome|metronomes]], the physical location or orientation of the
+head, or a show variable, perhaps
+[[bound|midi-mapping-and-beat-sync#mapping-a-control-to-a-variable]] to
+a control surface. Using a tablet with an OSC or midi interface that
+lets you drag an aiming point around a map of the stage is one fun
+possibility.
+
+[[function-effects]]
+Function Effects
+~~~~~~~~~~~~~~~~
+
+Fixtures have a wide variety of different capabilities, often more than
+would be reasonable to assign a separate DMX channel for each,
+especially when it does not make sense to activate or control some at
+the same time. Afterglow can be told about these in the [[fixture
+definition|fixture-definitions]], and you can control them using
+function effects, by specifying the name of the function you want to
+activate, and a percentage by which you want it activated (representing
+the value within that function’s valid DMX range that you want Afterglow
+to send).
+
+For example, many fixtures have a strobe function, which causes them to
+flash off and on at a particular speed. The following line shows how to
+cause them all to strobe at their fastest speed:
+
+code,clojure-----------------------------------------------------------------
+code,clojure
+(show/add-effect! :strobe (afterglow.effects.channel/function-cue
+  "Fastest strobe" :strobe 100 (show/all-fixtures)))
+-----------------------------------------------------------------
+
+With this effect active, any fixture with a `:strobe` function range
+will be sent the highest value defined for that range, on the channel on
+which the function exists, causing it to strobe rapidly. Fixtures which
+lack such a function will be unaffected.
+
+Function effects can be very specific to individual fixtures. For
+example, the Blizzard Torrent F3 has a pair of gobo wheels; one of them
+has a gobo that projects something that looks like a fat atom with
+electrons orbiting it. This projection can be selected, and caused to
+jiggle back and forth at the mid-range of possible shake speeds, by
+adding the following effect:
+
+code,clojure----------------------------------------------------------------
+code,clojure
+(show/add-effect! :gobo-fixed
+  (afterglow.effects.channel/function-cue "Brownian motion?"
+    :gobo-fixed-atom-shake 100 (show/fixtures-named "torrent")))
+----------------------------------------------------------------
+
+Depending on how far away the projection is landing, it may be very
+blurry; focus can be adjusted like so:
+
+code,clojure---------------------------------------------------------
+code,clojure
+(show/add-effect! :focus
+  (afterglow.effects.channel/function-cue
+    "focus" :focus 95.5 (show/fixtures-named "torrent")))
+---------------------------------------------------------
+
+The functions available for a fixture, their names, channels, and
+ranges, are specified by the [[fixture definition|fixture-definitions]],
+so reading over those can be helpful. (And carefully crafting and
+testing them is important when defining a new fixture.) Trying to
+maintain consistency in function naming is valuable in allowing
+functions to be conveniently applied to groups of different fixtures.
+
+Functions which do not vary in their effect for different DMX values
+within the legal range are described as `:range :fixed` in the fixture
+definition; this is currently only used for displaying the
+interpretation of a fixture setting, you still need to provide a
+percentage within the range when setting up the function effect.
+
+Fixture definitions can also supply a _scaling function_ for a function
+specification, which maps input values to the final percentage within
+the DMX range. This is helpful, for example, to allow strobe settings to
+be interpreted as approximate Hz values, so fixtures from different
+manufacturers can be asked to strobe at roughly the same rate for the
+same function setting. You can view the source of the
+http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.blizzard.html[Blizzard
+fixture definitions] for examples of how this is done, passing the
+minimum and maximum Hz strobe rates of the actual fixture to create a
+partial implementation of
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.channel.html#var-function-value-scaler[afterglow.effects.channel/function-value-scaler]
+which is passed the value that the effect is trying to establish, and
+converts it to a position in that fixture’s range which attempts to
+approximate that strobing rate.
+
+[[channel-effects]]
+Channel Effects
+~~~~~~~~~~~~~~~
+
+When you just want to send a specific number to a particular DMX
+channel, you can drop right down to the bottom level with channel
+effects. For example, to pin the dimmer channel of a group of fixtures
+to 55, regardless of the setting of the show’s master chain, you could
+do something like this:
+
+code,clojure------------------------------------------------------------
+code,clojure
+(show/add-effect! :blade-dimmers
+  (afterglow.effects.channel/channel-cue "Blade dimmers" 55
+    (afterglow.channels/extract-channels
+      (show/fixtures-named :blade) #(= (:type %) :dimmer))))
+------------------------------------------------------------
+
+Or to look at what actual pan values do to a Torrent, without fancy
+geometric transformations, as you set values into the show variable
+named `:pan`:
+
+code,clojure-----------------------------------------------------------
+code,clojure
+(show/add-effect! :pan-torrent
+  (afterglow.effects.channel/channel-cue
+    "Pan Torrent" (params/build-variable-param :pan)
+    (afterglow.channels/extract-channels
+      (show/fixtures-named :torrent) #(= (:type %) :pan))))
+-----------------------------------------------------------
+
+You will most likely be wanting to do this sort of thing for channel
+types which Afterglow does not yet have a more sophisticated
+understanding, and then perhaps you will end up creating a whole new
+category of effect functions as your experimentation progresses.
+
+[[complex-effects]]
+Complex Effects
+~~~~~~~~~~~~~~~
+
+[[metronome]]
+Metronome
+^^^^^^^^^
+
+The Metronome cue is a great way to check the synchronization of the
+show metronome with your DJ software or mixer, and is a nice example of
+how to write a cue that is driven by a metronome.
+
+code,clojure---------------------------------------------------
+code,clojure
+(afterglow.effects.color/metronome-cue fixtures
+  :down-beat-color color1 :other-beat-color color2)
+---------------------------------------------------
+
+Creates an effect function which flashes the heads of the supplied
+fixtures one color on the down beat and another color on the other beats
+of the show metronome. The two color keyword parameters are optional; if
+they are omitted, the down beat color is a lightened red, and the other
+beat color is a darkened yellow.
+
+[[sparkle]]
+Sparkle
+^^^^^^^
+
+To be documented shortly!

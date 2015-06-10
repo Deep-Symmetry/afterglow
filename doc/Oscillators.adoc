@@ -1,0 +1,367 @@
+Oscillators in Afterglow are a flexible way of turning the timing
+information tracked by [[metronomes|metronomes]] into waveforms that can
+be used to make lights do interesting things. They can be related to the
+beats, bars, or phrases of the metronome, or multiples or fractions
+thereof, and can create link:#sawtooth-oscillators[sawtooth],
+link:#triangle-oscillators[triangle], link:#square-oscillators[square],
+or link:#sine-oscillators[sine] waves.
+
+Metronomes keep track of musical time relative to some starting point,
+in terms of beats, bars (by default four beats to a bar), and phrases
+(usually eight bars to a phrase). In addition to keeping track of the
+current beat, bar, and phrase, metronomes can also tell you the _phase_
+of that beat, bar, or phrase, which is a measurement of progress through
+the beat, bar, or phrase. The phase starts out at 0.0 at the very
+beginning of the interval, and grows towards, but never quite reaches,
+1.0, because at that point you will be on to phase 0.0 of the following
+interval.
+
+So, in a sense, by itself a metronome can give you a
+link:#sawtooth-oscillators[sawtooth] wave related to its intervals, just
+by looking at the interval phase. The sawtooth oscillators build on that
+by letting you change the direction of oscillation, so it starts at 1.0
+and slides downward, the speed of oscillation, so it ramps over
+multiples or fractions of an interval, and also let you shift the phase
+of the wave so it does not coincide with the interval itself.
+
+So that all of the lighting effects created for a given frame of control
+output are synchronized and share the same notion of the current state
+of the metronome, Afterglow takes a _snapshot_ of the metronome at the
+start of the frame, and the oscillators work from that.
+
+[[sawtooth-oscillators]]
+Sawtooth Oscillators
+~~~~~~~~~~~~~~~~~~~~
+
+code,clojure--------------------------------------------- code,clojure
+(afterglow.effects.oscillators/sawtooth-beat)
+---------------------------------------------
+
+Returns an oscillator which generates a
+http://en.wikipedia.org/wiki/Sawtooth_wave[sawtooth wave] relative to
+the phase of the current beat. At the start of the beat, the value will
+be 0.0, and at the end of the beat, the value will have grown linearly
+to 1.0. You can change the nature of the wave by using optional keyword
+parameters:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:down?` |`false` |When `true` the wave starts at 1.0 and falls
+linearly to 0.0
+
+|`:beat-ratio` |`1` |Runs the oscillator at the specified multiple or
+fraction of a beat
+
+|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+beat by the specified amount
+|=======================================================================
+
+[[ratios]]
+Ratios
+++++++
+
+All of the oscillators can be modified by supplying a ratio keyword
+argument (for beat-oriented oscillators, this will be `:beat-ratio`,
+bar-oriented ones use `:bar-ratio`, and phrase oscillators use
+`:phrase-ratio`. This argument supplies a fraction which adjusts the
+speed of the oscillator with respect to the interval it is oscillating
+over. For example a beat-oriented oscillator normally goes through its
+entire wave shape once per beat. If you supply a `:beat-ratio` of `2`,
+it will run half as fast, taking two beats to go through its waveform. A
+`:beat-ratio` of `1/3` speeds it up so that it only takes one-third of a
+beat to go through its oscillation, and will finish three complete
+cycles each beat. These can be combined, of course, so a `:bar-ratio` of
+`2/3` would complete three cycles of a bar-oriented oscillator every two
+bars.
+
+[[phase-shifting]]
+Phase Shifting
+++++++++++++++
+
+All of the oscillators can be modified by supplying a `:phase` keyword
+argument, which offsets them from the actual phase of the interval that
+they are tracking. For example, if you supply a `:phase` value of `0.5`,
+the oscillator will be pushed exactly halfway out-of-phase with the
+metronome interval, so that it will act as if a beat is starting halfway
+through the actual beat. A positive value shifts the oscillator ahead of
+the underlying interval, and a negative value delays it. Only values
+between -1.0 and 1.0 make sense, since shifting multiple intervals has
+no functional difference from staying within the current interval. In
+other words, passing in exactly 1.0 (or 2.0, etc.) is the same as
+passing in 0.0, and will have no effect on the oscillator.
+
+code,clojure-------------------------------------------- code,clojure
+(afterglow.effects.oscillators/sawtooth-bar)
+--------------------------------------------
+
+Returns an oscillator which generates a
+http://en.wikipedia.org/wiki/Sawtooth_wave[sawtooth wave] relative to
+the phase of the current bar (measure, usually four beats). At the start
+of the bar, the value will be 0.0, and at the end of the bar, the value
+will have grown linearly to 1.0. You can change the nature of the wave
+by using optional keyword parameters:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:down?` |`false` |When `true` the wave starts at 1.0 and falls
+linearly to 0.0
+
+|`:bar-ratio` |`1` |Runs the oscillator at the specified
+link:#ratios[multiple or fraction] of a bar
+
+|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+bar by the specified amount
+|=======================================================================
+
+code,clojure----------------------------------------------- code,clojure
+(afterglow.effects.oscillators/sawtooth-phrase)
+-----------------------------------------------
+
+Returns an oscillator which generates a
+http://en.wikipedia.org/wiki/Sawtooth_wave[sawtooth wave] relative to
+the phase of the current phrase (usually eight bars). At the start of
+the phrase, the value will be 0.0, and at the end of the phrase, the
+value will have grown linearly to 1.0. You can change the nature of the
+wave by using optional keyword parameters:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:down?` |`false` |When `true` the wave starts at 1.0 and falls
+linearly to 0.0
+
+|`:phrase-ratio` |`1` |Runs the oscillator at the specified
+link:#ratios[multiple or fraction] of a phrase
+
+|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+phrase by the specified amount
+|=======================================================================
+
+[[triangle-oscillators]]
+Triangle Oscillators
+~~~~~~~~~~~~~~~~~~~~
+
+code,clojure--------------------------------------------- code,clojure
+(afterglow.effects.oscillators/triangle-beat)
+---------------------------------------------
+
+Returns an oscillator which generates a
+http://en.wikipedia.org/wiki/Triangle_wave[triangle wave] relative to
+the phase of the current beat. At the start of the beat, the value will
+be 0.0, at the midpoint, the value will have grown linearly to 1.0, and
+at the end of the beat it will have returned to 0.0. You can change the
+nature of the wave by using optional keyword parameters:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:beat-ratio` |`1` |Runs the oscillator at the specified
+link:#ratios[multiple or fraction] of a beat
+
+|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+beat by the specified amount
+|=======================================================================
+
+code,clojure-------------------------------------------- code,clojure
+(afterglow.effects.oscillators/triangle-bar)
+--------------------------------------------
+
+Returns an oscillator which generates a
+http://en.wikipedia.org/wiki/Triangle_wave[triangle wave] relative to
+the phase of the current bar (measure, usually four beats). At the start
+of the bar, the value will be 0.0, at the midpoint, the value will have
+grown linearly to 1.0, and at the end of the bar, it will have returned
+to 0.0. You can change the nature of the wave by using optional keyword
+parameters:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:bar-ratio` |`1` |Runs the oscillator at the specified
+link:#ratios[multiple or fraction] of a bar
+
+|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+bar by the specified amount
+|=======================================================================
+
+code,clojure----------------------------------------------- code,clojure
+(afterglow.effects.oscillators/sawtooth-phrase)
+-----------------------------------------------
+
+Returns an oscillator which generates a
+http://en.wikipedia.org/wiki/Triangle_wave[triangle wave] relative to
+the phase of the current phrase (usually eight bars). At the start of
+the phrase, the value will be 0.0, at the midpoint, the value will have
+grown linearly to 1.0, and at the end of the phrase, it will have
+returned to 0.0. You can change the nature of the wave by using optional
+keyword parameters:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:phrase-ratio` |`1` |Runs the oscillator at the specified
+link:#ratios[multiple or fraction] of a phrase
+
+|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+phrase by the specified amount
+|=======================================================================
+
+[[square-oscillators]]
+Square Oscillators
+~~~~~~~~~~~~~~~~~~
+
+Square waves are good for abrupt transitions, like strobes, or switching
+between different effects.
+
+code,clojure------------------------------------------- code,clojure
+(afterglow.effects.oscillators/square-beat)
+-------------------------------------------
+
+Returns an oscillator which generates a
+http://en.wikipedia.org/wiki/Square_wave[square wave] relative to the
+phase of the current beat. At the start of the beat, the value will be
+1.0. At the midpoint, it will instantly drop to 0.0, where it will stay
+until the end of the beat. You can change the nature of the wave by
+using optional keyword parameters:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:width` |`0.5` |Determines the phase at which the value changes from
+1.0 to 0.0, and therefore the width of the 1.0 pulse
+
+|`:beat-ratio` |`1` |Runs the oscillator at the specified
+link:#ratios[multiple or fraction] of a beat
+
+|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+beat by the specified amount
+|=======================================================================
+
+code,clojure------------------------------------------ code,clojure
+(afterglow.effects.oscillators/square-bar)
+------------------------------------------
+
+Returns an oscillator which generates a
+http://en.wikipedia.org/wiki/Square_wave[square wave] relative to the
+phase of the current bar (measure, usually four beats). At the start of
+the bar, the value will be 1.0. At the midpoint, it will instantly drop
+to 0.0, where it will stay until the end of the bar. You can change the
+nature of the wave by using optional keyword parameters:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:width` |`0.5` |Determines the phase at which the value changes from
+1.0 to 0.0, and therefore the width of the 1.0 pulse
+
+|`:bar-ratio` |`1` |Runs the oscillator at the specified
+link:#ratios[multiple or fraction] of a bar
+
+|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+bar by the specified amount
+|=======================================================================
+
+code,clojure--------------------------------------------- code,clojure
+(afterglow.effects.oscillators/square-phrase)
+---------------------------------------------
+
+Returns an oscillator which generates a
+http://en.wikipedia.org/wiki/Square_wave[square wave] relative to the
+phase of the current phrase (usually eight bars). At the start of the
+phrase, the value will be 1.0. At the midpoint, it will instantly drop
+to 0.0, where it will stay until the end of the phrase. You can change
+the nature of the wave by using optional keyword parameters:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:width` |`0.5` |Determines the phase at which the value changes from
+1.0 to 0.0, and therefore the width of the 1.0 pulse
+
+|`:phrase-ratio` |`1` |Runs the oscillator at the specified
+link:#ratios[multiple or fraction] of a phrase
+
+|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+phrase by the specified amount
+|=======================================================================
+
+[[sine-oscillators]]
+Sine Oscillators
+~~~~~~~~~~~~~~~~
+
+Just like in musical synthesis, sine waves are the smoothest-feeling
+waves of all, and are good for creating gentle, subtle effects which
+ease in and out.
+
+code,clojure----------------------------------------- code,clojure
+(afterglow.effects.oscillators/sine-beat)
+-----------------------------------------
+
+Returns an oscillator which generates a
+http://en.wikipedia.org/wiki/Sine_wave[sine wave] relative to the phase
+of the current beat. At the start of the beat, the value will be 0.0 and
+beginning to rise slowly, picking up speed as it goes, and slowing down
+again as it approaches the midpoint. At the midpoint, the value will
+reach 1.0 and begin falling slowly, again picking up speed, and at the
+end of the beat it will have returned to 0.0. You can change the nature
+of the wave by using optional keyword parameters:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:beat-ratio` |`1` |Runs the oscillator at the specified
+link:#ratios[multiple or fraction] of a beat
+
+|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+beat by the specified amount
+|=======================================================================
+
+code,clojure---------------------------------------- code,clojure
+(afterglow.effects.oscillators/sine-bar)
+----------------------------------------
+
+Returns an oscillator which generates a
+http://en.wikipedia.org/wiki/Sine_wave[sine wave] relative to the phase
+of the current bar (measure, usually four beats). At the start of the
+bar, the value will be 0.0 and beginning to rise slowly, picking up
+speed as it goes, and slowing down again as it approaches the midpoint.
+At the midpoint, the value will reach 1.0 and begin falling slowly,
+again picking up speed, and at the end of the bar it will have returned
+to 0.0. You can change the nature of the wave by using optional keyword
+parameters:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:bar-ratio` |`1` |Runs the oscillator at the specified
+link:#ratios[multiple or fraction] of a bar
+
+|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+bar by the specified amount
+|=======================================================================
+
+code,clojure------------------------------------------- code,clojure
+(afterglow.effects.oscillators/sine-phrase)
+-------------------------------------------
+
+Returns an oscillator which generates a
+http://en.wikipedia.org/wiki/Sine_wave[sine wave] relative to the phase
+of the current phrase (usually eight bars). At the start of the phrase,
+the value will be 0.0 and beginning to rise slowly, picking up speed as
+it goes, and slowing down again as it approaches the midpoint. At the
+midpoint, the value will reach 1.0 and begin falling slowly, again
+picking up speed, and at the end of the phrase it will have returned to
+0.0. You can change the nature of the wave by using optional keyword
+parameters:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:phrase-ratio` |`1` |Runs the oscillator at the specified
+link:#ratios[multiple or fraction] of a phrase
+
+|`:phase` |0.0 |link:#phase-shifting[Offsets] the oscillator from the
+phrase by the specified amount
+|=======================================================================

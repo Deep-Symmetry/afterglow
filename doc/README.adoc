@@ -1,0 +1,84 @@
+[[what-is-afterglow]]
+What is Afterglow?
+~~~~~~~~~~~~~~~~~~
+
+Afterglow is a functional lighting controller, written in
+http://clojure.org[Clojure], intended to enable people to produce
+spectacular light shows using modern stage and effect lighting, and
+which are related in deep ways to the phrasing of music being played.
+(Its http://deepsymmetry.org[creator] is a DJ and producer of light and
+laser shows by avocation.) Currently, the lighting effects and fixture
+definitions are written and organized through Clojure code, so you will
+either need to learn Clojure or work with a Clojure programmer to create
+new ones, but they are controlled through MIDI control surfaces or Open
+Sound Control, so once they are set up, there is great flexibility in
+how you can perform them.
+
+Someday a user interface for building shows and fixture definitions may
+be created, either within Afterglow, or as a companion project, but that
+is not currently planned.
+
+______________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+:eight_spoked_asterisk: Actually, that is a bit of a fib… James has an
+Ableton Push and is already exploring how to build a rich interface
+using its LCD display, color-changing pressure-sensitive pads, and
+touch-sensitive encoders, but that is slightly separate from the main
+Afterglow project.
+______________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+[[how-afterglow-works]]
+How Afterglow Works
+~~~~~~~~~~~~~~~~~~~
+
+The fundamental task of Afterglow is to make light shows happen. It does
+this by controlling lights, communicating with them through the
+https://www.openlighting.org/ola/[Open Lighting Architecture], which can
+work with several kinds of control protocols, most of which are derived
+from http://en.wikipedia.org/wiki/DMX512[DMX512], or a faster
+implementation of its basic ideas over Ethernet. When a show is running,
+Afterglow runs a thread which periodically asks “what should all the
+lights be doing now?” (resulting in a single “frame” of control values
+representing that moment in time), and sends the results of that
+analysis to all of the OLA universes the show is configured to control.
+By default this happens thirty times each second, but the interval is
+configurable within the show, and should be decided based on the fastest
+refresh rate of any physical interfaces you have hooked up to Afterglow.
+This is described in more detail in the [[Rendering
+Loop|the-rendering-loop]] section.
+
+___________________________________________________________________________________________________________________________________________________________________
+In principle you could have more than one show running at a time, each
+controlling a different set of OLA universes, but most people will not
+need this capability.
+___________________________________________________________________________________________________________________________________________________________________
+
+When you just create a show and call `(show/start!)`, Afterglow will
+send a bunch of zero values to the show’s universes. To make interesting
+things happen you add [[Effect Functions|effect-functions]] to the show.
+The default namespace you are put into when you launch the Afterglow
+project using `lein repl` has some [[example effects|effect-examples]]
+that can help get a feel for this concept. To get a full understanding
+of how to use (and create) effect functions, learn about the [[Effect
+Function Lifecycle|effect-function-lifecycle]].
+
+The effect functions need to know what lights they are supposed to
+control, what capabilities they have, and how they are connected (what
+universe, what channels), as well as how they are arranged in space.
+This is accomplished by patching [[Fixture
+Definitions|fixture-definitions]] to the show. To work with the actual
+lights you have available, you will need to create fixture definitions
+for them, unless they happen to be ones already available in the
+Afterglow project. Since there are so many kinds of lights, with more
+being created every month, that seems unlikely unless the project really
+takes off… and, to that end, if you _do_ create definitions for your
+lights, please contribute them to the project!
+
+To learn how to install Afterglow and the Open Lighting Architecture,
+see the project https://github.com/brunchboy/afterglow[README].
+
+Since Afterglow was developed to create light shows for electronic music
+events, it is deeply driven by the notion of musical time, through its
+[[Metronomes|metronomes]], so it is worth learning how to configure and
+interact with them. It is also designed to work with MIDI controllers,
+both to trigger effects, and to synchronize with music, as described in
+[[MIDI Mapping and Beat Sync|midi-mapping-and-beat-sync]].
