@@ -11,9 +11,9 @@ information tracked by <<metronomes#metronomes,metronomes>> into
 waveforms that can be used to make lights do interesting things. They
 can be related to the beats, bars, or phrases of the metronome, or
 multiples or fractions thereof, and can create
-<<#sawtooth-oscillators,sawtooth>>,
-<<#triangle-oscillators,triangle>>, <<#square-oscillators,square>>, or
-<<#sine-oscillators,sine>> waves.
+<<sawtooth-oscillators,sawtooth>>,
+<<triangle-oscillators,triangle>>, <<square-oscillators,square>>, or
+<<sine-oscillators,sine>> waves.
 
 Metronomes keep track of musical time relative to some starting point,
 in terms of beats, bars (by default four beats to a bar), and phrases
@@ -26,7 +26,7 @@ beginning of the interval, and grows towards, but never quite reaches,
 interval.
 
 So, in a sense, by itself a metronome can give you a
-<<#sawtooth-oscillators,sawtooth>> wave related to its intervals, just
+<<sawtooth-oscillators,sawtooth>> wave related to its intervals, just
 by looking at the interval phase. The sawtooth oscillators build on that
 by letting you change the direction of oscillation, so it starts at 1.0
 and slides downward, the speed of oscillation, so it ramps over
