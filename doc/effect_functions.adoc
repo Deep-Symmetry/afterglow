@@ -155,23 +155,22 @@ should be pointing, pass the fixture or head to:
 The `name` parameter is intended to help identify the purpose of the
 effect, and shows up when examining the created effect.
 
-The `direction` parameter is where you specify the direction the lights
-should be pointing. It is a `javax.vector.Vector3d` pointing in the
-direction the lights should, with respect to the show’s [[frame of
-reference|show-space]]. An easy way to create one is to call
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-direction-param[afterglow.effects.params.build-direction-param].
-This can create static vectors for you, but can also create [[Dynamic
-Parameter|dynamic-parameters]] whose value depends on a
-[[Metronome|metronomes]], the physical location or orientation of the
-head, or a show variable, perhaps
-[[bound|midi-mapping-and-beat-sync#mapping-a-control-to-a-variable]] to
-a MIDI control surface. Building dynamic direction parameters with
-[[oscillated parameters|dynamic-parameters#oscillated-parameters]] can
+The `direction` parameter is where you specify the direction the
+lights should be pointing. It is a `javax.vector.Vector3d` pointing in
+the direction the lights should, with respect to the show’s
+<<show_space#show-space,frame of reference>>. An easy way to create
+one is to call
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-direction-param[afterglow.effects.params/build-direction-param].
+This can create static vectors for you, but can also create
+<<parameters#dynamic-parameters,Dynamic Parameters>> whose value
+depends on a <<metronomes#metronomes,Metronome>>, the physical
+location or orientation of the head, or a show variable, perhaps
+<<mapping_sync#mapping-a-control-to-a-variable,bound>>
+to a MIDI control surface. Building dynamic direction parameters with
+<<parameters#oscillated-parameters,oscillated parameters>> can
 create fascinating motions.
 
-[[aim-effects]]
-Aim Effects
-~~~~~~~~~~~
+## Aim Effects
 
 These are very similar to link:#direction-effects[direction effects],
 except they tell each fixture to aim at a particular point in space,
