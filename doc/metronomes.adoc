@@ -60,11 +60,16 @@ which make up a bar (or measure), and how many bars make up a phrase:
 The metronome starts counting from the moment it was created, and you
 can ask it for all the counts as a string by calling:
 
-code,clojure--------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (afterglow.rhythm/metro-marker (:metronome sample-show))
 ; -> "15.1.4"
---------------------------------------------------------
+----
+
+TIP: This is used by the
+http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton_push.html[Ableton
+Push controller binding] to display the metronome state and support
+beat jumping.
 
 For that metronome, the current count was phrase 15, bar 1, beat 4. You
 can determine those values as individual numbers as well, but you might
@@ -79,14 +84,14 @@ starts generating a frame of lighting effects, to make sure that all the
 effects share the same notion of the point at which they are being
 rendered, and create a consistent look:
 
-code,clojure----------------------------------------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (afterglow.rhythm/metro-snapshot (:metronome sample-show))
 ; -> #afterglow.rhythm.MetronomeSnapshot{:start 1431727332206, :bpm 120, :bpb 4, :bpp 8,
 ;    :instant 1431727683636, :beat 703, :bar 176, :phrase 22,
 ;    :beat-phase 0.8600000000000136, :bar-phase 0.7150000000000034,
 ;    :phrase-phase 0.9643750000000004}
-----------------------------------------------------------------------------------------
+----
 
 Although this captures all of the information, it is not necessarily in
 the format you want it, for example the beat number and bar number are
@@ -94,8 +99,8 @@ counted since the start of the metronome, and you usually want them
 since the start of the bar or phrase. The snapshot has ways of providing
 this information:
 
-code,clojure----------------------------------------------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (def snap (afterglow.rhythm/metro-snapshot (:metronome sample-show)))
 ; -> #'afterglow.examples/snap
 
@@ -109,20 +114,21 @@ snap
 
 (afterglow.rhythm/snapshot-beat-within-bar snap)
 ; -> 2
-----------------------------------------------------------------------------------------------
+----
 
 Since the notion of a “down beat” (the first beat in a bar) is important
 in music and thus potentially to lighting effects, there is a snapshot
 function for checking that, too:
 
-code,clojure------------------------------------------- code,clojure
+[source,clojure]
+----
 (afterglow.rhythm/snapshot-down-beat? snap)
 ; -> false
--------------------------------------------
+----
 
-_____________________________________
+____
 The second beat is not the down beat.
-_____________________________________
+____
 
 The metronome can be restarted at a particular beat by calling
 `metro-start` with a beat number. (Calling it with no argument returns
@@ -132,15 +138,15 @@ because there is no BPM synchronization in place, or if MIDI clock sync
 is being used, and it’s been a long time, since that can drift, unlike
 Pro DJ Link sync:
 
-code,clojure---------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (afterglow.rhythm/metro-start (:metronome sample-show) 1)
 ; -> 1431727642086
----------------------------------------------------------
+----
 
-______________________________________________
+____
 The new metronome start timestamp is returned.
-______________________________________________
+____
 
 If the beats are landing in the right place but the notion of the down
 beat (bar start) or phrase start is wrong, you can reset those by
@@ -163,9 +169,7 @@ protocols in
 http://deepsymmetry.org/afterglow/doc/afterglow.rhythm.html[afterglow.rhythm]
 specify and describe them.
 
-[[watching-metronomes]]
-Watching Metronomes
-+++++++++++++++++++
+== Watching Metronomes
 
 To help get a feeling for exactly what your metronome is doing, there is
 an effect function that flashes one bright color on the down beat, and
@@ -174,34 +178,35 @@ you change the metronome BPM, sync, beats per bar, and such can help
 drive a more visceral understanding. To run it for the main show
 metronome, you can do this:
 
-code,clojure--------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (require 'afterglow.effects.fun)
 (show/add-effect! :color
   (afterglow.effects.fun/metronome-cue sample-show
     (show/all-fixtures sample-show)))
---------------------------------------------------
+----
 
 If you want to watch a different metronome, the invocation looks like
 this:
 
-code,clojure-------------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (show/set-variable :my-metro (afterglow.rhythm/metronome 50))
 (require 'afterglow.effects.fun)
 (show/add-effect! :color
   (afterglow.effects.fun/metronome-cue sample-show
     (show/all-fixtures) :metronome :my-metro))
--------------------------------------------------------------
+----
 
-__________________________________
+____
 The lights are pulsing sedately...
-__________________________________
+____
 
-code,clojure--------------------------------------------- code,clojure
+[source,clojure]
+----
 (metro-bpm (show/get-variable :my-metro) 400)
----------------------------------------------
+----
 
-__________________________________________
+____
 ...and now they are almost seizure-worthy!
-__________________________________________
+____
