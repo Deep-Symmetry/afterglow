@@ -7,9 +7,10 @@ James Elliott <james@deepsymmetry.org>
 ifdef::env-github[:outfilesuffix: .adoc]
 
 To keep page sizes manageable, this information is split into several
-pages. This page provides an introduction and overview, and links to
-other sections as needed. If you know what you are looking for, you
-can also dive right into it by jumping to the page you want:
+pages. This page provides an <<what-is-afterglow,introduction>> and
+overview, and links to other sections as needed. If you know what you
+are looking for, you can also dive right into it by jumping to the
+page you want:
 
 ****
 
