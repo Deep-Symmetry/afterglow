@@ -2,6 +2,10 @@
 What is Afterglow?
 ~~~~~~~~~~~~~~~~~~
 
+// Set up support for relative links on GitHub; add more conditions
+// if you need to support other environments and extensions.
+ifdef::env-github[:outfilesuffix: .adoc]
+
 Afterglow is a functional lighting controller, written in
 http://clojure.org[Clojure], intended to enable people to produce
 spectacular light shows using modern stage and effect lighting, and
@@ -18,39 +22,42 @@ Someday a user interface for building shows and fixture definitions may
 be created, either within Afterglow, or as a companion project, but that
 is not currently planned.
 
-______________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
-:eight_spoked_asterisk: Actually, that is a bit of a fib… James has an
+___________________________________________________________________________
+Actually, that is a bit of a fib… James has an
 Ableton Push and is already exploring how to build a rich interface
 using its LCD display, color-changing pressure-sensitive pads, and
 touch-sensitive encoders, but that is slightly separate from the main
 Afterglow project.
-______________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+___________________________________________________________________________
 
 [[how-afterglow-works]]
 How Afterglow Works
 ~~~~~~~~~~~~~~~~~~~
 
-The fundamental task of Afterglow is to make light shows happen. It does
-this by controlling lights, communicating with them through the
-https://www.openlighting.org/ola/[Open Lighting Architecture], which can
-work with several kinds of control protocols, most of which are derived
-from http://en.wikipedia.org/wiki/DMX512[DMX512], or a faster
-implementation of its basic ideas over Ethernet. When a show is running,
-Afterglow runs a thread which periodically asks “what should all the
-lights be doing now?” (resulting in a single “frame” of control values
-representing that moment in time), and sends the results of that
-analysis to all of the OLA universes the show is configured to control.
-By default this happens thirty times each second, but the interval is
-configurable within the show, and should be decided based on the fastest
-refresh rate of any physical interfaces you have hooked up to Afterglow.
-This is described in more detail in the [[Rendering
-Loop|the-rendering-loop]] section.
+The fundamental task of Afterglow is to make light shows happen. It
+does this by controlling lights, communicating with them through the
+https://www.openlighting.org/ola/[Open Lighting Architecture], which
+can work with several kinds of control protocols, most of which are
+derived from http://en.wikipedia.org/wiki/DMX512[DMX512], or a faster
+implementation of its basic ideas over Ethernet. When a show is
+running, Afterglow runs a thread which periodically asks “what should
+all the lights be doing now?” (resulting in a single “frame” of
+control values representing that moment in time), and sends the
+results of that analysis to all of the OLA universes the show is
+configured to control. By default this happens thirty times each
+second, but the interval is configurable within the show, and should
+be decided based on the fastest refresh rate of any physical
+interfaces you have hooked up to Afterglow. This is described in more
+detail in the
+link:rendering_loop{outfilesuffix}#the-rendering-loop[Rendering
+Loop] section.
 
-___________________________________________________________________________________________________________________________________________________________________
+___________________________________________________________________________
 In principle you could have more than one show running at a time, each
 controlling a different set of OLA universes, but most people will not
 need this capability.
-___________________________________________________________________________________________________________________________________________________________________
+___________________________________________________________________________
+
 
 When you just create a show and call `(show/start!)`, Afterglow will
 send a bunch of zero values to the show’s universes. To make interesting
