@@ -172,57 +172,55 @@ create fascinating motions.
 
 ## Aim Effects
 
-These are very similar to link:#direction-effects[direction effects],
+These are very similar to <<direction-effects,direction effects>>,
 except they tell each fixture to aim at a particular point in space,
 such as an object or person in front of the lighting rig, or perhaps
 another fixture. To create an effect that will tell a fixture or head
 what point it should be aiming at, pass the fixture or head to:
 
-code,clojure---------------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (afterglow.effects.movement/aim-cue name target-point fixtures)
----------------------------------------------------------------
+----
 
 The `name` parameter is intended to help identify the purpose of the
 effect, and shows up when examining the created effect.
 
-The `target-point` parameter is where you specify the point at which the
-lights should be aiming. It is a `javax.vector.Point3d` identifying a
-point within the show’s [[frame of reference|show-space]]. An easy way
-to create one is to call
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-aim-param[afterglow.effects.params.build-aim-param].
-This can create static points for you, but can also create [[Dynamic
-Parameter|dynamic-parameters]] whose value depends on a
-[[Metronome|metronomes]], the physical location or orientation of the
-head, or a show variable, perhaps
-[[bound|midi-mapping-and-beat-sync#mapping-a-control-to-a-variable]] to
-a control surface. Using a tablet with an OSC or midi interface that
+The `target-point` parameter is where you specify the point at which
+the lights should be aiming. It is a `javax.vector.Point3d`
+identifying a point within the show’s <<show_space#show-space,frame of
+reference>>. An easy way to create one is to call
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-aim-param[afterglow.effects.params/build-aim-param].
+This can create static points for you, but can also create
+<<parameters#dynamic-parameters,Dynamic Parameters>> whose value
+depends on a <<metronomes#metronomes,Metronome>>, the physical
+location or orientation of the head, or a show variable, perhaps
+<<mapping_sync#mapping-a-control-to-a-variable,bound>> to a MIDI
+control surface. Using a tablet with an OSC or midi interface that
 lets you drag an aiming point around a map of the stage is one fun
 possibility.
 
-[[function-effects]]
-Function Effects
-~~~~~~~~~~~~~~~~
+# Function Effects
 
-Fixtures have a wide variety of different capabilities, often more than
-would be reasonable to assign a separate DMX channel for each,
+Fixtures have a wide variety of different capabilities, often more
+than would be reasonable to assign a separate DMX channel for each,
 especially when it does not make sense to activate or control some at
-the same time. Afterglow can be told about these in the [[fixture
-definition|fixture-definitions]], and you can control them using
-function effects, by specifying the name of the function you want to
-activate, and a percentage by which you want it activated (representing
-the value within that function’s valid DMX range that you want Afterglow
-to send).
+the same time. Afterglow can be told about these in the
+<<fixture_definitions#fixture-definitions,fixture definition>>, and
+you can control them using function effects, by specifying the name of
+the function you want to activate, and a percentage by which you want
+it activated (representing the value within that function’s valid DMX
+range that you want Afterglow to send).
 
 For example, many fixtures have a strobe function, which causes them to
 flash off and on at a particular speed. The following line shows how to
 cause them all to strobe at their fastest speed:
 
-code,clojure-----------------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (show/add-effect! :strobe (afterglow.effects.channel/function-cue
   "Fastest strobe" :strobe 100 (show/all-fixtures)))
------------------------------------------------------------------
+----
 
 With this effect active, any fixture with a `:strobe` function range
 will be sent the highest value defined for that range, on the channel on
