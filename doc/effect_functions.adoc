@@ -77,10 +77,8 @@ value this effect wants. If `htp?` is false, this effect will simply
 overwrite any previous assignments it finds for the dimmers it is
 controlling. Omitting `htp?` is the same as passing a `true` value.
 
-_________________________________________________________________________________________________________________________________
-If you want your dimmer cue to affect only one head of a fixture, you
+TIP: If you want your dimmer cue to affect only one head of a fixture, you
 can pass it just that head, rather than the entire fixture.
-_________________________________________________________________________________________________________________________________
 
 For some fixtures, generally those with a single, white light source,
 the dimmer is the only thing that determines the amount of light output.
@@ -99,70 +97,60 @@ orientation of the head, or a show variable, perhaps
 a MIDI control surface. It often makes sense to use [[oscillated
 parameters|dynamic-parameters#oscillated-parameters]] with dimmer cues.
 
-__________________________________________________________________________________________________________________________________________________________
-If you have color effects running for a light and you aren’t seeing
+TIP: If you have color effects running for a light and you aren’t seeing
 anything, make sure you have a dimmer effect setting the dimmer to some
 visible level.
-__________________________________________________________________________________________________________________________________________________________
 
-[[color-effects]]
-Color Effects
-~~~~~~~~~~~~~
+== Color Effects
 
 One of the most common basic effects you will be using to create the
 looks you want is the color cue. To create an effect that will assign a
 color to a fixture (which will assign colors to all of the fixture’s
 heads), or a single head of a fixture, pass the fixture or head to:
 
-code,clojure-------------------------------------------------------
-code,clojure
+[source,clojure
+----
 (afterglow.effects.color/color-cue name color fixtures)
--------------------------------------------------------
+----
 
 The `name` parameter is intended to help identify the purpose of the
 effect, and shows up when examining the created effect. Put something
 descriptive in there, or use a function like
 `afterglow.examples/global-color-cue` which builds the cue for you,
-figuring out a reasonable name in many cases. This parameter may
-actually go away completely soon, as it is not clear how useful the name
-is.
+figuring out a reasonable name in many cases.
 
 The `color` parameter is where you specify the color to assign to the
 lights. It can be a string, specifying the name of a color understood by
 the https://github.com/jolby/colors[jolby/colors] library, or an object
 returned by one of the factories in that library as described in
-[[Working with Color|working-with-color]].
+<<color#working-with-color,Working with Color>>.
 
 In addition to passing in a literal number for the `color` parameter,
-you can pass a [[Dynamic Parameter|dynamic-parameters]] whose value
-depends on a [[Metronome|metronomes]], the physical location or
-orientation of the head, or a show variable, perhaps
-[[bound|midi-mapping-and-beat-sync#mapping-a-control-to-a-variable]] to
-a MIDI control surface. The flexibility offered by [[dynamic color
-parameters|dynamic-parameters#color-parameters]] is huge, especially
-when combined with [[oscillated
-parameters|dynamic-parameters#oscillated-parameters]]. Learning how to
-effectively leverage these in combination with each other will enable
-you to create most of the basic lighting looks you need.
+you can pass a <<parameters#dynamic-parameters,Dynamic Parameter>>
+whose value depends on a <<metronomes#metronomes,Metronome>>, the
+physical location or orientation of the head, or a show variable,
+perhaps <<mapping_sync#mapping-a-control-to-a-variable,bound>> to a
+MIDI control surface. The flexibility offered by
+<<parameters#color-parameters,dynamic color parameters>> is huge,
+especially when combined with
+<<parameters#oscillated-parameters,oscillated parameters>>. Learning
+how to effectively leverage these in combination with each other will
+enable you to create most of the basic lighting looks you need.
 
-_________________________________________________________________________________________________________________________________________________________________________________________
-Remember that if aren’t seeing anything when you have assigned color
+TIP: Remember that if aren’t seeing anything when you have assigned color
 effects to a fixture to make sure you also have a dimmer effect setting
 that fixture’s dimmer to some visible level.
-_________________________________________________________________________________________________________________________________________________________________________________________
 
-[[direction-effects]]
-Direction Effects
-~~~~~~~~~~~~~~~~~
+## Direction Effects
 
 Moving-head fixtures can create particularly exciting and dynamic shows.
 To create an effect that will tell a fixture or head what direction it
 should be pointing, pass the fixture or head to:
 
-code,clojure-----------------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (afterglow.effects.movement/directon-cue name direction fixtures)
------------------------------------------------------------------
+----
 
 The `name` parameter is intended to help identify the purpose of the
 effect, and shows up when examining the created effect.
