@@ -350,7 +350,7 @@ gradients across all or part of a show. Spatial parameters make
 excellent building blocks for <<color-parameters,color>>,
 <<direction-parameters,direction>> and <<aim-parameters,aim>>
 parameters, as shown in the
-<<effect_functions#spatial-parameters,effect examples>>.
+<<effect_functions#spatial-effects,effect examples>>.
 
 ## Digging Deeper
 
