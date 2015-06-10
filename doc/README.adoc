@@ -39,6 +39,10 @@ can properly calculate spatial and directional effects.
 expressing and manipulating color values when designing lighting
 effects.
 
+<<mapping_sync#midi-mapping-and-beat-sync,Mapping and Sync>>:: Looks
+at options for using MIDI controllers to run your show, and
+synchronizing its metronome with DJ equipment.
+
 <<rendering_loop#the-rendering-loop,The Rendering Loop>>:: Explains in
 detail how a frame of lighting control data is calculated and sent to
 the lights in the show.
