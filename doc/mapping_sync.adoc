@@ -1,3 +1,11 @@
+= MIDI Mapping and Beat Sync
+James Elliott <james@deepsymmetry.org>
+:icons: font
+
+// Set up support for relative links on GitHub; add more conditions
+// if you need to support other environments and extensions.
+ifdef::env-github[:outfilesuffix: .adoc]
+
 Afterglow is designed to work with MIDI controllers and DJ equipment.
 You can bind physical controller elements to show variables, and sync
 the BPM of the show master metronome to MIDI clock pulses from a DJ
@@ -5,16 +13,12 @@ controller or mixer. (Although if you have professional Pioneer gear,
 you are better off syncing the metronome to the Pro DJ Link via an
 Ethernet cable.)
 
-_______________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
-These examples assume you are in a Clojure REPL with Afterglow loaded,
+NOTE: These examples assume you are in a Clojure REPL with Afterglow loaded,
 in the namespace `afterglow.examples`. This is the default namespace you
 get if you check out the project and run `lein repl`. The sample show is
 assumed to be running; if not, `(show/start!)`
-_______________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
 
-[[mapping-a-control-to-a-variable]]
-Mapping a Control to a Variable
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+== Mapping a Control to a Variable
 
 Here is an example of how I can have a knob on one of my MIDI
 controllers set the hue of all the lights. It shows up with a MIDI port
@@ -22,76 +26,83 @@ name of `SLIDER/KNOB`, and its first rotary controller is control 16 on
 channel 0. I can map that to set a show variable `knob-1` to the values
 0-360 (the legal hue values):
 
-code,clojure------------------------------------- code,clojure
+[source,clojure]
+----
 (show/add-midi-control-to-var-mapping
   "Slider" 0 16 :knob-1 :max 360)
--------------------------------------
+----
 
 Then I can create a global color cue based on that variable:
 
-code,clojure------------------------------------------------------
+[source,clojure]
+----
 code,clojure
 (show/add-effect! :color (global-color-cue
   (params/build-color-param :s 100 :l 50 :h :knob-1)))
-------------------------------------------------------
+----
 
-[[finding-mapping-details]]
-Finding Mapping Details
-^^^^^^^^^^^^^^^^^^^^^^^
+== Finding Mapping Details
 
 In the all-too likely event you don’t have all your MIDI port names and
 control channel and note numbers memorized, Afterglow can help. Just
-run…
+run...
 
-code,clojure--------------------------------- code,clojure
+[source,clojure]
+----
 (afterglow.midi/identify-mapping)
----------------------------------
+----
 
-…then twiddle the knob, slide the fader, or press the button you wish to
-map. Afterglow will report the first control-change or note message it
-receives:
+...then twiddle the knob, slide the fader, or press the button you
+wish to map. Afterglow will report the first control-change or note
+message it receives:
 
-code,clojure--------------------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 ; -> {:command :control-change, :channel 0, :note 32, :velocity 127,
 ;     :device {:name "SLIDER/KNOB",
 ;              :description "nanoKONTROL2 SLIDER/KNOB"}}
---------------------------------------------------------------------
+----
 
-__________________________________________________________________________________________________________
+____
 Notice that even for control changes, the controller number is
 identified as `:note` (32 in this example).
-__________________________________________________________________________________________________________
+____
 
 If nothing is received for ten seconds, it will give up:
 
-code,clojure-------- code,clojure
+[source,clojure]
+----
 ; -> nil
---------
+----
 
 If this happens, remember that you need to have all of your MIDI devices
 hooked up before you start Afterglow, because of limitations in the Java
 MIDI implementation. Try quitting and restarting Afterglow. If that
 doesn’t help, you will need to troubleshoot your MIDI setup.
 
-[[syncing-to-midi-clock]]
-Syncing to MIDI Clock
-~~~~~~~~~~~~~~~~~~~~~
+NOTE: These examples show how to perform low-level MIDI mapping. Over
+time, you might find that someone has written a rich user interface
+binding for your controller, as is happening for the
+http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
+Push], which would let you jump right in without having to worry about
+such details.
+
+== Syncing to MIDI Clock
 
 Many DJ mixers automatically send MIDI clock pulses to help synchronize
 to their BPM. Pioneer’s Nexus mixers send MIDI clock over both their
 physical MIDI connection, and over USB if you are connected that way,
 conveniently. But they offer far more useful sync information over the
 Ethernet port via Pro DJ Link packets, which Afterglow
-link:#syncing-to-pro-dj-link[can also process].
+<<syncing-to-pro-dj-link,can also process>>.
 
 If you are using a mixer or DJ software like Traktor which supports only
 MIDI clock sync, it is a lot better than nothing! Here is how to take
 advantage of it.
 
-_______________________________________________________
+____
 TODO: Explain how to set Traktor up to send MIDI clock.
-_______________________________________________________
+____
 
 Once you have your MIDI clock pulses reaching the system on which
 Afterglow is running, start Afterglow. Because of limitations inherent
