@@ -10,13 +10,16 @@ Afterglow is a functional lighting controller, written in
 http://clojure.org[Clojure], intended to enable people to produce
 spectacular light shows using modern stage and effect lighting, and
 which are related in deep ways to the phrasing of music being played.
-(Its http://deepsymmetry.org[creator] is a DJ and producer of light and
-laser shows by avocation.) Currently, the lighting effects and fixture
-definitions are written and organized through Clojure code, so you will
-either need to learn Clojure or work with a Clojure programmer to create
-new ones, but they are controlled through MIDI control surfaces or Open
-Sound Control, so once they are set up, there is great flexibility in
-how you can perform them.
+(Its http://deepsymmetry.org[creator] is a DJ and producer of light
+and laser shows by avocation.) Currently, the
+link:effect_functions{outfilesuffix}#effect-functions[lighting
+effects] and
+link:fixture_definitions{outfilesuffix}#fixture-definitions[fixture
+efinitions] are written and organized through Clojure code, so you
+will either need to learn Clojure or work with a Clojure programmer to
+create new ones, but they are controlled through MIDI control surfaces
+or Open Sound Control, so once they are set up, there is great
+flexibility in how you can perform them.
 
 Someday a user interface for building shows and fixture definitions may
 be created, either within Afterglow, or as a companion project, but that
