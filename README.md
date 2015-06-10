@@ -16,9 +16,10 @@ Afterglow. The main
 [documentation](doc/README.adoc#afterglow-documentation) goes much
 deeper, and there is also
 [API documentation](http://deepsymmetry.org/afterglow/doc/index.html).
-Finally, the project [wiki](wiki) offers a place for more-rapid
-discussion of ideas and sharing of code and discoveries among the
-entire user community.
+Finally, the project
+[wiki](https://github.com/brunchboy/afterglow/wiki) offers a place for
+more-rapid discussion of ideas and sharing of code and discoveries
+among the entire user community.
 
 ## Installation
 
