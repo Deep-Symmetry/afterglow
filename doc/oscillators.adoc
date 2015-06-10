@@ -65,9 +65,7 @@ fraction of a beat
 beat by the specified amount
 |=======================================================================
 
-[[ratios]]
-Ratios
-++++++
+=== Ratios
 
 All of the oscillators can be modified by supplying a ratio keyword
 argument (for beat-oriented oscillators, this will be `:beat-ratio`,
@@ -83,9 +81,7 @@ cycles each beat. These can be combined, of course, so a `:bar-ratio` of
 `2/3` would complete three cycles of a bar-oriented oscillator every two
 bars.
 
-[[phase-shifting]]
-Phase Shifting
-++++++++++++++
+=== Phase Shifting
 
 All of the oscillators can be modified by supplying a `:phase` keyword
 argument, which offsets them from the actual phase of the interval that
@@ -99,9 +95,10 @@ no functional difference from staying within the current interval. In
 other words, passing in exactly 1.0 (or 2.0, etc.) is the same as
 passing in 0.0, and will have no effect on the oscillator.
 
-code,clojure-------------------------------------------- code,clojure
+[source,clojure]
+----
 (afterglow.effects.oscillators/sawtooth-bar)
---------------------------------------------
+----
 
 Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Sawtooth_wave[sawtooth wave] relative to
@@ -123,9 +120,10 @@ link:#ratios[multiple or fraction] of a bar
 bar by the specified amount
 |=======================================================================
 
-code,clojure----------------------------------------------- code,clojure
+[source,clojure]
+----
 (afterglow.effects.oscillators/sawtooth-phrase)
------------------------------------------------
+----
 
 Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Sawtooth_wave[sawtooth wave] relative to
@@ -147,13 +145,12 @@ link:#ratios[multiple or fraction] of a phrase
 phrase by the specified amount
 |=======================================================================
 
-[[triangle-oscillators]]
-Triangle Oscillators
-~~~~~~~~~~~~~~~~~~~~
+== Triangle Oscillators
 
-code,clojure--------------------------------------------- code,clojure
+[source,clojure]
+----
 (afterglow.effects.oscillators/triangle-beat)
----------------------------------------------
+----
 
 Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Triangle_wave[triangle wave] relative to
@@ -172,9 +169,10 @@ link:#ratios[multiple or fraction] of a beat
 beat by the specified amount
 |=======================================================================
 
-code,clojure-------------------------------------------- code,clojure
+[source,clojure]
+----
 (afterglow.effects.oscillators/triangle-bar)
---------------------------------------------
+----
 
 Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Triangle_wave[triangle wave] relative to
@@ -194,9 +192,10 @@ link:#ratios[multiple or fraction] of a bar
 bar by the specified amount
 |=======================================================================
 
-code,clojure----------------------------------------------- code,clojure
+[source,clojure]
+----
 (afterglow.effects.oscillators/sawtooth-phrase)
------------------------------------------------
+----
 
 Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Triangle_wave[triangle wave] relative to
@@ -216,16 +215,15 @@ link:#ratios[multiple or fraction] of a phrase
 phrase by the specified amount
 |=======================================================================
 
-[[square-oscillators]]
-Square Oscillators
-~~~~~~~~~~~~~~~~~~
+== Square Oscillators
 
 Square waves are good for abrupt transitions, like strobes, or switching
 between different effects.
 
-code,clojure------------------------------------------- code,clojure
+[source,clojure]
+----
 (afterglow.effects.oscillators/square-beat)
--------------------------------------------
+----
 
 Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Square_wave[square wave] relative to the
@@ -247,9 +245,10 @@ link:#ratios[multiple or fraction] of a beat
 beat by the specified amount
 |=======================================================================
 
-code,clojure------------------------------------------ code,clojure
+[source,clojure]
+----
 (afterglow.effects.oscillators/square-bar)
-------------------------------------------
+----
 
 Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Square_wave[square wave] relative to the
@@ -271,9 +270,10 @@ link:#ratios[multiple or fraction] of a bar
 bar by the specified amount
 |=======================================================================
 
-code,clojure--------------------------------------------- code,clojure
+[source,clojure]
+----
 (afterglow.effects.oscillators/square-phrase)
----------------------------------------------
+----
 
 Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Square_wave[square wave] relative to the
@@ -295,17 +295,17 @@ link:#ratios[multiple or fraction] of a phrase
 phrase by the specified amount
 |=======================================================================
 
-[[sine-oscillators]]
-Sine Oscillators
-~~~~~~~~~~~~~~~~
+== Sine Oscillators
+
 
 Just like in musical synthesis, sine waves are the smoothest-feeling
 waves of all, and are good for creating gentle, subtle effects which
 ease in and out.
 
-code,clojure----------------------------------------- code,clojure
+[source,clojure]
+----
 (afterglow.effects.oscillators/sine-beat)
------------------------------------------
+----
 
 Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Sine_wave[sine wave] relative to the phase
@@ -326,9 +326,10 @@ link:#ratios[multiple or fraction] of a beat
 beat by the specified amount
 |=======================================================================
 
-code,clojure---------------------------------------- code,clojure
+[source,clojure]
+----
 (afterglow.effects.oscillators/sine-bar)
-----------------------------------------
+----
 
 Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Sine_wave[sine wave] relative to the phase
@@ -350,9 +351,10 @@ link:#ratios[multiple or fraction] of a bar
 bar by the specified amount
 |=======================================================================
 
-code,clojure------------------------------------------- code,clojure
+[source,clojure]
+----
 (afterglow.effects.oscillators/sine-phrase)
--------------------------------------------
+----
 
 Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Sine_wave[sine wave] relative to the phase
