@@ -20,6 +20,10 @@ The building blocks of a dynamic light show, which have a
 <<effect_functions#lifecycle,lifecyle>> worth understanding, and a few
 <<effect_functions#effect-examples,examples>> to get you started.
 
+<<parameters#dynamic-parameters,Dynamic Parameters>>:: Provide inputs
+to your effect functions which change over time and space, enabling
+much more interesting and complex appearance and behavior.
+
 <<metronomes#metronomes,Metronomes>>:: Keep track of musical time, in
 terms of beats, bars, and phrases, and can be
 <<mapping_sync#midi-mapping-and-beat-sync,synced>> to DJ equipment and

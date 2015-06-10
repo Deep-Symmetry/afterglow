@@ -1,11 +1,18 @@
+= Dynamic Parameters
+
+James Elliott <james@deepsymmetry.org>
+:icons: font
+
+// Set up support for relative links on GitHub; add more conditions
+// if you need to support other environments and extensions.
+ifdef::env-github[:outfilesuffix: .adoc]
+
 Dynamic parameters provide a way to turn a simple cue into something
 which changes over time and space, or reacts to operator input. Most
 cues which take simple values can also take dynamic parameters which
 evaluate to those values.
 
-[[frame-dynamic-parameters]]
-Frame Dynamic Parameters
-~~~~~~~~~~~~~~~~~~~~~~~~
+== Frame Dynamic Parameters
 
 When creating a dynamic parameter, you can control _how_ dynamic it is.
 The most dynamic, __frame dynamic__, are evaluated anew for every single
@@ -14,25 +21,21 @@ other hand, you want the value to be calculated when the effect is
 started, and then stay constant, you can create the parameter with a
 `false` value for `frame-dynamic?`
 
-[[variable-parameters]]
-Variable Parameters
-~~~~~~~~~~~~~~~~~~~
+== Variable Parameters
 
 Parameters can get their values from a __show variable__. Any number of
 values can be stored in the show, by assigning them a keyword with the
 function:
 
-code,clojure----------------------------------------- code,clojure
+[source,clojure]
+----
 (afterglow.show/set-variable! :key value)
------------------------------------------
+----
 
-____________________________________________________________________________________________________________________________________________________________________________________________________________________________________
-In addition to manually setting values in show variables, you can use
-[[MIDI
-mappings|midi-mapping-and-beat-sync|#mapping-a-control-to-a-variable]]
-to have them set by turning a knob or sliding a fader on a MIDI control
+Tip: In addition to manually setting values in show variables, you can
+use <<mapping_sync#mapping-a-control-to-a-variable,MIDI mappings>> to
+have them set by turning a knob or sliding a fader on a MIDI control
 surface.
-____________________________________________________________________________________________________________________________________________________________________________________________________________________________________
 
 You can then refer to that stored value whenever you are creating a
 dynamic parameter by simply using the keyword (in this example, `:key`),
