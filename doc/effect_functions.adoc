@@ -234,29 +234,30 @@ electrons orbiting it. This projection can be selected, and caused to
 jiggle back and forth at the mid-range of possible shake speeds, by
 adding the following effect:
 
-code,clojure----------------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (show/add-effect! :gobo-fixed
   (afterglow.effects.channel/function-cue "Brownian motion?"
     :gobo-fixed-atom-shake 100 (show/fixtures-named "torrent")))
-----------------------------------------------------------------
+----
 
 Depending on how far away the projection is landing, it may be very
 blurry; focus can be adjusted like so:
 
-code,clojure---------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (show/add-effect! :focus
   (afterglow.effects.channel/function-cue
     "focus" :focus 95.5 (show/fixtures-named "torrent")))
----------------------------------------------------------
+----
 
 The functions available for a fixture, their names, channels, and
-ranges, are specified by the [[fixture definition|fixture-definitions]],
-so reading over those can be helpful. (And carefully crafting and
-testing them is important when defining a new fixture.) Trying to
-maintain consistency in function naming is valuable in allowing
-functions to be conveniently applied to groups of different fixtures.
+ranges, are specified by the
+<<fixture_definitions#fixture-definitions,fixture definition>>, so
+reading over those can be helpful. (And carefully crafting and testing
+them is important when defining a new fixture.) Trying to maintain
+consistency in function naming is valuable in allowing functions to be
+conveniently applied to groups of different fixtures.
 
 Functions which do not vary in their effect for different DMX values
 within the legal range are described as `:range :fixed` in the fixture
@@ -279,9 +280,7 @@ which is passed the value that the effect is trying to establish, and
 converts it to a position in that fixture’s range which attempts to
 approximate that strobing rate.
 
-[[channel-effects]]
-Channel Effects
-~~~~~~~~~~~~~~~
+== Channel Effects
 
 When you just want to send a specific number to a particular DMX
 channel, you can drop right down to the bottom level with channel
@@ -289,49 +288,51 @@ effects. For example, to pin the dimmer channel of a group of fixtures
 to 55, regardless of the setting of the show’s master chain, you could
 do something like this:
 
-code,clojure------------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (show/add-effect! :blade-dimmers
   (afterglow.effects.channel/channel-cue "Blade dimmers" 55
     (afterglow.channels/extract-channels
       (show/fixtures-named :blade) #(= (:type %) :dimmer))))
-------------------------------------------------------------
+----
 
 Or to look at what actual pan values do to a Torrent, without fancy
 geometric transformations, as you set values into the show variable
 named `:pan`:
 
-code,clojure-----------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (show/add-effect! :pan-torrent
   (afterglow.effects.channel/channel-cue
     "Pan Torrent" (params/build-variable-param :pan)
     (afterglow.channels/extract-channels
       (show/fixtures-named :torrent) #(= (:type %) :pan))))
------------------------------------------------------------
+----
 
 You will most likely be wanting to do this sort of thing for channel
 types which Afterglow does not yet have a more sophisticated
 understanding, and then perhaps you will end up creating a whole new
 category of effect functions as your experimentation progresses.
 
-[[complex-effects]]
-Complex Effects
-~~~~~~~~~~~~~~~
+== Complex Effects
 
-[[metronome]]
-Metronome
-^^^^^^^^^
+These are effects which build on more than one of the capabilities
+listed above to create an interesting or fun effect. They represent
+examples of how Afterglow can be used to create new things, and we
+hope that people will contribute their own effects for inclusion in
+future releases.
+
+=== Metronome
 
 The Metronome cue is a great way to check the synchronization of the
 show metronome with your DJ software or mixer, and is a nice example of
 how to write a cue that is driven by a metronome.
 
-code,clojure---------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (afterglow.effects.color/metronome-cue fixtures
   :down-beat-color color1 :other-beat-color color2)
----------------------------------------------------
+----
 
 Creates an effect function which flashes the heads of the supplied
 fixtures one color on the down beat and another color on the other beats
@@ -339,8 +340,6 @@ of the show metronome. The two color keyword parameters are optional; if
 they are omitted, the down beat color is a lightened red, and the other
 beat color is a darkened yellow.
 
-[[sparkle]]
-Sparkle
-^^^^^^^
+=== Sparkle
 
 To be documented shortly!
