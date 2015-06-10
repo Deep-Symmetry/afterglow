@@ -97,3 +97,5 @@ it is worth learning how to configure and interact with them. It is
 also designed to work with MIDI controllers, both to trigger effects,
 and to synchronize with music, as described in
 <<mapping_sync#midi-mapping-and-beat-sync,MIDI Mapping and Beat Sync>>.
+
+include::effect_functions.adoc[]
