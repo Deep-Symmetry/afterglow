@@ -141,7 +141,7 @@ TIP: Remember that if aren’t seeing anything when you have assigned color
 effects to a fixture to make sure you also have a dimmer effect setting
 that fixture’s dimmer to some visible level.
 
-## Direction Effects
+== Direction Effects
 
 Moving-head fixtures can create particularly exciting and dynamic shows.
 To create an effect that will tell a fixture or head what direction it
@@ -170,7 +170,7 @@ to a MIDI control surface. Building dynamic direction parameters with
 <<parameters#oscillated-parameters,oscillated parameters>> can
 create fascinating motions.
 
-## Aim Effects
+== Aim Effects
 
 These are very similar to <<direction-effects,direction effects>>,
 except they tell each fixture to aim at a particular point in space,
@@ -200,7 +200,7 @@ control surface. Using a tablet with an OSC or midi interface that
 lets you drag an aiming point around a map of the stage is one fun
 possibility.
 
-# Function Effects
+== Function Effects
 
 Fixtures have a wide variety of different capabilities, often more
 than would be reasonable to assign a separate DMX channel for each,
