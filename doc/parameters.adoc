@@ -1,6 +1,8 @@
 = Dynamic Parameters
 James Elliott <james@deepsymmetry.org>
 :icons: font
+:toc:
+:toc-placement: preamble
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
@@ -140,7 +142,7 @@ color. The basic way to create one is to call:
 (afterglow.effects.params/build-color-param)
 ----
 
-By itself this call would simply return a non-dynamic back color.
+By itself this call would simply return a non-dynamic black color.
 However, you will use one or more of the following optional keyword
 parameters to get the dynamic color you want:
 
@@ -222,10 +224,10 @@ Direction parameters are a way to tell a group of fixtures to point in a
 particular direction, or move in unison or in a coordinated pattern. The
 basic way to create one is to call:
 
-code,clojure------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (afterglow.effects.params/build-direction-param)
-------------------------------------------------
+----
 
 By itself this call would simply return a non-dynamic direction telling
 fixtures to point directly at the audience. However, you will use one or
@@ -246,31 +248,31 @@ every frame, or just once
 |=======================================================================
 
 Collectively, `x`, `y`, and `z` specify a three-dimensional vector in
-the light show’s [[frame of reference|show-space]] telling the lights
-which direction they should point. The absolute magnitudes of the values
-are not important, it is their relative sizes that matter. The default
-of `[0, 0, 1]` means the lights point neither left nor right, neither up
-nor down, and straight towards the audience. `[1, 0, 0]` would be
-straight right, `[-1, 0, 0]` straight left, `[0, 1, 0]` straight up, and
-`[0, 1, -1]` up and away from the audience at a 45° angle.
+the light show’s <<show_space#show-space,frame of reference>> telling
+the lights which direction they should point. The absolute magnitudes
+of the values are not important, it is their relative sizes that
+matter. The default of `[0, 0, 1]` means the lights point neither left
+nor right, neither up nor down, and straight towards the audience.
+`[1, 0, 0]` would be straight right, `[-1, 0, 0]` straight left, `[0,
+1, 0]` straight up, and `[0, 1, -1]` up and away from the audience at
+a 45° angle.
 
 All of these parameters, except for `frame-dynamic`, can themselves be
-dynamic parameters, such as show link:#variable-parameters[variables]
+dynamic parameters, such as show <<variable-parameters,variables>>
 (with the convenience shorthand of just passing in the keyword by which
-the show variable was stored) or link:#oscillated-parameters[oscillated
-parameters].
+the show variable was stored) or <<oscillated-parameters,oscillated
+parameters>>.
 
-[[aim-parameters]]
-Aim Parameters
-~~~~~~~~~~~~~~
+## Aim Parameters
 
 Aim parameters are a way to tell a group of fixtures to aim at a
 particular point in space, or track something in unison or in a
 coordinated pattern. The basic way to create one is to call:
 
-code,clojure------------------------------------------ code,clojure
+[source,clojure]
+----
 (afterglow.effects.params/build-aim-param)
-------------------------------------------
+----
 
 By itself this call would simply return a non-dynamic point telling
 fixtures to aim directly at a height of zero, centered on the X axis,
@@ -299,23 +301,21 @@ standard distance units in Afterglow, you can use
 http://deepsymmetry.org/afterglow/doc/afterglow.transform.html#var-inches[afterglow.transform/inches].
 
 All of these parameters, except for `frame-dynamic`, can themselves be
-dynamic parameters, such as show link:#variable-parameters[variables]
+dynamic parameters, such as show <<variable-parameters,variables>>
 (with the convenience shorthand of just passing in the keyword by which
-the show variable was stored) or link:#oscillated-parameters[oscillated
-parameters].
+the show variable was stored) or <<oscillated-parameters,oscillated
+parameters>>.
 
-[[spatial-parameters]]
-Spatial Parameters
-~~~~~~~~~~~~~~~~~~
+## Spatial Parameters
 
 Spatial parameters allow you to base an effect parameter on the physical
 arrangement or relationships between fixtures in your light show. The
 way to create one is to call:
 
-code,clojure------------------------------------------------------------------
-code,clojure
+[source,clojure]
+----
 (afterglow.effects.params/build-spatial-param fixtures-or-heads f)
-------------------------------------------------------------------
+----
 
 The required parameters are the fixtures and/or heads over which you
 want this parameter to be calculated, and a function which, when invoked
@@ -336,25 +336,23 @@ every frame, or just once.
 |=======================================================================
 
 All of these parameters, except for `frame-dynamic`, can themselves be
-dynamic parameters, such as show link:#variable-parameters[variables]
+dynamic parameters, such as show <<variable-parameters,variables>>
 (with the convenience shorthand of just passing in the keyword by which
-the show variable was stored) or link:#oscillated-parameters[oscillated
-parameters]. If `frame-dynamic` is not explicitly set, the spatial
+the show variable was stored) or <<oscillated-parameters,oscillated
+parameters>>. If `frame-dynamic` is not explicitly set, the spatial
 parameter will be frame dynamic if either `start` or `end` is
 frame-dynamic.
 
 Useful things that `f` can do include calculating the distance of the
-head from some point, either in 3D or along an axis, its angle from some
-line, and so on. These can allow the creation of lighting gradients
-across all or part of a show. Spatial parameters make excellent building
-blocks for link:#color-parameters[color],
-link:#direction-parameters[direction] and link:#aim-parameters[aim]
-parameters, as shown in the [[effect
-examples|effect-examples#spatial-parameters]].
+head from some point, either in 3D or along an axis, its angle from
+some line, and so on. These can allow the creation of lighting
+gradients across all or part of a show. Spatial parameters make
+excellent building blocks for <<color-parameters,color>>,
+<<direction-parameters,direction>> and <<aim-parameters,aim>>
+parameters, as shown in the
+<<effect-functions#spatial-parameters,effect examples>>.
 
-[[digging-deeper]]
-Digging Deeper
-^^^^^^^^^^^^^^
+## Digging Deeper
 
 For more details, see the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html[API
