@@ -35,6 +35,10 @@ Afterglow how to work with different lighting hardware.
 locations and orientations when hanging your lights so that Afterglow
 can properly calculate spatial and directional effects.
 
+<<color#working-with-color,Working with Color>>:: Introduces tools for
+expressing and manipulating color values when designing lighting
+effects.
+
 <<rendering_loop#the-rendering-loop,The Rendering Loop>>:: Explains in
 detail how a frame of lighting control data is calculated and sent to
 the lights in the show.
