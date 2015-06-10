@@ -27,6 +27,10 @@ software.
 <<oscillators#oscillators,Oscillators>>:: Convert show timing
 information into waveforms that can drive your light show.
 
+<<rendering_loop#rendering-loop,The Rendering Loop>>:: Explains in
+detail how a frame of lighting control data is calculated and sent to
+the lights in the show.
+
 ****
 
 == What is Afterglow?
@@ -85,10 +89,10 @@ interesting things happen you add
 <<effect_functions#effect-functions,Effect Functions>> to the show.
 The default namespace you are put into when you launch the Afterglow
 project using `lein repl` has some
-<<effect_examples#effect-examples,Example Effects>>
+<<effect_functions#effect-examples,Example Effects>>
 that can help get a feel for this concept. To get a full understanding
 of how to use (and create) effect functions, learn about the
-<<lifecycle#effect-function-lifecycle,Effect Function Lifecycle>>.
+<<effect_functions#lifecycle,Effect Function Lifecycle>>.
 
 The effect functions need to know what lights they are supposed to
 control, what capabilities they have, and how they are connected (what
