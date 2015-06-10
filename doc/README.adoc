@@ -28,7 +28,7 @@ software.
 <<oscillators#oscillators,Oscillators>>:: Convert show timing
 information into waveforms that can drive your light show.
 
-<<rendering_loop#rendering-loop,The Rendering Loop>>:: Explains in
+<<rendering_loop#the-rendering-loop,The Rendering Loop>>:: Explains in
 detail how a frame of lighting control data is calculated and sent to
 the lights in the show.
 
