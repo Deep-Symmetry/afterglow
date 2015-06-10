@@ -67,7 +67,7 @@ can ask it for all the counts as a string by calling:
 ----
 
 TIP: This is used by the
-http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton_push.html[Ableton
+http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
 Push controller binding] to display the metronome state and support
 beat jumping.
 
