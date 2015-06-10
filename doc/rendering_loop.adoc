@@ -2,8 +2,12 @@
 The Rendering Loop
 ~~~~~~~~~~~~~~~~~~
 
+// Set up support for relative links on GitHub; add more conditions
+// if you need to support other environments and extensions.
+ifdef::env-github[:outfilesuffix: .adoc]
+
 When an afterglow show is running, that is, from when
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-start.21[(show/start!)]
+link:api/afterglow.show.html#var-start.21[(show/start!)]
 has been called, until
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-stop.21[(show/stop!)]
 or
@@ -33,14 +37,15 @@ ___________________________________________________________________________
 ; -> {:total-time 382127, :frames-sent 87769, :average-duration 4.35378}
 --
 
-_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+___________________________________________________________________________
 This tells you how many milliseconds have been spent in the rendering
 loop while the show is running, how many frames of DMX data have been
 sent to the show universes, and the average number of milliseconds spent
 in the rendering loop. If the duration of a rendering cycle ever exceeds
 the refresh interval, Afterglow will log a warning that it is unable to
 keep up with the effects you are trying to run.
-_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+___________________________________________________________________________
+
 
 When it is time to determine the next set of values to send to the
 show’s patched fixtures, this is what happens:
@@ -52,14 +57,17 @@ https://github.com/brunchboy/afterglow/wiki/Metronomes[metronome] to
 identify a common point in time for all the effects to use in deciding
 how they should look. This enables a consistent, coordinated appearance
 for everything in the frame.
+
 2.  The next step is to zero out the buffers that will be used to send
 DMX data for each universe, so that if no effect tries to set a value
 for a particular channel on this frame, a zero value will be sent for
 it.
+
 3.  Then Afterglow loops over all [[Effect Functions]] that are
 currently active for the show, and asks if any are ready to end, as
 described in the [[Effect Function Lifecycle]] section. If any are, they
 are removed from the list of active effects.
+
 4.  Then it makes another loop over any functions that did not end, to
 see how they want to affect the lights. It does this by calling, in
 order, each effect’s

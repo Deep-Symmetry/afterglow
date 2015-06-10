@@ -65,5 +65,5 @@
 
   :codox {:src-dir-uri "http://github.com/brunchboy/afterglow/blob/master/"
           :src-linenum-anchor-prefix "L"
-          :output-dir "target/doc"}
+          :output-dir "doc/api"}
   :min-lein-version "2.0.0")
