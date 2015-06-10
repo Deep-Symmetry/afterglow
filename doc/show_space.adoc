@@ -12,7 +12,7 @@ coordinated way with respect to each other or people or objects near
 them, Afterglow needs to know where everything is, and how it is
 oriented in space. This means you need to be able to specify these
 things. When mounting a
-<<fixture_definitions#fixture_definitions,fixture>>, you specify where
+<<fixture_definitions#fixture-definitions,fixture>>, you specify where
 it is and where it is facing. When creating a
 <<effect_functions#direction-effects,direction>> or
 <<effect_functions#aim-effects,aim>> cue, you specify a direction for
