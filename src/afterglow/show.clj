@@ -21,6 +21,7 @@
   {:author "James Elliott"
    :doc/format :markdown}
   (:require [afterglow.channels :as chan]
+            [afterglow.controllers :as controllers]
             [afterglow.effects :as fx]
             [afterglow.effects.channel :refer [channel-assignment-resolver
                                                function-assignment-resolver]]
@@ -122,7 +123,7 @@
                                                         (:effects @(:active-effects show)))]
                                    (doseq [[index effect] indexed]
                                      (when-not (fx/still-active? effect show snapshot)
-                                       (end-effect! (get (:keys @(:active-effects show)) index) true)))))
+                                       (end-effect! (:key (get (:meta @(:active-effects show)) index)) true)))))
       (let [all-assigners (gather-assigners show snapshot)]
         (doseq [[kind handler] resolution-handlers]
           (doseq [assigners (vals (get all-assigners kind))]
@@ -174,6 +175,7 @@
   show-counter
   (atom 0))
 
+;; TODO: Should some of these atoms be refs and use dosync?
 (defn show
   "Create a show coordinator to calculate and send DMX values to the
   specified universe(s), with a [[rhythm/metronome]] to coordinate
@@ -193,8 +195,7 @@
     :next-id (atom 0)
     :active-effects (atom {:effects []
                            :indices {}
-                           :keys []
-                           :priorities []
+                           :meta []
                            :ending #{}})
     :variables (atom {})
     :grand-master (master nil)  ; Only the grand master can have no show, or parent.
@@ -203,7 +204,8 @@
     :statistics (atom { :afterglow-version (env :afterglow-version)})
     :dimensions (atom {})
     :task (atom nil)
-    :pool (atom nil)}))
+    :pool (atom nil)
+    :cue-grid (controllers/cue-grid)}))
 
 (defn stop-all!
   "Kills all scheduled tasks which shows may have created to output
@@ -410,26 +412,26 @@
   (into {} (for [[k v] (dissoc m key)] [k (if (>= v index) (dec v) v)])))
 
 (defn- remove-effect-internal
-  "Helper function which removes the effect with the specified key from the priority list
-  structure maintained for the show."
+  "Helper function which removes the effect with the specified key
+  from the priority list structure maintained for the show."
   [fns key]
   (if-let [index (get (:indices fns) key)]
     {:effects (vec-remove (:effects fns) index)
      :indices (remove-key (:indices fns) key index)
-     :keys (vec-remove (:keys fns) index)
-     :priorities (vec-remove (:priorities fns) index)
+     :meta (vec-remove (:meta fns) index)
      :ending (disj (:ending fns) key)}
     fns))
 
 (defn- find-insertion-index
-  "Determines where in the priority array the current priority should be inserted: Starting at
-  the end, look backwards for a priority that is equal to or less than the value being inserted,
+  "Determines where in the priority list an effect with the specified
+  priority should be inserted: Starting at the end, look backwards for
+  a priority that is equal to or less than the value being inserted,
   since later effects take priority over earlier ones."
   [coll priority]
   (loop [pos (count coll)]
     (cond (zero? pos)
           pos
-          (<= (get coll (dec pos)) priority)
+          (<= (:priority (get coll (dec pos))) priority)
           pos
           :else
           (recur (dec pos)))))
@@ -450,13 +452,12 @@
 (defn- add-effect-internal
   "Helper function which adds an effect with a specified key and priority to the priority
   list structure maintained for the show, replacing any existing effect with the same key."
-  [fns key f priority]
+  [fns key f priority id]
   (let [base (remove-effect-internal fns key)
-        index (find-insertion-index (:priorities base) priority)]
+        index (find-insertion-index (:meta base) priority)]
     {:effects (vec-insert (:effects base) index f)
      :indices (insert-key (:indices base) key index)
-     :keys (vec-insert (:keys base) index key)
-     :priorities (vec-insert (:priorities base) index priority)
+     :meta (vec-insert (:meta base) index {:key key :priority priority :id id :started (at-at/now)})
      :ending (:ending base)}))
 
 (defn add-effect!
@@ -470,13 +471,18 @@
   for channels using highest-takes priority, the order does not
   matter. Effect functions can also use more sophisticated strategies
   for adjusting the results of earlier effects, but the later one
-  always gets to decide what to do."
- {:doc/format :markdown}
+  always gets to decide what to do.
+
+  Returns the unique id assigned to this particular effect activation,
+  so that user interfaces can detect whether it is still active."
+  {:doc/format :markdown}
   ([key f]
    (add-effect! key f 0))
   ([key f priority]
    {:pre [(some? *show*) (some? key) (instance? Effect f) (integer? priority)]}
-   (swap! (:active-effects *show*) #(add-effect-internal % (keyword key) f priority))))
+   (let [id (swap! (:next-id *show*) inc)]
+     (swap! (:active-effects *show*) #(add-effect-internal % (keyword key) f priority id))
+     id)))
 
 (defn- vec-remove
   "Remove the element at the specified index from the collection."
@@ -484,12 +490,16 @@
   (vec (concat (subvec coll 0 pos) (subvec coll (inc pos)))))
 
 (defn find-effect
-  "Looks up the specified effect in list of active effect
-  functions for [[*show*]]."
+  "Looks up the specified effect keyword in list of active effect
+  functions for [[*show*]]. Returns a map of the effect metadata, with
+  the effect itself under the key `:effect`."
   {:doc/format :markdown}
   [key]
   {:pre [(some? *show*) (some? key)]}
-  (get (:effects @(:active-effects *show*)) (get (:indices @(:active-effects *show*)) (keyword key))))
+  (when-let [index (get (:indices @(:active-effects *show*)) (keyword key))]
+    (assoc (get (:meta @(:active-effects *show*)) index)
+           :effect (get (:effects @(:active-effects *show*)) index)
+           :ending ((:ending @(:active-effects *show*)) (keyword key)))))
 
 (defn end-effect!
   "Shut down an effect function that is running in [[*show*]]. Unless
@@ -501,7 +511,7 @@
    (end-effect! key false))
   ([key force]
   {:pre [(some? *show*) (some? key)]}
-  (let [effect (find-effect key)
+  (let [effect (:effect (find-effect key))
         key (keyword key)] 
     (if (and effect
              (or force ((:ending @(:active-effects *show*)) key)
@@ -518,7 +528,7 @@
   {:pre [(some? *show*)]}
   (reset! (:active-effects *show*) {:effects [],
                                     :indices {},
-                                    :keys [],
+                                    :meta [],
                                     :priorities []
                                     :ending #{}}))
 

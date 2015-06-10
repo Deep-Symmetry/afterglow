@@ -8,7 +8,7 @@
 
 (defonce
   ^{:private true
-    :doc "Protect protocols against namespace reloads"}
+    :doc "Protect protocols against namespace reloads."}
   _PROTOCOLS_
   (do
     (defprotocol IMetronome

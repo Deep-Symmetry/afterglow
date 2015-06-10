@@ -60,9 +60,9 @@
   (let [id (swap! (:next-overlay controller) inc)]
     (swap! (:overlays controller) assoc id overlay)))
 
-(defn add-pad-held-feedback-overlay
+(defn add-control-held-feedback-overlay
   "Builds a simple overlay which just adds something to the user
-  interface until a particular pad is released, and adds it to the
+  interface until a particular control is released, and adds it to the
   controller. The overlay will end when a control-change message with
   value 0 is sent to the specified control number. Other than that,
   all it does is call the supplied function every time the interface
@@ -112,18 +112,23 @@
           ;; the bright, medium, and dim versions.
           :else
           (let [hue-section (+ 4 (* 4 (math/floor (* 13 (/ (colors/hue color) 360)))))]
-            (+ hue-section brightness-shift)))))
+            (int (+ hue-section brightness-shift))))))
 
 (defonce ^{:doc "The color of buttons that are completely off."}
   off-color (com.evocomputing.colors/create-color :black))
+
+(defn set-pad-velocity
+  "Set the velocity of one of the 64 touch pads."
+  [controller x y velocity]
+  {:pre [(<= 0 x 7) (<= 0 y 7)]}
+  (let [note (+ 36 x (* y 8))]  ;; Calculate note from grid coordinates
+    (midi/midi-note-on (:port-out controller) note velocity)))
 
 (defn set-pad-color
   "Set the color of one of the 64 touch pads to the closest
   approximation available for a desired color."
   [controller x y color]
-  {:pre [(<= 0 x 7) (<= 0 y 7)]}
-  (let [note (+ 36 x (* y 8))]  ;; Calculate note from grid coordinates
-    (midi/midi-note-on (:port-out controller) note (velocity-for-color color))))
+  (set-pad-velocity controller x y (velocity-for-color color)))
 
 (def monochrome-button-states
   "The control values and modes for a labeled button which does not
@@ -533,16 +538,16 @@
                      20 ; Reset pad
                      (when (pos? (:velocity message))
                        (rhythm/metro-phrase-start (:metronome (:show controller)) 1)
-                       (add-pad-held-feedback-overlay controller 20
-                                                      #(aset (:next-top-pads controller)
-                                                             0 (top-pad-state :bright :red)))
+                       (add-control-held-feedback-overlay controller 20
+                                                          #(aset (:next-top-pads controller)
+                                                                 0 (top-pad-state :bright :red)))
                        true)
                      21 ; Sync pad
                      (when (pos? (:velocity message))
                        ;; TODO: Actually implement a new overlay
-                       (add-pad-held-feedback-overlay controller 21
-                                                      #(aset (:next-top-pads controller)
-                                                             1 (top-pad-state :bright :green)))
+                       (add-control-held-feedback-overlay controller 21
+                                                          #(aset (:next-top-pads controller)
+                                                                 1 (top-pad-state :bright :green)))
                        true)))
                  (handle-note-on [this controller message]
                    ;; Whoops, user grabbed encoder closest to beat or BPM display
@@ -587,6 +592,44 @@
                          (if (< (rhythm/metro-beat-phase metronome) 0.15)
                            :bright :dim)))))
 
+;; TODO: This should probably move to show.clj?
+(defn- still-active?
+  "If a cue is marked as active, check whether there is still an
+  effect running under that key with the same id. If so, return a
+  truthy value, otherwise mark the cue as inactive and return
+  falsey."
+  [controller cue x y effect-found]
+  (when (:active-id cue)
+    (or (and effect-found (= (:id effect-found) (:active-id cue)))
+        (do (controllers/activate-cue! (:cue-grid (:show controller)) x y nil)
+            false))))
+
+(defn update-cue-grid
+  "See if any of the cue grid button states have changed, and send any
+  required updates."
+  [controller]
+  (doseq [x (range 8)
+          y (range 8)]
+    (let [[origin-x origin-y] @(:origin controller)
+          cue (controllers/cue-at (:cue-grid (:show controller)) (+ x origin-x) (+ y origin-y))]
+      (let [found (and cue (show/find-effect (:key cue)))
+            active (and found (still-active? controller cue x y found))
+            ending (and found (:ending found))
+            color (when cue
+                    (com.evocomputing.colors/create-color
+                     :h (com.evocomputing.colors/hue (:color cue))
+                     :s (com.evocomputing.colors/saturation (:color cue))
+                     :l (if active
+                          (if ending
+                            (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 10 20)
+                            50)
+                          10)))
+            velocity (if color (velocity-for-color color) 0)]
+        (when-not (= velocity (aget (:last-grid-pads controller) (+ x (* y 8))))
+          (set-pad-velocity controller x y velocity)
+          (println x y velocity)
+          (aset (:last-grid-pads controller) (+ x (* y 8)) velocity))))))
+
 (defn update-interface
   "Determine the desired current state of the interface, and send any
   changes needed to get it to that state."
@@ -602,6 +645,7 @@
     ;;       about them.
 
     (update-metronome-section controller)
+    (update-cue-grid controller)
 
     ;; Reflect the shift button state
     (swap! (:next-text-buttons controller)
@@ -609,6 +653,25 @@
            (button-state (:shift control-buttons)
                          (if @(:shift-mode controller) :bright :dim)))
     
+    ;; Activate the arrow buttons for directions in which scrolling is possible.
+    (let [[origin-x origin-y] @(:origin controller)]
+      (when (pos? origin-x)
+        (swap! (:next-text-buttons controller)
+              assoc (:left-arrow control-buttons)
+              (button-state (:left-arrow control-buttons) :dim)))
+      (when (pos? origin-y)
+        (swap! (:next-text-buttons controller)
+              assoc (:down-arrow control-buttons)
+              (button-state (:down-arrow control-buttons) :dim)))
+      (when (> (- (controllers/grid-width (:cue-grid (:show controller))) origin-x) 7)
+        (swap! (:next-text-buttons controller)
+              assoc (:right-arrow control-buttons)
+              (button-state (:right-arrow control-buttons) :dim)))
+      (when (> (- (controllers/grid-height (:cue-grid (:show controller))) origin-y) 7)
+        (swap! (:next-text-buttons controller)
+              assoc (:up-arrow control-buttons)
+              (button-state (:up-arrow control-buttons) :dim))))
+
     ;; Make the User button bright, since we live in User mode
     (swap! (:next-text-buttons controller)
            assoc (:user-mode control-buttons)
@@ -733,6 +796,7 @@
     (doseq [y (range 8)]
       (set-pad-color controller x y off-color)))
   (Arrays/fill (:last-top-pads controller) 0)
+  (Arrays/fill (:last-grid-pads controller) 0)
   (doseq [[_ button] control-buttons]
     (set-button-state controller button :off))
   (reset! (:last-text-buttons controller) {}))
@@ -858,6 +922,10 @@
   (swap! (:task controller) (fn [task]
                               (when task (at-at/kill task))
                               nil))
+  (clear-interface controller)
+  ;; In case Live isn't running, leave the User Mode button dimly lit, to help the user return.
+  (set-button-state controller (:user-mode control-buttons)
+                    (button-state (:user-mode control-buttons) :dim))
   (add-overlay controller
                (reify IOverlay
                  (captured-controls [this] #{59})
@@ -879,6 +947,14 @@
                  (handle-note-off [this controller message]
                    false))))
 
+(defn add-button-held-feedback-overlay
+  "Adds a simple overlay which keeps a control button bright as long
+  as the user is holding it down."
+  [controller button]
+  (add-control-held-feedback-overlay controller (:control button)
+                                     #(swap! (:next-text-buttons controller)
+                                             assoc button (button-state button :bright))))
+
 (defn- control-change-received
   "Process a control change message which was not handled by an
   interface overlay."
@@ -895,6 +971,34 @@
 
     49 ; Shift button
     (swap! (:shift-mode controller) (fn [_] (pos? (:velocity message))))
+
+    44 ; Left arrow
+    (when (pos? (:velocity message))
+      (let [[x y] @(:origin controller)]
+        (when (pos? x)
+          (reset! (:origin controller) [(max 0 (- x 8)) y])
+          (add-button-held-feedback-overlay controller (:left-arrow control-buttons)))))
+
+    45 ; Right arrow
+    (when (pos? (:velocity message))
+      (let [[x y] @(:origin controller)]
+        (when (> (- (controllers/grid-width (:cue-grid (:show controller))) x) 7)
+          (reset! (:origin controller) [(+ x 8) y])
+          (add-button-held-feedback-overlay controller (:right-arrow control-buttons)))))
+
+    46 ; Up arrow
+    (when (pos? (:velocity message))
+      (let [[x y] @(:origin controller)]
+        (when (> (- (controllers/grid-height (:cue-grid (:show controller))) y) 7)
+          (reset! (:origin controller) [x (+ y 8)])
+          (add-button-held-feedback-overlay controller (:up-arrow control-buttons)))))
+
+    47 ; Down arrow
+    (when (pos? (:velocity message))
+      (let [[x y] @(:origin controller)]
+        (when (pos? y)
+          (reset! (:origin controller) [x (max 0 (- y 8))])
+          (add-button-held-feedback-overlay controller (:down-arrow control-buttons)))))
 
     59 ; User mode button
     (when (pos? (:velocity message))
@@ -973,6 +1077,7 @@
   (let [controller
         {:id (swap! controller-counter inc)
          :show show
+         :origin (atom [0 0])
          :refresh-interval refresh-interval
          :port-in (midi/midi-find-device (amidi/open-inputs-if-needed!) device-name)
          :port-out (midi/midi-find-device (amidi/open-outputs-if-needed!) device-name)
@@ -983,6 +1088,8 @@
          :next-text-buttons (atom {})
          :last-top-pads (int-array 8)
          :next-top-pads (int-array 8)
+         :last-grid-pads (int-array 64)
+         :next-grid-pads (int-array 64)
          :metronome-mode (atom {})
          :shift-mode (atom false)
          :midi-handler (atom nil)
