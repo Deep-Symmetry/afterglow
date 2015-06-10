@@ -65,9 +65,9 @@ interesting things happen you add
 link:effect_functions{outfilesuffix}#effect-functions[Effect
 Functions] to the show. The default namespace you are put into when
 you launch the Afterglow project using `lein repl` has some
-link:example_effects{outfilesuffix}#effect-examples[Example
-Effects] that can help get a feel for this concept.
-To get a full understanding of how to use (and create)
+link:effect_examples{outfilesuffix}#effect-examples[Example Effects]
+that can help get a feel for this concept. To get a full understanding
+of how to use (and create) effect functions, learn about the
 link:lifecycle{outfilesuffix}#effect-function-lifecycle[Effect
 Function Lifecycle].
 

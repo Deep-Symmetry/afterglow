@@ -83,6 +83,7 @@ assigners will get the chance to modify or veto any assigners from
 earlier and lower-priority effects which are trying to control the same
 thing. If the effect doesn’t want to do anything this frame, it can
 simply return an empty assigner list.
+
 5.  Once all the assigners have been collected, Each assigner’s
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-assign[assign]
 function is called, again passing in the show and the metronome
@@ -103,6 +104,7 @@ the assigner may choose to resolve it in order to decide between or
 blend competing assignments. At the end of this process, Afterglow is
 left with a single assigned value for every target which any effect
 wanted to affect for the current frame.
+
 6.  Afterglow uses these assignment results to establish actual DMX
 values for the frame. It splits them based on the kind of assignment
 they want to make, doing all of one type before moving on to the next
@@ -114,6 +116,7 @@ assigners. The resolution-handler functions finally resolve any
 remaining dynamic parameters, and then turn abstractions like color
 objects into appropriate DMX channel values for the target that is being
 assigned.
+
 7.  Finally, the resulting buffers of DMX values, with zeros in any
 channels which were not affected by assigners, are sent to their
 corresponding universes, causing the lights to produce the desired
