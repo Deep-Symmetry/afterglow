@@ -238,13 +238,14 @@ Or, if you need to be woken up a bit,
   "Fast blast!" :strobe 100 (show/all-fixtures)))
 ```
 
-> The Wiki has more examples of
-> [building effects](https://github.com/brunchboy/afterglow/wiki/effect-examples),
+> The [project documentation](https://github.com/brunchboy/afterglow/blob/master/doc/README.adoc#afterglow-documentation)
+> has more examples of
+> [building effects](https://github.com/brunchboy/afterglow/blob/master/doc/effect_functions.adoc#effect-examples),
 > and
-> [mapping parameters](https://github.com/brunchboy/afterglow/wiki/midi-mapping-and-beat-sync)
+> [mapping parameters](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#midi-mapping-and-beat-sync)
 > to MIDI controllers. There is also low-level
 > [API documentation](http://deepsymmetry.org/afterglow/doc), but the
-> Wiki is the best starting point for a conceptual overview and
+> project documentation is the best starting point for a conceptual overview and
 > introduction.
 
 When you are all done, you can terminate the effect handler thread...
@@ -283,6 +284,7 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   - [x] Use keyword parameters
   - [x] Add phrase oscillators
   - [x] Finish wiki page
+  - [x] Migrate wiki documentation into project documentation.
 - [x] Have metronome cue take metronome parameter and support dynamic
       parameters.
 - [x] Consider having patched fixture hold a reference to the show.
@@ -297,7 +299,7 @@ TODO: listing of options this app accepts once it can run as a standalone app.
       fixture implementation.
 - [x] Add color wheel support.
 - [ ] Review existing fixture definitions for consistency of function
-      names, start a style guide on the Wiki for others creating fixture
+      names, start a style guide in the docs for others creating fixture
       definitions.
 - [ ] Make pass over all source, flesh out API doc and preconditions.
 - [ ] Sparkle effect, essentially a particle generator with
