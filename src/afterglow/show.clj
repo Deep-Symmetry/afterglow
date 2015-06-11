@@ -112,7 +112,7 @@
 (defn- send-dmx
   "Calculate and send the next frame of DMX values for the universes
   and effects run by this show, as described in
-  [The Rendering Loop](https://github.com/brunchboy/afterglow/wiki/The-Rendering-Loop)."
+  [The Rendering Loop](https://github.com/brunchboy/afterglow/blob/master/doc/rendering_loop.adoc#the-rendering-loop)."
   {:doc/format :markdown}
   [show buffers]
   (try
@@ -621,7 +621,7 @@
   channel address, at a particular point in space, with a particular
   orientation. Coordinates and rotations are with respect to the [show
   frame of
-  reference](https://github.com/brunchboy/afterglow/wiki/Show-Space),
+  reference](https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space),
   and are in meters and radians. You can use [[transform/inches]]
   and [[transform/degrees]] to convert for you if desired."
   {:doc/format :markdown}

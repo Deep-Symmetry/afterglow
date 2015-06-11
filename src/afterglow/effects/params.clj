@@ -253,13 +253,13 @@
 
 (defn build-oscillated-param
   "Returns a number parameter that is driven by
-  an [oscillator](https://github.com/brunchboy/afterglow/wiki/Oscillators).
+  an [oscillator](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#oscillators).
   By default will be frame-dynamic, since it oscillates, but if you
   pass a `false` value for `:frame-dynamic`, the value will be fixed
   once it is assigned to an effect, acting like a random number
   generator with the oscillator's range. If you don't specify a
   `:metronome` to use, the
-  main [metronome](https://github.com/brunchboy/afterglow/wiki/Metronomes)
+  main [metronome](https://github.com/brunchboy/afterglow/blob/master/doc/metronomes.adoc#metronomes)
   in [[*show*]] will be used."
   {:doc/format :markdown}
   [osc & {:keys [min max metronome frame-dynamic] :or {min 0 max 255 frame-dynamic true}}]
@@ -600,8 +600,8 @@
   gradients across all or part of a show. Spatial parameters make
   excellent building blocks
   for [color](#var-build-color-param), [direction](#var-build-direction-param)
-  and [aim](#var-build-aim-param) parameters, as shown in the [wiki
-  examples](https://github.com/brunchboy/afterglow/wiki/Effect-Examples#spatial-effects).
+  and [aim](#var-build-aim-param) parameters, as shown in the [effect
+  examples](https://github.com/brunchboy/afterglow/blob/master/doc/effect_functions.adoc#spatial-effects).
 
   If you do not specify an explicit value for `:frame-dynamic`, this
   spatial parameter will be frame dynamic if any values returned by
