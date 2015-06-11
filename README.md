@@ -216,7 +216,7 @@ Clojure seize control of your lights!
 
 If you have DJ software or a mixer sending you MIDI clock data, you
 can sync the show’s BPM to it (see the
-[wiki](https://github.com/brunchboy/afterglow/wiki/MIDI-Mapping-and-Beat-Sync#syncing-to-midi-clock)
+[docs](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#syncing-to-midi-clock)
 for details):
 
 ```clojure
