@@ -29,58 +29,67 @@
  [metronome target-name socket watcher packet-count sync-count last-sync]
   IClockSync
   (sync-start [this]
-    (swap! socket (fn [s]
-                    (when s (.close s))
-                    (DatagramSocket. port (InetAddress/getByName "0.0.0.0"))))
-    (reset! packet-count 0)
-    (reset! sync-count 0)
-    (reset! last-sync nil)
-    (swap! watcher (fn [w]
-                    (when w (future-cancel w))
-                    (future (while true
-                              (let [packet (receive @socket)
-                                    data (.getData packet)]
-                                ;; Check packet length and target name.
-                                ;; TODO: Check header bytes, perhaps use Protobuf for this?
-                                (swap! packet-count inc)
-                                (when (and (= 96 (.getLength packet))
-                                           (= target-name (String. data 11 (count target-name))))
-                                  ;; Record that we received a packet from the target, and when
-                                  (swap! sync-count inc)
-                                  (reset! last-sync (now))
-                                  (let [bpm (float (/ (+ (* 256 (unsign (aget data 90))) (unsign (aget data 91))) 100))
-                                        beat (aget data 92)]
-                                    (metro-bpm metronome bpm)
-                                    (metro-beat-phase metronome 0)
-                                    ;; TODO: Had to give up for now on the following line because the mixer
-                                    ;;       does not update its measure position based on that of the master
-                                    ;;       player.
-                                    ;;
-                                    ;;       Consider figuring out how to tell what the master player is from
-                                    ;;       the UDP traffic, and using that. But this should probably be an
-                                    ;;       option anyway because a lot of DJs do not beat grid that carefully,
-                                    ;;       and the light show operator will in those cases need to be able to
-                                    ;;       override the down beat, which will not be possible if this code is
-                                    ;;       resyncing the bar start on each beat from the Pioneer equipment.
-                                    ;;
-                                    ;;       If/when that mode is figured out and made an option, the following
-                                    ;;       line will be invoked INSTEAD of the one above.
-                                    #_(metro-bar-phase metronome (/ (dec beat) 4))))))))))
+    (dosync
+     (alter socket (fn [s]
+                     (when s (.close s))
+                     (DatagramSocket. port (InetAddress/getByName "0.0.0.0"))))
+     (ref-set packet-count 0)
+     (ref-set sync-count 0)
+     (ref-set last-sync nil)
+     (alter watcher (fn [w]
+                      (when w (future-cancel w))
+                      (future (while true
+                                (let [packet (receive @socket)
+                                      data (.getData packet)]
+                                  ;; Check packet length and target name.
+                                  ;; TODO: Check header bytes, perhaps use Protobuf for this?
+                                  (dosync
+                                   (alter packet-count inc)
+                                   (when (and (= 96 (.getLength packet))
+                                              (= target-name (String. data 11 (count target-name))))
+                                     ;; Record that we received a packet from the target, and when
+                                     (alter sync-count inc)
+                                     (ref-set last-sync (now))
+                                     (let [bpm (float (/ (+ (* 256 (unsign (aget data 90))) (unsign (aget data 91))) 100))
+                                           beat (aget data 92)]
+                                       (metro-bpm metronome bpm)
+                                       (metro-beat-phase metronome 0)
+                                       ;; TODO: Had to give up for now on the following line because the mixer
+                                       ;;       does not update its measure position based on that of the master
+                                       ;;       player.
+                                       ;;
+                                       ;;       Consider figuring out how to tell what the master player is from
+                                       ;;       the UDP traffic, and using that. But this should probably be an
+                                       ;;       option anyway because a lot of DJs do not beat grid that carefully,
+                                       ;;       and the light show operator will in those cases need to be able to
+                                       ;;       override the down beat, which will not be possible if this code is
+                                       ;;       resyncing the bar start on each beat from the Pioneer equipment.
+                                       ;;
+                                       ;;       If/when that mode is figured out and made an option, the following
+                                       ;;       line will be invoked INSTEAD of the one above.
+                                       #_(metro-bar-phase metronome (/ (dec beat) 4))))))))))))
   (sync-stop [this]
-    (swap! watcher (fn [w]
-                     (when w (future-cancel w))
-                     nil))
-    (swap! socket (fn [s]
-                    (when s (.close s))
-                    nil)))
+    (dosync
+     (alter watcher (fn [w]
+                      (when w (future-cancel w))
+                      nil))
+     (alter socket (fn [s]
+                     (when s (.close s))
+                     nil))))
   (sync-status [this]
-    {:type :dj-link,
-     :status (cond
-               (nil? watcher)                "Stopped."
-               (zero? @packet-count)         "Network problems? No DJ Link packets received."
-               (zero? @sync-count)           (str "Configuration problem? No DJ Link beat packets received from " target-name ".")
-               (> (- (now) @last-sync) 1000) (str "Stalled? No sync packets received in " (- (now) @last-sync) "ms.")
-               :else                         (str "Running. " @sync-count " beats received."))}))
+    (dosync
+     (ensure watcher)
+     (ensure packet-count)
+     (ensure sync-count)
+     (ensure last-sync)
+     {:type :dj-link,
+      :status (cond
+                (nil? @watcher)               "Stopped."
+                (zero? @packet-count)         "Network problems? No DJ Link packets received."
+                (zero? @sync-count)           (str "Configuration problem? No DJ Link beat packets received from "
+                                                   target-name ".")
+                (> (- (now) @last-sync) 1000) (str "Stalled? No sync packets received in " (- (now) @last-sync) "ms.")
+                :else                         (str "Running. " @sync-count " beats received."))})))
 
 ;; Suppress uninformative auto-generated documentation entries.
 (alter-meta! #'->UDPSync assoc :no-doc true)
@@ -93,6 +102,6 @@
   for use with afterglow.show/sync-to-external-clock."
   [dj-link-device-name]
   (fn [^afterglow.rhythm.Metronome metronome]
-    (let [sync-handler (UDPSync. metronome dj-link-device-name (atom nil) (atom nil) (atom 0) (atom 0) (atom nil))]
+    (let [sync-handler (UDPSync. metronome dj-link-device-name (ref nil) (ref nil) (ref 0) (ref 0) (ref nil))]
       (sync-start sync-handler)
       sync-handler)))
