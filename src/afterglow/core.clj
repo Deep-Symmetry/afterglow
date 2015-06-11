@@ -12,7 +12,7 @@
     [clojure.java.browse :as browse]
     [selmer.parser :as parser]
     [taoensso.timbre :as timbre]
-    [taoensso.timbre.appenders.rotor :as rotor])
+    [taoensso.timbre.appenders.3rd-party.rotor :as rotor])
   (:gen-class))
 
 (defonce ^{:doc "Keeps track of whether init has been called."}
@@ -33,21 +33,30 @@
   []
   (when-not @initialized
     ;; Make sure the experimenter does not get blasted with a ton of debug messages
-    (timbre/set-level! :info)
+    (timbre/set-config!
+     {:level :info  ; e/o #{:trace :debug :info :warn :error :fatal :report}
+
+      ;; Control log filtering by namespaces/patterns. Useful for turning off
+      ;; logging in noisy libraries, etc.:
+      :ns-whitelist  [] #_["my-app.foo-ns"]
+      :ns-blacklist  [] #_["taoensso.*"]
+      
+      :middleware [] ; (fns [data]) -> ?data, applied left->right
+      
+      ;; Clj only:
+      :timestamp-opts timbre/default-timestamp-opts ; {:pattern _ :locale _ :timezone _}
+      
+      :output-fn timbre/default-output-fn ; (fn [data]) -> string
+      })
 
     ;; Provide a nice, organized set of log files to help hunt down problems, especially
     ;; for exceptions which occur on background threads.
-    (timbre/set-config!
-     [:appenders :rotor]
-     {:min-level             :info
-      :enabled?              true
-      :async?                false ; should be always false for rotor
-      :max-message-per-msecs nil
-      :fn                    rotor/appender-fn})
+    (timbre/merge-config!
+     {:appenders {:rotor (rotor/rotor-appender {:path "logs/afterglow.log"
+                                                :max-size 100000
+                                                :backlog 5})}})
+    (timbre/merge-config!  {:appenders {:rotor {:min-level :info}}})
 
-    (timbre/set-config!
-     [:shared-appender-config :rotor]
-     {:path "logs/afterglow.log" :max-size 100000 :backlog 5})
 
     (if (env :dev) (parser/cache-off!))
 

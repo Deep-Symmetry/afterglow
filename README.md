@@ -374,7 +374,7 @@ TODO: listing of options this app accepts once it can run as a standalone app.
 - [x] Serious references for color manipulation, but in [Julia](https://github.com/timholy/Color.jl).
 - [ ] Absolutely amazing reference on [color vision](http://handprint.com/LS/CVS/color.html)! Send him a note asking if he knows where I can find an algorithm for using arbitrary LEDs to make an HSL color!
 - [ ] When it is time to optimize performance, study the [type hints](http://clojure.org/java_interop#Java%20Interop-Type%20Hints) interop information looks very informative and helpful.
-  - [ ] Do a pass through all files with *warn-on-reflection* set to true, see what hinting can help.
+  - [ ] Do a pass through all files with *warn-on-reflection* set to true, see what hinting can help. `(set! *warn-on-reflection* true)` at top of file.
 - [ ] Eventually create a leiningen task that can build a standalone jar with Afterglow and a custom show definition file and its supporting resources, so developers can easily deploy and share shows with non-Clojurists.
 - [ ] Once I release the first version, answer this StackOverflow [question](http://stackoverflow.com/questions/9582192/dmx-software-to-control-lights-with-programmable-interface).
 - [ ] Also post a followup to this [article](http://radar.oreilly.com/2015/05/creative-computing-with-clojure.html) and reach out to some of the artists themselves.
