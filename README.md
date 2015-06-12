@@ -29,8 +29,8 @@ among the entire user community.
 ## Installation
 
 1. [Install OLA](https://www.openlighting.org/ola/getting-started/downloads/);
-   I recommend using [Homebrew](http://brew.sh) which lets you simply
-   `brew install ola`. Once you launch the `olad` server you can
+   (On the Mac I recommend using [Homebrew](http://brew.sh) which lets you simply
+   `brew install ola`). Once you launch the `olad` server you can
    interact with its embedded
    [web server](http://localhost:9090/ola.html), which is very helpful
    in seeing whether anything is working; you can even watch live DMX
