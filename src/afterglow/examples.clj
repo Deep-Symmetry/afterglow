@@ -3,6 +3,8 @@
   exploration." {:author "James Elliott"}
   (:require [afterglow.core :as core]
             [afterglow.transform :as tf]
+            [afterglow.controllers :as ct]
+            [afterglow.controllers.ableton-push :as push]
             [afterglow.effects.color :refer [color-cue]]
             [afterglow.effects.dimmer :refer [dimmer-cue master-set-level]]
             [afterglow.effects.fun :as fun]
@@ -40,9 +42,9 @@
 (show/patch-fixture! :ws-1 (blizzard/weather-system) 1 161 :x (tf/inches 22) :y (tf/inches 7) :z (tf/inches 7)
                      :x-rotation (tf/degrees 90))
 
-(defn global-color-cue
-  "Make a color cue which affects all lights in the sample show. This
-  became vastly more useful once I implemented dynamic color
+(defn global-color-effect
+  "Make a color effect which affects all lights in the sample show.
+  This became vastly more useful once I implemented dynamic color
   parameters."
   [color & {:keys [include-color-wheels]}]
   (try
@@ -58,7 +60,7 @@
 
 (def blue-cue
   "An effect which assigns all fixtures to a nice blue color."
-  (global-color-cue "slateblue" :include-color-wheels true))
+  (global-color-effect "slateblue" :include-color-wheels true))
 
 (defn global-dimmer-cue
   "Return an effect function that sets all the dimmers in the sample
@@ -92,7 +94,7 @@
   []
   (let [hue-param (params/build-oscillated-param (oscillators/sawtooth-phrase) :max 360)]
     (show/add-effect! :color
-                      (global-color-cue
+                      (global-color-effect
                        (params/build-color-param :s 100 :l 50 :h hue-param)))
     (show/add-effect! :sparkle
                       (fun/sparkle (show/all-fixtures) :chance 0.05 :fade-time 50))))
@@ -108,7 +110,7 @@
   (let [hue-param (params/build-oscillated-param (oscillators/sawtooth-phrase) :max 360)
         sparkle-color-param (params/build-color-param :s 100 :l :sparkle-lightness :h :sparkle-hue)]
     (show/add-effect! :color
-                      (global-color-cue
+                      (global-color-effect
                        (params/build-color-param :s 100 :l 50 :h hue-param)))
     (show/add-effect! :sparkle
                       (fun/sparkle (show/all-fixtures) :color sparkle-color-param
@@ -159,3 +161,27 @@
                     (afterglow.effects.movement/aim-cue
                      "Aimer" (params/build-aim-param :x :x :y :y :z :z) (show/all-fixtures)))
   (show/set-variable! :y  2.6416))  ; Approximate height of ceiling
+
+(defn global-color-cue
+  "Create a cue-grid entry which establishes a global color effect."
+  [color x y & {:keys [include-color-wheels held]}]
+  (let [cue (ct/cue :color (fn [] (global-color-effect color :include-color-wheels include-color-wheels))
+                    :held held
+                    :color (create-color color))]
+    (ct/set-cue! (:cue-grid *show*) x y cue)))
+
+(defn use-push
+  []
+  (defonce pc (push/bind-to-show *show*))
+  (global-color-cue "red" 0 0 :include-color-wheels true)
+  (global-color-cue "orange" 1 0 :include-color-wheels true)
+  (global-color-cue "yellow" 2 0 :include-color-wheels true)
+  (global-color-cue "green" 3 0 :include-color-wheels true)
+  (global-color-cue "blue" 4 0 :include-color-wheels true)
+  (global-color-cue "purple" 5 0 :include-color-wheels true)
+  (global-color-cue "white" 6 0 :include-color-wheels true)
+
+  (ct/set-cue! (:cue-grid *show*) 0 7
+               (ct/cue :sparkle (fn [] (fun/sparkle (show/all-fixtures) :chance 0.05 :fade-time 50))
+                       :held true
+                       :priority 100)))

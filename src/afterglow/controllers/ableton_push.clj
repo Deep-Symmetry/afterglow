@@ -592,18 +592,6 @@
                          (if (< (rhythm/metro-beat-phase metronome) 0.15)
                            :bright :dim)))))
 
-;; TODO: This should probably move to show.clj?
-(defn- still-active?
-  "If a cue is marked as active, check whether there is still an
-  effect running under that key with the same id. If so, return a
-  truthy value, otherwise mark the cue as inactive and return
-  falsey."
-  [controller cue x y effect-found]
-  (when (:active-id cue)
-    (or (and effect-found (= (:id effect-found) (:active-id cue)))
-        (do (controllers/activate-cue! (:cue-grid (:show controller)) x y nil)
-            false))))
-
 (defn update-cue-grid
   "See if any of the cue grid button states have changed, and send any
   required updates."
@@ -611,24 +599,21 @@
   (doseq [x (range 8)
           y (range 8)]
     (let [[origin-x origin-y] @(:origin controller)
-          cue (controllers/cue-at (:cue-grid (:show controller)) (+ x origin-x) (+ y origin-y))]
-      (let [found (and cue (show/find-effect (:key cue)))
-            active (and found (still-active? controller cue x y found))
-            ending (and found (:ending found))
-            color (when cue
-                    (com.evocomputing.colors/create-color
-                     :h (com.evocomputing.colors/hue (:color cue))
-                     :s (com.evocomputing.colors/saturation (:color cue))
-                     :l (if active
-                          (if ending
-                            (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 10 20)
-                            50)
-                          10)))
-            velocity (if color (velocity-for-color color) 0)]
+          [cue active] (show/find-cue-grid-active-effect (:show controller) (+ x origin-x) (+ y origin-y))
+          ending (and active (:ending active))
+                      color (when cue
+                              (com.evocomputing.colors/create-color
+                               :h (com.evocomputing.colors/hue (:color cue))
+                               :s (com.evocomputing.colors/saturation (:color cue))
+                               :l (if active
+                                    (if ending
+                                      (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 10 20)
+                                      50)
+                                    10)))
+                      velocity (if color (velocity-for-color color) 0)]
         (when-not (= velocity (aget (:last-grid-pads controller) (+ x (* y 8))))
           (set-pad-velocity controller x y velocity)
-          (println x y velocity)
-          (aset (:last-grid-pads controller) (+ x (* y 8)) velocity))))))
+          (aset (:last-grid-pads controller) (+ x (* y 8)) velocity)))))
 
 (defn update-interface
   "Determine the desired current state of the interface, and send any
@@ -1007,22 +992,61 @@
     ;; Something we don't care about
     nil))
 
+(defn- note-to-cue-coordinates
+  "Translate the MIDI note associated with an incoming message to its
+  coordinates in the show cue grid."
+  [controller message]
+  (let [base (- (:note message) 36)
+        [origin-x origin-y] @(:origin controller)
+        pad-x (rem base 8)
+        pad-y (quot base 8)
+        cue-x (+ origin-x pad-x)
+        cue-y (+ origin-y pad-y)]
+    [cue-x cue-y]))
+
 (defn- note-on-received
   "Process a note-on message which was not handled by an interface
   overlay."
   [controller message]
-  (case (:note message)
-    8 ; Master encoder
-    (master-encoder-touched controller)
+  (if (<= 36 (:note message) 99)
+    ;; The cue grid was touched
+    (let [[cue-x cue-y] (note-to-cue-coordinates controller message)
+          [cue active] (show/find-cue-grid-active-effect (:show controller) cue-x cue-y)]
+      (when cue
+        (with-show (:show controller)
+          (if active
+            (show/end-effect! (:key cue))
+            (let [id (show/add-effect-from-cue-grid! cue-x cue-y)]
+              (add-overlay controller
+                           (reify IOverlay
+                             (captured-controls [this] #{})
+                             (captured-notes [this] #{(:note message)})
+                             ;; TODO: Capture aftertouch once cues can introduce variables
+                             (adjust-interface [this controller]
+                               true)  ; The pad will track the effect state on its own
+                             (handle-control-change [this controller message]
+                               false)
+                             (handle-note-on [this controller message]
+                               false)
+                             (handle-note-off [this controller message]
+                               (when (:held cue)
+                                 (with-show (:show controller)
+                                   (show/end-effect! (:key cue) :when-id id)))
+                               :done))))))))
 
-    9 ; BPM encoder
-    (bpm-encoder-touched controller)
+    ;; Some other UI element was touched
+    (case (:note message)
+      8 ; Master encoder
+      (master-encoder-touched controller)
 
-    10 ; Beat encoder
-    (beat-encoder-touched controller)
+      9 ; BPM encoder
+      (bpm-encoder-touched controller)
 
-    ;; Something we don't care about
-    nil))
+      10 ; Beat encoder
+      (beat-encoder-touched controller)
+
+      ;; Something we don't care about
+      nil)))
 
 (defn- note-off-received
   "Process a note-off message which was not handled by an interface

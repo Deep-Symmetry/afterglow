@@ -123,7 +123,7 @@
                                                         (:effects @(:active-effects show)))]
                                    (doseq [[index effect] indexed]
                                      (when-not (fx/still-active? effect show snapshot)
-                                       (end-effect! (:key (get (:meta @(:active-effects show)) index)) true)))))
+                                       (end-effect! (:key (get (:meta @(:active-effects show)) index)) :force true)))))
       (let [all-assigners (gather-assigners show snapshot)]
         (doseq [[kind handler] resolution-handlers]
           (doseq [assigners (vals (get all-assigners kind))]
@@ -503,21 +503,24 @@
 
 (defn end-effect!
   "Shut down an effect function that is running in [[*show*]]. Unless
-  a `true` value is passed for force, this is done by asking the
-  effect to end (and waiting until it reports completion). Forcibly
-  stopping it simply immediately removes it from the show."
+  a `true` value is passed for :force, this is done by asking the
+  effect to end (and waiting until it reports completion); forcibly
+  stopping it simply immediately removes it from the show. If an id is
+  specified with :when-id, the effect will only be ended if the id of
+  the currently-running effect matches the one supplied."
   {:doc/format :markdown}
-  ([key]
-   (end-effect! key false))
-  ([key force]
+  [key & {:keys [force when-id]}]
   {:pre [(some? *show*) (some? key)]}
-  (let [effect (:effect (find-effect key))
+  (let [found (find-effect key)
+        effect (:effect found)
         key (keyword key)] 
-    (if (and effect
-             (or force ((:ending @(:active-effects *show*)) key)
-                 (fx/end effect *show* (metro-snapshot (:metronome *show*)))))
-       (swap! (:active-effects *show*) #(remove-effect-internal % key))
-       (swap! (:active-effects *show*) #(update-in % [:ending] conj key))))))
+    ;; Make sure the effect is actually running, and if the caller cares, is the right instance
+    (when (and effect (or (nil? when-id) (= (:id found) when-id)))
+      ;; See if it should be forcibly or gently ended
+      (if (or force ((:ending @(:active-effects *show*)) key)
+              (fx/end effect *show* (metro-snapshot (:metronome *show*))))
+        (swap! (:active-effects *show*) #(remove-effect-internal % key))
+        (swap! (:active-effects *show*) #(update-in % [:ending] conj key))))))
 
 (defn clear-effects!
   "Remove all effect functions currently active in [[*show*]], leading
@@ -531,6 +534,37 @@
                                     :meta [],
                                     :priorities []
                                     :ending #{}}))
+
+(defn add-effect-from-cue-grid!
+  "Finds the cue, if any, at the specified grid coordinates, and
+  activates its effect with the designated key and priority, after
+  ending any effects whose keys are specified in the cue's :end-keys.
+  Returns the id of the new effect, or nil if no cue was found."
+  [x y]
+  {:pre [(some? *show*)]}
+  (when-let [cue (controllers/cue-at (:cue-grid *show*) x y)]
+    (doseq [k (:end-keys cue)]
+      (end-effect! k))
+    (let [id (add-effect! (:key cue) ((:effect cue)) (:priority cue))]
+      (controllers/activate-cue! (:cue-grid *show*) x y id)
+      id)))
+
+(defn find-cue-grid-active-effect
+  "Find the cue at a particular cue grid location. If it is marked as
+  active, check whether there is still an effect running under that
+  key with the same id. If so, return a vector containing both the cue
+  and the effect. If not, mark the cue as inactive, and return a
+  vector containing the cue and nil. If no cue was found at all,
+  simply returns nil."
+  [show x y]
+  (when-let [cue (controllers/cue-at (:cue-grid show) x y)]
+    (let [effect-found (find-effect (:key cue))
+          active (when (:active-id cue)
+                   (if (and effect-found (= (:id effect-found) (:active-id cue)))
+                     effect-found
+                     (do (controllers/activate-cue! (:cue-grid show) x y nil)
+                         nil)))]
+      [cue active])))
 
 (defn- address-map-internal
   "Helper function which returns a sorted map whose keys are all

@@ -177,7 +177,7 @@ quickly get relief from overly bright lights.
 Moving on, though... we can change the global color to orange:
 
 ```clojure
-(show/add-effect! :color (global-color-cue :orange))
+(show/add-effect! :color (global-color-effect :orange))
 ```
 
 > The color channel values change.
@@ -227,7 +227,7 @@ How about a nice cycling rainbow color fade?
 
 ```clojure
 (def hue-param (params/build-oscillated-param (oscillators/sawtooth-bar) :max 360))
-(show/add-effect! :color (global-color-cue
+(show/add-effect! :color (global-color-effect
   (params/build-color-param :s 100 :l 50 :h hue-param)))
 ```
 
@@ -333,6 +333,11 @@ TODO: listing of options this app accepts once it can run as a standalone app.
       current effects and priorities, perhaps when they were added, the
       list of targets each is currently assigning, other stuff? Could turn
       into the start of a web interface.
+- [ ] When it comes time to save data and settings, the luminus
+      approach looks good, including
+      [yesql](https://yobriefca.se/blog/2014/11/25/yesql-sql-in-sql-in-clojure/)
+      and h2 as the database. Need to figure out where it would be
+      stored, though.
 - [ ] See if I can get Traktor to just send beat notes for master
       track; if so, add mode for MIDI sync to ride them like DJ link
   - [ ] See example on page 166 of Traktor Bible; it is close, but I
