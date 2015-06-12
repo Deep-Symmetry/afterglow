@@ -216,7 +216,7 @@ possible, and do as much calculation as it can when the parameter is
 created. If there are no frame dynamic parameters, it will return a
 fixed color. But you can easily use frame-dynamic oscillated
 parameters and get lovely shifting rainbow cues, as shown in the
-<<effect_functions#oscillator-effects,effect examples>>.
+<<effects#oscillator-effects,effect examples>>.
 
 == Direction Parameters
 
@@ -350,7 +350,7 @@ gradients across all or part of a show. Spatial parameters make
 excellent building blocks for <<color-parameters,color>>,
 <<direction-parameters,direction>> and <<aim-parameters,aim>>
 parameters, as shown in the
-<<effect_functions#spatial-effects,effect examples>>.
+<<effects#spatial-effects,effect examples>>.
 
 ## Digging Deeper
 

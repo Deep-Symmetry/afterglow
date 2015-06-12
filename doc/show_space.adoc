@@ -14,8 +14,8 @@ oriented in space. This means you need to be able to specify these
 things. When mounting a
 <<fixture_definitions#fixture-definitions,fixture>>, you specify where
 it is and where it is facing. When creating a
-<<effect_functions#direction-effects,direction>> or
-<<effect_functions#aim-effects,aim>> cue, you specify a direction for
+<<effects#direction-effects,direction>> or
+<<effects#aim-effects,aim>> cue, you specify a direction for
 lights to face, or a point for them to aim at. In order to be able to
 communicate such concepts, Afterglow has a standard frame of reference
 for the light show. The entire show has an __origin__, the zero point

@@ -240,7 +240,7 @@ Or, if you need to be woken up a bit,
 
 > The [project documentation](https://github.com/brunchboy/afterglow/blob/master/doc/README.adoc#afterglow-documentation)
 > has more examples of
-> [building effects](https://github.com/brunchboy/afterglow/blob/master/doc/effect_functions.adoc#effect-examples),
+> [building effects](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#effect-examples),
 > and
 > [mapping parameters](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#midi-mapping-and-beat-sync)
 > to MIDI controllers. There is also low-level

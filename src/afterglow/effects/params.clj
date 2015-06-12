@@ -601,7 +601,7 @@
   excellent building blocks
   for [color](#var-build-color-param), [direction](#var-build-direction-param)
   and [aim](#var-build-aim-param) parameters, as shown in the [effect
-  examples](https://github.com/brunchboy/afterglow/blob/master/doc/effect_functions.adoc#spatial-effects).
+  examples](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#spatial-effects).
 
   If you do not specify an explicit value for `:frame-dynamic`, this
   spatial parameter will be frame dynamic if any values returned by

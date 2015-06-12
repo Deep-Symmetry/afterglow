@@ -15,10 +15,10 @@ page you want:
 ****
 
 [horizontal]
- <<effect_functions#effect-functions,Effects>>::
+ <<effects#effects,Effects>>::
 The building blocks of a dynamic light show, which have a
-<<effect_functions#lifecycle,lifecyle>> worth understanding, and a few
-<<effect_functions#effect-examples,examples>> to get you started.
+<<effects#lifecycle,lifecyle>> worth understanding, and a few
+<<effects#effect-examples,examples>> to get you started.
 
 <<parameters#dynamic-parameters,Dynamic Parameters>>:: Provide inputs
 to your effects which change over time and space, enabling much more
@@ -61,7 +61,7 @@ spectacular light shows using modern stage and effect lighting, and
 which are related in deep ways to the phrasing of music being played.
 (Its http://deepsymmetry.org[creator] is a DJ and producer of light
 and laser shows by avocation.) Currently, the
-<<effect_functions#effect-functions,lighting effects>> and
+<<effects#effects,lighting effects>> and
 <<fixture_definitions#fixture-definitions,fixture definitions>> are
 written and organized through Clojure code, so you will either need to
 learn Clojure or work with a Clojure programmer to create new ones,
@@ -106,12 +106,12 @@ need this capability.
 When you just create a show and call `(show/start!)`, Afterglow will
 send a bunch of zero values to the show’s universes. To make
 interesting things happen you add
-<<effect_functions#effect-functions,Effects>> to the show. The default
+<<effects#effects,Effects>> to the show. The default
 namespace you are put into when you launch the Afterglow project using
-`lein repl` has some <<effect_functions#effect-examples,example
+`lein repl` has some <<effects#effect-examples,example
 effects>> that can help get a feel for this concept. To get a full
 understanding of how to use (and create) effects, learn about
-the <<effect_functions#lifecycle,Effect Lifecycle>>.
+the <<effects#lifecycle,Effect Lifecycle>>.
 
 The effects need to know what lights they are supposed to control,
 what capabilities they have, and how they are connected (what
