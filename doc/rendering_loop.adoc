@@ -60,10 +60,11 @@ DMX data for each universe, so that if no effect tries to set a value
 for a particular channel on this frame, a zero value will be sent for
 it.
 
-. Then Afterglow loops over all [[Effect Functions]] that are
-currently active for the show, and asks if any are ready to end, as
-described in the [[Effect Function Lifecycle]] section. If any are, they
-are removed from the list of active effects.
+. Then Afterglow loops over all
+<<effect_functions#effect-functions,Effects that are currently active
+for the show, and asks if any are ready to end, as described in the
+<<effect_functions#lifecycle,Effect Lifecycle>> section. If any are,
+they are removed from the list of active effects.
 
 . Then it makes another loop over any functions that did not end, to
 see how they want to affect the lights. It does this by calling, in
@@ -86,7 +87,7 @@ http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-assign[assign]
 function is called, again passing in the show and the metronome
 snapshot, the target which is being assigned (a DMX channel in a show
 universe, or a fixture or fixture head, depending on the assigner type),
-as well as the assignment value the effect function wanted to establish
+as well as the assignment value the effect wanted to establish
 (a number, color, or head direction, again depending on the assigner
 type), and the previous assignment (if any) that an earlier effect
 wanted to set for this target. The assigner can decide what to do with

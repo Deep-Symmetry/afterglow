@@ -63,10 +63,10 @@
   (global-color-effect "slateblue" :include-color-wheels true))
 
 (defn global-dimmer-cue
-  "Return an effect function that sets all the dimmers in the sample
-  rig. Originally this had to be to a static value, but now that
-  dynamic parameters exist, it can vary in response to a MIDI mapped
-  show variable, an oscillator, or (once geometry is implemented), the
+  "Return an effect that sets all the dimmers in the sample rig.
+  Originally this had to be to a static value, but now that dynamic
+  parameters exist, it can vary in response to a MIDI mapped show
+  variable, an oscillator, or (once geometry is implemented), the
   location of the fixture."
   [level]
   (dimmer-cue level (show/all-fixtures)))

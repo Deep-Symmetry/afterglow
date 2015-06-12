@@ -461,17 +461,16 @@
      :ending (:ending base)}))
 
 (defn add-effect!
-  "Add an effect function or cue to the active set which are affecting
-  DMX outputs for [[show-context/*show*]]. If no priority is
-  specified, zero is used. This effect is added after all existing
-  effects with equal or lower priority, and replaces any existing
-  effect with the same key. Since the effects are executed in
-  order, ones which come later will win when setting DMX values for
-  the same channel if that channel uses latest-takes-priority mode;
-  for channels using highest-takes priority, the order does not
-  matter. Effect functions can also use more sophisticated strategies
-  for adjusting the results of earlier effects, but the later one
-  always gets to decide what to do.
+  "Add an effect to the active set which are affecting DMX outputs
+  for [[show-context/*show*]]. If no priority is specified, zero is
+  used. This effect is added after all existing effects with equal or
+  lower priority, and replaces any existing effect with the same key.
+  Since the effects are executed in order, ones which come later will
+  win when setting DMX values for the same channel if that channel
+  uses latest-takes-priority mode; for channels using highest-takes
+  priority, the order does not matter. Effects can also use more
+  sophisticated strategies for adjusting the results of earlier
+  effects, but the later one always gets to decide what to do.
 
   Returns the unique id assigned to this particular effect activation,
   so that user interfaces can detect whether it is still active."
@@ -490,9 +489,9 @@
   (vec (concat (subvec coll 0 pos) (subvec coll (inc pos)))))
 
 (defn find-effect
-  "Looks up the specified effect keyword in list of active effect
-  functions for [[*show*]]. Returns a map of the effect metadata, with
-  the effect itself under the key `:effect`."
+  "Looks up the specified effect keyword in list of active effects
+  for [[*show*]]. Returns a map of the effect metadata, with the
+  effect itself under the key `:effect`."
   {:doc/format :markdown}
   [key]
   {:pre [(some? *show*) (some? key)]}
@@ -502,12 +501,12 @@
            :ending ((:ending @(:active-effects *show*)) (keyword key)))))
 
 (defn end-effect!
-  "Shut down an effect function that is running in [[*show*]]. Unless
-  a `true` value is passed for :force, this is done by asking the
-  effect to end (and waiting until it reports completion); forcibly
-  stopping it simply immediately removes it from the show. If an id is
-  specified with :when-id, the effect will only be ended if the id of
-  the currently-running effect matches the one supplied."
+  "Shut down an effect that is running in [[*show*]]. Unless a `true`
+  value is passed for `:force`, this is done by asking the effect to
+  end (and waiting until it reports completion); forcibly stopping it
+  simply immediately removes it from the show. If an id is specified
+  with `:when-id`, the effect will only be ended if the id of the
+  currently-running effect matches the one supplied."
   {:doc/format :markdown}
   [key & {:keys [force when-id]}]
   {:pre [(some? *show*) (some? key)]}
@@ -523,9 +522,9 @@
         (swap! (:active-effects *show*) #(update-in % [:ending] conj key))))))
 
 (defn clear-effects!
-  "Remove all effect functions currently active in [[*show*]], leading
-  to a blackout state in all controlled universes (if the show is
-  running) until new effects are added."
+  "Remove all effects currently active in [[*show*]], leading to a
+  blackout state in all controlled universes (if the show is running)
+  until new effects are added."
   {:doc/format :markdown}
   []
   {:pre [(some? *show*)]}

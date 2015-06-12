@@ -172,7 +172,7 @@ specify and describe them.
 == Watching Metronomes
 
 To help get a feeling for exactly what your metronome is doing, there is
-an effect function that flashes one bright color on the down beat, and
+an effect that flashes one bright color on the down beat, and
 another less-bright color on the rest of the beats. Running this while
 you change the metronome BPM, sync, beats per bar, and such can help
 drive a more visceral understanding. To run it for the main show

@@ -87,8 +87,8 @@
   "Creates a cue for managing in a cue grid. `show-key` will be used
   as the effect keyword when the cue is triggered to add it to a show,
   ending any existing effect that was using that key. `effect` is a
-  function that will be called to obtain the effect function to be
-  started and monitored when this cue is triggered.
+  function that will be called to obtain the effect to be started and
+  monitored when this cue is triggered.
 
   If supplied, `:short-name` identifies a compact, user-oriented name
   to be displayed in the web interface or controller display (if it

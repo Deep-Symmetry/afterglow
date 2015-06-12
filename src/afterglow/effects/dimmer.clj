@@ -142,9 +142,9 @@
 
 ;; Deprecated now that you can pass an oscillated parameter to dimmer-cue
 (defn dimmer-oscillator
-  "*Deprecated* Returns an effect function which drives the dimmer
-  channels of the supplied fixtures according to a supplied oscillator
-  function and the show metronome. If :htp? is true, use
+  "*Deprecated* Returns an effect which drives the dimmer channels of
+  the supplied fixtures according to a supplied oscillator function
+  and the show metronome. If :htp? is true, use
   highest-takes-precedence (i.e. compare to the previous assignment,
   and let the higher value remain). Unless otherwise specified,
   via :min and :max, ranges from 0 to 255. Returns a fractional value,

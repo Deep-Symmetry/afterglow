@@ -53,11 +53,11 @@
 
 ;; Deprecated in favor of new composable dynamic parameter mechanism
 (defn hue-oscillator
-  "*Deprecated* Returns an effect function which sets the hue to all
-  heads of the fixtures supplied according to a supplied oscillator
-  function and the show metronome. Unless otherwise specified,
-  via :min and :max, the hue ranges from 0 to 359. Saturation defaults
-  to 100 and lightness to 50, but these can be set via :saturation
+  "*Deprecated* Returns an effect which sets the hue to all heads of
+  the fixtures supplied according to a supplied oscillator function
+  and the show metronome. Unless otherwise specified, via :min
+  and :max, the hue ranges from 0 to 359. Saturation defaults to 100
+  and lightness to 50, but these can be set via :saturation
   and :lightness."
   {:deprecated true}
   [osc fixtures & {:keys [min max saturation lightness] :or {min 0 max 359 saturation 100 lightness 50}}]

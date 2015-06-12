@@ -1,4 +1,4 @@
-= Effect Functions
+= Effects
 James Elliott <james@deepsymmetry.org>
 :icons: font
 :toc:
@@ -8,12 +8,12 @@ James Elliott <james@deepsymmetry.org>
 // if you need to support other environments and extensions.
 ifdef::env-github[:outfilesuffix: .adoc]
 
-Effect functions determine what a light or group of lights are doing
-at a given moment in time.
+Effects determine what a light or group of lights are doing at a given
+moment in time.
 
 == Overview
 
-When creating an effect function, you assign one or more
+When creating an effect, you assign one or more
 <<fixture_definitions#fixture-definitions,Fixtures>> to it, and it
 will generate control values for only those fixtures. The fixture
 channels affected by the effect depend on the kind of effect it is,
@@ -60,7 +60,7 @@ kinds of effects you create on your own.
 
 Effects in afterglow are divided by the aspect of a light that they
 control. Not all fixtures have features which allow them to
-participate in all kinds of effects. Afterglow effect functions will
+participate in all kinds of effects. Afterglow effects will
 simply ignore fixtures which are unable to reapond to them.
 
 === Dimmer Effects
@@ -319,7 +319,7 @@ named `:pan`:
 You will most likely be wanting to do this sort of thing for channel
 types which Afterglow does not yet have a more sophisticated
 understanding, and then perhaps you will end up creating a whole new
-category of effect functions as your experimentation progresses.
+category of effects as your experimentation progresses.
 
 === Complex Effects
 
@@ -341,10 +341,10 @@ how to write a cue that is driven by a metronome.
   :down-beat-color color1 :other-beat-color color2)
 ----
 
-Creates an effect function which flashes the heads of the supplied
-fixtures one color on the down beat and another color on the other beats
-of the show metronome. The two color keyword parameters are optional; if
-they are omitted, the down beat color is a lightened red, and the other
+Creates an effect which flashes the heads of the supplied fixtures one
+color on the down beat and another color on the other beats of the
+show metronome. The two color keyword parameters are optional; if they
+are omitted, the down beat color is a lightened red, and the other
 beat color is a darkened yellow.
 
 ==== Sparkle
@@ -352,13 +352,13 @@ beat color is a darkened yellow.
 To be documented shortly!
 
 [[lifecycle]]
-== The Effect Function Lifecycle
+== The Effect Lifecycle
 
-When an effect function is added to a show via `(show/add-effect!
-:keyword effect-fn priority)` it immediately replaces any other effect
-which had been previously added with the same keyword. The former
-effect does not get a chance to gracefully finish its effects, it is
-simply gone. The new effect is added to the
+When an effect is added to a show via `(show/add-effect! :keyword
+effect-fn priority)` it immediately replaces any other effect which
+had been previously added with the same keyword. The former effect
+does not get a chance to gracefully finish its effects, it is simply
+gone. The new effect is added to the
 <<rendering_loop#rendering-loop,rendering loop>> in a position
 determined by the priority value. If no priority argument is supplied,
 a priority of zero is defaulted in. The new effect is added after any
@@ -367,7 +367,7 @@ existing effects with higher priority. Since later effects get a
 chance to override earlier effects, this means that higher-priority
 effects, and effects added later, win.
 
-All effect functions implement the
+All effecta implement the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-IEffect[afterglow.effects/IEffect]
 protocol. As each frame of lighting control values is rendered, a
 snapshot is created from the show metronome, so every effect shares the

@@ -260,10 +260,10 @@ And darken the universe you were playing with.
 (show/blackout-show)
 ```
 
-> An alternate way of accomplishing those last two steps would have been to call
-> `(show/clear-effects!)` before `(show/stop!)` because once there were
-> were no active effect functions, all the DMX values would settle back at zero
-> and stay there until you stopped the show.
+> An alternate way of accomplishing those last two steps would have
+> been to call `(show/clear-effects!)` before `(show/stop!)` because
+> once there were were no active effects, all the DMX values would
+> settle back at zero and stay there until you stopped the show.
 
 ## Options
 
@@ -319,7 +319,7 @@ TODO: listing of options this app accepts once it can run as a standalone app.
       have animated feedback, e.g. dim version of current effect color if
       off, bright when on; flash it while ending. Update MIDI feedback
       around ten times per second?
-- [ ] Compound effects: Have effect functions pass a context map to
+- [ ] Compound effects: Have effects pass a context map to
       children with show, snapshot, own stuff? For example, so the
       children can be aware of build, duration, a shared palette, other
       things?

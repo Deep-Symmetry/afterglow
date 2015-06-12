@@ -43,7 +43,7 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
 ;;
 ;; We are going to have types of assigners: :channel, :head-color, :head-rotation. Each will be
 ;; associated with some kind of target. Channel: :u<universe-id>-c<channel-number> Head-related
-;; ones: :h<head-id>. We will run through the list of effect functions in priority order; each will
+;; ones: :h<head-id>. We will run through the list of effects in priority order; each will
 ;; spit out some number of assigners, which are a tuple:
 (defrecord Assigner [^clojure.lang.Keyword kind ^clojure.lang.Keyword target-id target ^clojure.lang.IFn f]
   IAssigner
