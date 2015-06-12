@@ -1,8 +1,8 @@
 # Afterglow
 
-A environment supporting
+An environment supporting
 [live coding](https://en.wikipedia.org/wiki/Live_coding) for the
-creation of dynamic light shows in [Clojure]{http://clojure.org),
+creation of dynamic light shows in [Clojure](http://clojure.org),
 leveraging the
 [Open Lighting Architecture](https://www.openlighting.org/ola/), and
 pieces of the [Overtone](http://overtone.github.io) toolkit. For
