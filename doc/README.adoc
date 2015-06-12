@@ -55,12 +55,13 @@ the lights in the show.
 
 == What is Afterglow?
 
-Afterglow is a functional lighting controller, written in
+Afterglow is a lighting controller designed to support
+https://en.wikipedia.org/wiki/Live_coding[live coding], written in
 http://clojure.org[Clojure], intended to enable people to produce
-spectacular light shows using modern stage and effect lighting, and
-which are related in deep ways to the phrasing of music being played.
-(Its http://deepsymmetry.org[creator] is a DJ and producer of light
-and laser shows by avocation.) Currently, the
+spectacular and highly customizable light shows using modern stage and
+effect lighting, and which are related in deep ways to the phrasing of
+music being played. (Its http://deepsymmetry.org[creator] is a DJ and
+producer of light and laser shows by avocation.) Currently, the
 <<effects#effects,lighting effects>> and
 <<fixture_definitions#fixture-definitions,fixture definitions>> are
 written and organized through Clojure code, so you will either need to
@@ -79,6 +80,13 @@ display, color-changing pressure-sensitive pads, and touch-sensitive
 encoders, but that is slightly separate from the main Afterglow
 project.
 
+Afterglow communicates with the lighting hardware using the
+https://www.openlighting.org/ola/[Open Lighting Architecture], so it
+supports a wide variety of communication methods and interfaces.
+Information about
+https://github.com/brunchboy/afterglow#installation[installing OLA] is
+included in the project
+https://github.com/brunchboy/afterglow[README].
 
 == How Afterglow Works
 
