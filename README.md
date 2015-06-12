@@ -1,13 +1,18 @@
 # Afterglow
 
-A Clojure approach to creating dynamic light shows, leveraging the
+A environment supporting
+[live coding](https://en.wikipedia.org/wiki/Live_coding) for the
+creation of dynamic light shows in [Clojure]{http://clojure.org),
+leveraging the
 [Open Lighting Architecture](https://www.openlighting.org/ola/), and
-pieces of the [Overtone](https://github.com/overtone/overtone)
-toolkit. For efficiency, Afterglow uses
+pieces of the [Overtone](http://overtone.github.io) toolkit. For
+efficiency, Afterglow uses
 [Protocol Buffers](https://developers.google.com/protocol-buffers/docs/overview)
 to communicate with the `olad` process running on the local machine
 via its
 [RPC Service](https://docs.openlighting.org/doc/latest/rpc_system.html).
+Beyond building on pieces of Overtone, the entire Afterglow project
+was [inspired](https://vimeo.com/22798433) by it.
 
 ## Documentation
 
@@ -384,7 +389,8 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   - [ ] Do a pass through all files with *warn-on-reflection* set to true, see what hinting can help. `(set! *warn-on-reflection* true)` at top of file.
 - [ ] Eventually create a leiningen task that can build a standalone jar with Afterglow and a custom show definition file and its supporting resources, so developers can easily deploy and share shows with non-Clojurists.
 - [ ] Once I release the first version, answer this StackOverflow [question](http://stackoverflow.com/questions/9582192/dmx-software-to-control-lights-with-programmable-interface).
-- [ ] Also post a followup to this [article](http://radar.oreilly.com/2015/05/creative-computing-with-clojure.html) and reach out to some of the artists themselves.
+  - [ ] Also submit a link to [TOPLAP](http://toplap.org/contact-page/).
+  - [ ] Also post a followup to this [article](http://radar.oreilly.com/2015/05/creative-computing-with-clojure.html) and reach out to some of the artists themselves.
 
 ### References
 
