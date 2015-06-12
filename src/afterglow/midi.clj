@@ -230,16 +230,17 @@
   collecting timestamps, and if we have enough, calculate a BPM value
   and update the associated metronome."
   [msg buffer metronome]
-  (case (:status msg)
-    :timing-clock (let [timestamp (now)]
-                    (swap! buffer conj timestamp)
-                    (when (> (count @buffer) 2)
-                      (let [passed (- timestamp (peek @buffer))
-                            intervals (dec (count @buffer))
-                            mean (/ passed intervals)]
-                        (metro-bpm metronome (double (/ 60000 (* mean 24)))))))
-    (:start :stop) (reset! buffer (ring-buffer max-clock-intervals)) ; Clock is being reset!
-    nil))
+  (dosync
+   (case (:status msg)
+     :timing-clock (let [timestamp (now)]
+                     (alter buffer conj timestamp)
+                     (when (> (count @buffer) 2)
+                       (let [passed (- timestamp (peek @buffer))
+                             intervals (dec (count @buffer))
+                             mean (/ passed intervals)]
+                         (metro-bpm metronome (double (/ 60000 (* mean 24)))))))
+            (:start :stop) (ref-set buffer (ring-buffer max-clock-intervals)) ; Clock is being reset!
+            nil)))
 
 (defn- add-synced-metronome
   [midi-clock-source metronome sync-fn]
@@ -258,13 +259,15 @@
     (sync-stop [this]
       (remove-synced-metronome midi-clock-source metronome))
     (sync-status [this]
-      (let [n (count @buffer)]
-        {:type :midi,
-         :status (cond
-                   (empty? @buffer)           "Inactive, no clock pulses have been received."
-                   (< n  max-clock-intervals) (str "Stalled? Clock pulse buffer has " n " of "
-                                                   max-clock-intervals " pulses in it.")
-                   :else                      "Running, clock pulse buffer is full.")})))
+      (dosync
+       (ensure buffer)
+       (let [n (count @buffer)]
+         {:type :midi,
+          :status (cond
+                    (empty? @buffer)           "Inactive, no clock pulses have been received."
+                    (< n  max-clock-intervals) (str "Stalled? Clock pulse buffer has " n " of "
+                                                    max-clock-intervals " pulses in it.")
+                    :else                      "Running, clock pulse buffer is full.")}))))
 
 (defn- describe-name-filter
   "Returns a description of a name filter used to narrow down MIDI
@@ -329,7 +332,7 @@
          0 (throw (IllegalArgumentException. (str "No MIDI clock sources " (describe-name-filter name-filter)
                                                   "were found.")))
          1 (fn [^afterglow.rhythm.Metronome metronome]
-             (let [sync-handler (ClockSync. metronome (first result) (atom (ring-buffer max-clock-intervals)))]
+             (let [sync-handler (ClockSync. metronome (first result) (ref (ring-buffer max-clock-intervals)))]
                (sync-start sync-handler)
                sync-handler))
 
