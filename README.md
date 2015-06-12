@@ -28,7 +28,7 @@ among the entire user community.
 
 ## Installation
 
-1. [Install OLA](https://www.openlighting.org/ola/getting-started/downloads/);
+1. [Install OLA](https://www.openlighting.org/ola/getting-started/downloads/).
    (On the Mac I recommend using [Homebrew](http://brew.sh) which lets you simply
    `brew install ola`). Once you launch the `olad` server you can
    interact with its embedded
