@@ -708,6 +708,12 @@
 
 ;; TODO: Provide general regex search of fixtures? Provide named fixture groups?
 
+(defn active-effect-keys
+  "Returns a set of the keywords assigned to all currently-active
+  effects."
+  [show]
+  (set (map :key (:meta @(:active-effects show)))))
+
 (defn profile-show
   "Gather statistics about the performance of generating and sending a
   frame of DMX data to the universes [[*show*]]."

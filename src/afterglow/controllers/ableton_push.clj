@@ -115,7 +115,7 @@
             (int (+ hue-section brightness-shift))))))
 
 (defonce ^{:doc "The color of buttons that are completely off."}
-  off-color (com.evocomputing.colors/create-color :black))
+  off-color (colors/create-color :black))
 
 (defn set-pad-velocity
   "Set the velocity of one of the 64 touch pads."
@@ -592,28 +592,43 @@
                          (if (< (rhythm/metro-beat-phase metronome) 0.15)
                            :bright :dim)))))
 
+(defn render-cue-grid
+  "Figure out how the cue grid pads should be illuminated, based on the
+  currently active cues."
+ [controller]
+   (doseq [x (range 8)
+           y (range 8)]
+    (let [[origin-x origin-y] @(:origin controller)
+          active-keys (show/active-effect-keys (:show controller))
+          [cue active] (show/find-cue-grid-active-effect (:show controller) (+ x origin-x) (+ y origin-y))
+          ending (and active (:ending active))
+                      color (when cue
+                              (colors/create-color
+                               :h (colors/hue (:color cue))
+                               :s (colors/saturation (:color cue))
+                               ;; Figure the brightness. Active, non-ending cues are full brightness;
+                               ;; when ending, they blink between middle and low. If they are not active,
+                               ;; they are at middle brightness unless there is another active effect with
+                               ;; the same keyword, in which case they are dim.
+                               :l (if active
+                                    (if ending
+                                      (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 10 20)
+                                      50)
+                                    (if (active-keys (:key cue)) 10 20))))
+                      velocity (if color (velocity-for-color color) 0)]
+      (aset (:next-grid-pads controller) (+ x (* y 8)) velocity))))
+
 (defn update-cue-grid
   "See if any of the cue grid button states have changed, and send any
   required updates."
   [controller]
   (doseq [x (range 8)
           y (range 8)]
-    (let [[origin-x origin-y] @(:origin controller)
-          [cue active] (show/find-cue-grid-active-effect (:show controller) (+ x origin-x) (+ y origin-y))
-          ending (and active (:ending active))
-                      color (when cue
-                              (com.evocomputing.colors/create-color
-                               :h (com.evocomputing.colors/hue (:color cue))
-                               :s (com.evocomputing.colors/saturation (:color cue))
-                               :l (if active
-                                    (if ending
-                                      (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 10 20)
-                                      50)
-                                    10)))
-                      velocity (if color (velocity-for-color color) 0)]
-        (when-not (= velocity (aget (:last-grid-pads controller) (+ x (* y 8))))
-          (set-pad-velocity controller x y velocity)
-          (aset (:last-grid-pads controller) (+ x (* y 8)) velocity)))))
+    (let [index (+ x (* y 8))
+          velocity (aget (:next-grid-pads controller) index)]
+      (when-not (= velocity (aget (:last-grid-pads controller) index))
+        (set-pad-velocity controller x y velocity)
+        (aset (:last-grid-pads controller) index velocity)))))
 
 (defn update-interface
   "Determine the desired current state of the interface, and send any
@@ -630,7 +645,6 @@
     ;;       about them.
 
     (update-metronome-section controller)
-    (update-cue-grid controller)
 
     ;; Reflect the shift button state
     (swap! (:next-text-buttons controller)
@@ -638,6 +652,8 @@
            (button-state (:shift control-buttons)
                          (if @(:shift-mode controller) :bright :dim)))
     
+    (render-cue-grid controller)
+
     ;; Activate the arrow buttons for directions in which scrolling is possible.
     (let [[origin-x origin-y] @(:origin controller)]
       (when (pos? origin-x)
@@ -670,6 +686,7 @@
       (when-not (adjust-interface overlay controller)
         (swap! (:overlays controller) dissoc k)))
 
+    (update-cue-grid controller)
     (update-text controller)
     (update-top-pads controller)
     (update-text-buttons controller)
@@ -688,7 +705,7 @@
     (cond
       (< @counter 8)
       (doseq [y (range 0 (inc @counter))]
-        (let [color (com.evocomputing.colors/create-color
+        (let [color (colors/create-color
                      :h 0 :s 0 :l (max 10 (- 50 (/ (* 50 (- @counter y)) 4))))]
           (set-pad-color controller 3 y color)
           (set-pad-color controller 4 y color)))
@@ -696,14 +713,14 @@
       (< @counter 12)
       (doseq [x (range 0 (- @counter 7))
               y (range 0 8)]
-        (let [color (com.evocomputing.colors/create-color
+        (let [color (colors/create-color
                      :h 340 :s 100 :l (if (= x (- @counter 8)) 75 50))]
           (set-pad-color controller (- 3 x) y color)
           (set-pad-color controller (+ 4 x) y color)))
 
       (< @counter 15)
       (doseq [y (range 0 8)]
-        (let [color (com.evocomputing.colors/create-color
+        (let [color (colors/create-color
                      :h (* 13 (- @counter 11)) :s 100 :l 50)]
           (set-pad-color controller (- @counter 7) y color)
           (set-pad-color controller (- 14 @counter) y color)))
@@ -718,12 +735,12 @@
       (= @counter 17)
       (doseq [x (range 0 8)]
         (set-second-pad-color controller x
-                                (com.evocomputing.colors/create-color :h 45 :s 100 :l 50))
+                                (colors/create-color :h 45 :s 100 :l 50))
         (set-top-pad-state controller x :bright :red))
 
       (< @counter 26)
       (doseq [x (range 0 8)]
-        (let [color (com.evocomputing.colors/create-color
+        (let [color (colors/create-color
                      :h (+ 60 (* 40 (- @counter 18))) :s 100 :l 50)]
           (set-pad-color controller x (- 25 @counter) color)))
       
@@ -1002,7 +1019,7 @@
         pad-y (quot base 8)
         cue-x (+ origin-x pad-x)
         cue-y (+ origin-y pad-y)]
-    [cue-x cue-y]))
+    [cue-x cue-y pad-x pad-y]))
 
 (defn- note-on-received
   "Process a note-on message which was not handled by an interface
@@ -1010,7 +1027,7 @@
   [controller message]
   (if (<= 36 (:note message) 99)
     ;; The cue grid was touched
-    (let [[cue-x cue-y] (note-to-cue-coordinates controller message)
+    (let [[cue-x cue-y pad-x pad-y] (note-to-cue-coordinates controller message)
           [cue active] (show/find-cue-grid-active-effect (:show controller) cue-x cue-y)]
       (when cue
         (with-show (:show controller)
@@ -1023,7 +1040,13 @@
                              (captured-notes [this] #{(:note message)})
                              ;; TODO: Capture aftertouch once cues can introduce variables
                              (adjust-interface [this controller]
-                               true)  ; The pad will track the effect state on its own
+                               (let [color (colors/create-color
+                                            :h (colors/hue (:color cue))
+                                            :s (colors/saturation (:color cue))
+                                            :l 75)]
+                                 (aset (:next-grid-pads controller) (+ pad-x (* pad-y 8))
+                                       (velocity-for-color color)))
+                               true)
                              (handle-control-change [this controller message]
                                false)
                              (handle-note-on [this controller message]
