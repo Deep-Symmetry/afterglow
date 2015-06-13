@@ -1161,6 +1161,7 @@
 
   (amidi/remove-global-handler! @(:midi-handler controller))
   
+  (Thread/sleep 35) ; Give the UI update thread time to shut down
   (clear-interface controller)
   ;; Leave the User button bright, in case the user has Live
   ;; running and wants to be able to see how to return to it.
