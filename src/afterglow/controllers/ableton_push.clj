@@ -1167,8 +1167,10 @@
   ;; running and wants to be able to see how to return to it.
   (set-button-state controller (:user-mode control-buttons) :bright)
 
-  ;; TODO: Clear out any interface stacks, MIDI listeners, etc.
+  ;; Cancel any UI overlays which were in effect
+  (reset! (:overlays controller) (sorted-map-by >))
 
+  ;; And finally, note that we are no longer active.
   (swap! active-bindings dissoc (:id controller)))
 
 (defn deactivate-all
