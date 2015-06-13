@@ -405,11 +405,28 @@
         :dj-link (rhythm/metro-bar-start metronome (rhythm/metro-bar metronome))
         (warn "Don't know how to tap tempo for sync type" (show/sync-status))))))
 
-(defn- bpm-adjusting-interface
-  "Add an arrow showing the BPM is being adjusted."
+(defn- metronome-sync-label
+  "Determine the sync type label to display under the BPM section."
   [controller]
-  ;; TODO: Unless it is being externally synced...
-  (aset (get (:next-display controller) 2) 16 (:up-arrow special-symbols)))
+  (with-show (:show controller)
+    (case (:type (show/sync-status))
+      :manual "Manual"
+      :midi "MIDI"
+      :dj-link "DJ Link"
+      "Unknown")))
+
+(defn- bpm-adjusting-interface
+  "Add an arrow showing the BPM is being adjusted, or point out that
+  it is being externally synced."
+  [controller]
+  (if (= (:type (show/sync-status)) :manual)
+    (aset (get (:next-display controller) 2) 16 (:up-arrow special-symbols))
+    (do
+      (aset (get (:next-display controller) 2) 9 (:down-arrow special-symbols))
+      (when-not (:showing (:metronome-mode controller))
+        ;; We need to display the sync mode in order to point at it
+        #_(write-display-cell controller 3 0
+                            (str "         " (metronome-sync-label controller)))))))
 
 (defn sign-velocity
   "Convert a midi velocity to its signed equivalent, to translate
@@ -420,11 +437,13 @@
      val))
 
 (defn- adjust-bpm-from-encoder
-  "Adjust the current BPM based on how the encoder was twisted."
+  "Adjust the current BPM based on how the encoder was twisted, unless
+  the metronome is synced."
   [controller message]
-  (let [delta (/ (sign-velocity (:velocity message)) 10)
-        bpm (rhythm/metro-bpm (:metronome (:show controller)))]
-    (rhythm/metro-bpm (:metronome (:show controller)) (+ bpm delta))))
+  (when (= (:type (show/sync-status)) :manual)
+    (let [delta (/ (sign-velocity (:velocity message)) 10)
+          bpm (rhythm/metro-bpm (:metronome (:show controller)))]
+      (rhythm/metro-bpm (:metronome (:show controller)) (+ bpm delta)))))
 
 (defn- encoder-above-bpm-touched
   "Add a user interface overlay to give feedback when turning the
@@ -491,16 +510,6 @@
                    (when (zero? (:note message))
                      ;; They released us, end the overlay.
                      :done)))))
-
-(defn- metronome-sync-label
-  "Determine the sync type label to display under the BPM section."
-  [controller]
-  (with-show (:show controller)
-    (case (:type (show/sync-status))
-      :manual "Manual"
-      :midi "MIDI"
-      :dj-link "DJ Link"
-      "Unknown")))
 
 (defn- enter-metronome-showing
   "Activate the persistent metronome display, with sync and reset pads
