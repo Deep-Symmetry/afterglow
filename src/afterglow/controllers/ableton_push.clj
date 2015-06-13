@@ -297,7 +297,7 @@
   {:pre [(<= 0 line 3)]}
   (midi/midi-sysex (:port-out controller) [240 71 127 21 (+ line 28) 0 0 247]))
 
-(defn- show-labels
+(defn show-labels
   "Illuminates all buttons with text labels, for development assistance."
   ([controller]
    (show-labels controller :bright :amber))
@@ -630,6 +630,14 @@
         (set-pad-velocity controller x y velocity)
         (aset (:last-grid-pads controller) index velocity)))))
 
+(defn update-effect-list
+  "Display information about the four most recently activated
+  effects."
+  [controller]
+  ;; TODO: Loop over the most recent four active cues, rendering information
+  ;;       about them.
+  )
+
 (defn update-interface
   "Determine the desired current state of the interface, and send any
   changes needed to get it to that state."
@@ -641,9 +649,7 @@
     (reset! (:next-text-buttons controller) {})
     (Arrays/fill (:next-top-pads controller) 0)
 
-    ;; TODO: Loop over the most recent four active cues, rendering information
-    ;;       about them.
-
+    (update-effect-list controller)
     (update-metronome-section controller)
 
     ;; Reflect the shift button state
@@ -677,6 +683,11 @@
     (swap! (:next-text-buttons controller)
            assoc (:user-mode control-buttons)
            (button-state (:user-mode control-buttons) :bright))
+
+    ;; Make the stop button visible, since we support it
+    (swap! (:next-text-buttons controller)
+           assoc (:stop control-buttons)
+           (button-state (:stop control-buttons) :dim))
 
     ;; Add any contributions from interface overlays, removing them
     ;; if they report being finished. Reverse the order so that the
@@ -949,6 +960,45 @@
                  (handle-note-off [this controller message]
                    false))))
 
+(defn- enter-stop-mode
+  "The user has asked to stop the show. Suspend its update task
+  and black it out until the stop button is pressed again."
+  [controller]
+
+  (with-show (:show controller)
+    (show/stop!)
+    (Thread/sleep (:refresh-interval (:show controller)))
+    (show/blackout-show))
+  (clear-interface controller)
+
+  (add-overlay controller
+               (reify IOverlay
+                 (captured-controls [this] #{29})
+                 (captured-notes [this] #{})
+                 (adjust-interface [this controller]
+                   (write-display-cell controller 0 1 "")
+                   (write-display-cell controller 0 2 "")
+                   (write-display-cell controller 1 1 "         *** Show")
+                   (write-display-cell controller 1 2 "Stop ***")
+                   (write-display-cell controller 2 1 "       Press Stop")
+                   (write-display-cell controller 2 2 "to resume.")
+                   (write-display-cell controller 3 1 "")
+                   (write-display-cell controller 3 2 "")
+                   (swap! (:next-text-buttons controller)
+                          assoc (:stop control-buttons)
+                          (button-state (:stop control-buttons) :bright))
+                   true)
+                 (handle-control-change [this controller message]
+                   (when (pos? (:velocity message))
+                     ;; End stop mode
+                     (with-show (:show controller)
+                       (show/start!))
+                     :done))
+                 (handle-note-on [this controller message]
+                   false)
+                 (handle-note-off [this controller message]
+                   false))))
+
 (defn add-button-held-feedback-overlay
   "Adds a simple overlay which keeps a control button bright as long
   as the user is holding it down."
@@ -970,6 +1020,12 @@
     9 ; Metronome button
     (when (pos? (:velocity message))
       (enter-metronome-showing controller))
+
+    ;; 28 ; Master button
+
+    29 ; Stop button
+    (when (pos? (:velocity message))
+      (enter-stop-mode controller))
 
     49 ; Shift button
     (swap! (:shift-mode controller) (fn [_] (pos? (:velocity message))))
