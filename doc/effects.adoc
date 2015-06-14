@@ -356,19 +356,19 @@ To be documented shortly!
 == The Effect Lifecycle
 
 When an effect is added to a show via `(show/add-effect! :keyword
-effect-fn priority)` it immediately replaces any other effect which
-had been previously added with the same keyword. The former effect
-does not get a chance to gracefully finish its effects, it is simply
-gone. The new effect is added to the
-<<rendering_loop#rendering-loop,rendering loop>> in a position
-determined by the priority value. If no priority argument is supplied,
-a priority of zero is defaulted in. The new effect is added after any
-other existing effects of the same (or lower) priority, but before any
-existing effects with higher priority. Since later effects get a
-chance to override earlier effects, this means that higher-priority
-effects, and effects added later, win.
+effect)` it immediately replaces any other effect which had been
+previously added with the same keyword. The former effect does not get
+a chance to gracefully finish its effects, it is simply gone. The new
+effect is added to the <<rendering_loop#rendering-loop,rendering
+loop>> in a position determined by the priority value, if any,
+specified after the optional `:priority` keyword argument. If no
+priority argument is supplied, a priority of zero is used. The new
+effect is added after any other existing effects of the same (or
+lower) priority, but before any existing effects with higher priority.
+Since later effects get a chance to override earlier effects, this
+means that higher-priority effects, and effects added later, win.
 
-All effecta implement the
+All effects implement the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-IEffect[afterglow.effects/IEffect]
 protocol. As each frame of lighting control values is rendered, a
 snapshot is created from the show metronome, so every effect shares the

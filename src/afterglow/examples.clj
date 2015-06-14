@@ -78,7 +78,7 @@
   (show/add-effect! :dimmers (global-dimmer-effect 255))
   (show/add-effect! :torrent-shutter
                     (afterglow.effects.channel/function-effect
-                     "Torrent Shutter Open" :shutter-open 50 (show/fixtures-named "torrent"))))
+                     "Torrents Open" :shutter-open 50 (show/fixtures-named "torrent"))))
 
 ;; Get a little fancier with a beat-driven fade
 ;; (show/add-effect! :dimmers (global-dimmer-effect
@@ -189,15 +189,18 @@
 
     (ct/set-cue! (:cue-grid *show*) 0 1
                  (ct/cue :color (fn [] (global-color-effect
-                                        (params/build-color-param :s 100 :l 50 :h hue-bar)))))
+                                        (params/build-color-param :s 100 :l 50 :h hue-bar)))
+                         :short-name "Rainbow/Bar"))
     (ct/set-cue! (:cue-grid *show*) 1 1
                  (ct/cue :color (fn [] (global-color-effect
                                         (params/build-color-param :s 100 :l 50 :h hue-gradient)
-                                        :include-color-wheels true))))
+                                        :include-color-wheels true))
+                         :short-name "Rainbow Grid"))
     (ct/set-cue! (:cue-grid *show*) 2 1
                  (ct/cue :color (fn [] (global-color-effect
                                         (params/build-color-param :s 100 :l 50 :h hue-gradient
-                                                                  :adjust-hue hue-bar)))))
+                                                                  :adjust-hue hue-bar)))
+                         :short-name "Rainbow Grid/Bar"))
     (ct/set-cue! (:cue-grid *show*) 0 7
                  (ct/cue :sparkle (fn [] (fun/sparkle (show/all-fixtures) :chance 0.05 :fade-time 50))
                          :held true

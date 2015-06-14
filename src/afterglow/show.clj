@@ -451,13 +451,15 @@
 
 (defn- add-effect-internal
   "Helper function which adds an effect with a specified key and priority to the priority
-  list structure maintained for the show, replacing any existing effect with the same key."
-  [fns key f priority id]
+  list structure maintained for the show, replacing any existing effect with the same key.
+  Tracks the effect instance id and cue-grid source as metadata."
+  [fns key f priority id from-cue]
   (let [base (remove-effect-internal fns key)
         index (find-insertion-index (:meta base) priority)]
     {:effects (vec-insert (:effects base) index f)
      :indices (insert-key (:indices base) key index)
-     :meta (vec-insert (:meta base) index {:key key :priority priority :id id :started (at-at/now)})
+     :meta (vec-insert (:meta base) index (merge {:key key :priority priority :id id :started (at-at/now)}
+                                                 (when from-cue {:cue from-cue})))
      :ending (:ending base)}))
 
 (defn add-effect!
@@ -473,15 +475,17 @@
   effects, but the later one always gets to decide what to do.
 
   Returns the unique id assigned to this particular effect activation,
-  so that user interfaces can detect whether it is still active."
+  so that user interfaces can detect whether it is still active.
+
+  The `:from-cue` keyword argument is used to keep track of effects
+  which were launched from the cue grid, to help provide feedback on
+  control surfaces and in the web interface."
   {:doc/format :markdown}
-  ([key f]
-   (add-effect! key f 0))
-  ([key f priority]
-   {:pre [(some? *show*) (some? key) (instance? Effect f) (integer? priority)]}
-   (let [id (swap! (:next-id *show*) inc)]
-     (swap! (:active-effects *show*) #(add-effect-internal % (keyword key) f priority id))
-     id)))
+  [key f & {:keys [priority from-cue] :or {priority 0}}]
+  {:pre [(some? *show*) (some? key) (instance? Effect f) (integer? priority)]}
+  (let [id (swap! (:next-id *show*) inc)]
+    (swap! (:active-effects *show*) #(add-effect-internal % (keyword key) f priority id from-cue))
+    id))
 
 (defn- vec-remove
   "Remove the element at the specified index from the collection."
@@ -544,7 +548,7 @@
   (when-let [cue (controllers/cue-at (:cue-grid *show*) x y)]
     (doseq [k (:end-keys cue)]
       (end-effect! k))
-    (let [id (add-effect! (:key cue) ((:effect cue)) (:priority cue))]
+    (let [id (add-effect! (:key cue) ((:effect cue)) :priority (:priority cue) :from-cue cue)]
       (controllers/activate-cue! (:cue-grid *show*) x y id)
       id)))
 

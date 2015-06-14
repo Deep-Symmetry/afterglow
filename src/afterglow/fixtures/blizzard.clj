@@ -49,7 +49,7 @@
 ```clojure
 (show/add-effect! :torrent-shutter
   (afterglow.effects.channel/function-effect
-    \"Torrent Shutter Open\" :shutter-open 50
+    \"Torrents Open\" :shutter-open 50
     (show/fixtures-named \"torrent\")))
 ```" 
   {:doc/format :markdown}

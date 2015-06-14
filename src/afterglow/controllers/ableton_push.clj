@@ -642,11 +642,25 @@
 
 (defn update-effect-list
   "Display information about the four most recently activated
-  effects."
+  effects (or three, if the metronome is taking up a slot)."
   [controller]
-  ;; TODO: Loop over the most recent four active cues, rendering information
-  ;;       about them.
-  )
+  (let [room (if (seq @(:metronome-mode controller)) 3 4)
+        fx-info @(:active-effects (:show controller))
+        fx (:effects fx-info)
+        fx-meta (:meta fx-info)]
+    (if (seq fx)
+      (loop [fx (drop (- (count fx) room) fx)
+             fx-meta (drop (- (count fx-meta) room) fx-meta)
+             x (- 4 room)]
+        (let [effect (:effect (first fx))
+              info (first fx-meta)
+              cue (:cue info)]
+          (write-display-cell controller 2 x (or (:name cue) (:name (first fx))))
+          (when (seq (rest fx))
+            (recur (rest fx) (rest fx-meta) (inc x)))))
+      (do
+        (write-display-cell controller 2 1 "       No effects")
+        (write-display-cell controller 2 2 "are active.")))))
 
 (defn update-interface
   "Determine the desired current state of the interface, and send any
