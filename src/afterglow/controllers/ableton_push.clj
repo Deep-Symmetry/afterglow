@@ -763,6 +763,8 @@
         (write-display-cell controller 2 1 "       No effects")
         (write-display-cell controller 2 2 "are active.")))))
 
+(declare enter-stop-mode)
+
 (defn- update-interface
   "Determine the desired current state of the interface, and send any
   changes needed to get it to that state."
@@ -776,6 +778,10 @@
 
     (update-effect-list controller)
     (update-metronome-section controller)
+
+    ;; If the show has stopped without us noticing, enter stop mode
+    (when (and (nil? @(:task (:show controller))) (not @(:stop-mode controller)))
+      (enter-stop-mode controller))
 
     ;; Reflect the shift button state
     (swap! (:next-text-buttons controller)
@@ -1091,11 +1097,11 @@
   and black it out until the stop button is pressed again."
   [controller]
 
+  (reset! (:stop-mode controller) true)
   (with-show (:show controller)
     (show/stop!)
     (Thread/sleep (:refresh-interval (:show controller)))
     (show/blackout-show))
-  (clear-interface controller)
 
   (add-overlay controller
                (reify IOverlay
@@ -1119,6 +1125,7 @@
                      ;; End stop mode
                      (with-show (:show controller)
                        (show/start!))
+                     (reset! (:stop-mode controller) false)
                      :done))
                  (handle-note-on [this controller message]
                    false)
@@ -1457,6 +1464,7 @@
          :next-grid-pads (int-array 64)
          :metronome-mode (atom {})
          :shift-mode (atom false)
+         :stop-mode (atom false)
          :midi-handler (atom nil)
          :tap-tempo-handler (amidi/create-tempo-tap-handler (:metronome show))
          :overlays (atom (sorted-map-by >))
