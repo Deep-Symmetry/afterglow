@@ -33,11 +33,11 @@ channel 0. I can map that to set a show variable `knob-1` to the values
   "Slider" 0 16 :knob-1 :max 360)
 ----
 
-Then I can create a global color cue based on that variable:
+Then I can create a global color effect based on that variable:
 
 [source,clojure]
 ----
-(show/add-effect! :color (global-color-cue
+(show/add-effect! :color (global-color-effect
   (params/build-color-param :s 100 :l 50 :h :knob-1)))
 ----
 

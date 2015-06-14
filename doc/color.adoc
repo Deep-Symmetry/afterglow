@@ -23,7 +23,7 @@ code,clojure
 (def hue-param (params/build-oscillated-param
   (oscillators/sine-beat) :min (hue (adjust-hue yellow -5))
                           :max (hue (adjust-hue yellow 5))))
-(show/add-effect! :color (global-color-cue
+(show/add-effect! :color (global-color-effect
   (params/build-color-param :s 100 :l 50 :h hue-param)))
 ----
 
