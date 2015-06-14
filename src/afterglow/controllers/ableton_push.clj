@@ -692,7 +692,9 @@
   variable map."
   [controller cue v]
   (with-show (:show controller)
-    (show/get-variable (find-cue-variable-keyword controller cue v))))
+    (when-let [k (find-cue-variable-keyword controller cue v)]
+      ;; Effect is still running to look up value
+      (show/get-variable k))))
 
 (defn- set-cue-variable-value
   "Sets the current value of a cue variable, which may be directly
@@ -700,18 +702,21 @@
   for the cue, whose name needs to be looked up in the effect's
   variable map."
   [controller cue v value]
-  (with-show (:show controller)
-    (show/set-variable! (find-cue-variable-keyword controller cue v) value)))
+  (when-let [k (find-cue-variable-keyword controller cue v)]
+    (with-show (:show controller)
+      (show/set-variable! k value))))
 
 (defn- fit-cue-variable-value
   "Truncates the current value of a cue variable to fit available
   space."
   [controller cue v len]
   (let [val (find-cue-variable-value controller cue v)
-        formatted (case (:type v)
-                    :integer (int val)
-                    ;; If we don't know what else to do, at least turn ratios to floats
-                    (float val))
+        formatted (if val
+                    (case (:type v)
+                      :integer (int val)
+                      ;; If we don't know what else to do, at least turn ratios to floats
+                      (float val))
+                    "<ended>")
         padding (apply str (repeat len " "))]
     (apply str (take len (str formatted padding)))))
 
@@ -1299,6 +1304,13 @@
         delta (* (sign-velocity (:velocity message)) resolution)]
     (set-cue-variable-value controller cue v (max low (min high (+ value delta))))))
 
+(defn- same-effect-active
+  "See if the specified effect is still active with the same id."
+  [controller cue id]
+  (with-show (:show controller)
+    (let [effect-found (show/find-effect (:key cue))]
+      (and effect-found (= (:id effect-found) id)))))
+
 (defn- display-encoder-touched
   "One of the eight encoders above the text display was touched."
   [controller note]
@@ -1306,7 +1318,7 @@
         fx-info @(:active-effects (:show controller))
         fx (:effects fx-info)
         fx-meta (:meta fx-info)
-        offset (- 4 room)
+        offset (if (<= (count fx) room) (- 4 room) 0)
         x (quot note 2)
         index (- x offset)
         var-index (rem note 2)]
@@ -1324,8 +1336,9 @@
                              (captured-controls [this] #{(control-for-top-encoder-note note)})
                              (captured-notes [this] #{note paired-note})
                              (adjust-interface [this controller]
-                               (draw-variable-gauge controller x 17 0 cue (first (:variables cue)))
-                               true)
+                               (when (same-effect-active controller cue (:id info))
+                                 (draw-variable-gauge controller x 17 0 cue (first (:variables cue)))
+                                 true))
                              (handle-control-change [this controller message]
                                (adjust-variable-value controller message cue (first (:variables cue))))
                              (handle-note-on [this controller message]
@@ -1339,9 +1352,10 @@
                            (captured-controls [this] #{(control-for-top-encoder-note note)})
                            (captured-notes [this] #{note})
                            (adjust-interface [this controller]
-                             (draw-variable-gauge controller x 8 (* 9 var-index)
-                                                  cue (get (:variables cue) var-index))
-                             true)
+                             (when (same-effect-active controller cue (:id info))
+                               (draw-variable-gauge controller x 8 (* 9 var-index)
+                                                    cue (get (:variables cue) var-index))
+                               true))
                            (handle-control-change [this controller message]
                              (adjust-variable-value controller message cue (get (:variables cue) var-index)))
                            (handle-note-on [this controller message]
