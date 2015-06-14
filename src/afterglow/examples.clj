@@ -172,7 +172,12 @@
 
 (defn use-push
   []
-  (let [pc (push/bind-to-show *show*)]
+  (let [pc (push/bind-to-show *show*)
+        hue-bar (params/build-oscillated-param ; Spread a rainbow across a bar of music
+                 (oscillators/sawtooth-bar) :max 360)
+        hue-gradient (params/build-spatial-param ; Spread a rainbow across the light grid
+                      (show/all-fixtures)
+                      (fn [head] (- (:x head) (:min-x @(:dimensions *show*)))) :end 360)]
     (global-color-cue "red" 0 0 :include-color-wheels true)
     (global-color-cue "orange" 1 0 :include-color-wheels true)
     (global-color-cue "yellow" 2 0 :include-color-wheels true)
@@ -181,6 +186,18 @@
     (global-color-cue "purple" 5 0 :include-color-wheels true)
     (global-color-cue "white" 6 0 :include-color-wheels true)
 
+
+    (ct/set-cue! (:cue-grid *show*) 0 1
+                 (ct/cue :color (fn [] (global-color-effect
+                                        (params/build-color-param :s 100 :l 50 :h hue-bar)))))
+    (ct/set-cue! (:cue-grid *show*) 1 1
+                 (ct/cue :color (fn [] (global-color-effect
+                                        (params/build-color-param :s 100 :l 50 :h hue-gradient)
+                                        :include-color-wheels true))))
+    (ct/set-cue! (:cue-grid *show*) 2 1
+                 (ct/cue :color (fn [] (global-color-effect
+                                        (params/build-color-param :s 100 :l 50 :h hue-gradient
+                                                                  :adjust-hue hue-bar)))))
     (ct/set-cue! (:cue-grid *show*) 0 7
                  (ct/cue :sparkle (fn [] (fun/sparkle (show/all-fixtures) :chance 0.05 :fade-time 50))
                          :held true
