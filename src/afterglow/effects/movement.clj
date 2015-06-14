@@ -21,7 +21,7 @@
   [fixtures]
   (filter #(pos? (count (filter #{:pan :tilt} (map :type (:channels %))))) (channels/expand-heads fixtures)))
 
-(defn direction-cue
+(defn direction-effect
   "Returns an effect which assigns a direction parameter to all
   moving heads of the fixtures supplied when invoked. The direction is
   a vector in the frame of reference of the show, so standing in the
@@ -48,7 +48,7 @@
       (apply-channel-value buffers c tilt))
     (swap! (:movement *show*) #(assoc-in % [:current direction-key] [pan tilt]))))
 
-(defn aim-cue
+(defn aim-effect
   "Returns an effect which assigns an aim parameter to all moving
   heads of the fixtures supplied when invoked. The direction is a
   point in the frame of reference of the show, so standing in the

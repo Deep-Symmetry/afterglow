@@ -157,7 +157,7 @@ should be pointing, pass the fixture or head to:
 
 [source,clojure]
 ----
-(afterglow.effects.movement/directon-cue name direction fixtures)
+(afterglow.effects.movement/direction-effect name direction fixtures)
 ----
 
 The `name` parameter is intended to help identify the purpose of the
@@ -188,7 +188,7 @@ what point it should be aiming at, pass the fixture or head to:
 
 [source,clojure]
 ----
-(afterglow.effects.movement/aim-cue name target-point fixtures)
+(afterglow.effects.movement/aim-effect name target-point fixtures)
 ----
 
 The `name` parameter is intended to help identify the purpose of the
