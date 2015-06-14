@@ -83,17 +83,20 @@
                           (assoc cue :active-id id)
                           (dissoc cue :active-id))))))
 
+;; TODO: Support variable resolution, type specification, shorter name, centered gauge
 (defn cue
   "Creates a cue for managing in a cue grid. `show-key` will be used
   as the effect keyword when the cue is triggered to add it to a show,
   ending any existing effect that was using that key. `effect` is a
   function that will be called to obtain the effect to be started and
-  monitored when this cue is triggered.
+  monitored when this cue is triggered. It will be passed a map
+  allowing lookup of any temporary variables introduced by the
+  cue (see the `:variables` parameter below).
 
   If supplied, `:short-name` identifies a compact, user-oriented name
   to be displayed in the web interface or controller display (if it
   has one) to help identify the cue, which can be helpful if the name
-  of the underlying [[Effect]] is ambiguous or overly long.
+  of the underlying effect is ambiguous or overly long.
 
  `:color` requests that the web interface and control surfaces draw
   the cue using the specified color rather than the default white to
@@ -104,11 +107,54 @@
   `:end-keys` introduces a sequence of keywords identifying other
   effects which should be ended whenever this one is started. This
   allows a set of grid cues to be set up as mutually exclusive, even
-  if they use different keywords within the show for other reasons."
+  if they use different keywords within the show for other reasons.
+
+  `:variables` introduces a list of variable bindings for the cue,
+  each of which is a map with the following keys:
+
+  * `:key` identifies the variable that is being bound by the cue (for easy
+    adjustment in the user interface while the cue is running). If it is
+    a string rather than a keyword, it identifies a temporary variable
+    which should exist only for the duration of the cue. The actual name
+    will be assigned when the cue is activated. In order for the effect
+    function to be able to access the correct variable, it is passed a
+    map whose keys are keywords made from the string `:key` values
+    supplied in the `:variables` list, and whose values are the actual
+    keyword of the corresponding temporary show variable created for the
+    cue.
+
+  * `:name`, if present, gives the name by which the variable should be
+    displayed in the user interface for adjusting it. If not specified,
+    the name of `:key` is used.
+
+  * `:short-name`, if present, is a shorter version of the name which
+    can be used in interfaces with limited space.
+
+  * `:min` specifies the minimum value to which the variable can be set.
+    If not supplied, zero is assumed.
+
+  * `:max` specifies the maximum value to which the variable can be set.
+    If not supplied, 100 is assumed.
+
+  * `:start` specifies the value to assign to the variable at the start
+    of the cue, if any.
+
+  * `:type` identifies the type of the variable, to help formatting
+    its display. Supported values are `:integer`, `:float`, possibly
+    others in the future. If omitted or unrecognized, `:float` is
+    assumed.
+
+  * `:pan` is supplied with a true value requests that the gauge
+    displayed when adjusting this variable's value be like a pan
+    gauge, showing deviation from a central value.
+
+  * `:resolution` specifies the smallest amount by which the variable
+    will be incremented or decremented when the user adjusts it. If not
+    specified, one hundredth of the range from `:min` to `:max` is used."
   {:doc/format :markdown}
-  [show-key effect & {:keys [short-name color end-keys priority held]
-                      :or {short-name (:name (effect)) color :white priority 0}}]
-  {:pre [(some? show-key) (ifn? effect) (= (class (effect)) Effect)]}
+  [show-key effect & {:keys [short-name color end-keys priority held variables]
+                      :or {short-name (:name (effect {})) color :white priority 0}}]
+  {:pre [(some? show-key) (ifn? effect) (= (class (effect {})) Effect)]}
   {:name (name short-name)
    :key (keyword show-key)
    :effect effect
@@ -116,4 +162,6 @@
    :held held
    :color (params/interpret-color (if (keyword? color) (name color) color))
    :end-keys (vec end-keys)
+   :variables (vec variables)
    })
+

@@ -165,7 +165,7 @@
 (defn global-color-cue
   "Create a cue-grid entry which establishes a global color effect."
   [color x y & {:keys [include-color-wheels held]}]
-  (let [cue (ct/cue :color (fn [] (global-color-effect color :include-color-wheels include-color-wheels))
+  (let [cue (ct/cue :color (fn [_] (global-color-effect color :include-color-wheels include-color-wheels))
                     :held held
                     :color (create-color color))]
     (ct/set-cue! (:cue-grid *show*) x y cue)))
@@ -188,21 +188,26 @@
 
 
     (ct/set-cue! (:cue-grid *show*) 0 1
-                 (ct/cue :color (fn [] (global-color-effect
-                                        (params/build-color-param :s 100 :l 50 :h hue-bar)))
+                 (ct/cue :color (fn [_] (global-color-effect
+                                         (params/build-color-param :s 100 :l 50 :h hue-bar)))
                          :short-name "Rainbow/Bar"))
     (ct/set-cue! (:cue-grid *show*) 1 1
-                 (ct/cue :color (fn [] (global-color-effect
-                                        (params/build-color-param :s 100 :l 50 :h hue-gradient)
-                                        :include-color-wheels true))
+                 (ct/cue :color (fn [_] (global-color-effect
+                                         (params/build-color-param :s 100 :l 50 :h hue-gradient)
+                                         :include-color-wheels true))
                          :short-name "Rainbow Grid"))
     (ct/set-cue! (:cue-grid *show*) 2 1
-                 (ct/cue :color (fn [] (global-color-effect
-                                        (params/build-color-param :s 100 :l 50 :h hue-gradient
-                                                                  :adjust-hue hue-bar)))
+                 (ct/cue :color (fn [_] (global-color-effect
+                                         (params/build-color-param :s 100 :l 50 :h hue-gradient
+                                                                   :adjust-hue hue-bar)))
                          :short-name "Rainbow Grid/Bar"))
+    ;; TODO: Write a macro to make it easier to bind cue variables.
     (ct/set-cue! (:cue-grid *show*) 0 7
-                 (ct/cue :sparkle (fn [] (fun/sparkle (show/all-fixtures) :chance 0.05 :fade-time 50))
+                 (ct/cue :sparkle (fn [var-map] (fun/sparkle (show/all-fixtures)
+                                                             :chance (:chance var-map 0.05)
+                                                             :fade-time (:fade-time var-map 50)))
                          :held true
-                         :priority 100))
+                         :priority 100
+                         :variables [{:key "chance" :min 0.01 :max 0.2 :start 0.05 :pan true}
+                                     {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
     pc))

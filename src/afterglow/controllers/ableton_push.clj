@@ -307,7 +307,7 @@
    (doseq [[_ button] control-buttons]
      (set-button-state controller button state color))))
 
-(defn update-text
+(defn- update-text
   "Sees if any text has changed since the last time the display
   was updated, and if so, sends the necessary MIDI SysEx values
   to update it on the Push."
@@ -319,7 +319,7 @@
       (System/arraycopy (get (:next-display controller) row) 0
                         (get (:last-display controller) row) 0 68))))
 
-(defn update-top-pads
+(defn- update-top-pads
   "Sees if any of the top row of pads have changed state since
   the interface was updated, and if so, sends the necessary MIDI
   control values to update them on the Push."
@@ -331,7 +331,7 @@
         (set-top-pad-state controller x next-state)
         (aset (:last-top-pads controller) x next-state)))))
 
-(defn update-text-buttons
+(defn- update-text-buttons
   "Sees if any labeled buttons have changed state since the last time
   the interface was updated, and if so, sends the necessary MIDI
   control values to update them on the Push."
@@ -349,7 +349,16 @@
   ;; And record the new state for next time
   (reset! (:last-text-buttons controller) @(:next-text-buttons controller)))
 
-(defn write-display-cell
+(defn write-display-text
+  "Update a batch of characters within the display to be rendered on
+  the next update."
+  [controller row start text]
+  {:pre [(<= 0 row 3) (<= 0 start 67)]}
+  (let [bytes (take (- 68 start) (map int text))]
+    (doseq [[i val] (map-indexed vector bytes)]
+      (aset (get (:next-display controller) row) (+ start i) (util/ubyte val)))))
+
+(defn- write-display-cell
   "Update a single text cell (of which there are four per row) in the
   display to be rendered on the next update."
   [controller row cell text]
@@ -628,7 +637,7 @@
                       velocity (if color (velocity-for-color color) 0)]
       (aset (:next-grid-pads controller) (+ x (* y 8)) velocity))))
 
-(defn update-cue-grid
+(defn- update-cue-grid
   "See if any of the cue grid button states have changed, and send any
   required updates."
   [controller]
@@ -640,11 +649,92 @@
         (set-pad-velocity controller x y velocity)
         (aset (:last-grid-pads controller) index velocity)))))
 
-(defn update-effect-list
+(defn- fit-cue-variable-name
+  "Picks the best version of a cue variable name to fit in the specified
+  number of characters, then truncates it if necessary."
+  [v len]
+  (let [longer (or (:name v) (name (:key v)))
+        shorter (or (:short-name v) longer)
+        padding (apply str (repeat len " "))]
+    (if (<= (count longer) len)
+      (apply str (take len (str longer padding)))
+      (apply str (take len (str shorter padding))))))
+
+(defn- cue-variable-names
+  "Determines the names of adjustable variables to display under an
+  active cue."
+  [cue]
+  (if (seq (:variables cue))
+    (if (= (count (:variables cue)) 1)
+      (fit-cue-variable-name (first (:variables cue)) 17)
+      (str (fit-cue-variable-name (first (:variables cue)) 8) " "
+           (fit-cue-variable-name (second (:variables cue)) 8)))
+    ""))
+
+(defn- find-cue-variable-keyword
+  "Finds the keyword by which a cue variable is accessed; it may be
+  directly bound to a show variable, or may be a temporary variable
+  introduced for the cue, whose name needs to be looked up in the
+  effect's variable map."
+  [controller cue v]
+  (with-show (:show controller)
+    (if (keyword? (:key v))
+      (:key v)
+      (let [effect (show/find-effect (:key cue))]
+        ((keyword (:key v)) (:variables effect))))))
+
+(defn- find-cue-variable-value
+  "Finds the current value of a cue variable, which may be directly
+  bound to a show variable, or may be a temporary variable introduced
+  for the cue, whose name needs to be looked up in the effect's
+  variable map."
+  [controller cue v]
+  (with-show (:show controller)
+    (show/get-variable (find-cue-variable-keyword controller cue v))))
+
+(defn- set-cue-variable-value
+  "Sets the current value of a cue variable, which may be directly
+  bound to a show variable, or may be a temporary variable introduced
+  for the cue, whose name needs to be looked up in the effect's
+  variable map."
+  [controller cue v value]
+  (with-show (:show controller)
+    (show/set-variable! (find-cue-variable-keyword controller cue v) value)))
+
+(defn- fit-cue-variable-value
+  "Truncates the current value of a cue variable to fit available
+  space."
+  [controller cue v len]
+  (let [val (find-cue-variable-value controller cue v)
+        formatted (case (:type v)
+                    :integer (int val)
+                    ;; If we don't know what else to do, at least turn ratios to floats
+                    (float val))
+        padding (apply str (repeat len " "))]
+    (apply str (take len (str formatted padding)))))
+
+(defn- cue-variable-values
+  "Formats the current values of the adjustable variables to display
+  under an active cue."
+  [controller cue]
+  (if (seq (:variables cue))
+    (if (= (count (:variables cue)) 1)
+      (fit-cue-variable-value controller cue (first (:variables cue)) 17)
+      (str (fit-cue-variable-value controller cue (first (:variables cue)) 8) " "
+           (fit-cue-variable-value controller cue (second (:variables cue)) 8)))
+    ""))
+
+(defn- room-for-effects
+  "Determine how many display cells are available for displaying
+  effect information."
+  [controller]
+  (if (seq @(:metronome-mode controller)) 3 4))
+
+(defn- update-effect-list
   "Display information about the four most recently activated
   effects (or three, if the metronome is taking up a slot)."
   [controller]
-  (let [room (if (seq @(:metronome-mode controller)) 3 4)
+  (let [room (room-for-effects controller)
         fx-info @(:active-effects (:show controller))
         fx (:effects fx-info)
         fx-meta (:meta fx-info)]
@@ -655,6 +745,8 @@
         (let [effect (:effect (first fx))
               info (first fx-meta)
               cue (:cue info)]
+          (write-display-cell controller 0 x (cue-variable-names cue))
+          (write-display-cell controller 1 x (cue-variable-values controller cue))
           (write-display-cell controller 2 x (or (:name cue) (:name (first fx))))
           (write-display-cell controller 3 x "End")
           (aset (:next-top-pads controller) (* 2 x) (top-pad-state :dim :red))
@@ -664,7 +756,7 @@
         (write-display-cell controller 2 1 "       No effects")
         (write-display-cell controller 2 2 "are active.")))))
 
-(defn update-interface
+(defn- update-interface
   "Determine the desired current state of the interface, and send any
   changes needed to get it to that state."
   [controller]
@@ -733,7 +825,7 @@
 
 (declare clear-interface)
 
-(defn welcome-frame
+(defn- welcome-frame
   "Render a frame of the welcome animation, or if it is done, start
   the main interface update thread, and terminate the task running the
   animation."
@@ -811,7 +903,7 @@
 
   (swap! counter inc))
 
-(defn welcome-animation
+(defn- welcome-animation
   "Provide a fun animation to make it clear the Push is online."
   [controller]
   (set-display-line controller 0 (concat (repeat 24 \space) (seq "Welcome toAfterglow")))
@@ -888,9 +980,9 @@
                  (captured-notes [this] #{8})
                  (adjust-interface [this controller]
                    (let [level (master-get-level (get-in controller [:show :grand-master]))]
-                     (write-display-cell controller 0 3
-                                         (str "GrandMaster " (format "%5.1f" level)))
-                     (write-display-cell controller 1 3 (make-gauge level)))
+                     (write-display-cell controller 0 3 (make-gauge level))
+                     (write-display-cell controller 1 3
+                                         (str "GrandMaster " (format "%5.1f" level))))
                    true)
                  (handle-control-change [this controller message]
                    ;; Adjust the BPM based on how the encoder was twisted
@@ -1038,12 +1130,12 @@
   "Process a tap on one of the pads which indicate the user wants to
   end the associated effect."
   [controller note]
-  (let [room (if (seq @(:metronome-mode controller)) 3 4)
+  (let [room (room-for-effects controller)
         fx-info @(:active-effects (:show controller))
         fx (:effects fx-info)
         fx-meta (:meta fx-info)
         offset (- 4 room)
-        x (/ (- note 20) 2)
+        x (quot (- note 20) 2)
         index (- x offset)]
     (when (and (seq fx) (< index (count fx)))
       (let [effect (get fx index)
@@ -1135,8 +1227,8 @@
 (defn- note-to-cue-coordinates
   "Translate the MIDI note associated with an incoming message to its
   coordinates in the show cue grid."
-  [controller message]
-  (let [base (- (:note message) 36)
+  [controller note]
+  (let [base (- note 36)
         [origin-x origin-y] @(:origin controller)
         pad-x (rem base 8)
         pad-y (quot base 8)
@@ -1144,55 +1236,142 @@
         cue-y (+ origin-y pad-y)]
     [cue-x cue-y pad-x pad-y]))
 
+(defn- cue-grid-pressed
+  "One of the pads in the 8x8 pressure-sensitve cue grid was pressed."
+  [controller note]
+  (let [[cue-x cue-y pad-x pad-y] (note-to-cue-coordinates controller note)
+              [cue active] (show/find-cue-grid-active-effect (:show controller) cue-x cue-y)]
+          (when cue
+            (with-show (:show controller)
+              (if active
+                (show/end-effect! (:key cue))
+                (let [id (show/add-effect-from-cue-grid! cue-x cue-y)]
+                  (add-overlay controller
+                               (reify IOverlay
+                                 (captured-controls [this] #{})
+                                 (captured-notes [this] #{note})
+                                 ;; TODO: Capture aftertouch once cues can introduce variables
+                                 (adjust-interface [this controller]
+                                   (let [color (colors/create-color
+                                                :h (colors/hue (:color cue))
+                                                :s (colors/saturation (:color cue))
+                                                :l 75)]
+                                     (aset (:next-grid-pads controller) (+ pad-x (* pad-y 8))
+                                           (velocity-for-color color)))
+                                   true)
+                                 (handle-control-change [this controller message]
+                                   false)
+                                 (handle-note-on [this controller message]
+                                   false)
+                                 (handle-note-off [this controller message]
+                                   (when (:held cue)
+                                     (with-show (:show controller)
+                                       (show/end-effect! (:key cue) :when-id id)))
+                                   :done)))))))))
+
+(defn- control-for-top-encoder-note
+  "Return the control number on which rotation of the encoder whose
+  touch events are sent on the specified note will be sent."
+  [note]
+  (+ note 71))
+
+(defn- draw-variable-gauge
+  "Display the value of a variable being adjusted in the effect list."
+  [controller cell width offset cue v]
+  (let [value (find-cue-variable-value controller cue v)
+        low (min value (:min v))  ; In case user set "out of bounds".
+        high (max value (:max v))
+        gauge (if (:pan v)
+                (make-pan-gauge value :lowest low :highest high :width width)
+                (make-gauge value :lowest low :highest high :width width))]
+    (write-display-text controller 0 (+ offset (* cell 17)) gauge)))
+
+(defn- adjust-variable-value
+  "Handle a control change from turning an encoder associated with a
+  variable being adjusted in the effect list."
+  [controller message cue v]
+  (let [value (find-cue-variable-value controller cue v)
+        low (min value (:min v))  ; In case user set "out of bounds".
+        high (max value (:max v))
+        resolution (or (:resolution v) (/ (- high low) 100))
+        delta (* (sign-velocity (:velocity message)) resolution)]
+    (set-cue-variable-value controller cue v (max low (min high (+ value delta))))))
+
+(defn- display-encoder-touched
+  "One of the eight encoders above the text display was touched."
+  [controller note]
+  (let [room (room-for-effects controller)
+        fx-info @(:active-effects (:show controller))
+        fx (:effects fx-info)
+        fx-meta (:meta fx-info)
+        offset (- 4 room)
+        x (quot note 2)
+        index (- x offset)
+        var-index (rem note 2)]
+    (when (and (seq fx) (< index (count fx)))
+      (let [effect (get fx index)
+            info (get fx-meta index)
+            cue (:cue info)]
+        (case (count (:variables cue))
+          0 nil ; No variables to adjust
+          1 (add-overlay controller
+                         ;; Just one variable, take full cell, using either encoder,
+                         ;; suppress the other one.
+                         (let [paired-note (odd? note (dec note) (inc note))]
+                           (reify IOverlay
+                             (captured-controls [this] #{(control-for-top-encoder-note note)})
+                             (captured-notes [this] #{note paired-note})
+                             (adjust-interface [this controller]
+                               (draw-variable-gauge controller x 17 0 cue (first (:variables cue)))
+                               true)
+                             (handle-control-change [this controller message]
+                               (adjust-variable-value controller message cue (first (:variables cue))))
+                             (handle-note-on [this controller message]
+                               false)
+                             (handle-note-off [this controller message]
+                               (when (= (:note message) note)
+                                 :done)))))
+          (add-overlay controller
+                       ;; More than one variable, adjust whichever's encoder was touched
+                       (reify IOverlay
+                           (captured-controls [this] #{(control-for-top-encoder-note note)})
+                           (captured-notes [this] #{note})
+                           (adjust-interface [this controller]
+                             (draw-variable-gauge controller x 8 (* 9 var-index)
+                                                  cue (get (:variables cue) var-index))
+                             true)
+                           (handle-control-change [this controller message]
+                             (adjust-variable-value controller message cue (get (:variables cue) var-index)))
+                           (handle-note-on [this controller message]
+                             false)
+                           (handle-note-off [this controller message]
+                             :done))))))))
+
 (defn- note-on-received
   "Process a note-on message which was not handled by an interface
   overlay."
   [controller message]
-  (if (<= 36 (:note message) 99)
-    ;; The cue grid was touched
-    (let [[cue-x cue-y pad-x pad-y] (note-to-cue-coordinates controller message)
-          [cue active] (show/find-cue-grid-active-effect (:show controller) cue-x cue-y)]
-      (when cue
-        (with-show (:show controller)
-          (if active
-            (show/end-effect! (:key cue))
-            (let [id (show/add-effect-from-cue-grid! cue-x cue-y)]
-              (add-overlay controller
-                           (reify IOverlay
-                             (captured-controls [this] #{})
-                             (captured-notes [this] #{(:note message)})
-                             ;; TODO: Capture aftertouch once cues can introduce variables
-                             (adjust-interface [this controller]
-                               (let [color (colors/create-color
-                                            :h (colors/hue (:color cue))
-                                            :s (colors/saturation (:color cue))
-                                            :l 75)]
-                                 (aset (:next-grid-pads controller) (+ pad-x (* pad-y 8))
-                                       (velocity-for-color color)))
-                               true)
-                             (handle-control-change [this controller message]
-                               false)
-                             (handle-note-on [this controller message]
-                               false)
-                             (handle-note-off [this controller message]
-                               (when (:held cue)
-                                 (with-show (:show controller)
-                                   (show/end-effect! (:key cue) :when-id id)))
-                               :done))))))))
+  (let [note (:note message)]
+    (cond (<= 0 note 7)
+          (display-encoder-touched controller note)
 
-    ;; Some other UI element was touched
-    (case (:note message)
-      8 ; Master encoder
-      (master-encoder-touched controller)
+          (<= 36 note 99)
+          (cue-grid-pressed controller note)
 
-      9 ; BPM encoder
-      (bpm-encoder-touched controller)
-
-      10 ; Beat encoder
-      (beat-encoder-touched controller)
-
-      ;; Something we don't care about
-      nil)))
+          :else
+          ;; Some other UI element was touched
+          (case note
+            8 ; Master encoder
+            (master-encoder-touched controller)
+            
+            9 ; BPM encoder
+            (bpm-encoder-touched controller)
+            
+            10 ; Beat encoder
+            (beat-encoder-touched controller)
+            
+            ;; Something we don't care about
+            nil))))
 
 (defn- note-off-received
   "Process a note-off message which was not handled by an interface

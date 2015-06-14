@@ -252,7 +252,9 @@
   {:doc/format :markdown}
   [key newval]
   {:pre [(some? *show*) (some? key)]}
-  (swap! (:variables *show*) #(assoc % (keyword key) newval)))
+  (swap! (:variables *show*) #(if (some? newval)
+                                (assoc % (keyword key) newval)
+                                (dissoc % (keyword key)))))
 
 (defn get-variable
   "Get the value of a variable associated with [[*show]]."
@@ -452,14 +454,15 @@
 (defn- add-effect-internal
   "Helper function which adds an effect with a specified key and priority to the priority
   list structure maintained for the show, replacing any existing effect with the same key.
-  Tracks the effect instance id and cue-grid source as metadata."
-  [fns key f priority id from-cue]
+  Tracks the effect instance id, cue-grid source, and variable binding map as metadata."
+  [fns key f priority id from-cue var-map]
   (let [base (remove-effect-internal fns key)
         index (find-insertion-index (:meta base) priority)]
     {:effects (vec-insert (:effects base) index f)
      :indices (insert-key (:indices base) key index)
      :meta (vec-insert (:meta base) index (merge {:key key :priority priority :id id :started (at-at/now)}
-                                                 (when from-cue {:cue from-cue})))
+                                                 (when from-cue {:cue from-cue})
+                                                 (when var-map {:variables var-map})))
      :ending (:ending base)}))
 
 (defn add-effect!
@@ -481,10 +484,10 @@
   which were launched from the cue grid, to help provide feedback on
   control surfaces and in the web interface."
   {:doc/format :markdown}
-  [key f & {:keys [priority from-cue] :or {priority 0}}]
+  [key f & {:keys [priority from-cue var-map] :or {priority 0}}]
   {:pre [(some? *show*) (some? key) (instance? Effect f) (integer? priority)]}
   (let [id (swap! (:next-id *show*) inc)]
-    (swap! (:active-effects *show*) #(add-effect-internal % (keyword key) f priority id from-cue))
+    (swap! (:active-effects *show*) #(add-effect-internal % (keyword key) f priority id from-cue var-map))
     id))
 
 (defn- vec-remove
@@ -538,6 +541,20 @@
                                     :priorities []
                                     :ending #{}}))
 
+;; TODO: Consider someday cleaning up these variables when the cue ends.
+(defn- introduce-cue-temp-variables
+  "Creates any temporary variable parameters specified by the cue
+  variable list, and returns the var-map that the effect creation
+  function will need to be able to find them in the show."
+  [cue x y]
+  (reduce (fn [result v]
+            (if (string? (:key v))
+              (let [temp-var (keyword (str "cue-temp-" x "-" y "-" (:key v)))]
+                (when (:start v)
+                  (set-variable! temp-var (:start v))
+                  (assoc result (keyword (:key v)) temp-var)))
+              result)) {} (:variables cue)))
+
 (defn add-effect-from-cue-grid!
   "Finds the cue, if any, at the specified grid coordinates, and
   activates its effect with the designated key and priority, after
@@ -548,7 +565,9 @@
   (when-let [cue (controllers/cue-at (:cue-grid *show*) x y)]
     (doseq [k (:end-keys cue)]
       (end-effect! k))
-    (let [id (add-effect! (:key cue) ((:effect cue)) :priority (:priority cue) :from-cue cue)]
+    (let [var-map (introduce-cue-temp-variables cue x y)
+          id (add-effect! (:key cue) ((:effect cue) var-map)
+                          :priority (:priority cue) :from-cue cue :var-map var-map)]
       (controllers/activate-cue! (:cue-grid *show*) x y id)
       id)))
 
