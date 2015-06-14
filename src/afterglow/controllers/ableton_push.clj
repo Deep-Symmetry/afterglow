@@ -423,9 +423,9 @@
     (aset (get (:next-display controller) 2) 16 (:up-arrow special-symbols))
     (do
       (aset (get (:next-display controller) 2) 9 (:down-arrow special-symbols))
-      (when-not (:showing (:metronome-mode controller))
+      (when-not (:showing @(:metronome-mode controller))
         ;; We need to display the sync mode in order to point at it
-        #_(write-display-cell controller 3 0
+        (write-display-cell controller 3 0
                             (str "         " (metronome-sync-label controller)))))))
 
 (defn sign-velocity
@@ -456,7 +456,8 @@
                  (captured-controls [this] #{72})
                  (captured-notes [this] #{1 9})
                  (adjust-interface [this controller]
-                   (bpm-adjusting-interface controller))
+                   (bpm-adjusting-interface controller)
+                   true)
                  (handle-control-change [this controller message]
                    (adjust-bpm-from-encoder controller message))
                  (handle-note-on [this controller message]
@@ -897,7 +898,8 @@
                  (captured-controls [this] #{15})
                  (captured-notes [this] #{9 1})
                  (adjust-interface [this controller]
-                   (bpm-adjusting-interface controller))
+                   (bpm-adjusting-interface controller)
+                   true)
                  (handle-control-change [this controller message]
                    (adjust-bpm-from-encoder controller message))
                  (handle-note-on [this controller message]
