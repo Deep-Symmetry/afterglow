@@ -172,16 +172,17 @@
 
 (defn use-push
   []
-  (defonce pc (push/bind-to-show *show*))
-  (global-color-cue "red" 0 0 :include-color-wheels true)
-  (global-color-cue "orange" 1 0 :include-color-wheels true)
-  (global-color-cue "yellow" 2 0 :include-color-wheels true)
-  (global-color-cue "green" 3 0 :include-color-wheels true)
-  (global-color-cue "blue" 4 0 :include-color-wheels true)
-  (global-color-cue "purple" 5 0 :include-color-wheels true)
-  (global-color-cue "white" 6 0 :include-color-wheels true)
+  (let [pc (push/bind-to-show *show*)]
+    (global-color-cue "red" 0 0 :include-color-wheels true)
+    (global-color-cue "orange" 1 0 :include-color-wheels true)
+    (global-color-cue "yellow" 2 0 :include-color-wheels true)
+    (global-color-cue "green" 3 0 :include-color-wheels true)
+    (global-color-cue "blue" 4 0 :include-color-wheels true)
+    (global-color-cue "purple" 5 0 :include-color-wheels true)
+    (global-color-cue "white" 6 0 :include-color-wheels true)
 
-  (ct/set-cue! (:cue-grid *show*) 0 7
-               (ct/cue :sparkle (fn [] (fun/sparkle (show/all-fixtures) :chance 0.05 :fade-time 50))
-                       :held true
-                       :priority 100)))
+    (ct/set-cue! (:cue-grid *show*) 0 7
+                 (ct/cue :sparkle (fn [] (fun/sparkle (show/all-fixtures) :chance 0.05 :fade-time 50))
+                         :held true
+                         :priority 100))
+    pc))
