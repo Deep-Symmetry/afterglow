@@ -384,21 +384,23 @@
 (defn make-pan-gauge
   "Create a graphical gauge with an indicator that moves along a line.
   The default range is from zero to a hundred, and the default size is
-  17 characters, or a full display cell. The centered display only
-  works for an odd width, so it is suppressed otherwise."
+  17 characters, or a full display cell."
   [value & {:keys [lowest highest width] :or {lowest 0 highest 100 width 17}}]
   (let [range (* 1.01 (- highest lowest))
         midpoint (/ (- highest lowest) 2)
         scaled (int (* 2 width (/ (- value lowest) range)))
         filler (repeat (:fader-empty special-symbols))
-        centered (and (odd? width)
-                      (< (math/abs (- (- value lowest) midpoint)) (/ range 200)))
-        marker ((if centered
-                   :fader-center
-                   (if (even? scaled) :fader-left :fader-right))
+        centered (< (math/abs (- (- value lowest) midpoint)) (/ range 200))
+        marker ((if (and centered (odd? width))
+                  :fader-center
+                  (if (even? scaled) :fader-left :fader-right))
                 special-symbols)
-        leader (take (int (/ scaled 2)) filler)]
-    (take width (concat leader [marker] filler))))
+        leader (if (and centered (even? width) (even? scaled))
+                 (concat (take (dec (int (/ scaled 2))) filler) [(:fader-right special-symbols)])
+                 (take (int (/ scaled 2)) filler))]
+    (take width (concat leader [marker]
+                        (when (and centered (even? width) (odd? scaled)) [(:fader-left special-symbols)])
+                        filler))))
 
 (defn- interpret-tempo-tap
   "React appropriately to a tempo tap, based on the sync mode of the

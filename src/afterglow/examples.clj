@@ -208,6 +208,6 @@
                                                              :fade-time (:fade-time var-map 50)))
                          :held true
                          :priority 100
-                         :variables [{:key "chance" :min 0.01 :max 0.2 :start 0.05 :pan true}
+                         :variables [{:key "chance" :min 0.01 :max 0.2 :start 0.05}
                                      {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
     pc))
