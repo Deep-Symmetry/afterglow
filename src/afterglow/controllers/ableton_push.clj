@@ -656,6 +656,8 @@
               info (first fx-meta)
               cue (:cue info)]
           (write-display-cell controller 2 x (or (:name cue) (:name (first fx))))
+          (write-display-cell controller 3 x "End")
+          (aset (:next-top-pads controller) (* 2 x) (top-pad-state :dim :red))
           (when (seq (rest fx))
             (recur (rest fx) (rest fx-meta) (inc x)))))
       (do
@@ -1032,6 +1034,42 @@
                                      #(swap! (:next-text-buttons controller)
                                              assoc button (button-state button :bright))))
 
+(defn- handle-end-effect
+  "Process a tap on one of the pads which indicate the user wants to
+  end the associated effect."
+  [controller note]
+  (let [room (if (seq @(:metronome-mode controller)) 3 4)
+        fx-info @(:active-effects (:show controller))
+        fx (:effects fx-info)
+        fx-meta (:meta fx-info)
+        offset (- 4 room)
+        x (/ (- note 20) 2)
+        index (- x offset)]
+    (when (and (seq fx) (< index (count fx)))
+      (let [effect (get fx index)
+            info (get fx-meta index)]
+        (with-show (:show controller)
+          (show/end-effect! (:key info) :when-id (:id info)))
+        (add-overlay controller
+                     (reify IOverlay
+                       (captured-controls [this] #{note (inc note)})
+                       (captured-notes [this] #{})
+                       (adjust-interface [this controller]
+                         (write-display-cell controller 0 x "")
+                         (write-display-cell controller 1 x "Ending:")
+                         (write-display-cell controller 2 x (or (:name (:cue info)) (:name effect)))
+                         (write-display-cell controller 3 x "")
+                         (aset (:next-top-pads controller) (* 2 x) (top-pad-state :bright :red))
+                         (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
+                         true)
+                       (handle-control-change [this controller message]
+                         (when (and (= (:note message) note) (zero? (:velocity message)))
+                           :done))
+                       (handle-note-on [this controller message]
+                         false)
+                       (handle-note-off [this controller message]
+                         false)))))))
+
 (defn- control-change-received
   "Process a control change message which was not handled by an
   interface overlay."
@@ -1046,6 +1084,10 @@
     (when (pos? (:velocity message))
       (enter-metronome-showing controller))
 
+    (20 22 24 26) ; Effect end pads
+    (when (pos? (:velocity message))
+      (handle-end-effect controller (:note message)))
+    
     ;; 28 ; Master button
 
     29 ; Stop button
