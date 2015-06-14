@@ -111,20 +111,21 @@ visible level.
 === Color Effects
 
 One of the most common basic effects you will be using to create the
-looks you want is the color cue. To create an effect that will assign a
-color to a fixture (which will assign colors to all of the fixture’s
-heads), or a single head of a fixture, pass the fixture or head to:
+looks you want is the color effect. To create an effect that will
+assign a color to a fixture (which will assign colors to all of the
+fixture’s heads), or a single head of a fixture, pass the fixture or
+head to:
 
 [source,clojure
 ----
-(afterglow.effects.color/color-cue name color fixtures)
+(afterglow.effects.color/color-effect name color fixtures)
 ----
 
 The `name` parameter is intended to help identify the purpose of the
 effect, and shows up when examining the created effect. Put something
 descriptive in there, or use a function like
-`afterglow.examples/global-color-effect` which builds the cue for you,
-figuring out a reasonable name in many cases.
+`afterglow.examples/global-color-effect` which builds the effect for
+you, figuring out a reasonable name in many cases.
 
 The `color` parameter is where you specify the color to assign to the
 lights. It can be a string, specifying the name of a color understood by

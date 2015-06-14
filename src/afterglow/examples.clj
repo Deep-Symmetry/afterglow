@@ -5,7 +5,7 @@
             [afterglow.transform :as tf]
             [afterglow.controllers :as ct]
             [afterglow.controllers.ableton-push :as push]
-            [afterglow.effects.color :refer [color-cue]]
+            [afterglow.effects.color :refer [color-effect]]
             [afterglow.effects.dimmer :refer [dimmer-cue master-set-level]]
             [afterglow.effects.fun :as fun]
             [afterglow.effects.oscillators :as oscillators]
@@ -54,7 +54,7 @@
                        [color "variable"]
                        :else
                        [(create-color color) color])]
-      (color-cue (str "Color: " desc) c (show/all-fixtures) :include-color-wheels include-color-wheels))
+      (color-effect (str "Color: " desc) c (show/all-fixtures) :include-color-wheels include-color-wheels))
     (catch Exception e
       (throw (Exception. (str "Can't figure out how to create color from " color) e)))))
 

@@ -41,7 +41,7 @@
    ))
 
 ;; TODO: Support different kinds of color mixing, blending, HTP...
-(defn color-cue
+(defn color-effect
   "Returns an effect which assigns a color parameter to all heads of
   the fixtures supplied when invoked."
   [name color fixtures & {:keys [include-color-wheels]}]
