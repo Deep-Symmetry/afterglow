@@ -6,7 +6,7 @@
             [afterglow.controllers :as ct]
             [afterglow.controllers.ableton-push :as push]
             [afterglow.effects.color :refer [color-effect]]
-            [afterglow.effects.dimmer :refer [dimmer-cue master-set-level]]
+            [afterglow.effects.dimmer :refer [dimmer-effect master-set-level]]
             [afterglow.effects.fun :as fun]
             [afterglow.effects.oscillators :as oscillators]
             [afterglow.effects.params :as params]
@@ -58,30 +58,30 @@
     (catch Exception e
       (throw (Exception. (str "Can't figure out how to create color from " color) e)))))
 
-(def blue-cue
+(def blue-effect
   "An effect which assigns all fixtures to a nice blue color."
   (global-color-effect "slateblue" :include-color-wheels true))
 
-(defn global-dimmer-cue
+(defn global-dimmer-effect
   "Return an effect that sets all the dimmers in the sample rig.
   Originally this had to be to a static value, but now that dynamic
   parameters exist, it can vary in response to a MIDI mapped show
   variable, an oscillator, or (once geometry is implemented), the
   location of the fixture."
   [level]
-  (dimmer-cue level (show/all-fixtures)))
+  (dimmer-effect level (show/all-fixtures)))
 
 (defn fiat-lux
   "Start simple with a cool blue color from all the lights."
   []
-  (show/add-effect! :color blue-cue)
-  (show/add-effect! :dimmers (global-dimmer-cue 255))
+  (show/add-effect! :color blue-effect)
+  (show/add-effect! :dimmers (global-dimmer-effect 255))
   (show/add-effect! :torrent-shutter
-                    (afterglow.effects.channel/function-cue
+                    (afterglow.effects.channel/function-effect
                      "Torrent Shutter Open" :shutter-open 50 (show/fixtures-named "torrent"))))
 
 ;; Get a little fancier with a beat-driven fade
-;; (show/add-effect! :dimmers (global-dimmer-cue
+;; (show/add-effect! :dimmers (global-dimmer-effect
 ;;   (params/build-oscillated-param (oscillators/sawtooth-beat))))
 
 ;; To actually start the effects above (although only the last one assigned to any
@@ -139,12 +139,12 @@
   (show/add-midi-control-to-var-mapping "Slider" 0 0 :tilt :max 255.99)
   (show/add-midi-control-to-var-mapping "Slider" 0 16 :pan :max 255.99)
   (show/add-effect!
-   :pan-torrent (afterglow.effects.channel/channel-cue
+   :pan-torrent (afterglow.effects.channel/channel-effect
                  "Pan Torrent"
                  (params/build-variable-param :pan)
                  (afterglow.channels/extract-channels (show/fixtures-named :torrent) #(= (:type %) :pan))))
   (show/add-effect!
-   :tilt-torrent (afterglow.effects.channel/channel-cue
+   :tilt-torrent (afterglow.effects.channel/channel-effect
                   "Tilt Torrent"
                   (params/build-variable-param :tilt)
                   (afterglow.channels/extract-channels (show/fixtures-named :torrent) #(= (:type %) :tilt)))))

@@ -70,7 +70,7 @@ an effect that will set the dimmer level of a fixture, use:
 
 [source,clojure]
 ----
-(afterglow.effects.dimmer/dimmer-cue level fixtures htp?)
+(afterglow.effects.dimmer/dimmer-effect level fixtures htp?)
 ----
 
 This effect finds all the dimmer channels associated with the specified
@@ -226,7 +226,7 @@ cause them all to strobe at their fastest speed:
 
 [source,clojure]
 ----
-(show/add-effect! :strobe (afterglow.effects.channel/function-cue
+(show/add-effect! :strobe (afterglow.effects.channel/function-effect
   "Fastest strobe" :strobe 100 (show/all-fixtures)))
 ----
 
@@ -245,7 +245,7 @@ adding the following effect:
 [source,clojure]
 ----
 (show/add-effect! :gobo-fixed
-  (afterglow.effects.channel/function-cue "Brownian motion?"
+  (afterglow.effects.channel/function-effect "Brownian motion?"
     :gobo-fixed-atom-shake 100 (show/fixtures-named "torrent")))
 ----
 
@@ -255,7 +255,7 @@ blurry; focus can be adjusted like so:
 [source,clojure]
 ----
 (show/add-effect! :focus
-  (afterglow.effects.channel/function-cue
+  (afterglow.effects.channel/function-effect
     "focus" :focus 95.5 (show/fixtures-named "torrent")))
 ----
 
@@ -299,7 +299,7 @@ do something like this:
 [source,clojure]
 ----
 (show/add-effect! :blade-dimmers
-  (afterglow.effects.channel/channel-cue "Blade dimmers" 55
+  (afterglow.effects.channel/channel-effect "Blade dimmers" 55
     (afterglow.channels/extract-channels
       (show/fixtures-named :blade) #(= (:type %) :dimmer))))
 ----
@@ -311,7 +311,7 @@ named `:pan`:
 [source,clojure]
 ----
 (show/add-effect! :pan-torrent
-  (afterglow.effects.channel/channel-cue
+  (afterglow.effects.channel/channel-effect
     "Pan Torrent" (params/build-variable-param :pan)
     (afterglow.channels/extract-channels
       (show/fixtures-named :torrent) #(= (:type %) :pan))))
@@ -338,7 +338,7 @@ how to write a cue that is driven by a metronome.
 
 [source,clojure]
 ----
-(afterglow.effects.color/metronome-cue fixtures
+(afterglow.effects.color/metronome-effect fixtures
   :down-beat-color color1 :other-beat-color color2)
 ----
 

@@ -200,7 +200,7 @@ Afterglow.
 = Checking your Sync
 
 An easy way to see how well your show is syncing the beat is to use the
-`metronome-cue`, which flashes a bright pink pulse on the down beat, and a
+`metronome-effect`, which flashes a bright pink pulse on the down beat, and a
 less bright yellow pulse on all other beats of the show metronome. To
 set that up:
 
@@ -208,7 +208,7 @@ set that up:
 ----
 (require 'afterglow.effects.fun)
 (show/add-effect! :color
-  (afterglow.effects.fun/metronome-cue (show/all-fixtures)))
+  (afterglow.effects.fun/metronome-effect (show/all-fixtures)))
 ----
 
 Then you can reset the metronome by hitting kbd:[Return] on the following
@@ -259,7 +259,7 @@ a static cue,
 
 [source,clojure]
 ----
-(show/add-effect! :color blue-cue)
+(show/add-effect! :color blue-effect)
 ----
 
 or even black things out:

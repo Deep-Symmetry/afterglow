@@ -34,7 +34,7 @@
   [channels f]
   (map #(build-channel-assigner % f) channels))
 
-(defn build-fixed-channel-cue
+(defn build-fixed-channel-effect
   "Returns an effect which simply assigns a fixed value to all the
   supplied channels. If htp? is true, applies
   highest-takes-precedence (i.e. compares the value to the previous
@@ -47,7 +47,7 @@
         assigners (build-raw-channel-assigners channels f)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
-(defn channel-cue
+(defn channel-effect
   "Returns an effect which assigns a dynamic value to all the supplied
   channels. If htp? is true, applies highest-takes-precedence (i.e.
   compares the value to the previous assignment for the channel, and
@@ -67,7 +67,7 @@
         assigners (build-raw-channel-assigners channels f)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
-(defn raw-channel-cue
+(defn raw-channel-effect
   "Returns an effect which simply calls a function to obtain the
   current level for all the supplied channels, runs forever, and ends
   immediately when requested."
@@ -126,7 +126,7 @@
   [function fixtures]
   (filter #(some #{(keyword function)} (keys (:function-map %))) (channels/expand-heads fixtures)))
 
-(defn function-cue
+(defn function-effect
   "Returns an effect which assigns a dynamic value to all channels of
   the supplied fixtures or heads which have a range that implements
   the specified function. (Functions are a way for fixtures to use the

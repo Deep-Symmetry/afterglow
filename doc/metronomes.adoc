@@ -182,7 +182,7 @@ metronome, you can do this:
 ----
 (require 'afterglow.effects.fun)
 (show/add-effect! :color
-  (afterglow.effects.fun/metronome-cue sample-show
+  (afterglow.effects.fun/metronome-effect sample-show
     (show/all-fixtures sample-show)))
 ----
 
@@ -194,7 +194,7 @@ this:
 (show/set-variable :my-metro (afterglow.rhythm/metronome 50))
 (require 'afterglow.effects.fun)
 (show/add-effect! :color
-  (afterglow.effects.fun/metronome-cue sample-show
+  (afterglow.effects.fun/metronome-effect sample-show
     (show/all-fixtures) :metronome :my-metro))
 ----
 

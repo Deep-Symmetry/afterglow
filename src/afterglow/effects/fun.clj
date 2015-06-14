@@ -23,7 +23,7 @@
   "The default color to flash on beats that are not down beats."
   (colors/darken (colors/create-color :yellow) 30))
 
-(defn metronome-cue
+(defn metronome-effect
   "Returns an effect which flashes the supplied fixtures to the beats
   of the show metronome, emphasizing the down beat, which is a great
   way to test and understand metronome synchronization. The color of
@@ -50,7 +50,7 @@
           other-beat-color (params/resolve-unless-frame-dynamic other-beat-color *show* snapshot)
           local-snapshot (atom nil)  ; Need to set up a snapshot at start of each run for all assigners
           f (fn [show snapshot target previous-assignment]
-              (pspy :metronome-cue
+              (pspy :metronome-effect
                     (let [raw-intensity (* 2 (- (/ 1 2) (snapshot-beat-phase @local-snapshot 1)))
                           intensity (if (neg? raw-intensity) 0 raw-intensity)
                           base-color (if (snapshot-down-beat? @local-snapshot)

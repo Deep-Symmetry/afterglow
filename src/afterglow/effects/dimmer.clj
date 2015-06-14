@@ -100,7 +100,7 @@
   (let [initial-level (atom (clamp-percent-float level))]
     (Master. initial-level parent)))
 
-(defn- build-parameterized-dimmer-cue
+(defn- build-parameterized-dimmer-effect
   "Returns an effect which assigns a dynamic value to all the supplied
   dimmers. If htp? is true, applies highest-takes-precedence (i.e.
   compares the value to the previous assignment for the channel, and
@@ -119,7 +119,7 @@
         assigners (chan-fx/build-raw-channel-assigners channels f)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
-(defn dimmer-cue
+(defn dimmer-effect
   "Returns an effect which assigns a dynamic value to all the supplied
   dimmers. If a `true` value is passed for `:htp?`, applies
   _highest-takes-precedence_ (i.e. compares the value to the previous
@@ -138,9 +138,10 @@
           level (params/resolve-unless-frame-dynamic level *show* snapshot)
           master (params/resolve-param master *show* snapshot)  ; Can resolve now; value is inherently dynamic.
           label (if (satisfies? params/IParam level) "<dynamic>" level)]
-      (build-parameterized-dimmer-cue (str "Dimmers=" label (when htp?) " (HTP)") level *show* dimmers htp? master))))
+      (build-parameterized-dimmer-effect (str "Dimmers=" label (when htp?) " (HTP)")
+                                         level *show* dimmers htp? master))))
 
-;; Deprecated now that you can pass an oscillated parameter to dimmer-cue
+;; Deprecated now that you can pass an oscillated parameter to dimmer-effect
 (defn dimmer-oscillator
   "*Deprecated* Returns an effect which drives the dimmer channels of
   the supplied fixtures according to a supplied oscillator function
@@ -165,4 +166,4 @@
             (fn [show snapshot target previous-assignment]
               (pspy :dimmer-oscillator
                     (+ min (* range (osc snapshot))))))]
-    (chan-fx/raw-channel-cue (str "Dimmer Oscillator " min "-" max (when htp? " (HTP)")) f chans)))
+    (chan-fx/raw-channel-effect (str "Dimmer Oscillator " min "-" max (when htp? " (HTP)")) f chans)))
