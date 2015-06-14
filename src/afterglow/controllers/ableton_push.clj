@@ -52,6 +52,12 @@
   lists has been received. Return a truthy value if the overlay has
   consumed the event, so it should not be processed further. If the
   special value :done is returned, it further indicates the overlay is
+  finished and should be removed.")
+  (handle-aftertouch [this controller message]
+    "Called when a MIDI aftertouch event matching the captured-notes
+  lists has been received. Return a truthy value if the overlay has
+  consumed the event, so it should not be processed further. If the
+  special value :done is returned, it further indicates the overlay is
   finished and should be removed."))))
 
 (defn add-overlay
@@ -77,7 +83,8 @@
                    (when (zero? (:velocity message))
                      :done))
                  (handle-note-off [this controller message])
-                 (handle-note-on [this controller message]))))
+                 (handle-note-on [this controller message])
+                 (handle-aftertouch [this controller message]))))
 
 (defn velocity-for-color
   "Given a target color, calculate the MIDI note velocity which will
@@ -477,7 +484,8 @@
                  (handle-note-off [this controller message]
                    (when (= (:note message) 1)
                      ;; They released us, end the overlay.
-                     :done)))))
+                     :done))
+                 (handle-aftertouch [this controller message]))))
 
 (defn- beat-adjusting-interface
   "Add an arrow showing the beat is being adjusted."
@@ -521,7 +529,8 @@
                  (handle-note-off [this controller message]
                    (when (zero? (:note message))
                      ;; They released us, end the overlay.
-                     :done)))))
+                     :done))
+                 (handle-aftertouch [this controller message]))))
 
 (defn- enter-metronome-showing
   "Activate the persistent metronome display, with sync and reset pads
@@ -577,7 +586,8 @@
                      1 (encoder-above-bpm-touched controller))
                    true)
                  (handle-note-off [this controller message]
-                   false))))
+                   false)
+                 (handle-aftertouch [this controller message]))))
 
 (defn- update-metronome-section
   "Updates the sections of the interface related to metronome
@@ -960,12 +970,13 @@
   not be given to anyone else."
   [controller message]
   (case (:command message)
-    (:note-on :note-off)
+    (:note-on :note-off :poly-pressure)
     (some (fn [[k overlay]]
             (when (contains? (captured-notes overlay) (:note message))
-              (let [result (if (= :note-on (:command message))
-                             (handle-note-on overlay controller message)
-                             (handle-note-off overlay controller message))]
+              (let [result (case (:command message)
+                             :note-on (handle-note-on overlay controller message)
+                             :note-off (handle-note-off overlay controller message)
+                             :poly-pressure (handle-aftertouch overlay controller message))]
                 (when (= result :done)
                   (swap! (:overlays controller) dissoc k))
                 result)))
@@ -1006,7 +1017,8 @@
                    false)
                  (handle-note-off [this controller message]
                    ;; Exit the overlay
-                   :done))))
+                   :done)
+                 (handle-aftertouch [this controller message]))))
 
 (defn- bpm-encoder-touched
   "Add a user interface overlay to give feedback when turning the BPM
@@ -1032,7 +1044,8 @@
                    (when (= (:note message) 9)
                      ;; They released us, end the overlay
                      (swap! (:metronome-mode controller) dissoc :adjusting-bpm)
-                     :done)))))
+                     :done))
+                 (handle-aftertouch [this controller message]))))
 
 (defn- beat-encoder-touched
   "Add a user interface overlay to give feedback when turning the beat
@@ -1057,7 +1070,8 @@
                    (when (= (:note message) 10)
                      ;; They released us, exit the overlay
                      (swap! (:metronome-mode controller) dissoc :adjusting-beat)
-                     :done)))))
+                     :done))
+                 (handle-aftertouch [this controller message]))))
 
 (defn- leave-user-mode
   "The user has asked to exit user mode, so suspend our display
@@ -1090,7 +1104,8 @@
                  (handle-note-on [this controller message]
                    false)
                  (handle-note-off [this controller message]
-                   false))))
+                   false)
+                 (handle-aftertouch [this controller message]))))
 
 (defn- enter-stop-mode
   "The user has asked to stop the show. Suspend its update task
@@ -1130,7 +1145,8 @@
                  (handle-note-on [this controller message]
                    false)
                  (handle-note-off [this controller message]
-                   false))))
+                   false)
+                 (handle-aftertouch [this controller message]))))
 
 (defn add-button-held-feedback-overlay
   "Adds a simple overlay which keeps a control button bright as long
@@ -1174,7 +1190,8 @@
                        (handle-note-on [this controller message]
                          false)
                        (handle-note-off [this controller message]
-                         false)))))))
+                         false)
+                       (handle-aftertouch [this controller message])))))))
 
 (defn- control-change-received
   "Process a control change message which was not handled by an
@@ -1264,7 +1281,6 @@
                                (reify IOverlay
                                  (captured-controls [this] #{})
                                  (captured-notes [this] #{note})
-                                 ;; TODO: Capture aftertouch once cues can introduce variables
                                  (adjust-interface [this controller]
                                    (let [color (colors/create-color
                                                 :h (colors/hue (:color cue))
@@ -1281,7 +1297,15 @@
                                    (when (:held cue)
                                      (with-show (:show controller)
                                        (show/end-effect! (:key cue) :when-id id)))
-                                   :done)))))))))
+                                   :done)
+                                 (handle-aftertouch [this controller message]
+                                   (doseq [v (:variables cue)]
+                                     (when (:aftertouch v)
+                                       (let [low (or (:aftertouch-min v) (:min v) 0)
+                                             high (or (:aftertouch-max v) (:max v) 100)
+                                             range (- high low)
+                                             value (+ low (* (/ (:velocity message) 127) range))]
+                                         (set-cue-variable-value controller cue v value)))))))))))))
 
 (defn- control-for-top-encoder-note
   "Return the control number on which rotation of the encoder whose
@@ -1307,7 +1331,7 @@
   (let [value (find-cue-variable-value controller cue v)
         low (min value (:min v))  ; In case user set "out of bounds".
         high (max value (:max v))
-        resolution (or (:resolution v) (/ (- high low) 100))
+        resolution (or (:resolution v) (/ (- high low) 200))
         delta (* (sign-velocity (:velocity message)) resolution)]
     (set-cue-variable-value controller cue v (max low (min high (+ value delta))))))
 
@@ -1352,7 +1376,8 @@
                                false)
                              (handle-note-off [this controller message]
                                (when (= (:note message) note)
-                                 :done)))))
+                                 :done))
+                             (handle-aftertouch [this controller message]))))
           (add-overlay controller
                        ;; More than one variable, adjust whichever's encoder was touched
                        (reify IOverlay
@@ -1368,7 +1393,8 @@
                            (handle-note-on [this controller message]
                              false)
                            (handle-note-off [this controller message]
-                             :done))))))))
+                             :done)
+                           (handle-aftertouch [this controller message]))))))))
 
 (defn- note-on-received
   "Process a note-on message which was not handled by an interface

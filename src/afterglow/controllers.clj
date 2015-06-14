@@ -149,8 +149,16 @@
     gauge, showing deviation from a central value.
 
   * `:resolution` specifies the smallest amount by which the variable
-    will be incremented or decremented when the user adjusts it. If not
-    specified, one hundredth of the range from `:min` to `:max` is used."
+    will be incremented or decremented when the user adjusts it for
+    controllers with continuous encoders. If not specified, 1/200
+    of the range from `:min` to `:max` is used.
+
+  * `:aftertouch` accompanied by a true value enables the variable to
+  be adjusted by aftertouch values on pressure-sensitive controllers.
+
+  * `:aftertouch-min` and `:aftertouch-max` specify the range into
+    which MIDI aftertouch values will be mapped, if they are present.
+    Otherwise the standard `:min` and `:max` values will be used."
   {:doc/format :markdown}
   [show-key effect & {:keys [short-name color end-keys priority held variables]
                       :or {short-name (:name (effect {})) color :white priority 0}}]
