@@ -1373,7 +1373,7 @@
                              (handle-control-change [this controller message]
                                (adjust-variable-value controller message cue (first (:variables cue))))
                              (handle-note-on [this controller message]
-                               false)
+                               true)
                              (handle-note-off [this controller message]
                                (when (= (:note message) note)
                                  :done))
