@@ -9,6 +9,7 @@
             [afterglow.effects.cues :as cues]
             [afterglow.effects.dimmer :refer [dimmer-effect master-set-level]]
             [afterglow.effects.fun :as fun]
+            [afterglow.effects.movement :as move]
             [afterglow.effects.oscillators :as oscillators]
             [afterglow.effects.params :as params]
             [afterglow.fixtures.blizzard :as blizzard]
@@ -152,16 +153,16 @@
 
 (defn add-xyz-controls
   []
-  (show/add-midi-control-to-var-mapping "Slider" 0 4 :x)
-  (show/add-midi-control-to-var-mapping "Slider" 0 5 :y)
-  (show/add-midi-control-to-var-mapping "Slider" 0 6 :z)
-  #_(show/add-effect! :position
-                    (afterglow.effects.movement/direction-effect
-                     "Pointer" (params/build-direction-param :x :x :y :y :z :z) (show/all-fixtures)))
+  #_(show/add-midi-control-to-var-mapping "Slider" 0 4 :x)
+  #_(show/add-midi-control-to-var-mapping "Slider" 0 5 :y)
+  #_(show/add-midi-control-to-var-mapping "Slider" 0 6 :z)
   (show/add-effect! :position
-                    (afterglow.effects.movement/aim-effect
+                    (move/direction-effect
+                     "Pointer" (params/build-direction-param :x :x :y :y :z :z) (show/all-fixtures)))
+  #_(show/add-effect! :position
+                    (move/aim-effect
                      "Aimer" (params/build-aim-param :x :x :y :y :z :z) (show/all-fixtures)))
-  (show/set-variable! :y  2.6416))  ; Approximate height of ceiling
+  #_(show/set-variable! :y  2.6416))  ; Approximate height of ceiling
 
 (defn global-color-cue
   "Create a cue-grid entry which establishes a global color effect."
@@ -212,10 +213,24 @@
                          :variables [{:key "chance" :min 0.0 :max 0.4 :start 0.05 :aftertouch true}
                                      {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
 
-    (ct/set-cue! (:cue-grid *show*) 3 3
+    (ct/set-cue! (:cue-grid *show*) 3 9
                  (cues/function-cue :t1-gobo-fixed :gobo-fixed-4-rings (show/fixtures-named "torrent-1")))
+    (ct/set-cue! (:cue-grid *show*) 2 9
+                 (cues/function-cue :t1-prism :prism-clockwise (show/fixtures-named "torrent-1")))
 
-    (ct/set-cue! (:cue-grid *show*) 0 3
-                (cues/function-cue :t1-focus :focus (show/fixtures-named "torrent-1")))
+    ;; TODO: Write a function to create direction cues, like function cues? Unless macro solves.
+    (ct/set-cue! (:cue-grid *show*) 0 8
+                 (cues/cue :torrent-dir (fn [var-map]
+                                          (move/direction-effect
+                                           "Direction"
+                                           (params/build-direction-param :x (:x var-map 0.0)
+                                                                         :y (:y var-map 0.0)
+                                                                         :z (:z var-map 1.0))
+                                           (show/all-fixtures)))
+                           :variables [{:key "x" :min -5.0 :max 5.0 :start 0.0 :centered true}
+                                       {:key "y" :min -5.0 :max 5.0 :start 0.0 :centered true}
+                                       {:key "z" :min -5.0 :max 5.0 :start 1.0 :centered true}]))
+    (ct/set-cue! (:cue-grid *show*) 1 8
+                 (cues/function-cue :t1-focus :focus (show/fixtures-named "torrent-1")))
     pc))
 

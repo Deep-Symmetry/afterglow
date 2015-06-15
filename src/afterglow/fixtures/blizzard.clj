@@ -100,10 +100,12 @@
               (chan/focus 11)
               (chan/functions :prism 12 0 "prism-out" 6 "prism-in"
                               128 {:type :prism-clockwise
-                                   :label "Prism Clockwise (fast->slow)"}
+                                   :label "Prism Clockwise (fast->slow)"
+                                   :short-label "CW->slow"}
                               190 "prism-stop"
                               194 {:type :prism-counterclockwise
-                                   :label "Prism Counterclockwsie (slow->fast)"})
+                                   :label "Prism Counterclockwsie (slow->fast)"
+                                   :short-label "CCW>fast"})
               (chan/functions :pan-tilt-speed 13 0 "pan-tilt-speed-normal"
                               1 :pan-tilt-speed-slow
                               226 "blackout-when-head-moving"
