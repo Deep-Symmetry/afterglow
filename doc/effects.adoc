@@ -116,7 +116,7 @@ assign a color to a fixture (which will assign colors to all of the
 fixture’s heads), or a single head of a fixture, pass the fixture or
 head to:
 
-[source,clojure
+[source,clojure]
 ----
 (afterglow.effects.color/color-effect name color fixtures)
 ----
