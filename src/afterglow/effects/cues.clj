@@ -77,14 +77,17 @@
     others in the future. If omitted or unrecognized, `:float` is
     assumed.
 
-  * `:pan` is supplied with a true value requests that the gauge
+  * `:centered` supplied with a true value requests that the gauge
     displayed when adjusting this variable's value be like a pan
     gauge, showing deviation from a central value.
 
   * `:resolution` specifies the smallest amount by which the variable
-    will be incremented or decremented when the user adjusts it for
-    controllers with continuous encoders. If not specified, 1/200
-    of the range from `:min` to `:max` is used.
+     will be incremented or decremented when the user adjusts it for
+     controllers with continuous encoders. If not specified the
+     resolution is up to the controller, but 1/256 of the range from
+     `:min` to `:max` is a recommended default implementation, since that
+     allows access to the full DMX parameter space for channel-oriented
+     values.
 
   * `:aftertouch` accompanied by a true value enables the variable to
   be adjusted by aftertouch values on pressure-sensitive controllers.
@@ -182,18 +185,20 @@
         variable? (some #(= (:range %) :variable) specs)]
     (if variable?
       ;; Introduce a variable for conveniently adjusting the function level
-      (cue show-key (fn [var-map] (chan/function-effect effect-name function (params/bind-keyword-param
-                                                                              (:level var-map level) Number level)
-                                                        fixtures :htp? htp?))
-                :short-name short-name
-                :color color
-                :end-keys end-keys
-                :priority priority
-                :held held
-                :variables [(merge {:key "level" :min 0 :max 100 :start level}
-                                   (when aftertouch {:aftertouch aftertouch})
-                                   (when aftertouch-min {:aftertouch-max aftertouch-min})
-                                   (when aftertouch-max {:aftertouch-max aftertouch-max}))])
+      (let [label (or (:label (first specs)) (:short-label (first specs)) "Level")
+            short-label (or (:short-label (first specs)) (:label (first specs)) "Level")]
+        (cue show-key (fn [var-map] (chan/function-effect effect-name function (params/bind-keyword-param
+                                                                                (:level var-map level) Number level)
+                                                          fixtures :htp? htp?))
+             :short-name short-name
+             :color color
+             :end-keys end-keys
+             :priority priority
+             :held held
+             :variables [(merge {:key "level" :min 0 :max 100 :start level :name label :short-name short-label}
+                                (when aftertouch {:aftertouch aftertouch})
+                                (when aftertouch-min {:aftertouch-max aftertouch-min})
+                                (when aftertouch-max {:aftertouch-max aftertouch-max}))]))
       ;; It's a fixed function, no variable required
       (cue show-key (fn [_] (chan/function-effect effect-name function (params/bind-keyword-param level Number 0)
                                                   fixtures :htp? htp?))
