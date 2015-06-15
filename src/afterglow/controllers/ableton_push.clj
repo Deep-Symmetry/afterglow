@@ -1162,8 +1162,8 @@
   [controller note]
   (let [room (room-for-effects controller)
         fx-info @(:active-effects (:show controller))
-        fx (:effects fx-info)
-        fx-meta (:meta fx-info)
+        fx (vec (drop (- (count (:effects fx-info)) room) (:effects fx-info)))
+        fx-meta (vec (drop (- (count (:meta fx-info)) room) (:meta fx-info)))
         offset (- 4 room)
         x (quot (- note 20) 2)
         index (- x offset)]
@@ -1347,9 +1347,9 @@
   [controller note]
   (let [room (room-for-effects controller)
         fx-info @(:active-effects (:show controller))
-        fx (:effects fx-info)
-        fx-meta (:meta fx-info)
-        offset (if (<= (count fx) room) (- 4 room) 0)
+        fx (vec (drop (- (count (:effects fx-info)) room) (:effects fx-info)))
+        fx-meta (vec (drop (- (count (:meta fx-info)) room) (:meta fx-info)))
+        offset (- 4 room)
         x (quot note 2)
         index (- x offset)
         var-index (rem note 2)]
@@ -1362,7 +1362,7 @@
           1 (add-overlay controller
                          ;; Just one variable, take full cell, using either encoder,
                          ;; suppress the other one.
-                         (let [paired-note (odd? note (dec note) (inc note))]
+                         (let [paired-note (if (odd? note) (dec note) (inc note))]
                            (reify IOverlay
                              (captured-controls [this] #{(control-for-top-encoder-note note)})
                              (captured-notes [this] #{note paired-note})
