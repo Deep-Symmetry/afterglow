@@ -397,7 +397,7 @@
         midpoint (/ (- highest lowest) 2)
         scaled (int (* 2 width (/ (- value lowest) range)))
         filler (repeat (:fader-empty special-symbols))
-        centered (< (math/abs (- (- value lowest) midpoint)) (/ range 200))
+        centered (< (math/abs (- (- value lowest) midpoint)) (/ range 256))
         marker ((if (and centered (odd? width))
                   :fader-center
                   (if (even? scaled) :fader-left :fader-right))
@@ -1319,7 +1319,7 @@
   (let [value (find-cue-variable-value controller cue v)
         low (min value (:min v))  ; In case user set "out of bounds".
         high (max value (:max v))
-        gauge (if (:pan v)
+        gauge (if (:centered v)
                 (make-pan-gauge value :lowest low :highest high :width width)
                 (make-gauge value :lowest low :highest high :width width))]
     (write-display-text controller 0 (+ offset (* cell 17)) gauge)))
