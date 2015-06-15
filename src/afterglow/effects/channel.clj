@@ -2,6 +2,7 @@
   "Effects pipeline functions for working with individual DMX channels."
   {:author "James Elliott"}
   (:require [afterglow.channels :as channels]
+            [afterglow.controllers :as ct]
             [afterglow.effects :refer [always-active end-immediately]]
             [afterglow.effects.params :as params]
             [afterglow.rhythm :as rhythm]
