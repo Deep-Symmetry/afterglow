@@ -223,13 +223,12 @@
                  (cues/cue :torrent-dir (fn [var-map]
                                           (move/direction-effect
                                            "Direction"
-                                           (params/build-direction-param :x (:x var-map 0.0)
-                                                                         :y (:y var-map 0.0)
-                                                                         :z (:z var-map 1.0))
+                                           (params/build-pan-tilt-param :pan (:pan var-map 0.0)
+                                                                         :tilt (:tilt var-map 0.0)
+                                                                         :degrees true)
                                            (show/all-fixtures)))
-                           :variables [{:key "x" :min -5.0 :max 5.0 :start 0.0 :centered true}
-                                       {:key "y" :min -5.0 :max 5.0 :start 0.0 :centered true}
-                                       {:key "z" :min -5.0 :max 5.0 :start 1.0 :centered true}]))
+                           :variables [{:key "pan" :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}
+                                       {:key "tilt" :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}]))
     (ct/set-cue! (:cue-grid *show*) 1 8
                  (cues/function-cue :t1-focus :focus (show/fixtures-named "torrent-1")))
     pc))

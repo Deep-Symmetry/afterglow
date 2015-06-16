@@ -7,13 +7,15 @@
   and MIDI mappings), and other, not-yet-imagined things."
   {:author "James Elliott"}
   (:require [afterglow.channels :as chan]
+            [afterglow.fixtures :refer [printable]]
             [afterglow.rhythm :refer [metro-snapshot]]
             [afterglow.show-context :refer [*show* with-show]]
-            [afterglow.fixtures :refer [printable]]
+            [afterglow.transform :as transform]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
             [taoensso.timbre :refer [error]])
   (:import [afterglow.rhythm Metronome]
+           [javax.media.j3d Transform3D]
            [javax.vecmath Point3d Vector3d]))
 
 (defonce
@@ -445,13 +447,13 @@
           (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))
           (resolve-non-frame-dynamic-elements-for-head [this show snapshot head] (resolve-fn show snapshot head)))))))
 
-;; TODO: Draw a diagram of the light show coordinate system, so it can be linked
-;;       to in places like this.
 (defn build-direction-param
   "Returns a dynamic direction parameter. If no arguments are
   supplied, returns a static direction facing directly out towards the
   audience. Keywords `:x`, `:y`, and `:z` can be used to specify a
-  vector in the frame of reference of the light show.
+  vector in the [frame of
+  reference](https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space)
+  of the light show.
 
   All incoming parameter values may be literal or dynamic, and may be
   keywords, which will be dynamically bound to variables
@@ -495,12 +497,88 @@
           (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))
           (resolve-non-frame-dynamic-elements-for-head [this show snapshot head] (resolve-fn show snapshot head)))))))
 
+(defn- make-radians
+  "If an angle was not already radians, convert it from degrees to
+  radians."
+  [angle radians]
+  (if radians
+    angle
+    (* (/ angle 180) Math/PI)))
+
+(defn- vector-from-pan-tilt
+  "Convert a pan and tilt value to an aiming vector."
+  [pan tilt radians]
+  (let [pan (make-radians pan radians)
+        tilt (make-radians tilt radians)
+        euler (Vector3d. tilt pan 0)
+        rotation (Transform3D.)
+        direction (Vector3d. 0.0 0.0 1.0)]
+    (.setEuler rotation euler)
+    (.transform rotation direction)
+    direction))
+
+(defn build-pan-tilt-param
+  "An alternate to [[build-direction-param]] for cases in which angles
+  are more convenient than a vector. Returns a dynamic direction
+  parameter specified in terms of pan and tilt angles away from facing
+  directly out towards the audience. If no arguments are supplied,
+  returns a static direction facing directly out towards the audience.
+  Keywords `:pan` and `:tilt` can be used to specify angles to turn around the Y and X axes respectively
+  (see [show
+  space](https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space)
+  for a diagram of these axes). For human friendliness, the angles are
+  assumed to be in degrees unless keyword `:radians` is supplied with
+  a true value.
+
+  The values passed for `:pan` and `:tilt` may be dynamic, or may be
+  keywords, which will be dynamically bound to variables
+  in [[*show*]].
+
+  If you do not specify an explicit value for `:frame-dynamic`, the
+  resulting direction parameter will be frame dynamic if it has any
+  incoming parameters which themselves are."
+  {:doc/format :markdown}
+  [& {:keys [pan tilt radians frame-dynamic] :or {pan 0 tilt 0 frame-dynamic :default}}]
+  {:pre [(some? *show*)]}
+  (let [pan (bind-keyword-param pan Number 0)
+        tilt (bind-keyword-param tilt Number 0)]
+    (if-not (some (partial satisfies? IParam) [pan tilt])
+      ;; Optimize the degenerate case of all constant parameters
+      (vector-from-pan-tilt pan tilt radians)
+      ;; Handle the general case of some dynamic parameters
+      (let [dyn (if (= :default frame-dynamic)
+                  ;; Default means incoming args control how dynamic we should be
+                  (boolean (some frame-dynamic-param? [pan tilt]))
+                  ;; We were given an explicit value for frame-dynamic
+                  (boolean frame-dynamic))
+            eval-fn (fn [show snapshot head]
+                      (vector-from-pan-tilt (resolve-param pan show snapshot head)
+                                            (resolve-param tilt show snapshot head)
+                                            radians))
+            resolve-fn (fn [show snapshot head]
+                         (with-show show
+                           (build-pan-tilt-param :pan (resolve-unless-frame-dynamic pan show snapshot head)
+                                                 :tilt (resolve-unless-frame-dynamic tilt show snapshot head)
+                                                 :radians radians
+                                                 :frame-dynamic dyn)))]
+        (reify
+          IParam
+          (evaluate [this show snapshot] (eval-fn show snapshot nil))
+          (frame-dynamic? [this] dyn)
+          (result-type [this] Vector3d)
+          (resolve-non-frame-dynamic-elements [this show snapshot] (resolve-fn show snapshot nil))
+          IHeadParam
+          (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))
+          (resolve-non-frame-dynamic-elements-for-head [this show snapshot head] (resolve-fn show snapshot head)))))))
+
 (defn build-aim-param
   "Returns a dynamic aiming parameter. If no arguments are supplied,
   returns a static direction aiming towards a spot on the floor two
   meters towards the audience from the center of the light show.
   Keywords `:x`, `:y`, and `:z` can be used to specify a target point
-  in the frame of reference of the light show.
+  in the [frame of
+  reference](https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space)
+  of the light show.
 
   All incoming parameter values may be literal or dynamic, and may be
   keywords, which will be dynamically bound to variables
