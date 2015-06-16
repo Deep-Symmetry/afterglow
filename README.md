@@ -289,7 +289,7 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   - [x] Use keyword parameters
   - [x] Add phrase oscillators
   - [x] Finish wiki page
-  - [x] Migrate wiki documentation into project documentation.
+- [x] Migrate wiki documentation into project documentation.
 - [x] Have metronome cue take metronome parameter and support dynamic
   parameters.
 - [x] Consider having patched fixture hold a reference to the show.
