@@ -187,8 +187,7 @@
             (write-safely header-bytes request-bytes connection))
           (recur (<! channel))))
       ;; The channel has been closed, so signal the main thread to shut down as well
-      (swap! connection disconnect-server))
-))
+      (swap! connection disconnect-server))))
 
 (declare shutdown)
 
@@ -238,7 +237,8 @@
   [old-channel]
   (or old-channel
       (let [c (chan)]
-        (info "Created OLA request processor." (future (process-requests c)))
+        (info "Created OLA request processor.")
+        (future (process-requests c))
         c)))
 
 (defn- destroy-channel
