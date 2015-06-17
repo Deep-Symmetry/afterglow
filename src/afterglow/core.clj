@@ -9,6 +9,7 @@
     [environ.core :refer [env]]
     [clojure.tools.cli :refer [parse-opts]]
     [clojure.tools.nrepl.server :as nrepl]
+    [cider.nrepl :refer [cider-nrepl-handler]]
     [clojure.java.browse :as browse]
     [selmer.parser :as parser]
     [taoensso.timbre :as timbre]
@@ -117,7 +118,7 @@
   [port]
   (try
     (swap! nrepl-server #(do (when % (nrepl/stop-server %))
-                             (nrepl/start-server :port port)))
+                             (nrepl/start-server :port port :handler cider-nrepl-handler)))
     (timbre/info "nREPL server started on port" port)
     (catch Throwable t
       (timbre/error "failed to start nREPL" t))))
