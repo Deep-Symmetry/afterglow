@@ -59,38 +59,51 @@
                               (range 16 128 16) (chan/color-wheel-hue ["red" "blue" "green" "yellow"
                                                                        "magenta" "cyan" "orange"])
                               128 {:type :color-clockwise
-                                   :label "Color Wheel Clockwise (fast->slow)"}
+                                   :label "Color Wheel Clockwise (fast->slow)"
+                                   :short-label "CW (fast->slow)"}
                               190 "color-stop" 194 {:type :color-counterclockwise
-                                                    :label "Color Wheel Counterclockwise (slow->fast)"})
+                                                    :label "Color Wheel Counterclockwise (slow->fast)"
+                                                    :short-label "CCW (fast->slow)"})
               (chan/functions :gobo-moving 6
                               (range 0 80 10) ["gobo-moving-open" "gobo-moving-rings"
                                                "gobo-moving-color-swirl" "gobo-moving-stars"
                                                "gobo-moving-optical-tube" "gobo-moving-magenta-bundt"
                                                "gobo-moving-blue-megahazard" "gobo-moving-turbine"]
-                              (range 80 220 20) [:gobo-moving-rings-shake :gobo-moving-color-swirl-shake
-                                                 :gobo-moving-stars-shake :gobo-moving-optical-tube-shake
-                                                 :gobo-moving-magenta-bundt-shake
-                                                 :gobo-moving-blue-megahazard-shake
-                                                 :gobo-moving-turbine-shake]
-                              220 :gobo-moving-clockwise)
+                              (range 80 220 20) (map (fn [entry] {:type entry
+                                                                   :label "Shake Speed"
+                                                                   :range :variable})
+                                                     [:gobo-moving-rings-shake :gobo-moving-color-swirl-shake
+                                                      :gobo-moving-stars-shake :gobo-moving-optical-tube-shake
+                                                      :gobo-moving-magenta-bundt-shake
+                                                      :gobo-moving-blue-megahazard-shake :gobo-moving-turbine-shake])
+                              220 {:type :gobo-moving-clockwise
+                                   :label "Speed"
+                                   :range :variable})
               (chan/functions :gobo-rotation 7 0 nil
                               4 {:type :gobo-rotation-clockwise
-                                 :label "Gobo Rotation Clockwise (fast->slow)"}
+                                 :label "Gobo Rotation Clockwise (fast->slow)"
+                                 :short-label "CW (fast->slow)"}
                               128 "gobo-rotation-stop"
-                              192 {:type :gobo-rotation-counterclockwise
-                                   :label "Gobo Rotation Counterlockwise (slow->fast)"})
+                              132 {:type :gobo-rotation-counterclockwise
+                                   :label "Gobo Rotation Counterlockwise (slow->fast)"
+                                   :short-label "CCW (slow->fast)"})
               (chan/functions :gobo-fixed 8
                               (range 0 100 10) ["gobo-fixed-open" "gobo-fixed-mortar"
                                                 "gobo-fixed-4-rings" "gobo-fixed-atom"
                                                 "gobo-fixed-jacks" "gobo-fixed-saw"
                                                 "gobo-fixed-sunflower" "gobo-fixed-45-adapter"
-                                                "gobo-fixed-star" "gobo-fixed-fose-fingerprint"]
-                              (range 100 208 12) [:gobo-fixed-mortar-shake :gobo-fixed-4-rings-shake
-                                                  :gobo-fixed-atom-shake :gobo-fixed-jacks-shake
-                                                  :gobo-fixed-saw-shake :gobo-fixed-sunflower-shake
-                                                  :gobo-fixed-45-adapter-shake :gobo-fixed-star-shake
-                                                  :gobo-fixed-rose-fingerprint-shake]
-                              208 :gobo-fixed-clockwise)
+                                                "gobo-fixed-star" "gobo-fixed-rose-fingerprint"]
+                              (range 100 208 12) (map (fn [entry] {:type entry
+                                                                   :label "Shake Speed"
+                                                                   :range :variable})
+                                                      [:gobo-fixed-mortar-shake :gobo-fixed-4-rings-shake
+                                                       :gobo-fixed-atom-shake :gobo-fixed-jacks-shake
+                                                       :gobo-fixed-saw-shake :gobo-fixed-sunflower-shake
+                                                       :gobo-fixed-45-adapter-shake :gobo-fixed-star-shake
+                                                       :gobo-fixed-rose-fingerprint-shake])
+                              208 {:type :gobo-fixed-clockwise
+                                   :label "Speed"
+                                   :range :variable})
               (chan/functions :shutter 9 0 "shutter-closed" 32 "shutter-open"
                               64 :strobe
                               96 "shutter-open-2" 128 :pulse-strobe 160 "shutter-open-3"
@@ -101,11 +114,11 @@
               (chan/functions :prism 12 0 "prism-out" 6 "prism-in"
                               128 {:type :prism-clockwise
                                    :label "Prism Clockwise (fast->slow)"
-                                   :short-label "CW->slow"}
+                                   :short-label "CW (fast->slow)"}
                               190 "prism-stop"
                               194 {:type :prism-counterclockwise
                                    :label "Prism Counterclockwsie (slow->fast)"
-                                   :short-label "CCW>fast"})
+                                   :short-label "CCW (slow->fast)"})
               (chan/functions :pan-tilt-speed 13 0 "pan-tilt-speed-normal"
                               1 :pan-tilt-speed-slow
                               226 "blackout-when-head-moving"
