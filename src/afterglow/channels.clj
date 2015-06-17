@@ -170,8 +170,9 @@
   "Defines a channel whose values are divided up into different ranges
   which perform different functions. After the channel type and DMX
   offset, pass a list of starting values and function specifications.
-  The simplest form of specification is a keyword identifying the
-  function type; this will be expanded into a variable-range function
+  The simplest form of specification is a keyword or string
+  identifying the function type; this will be expanded into a
+  variable-range (for keywords) or fixed-range (for strings) function
   of that type. For more complex functions, pass in a map containing
   the :type keyword and any other settings you need to
   make (e.g. :label), and the rest will be filled in for you. The
