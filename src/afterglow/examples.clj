@@ -172,6 +172,38 @@
                       :color (create-color color))]
     (ct/set-cue! (:cue-grid *show*) x y cue)))
 
+(defn- make-torrent-gobo-cues
+  "Create cues for the fixed and moving gobo options, stationary and
+  shaking. Takes up half a page on the Push, with the top left at the
+  coordinates specified."
+  [prefix fixtures top left]
+  ;; Make cues for the stationary and shaking versions of all fixed gobos
+  (doseq [_ (map-indexed (fn [i v]
+                           (let [blue (create-color :blue)
+                                 x (if (< i 8) left (+ left 2))
+                                 y (if (< i 8) (- top i) (- top i -1))
+                                 cue-key (keyword (str (name prefix) "-gobo-fixed"))]
+                             (ct/set-cue! (:cue-grid *show*) x y
+                                          (cues/function-cue cue-key (keyword v) fixtures :color blue))
+                             (ct/set-cue! (:cue-grid *show*) (inc x) y
+                                          (cues/function-cue cue-key (keyword (str (name v) "-shake"))
+                                                             fixtures :color blue))))
+                         ["gobo-fixed-mortar" "gobo-fixed-4-rings" "gobo-fixed-atom" "gobo-fixed-jacks"
+                          "gobo-fixed-saw" "gobo-fixed-sunflower" "gobo-fixed-45-adapter"
+                          "gobo-fixed-star" "gobo-fixed-rose-fingerprint"])])
+  ;; Make cues for the stationary and shaking versions of all rotating gobos
+  (doseq [_ (map-indexed (fn [i v]
+                           (let [green (create-color :green)
+                                 cue-key (keyword (str (name prefix) "-gobo-moving"))]
+                             (ct/set-cue! (:cue-grid *show*) (+ left 2) (- top i)
+                                          (cues/function-cue cue-key (keyword v) fixtures :color green))
+                             (ct/set-cue! (:cue-grid *show*) (+ left 3) (- top i)
+                                          (cues/function-cue cue-key (keyword (str (name v) "-shake"))
+                                                             fixtures :color green))))
+                         ["gobo-moving-rings" "gobo-moving-color-swirl" "gobo-moving-stars"
+                          "gobo-moving-optical-tube" "gobo-moving-magenta-bundt"
+                          "gobo-moving-blue-megahazard" "gobo-moving-turbine"])]))
+
 (defn use-push
   []
   (let [pc (push/bind-to-show *show*)
@@ -213,10 +245,65 @@
                          :variables [{:key "chance" :min 0.0 :max 0.4 :start 0.05 :aftertouch true}
                                      {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
 
-    (ct/set-cue! (:cue-grid *show*) 3 9
-                 (cues/function-cue :t1-gobo-fixed :gobo-fixed-4-rings (show/fixtures-named "torrent-1")))
-    (ct/set-cue! (:cue-grid *show*) 2 9
-                 (cues/function-cue :t1-prism :prism-clockwise (show/fixtures-named "torrent-1")))
+
+    ;; The upper page of torrent config cues
+    (ct/set-cue! (:cue-grid *show*) 0 15
+                 (cues/function-cue :torrent-shutter :shutter-open (show/fixtures-named "torrent")))
+
+    (ct/set-cue! (:cue-grid *show*) 6 15
+                 (cues/function-cue :t1-focus :focus (show/fixtures-named "torrent-1") :effect-name "Torrent 1 Focus"
+                                    :color (create-color :yellow)))
+    (ct/set-cue! (:cue-grid *show*) 7 15
+                 (cues/function-cue :t2-focus :focus (show/fixtures-named "torrent-2") :effect-name "Torrent 2 Focus"
+                                    :color (create-color :yellow)))
+    (ct/set-cue! (:cue-grid *show*) 6 14
+                 (cues/function-cue :t1-prism :prism-clockwise (show/fixtures-named "torrent-1") :level 100
+                                    :effect-name "Torrent 1 Prism" :color (create-color :orange)))
+    (ct/set-cue! (:cue-grid *show*) 7 14
+                 (cues/function-cue :t2-prism :prism-clockwise (show/fixtures-named "torrent-2") :level 100
+                                    :effect-name "Torrent 2 Prism" :color (create-color :orange)))
+    (ct/set-cue! (:cue-grid *show*) 6 13
+                 (cues/function-cue :t1-prism :prism-in (show/fixtures-named "torrent-1")
+                                    :effect-name "Torrent 1 Prism" :color (create-color :orange)))
+    (ct/set-cue! (:cue-grid *show*) 7 13
+                 (cues/function-cue :t2-prism :prism-in (show/fixtures-named "torrent-2")
+                                    :effect-name "Torrent 2 Prism" :color (create-color :orange)))
+    (ct/set-cue! (:cue-grid *show*) 6 12
+                 (cues/function-cue :t1-prism :prism-counterclockwise (show/fixtures-named "torrent-1")
+                                    :effect-name "Torrent 1 Prism" :color (create-color :orange)))
+    (ct/set-cue! (:cue-grid *show*) 7 12
+                 (cues/function-cue :t2-prism :prism-counterclockwise (show/fixtures-named "torrent-2")
+                                    :effect-name "Torrent 2 Prism" :color (create-color :orange)))
+    (ct/set-cue! (:cue-grid *show*) 6 11
+                 (cues/function-cue :t1-gobo-fixed :gobo-fixed-clockwise (show/fixtures-named "torrent-1")
+                                    :effect-name "Torrent 1 Gobo Fixed" :color (create-color :blue)))
+    (ct/set-cue! (:cue-grid *show*) 7 11
+                 (cues/function-cue :t2-gobo-fixed :gobo-fixed-clockwise (show/fixtures-named "torrent-2")
+                                    :effect-name "Torrent 2 Gobo Fixed" :color (create-color :blue)))
+    (ct/set-cue! (:cue-grid *show*) 6 10
+                 (cues/function-cue :t1-gobo-moving :gobo-moving-clockwise (show/fixtures-named "torrent-1")
+                                    :effect-name "Torrent 1 Gobo Moving" :color (create-color :green)))
+    (ct/set-cue! (:cue-grid *show*) 7 10
+                 (cues/function-cue :t2-gobo-fixed :gobo-moving-clockwise (show/fixtures-named "torrent-2")
+                                    :effect-name "Torrent 2 Gobo Moving" :color (create-color :green)))
+    (ct/set-cue! (:cue-grid *show*) 6 9
+                 (cues/function-cue :t1-gobo-rotation :gobo-rotation-clockwise (show/fixtures-named "torrent-1")
+                                    :effect-name "T1 Rotate Gobo CW" :color (create-color :cyan) :level 100))
+    (ct/set-cue! (:cue-grid *show*) 7 9
+                 (cues/function-cue :t2-gobo-rotation :gobo-rotation-clockwise (show/fixtures-named "torrent-2")
+                                    :effect-name "T2 Rotate Gobo CW" :color (create-color :cyan) :level 100))
+    (ct/set-cue! (:cue-grid *show*) 6 8
+                 (cues/function-cue :t1-gobo-rotation :gobo-rotation-counterclockwise (show/fixtures-named "torrent-1")
+                                    :effect-name "T1 Rotate Gobo CCW" :color (create-color :cyan)))
+    (ct/set-cue! (:cue-grid *show*) 7 8
+                 (cues/function-cue :t2-gobo-rotation :gobo-rotation-counterclockwise (show/fixtures-named "torrent-2")
+                                    :effect-name "T2 Rotate Gobo CCW" :color (create-color :cyan)))
+
+    ;; TODO: Buttons under these to rotate gobos themselves
+
+    ;; The separate page of specific gobo cues for each Torrent
+    (make-torrent-gobo-cues :t1 (show/fixtures-named "torrent-1") 15 8)
+    (make-torrent-gobo-cues :t2 (show/fixtures-named "torrent-2") 15 12)
 
     ;; TODO: Write a function to create direction cues, like function cues? Unless macro solves.
     (ct/set-cue! (:cue-grid *show*) 0 8
@@ -229,7 +316,6 @@
                                            (show/all-fixtures)))
                            :variables [{:key "pan" :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}
                                        {:key "tilt" :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}]))
-    (ct/set-cue! (:cue-grid *show*) 1 8
-                 (cues/function-cue :t1-focus :focus (show/fixtures-named "torrent-1")))
+
     pc))
 

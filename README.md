@@ -456,6 +456,8 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   jar with Afterglow and a custom show definition file and its
   supporting resources, so developers can easily deploy and share
   shows with non-Clojurists.
+- [ ] See if [thi-ng/color](https://github.com/thi-ng/color) is a
+  better fit.
 - [ ] Once I release the first version, answer this StackOverflow
   [question](http://stackoverflow.com/questions/9582192/dmx-software-to-control-lights-with-programmable-interface).
   - [ ] Also submit a link to
