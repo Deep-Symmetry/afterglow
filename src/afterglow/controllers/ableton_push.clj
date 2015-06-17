@@ -428,8 +428,8 @@
   [controller]
   (with-show (:show controller)
     (case (:type (show/sync-status))
-      :manual "Manual"
-      :midi "MIDI"
+      :manual " Manual"
+      :midi "  MIDI"
       :dj-link "DJ Link"
       "Unknown")))
 
@@ -549,7 +549,7 @@
 
                    ;; Add the labels for reset and sync, and light the pads
                    (write-display-cell controller 3 0
-                                       (str "Reset    " (metronome-sync-label controller)))
+                                       (str " Reset   " (metronome-sync-label controller)))
                    (aset (:next-top-pads controller) 0 (top-pad-state :dim :red))
                    (aset (:next-top-pads controller) 1 (top-pad-state :dim :green)))
                  (handle-control-change [this controller message]
@@ -752,26 +752,29 @@
   effects (or three, if the metronome is taking up a slot)."
   [controller]
   (let [room (room-for-effects controller)
+        first-cell (- 4 room)
         fx-info @(:active-effects (:show controller))
         fx (:effects fx-info)
-        fx-meta (:meta fx-info)]
+        fx-meta (:meta fx-info)
+        num-skipped (- (count fx-meta) room)]
     (if (seq fx)
-      (loop [fx (drop (- (count fx) room) fx)
-             fx-meta (drop (- (count fx-meta) room) fx-meta)
-             x (- 4 room)]
-        (let [effect (:effect (first fx))
-              info (first fx-meta)
-              cue (:cue info)]
-          (write-display-cell controller 0 x (cue-variable-names cue))
-          (write-display-cell controller 1 x (cue-variable-values controller cue))
-          (write-display-cell controller 2 x (or (:name cue) (:name (first fx))))
-          (write-display-cell controller 3 x "End")
-          (aset (:next-top-pads controller) (* 2 x) (top-pad-state :dim :red))
-          (when (seq (rest fx))
-            (recur (rest fx) (rest fx-meta) (inc x)))))
-      (do
-        (write-display-cell controller 2 1 "       No effects")
-        (write-display-cell controller 2 2 "are active.")))))
+      (do (loop [fx (drop num-skipped fx)
+                 fx-meta (drop num-skipped fx-meta)
+                 x first-cell]
+            (let [effect (:effect (first fx))
+                  info (first fx-meta)
+                  cue (:cue info)]
+              (write-display-cell controller 0 x (cue-variable-names cue))
+              (write-display-cell controller 1 x (cue-variable-values controller cue))
+              (write-display-cell controller 2 x (or (:name cue) (:name (first fx))))
+              (write-display-cell controller 3 x "  End")
+              (aset (:next-top-pads controller) (* 2 x) (top-pad-state :dim :red))
+              (when (seq (rest fx))
+                (recur (rest fx) (rest fx-meta) (inc x)))))
+          (when (pos? num-skipped)
+            (aset (get (:next-display controller) 3) (* first-cell 17) (util/ubyte (:left-arrow special-symbols)))))
+      (do (write-display-cell controller 2 1 "       No effects")
+          (write-display-cell controller 2 2 "are active.")))))
 
 (declare enter-stop-mode)
 
