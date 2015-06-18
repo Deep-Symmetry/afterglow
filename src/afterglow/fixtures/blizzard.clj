@@ -5,8 +5,29 @@
   (:require [afterglow.channels :as chan]
             [afterglow.effects.channel :refer [function-value-scaler]]))
 
-;; TODO: Figure out how to integrate color wheel into color assigner.
-;;       For now, just mapped as a function channel.
+(defn- build-gobo-entries
+  "Create a series of function map entries describing the gobos
+  available on one of the Torrent gobo wheels, in a format suitable
+  for passing to [[chan/functions]]. `moving?` is `true` to generate
+  entries for the moving gobo wheel, `false` for the fixed gobo wheel.
+  `shake?` is `true` when generating entries for ranges which shake
+  the gobo at variable speeds, `false` if the gobo is being projected
+  in a static position. `names` is the list of gobo names to expand
+  into corresponding function map entries."
+  {:doc/format :markdown}
+  [moving? shake? names]
+  (map (fn [entry]
+         (let [prefix (str "gobo-" (if moving? "moving-" "fixed-"))
+               type-key (keyword
+                         (str prefix (clojure.string/lower-case (clojure.string/replace entry #"[^a-zA-Z0-9]" "-"))
+                              (when shake? "-shake")))
+               label (str "Gobo" (when moving? "M") " " entry (when shake? " shake"))]
+           (merge {:type type-key
+                   :label label
+                   :range (if shake? :variable :fixed)}
+                  (when shake? {:var-label "Shake Speed"}))))
+       names))
+
 (defn torrent-f3
   "[Torrent F3](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&id=174:torrent-f3™&Itemid=71)
   moving head effects spotlight. The default patching orientation is sitting on its feet
@@ -60,50 +81,34 @@
                                                                        "magenta" "cyan" "orange"])
                               128 {:type :color-clockwise
                                    :label "Color Wheel Clockwise (fast->slow)"
-                                   :short-label "CW (fast->slow)"}
+                                   :var-label "CW (fast->slow)"}
                               190 "color-stop" 194 {:type :color-counterclockwise
                                                     :label "Color Wheel Counterclockwise (slow->fast)"
-                                                    :short-label "CCW (fast->slow)"})
-              (chan/functions :gobo-moving 6
-                              (range 0 80 10) ["gobo-moving-open" "gobo-moving-rings"
-                                               "gobo-moving-color-swirl" "gobo-moving-stars"
-                                               "gobo-moving-optical-tube" "gobo-moving-magenta-bundt"
-                                               "gobo-moving-blue-megahazard" "gobo-moving-turbine"]
-                              (range 80 220 20) (map (fn [entry] {:type entry
-                                                                   :label "Shake Speed"
-                                                                   :range :variable})
-                                                     [:gobo-moving-rings-shake :gobo-moving-color-swirl-shake
-                                                      :gobo-moving-stars-shake :gobo-moving-optical-tube-shake
-                                                      :gobo-moving-magenta-bundt-shake
-                                                      :gobo-moving-blue-megahazard-shake :gobo-moving-turbine-shake])
-                              220 {:type :gobo-moving-clockwise
-                                   :label "Speed"
-                                   :range :variable})
+                                                    :var-label "CCW (fast->slow)"})
+              (let [gobo-names ["Rings" "Color Swirl" "Stars" "Optical Tube" "Magenta Bundt"
+                                "Blue MegaHazard" "Turbine"]]
+                (chan/functions :gobo-moving 6
+                                (range 0 80 10) (build-gobo-entries true false (concat ["Open"] gobo-names))
+                                (range 80 220 20) (build-gobo-entries true true gobo-names)
+                                220 {:type :gobo-moving-clockwise
+                                     :label "Speed"
+                                     :range :variable}))
               (chan/functions :gobo-rotation 7 0 nil
                               4 {:type :gobo-rotation-clockwise
                                  :label "Gobo Rotation Clockwise (fast->slow)"
-                                 :short-label "CW (fast->slow)"}
+                                 :var-label "CW (fast->slow)"}
                               128 "gobo-rotation-stop"
                               132 {:type :gobo-rotation-counterclockwise
                                    :label "Gobo Rotation Counterlockwise (slow->fast)"
-                                   :short-label "CCW (slow->fast)"})
-              (chan/functions :gobo-fixed 8
-                              (range 0 100 10) ["gobo-fixed-open" "gobo-fixed-mortar"
-                                                "gobo-fixed-4-rings" "gobo-fixed-atom"
-                                                "gobo-fixed-jacks" "gobo-fixed-saw"
-                                                "gobo-fixed-sunflower" "gobo-fixed-45-adapter"
-                                                "gobo-fixed-star" "gobo-fixed-rose-fingerprint"]
-                              (range 100 208 12) (map (fn [entry] {:type entry
-                                                                   :label "Shake Speed"
-                                                                   :range :variable})
-                                                      [:gobo-fixed-mortar-shake :gobo-fixed-4-rings-shake
-                                                       :gobo-fixed-atom-shake :gobo-fixed-jacks-shake
-                                                       :gobo-fixed-saw-shake :gobo-fixed-sunflower-shake
-                                                       :gobo-fixed-45-adapter-shake :gobo-fixed-star-shake
-                                                       :gobo-fixed-rose-fingerprint-shake])
-                              208 {:type :gobo-fixed-clockwise
-                                   :label "Speed"
-                                   :range :variable})
+                                   :var-label "CCW (slow->fast)"})
+              (let [gobo-names ["Mortar" "4 Rings" "Atom" "Jacks" "Saw" "Sunflower" "45 Adapter"
+                                "Star" "Rose/Fingerprint"]]
+                (chan/functions :gobo-fixed 8
+                                (range 0 100 10) (build-gobo-entries false false (concat ["Open"] gobo-names))
+                                (range 100 208 12) (build-gobo-entries false true gobo-names)
+                                208 {:type :gobo-fixed-clockwise
+                                     :label "Speed"
+                                     :range :variable}))
               (chan/functions :shutter 9 0 "shutter-closed" 32 "shutter-open"
                               64 :strobe
                               96 "shutter-open-2" 128 :pulse-strobe 160 "shutter-open-3"
@@ -114,11 +119,11 @@
               (chan/functions :prism 12 0 "prism-out" 6 "prism-in"
                               128 {:type :prism-clockwise
                                    :label "Prism Clockwise (fast->slow)"
-                                   :short-label "CW (fast->slow)"}
+                                   :var-label "CW (fast->slow)"}
                               190 "prism-stop"
                               194 {:type :prism-counterclockwise
                                    :label "Prism Counterclockwsie (slow->fast)"
-                                   :short-label "CCW (slow->fast)"})
+                                   :var-label "CCW (slow->fast)"})
               (chan/functions :pan-tilt-speed 13 0 "pan-tilt-speed-normal"
                               1 :pan-tilt-speed-slow
                               226 "blackout-when-head-moving"

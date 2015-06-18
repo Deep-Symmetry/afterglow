@@ -173,20 +173,19 @@
   {:doc/format :markdown}
   [show-key function fixtures & {:keys [level htp? effect-name short-name color end-keys priority held
                                         aftertouch aftertouch-min aftertouch-max]
-                                 :or {effect-name (name function)
-                                      color :white level 0 priority 0}}]
-  (let [short-name (or short-name effect-name)
-        function (keyword function)
+                                 :or {color :white level 0 priority 0}}]
+  (let [function (keyword function)
         heads (chan/find-heads-with-function function fixtures)
         specs (map second
                    (map function
                         (map :function-map
                              (afterglow.effects.channel/find-heads-with-function function (show/all-fixtures)))))
+        effect-name (or effect-name (:label (first specs)) (name function))
+        short-name (or short-name effect-name)
         variable? (some #(= (:range %) :variable) specs)]
     (if variable?
       ;; Introduce a variable for conveniently adjusting the function level
-      (let [label (or (:label (first specs)) (:short-label (first specs)) "Level")
-            short-label (or (:short-label (first specs)) (:label (first specs)) "Level")]
+      (let [label (or (:var-label (first specs)) "Level")]
         (cue show-key (fn [var-map] (chan/function-effect effect-name function (params/bind-keyword-param
                                                                                 (:level var-map level) Number level)
                                                           fixtures :htp? htp?))
@@ -195,7 +194,7 @@
              :end-keys end-keys
              :priority priority
              :held held
-             :variables [(merge {:key "level" :min 0 :max 100 :start level :name label :short-name short-label}
+             :variables [(merge {:key "level" :min 0 :max 100 :start level :name label}
                                 (when aftertouch {:aftertouch aftertouch})
                                 (when aftertouch-min {:aftertouch-max aftertouch-min})
                                 (when aftertouch-max {:aftertouch-max aftertouch-max}))]))
