@@ -1,12 +1,12 @@
 (ns afterglow.midi
   "Handles MIDI communication, including syncing a show metronome to MIDI clock pulses."
   (:require [afterglow.rhythm :refer :all]
-            [clojure.core.async :refer [chan go <! >!! thread]]
             [amalloy.ring-buffer :refer [ring-buffer]]
             [overtone.at-at :refer [now]]
             [overtone.midi :as midi]
             [taoensso.timbre :refer [info error]])
-  (:import [java.util.regex Pattern]))
+  (:import [java.util.regex Pattern]
+           [java.util.concurrent LinkedBlockingQueue]))
 
 (def ^:private max-clock-intervals
   "How many MIDI clock pulses should be kept around for averaging?"
@@ -60,11 +60,18 @@
   (doseq [handler (vals (get-in @control-mappings [(:name (:device msg)) (:channel msg) (:note msg)]))]
     (handler msg)))
 
-(defonce ^:private ^{:doc "The channel used to hand MIDI events from
+(defonce ^:private ^{:doc "The queue used to hand MIDI events from
   the extension thread to our world, since there seem to be
   classloader compatibility issues, and the Java3d classes are not
   available to threads that are directly dispatching MIDI events."}
-  channel
+  midi-queue
+  (LinkedBlockingQueue.))
+
+(defonce ^:private ^{:doc "The thread used to hand MIDI events from
+  the extension thread to our world, since there seem to be
+  classloader compatibility issues, and the Java3d classes are not
+  available to threads that are directly dispatching MIDI events."}
+  midi-transfer-thread
   (atom nil))
 
 (defn- delegated-message-handler
@@ -74,8 +81,8 @@
   variable mappings, etc.) and dispatches to the appropriate specific
   handler."
   []
-  (go
-    (loop [msg (<! @channel)]
+  (let [running (atom true)]
+    (loop [msg (.take midi-queue)]
       (when msg
         ;; First call the global message handlers
         (doseq [handler @global-handlers]
@@ -93,11 +100,14 @@
             (:timing-clock :start :stop) (clock-message-handler msg)
             :control-change (cc-message-handler msg)
             nil)
+
+          (catch InterruptedException t
+            (info "MIDI event handler thread interrupted, shutting down.")
+            (reset! running false)
+            (reset! midi-transfer-thread nil))
           (catch Throwable t
             (error t "Problem running MIDI event handler")))
-        (recur (<! @channel))))
-    ;; The channel has been closed.
-    (reset! channel nil)))
+        (when running (recur (.take midi-queue)))))))
 
 (defn- incoming-message-handler
   "Attached to all midi input devices we manage. Puts the message on a
@@ -105,7 +115,7 @@
   which have access to all the classes that Afterglow needs."
   [msg]
   (try
-    (thread (>!! @channel msg))
+    (.add midi-queue msg)
     (catch Throwable t
       (error t "Problem trasferring MIDI event to core.async channel"))))
 
@@ -158,21 +168,20 @@
             (not (mmj-descriptions (:name device))))))
     identity))
 
-(defn- create-channel
-  "Creates the core.async channel used to deliver MIDI events when needed."
-  [old-channel]
-  (or old-channel
-      (let [c (chan 32)]
-        (info "Created MIDI dispatch channel.")
-        (future (delegated-message-handler))
-        c)))
+(defn- start-handoff-thread
+  "Creates the thread used to deliver MIDI events when needed."
+  [old-thread]
+  (or old-thread
+      (doto (Thread. delegated-message-handler)
+        (.setDaemon true)
+        (.start))))
 
 ;; TODO: This and open-outputs will have to change once hot-plugging works.
 (defn open-inputs-if-needed!
   "Make sure the MIDI input ports are open and ready to distribute events.
   Returns the opened inputs."
   []
-  (swap! channel create-channel)
+  (swap! midi-transfer-thread start-handoff-thread)
   (let [port-filter (create-midi-port-filter)
         result (swap! midi-inputs #(if (empty? %)
                                      (map connect-midi-in
