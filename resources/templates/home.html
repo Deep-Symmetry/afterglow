@@ -2,12 +2,23 @@
 {% block content %}
   <div class="jumbotron">
     <h1>Afterglow</h1>
-    <p>A functional lighting environment.
+    <p>A lighting controller optimized for live coding.
     <p>
       <a class="btn btn-primary btn-lg" href="{{servlet-context}}/visualizer" target="_blank">Open visualizer &raquo;</a>
       <a class="btn btn-primary btn-lg" href="http://localhost:9090/new/" target="_blank">Open OLA &raquo;</a>
       <a class="btn btn-info btn-lg" href="http://luminusweb.net">Luminus help &raquo;</a>
     </p>
+  </div>
+
+  <div class="row">
+    <div class="span12">
+      <h2>Shows</h2>
+        <ul>
+          {% for show in shows %}
+          <li><a href="{{servlet-context}}/show/{{show.show.id}}">{{ show.description }}</a></li>
+          {% endfor %}
+        </ul>
+    </div>
   </div>
 
   <div class="row">

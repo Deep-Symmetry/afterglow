@@ -768,3 +768,16 @@
   {:pre [(some? *show*)]}
   (doseq [universe (:universes *show*)]
     (blackout-universe universe)))
+
+(defonce ^{:doc "Holds the registered shows, if any, for display in the web server."}
+  shows (atom {}))
+
+(defn register-show
+  "Add a show to the list of available shows for the web interface."
+  [show description]
+  (swap! shows assoc (:id show) [show description]))
+
+(defn unregister-show
+  "Remove a show from the list of available shows for the web interface."
+  [show]
+  (swap! shows dissoc (:id show)))

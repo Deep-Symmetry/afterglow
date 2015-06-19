@@ -32,6 +32,9 @@
 ;; in a (with-show sample-show ...) binding.
 (set-default-show! sample-show)
 
+;; Register it with the web interface
+(show/register-show sample-show "Sample Show")
+
 ;; Throw a couple of fixtures in there to play with. For better fun, use
 ;; fixtures and addresses that correspond to your actual hardware.
 (show/patch-fixture! :torrent-1 (blizzard/torrent-f3) 1 1 :x (tf/inches 49) :y (tf/inches 61.5) :z (tf/inches 6)

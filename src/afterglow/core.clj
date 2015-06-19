@@ -2,18 +2,17 @@
   "This is the main class for running Afterglow as a self-contained JAR application.
   When you are learning and experimenting in your REPL, the main
   namespace you want to be using is afterglow.examples"
-  (:require
-    [afterglow.web.handler :refer [app]]
-    [afterglow.web.session :as session]
-    [org.httpkit.server :as http-kit]
-    [environ.core :refer [env]]
-    [clojure.tools.cli :refer [parse-opts]]
-    [clojure.tools.nrepl.server :as nrepl]
-    [cider.nrepl :refer [cider-nrepl-handler]]
-    [clojure.java.browse :as browse]
-    [selmer.parser :as parser]
-    [taoensso.timbre :as timbre]
-    [taoensso.timbre.appenders.3rd-party.rotor :as rotor])
+  (:require [afterglow.web.handler :refer [app]]
+            [afterglow.web.session :as session]
+            [org.httpkit.server :as http-kit]
+            [environ.core :refer [env]]
+            [clojure.tools.cli :refer [parse-opts]]
+            [clojure.tools.nrepl.server :as nrepl]
+            [cider.nrepl :refer [cider-nrepl-handler]]
+            [clojure.java.browse :as browse]
+            [selmer.parser :as parser]
+            [taoensso.timbre :as timbre]
+            [taoensso.timbre.appenders.3rd-party.rotor :as rotor])
   (:gen-class))
 
 (defonce ^{:doc "Keeps track of whether init has been called."}
