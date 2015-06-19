@@ -1270,8 +1270,10 @@
       (if @(:shift-mode controller)
         ;; Trying to scroll back to older effects
         (let [[offset max-offset room] (find-effect-offset-range controller)
-              new-offset (+ offset room)]
-          (reset! (:effect-offset controller) (min max-offset new-offset)))
+              new-offset (min max-offset (+ offset room))]
+          (when (not= offset new-offset)
+            (reset! (:effect-offset controller) new-offset)
+            (add-button-held-feedback-overlay controller (:left-arrow control-buttons))))
 
         ;; Trying to scroll left in cue grid
         (let [[x y] @(:origin controller)]
@@ -1284,8 +1286,10 @@
       (if @(:shift-mode controller)
         ;; Trying to scroll forward to newer effects
         (let [[offset max-offset room] (find-effect-offset-range controller)
-              new-offset (- offset room)]
-          (reset! (:effect-offset controller) (max 0 new-offset)))
+              new-offset (max 0 (- offset room))]
+          (when (not= offset new-offset)
+            (reset! (:effect-offset controller) new-offset)
+            (add-button-held-feedback-overlay controller (:right-arrow control-buttons))))
 
         ;; Trying to scroll right in cue grid
         (let [[x y] @(:origin controller)]
@@ -1297,8 +1301,10 @@
     (when (pos? (:velocity message))
       (if @(:shift-mode controller)
         ;; Jump back to oldest effect
-        (let [[_ max-offset] (find-effect-offset-range controller)]
-          (reset! (:effect-offset controller) max-offset))
+        (let [[offset max-offset] (find-effect-offset-range controller)]
+          (when (not= offset max-offset)
+            (reset! (:effect-offset controller) max-offset)
+            (add-button-held-feedback-overlay controller (:up-arrow control-buttons))))
 
         ;; Trying to scroll up in cue grid
         (let [[x y] @(:origin controller)]
@@ -1310,7 +1316,9 @@
     (when (pos? (:velocity message))
       (if @(:shift-mode controller)
         ;; Jump forward to newest effect
-        (reset! (:effect-offset controller) 0)
+        (when (pos? @(:effect-offset controller))
+          (reset! (:effect-offset controller) 0)
+          (add-button-held-feedback-overlay controller (:down-arrow control-buttons)))
 
         ;; Trying to scroll down in cue grid
         (let [[x y] @(:origin controller)]
