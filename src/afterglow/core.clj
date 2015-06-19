@@ -57,7 +57,7 @@
                                                 :backlog 5})}})
     (timbre/merge-config!  {:appenders {:rotor {:min-level :info}}})
 
-
+    ;; Disable Selmer's template cache in development mode
     (if (env :dev) (parser/cache-off!))
 
     (reset! initialized true)))
