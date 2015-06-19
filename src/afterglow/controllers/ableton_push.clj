@@ -756,10 +756,10 @@
         fx-info @(:active-effects (:show controller))
         fx (:effects fx-info)
         fx-meta (:meta fx-info)
-        num-skipped (- (count fx-meta) room)]
+        num-skipped (- (count fx-meta) room @(:effect-offset controller))]
     (if (seq fx)
-      (do (loop [fx (drop num-skipped fx)
-                 fx-meta (drop num-skipped fx-meta)
+      (do (loop [fx (take room (drop num-skipped fx))
+                 fx-meta (take room (drop num-skipped fx-meta))
                  x first-cell]
             (let [effect (:effect (first fx))
                   info (first fx-meta)
@@ -771,12 +771,72 @@
               (aset (:next-top-pads controller) (* 2 x) (top-pad-state :dim :red))
               (when (seq (rest fx))
                 (recur (rest fx) (rest fx-meta) (inc x)))))
+          ;; Draw indicators if there are effects hidden from view in either direction
           (when (pos? num-skipped)
-            (aset (get (:next-display controller) 3) (* first-cell 17) (util/ubyte (:left-arrow special-symbols)))))
+            (aset (get (:next-display controller) 3) (* first-cell 17) (util/ubyte (:left-arrow special-symbols))))
+          (when (pos? @(:effect-offset controller))
+            (aset (get (:next-display controller) 3) 67 (util/ubyte (:right-arrow special-symbols)))))
       (do (write-display-cell controller 2 1 "       No effects")
           (write-display-cell controller 2 2 "are active.")))))
 
 (declare enter-stop-mode)
+
+(defn- find-effect-offset-range
+  "Determine the valid offset range for scrolling through the effect
+  list, based on how many effects are running, and how many currently
+  fit on the display. If we are currently scrolled beyond the sensible
+  range, correct that. Returns a tuple of the current offset, the
+  maximum sensible offset, and the number of effects displayed."
+  [controller]
+  (let [room (room-for-effects controller)
+        size (count (:effects @(:active-effects (:show controller))))
+        max-offset (max 0 (- size room))
+        ;; If we are offset more than now makes sense, fix that.
+        offset (swap! (:effect-offset controller) min max-offset)]
+    [offset max-offset room]))
+
+(defn- update-scroll-arrows
+  "Activate the arrow buttons for directions in which scrolling is
+  possible."
+  [controller]
+  (if @(:shift-mode controller)
+    ;; In shift mode, scroll through the effects list
+    (let [[offset max-offset] (find-effect-offset-range controller)]
+      ;; If there is an offset, user can scroll to the right
+      (when (pos? offset)
+        (swap! (:next-text-buttons controller)
+               assoc (:right-arrow control-buttons)
+               (button-state (:right-arrow control-buttons) :dim))
+        (swap! (:next-text-buttons controller)
+               assoc (:down-arrow control-buttons)
+               (button-state (:down-arrow control-buttons) :dim)))
+      ;; Is there room to scroll to the left?
+      (when (< offset max-offset)
+        (swap! (:next-text-buttons controller)
+               assoc (:left-arrow control-buttons)
+               (button-state (:left-arrow control-buttons) :dim))
+        (swap! (:next-text-buttons controller)
+               assoc (:up-arrow control-buttons)
+               (button-state (:up-arrow control-buttons) :dim))))
+
+    ;; In unshifted mode, scroll through the cue grid
+    (let [[origin-x origin-y] @(:origin controller)]
+      (when (pos? origin-x)
+        (swap! (:next-text-buttons controller)
+               assoc (:left-arrow control-buttons)
+               (button-state (:left-arrow control-buttons) :dim)))
+      (when (pos? origin-y)
+        (swap! (:next-text-buttons controller)
+               assoc (:down-arrow control-buttons)
+               (button-state (:down-arrow control-buttons) :dim)))
+      (when (> (- (controllers/grid-width (:cue-grid (:show controller))) origin-x) 7)
+        (swap! (:next-text-buttons controller)
+               assoc (:right-arrow control-buttons)
+               (button-state (:right-arrow control-buttons) :dim)))
+      (when (> (- (controllers/grid-height (:cue-grid (:show controller))) origin-y) 7)
+        (swap! (:next-text-buttons controller)
+               assoc (:up-arrow control-buttons)
+               (button-state (:up-arrow control-buttons) :dim))))))
 
 (defn- update-interface
   "Determine the desired current state of the interface, and send any
@@ -803,26 +863,8 @@
                          (if @(:shift-mode controller) :bright :dim)))
     
     (render-cue-grid controller)
-
-    ;; Activate the arrow buttons for directions in which scrolling is possible.
-    (let [[origin-x origin-y] @(:origin controller)]
-      (when (pos? origin-x)
-        (swap! (:next-text-buttons controller)
-              assoc (:left-arrow control-buttons)
-              (button-state (:left-arrow control-buttons) :dim)))
-      (when (pos? origin-y)
-        (swap! (:next-text-buttons controller)
-              assoc (:down-arrow control-buttons)
-              (button-state (:down-arrow control-buttons) :dim)))
-      (when (> (- (controllers/grid-width (:cue-grid (:show controller))) origin-x) 7)
-        (swap! (:next-text-buttons controller)
-              assoc (:right-arrow control-buttons)
-              (button-state (:right-arrow control-buttons) :dim)))
-      (when (> (- (controllers/grid-height (:cue-grid (:show controller))) origin-y) 7)
-        (swap! (:next-text-buttons controller)
-              assoc (:up-arrow control-buttons)
-              (button-state (:up-arrow control-buttons) :dim))))
-
+    (update-scroll-arrows controller)
+    
     ;; Make the User button bright, since we live in User mode
     (swap! (:next-text-buttons controller)
            assoc (:user-mode control-buttons)
@@ -1225,31 +1267,56 @@
 
     44 ; Left arrow
     (when (pos? (:velocity message))
-      (let [[x y] @(:origin controller)]
-        (when (pos? x)
-          (reset! (:origin controller) [(max 0 (- x 8)) y])
-          (add-button-held-feedback-overlay controller (:left-arrow control-buttons)))))
+      (if @(:shift-mode controller)
+        ;; Trying to scroll back to older effects
+        (let [[offset max-offset room] (find-effect-offset-range controller)
+              new-offset (+ offset room)]
+          (reset! (:effect-offset controller) (min max-offset new-offset)))
+
+        ;; Trying to scroll left in cue grid
+        (let [[x y] @(:origin controller)]
+          (when (pos? x)
+            (reset! (:origin controller) [(max 0 (- x 8)) y])
+            (add-button-held-feedback-overlay controller (:left-arrow control-buttons))))))
 
     45 ; Right arrow
     (when (pos? (:velocity message))
-      (let [[x y] @(:origin controller)]
-        (when (> (- (controllers/grid-width (:cue-grid (:show controller))) x) 7)
-          (reset! (:origin controller) [(+ x 8) y])
-          (add-button-held-feedback-overlay controller (:right-arrow control-buttons)))))
+      (if @(:shift-mode controller)
+        ;; Trying to scroll forward to newer effects
+        (let [[offset max-offset room] (find-effect-offset-range controller)
+              new-offset (- offset room)]
+          (reset! (:effect-offset controller) (max 0 new-offset)))
+
+        ;; Trying to scroll right in cue grid
+        (let [[x y] @(:origin controller)]
+          (when (> (- (controllers/grid-width (:cue-grid (:show controller))) x) 7)
+            (reset! (:origin controller) [(+ x 8) y])
+            (add-button-held-feedback-overlay controller (:right-arrow control-buttons))))))
 
     46 ; Up arrow
     (when (pos? (:velocity message))
-      (let [[x y] @(:origin controller)]
-        (when (> (- (controllers/grid-height (:cue-grid (:show controller))) y) 7)
-          (reset! (:origin controller) [x (+ y 8)])
-          (add-button-held-feedback-overlay controller (:up-arrow control-buttons)))))
+      (if @(:shift-mode controller)
+        ;; Jump back to oldest effect
+        (let [[_ max-offset] (find-effect-offset-range controller)]
+          (reset! (:effect-offset controller) max-offset))
+
+        ;; Trying to scroll up in cue grid
+        (let [[x y] @(:origin controller)]
+          (when (> (- (controllers/grid-height (:cue-grid (:show controller))) y) 7)
+            (reset! (:origin controller) [x (+ y 8)])
+            (add-button-held-feedback-overlay controller (:up-arrow control-buttons))))))
 
     47 ; Down arrow
     (when (pos? (:velocity message))
-      (let [[x y] @(:origin controller)]
-        (when (pos? y)
-          (reset! (:origin controller) [x (max 0 (- y 8))])
-          (add-button-held-feedback-overlay controller (:down-arrow control-buttons)))))
+      (if @(:shift-mode controller)
+        ;; Jump forward to newest effect
+        (reset! (:effect-offset controller) 0)
+
+        ;; Trying to scroll down in cue grid
+        (let [[x y] @(:origin controller)]
+          (when (pos? y)
+            (reset! (:origin controller) [x (max 0 (- y 8))])
+            (add-button-held-feedback-overlay controller (:down-arrow control-buttons))))))
 
     59 ; User mode button
     (when (pos? (:velocity message))
@@ -1350,8 +1417,11 @@
   [controller note]
   (let [room (room-for-effects controller)
         fx-info @(:active-effects (:show controller))
-        fx (vec (drop (- (count (:effects fx-info)) room) (:effects fx-info)))
-        fx-meta (vec (drop (- (count (:meta fx-info)) room) (:meta fx-info)))
+        fx (:effects fx-info)
+        fx-meta (:meta fx-info)
+        num-skipped (- (count fx-meta) room @(:effect-offset controller))
+        fx (vec (drop num-skipped (:effects fx-info)))
+        fx-meta (vec (drop num-skipped (:meta fx-info)))
         offset (- 4 room)
         x (quot note 2)
         index (- x offset)
@@ -1479,6 +1549,7 @@
         {:id (swap! controller-counter inc)
          :show show
          :origin (atom [0 0])
+         :effect-offset (atom 0)
          :refresh-interval refresh-interval
          :port-in (midi/midi-find-device (amidi/open-inputs-if-needed!) device-name)
          :port-out (midi/midi-find-device (amidi/open-outputs-if-needed!) device-name)
