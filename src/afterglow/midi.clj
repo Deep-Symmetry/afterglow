@@ -6,7 +6,7 @@
             [overtone.midi :as midi]
             [taoensso.timbre :refer [info error]])
   (:import [java.util.regex Pattern]
-           [java.util.concurrent LinkedBlockingQueue]))
+           [java.util.concurrent LinkedBlockingDeque]))
 
 (def ^:private max-clock-intervals
   "How many MIDI clock pulses should be kept around for averaging?"
@@ -60,12 +60,14 @@
   (doseq [handler (vals (get-in @control-mappings [(:name (:device msg)) (:channel msg) (:note msg)]))]
     (handler msg)))
 
-(defonce ^:private ^{:doc "The queue used to hand MIDI events from
-  the extension thread to our world, since there seem to be
-  classloader compatibility issues, and the Java3d classes are not
-  available to threads that are directly dispatching MIDI events."}
-  midi-queue
-  (LinkedBlockingQueue.))
+(defonce ^:private ^{:doc "The queue used to hand MIDI events from the
+  extension thread to our world, since there seem to be classloader
+  compatibility issues, and the Java3d classes are not available to
+  threads that are directly dispatching MIDI events. Although we
+  allocate a capacity of 100 elements, it is expected that the queue
+  will be drained much more quickly than events arrive, and so it will
+  almost always be empty."} midi-queue
+  (LinkedBlockingDeque. 100))
 
 (defonce ^:private ^{:doc "The thread used to hand MIDI events from
   the extension thread to our world, since there seem to be
@@ -75,11 +77,10 @@
   (atom nil))
 
 (defn- delegated-message-handler
-  "Takes incoming MIDI events from the core.async channel on a thread
-  with access to all Afterglow classes. Fields incoming MIDI
-  messages, looks for registered interest in them (metronome sync,
-  variable mappings, etc.) and dispatches to the appropriate specific
-  handler."
+  "Takes incoming MIDI events from the incoming queue on a thread with
+  access to all Afterglow classes. Fields incoming MIDI messages,
+  looks for registered interest in them (metronome sync, variable
+  mappings, etc.) and dispatches to the appropriate specific handler."
   []
   (let [running (atom true)]
     (loop [msg (.take midi-queue)]
@@ -111,13 +112,13 @@
 
 (defn- incoming-message-handler
   "Attached to all midi input devices we manage. Puts the message on a
-  core.async channel so it can be processed by one of our own threads,
-  which have access to all the classes that Afterglow needs."
+  queue so it can be processed by one of our own threads, which have
+  access to all the classes that Afterglow needs."
   [msg]
   (try
     (.add midi-queue msg)
     (catch Throwable t
-      (error t "Problem trasferring MIDI event to core.async channel"))))
+      (error t "Problem trasferring MIDI event to queue"))))
 
 (defn- connect-midi-in
   "Open a MIDI input device and cause it to send its events to
