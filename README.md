@@ -90,7 +90,8 @@ connected. Either way, here is how you start the show sending control
 signals to lights:
 
 ```clojure
-(show/start!)
+(use-sample-show) ; Create the sample show that uses universe 1.
+(show/start!)     ; Start sending its DMX frames.
 ```
 
 The `afterglow.examples` namespace has already assigned a nice cool

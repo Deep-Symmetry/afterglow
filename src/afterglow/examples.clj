@@ -20,32 +20,37 @@
             [com.evocomputing.colors :refer [color-name create-color hue adjust-hue]]
             [taoensso.timbre :as timbre]))
 
-;; Since this class is an entry point for interactive REPL usage,
-;; make sure a sane logging environment is established.
-(core/init-logging)
+(defn use-sample-show
+  "Set up a sample show for experimenting with Afterglow."
+  []
+  ;; Since this class is an entry point for interactive REPL usage,
+  ;; make sure a sane logging environment is established.
+  (core/init-logging)
 
-;; Create a show that runs on OLA universe 1, for demonstration purposes.
-(defonce ^{:doc "An example show which controls only the OLA universe with ID 1."}
-  sample-show (show/show 1))
+  ;; Create a show that runs on OLA universe 1, for demonstration purposes.
+  (let [sample-show (show/show 1)]
 
-;; Make it the default show so we don't need to wrap everything below
-;; in a (with-show sample-show ...) binding.
-(set-default-show! sample-show)
+    ;; Make it the default show so we don't need to wrap everything below
+    ;; in a (with-show sample-show ...) binding.
+    (set-default-show! sample-show)
 
-;; Register it with the web interface
-(show/register-show sample-show "Sample Show")
+    ;; TODO: Should this be automatic? If so, creating the show should assign the name too.
+    ;; Register it with the web interface.
+    (show/register-show sample-show "Sample Show"))
 
-;; Throw a couple of fixtures in there to play with. For better fun, use
-;; fixtures and addresses that correspond to your actual hardware.
-(show/patch-fixture! :torrent-1 (blizzard/torrent-f3) 1 1 :x (tf/inches 49) :y (tf/inches 61.5) :z (tf/inches 6)
-                     :y-rotation (tf/degrees -45))
-(show/patch-fixture! :hex-1 (chauvet/slimpar-hex3-irc) 1 129 :y (tf/inches 4) :z (tf/inches 10)
-                     :x-rotation (tf/degrees 90))
-(show/patch-fixture! :blade-1 (blizzard/blade-rgbw) 1 270 :y (tf/inches 9))
-(show/patch-fixture! :blade-2 (blizzard/blade-rgbw) 1 240 :x (tf/inches 40) :y (tf/inches 58) :z (tf/inches -15)
-                     :y-rotation (tf/degrees -45))
-(show/patch-fixture! :ws-1 (blizzard/weather-system) 1 161 :x (tf/inches 22) :y (tf/inches 7) :z (tf/inches 7)
-                     :x-rotation (tf/degrees 90))
+  ;; Throw a couple of fixtures in there to play with. For better fun, use
+  ;; fixtures and addresses that correspond to your actual hardware.
+  (show/patch-fixture! :torrent-1 (blizzard/torrent-f3) 1 1 :x (tf/inches 49) :y (tf/inches 61.5) :z (tf/inches 6)
+                       :y-rotation (tf/degrees -45))
+  (show/patch-fixture! :hex-1 (chauvet/slimpar-hex3-irc) 1 129 :y (tf/inches 4) :z (tf/inches 10)
+                       :x-rotation (tf/degrees 90))
+  (show/patch-fixture! :blade-1 (blizzard/blade-rgbw) 1 270 :y (tf/inches 9))
+  (show/patch-fixture! :blade-2 (blizzard/blade-rgbw) 1 240 :x (tf/inches 40) :y (tf/inches 58) :z (tf/inches -15)
+                       :y-rotation (tf/degrees -45))
+  (show/patch-fixture! :ws-1 (blizzard/weather-system) 1 161 :x (tf/inches 22) :y (tf/inches 7) :z (tf/inches 7)
+                       :x-rotation (tf/degrees 90))
+  nil)
+
 
 (defn global-color-effect
   "Make a color effect which affects all lights in the sample show.
@@ -55,17 +60,14 @@
   (try
     (let [[c desc] (cond (= (type color) :com.evocomputing.colors/color)
                        [color (color-name color)]
-                       (and (satisfies? params/IParam color) (= (params/result-type color) :com.evocomputing.colors/color))
+                       (and (satisfies? params/IParam color)
+                            (= (params/result-type color) :com.evocomputing.colors/color))
                        [color "variable"]
                        :else
                        [(create-color color) color])]
       (color-effect (str "Color: " desc) c (show/all-fixtures) :include-color-wheels include-color-wheels))
     (catch Exception e
       (throw (Exception. (str "Can't figure out how to create color from " color) e)))))
-
-(def blue-effect
-  "An effect which assigns all fixtures to a nice blue color."
-  (global-color-effect "slateblue" :include-color-wheels true))
 
 (defn global-dimmer-effect
   "Return an effect that sets all the dimmers in the sample rig.
@@ -79,7 +81,7 @@
 (defn fiat-lux
   "Start simple with a cool blue color from all the lights."
   []
-  (show/add-effect! :color blue-effect)
+  (show/add-effect! :color (global-color-effect "slateblue" :include-color-wheels true))
   (show/add-effect! :dimmers (global-dimmer-effect 255))
   (show/add-effect! :torrent-shutter
                     (afterglow.effects.channel/function-effect
@@ -130,7 +132,7 @@
    (test-phases 20))
   ([iterations]
    (dotimes [n iterations]
-     (let [snap (metro-snapshot (:metronome sample-show))]
+     (let [snap (metro-snapshot (:metronome *show*))]
        (println (format "Beat %4d (phase %.3f) bar %4d (phase %.3f) 1:%.3f, 2:%.3f, 4:%.3f, 1/2:%.3f, 1/4:%.3f, 3/4:%.3f"
                         (:beat snap) (:beat-phase snap) (:bar snap) (:bar-phase snap)
                         (snapshot-beat-phase snap 1) (snapshot-beat-phase snap 2) (snapshot-beat-phase snap 4)
