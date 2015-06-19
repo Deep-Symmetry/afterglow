@@ -63,28 +63,29 @@
   "Returns a function spefication that encompasses a range of possible
   DMX values for a channel. If start and end are not specified, the
   function uses the full range of the channel."
-  [range-type function-type label & {:keys [start end] :or {start 0 end 255}}]
-  {:start start
-   :end end
-   :range range-type
-   :type function-type
-   :label label})
+  [range-type function-type label & {:keys [start end var-label] :or {start 0 end 255}}]
+  (merge {:start start
+          :end end
+          :range range-type
+          :type function-type
+          :label label}
+         (when var-label {:var-label var-label})))
 
 (defn fine-channel
   "Defines a channel for which sometimes multi-byte values are
   desired, via a separate channel which specifies the fractional value
   to be added to the main channel."
-  [chan-type offset & {:keys [fine-offset function-type function-name] :or {function-type chan-type}}]
+  [chan-type offset & {:keys [fine-offset function-type function-name var-label] :or {function-type chan-type}}]
   {:pre (some? chan-type) (integer? offset) (<= 1 offset 512)}
   (let [chan-type (keyword chan-type)
         function-type (keyword function-type)
         function-name (or function-name (clojure.string/capitalize (name function-type)))
         base (assoc (channel offset)
                     :type chan-type
-                    :functions [(build-function :variable function-type function-name)])]
-    (if fine-offset
-      (assoc base :fine-offset fine-offset)
-      base)))
+                    :functions [(build-function :variable function-type function-name :var-label var-label)])]
+    (merge base
+           (when fine-offset
+             {:fine-offset fine-offset}))))
 
 (defn- expand-function-spec
   "Expands the specification for a function at a particular starting
@@ -175,9 +176,10 @@
   variable-range (for keywords) or fixed-range (for strings) function
   of that type. For more complex functions, pass in a map containing
   the :type keyword and any other settings you need to
-  make (e.g. :label), and the rest will be filled in for you. The
-  ranges need to be in order of increasing starting values, and the
-  ending values for each will be figured out by context, e.g.
+  make (e.g. :label, :range, :var-label), and the rest will be filled
+  in for you. The ranges need to be in order of increasing starting
+  values, and the ending values for each will be figured out by
+  context, e.g.
   (functions :strobe 40
              0 nil
              10 \"strobe-on\"
@@ -259,7 +261,7 @@
   ([offset]
    (pan offset nil))
   ([offset fine-offset]
-   (fine-channel :pan offset :fine-offset fine-offset)))
+   (fine-channel :pan offset :fine-offset fine-offset :var-label "Pan")))
 
 (defn tilt
   "A channel which tilts a moving head, with an optional second channel
@@ -267,7 +269,7 @@
   ([offset]
    (tilt offset nil))
   ([offset fine-offset]
-   (fine-channel :tilt offset :fine-offset fine-offset)))
+   (fine-channel :tilt offset :fine-offset fine-offset :var-label "Tilt")))
 
 (defn focus
   "A channel which adjusts focus, with an optional second channel for
@@ -275,7 +277,7 @@
   ([offset]
    (focus offset nil))
   ([offset fine-offset]
-   (fine-channel :focus offset :fine-offset fine-offset)))
+   (fine-channel :focus offset :fine-offset fine-offset :var-label "Focus")))
 
 (defn iris
   "A channel which controls an iris, with an optional second channel
@@ -283,7 +285,7 @@
   ([offset]
    (iris offset nil))
   ([offset fine-offset]
-   (fine-channel :iris offset :fine-offset fine-offset)))
+   (fine-channel :iris offset :fine-offset fine-offset :var-label "Iris")))
 
 (defn zoom
   "A channel which adjusts zoom, with an optional second channel for
@@ -291,7 +293,7 @@
   ([offset]
    (zoom offset nil))
   ([offset fine-offset]
-   (fine-channel :zoom offset :fine-offset fine-offset)))
+   (fine-channel :zoom offset :fine-offset fine-offset :var-label "Zoom")))
 
 (defn frost
   "A channel which adjusts frost, with an optional second channel for
@@ -299,4 +301,4 @@
   ([offset]
    (frost offset nil))
   ([offset fine-offset]
-   (fine-channel :zoom offset :fine-offset fine-offset)))
+   (fine-channel :frost offset :fine-offset fine-offset :var-label "Frost")))

@@ -91,7 +91,8 @@
                                 (range 0 80 10) (build-gobo-entries true false (concat ["Open"] gobo-names))
                                 (range 80 220 20) (build-gobo-entries true true gobo-names)
                                 220 {:type :gobo-moving-clockwise
-                                     :label "Speed"
+                                     :label "Clockwise Speed"
+                                     :var-label "CW Speed"
                                      :range :variable}))
               (chan/functions :gobo-rotation 7 0 nil
                               4 {:type :gobo-rotation-clockwise
@@ -107,7 +108,8 @@
                                 (range 0 100 10) (build-gobo-entries false false (concat ["Open"] gobo-names))
                                 (range 100 208 12) (build-gobo-entries false true gobo-names)
                                 208 {:type :gobo-fixed-clockwise
-                                     :label "Speed"
+                                     :label "Clockwise Speed"
+                                     :var-label "CW Speed"
                                      :range :variable}))
               (chan/functions :shutter 9 0 "shutter-closed" 32 "shutter-open"
                               64 :strobe

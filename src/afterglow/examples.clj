@@ -276,16 +276,16 @@
                                     :effect-name "Torrent 2 Prism" :color (create-color :orange)))
     (ct/set-cue! (:cue-grid *show*) 6 11
                  (cues/function-cue :t1-gobo-fixed :gobo-fixed-clockwise (show/fixtures-named "torrent-1")
-                                    :effect-name "Torrent 1 Gobo Fixed" :color (create-color :blue)))
+                                    :effect-name "T1 Fixed Gobos" :color (create-color :blue)))
     (ct/set-cue! (:cue-grid *show*) 7 11
                  (cues/function-cue :t2-gobo-fixed :gobo-fixed-clockwise (show/fixtures-named "torrent-2")
-                                    :effect-name "Torrent 2 Gobo Fixed" :color (create-color :blue)))
+                                    :effect-name "T2 Fixed Gobos" :color (create-color :blue)))
     (ct/set-cue! (:cue-grid *show*) 6 10
                  (cues/function-cue :t1-gobo-moving :gobo-moving-clockwise (show/fixtures-named "torrent-1")
-                                    :effect-name "Torrent 1 Gobo Moving" :color (create-color :green)))
+                                    :effect-name "T1 Moving Gobos" :color (create-color :green)))
     (ct/set-cue! (:cue-grid *show*) 7 10
                  (cues/function-cue :t2-gobo-fixed :gobo-moving-clockwise (show/fixtures-named "torrent-2")
-                                    :effect-name "Torrent 2 Gobo Moving" :color (create-color :green)))
+                                    :effect-name "T2 Moving Gobos" :color (create-color :green)))
     (ct/set-cue! (:cue-grid *show*) 6 9
                  (cues/function-cue :t1-gobo-rotation :gobo-rotation-clockwise (show/fixtures-named "torrent-1")
                                     :effect-name "T1 Rotate Gobo CW" :color (create-color :cyan) :level 100))
@@ -314,8 +314,10 @@
                                                                          :tilt (:tilt var-map 0.0)
                                                                          :degrees true)
                                            (show/all-fixtures)))
-                           :variables [{:key "pan" :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}
-                                       {:key "tilt" :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}]))
+                           :variables [{:key "pan" :name "Pan"
+                                        :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}
+                                       {:key "tilt" :name "Tilt"
+                                        :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}]))
 
     pc))
 
