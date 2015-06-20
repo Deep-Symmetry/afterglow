@@ -3,9 +3,12 @@
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
             [afterglow.controllers :as controllers]
+            [clojure.data.json :refer [read-json write-str]]
             [com.evocomputing.colors :as colors]
             [compojure.core :refer [defroutes GET]]
-            [ring.util.http-response :refer [ok]]))
+            [org.httpkit.server :refer [with-channel on-receive on-close]]
+            [ring.util.http-response :refer [ok]]
+            [taoensso.timbre :refer [info warn]]))
 
 (defn- current-cue-color
   "Given a show, the set of keys identifying effects that are
@@ -52,6 +55,33 @@
          :x x :y y :id (str "cue-" x "-" y))))))
 
 (defn show-page [id]
+  "Renders the web interface for interacting with the specified show."
   (let [[show description] (get @show/shows (Integer/valueOf id))
         grid (cue-view show 0 0 8 8)]
     (layout/render "show.html" {:show show :title description :grid grid})))
+
+(defonce ^{:doc "Tracks the active web socket connections, and any
+  pending interface updates for each."}
+  clients
+  (atom {}))
+
+(defn socket-message-received
+  "Called whenever a message is received from one of the web socket
+  connections established by the show web interface pages."
+  [channel msg]
+  (let [data (read-json msg)]
+    (info "Web socket message received" data)))
+
+(defn socket-handler
+  "Provides web socket communication for a show web interface page,
+  supporting real time updates of show and cue grid state."
+  [req]
+  (with-channel req channel
+    (info "Web socket channel" channel "connected")
+    (swap! clients assoc channel {}) ; Set up to track interface needs
+    (on-receive channel (fn [msg] (socket-message-received channel msg)))
+    (on-close channel (fn [status]
+                        (swap! clients dissoc channel)
+                        (info "Web socket channel" channel "closed, status" status))))
+  (write-str {:welcome "Hello"}))
+
