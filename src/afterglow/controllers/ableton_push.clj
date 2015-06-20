@@ -633,20 +633,20 @@
           active-keys (show/active-effect-keys (:show controller))
           [cue active] (show/find-cue-grid-active-effect (:show controller) (+ x origin-x) (+ y origin-y))
           ending (and active (:ending active))
-                      color (when cue
-                              (colors/create-color
-                               :h (colors/hue (:color cue))
-                               :s (colors/saturation (:color cue))
-                               ;; Figure the brightness. Active, non-ending cues are full brightness;
-                               ;; when ending, they blink between middle and low. If they are not active,
-                               ;; they are at middle brightness unless there is another active effect with
-                               ;; the same keyword, in which case they are dim.
-                               :l (if active
-                                    (if ending
-                                      (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 10 20)
-                                      50)
-                                    (if (active-keys (:key cue)) 10 20))))
-                      velocity (if color (velocity-for-color color) 0)]
+          color (when cue
+                  (colors/create-color
+                   :h (colors/hue (:color cue))
+                   :s (colors/saturation (:color cue))
+                   ;; Figure the brightness. Active, non-ending cues are full brightness;
+                   ;; when ending, they blink between middle and low. If they are not active,
+                   ;; they are at middle brightness unless there is another active effect with
+                   ;; the same keyword, in which case they are dim.
+                   :l (if active
+                        (if ending
+                          (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 10 20)
+                          50)
+                        (if (active-keys (:key cue)) 10 20))))
+          velocity (if color (velocity-for-color color) 0)]
       (aset (:next-grid-pads controller) (+ x (* y 8)) velocity))))
 
 (defn- update-cue-grid

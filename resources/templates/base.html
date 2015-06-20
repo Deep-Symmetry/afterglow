@@ -2,7 +2,7 @@
 <html>
   <head>
     <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Afterglow</title>
+    <title>{{title|default:"Afterglow"}}</title>
   </head>
   <body>
     <!-- navbar -->
@@ -35,8 +35,8 @@
     {% style "/css/bootstrap-cyborg.min.css" %}
     {% style "/css/screen.css" %}
 
-    <script src="/js/jquery-2.1.4.min.js" type="text/javascript"></script>
-    <script src="/js/bootstrap.min.js"></script>
+    {% script "/js/jquery-2.1.4.min.js" %}
+    {% script "/js/bootstrap.min.js" %}
 
     <script type="text/javascript">
       var context = "{{servlet-context}}";

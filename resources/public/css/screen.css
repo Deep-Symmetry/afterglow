@@ -2,5 +2,23 @@ html,
 body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     height: 100%;
-    padding-top: 40px;
+    padding-top: 35px;
+}
+.table>tbody>tr>td {
+    padding: 3px;
+}
+.table-bordered>tbody>tr>td {
+    border: 2px solid #060606;
+}
+td.cue-cell {
+    width: 90px;
+    max-width: 100px;
+    height: 50px;
+    max-height: 60px;
+    text-align: center;
+    overflow: hidden;
+    -ms-text-overflow: ellipsis;
+    -o-text-overflow: ellipsis;
+    text-overflow: ellipsis;
+    word-wrap: break-word
 }
