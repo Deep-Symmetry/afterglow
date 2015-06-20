@@ -1,0 +1,4 @@
+{% for row in grid %}
+      <tr>{% for cue in row %}
+        <td class="cue-cell" id="{{cue.id}}" {{cue.style-color|safe}}>{{ cue.name }}</td>{% endfor %}
+      </tr>{% endfor %}

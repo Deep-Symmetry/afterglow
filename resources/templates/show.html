@@ -2,10 +2,7 @@
 {% block content %}
   <div class="row">
     <h3>{{title}}</h3>
-    <table class="table table-bordered">{% for row in grid %}
-      <tr>{% for cue in row %}
-        <td class="cue-cell" id="{{cue.id}}" {{cue.style-color|safe}}>{{ cue.name }}</td>{% endfor %}
-      </tr>{% endfor %}
+    <table id="cue-grid" class="table table-bordered">{% include "cue_grid.html" %}
     </table>
   </div>
 {% endblock %}
