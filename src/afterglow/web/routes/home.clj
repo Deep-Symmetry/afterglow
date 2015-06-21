@@ -3,8 +3,9 @@
             [afterglow.web.routes.show-control :as show-control]
             [afterglow.web.routes.visualizer :as visualizer]
             [afterglow.show :as show]
-            [compojure.core :refer [defroutes GET]]
+            [compojure.core :refer [defroutes GET POST]]
             [ring.util.http-response :refer [ok]]
+            [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
             [clojure.java.io :as io]))
 
 (defn home-page []
@@ -13,18 +14,20 @@
                    (vals @show/shows))]
     (layout/render
      "home.html" {:shows shows
-                  :docs (-> "docs/docs.md" io/resource slurp)})))
+                  :docs (-> "docs/docs.md" io/resource slurp)
+                  :csrf-token *anti-forgery-token*})))
 
 (defn about-page []
-  (layout/render "about.html"))
+  (layout/render "about.html" {:csrf-token *anti-forgery-token*}))
 
 (defn visualizer-page []
-  (layout/render "visualizer.html"))
+  (layout/render "visualizer.html" {:csrf-token *anti-forgery-token*}))
 
 (defroutes home-routes
   (GET "/" [] (home-page))
   (GET "/show/:id" [id] (show-control/show-page id))
-  (GET "/ui-updates/:id" [id :as req] (show-control/ui-updates id req))
+  (GET "/ui-updates/:id" [id] (show-control/get-ui-updates id))
+  (POST "/ui-event/:id/:kind" [id kind :as req] (show-control/post-ui-event id kind req))
   (GET "/about" [] (about-page))
   (GET "/visualizer" [] (visualizer/page))
   (GET "/visualizer-update" [] (visualizer/update-preview))

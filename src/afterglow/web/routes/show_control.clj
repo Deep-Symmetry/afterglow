@@ -10,6 +10,7 @@
             [overtone.at-at :refer [now]]
             [ring.util.response :refer [response]]
             [ring.util.http-response :refer [ok]]
+            [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
             [taoensso.timbre :refer [info warn]]))
 
 (defn- current-cue-color
@@ -75,22 +76,26 @@
   (let [[show description] (get @show/shows (Integer/valueOf id))
         grid (cue-view show 0 0 8 8)
         page-id (:counter (swap! clients update-in [:counter] inc))]
-    (swap! clients update-in [page-id] assoc :show show)
+    (swap! clients update-in [page-id] assoc :show show :id page-id)
     (record-page-grid page-id grid 0 0 8 8)
-    (layout/render "show.html" {:show show :title description :grid grid :page-id page-id})))
+    (layout/render "show.html" {:show show :title description :grid grid :page-id page-id
+                                :csrf-token *anti-forgery-token*})))
 
 (defn- grid-changes
   "Returns the changes which need to be sent to a page to update its
   cue grid display since it was last rendered, and updates the
   record."
-  [page-id grid left bottom width height]
+  [page-id left bottom width height]
   (let [last-info (get @clients page-id)
+        grid (cue-view (:show last-info) left bottom width height)
         changes (filter identity (flatten (for [[last-row row] (map list (:grid last-info) grid)]
                                             (for [[last-cell cell] (map list last-row row)]
                                               (when (not= last-cell cell)
                                                 {:id (:id cell)
                                                  :name (:name cell)
-                                                 :color (colors/rgb-hexstr (:current-color cell))})))))]
+                                                 :color (if (:current-color cell)
+                                                          (colors/rgb-hexstr (:current-color cell))
+                                                          "")})))))]
     (record-page-grid page-id grid left bottom width height)
     (when (seq changes) {:grid-changes changes})))
 
@@ -116,15 +121,50 @@
     (swap! clients update-in [page-id] assoc :button-states next-states)
     (when (seq changes) {:button-changes changes})))
 
-(defn ui-updates [id req]
+(defn get-ui-updates [id]
+  "Route which delivers any changes which need to be applied to a show
+  web interface to reflect differences in the current show state
+  compared to when it was last updated."
   (let [page-id(Integer/valueOf id)]
     (if-let [last-info (get @clients page-id)]
-      ;; Found the page tracking information, send an update
-      (let [[left bottom width height] (:view last-info)
-            grid (cue-view (:show last-info) left bottom width height)]
+      ;; Found the page tracking information, send an update.
+      (let [[left bottom width height] (:view last-info)]
         (response (merge {}
-                         (grid-changes page-id grid left bottom width height)
+                         (grid-changes page-id left bottom width height)
                          (button-changes page-id left bottom width height))))
+      ;; Found no page tracking information, advise the page to reload itself.
       (response {:reload "Page ID not found"}))))
 
+(defn- handle-cue-move-event
+  "Process a request to scroll the cue grid."
+  [page-info kind]
+  (let [[left bottom width height] (:view page-info)]
+    (if (case kind
+          "cues-up" (when (> (- (controllers/grid-height (:cue-grid (:show page-info))) bottom) (dec height))
+                      (swap! clients update-in [(:id page-info) :view 1] + height))
+          "cues-down" (when (pos? bottom)
+                        (swap! clients update-in [(:id page-info) :view 1] - (min bottom height)))
+          "cues-right" (when (> (- (controllers/grid-width (:cue-grid (:show page-info))) left) (dec width))
+                      (swap! clients update-in [(:id page-info) :view 0] + width))
+          "cues-left" (when (pos? left)
+                        (swap! clients update-in [(:id page-info) :view 0] - (min left width)))
+          nil) ;; We did not recognize the direction
+      {:moved kind}
+      {:error (str "Unable to move cue grid in direction: " kind)})))
 
+(defn post-ui-event
+  "Route which reports a user interaction with the show web
+  interface."
+  [id kind req]
+  (when-let [page-id(Integer/valueOf id)]
+    (if-let [page-info (get @clients page-id)]
+      ;; Found the page tracking information, process the event.
+      (response
+       (cond (.startsWith kind "cues-")
+             (handle-cue-move-event page-info kind)
+             
+             ;; We do no recognize this kind of request
+             :else
+             ({:error (str "Unrecognized UI event kind: " kind)})))
+      ;; Found no page tracking information, advise the page to reload itself.
+      (response {:reload "Page ID not found"}))))

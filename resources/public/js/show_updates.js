@@ -39,6 +39,17 @@ function updateShow() {
     });
 }
 
+function moveButtonClicked( eventObject ) {
+    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + this.id),
+                        { "__anti-forgery-token": csrf_token } ).fail(function() {
+        console.log("Problem requesting cue grid move.");
+    });
+}
+
 $( document ).ready(function() {
+    $("#cues-left").click(moveButtonClicked);
+    $("#cues-right").click(moveButtonClicked);
+    $("#cues-up").click(moveButtonClicked);
+    $("#cues-down").click(moveButtonClicked);
     updateShow();
 });
