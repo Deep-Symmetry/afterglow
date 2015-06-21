@@ -28,15 +28,17 @@
   (core/init-logging)
 
   ;; Create a show that runs on OLA universe 1, for demonstration purposes.
-  (let [sample-show (show/show 1)]
+  (def sample-show
+  "A show that runs on OLA universe 1, for demonstration purposes."
+  (show/show 1))
 
-    ;; Make it the default show so we don't need to wrap everything below
-    ;; in a (with-show sample-show ...) binding.
-    (set-default-show! sample-show)
+  ;; Make it the default show so we don't need to wrap everything below
+  ;; in a (with-show sample-show ...) binding.
+  (set-default-show! sample-show)
 
-    ;; TODO: Should this be automatic? If so, creating the show should assign the name too.
-    ;; Register it with the web interface.
-    (show/register-show sample-show "Sample Show"))
+  ;; TODO: Should this be automatic? If so, creating the show should assign the name too.
+  ;; Register it with the web interface.
+  (show/register-show sample-show "Sample Show")
 
   ;; Throw a couple of fixtures in there to play with. For better fun, use
   ;; fixtures and addresses that correspond to your actual hardware.
@@ -49,7 +51,7 @@
                        :y-rotation (tf/degrees -45))
   (show/patch-fixture! :ws-1 (blizzard/weather-system) 1 161 :x (tf/inches 22) :y (tf/inches 7) :z (tf/inches 7)
                        :x-rotation (tf/degrees 90))
-  nil)
+  'sample-show)
 
 
 (defn global-color-effect
@@ -133,10 +135,11 @@
   ([iterations]
    (dotimes [n iterations]
      (let [snap (metro-snapshot (:metronome *show*))]
-       (println (format "Beat %4d (phase %.3f) bar %4d (phase %.3f) 1:%.3f, 2:%.3f, 4:%.3f, 1/2:%.3f, 1/4:%.3f, 3/4:%.3f"
-                        (:beat snap) (:beat-phase snap) (:bar snap) (:bar-phase snap)
-                        (snapshot-beat-phase snap 1) (snapshot-beat-phase snap 2) (snapshot-beat-phase snap 4)
-                        (snapshot-beat-phase snap 1/2) (snapshot-beat-phase snap 1/4) (snapshot-beat-phase snap 3/4)))
+       (println
+        (format "Beat %4d (phase %.3f) bar %4d (phase %.3f) 1:%.3f, 2:%.3f, 4:%.3f, 1/2:%.3f, 1/4:%.3f, 3/4:%.3f"
+                (:beat snap) (:beat-phase snap) (:bar snap) (:bar-phase snap)
+                (snapshot-beat-phase snap 1) (snapshot-beat-phase snap 2) (snapshot-beat-phase snap 4)
+                (snapshot-beat-phase snap 1/2) (snapshot-beat-phase snap 1/4) (snapshot-beat-phase snap 3/4)))
        (Thread/sleep 33)))))
 
 ;; Temporary for working on light aiming code
