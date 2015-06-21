@@ -24,7 +24,7 @@
 (defroutes home-routes
   (GET "/" [] (home-page))
   (GET "/show/:id" [id] (show-control/show-page id))
-  (GET "/ws" [] show-control/socket-handler)
+  (GET "/ui-updates/:id" [id :as req] (show-control/ui-updates id req))
   (GET "/about" [] (about-page))
   (GET "/visualizer" [] (visualizer/page))
   (GET "/visualizer-update" [] (visualizer/update-preview))

@@ -7,6 +7,8 @@
             [com.evocomputing.colors :as colors]
             [compojure.core :refer [defroutes GET]]
             [org.httpkit.server :refer [with-channel on-receive on-close]]
+            [overtone.at-at :refer [now]]
+            [ring.util.response :refer [response]]
             [ring.util.http-response :refer [ok]]
             [taoensso.timbre :refer [info warn]]))
 
@@ -17,7 +19,7 @@
   which that cue cell should be drawn in the web interface."
   [show active-keys cue cue-effect]
   (let [ending (and cue-effect (:ending cue-effect))
-        l-boost (if (zero? (colors/saturation (:color cue))) 10 0)]
+        l-boost (if (zero? (colors/saturation (:color cue))) 10.0 0.0)]
     (colors/create-color
      :h (colors/hue (:color cue))
      ;; Figure the brightness. Active, non-ending cues are full brightness;
@@ -27,9 +29,9 @@
      :s (colors/saturation (:color cue))
      :l (+ (if cue-effect
              (if ending
-               (if (> (rhythm/metro-beat-phase (:metronome show)) 0.4) 20 40)
-               65)
-             (if (active-keys (:key cue)) 20 40))
+               (if (> (rhythm/metro-beat-phase (:metronome show)) 0.4) 20.0 40.0)
+               65.0)
+             (if (active-keys (:key cue)) 20.0 40.0))
            l-boost))))
 
 (defn cue-view
@@ -39,7 +41,8 @@
   Each cell contains a tuple [cue effect], the cue assigned to that
   grid location, and the currently-running effect, if any, launched
   from that cue. Cells which do not have associated cues still be
-  assigned their X and Y attributes so they can be updated if a cue is
+  assigned a unique cue ID (identifying page-relative coordinates,
+  with zero at the lower left) so they can be updated if a cue is
   created for that slot while the page is still up."
   [show left bottom width height]
   (let [active-keys (show/active-effect-keys show)]
@@ -48,40 +51,56 @@
         (assoc
          (if-let [[cue active] (show/find-cue-grid-active-effect show x y)]
            (let [color (current-cue-color show active-keys cue active)]
-             (assoc cue :style-color (str "style=\"background-color: " (colors/rgb-hexstr color) "\"")))
+             (assoc cue :current-color color
+                    :style-color (str "style=\"background-color: " (colors/rgb-hexstr color) "\"")))
            ;; No actual cue found, start with an empty map
            {})
-         ;; Add the coordinates and ID whether or not there is a cue
-         :x x :y y :id (str "cue-" x "-" y))))))
+         ;; Add the ID whether or not there is a cue
+         :id (str "cue-" (- x left) "-" (- y bottom)))))))
+
+(defonce ^{:doc "Tracks the active show interface pages, and any
+  pending interface updates for each."}
+  clients
+  (atom {:counter 0}))
+
+(defn- record-page-grid
+  "Stores the view of the cue grid last rendered by a particular web
+  interface so that differences can be sent the next time the page
+  asks for an update."
+  [page-id grid left bottom width height]
+  (swap! clients update-in [page-id] assoc :view [left bottom width height] :grid grid :when (now)))
 
 (defn show-page [id]
   "Renders the web interface for interacting with the specified show."
   (let [[show description] (get @show/shows (Integer/valueOf id))
-        grid (cue-view show 0 0 8 8)]
-    (layout/render "show.html" {:show show :title description :grid grid})))
+        grid (cue-view show 0 0 8 8)
+        page-id (:counter (swap! clients update-in [:counter] inc))]
+    (swap! clients update-in [page-id] assoc :show show)
+    (record-page-grid page-id grid 0 0 8 8)
+    (layout/render "show.html" {:show show :title description :grid grid :page-id page-id})))
 
-(defonce ^{:doc "Tracks the active web socket connections, and any
-  pending interface updates for each."}
-  clients
-  (atom {}))
+(defn- grid-changes
+  "Returns the changes which need to be sent to a page to update its
+  cue grid display since it was last rendered, and updates the
+  record."
+  [page-id grid left bottom width height]
+  (let [last-info (get @clients page-id)
+        changes (filter identity (flatten (for [[last-row row] (map list (:grid last-info) grid)]
+                                            (for [[last-cell cell] (map list last-row row)]
+                                              (when (not= last-cell cell)
+                                                {:id (:id cell)
+                                                 :name (:name cell)
+                                                 :color (colors/rgb-hexstr (:current-color cell))})))))]
+    (record-page-grid page-id grid left bottom width height)
+    changes))
 
-(defn socket-message-received
-  "Called whenever a message is received from one of the web socket
-  connections established by the show web interface pages."
-  [channel msg]
-  (let [data (read-json msg)]
-    (info "Web socket message received" data)))
+(defn ui-updates [id req]
+  (let [page-id(Integer/valueOf id)]
+    (if-let [last-info (get @clients page-id)]
+      ;; Found the page tracking information, send an update
+      (let [[left bottom width height] (:view last-info)
+            grid (cue-view (:show last-info) left bottom width height)]
+        (response {:grid-changes (grid-changes page-id grid left bottom width height)}))
+      (response {:reload "Page ID not found"}))))
 
-(defn socket-handler
-  "Provides web socket communication for a show web interface page,
-  supporting real time updates of show and cue grid state."
-  [req]
-  (with-channel req channel
-    (info "Web socket channel" channel "connected")
-    (swap! clients assoc channel {}) ; Set up to track interface needs
-    (on-receive channel (fn [msg] (socket-message-received channel msg)))
-    (on-close channel (fn [status]
-                        (swap! clients dissoc channel)
-                        (info "Web socket channel" channel "closed, status" status))))
-  (write-str {:welcome "Hello"}))
 

@@ -7,7 +7,10 @@
   </div>
 {% endblock %}
 {% block page-scripts %}
-{% script "/js/jquery.json.min.js" %}
-{% script "/js/jquery.websocket-0.0.1.js" %}
-{% script "/js/show_updates.js" %}
+    {% script "/js/jquery.json.min.js" %}
+    {% comment %}{% script "/js/jquery.websocket-0.0.1.js" %}{% endcomment %}
+    <script type="text/javascript">
+      var page_id = "{{page-id}}";
+    </script>
+    {% script "/js/show_updates.js" %}
 {% endblock %}  
