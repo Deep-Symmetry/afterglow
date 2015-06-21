@@ -121,12 +121,23 @@
     (swap! clients update-in [page-id] assoc :button-states next-states)
     (when (seq changes) {:button-changes changes})))
 
+(defn- find-page-in-cache
+  "Looks up the cached show page status for the specified ID, cleaning
+  out any other entries which have not been used for a few minutes."
+  [page-id]
+  (doseq [[k v] @clients]
+    (when (and (number? k)
+               (not= k page-id)
+               (> (- (now) (:when v)) 12000))
+      (swap! clients dissoc k)))
+  (get @clients page-id))
+
 (defn get-ui-updates [id]
   "Route which delivers any changes which need to be applied to a show
   web interface to reflect differences in the current show state
   compared to when it was last updated."
   (let [page-id(Integer/valueOf id)]
-    (if-let [last-info (get @clients page-id)]
+    (if-let [last-info (find-page-in-cache page-id)]
       ;; Found the page tracking information, send an update.
       (let [[left bottom width height] (:view last-info)]
         (response (merge {}
