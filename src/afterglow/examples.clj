@@ -209,10 +209,10 @@
                           "gobo-moving-optical-tube" "gobo-moving-magenta-bundt"
                           "gobo-moving-blue-megahazard" "gobo-moving-turbine"])]))
 
-(defn use-push
+(defn make-cues
+  "Create a bunch of example cues for experimentation."
   []
-  (let [pc (push/bind-to-show *show*)
-        hue-bar (params/build-oscillated-param ; Spread a rainbow across a bar of music
+  (let [hue-bar (params/build-oscillated-param ; Spread a rainbow across a bar of music
                  (oscillators/sawtooth-bar) :max 360)
         hue-gradient (params/build-spatial-param ; Spread a rainbow across the light grid
                       (show/all-fixtures)
@@ -229,7 +229,7 @@
     (ct/set-cue! (:cue-grid *show*) 0 1
                  (cues/cue :color (fn [_] (global-color-effect
                                            (params/build-color-param :s 100 :l 50 :h hue-bar)))
-                           :short-name "Rainbow/Bar"))
+                           :short-name "Rainbow Bar Fade"))
     (ct/set-cue! (:cue-grid *show*) 1 1
                  (cues/cue :color (fn [_] (global-color-effect
                                            (params/build-color-param :s 100 :l 50 :h hue-gradient)
@@ -239,7 +239,7 @@
                  (cues/cue :color (fn [_] (global-color-effect
                                            (params/build-color-param :s 100 :l 50 :h hue-gradient
                                                                      :adjust-hue hue-bar)))
-                         :short-name "Rainbow Grid/Bar"))
+                         :short-name "Rainbow Grid+Bar"))
     ;; TODO: Write a macro to make it easier to bind cue variables.
     (ct/set-cue! (:cue-grid *show*) 0 7
                  (cues/cue :sparkle (fn [var-map] (fun/sparkle (show/all-fixtures)
@@ -322,7 +322,12 @@
                            :variables [{:key "pan" :name "Pan"
                                         :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}
                                        {:key "tilt" :name "Tilt"
-                                        :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}]))
+                                        :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}]))))
 
-    pc))
+(defn use-push
+  "A trivial reminder of how to connect the Ableton Push to run the
+  show. But also sets up the cues, if you haven't yet."
+  []
+  (make-cues)
+  (push/bind-to-show *show*))
 

@@ -1,10 +1,54 @@
 {% extends "base.html" %}
 {% block content %}
   <div class="row">
-    <h3>{{title}}</h3>
-    <table id="cue-grid" class="table table-bordered">{% include "cue_grid.html" %}
-    </table>
+    <div class="col-md-12">
+      <h3>{{title}}</h3>
+    </div>
+  </div>  
+  <div class="row">
+    <div class="col-md-12">
+      <table id="cue-grid" class="table table-bordered">{% include "cue_grid.html" %}
+      </table>
+    </div>
   </div>
+  <div class="row">
+    <div class="col-md-10">
+      Text
+    </div>
+    <div class="col-md-2">
+      <table class="pull-right">
+        <tr>
+          <td></td>
+          <td>
+            <button type="button" class="btn btn-primary btn-sm" id="cues-up" disabled>
+              <span class="glyphicon glyphicon-menu-up" aria-hidden="true"></span>
+          </td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>
+            <button type="button" class="btn btn-primary btn-sm" id="cues-left" disabled>
+              <span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span>
+          </td>
+          <td></td>
+          <td>
+            <button type="button" class="btn btn-primary btn-sm" id="cues-right" disabled>
+              <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <button type="button" class="btn btn-primary btn-sm" id="cues-down" disabled>
+              <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>
+          </td>
+          <td></td>
+        </tr>
+      </table>
+      </button>
+    </div>
+  </div>  
+
 {% endblock %}
 {% block page-scripts %}
     {% script "/js/jquery.json.min.js" %}

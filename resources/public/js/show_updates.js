@@ -1,13 +1,13 @@
-$( document ).ready(function() {
-    // Set up XmlRpcRequest to update UI here
-
-    console.log( "ready!" );
-});
-
 function updateCueGrid( data ) {
     $.each( data, function( key, val ) {
         $('#' + val.id).css('background-color', val.color);
         $('#' + val.id).html(val.name);
+    });
+}
+
+function updateButtons( data ) {
+    $.each( data, function( key, val ) {
+        $('#' + val.id).prop('disabled', val.disabled);
     });
 }
 
@@ -17,6 +17,10 @@ function updateShow() {
             switch (key) {
             case "grid-changes":
                 updateCueGrid(val);
+                break;
+
+            case "button-changes":
+                updateButtons(val);
                 break;
 
             case "reload":
@@ -35,4 +39,6 @@ function updateShow() {
     });
 }
 
-updateShow();
+$( document ).ready(function() {
+    updateShow();
+});

@@ -92,7 +92,29 @@
                                                  :name (:name cell)
                                                  :color (colors/rgb-hexstr (:current-color cell))})))))]
     (record-page-grid page-id grid left bottom width height)
-    changes))
+    (when (seq changes) {:grid-changes changes})))
+
+(defn- button-states
+  "Determine which of the scroll buttons should be enabled for the cue
+  grid."
+  [show left bottom width height]
+  (let [bounds @(:dimensions (:cue-grid show))]
+    {:cues-up (>= (second bounds) (+ bottom height))
+     :cues-right (>= (first bounds) (+ left width))
+     :cues-down (pos? bottom)
+     :cues-left (pos? left)}))
+
+(defn- button-changes
+  [page-id left bottom width height]
+  (let [last-info (get @clients page-id)
+        last-states (:button-states last-info)
+        next-states (button-states (:show last-info) left bottom width height)
+        changes (filter identity (for [[key _] next-states]
+                                   (when (not= (key last-states) (key next-states))
+                                     {:id (name key)
+                                      :disabled (not (key next-states))})))]
+    (swap! clients update-in [page-id] assoc :button-states next-states)
+    (when (seq changes) {:button-changes changes})))
 
 (defn ui-updates [id req]
   (let [page-id(Integer/valueOf id)]
@@ -100,7 +122,9 @@
       ;; Found the page tracking information, send an update
       (let [[left bottom width height] (:view last-info)
             grid (cue-view (:show last-info) left bottom width height)]
-        (response {:grid-changes (grid-changes page-id grid left bottom width height)}))
+        (response (merge {}
+                         (grid-changes page-id grid left bottom width height)
+                         (button-changes page-id left bottom width height))))
       (response {:reload "Page ID not found"}))))
 
 
