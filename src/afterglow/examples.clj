@@ -180,6 +180,15 @@
                       :color (create-color color))]
     (ct/set-cue! (:cue-grid *show*) x y cue)))
 
+(defn- name-torrent-gobo-cue
+  "Come up with a summary name for one of the gobo cues we are
+  creating that is concise but meaningful on a controller interface."
+  [prefix function]
+  (let [simplified (clojure.string/replace (name function) #"^gobo-fixed-" "")
+        simplified (clojure.string/replace simplified #"^gobo-moving-" "m/")
+        spaced (clojure.string/replace simplified "-" " ")]
+    (str (clojure.string/upper-case (name prefix)) " " spaced)))
+
 (defn- make-torrent-gobo-cues
   "Create cues for the fixed and moving gobo options, stationary and
   shaking. Takes up half a page on the Push, with the top left at the
@@ -192,10 +201,12 @@
                                  y (if (< i 8) (- top i) (- top i -1))
                                  cue-key (keyword (str (name prefix) "-gobo-fixed"))]
                              (ct/set-cue! (:cue-grid *show*) x y
-                                          (cues/function-cue cue-key (keyword v) fixtures :color blue))
-                             (ct/set-cue! (:cue-grid *show*) (inc x) y
-                                          (cues/function-cue cue-key (keyword (str (name v) "-shake"))
-                                                             fixtures :color blue))))
+                                          (cues/function-cue cue-key (keyword v) fixtures :color blue
+                                                             :short-name (name-torrent-gobo-cue prefix v)))
+                             (let [function (keyword (str (name v) "-shake"))]
+                               (ct/set-cue! (:cue-grid *show*) (inc x) y
+                                            (cues/function-cue cue-key function fixtures :color blue
+                                                               :short-name (name-torrent-gobo-cue prefix function))))))
                          ["gobo-fixed-mortar" "gobo-fixed-4-rings" "gobo-fixed-atom" "gobo-fixed-jacks"
                           "gobo-fixed-saw" "gobo-fixed-sunflower" "gobo-fixed-45-adapter"
                           "gobo-fixed-star" "gobo-fixed-rose-fingerprint"])])
@@ -204,10 +215,12 @@
                            (let [green (create-color :green)
                                  cue-key (keyword (str (name prefix) "-gobo-moving"))]
                              (ct/set-cue! (:cue-grid *show*) (+ left 2) (- top i)
-                                          (cues/function-cue cue-key (keyword v) fixtures :color green))
-                             (ct/set-cue! (:cue-grid *show*) (+ left 3) (- top i)
-                                          (cues/function-cue cue-key (keyword (str (name v) "-shake"))
-                                                             fixtures :color green))))
+                                          (cues/function-cue cue-key (keyword v) fixtures :color green
+                                                             :short-name (name-torrent-gobo-cue prefix v)))
+                             (let [function (keyword (str (name v) "-shake"))]
+                               (ct/set-cue! (:cue-grid *show*) (+ left 3) (- top i)
+                                            (cues/function-cue cue-key function fixtures :color green
+                                                               :short-name (name-torrent-gobo-cue prefix function))))))
                          ["gobo-moving-rings" "gobo-moving-color-swirl" "gobo-moving-stars"
                           "gobo-moving-optical-tube" "gobo-moving-magenta-bundt"
                           "gobo-moving-blue-megahazard" "gobo-moving-turbine"])]))
@@ -266,46 +279,46 @@
                                     :color (create-color :yellow)))
     (ct/set-cue! (:cue-grid *show*) 6 14
                  (cues/function-cue :t1-prism :prism-clockwise (show/fixtures-named "torrent-1") :level 100
-                                    :effect-name "Torrent 1 Prism" :color (create-color :orange)))
+                                    :effect-name "T1 Prism Spin CW" :color (create-color :orange)))
     (ct/set-cue! (:cue-grid *show*) 7 14
                  (cues/function-cue :t2-prism :prism-clockwise (show/fixtures-named "torrent-2") :level 100
-                                    :effect-name "Torrent 2 Prism" :color (create-color :orange)))
+                                    :effect-name "T2 Prism Spin CW" :color (create-color :orange)))
     (ct/set-cue! (:cue-grid *show*) 6 13
                  (cues/function-cue :t1-prism :prism-in (show/fixtures-named "torrent-1")
-                                    :effect-name "Torrent 1 Prism" :color (create-color :orange)))
+                                    :effect-name "T1 Prism In" :color (create-color :orange)))
     (ct/set-cue! (:cue-grid *show*) 7 13
                  (cues/function-cue :t2-prism :prism-in (show/fixtures-named "torrent-2")
-                                    :effect-name "Torrent 2 Prism" :color (create-color :orange)))
+                                    :effect-name "T2 Prism In" :color (create-color :orange)))
     (ct/set-cue! (:cue-grid *show*) 6 12
                  (cues/function-cue :t1-prism :prism-counterclockwise (show/fixtures-named "torrent-1")
-                                    :effect-name "Torrent 1 Prism" :color (create-color :orange)))
+                                    :effect-name "T1 Prism Spin CCW" :color (create-color :orange)))
     (ct/set-cue! (:cue-grid *show*) 7 12
                  (cues/function-cue :t2-prism :prism-counterclockwise (show/fixtures-named "torrent-2")
-                                    :effect-name "Torrent 2 Prism" :color (create-color :orange)))
+                                    :effect-name "T2 Prism Spin CCW" :color (create-color :orange)))
     (ct/set-cue! (:cue-grid *show*) 6 11
                  (cues/function-cue :t1-gobo-fixed :gobo-fixed-clockwise (show/fixtures-named "torrent-1")
-                                    :effect-name "T1 Fixed Gobos" :color (create-color :blue)))
+                                    :effect-name "T1 Fixed Gobos Swap CW" :color (create-color :blue)))
     (ct/set-cue! (:cue-grid *show*) 7 11
                  (cues/function-cue :t2-gobo-fixed :gobo-fixed-clockwise (show/fixtures-named "torrent-2")
-                                    :effect-name "T2 Fixed Gobos" :color (create-color :blue)))
+                                    :effect-name "T2 Fixed Gobos Swap CW" :color (create-color :blue)))
     (ct/set-cue! (:cue-grid *show*) 6 10
                  (cues/function-cue :t1-gobo-moving :gobo-moving-clockwise (show/fixtures-named "torrent-1")
-                                    :effect-name "T1 Moving Gobos" :color (create-color :green)))
+                                    :effect-name "T1 Moving Gobos Swap CW" :color (create-color :green)))
     (ct/set-cue! (:cue-grid *show*) 7 10
                  (cues/function-cue :t2-gobo-fixed :gobo-moving-clockwise (show/fixtures-named "torrent-2")
-                                    :effect-name "T2 Moving Gobos" :color (create-color :green)))
+                                    :effect-name "T2 Moving Gobos Swap CW" :color (create-color :green)))
     (ct/set-cue! (:cue-grid *show*) 6 9
                  (cues/function-cue :t1-gobo-rotation :gobo-rotation-clockwise (show/fixtures-named "torrent-1")
-                                    :effect-name "T1 Rotate Gobo CW" :color (create-color :cyan) :level 100))
+                                    :effect-name "T1 Spin Gobo CW" :color (create-color :cyan) :level 100))
     (ct/set-cue! (:cue-grid *show*) 7 9
                  (cues/function-cue :t2-gobo-rotation :gobo-rotation-clockwise (show/fixtures-named "torrent-2")
-                                    :effect-name "T2 Rotate Gobo CW" :color (create-color :cyan) :level 100))
+                                    :effect-name "T2 Spin Gobo CW" :color (create-color :cyan) :level 100))
     (ct/set-cue! (:cue-grid *show*) 6 8
                  (cues/function-cue :t1-gobo-rotation :gobo-rotation-counterclockwise (show/fixtures-named "torrent-1")
-                                    :effect-name "T1 Rotate Gobo CCW" :color (create-color :cyan)))
+                                    :effect-name "T1 Spin Gobo CCW" :color (create-color :cyan)))
     (ct/set-cue! (:cue-grid *show*) 7 8
                  (cues/function-cue :t2-gobo-rotation :gobo-rotation-counterclockwise (show/fixtures-named "torrent-2")
-                                    :effect-name "T2 Rotate Gobo CCW" :color (create-color :cyan)))
+                                    :effect-name "T2 Spin Gobo CCW" :color (create-color :cyan)))
 
     ;; TODO: Buttons under these to rotate gobos themselves
 
