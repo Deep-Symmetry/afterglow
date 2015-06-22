@@ -2,6 +2,7 @@
   (:require [afterglow.web.layout :as layout]
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
+            [afterglow.show-context :refer [with-show]]
             [afterglow.controllers :as controllers]
             [clojure.data.json :refer [read-json write-str]]
             [com.evocomputing.colors :as colors]
@@ -146,6 +147,21 @@
       ;; Found no page tracking information, advise the page to reload itself.
       (response {:reload "Page ID not found"}))))
 
+(defn- handle-cue-click-event
+  "Process an interaction with a cue grid cell."
+  [page-info kind]
+  (let [[left bottom] (:view page-info)
+        [_ column row] (clojure.string/split kind #"-")
+        [x y] (map + (map #(Integer/valueOf %) [column row]) [bottom left])
+        [cue active] (show/find-cue-grid-active-effect (:show page-info) x y)]
+    (if cue
+      (with-show (:show page-info)
+        (if active
+          (show/end-effect! (:key cue))
+          (show/add-effect-from-cue-grid! x y))
+        {:hit kind})
+      {:error (str "No cue found for cell: " kind)})))
+
 (defn- handle-cue-move-event
   "Process a request to scroll the cue grid."
   [page-info kind]
@@ -171,9 +187,12 @@
     (if-let [page-info (get @clients page-id)]
       ;; Found the page tracking information, process the event.
       (response
-       (cond (.startsWith kind "cues-")
-             (handle-cue-move-event page-info kind)
+       (cond (.startsWith kind "cue-")
+             (handle-cue-click-event page-info kind)
              
+             (.startsWith kind "cues-")
+             (handle-cue-move-event page-info kind)
+
              ;; We do no recognize this kind of request
              :else
              ({:error (str "Unrecognized UI event kind: " kind)})))
