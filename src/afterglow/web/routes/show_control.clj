@@ -21,7 +21,7 @@
   which that cue cell should be drawn in the web interface."
   [show active-keys cue cue-effect]
   (let [ending (and cue-effect (:ending cue-effect))
-        l-boost (if (zero? (colors/saturation (:color cue))) 10.0 0.0)]
+        l-boost (if (zero? (colors/saturation (:color cue))) 20.0 0.0)]
     (colors/create-color
      :h (colors/hue (:color cue))
      ;; Figure the brightness. Active, non-ending cues are full brightness;
@@ -82,6 +82,16 @@
     (layout/render "show.html" {:show show :title description :grid grid :page-id page-id
                                 :csrf-token *anti-forgery-token*})))
 
+(defn- contrasting-text-color
+  "If the default text color of white will be hard to read against a
+  cell assigned the specified color, returns black. Otherwise returns
+  an empty string so the text color is used."
+  [color]
+  (if (and color
+           (> (colors/lightness color) 60.0))
+    "#000"
+    ""))
+
 (defn- grid-changes
   "Returns the changes which need to be sent to a page to update its
   cue grid display since it was last rendered, and updates the
@@ -96,7 +106,8 @@
                                                  :name (:name cell)
                                                  :color (if (:current-color cell)
                                                           (colors/rgb-hexstr (:current-color cell))
-                                                          "")})))))]
+                                                          "")
+                                                 :textColor (contrasting-text-color (:current-color cell))})))))]
     (record-page-grid page-id grid left bottom width height)
     (when (seq changes) {:grid-changes changes})))
 

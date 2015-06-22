@@ -1,6 +1,7 @@
 function updateCueGrid( data ) {
     $.each( data, function( key, val ) {
         $('#' + val.id).css('background-color', val.color);
+        $('#' + val.id).css('color', val.textColor);
         $('#' + val.id).html(val.name);
     });
 }
