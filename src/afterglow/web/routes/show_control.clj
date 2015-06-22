@@ -33,7 +33,7 @@
              (if ending
                (if (> (rhythm/metro-beat-phase (:metronome show)) 0.4) 20.0 40.0)
                65.0)
-             (if (active-keys (:key cue)) 20.0 40.0))
+             (if (active-keys (:key cue)) 25.0 40.0))
            l-boost))))
 
 (defn cue-view
