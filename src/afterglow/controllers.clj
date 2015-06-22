@@ -11,6 +11,39 @@
   pool
   (at-at/mk-pool))
 
+(defonce
+  ^{:private true
+    :doc "Protect protocols against namespace reloads"}
+  _PROTOCOLS_
+  (do
+    (defprotocol IGridController
+  "A controller which provides an interface for a section of the cue
+  grid, and which can be linked to the web interface so they scroll in
+  unison."
+  (display-name [this]
+    "Returns the name by which the controller can be identified in
+    user interfaces.")
+  (physical-height [this]
+    "Returns the height of the cue grid on the controller.")
+  (physical-width [this]
+    "Returns the width of the cue grid on the controller.")
+  (current-bottom [this] [this y]
+    "Returns the cue grid row currently displayed at the bottom of the
+    controller, or sets it.")
+  (current-left [this] [this x]
+    "Returns the cue grid column currently displayed at the left of
+    the controller, or sets it.")
+  (add-move-listener [this f]
+    "Registers a function that will be called whenever the
+    controller's viewport on the overall cue grid is moved, or the
+    controller is deactivated. The function will be called with two
+    arguments, the controller and a keyword which will be either :move
+    or :deactivated. In the latter case, the function will never be
+    called again.")
+  (remove-move-listener [this f]
+    "Unregisters a move listener function so it will no longer be
+    called when the controller's origin is moved."))))
+
 (defn cue-grid
   "Return a two dimensional arrangement for launching and monitoring
   cues, suitable for both a web interface and control surfaces with a

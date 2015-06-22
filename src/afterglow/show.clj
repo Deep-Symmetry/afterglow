@@ -203,6 +203,7 @@
     :movement (atom {})  ; Used to smooth head motion between frames
     :statistics (atom { :afterglow-version (env :afterglow-version)})
     :dimensions (atom {})
+    :grid-controllers (atom #{})
     :task (atom nil)
     :pool (atom nil)
     :cue-grid (controllers/cue-grid)}))
@@ -771,6 +772,23 @@
 
 (defonce ^{:doc "Holds the registered shows, if any, for display in the web server."}
   shows (atom {}))
+
+(defn register-grid-controller
+  "Add a cue grid controller to the list available for linking in the
+  web interface. The argument must implement the [[IGridController]]
+  protocol."
+  {:doc/format :markdown}
+  [controller]
+  {:pre [(some? *show*) (satisfies? controllers/IGridController controller)]}
+  (swap! (:grid-controllers *show*) conj controller))
+
+(defn unregister-grid-controller
+  "Remove a cue grid controller from the list available for linking in the
+  web interface."
+    {:doc/format :markdown}
+  [controller]
+  {:pre [(some? *show*) (satisfies? controllers/IGridController controller)]}
+  (swap! (:grid-controllers *show*) disj controller))
 
 (defn register-show
   "Add a show to the list of available shows for the web interface."

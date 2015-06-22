@@ -345,5 +345,6 @@
   show. But also sets up the cues, if you haven't yet."
   []
   (make-cues)
+  (println "To link to the web interface:")
+  (println "(afterglow.web.routes.show-control/link-controller 1 (first @(:grid-controllers *show*)))")
   (push/bind-to-show *show*))
-

@@ -173,19 +173,30 @@
         {:hit kind})
       {:error (str "No cue found for cell: " kind)})))
 
+(defn- move-view
+  "Updates the origin of our view rectangle, and if it actually
+  changed, also moves any linked controller."
+  [page-info new-left new-bottom]
+  (let [[left bottom width height] (:view page-info)]
+    (when (or (not= left new-left) (not= bottom new-bottom))
+      (swap! clients assoc-in [(:id page-info) :view] [new-left new-bottom width height])
+      (when-let [controller (:linked-controller page-info)]
+        (when (not= left new-left) (controllers/current-left controller new-left))
+        (when (not= bottom new-bottom) (controllers/current-bottom controller new-bottom))))))
+
 (defn- handle-cue-move-event
   "Process a request to scroll the cue grid."
   [page-info kind]
   (let [[left bottom width height] (:view page-info)]
     (if (case kind
           "cues-up" (when (> (- (controllers/grid-height (:cue-grid (:show page-info))) bottom) (dec height))
-                      (swap! clients update-in [(:id page-info) :view 1] + height))
+                      (move-view page-info left (+ bottom height)))
           "cues-down" (when (pos? bottom)
-                        (swap! clients update-in [(:id page-info) :view 1] - (min bottom height)))
+                        (move-view page-info left (- bottom (min bottom height))))
           "cues-right" (when (> (- (controllers/grid-width (:cue-grid (:show page-info))) left) (dec width))
-                      (swap! clients update-in [(:id page-info) :view 0] + width))
+                         (move-view page-info (+ left width) bottom))
           "cues-left" (when (pos? left)
-                        (swap! clients update-in [(:id page-info) :view 0] - (min left width)))
+                        (move-view page-info (- left (min left width)) bottom))
           nil) ;; We did not recognize the direction
       {:moved kind}
       {:error (str "Unable to move cue grid in direction: " kind)})))
@@ -194,7 +205,7 @@
   "Route which reports a user interaction with the show web
   interface."
   [id kind req]
-  (when-let [page-id(Integer/valueOf id)]
+  (when-let [page-id (Integer/valueOf id)]
     (if-let [page-info (get @clients page-id)]
       ;; Found the page tracking information, process the event.
       (response
@@ -209,3 +220,40 @@
              ({:error (str "Unrecognized UI event kind: " kind)})))
       ;; Found no page tracking information, advise the page to reload itself.
       (response {:reload "Page ID not found"}))))
+
+(defn- linked-controller-update
+  "Called when a linked physical controller has scrolled, or is being
+  deactivated."
+  [old-page-info controller action]
+  (case action
+    :moved
+    (if-let [page-info (get @clients (:id old-page-info))]
+      ;; Page is still active, so update its view origin.
+      (move-view page-info (controllers/current-left controller) (controllers/current-bottom controller))
+      ;; Page is no longer active, remove our listener so we can be garbage collected.
+      (controllers/remove-move-listener controller (:move-handler old-page-info)))
+    
+    :deactivated
+    (when-let [page-info (get @clients (:id old-page-info))]
+      (swap! clients update-in [(:id page-info)] dissoc :move-handler :linked-controller))))
+
+(defn unlink-controller
+  "Remove any physical grid controller currently linked to scroll in
+  tandem."
+  [page-id]
+  (when-let [page-info (get @clients page-id)]
+    (when-let [controller (:linked-controller page-info)]
+      (controllers/remove-move-listener controller (:move-handler page-info)))
+    (swap! clients update-in [page-id] dissoc :move-handler :linked-controller)))
+
+;; TODO: Reload the window with the right number of rows and columns if the
+;; physical controller has a different number.
+(defn link-controller
+  "Tie the cue grid display to that of a physical grid controller, so
+  that they scroll in tandem."
+  [page-id controller]
+  (when-let [page-info (get @clients page-id)]
+    (unlink-controller page-id)  ;; In case there was a previous link
+    (let [move-handler (partial linked-controller-update page-info)]
+      (swap! clients update-in [page-id] assoc :move-handler move-handler :linked-controller controller)
+      (controllers/add-move-listener controller move-handler))))

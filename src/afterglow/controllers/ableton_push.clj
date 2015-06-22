@@ -1238,6 +1238,14 @@
                          false)
                        (handle-aftertouch [this controller message])))))))
 
+(defn- move-origin
+  "Changes the origin of the controller, notifying any registered
+  listeners."
+  [controller origin]
+  (when (not= origin @(:origin controller))
+    (reset! (:origin controller) origin)
+    (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :moved))))
+
 (defn- control-change-received
   "Process a control change message which was not handled by an
   interface overlay."
@@ -1278,7 +1286,7 @@
         ;; Trying to scroll left in cue grid
         (let [[x y] @(:origin controller)]
           (when (pos? x)
-            (reset! (:origin controller) [(max 0 (- x 8)) y])
+            (move-origin controller [(max 0 (- x 8)) y])
             (add-button-held-feedback-overlay controller (:left-arrow control-buttons))))))
 
     45 ; Right arrow
@@ -1294,7 +1302,7 @@
         ;; Trying to scroll right in cue grid
         (let [[x y] @(:origin controller)]
           (when (> (- (controllers/grid-width (:cue-grid (:show controller))) x) 7)
-            (reset! (:origin controller) [(+ x 8) y])
+            (move-origin controller [(+ x 8) y])
             (add-button-held-feedback-overlay controller (:right-arrow control-buttons))))))
 
     46 ; Up arrow
@@ -1309,7 +1317,7 @@
         ;; Trying to scroll up in cue grid
         (let [[x y] @(:origin controller)]
           (when (> (- (controllers/grid-height (:cue-grid (:show controller))) y) 7)
-            (reset! (:origin controller) [x (+ y 8)])
+            (move-origin controller [x (+ y 8)])
             (add-button-held-feedback-overlay controller (:up-arrow control-buttons))))))
 
     47 ; Down arrow
@@ -1323,7 +1331,7 @@
         ;; Trying to scroll down in cue grid
         (let [[x y] @(:origin controller)]
           (when (pos? y)
-            (reset! (:origin controller) [x (max 0 (- y 8))])
+            (move-origin controller [x (max 0 (- y 8))])
             (add-button-held-feedback-overlay controller (:down-arrow control-buttons))))))
 
     59 ; User mode button
@@ -1546,15 +1554,23 @@
   the first port whose name or description contains the supplied
   string will be used.
 
+  The controller will be identified in the user interface (for the
+  purposes of linking it to the web cue grid) as \"Ableton Push\". If
+  you would like to use a different name (for example, if you are
+  lucky enough to have more than one Push), you can pass in a custom
+  value after `:display-name`.
+
   If you want the user interface to be refreshed at a different rate
   than the default of thirty times per second, pass your desired
   number of milliseconds after `:refresh-interval`."
   {:doc/format :markdown}
-  [show & {:keys [device-name refresh-interval]
+  [show & {:keys [device-name refresh-interval display-name]
            :or {device-name "User Port"
-                refresh-interval show/default-refresh-interval}}]
+                refresh-interval show/default-refresh-interval
+                display-name "Ableton Push"}}]
   (let [controller
         {:id (swap! controller-counter inc)
+         :display-name display-name
          :show show
          :origin (atom [0 0])
          :effect-offset (atom 0)
@@ -1576,13 +1592,27 @@
          :midi-handler (atom nil)
          :tap-tempo-handler (amidi/create-tempo-tap-handler (:metronome show))
          :overlays (atom (sorted-map-by >))
-         :next-overlay (atom 0)}]
+         :next-overlay (atom 0)
+         :move-listeners (atom #{})
+         :grid-controller-impl (atom nil)}]
     (reset! (:midi-handler controller) (partial midi-received controller))
+    (reset! (:grid-controller-impl controller)
+            (reify controllers/IGridController
+              (display-name [this] (:display-name controller))
+              (physical-height [this] 8)
+              (physical-width [this] 8)
+              (current-bottom [this] (@(:origin controller) 1))
+              (current-bottom [this y] (move-origin controller (assoc @(:origin controller) 1 y)))
+              (current-left [this] (@(:origin controller) 0))
+              (current-left [this x] (move-origin controller (assoc @(:origin controller) 0 x)))
+              (add-move-listener [this f] (swap! (:move-listeners controller) conj f))
+              (remove-move-listener [this f] (swap! (:move-listeners controller) disj f))))
     ;; Set controller in User mode
     (midi/midi-sysex (:port-out controller) [240 71 127 21 98 0 1 1 247])
     (clear-interface controller)
     (welcome-animation controller)
     (swap! active-bindings assoc (:id controller) controller)
+    (show/register-grid-controller @(:grid-controller-impl controller))
     controller))
 
 (defn deactivate
@@ -1592,7 +1622,9 @@
   (swap! (:task controller) (fn [task]
                               (when task (at-at/kill task))
                               nil))
-
+  (show/unregister-grid-controller @(:grid-controller-impl controller))
+  (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :deactivated))
+  (reset! (:move-listeners controller) #{})
   (amidi/remove-global-handler! @(:midi-handler controller))
   
   (Thread/sleep 35) ; Give the UI update thread time to shut down
