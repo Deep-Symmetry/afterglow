@@ -21,8 +21,12 @@
             [taoensso.timbre :as timbre]))
 
 (defn use-sample-show
-  "Set up a sample show for experimenting with Afterglow."
-  []
+  "Set up a sample show for experimenting with Afterglow. By default
+  it will create the show to use universe 1, but if for some reason
+  your OLA environment makes using a different universe ID more
+  convenient, you can override that by supplying a different ID
+  after :universe"
+  [& {:keys [universe] :or {universe 1}}]
   ;; Since this class is an entry point for interactive REPL usage,
   ;; make sure a sane logging environment is established.
   (core/init-logging)
@@ -30,7 +34,7 @@
   ;; Create a show that runs on OLA universe 1, for demonstration purposes.
   (def sample-show
   "A show that runs on OLA universe 1, for demonstration purposes."
-  (show/show 1))
+  (show/show :universes [universe]))
 
   ;; Make it the default show so we don't need to wrap everything below
   ;; in a (with-show sample-show ...) binding.
@@ -42,14 +46,17 @@
 
   ;; Throw a couple of fixtures in there to play with. For better fun, use
   ;; fixtures and addresses that correspond to your actual hardware.
-  (show/patch-fixture! :torrent-1 (blizzard/torrent-f3) 1 1 :x (tf/inches 49) :y (tf/inches 61.5) :z (tf/inches 6)
+  (show/patch-fixture! :torrent-1 (blizzard/torrent-f3) universe 1
+                       :x (tf/inches 49) :y (tf/inches 61.5) :z (tf/inches 6)
                        :y-rotation (tf/degrees -45))
-  (show/patch-fixture! :hex-1 (chauvet/slimpar-hex3-irc) 1 129 :y (tf/inches 4) :z (tf/inches 10)
+  (show/patch-fixture! :hex-1 (chauvet/slimpar-hex3-irc) universe 129 :y (tf/inches 4) :z (tf/inches 10)
                        :x-rotation (tf/degrees 90))
-  (show/patch-fixture! :blade-1 (blizzard/blade-rgbw) 1 270 :y (tf/inches 9))
-  (show/patch-fixture! :blade-2 (blizzard/blade-rgbw) 1 240 :x (tf/inches 40) :y (tf/inches 58) :z (tf/inches -15)
+  (show/patch-fixture! :blade-1 (blizzard/blade-rgbw) universe 270 :y (tf/inches 9))
+  (show/patch-fixture! :blade-2 (blizzard/blade-rgbw) universe 240
+                       :x (tf/inches 40) :y (tf/inches 58) :z (tf/inches -15)
                        :y-rotation (tf/degrees -45))
-  (show/patch-fixture! :ws-1 (blizzard/weather-system) 1 161 :x (tf/inches 22) :y (tf/inches 7) :z (tf/inches 7)
+  (show/patch-fixture! :ws-1 (blizzard/weather-system) universe 161
+                       :x (tf/inches 22) :y (tf/inches 7) :z (tf/inches 7)
                        :x-rotation (tf/degrees 90))
   'sample-show)
 

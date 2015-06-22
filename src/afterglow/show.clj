@@ -183,30 +183,30 @@
   interval (in milliseconds), which defaults to a frame rate of thirty
   times per second."
   {:doc/format :markdown}
-  ([universe]
-   (show (metronome 120) default-refresh-interval universe))
-  ([metronome refresh-interval & universes]
-  {:pre [(sequential? universes) (number? refresh-interval) (pos? refresh-interval)]}
-   {:id (swap! show-counter inc)
-    :metronome metronome
-    :sync (atom nil)
-    :refresh-interval refresh-interval
-    :universes (set universes)
-    :next-id (atom 0)
-    :active-effects (atom {:effects []
-                           :indices {}
-                           :meta []
-                           :ending #{}})
-    :variables (atom {})
-    :grand-master (master nil)  ; Only the grand master can have no show, or parent.
-    :fixtures (atom {})
-    :movement (atom {})  ; Used to smooth head motion between frames
-    :statistics (atom { :afterglow-version (env :afterglow-version)})
-    :dimensions (atom {})
-    :grid-controllers (atom #{})
-    :task (atom nil)
-    :pool (atom nil)
-    :cue-grid (controllers/cue-grid)}))
+  [& {:keys [universes base-metronome refresh-interval]
+      :or {universes [1] base-metronome (metronome 120) refresh-interval default-refresh-interval}}]
+  {:pre [(sequential? universes) (pos? (count universes)) (every? integer? universes) (not-any? neg? universes)
+         (satisfies? IMetronome base-metronome) (number? refresh-interval) (pos? refresh-interval)]}
+  {:id (swap! show-counter inc)
+   :metronome base-metronome
+   :sync (atom nil)
+   :refresh-interval refresh-interval
+   :universes (set universes)
+   :next-id (atom 0)
+   :active-effects (atom {:effects []
+                          :indices {}
+                          :meta []
+                          :ending #{}})
+   :variables (atom {})
+   :grand-master (master nil)  ; Only the grand master can have no show, or parent.
+   :fixtures (atom {})
+   :movement (atom {})  ; Used to smooth head motion between frames
+   :statistics (atom { :afterglow-version (env :afterglow-version)})
+   :dimensions (atom {})
+   :grid-controllers (atom #{})
+   :task (atom nil)
+   :pool (atom nil)
+   :cue-grid (controllers/cue-grid)})
 
 (defn stop-all!
   "Kills all scheduled tasks which shows may have created to output
