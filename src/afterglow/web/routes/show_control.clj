@@ -163,7 +163,7 @@
   [page-info kind]
   (let [[left bottom] (:view page-info)
         [_ column row] (clojure.string/split kind #"-")
-        [x y] (map + (map #(Integer/valueOf %) [column row]) [bottom left])
+        [x y] (map + (map #(Integer/valueOf %) [column row]) [left bottom])
         [cue active] (show/find-cue-grid-active-effect (:show page-info) x y)]
     (if cue
       (with-show (:show page-info)
