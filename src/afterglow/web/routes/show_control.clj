@@ -12,7 +12,7 @@
             [ring.util.response :refer [response]]
             [ring.util.http-response :refer [ok]]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
-            [taoensso.timbre :refer [info warn]]))
+            [taoensso.timbre :refer [info warn spy]]))
 
 (defn- current-cue-color
   "Given a show, the set of keys identifying effects that are
@@ -72,13 +72,40 @@
   [page-id grid left bottom width height]
   (swap! clients update-in [page-id] assoc :view [left bottom width height] :grid grid :when (now)))
 
-(defn show-page [id]
+(defn update-known-controllers
+  "Builds a list of the currently-registered physical grid controllers
+  associated with a page's show, assigning each a unique id number, so
+  they can be selected in the user interface for scrolling or linking
+  to."
+  [page-id]
+  (let [page-info (get @clients page-id)
+        show (:show page-info)
+        controller-info (loop [result (update-in (:controller-info page-info) [:known]
+                                                 select-keys @(:grid-controllers show))
+                               new-controllers (clojure.set/difference @(:grid-controllers show)
+                                                                       (set (keys (:known result))))
+                               counter (inc (:counter result 0))]
+                          (if-not (seq new-controllers)
+                            result
+                            (recur (-> result
+                                       (assoc-in [:known (first new-controllers)] counter)
+                                       (assoc-in [:counter] counter))
+                                   (rest new-controllers)
+                                   (inc counter))))]
+    (swap! clients assoc-in [page-id :controller-info]
+           (if (and (:selected controller-info) (not  (get (:known controller-info) (:selected controller-info))))
+             (dissoc controller-info :selected)
+             controller-info))))
+
+(defn show-page
   "Renders the web interface for interacting with the specified show."
-  (let [[show description] (get @show/shows (Integer/valueOf id))
+  [show-id]
+  (let [[show description] (get @show/shows (Integer/valueOf show-id))
         grid (cue-view show 0 0 8 8)
         page-id (:counter (swap! clients update-in [:counter] inc))]
     (swap! clients update-in [page-id] assoc :show show :id page-id)
     (record-page-grid page-id grid 0 0 8 8)
+    (update-known-controllers page-id)
     (layout/render "show.html" {:show show :title description :grid grid :page-id page-id
                                 :csrf-token *anti-forgery-token*})))
 
@@ -247,7 +274,7 @@
     (swap! clients update-in [page-id] dissoc :move-handler :linked-controller)))
 
 ;; TODO: Reload the window with the right number of rows and columns if the
-;; physical controller has a different number.
+;; physical controller has a different number?
 (defn link-controller
   "Tie the cue grid display to that of a physical grid controller, so
   that they scroll in tandem."
