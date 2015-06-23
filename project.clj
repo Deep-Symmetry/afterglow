@@ -36,7 +36,7 @@
                  [org.clojure/tools.nrepl "0.2.10"]
                  [org.clojure/tools.cli "0.3.1"]
                  [buddy "0.5.5"]
-                 [instaparse "1.4.0"]
+                 [instaparse "1.4.1"]
                  [http-kit "2.1.19"]]
   :source-paths ["src" "generated"]
   :prep-tasks [["with-profile" "+gen,+dev" "run" "-m" "afterglow.src-generator"] "protobuf" "javac" "compile"]
