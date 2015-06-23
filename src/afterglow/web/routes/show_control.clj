@@ -73,29 +73,35 @@
   (swap! clients update-in [page-id] assoc :view [left bottom width height] :grid grid :when (now)))
 
 (defn update-known-controllers
-  "Builds a list of the currently-registered physical grid controllers
-  associated with a page's show, assigning each a unique id number, so
-  they can be selected in the user interface for scrolling or linking
-  to."
+  "Makes sure the cached page information contains list of the
+  currently-registered physical grid controllers associated with a
+  page's show, assigning each a unique id number, so they can be
+  selected in the user interface for scrolling or linking to. If this
+  list changed, return the new list so it can be sent as an update to
+  the page."
   [page-id]
   (let [page-info (get @clients page-id)
         show (:show page-info)
-        controller-info (loop [result (update-in (:controller-info page-info) [:known]
-                                                 select-keys @(:grid-controllers show))
-                               new-controllers (clojure.set/difference @(:grid-controllers show)
-                                                                       (set (keys (:known result))))
-                               counter (inc (:counter result 0))]
-                          (if-not (seq new-controllers)
-                            result
-                            (recur (-> result
-                                       (assoc-in [:known (first new-controllers)] counter)
-                                       (assoc-in [:counter] counter))
-                                   (rest new-controllers)
-                                   (inc counter))))]
-    (swap! clients assoc-in [page-id :controller-info]
-           (if (and (:selected controller-info) (not  (get (:known controller-info) (:selected controller-info))))
-             (dissoc controller-info :selected)
-             controller-info))))
+        old-info (:controller-info page-info)
+        updated-known (loop [result (update-in old-info [:known]
+                                               select-keys @(:grid-controllers show))
+                             new-controllers (clojure.set/difference @(:grid-controllers show)
+                                                                     (set (keys (:known result))))
+                             counter (inc (:counter result 0))]
+                        (if-not (seq new-controllers)
+                          result
+                          (recur (-> result
+                                     (assoc-in [:known (first new-controllers)] counter)
+                                     (assoc-in [:counter] counter))
+                                 (rest new-controllers)
+                                 (inc counter))))
+        controller-info (if (and (:selected updated-known)
+                                 (not (get (:known updated-known) (:selected updated-known))))
+                          (dissoc updated-known :selected)
+                          updated-known)]
+    (when (not= old-info controller-info)
+      (swap! clients assoc-in [page-id :controller-info] controller-info)
+      controller-info)))
 
 (defn show-page
   "Renders the web interface for interacting with the specified show."
