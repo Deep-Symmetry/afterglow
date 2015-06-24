@@ -22,3 +22,19 @@ td.cue-cell {
     text-overflow: ellipsis;
     word-wrap: break-word
 }
+.btn-mini {
+    padding: 2px 6px;
+    font-size: 11px;
+    line-height: 13px;
+}
+table.metronome {
+    text-align: center;
+}
+.table tbody>tr>th.division {
+    text-align: center;
+}
+.table tbody>tr>td.metronome-sync {
+    text-align: left;
+    vertical-align: middle;
+}
+

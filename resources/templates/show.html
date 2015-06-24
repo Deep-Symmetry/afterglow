@@ -7,8 +7,58 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-md-8">
-      Text
+    <div class="col-md-4">
+      <table class="table metronome">
+        <tr>
+          <th>Metronome</th>
+          <th class="division">Phrase</td>
+          <th class="division">Bar</td>
+          <th class="division">Beat</td>
+        </tr>
+        <tr>
+          <td rowspan="2" class="metronome-sync">
+            <button type="button" class="btn btn-sm tap-tempo" id="tap-tempo">Tap Tempo
+          </td>
+          <td>
+            <button type="button" class="btn btn-mini" id="phrase-up">
+              <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
+          </td>
+          <td>
+            <button type="button" class="btn btn-mini" id="bar-up">
+              <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
+          </td>
+          <td>
+            <button type="button" class="btn btn-mini" id="beat-up">
+              <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
+          </td>
+        </tr>
+        <tr>
+          <td id="phrase">120</td>
+          <td id="bar">3</td>
+          <td id="beat">1</td>
+        </tr>
+        <tr>
+          <td class="metronome-sync">
+            <select id="metronome-sync">
+              <option value="">Manual</option>
+            </select>
+          </td>
+          <td>
+            <button type="button" class="btn btn-mini" id="phrase-down">
+              <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
+          </td>
+          <td>
+            <button type="button" class="btn btn-mini" id="bar-down">
+              <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
+          </td>
+          <td>
+            <button type="button" class="btn btn-mini" id="beat-down">
+              <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="col-md-4">
     </div>
     <div class="col-md-2">
       <div id="link-section" style="display:none">

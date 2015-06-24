@@ -264,6 +264,22 @@
       {:moved kind}
       {:error (str "Unable to move cue grid in direction: " kind)})))
 
+(defn- linked-controller-update
+  "Called when a linked physical controller has scrolled, or is being
+  deactivated."
+  [old-page-info controller action]
+  (case action
+    :moved
+    (if-let [page-info (get @clients (:id old-page-info))]
+      ;; Page is still active, so update its view origin.
+      (move-view page-info (controllers/current-left controller) (controllers/current-bottom controller))
+      ;; Page is no longer active, remove our listener so we can be garbage collected.
+      (controllers/remove-move-listener controller (:move-handler old-page-info)))
+    
+    :deactivated
+    (when-let [page-info (get @clients (:id old-page-info))]
+      (swap! clients update-in [(:id page-info)] dissoc :move-handler :linked-controller))))
+
 (defn unlink-controller
   "Remove any physical grid controller currently linked to scroll in
   tandem."
@@ -326,19 +342,3 @@
              {:error (str "Unrecognized UI event kind: " kind)}))
       ;; Found no page tracking information, advise the page to reload itself.
       (response {:reload "Page ID not found"}))))
-
-(defn- linked-controller-update
-  "Called when a linked physical controller has scrolled, or is being
-  deactivated."
-  [old-page-info controller action]
-  (case action
-    :moved
-    (if-let [page-info (get @clients (:id old-page-info))]
-      ;; Page is still active, so update its view origin.
-      (move-view page-info (controllers/current-left controller) (controllers/current-bottom controller))
-      ;; Page is no longer active, remove our listener so we can be garbage collected.
-      (controllers/remove-move-listener controller (:move-handler old-page-info)))
-    
-    :deactivated
-    (when-let [page-info (get @clients (:id old-page-info))]
-      (swap! clients update-in [(:id page-info)] dissoc :move-handler :linked-controller))))
