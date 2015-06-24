@@ -1,0 +1,4 @@
+        Linked controller:<br/>
+        <select id="link-select">{% for element in link-menu %}
+          <option value="{{element.value}}"{% if element.selected %} selected{% endif %}>{{element.label}}</option>{% endfor %}
+        </select>
