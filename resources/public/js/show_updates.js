@@ -61,6 +61,13 @@ function moveButtonClicked( eventObject ) {
     });
 }
 
+function metronomeAdjustClicked( eventObject ) {
+    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + this.id),
+                        { "__anti-forgery-token": csrf_token } ).fail(function() {
+        console.log("Problem requesting metronome adjustment.");
+    });
+}
+
 function cueCellClicked( eventObject ) {
     var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + this.id),
                         { "__anti-forgery-token": csrf_token } ).fail(function() {
@@ -78,6 +85,15 @@ function linkMenuChanged( eventObject ) {
 
 $( document ).ready(function() {
     $(".grid-scroll-button").click(moveButtonClicked);
+    $(".metronome-adjust-target").click(metronomeAdjustClicked);
+    $(".metronome-adjust-target").hover(
+        function() {
+            $(this).addClass('metronome-active');
+        },
+        function() {
+            $(this).removeClass('metronome-active');
+        }
+    );
     $(".cue-cell").click(cueCellClicked);
     if ($("#link-select option").length > 1) {
         $("#link-section").fadeIn();

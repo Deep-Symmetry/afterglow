@@ -27,14 +27,24 @@ td.cue-cell {
     font-size: 11px;
     line-height: 13px;
 }
+
 table.metronome {
     text-align: center;
 }
+
 .table tbody>tr>th.division {
     text-align: center;
 }
+
 .table tbody>tr>td.metronome-sync {
     text-align: left;
     vertical-align: middle;
 }
 
+.table tbody>tr>td.metronome-adjust .metronome-active {
+    color: lightblue;
+}
+
+.table tbody>tr>td.metronome-sync .metronome-active {
+    background-color: lightblue;
+}

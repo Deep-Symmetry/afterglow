@@ -17,19 +17,16 @@
         </tr>
         <tr>
           <td rowspan="2" class="metronome-sync">
-            <button type="button" class="btn btn-sm tap-tempo" id="tap-tempo">Tap Tempo
+            <button type="button" class="btn btn-sm metronome-adjust-target" id="tap-tempo">Tap Tempo</button>
           </td>
-          <td>
-            <button type="button" class="btn btn-mini" id="phrase-up">
-              <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
+          <td class="metronome-adjust">
+            <span id="phrase-up" class="glyphicon glyphicon-plus-sign metronome-adjust-target"></span>
           </td>
-          <td>
-            <button type="button" class="btn btn-mini" id="bar-up">
-              <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
+          <td class="metronome-adjust">
+            <span id="bar-up" class="glyphicon glyphicon-plus-sign metronome-adjust-target"></span>
           </td>
-          <td>
-            <button type="button" class="btn btn-mini" id="beat-up">
-              <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
+          <td class="metronome-adjust">
+            <span id="beat-up" class="glyphicon glyphicon-plus-sign metronome-adjust-target"></span>
           </td>
         </tr>
         <tr>
@@ -43,17 +40,14 @@
               <option value="">Manual</option>
             </select>
           </td>
-          <td>
-            <button type="button" class="btn btn-mini" id="phrase-down">
-              <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
+          <td class="metronome-adjust">
+            <span id="phrase-down" class="glyphicon glyphicon-minus-sign metronome-adjust-target"></span>
           </td>
-          <td>
-            <button type="button" class="btn btn-mini" id="bar-down">
-              <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
+          <td class="metronome-adjust">
+            <span id="bar-down" class="glyphicon glyphicon-minus-sign metronome-adjust-target"></span>
           </td>
-          <td>
-            <button type="button" class="btn btn-mini" id="beat-down">
-              <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
+          <td class="metronome-adjust">
+            <span id="beat-down" class="glyphicon glyphicon-minus-sign metronome-adjust-target"></span>
           </td>
         </tr>
       </table>
@@ -71,26 +65,26 @@
           <td></td>
           <td>
             <button type="button" class="btn btn-primary btn-sm grid-scroll-button" id="cues-up" disabled>
-              <span class="glyphicon glyphicon-menu-up" aria-hidden="true"></span>
+              <span class="glyphicon glyphicon-menu-up" aria-hidden="true"></span></button>
           </td>
           <td></td>
         </tr>
         <tr>
           <td>
             <button type="button" class="btn btn-primary btn-sm grid-scroll-button" id="cues-left" disabled>
-              <span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span>
+              <span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span></button>
           </td>
           <td></td>
           <td>
             <button type="button" class="btn btn-primary btn-sm grid-scroll-button" id="cues-right" disabled>
-              <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>
+              <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span></button>
           </td>
         </tr>
         <tr>
           <td></td>
           <td>
             <button type="button" class="btn btn-primary btn-sm grid-scroll-button" id="cues-down" disabled>
-              <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>
+              <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span></button>
           </td>
           <td></td>
         </tr>

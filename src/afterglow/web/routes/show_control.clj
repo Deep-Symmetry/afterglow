@@ -104,7 +104,7 @@
       (swap! clients assoc-in [page-id :controller-info] controller-info)
       controller-info)))
 
-(defn build-link-select
+(defn- build-link-select
   "Creates the list needed by the template which renders the HTML
   select object allowing the user to link to one of the currently
   available controllers, with the current selection, if any, properly
@@ -124,7 +124,7 @@
                                :value id
                                :selected (= controller selected)})))))))
 
-(defn link-menu-changes
+(defn- link-menu-changes
   "Returns the changes which need to be sent to a page to update its
   link menu since it was last displayed, and updates the record in
   process."
@@ -339,6 +339,8 @@
 
              ;; We do no recognize this kind of request
              :else
-             {:error (str "Unrecognized UI event kind: " kind)}))
+             (do
+               (warn "Unrecognized UI event posted:" kind)
+               {:error (str "Unrecognized UI event kind: " kind)})))
       ;; Found no page tracking information, advise the page to reload itself.
       (response {:reload "Page ID not found"}))))
