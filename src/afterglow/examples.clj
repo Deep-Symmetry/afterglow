@@ -31,18 +31,14 @@
   ;; make sure a sane logging environment is established.
   (core/init-logging)
 
-  ;; Create a show that runs on OLA universe 1, for demonstration purposes.
-  (def sample-show
-  "A show that runs on OLA universe 1, for demonstration purposes."
-  (show/show :universes [universe]))
-
+  ;; Create a show on the chosen OLA universe, for demonstration purposes.
   ;; Make it the default show so we don't need to wrap everything below
   ;; in a (with-show sample-show ...) binding.
-  (set-default-show! sample-show)
+  (set-default-show! (show/show :universes [universe]))
 
   ;; TODO: Should this be automatic? If so, creating the show should assign the name too.
   ;; Register it with the web interface.
-  (show/register-show sample-show "Sample Show")
+  (show/register-show *show* "Sample Show")
 
   ;; Throw a couple of fixtures in there to play with. For better fun, use
   ;; fixtures and addresses that correspond to your actual hardware.
@@ -58,7 +54,7 @@
   (show/patch-fixture! :ws-1 (blizzard/weather-system) universe 161
                        :x (tf/inches 22) :y (tf/inches 7) :z (tf/inches 7)
                        :x-rotation (tf/degrees 90))
-  'sample-show)
+  '*show*)
 
 
 (defn global-color-effect
