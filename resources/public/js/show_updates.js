@@ -12,6 +12,16 @@ function updateButtons( data ) {
     });
 }
 
+function updateLinkMenu( data ) {
+    $('#link-section').html(data);
+    if ($("#link-select option").length > 1) {
+        $("#link-section").fadeIn();
+    } else {
+        $("#link-section").fadeOut();
+    }
+    $("#link-select").change(linkMenuChanged);
+}    
+
 function updateShow() {
     var jqxhr = $.getJSON( (context + "/ui-updates/" + page_id), function( data ) {
         $.each( data, function( key, val ) {
@@ -22,6 +32,10 @@ function updateShow() {
 
             case "button-changes":
                 updateButtons(val);
+                break;
+
+            case "link-menu-changes":
+                updateLinkMenu(val);
                 break;
 
             case "reload":
@@ -54,8 +68,20 @@ function cueCellClicked( eventObject ) {
     });
 }
 
+function linkMenuChanged( eventObject ) {
+    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + this.id),
+                        { "value": this.value,
+                          "__anti-forgery-token": csrf_token } ).fail(function() {
+        console.log("Problem requesting linked controller change.");
+    });
+}
+
 $( document ).ready(function() {
     $(".grid-scroll-button").click(moveButtonClicked);
     $(".cue-cell").click(cueCellClicked);
+    if ($("#link-select option").length > 1) {
+        $("#link-section").fadeIn();
+    }
+    $("#link-select").change(linkMenuChanged);
     updateShow();
 });

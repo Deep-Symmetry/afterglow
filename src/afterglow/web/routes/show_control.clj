@@ -12,6 +12,7 @@
             [ring.util.response :refer [response]]
             [ring.util.http-response :refer [ok]]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
+            [selmer.parser :as parser]
             [taoensso.timbre :refer [info warn spy]]))
 
 (defn- current-cue-color
@@ -103,6 +104,34 @@
       (swap! clients assoc-in [page-id :controller-info] controller-info)
       controller-info)))
 
+(defn build-link-select
+  "Creates the list needed by the template which renders the HTML
+  select object allowing the user to link to one of the currently
+  available controllers, with the current selection, if any, properly
+  identified."
+  [controller-info]
+  (let [known (:known controller-info)
+        selected (:selected controller-info)]
+    (loop [sorted (into (sorted-map-by (fn [key1 key2] (compare [(get known key2) key2]
+                                                                [(get known key1) key1])))
+                        known)
+           result [{:label "" :value "" :selected (nil? selected)}]]
+      (if-not (seq sorted)
+        result
+        (let [[controller id] (first sorted)]
+          (recur (rest sorted)
+                 (conj result {:label (controllers/display-name controller)
+                               :value id
+                               :selected (= controller selected)})))))))
+
+(defn link-menu-changes
+  "Returns the changes which need to be sent to a page to update its
+  link menu since it was last displayed, and updates the record in
+  process."
+  [page-id]
+  (when-let [new-info (update-known-controllers page-id)]
+    {:link-menu-changes (parser/render-file "link_menu.html" {:link-menu (build-link-select new-info)})}))
+
 (defn show-page
   "Renders the web interface for interacting with the specified show."
   [show-id]
@@ -111,8 +140,8 @@
         page-id (:counter (swap! clients update-in [:counter] inc))]
     (swap! clients update-in [page-id] assoc :show show :id page-id)
     (record-page-grid page-id grid 0 0 8 8)
-    (update-known-controllers page-id)
     (layout/render "show.html" {:show show :title description :grid grid :page-id page-id
+                                :link-menu (build-link-select (update-known-controllers page-id))
                                 :csrf-token *anti-forgery-token*})))
 
 (defn- contrasting-text-color
@@ -187,7 +216,8 @@
       (let [[left bottom width height] (:view last-info)]
         (response (merge {}
                          (grid-changes page-id left bottom width height)
-                         (button-changes page-id left bottom width height))))
+                         (button-changes page-id left bottom width height)
+                         (link-menu-changes page-id))))
       ;; Found no page tracking information, advise the page to reload itself.
       (response {:reload "Page ID not found"}))))
 
@@ -234,6 +264,46 @@
       {:moved kind}
       {:error (str "Unable to move cue grid in direction: " kind)})))
 
+(defn unlink-controller
+  "Remove any physical grid controller currently linked to scroll in
+  tandem."
+  [page-id]
+  (when-let [page-info (get @clients page-id)]
+    (when-let [controller (:linked-controller page-info)]
+      (controllers/remove-move-listener controller (:move-handler page-info)))
+    (swap! clients update-in [page-id] dissoc :move-handler :linked-controller)
+    (swap! clients update-in [page-id :controller-info] dissoc :selected)))
+
+;; TODO: Reload the window with the right number of rows and columns if the
+;; physical controller has a different number?
+(defn link-controller
+  "Tie the cue grid display to that of a physical grid controller, so
+  that they scroll in tandem."
+  [page-id controller]
+  (when-let [page-info (get @clients page-id)]
+    (unlink-controller page-id)  ;; In case there was a previous link
+    (let [move-handler (partial linked-controller-update page-info)]
+      (swap! clients update-in [page-id] assoc :move-handler move-handler :linked-controller controller)
+      (swap! clients assoc-in [page-id :controller-info :selected] controller)
+      (controllers/add-move-listener controller move-handler)
+      (move-view page-info (controllers/current-left controller) (controllers/current-bottom controller)))))
+
+(defn- handle-link-controller-event
+  "Process a request to specify a controller to link to."
+  [page-info id]
+  (if (clojure.string/blank? id)
+    (do (unlink-controller (:id page-info))
+        {:linked ""})
+    (let [id (Long/valueOf id)]
+      (loop [choices (:known (:controller-info page-info))]
+        (if-not (seq choices)
+          {:error (str "Unrecognized controller id: " id)}
+          (let [[k v] (first choices)]
+            (if (= v id)
+              (do (link-controller (:id page-info) k)
+                  {:linked id})
+              (recur (rest choices)))))))))
+
 (defn post-ui-event
   "Route which reports a user interaction with the show web
   interface."
@@ -248,9 +318,12 @@
              (.startsWith kind "cues-")
              (handle-cue-move-event page-info kind)
 
+             (= kind "link-select")
+             (handle-link-controller-event page-info (get-in req [:params :value]))
+
              ;; We do no recognize this kind of request
              :else
-             ({:error (str "Unrecognized UI event kind: " kind)})))
+             {:error (str "Unrecognized UI event kind: " kind)}))
       ;; Found no page tracking information, advise the page to reload itself.
       (response {:reload "Page ID not found"}))))
 
@@ -269,24 +342,3 @@
     :deactivated
     (when-let [page-info (get @clients (:id old-page-info))]
       (swap! clients update-in [(:id page-info)] dissoc :move-handler :linked-controller))))
-
-(defn unlink-controller
-  "Remove any physical grid controller currently linked to scroll in
-  tandem."
-  [page-id]
-  (when-let [page-info (get @clients page-id)]
-    (when-let [controller (:linked-controller page-info)]
-      (controllers/remove-move-listener controller (:move-handler page-info)))
-    (swap! clients update-in [page-id] dissoc :move-handler :linked-controller)))
-
-;; TODO: Reload the window with the right number of rows and columns if the
-;; physical controller has a different number?
-(defn link-controller
-  "Tie the cue grid display to that of a physical grid controller, so
-  that they scroll in tandem."
-  [page-id controller]
-  (when-let [page-info (get @clients page-id)]
-    (unlink-controller page-id)  ;; In case there was a previous link
-    (let [move-handler (partial linked-controller-update page-info)]
-      (swap! clients update-in [page-id] assoc :move-handler move-handler :linked-controller controller)
-      (controllers/add-move-listener controller move-handler))))
