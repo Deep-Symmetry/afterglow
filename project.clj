@@ -8,7 +8,7 @@
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/tools.nrepl "0.2.10"]
-                 [cider/cider-nrepl "0.9.0"]
+                 [cider/cider-nrepl "0.9.1"]
                  [java3d/vecmath "1.3.1"]
                  [java3d/j3d-core "1.3.1"]
                  [java3d/j3d-core-utils "1.3.1"]
