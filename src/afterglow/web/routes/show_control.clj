@@ -195,6 +195,25 @@
     (swap! clients update-in [page-id] assoc :button-states next-states)
     (when (seq changes) {:button-changes changes})))
 
+(defn metronome-states
+  [show]
+  (let [snap (rhythm/metro-snapshot (:metronome show))]
+    {:phrase (:phrase snap)
+     :bar (rhythm/snapshot-bar-within-phrase snap)
+     :beat (rhythm/snapshot-beat-within-bar snap)
+     :blink (< (rhythm/snapshot-beat-phase snap) 0.15)}))
+
+(defn metronome-changes
+  [page-id]
+  (let [last-info (get @clients page-id)
+        last-states (:metronome last-info)
+        next-states (metronome-states (:show last-info))
+        changes (filter identity (for [[key val] next-states]
+                                   (when (not= (key last-states) (key next-states))
+                                     {:id (name key) :val val})))]
+    (swap! clients update-in [page-id] assoc :metronome next-states)
+    (when (seq changes) {:metronome-changes changes})))
+
 (defn- find-page-in-cache
   "Looks up the cached show page status for the specified ID, cleaning
   out any other entries which have not been used for a few minutes."
@@ -217,7 +236,8 @@
         (response (merge {}
                          (grid-changes page-id left bottom width height)
                          (button-changes page-id left bottom width height)
-                         (link-menu-changes page-id))))
+                         (link-menu-changes page-id)
+                         (metronome-changes page-id))))
       ;; Found no page tracking information, advise the page to reload itself.
       (response {:reload "Page ID not found"}))))
 

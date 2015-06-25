@@ -48,3 +48,7 @@ table.metronome {
 .table tbody>tr>td.metronome-sync .metronome-active {
     background-color: lightblue;
 }
+
+.table tbody>tr>td.metronome-sync .metronome-blink {
+    color: yellow;
+}

@@ -12,6 +12,26 @@ function updateButtons( data ) {
     });
 }
 
+function updateMetronome( data ) {
+    $.each( data, function( key, val ) {
+        switch (val.id) {
+        case "phrase":
+        case "beat":
+        case "bar":
+            $("#" + val.id).html(val.val);
+            break;
+
+        case "blink":
+            if (val.val) {
+                $('#tap-tempo').addClass('metronome-blink');
+            } else {
+                $('#tap-tempo').removeClass('metronome-blink');
+            }
+            break;
+        }
+    });
+}
+
 function updateLinkMenu( data ) {
     $('#link-section').html(data);
     if ($("#link-select option").length > 1) {
@@ -36,6 +56,10 @@ function updateShow() {
 
             case "link-menu-changes":
                 updateLinkMenu(val);
+                break;
+
+            case "metronome-changes":
+                updateMetronome(val);
                 break;
 
             case "reload":
