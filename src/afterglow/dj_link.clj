@@ -83,6 +83,8 @@
      (ensure sync-count)
      (ensure last-sync)
      {:type :dj-link,
+      :current (<= (- (now) @last-sync) 1000)
+      :level :beat
       :status (cond
                 (nil? @watcher)               "Stopped."
                 (zero? @packet-count)         "Network problems? No DJ Link packets received."

@@ -199,12 +199,14 @@
 
 (defn metronome-states
   [show]
-  (let [snap (rhythm/metro-snapshot (:metronome show))]
-    {:bpm (format "%.1f" (float (:bpm snap)))
-     :phrase (:phrase snap)
-     :bar (rhythm/snapshot-bar-within-phrase snap)
-     :beat (rhythm/snapshot-beat-within-bar snap)
-     :blink (< (rhythm/snapshot-beat-phase snap) 0.15)}))
+  (with-show show
+    (let [snap (rhythm/metro-snapshot (:metronome show))]
+      {:bpm (format "%.1f" (float (:bpm snap)))
+       :phrase (:phrase snap)
+       :bar (rhythm/snapshot-bar-within-phrase snap)
+       :beat (rhythm/snapshot-beat-within-bar snap)
+       :blink (< (rhythm/snapshot-beat-phase snap) 0.15)
+       :sync (dissoc (show/sync-status) :status)})))
 
 (defn metronome-changes
   [page-id]
@@ -411,6 +413,10 @@
              (when-let [[delta metro] (metronome-bpm-delta-for-event page-info kind)]
                (rhythm/metro-bpm metro (+ (rhythm/metro-bpm metro) delta)))
              {:adjusted kind}
+
+             (= kind "bpm-slider")
+             (rhythm/metro-bpm (:metronome (:show page-info))
+                               (Float/valueOf (get-in req [:params :value])))
 
              (= kind "phrase-reset")
              (do (rhythm/metro-phrase-start (:metronome (:show page-info)) 1)

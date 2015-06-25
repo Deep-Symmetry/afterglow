@@ -262,7 +262,17 @@
   started and stopped, and the status checked."
       (sync-start [this] "Start synchronizing your metronome.")
       (sync-stop [this] "Stop synchronizing your metronome.")
-      (sync-status [this] "Report on how well synchronization is working."))
+      (sync-status [this] "Report on how well synchronization is
+      working. Returns a map with keys :type (a keyword that uniquely
+      identifies the kind of sync in effect, currently chosen
+      from :manual, :midi, and :dj-link), :current (true if sync
+      appears to be working at the present time), :level (a keyword
+      that indicates how strong of a sync is being performed; :bpm
+      means basic BPM following, :beat adds tracking of beat
+      locations, :bar adds tracking of bar starts (down beats),
+      and :phrase would add tracking of phrase starts, if any sync
+      mechanism ever offers that), and :status, which is a
+      human-oriented summmary of the status."))
 
     (defprotocol IClockFinder
   "Allows a list of available MIDI clock sources to be gathered, for
@@ -308,13 +318,20 @@
     (sync-status [this]
       (dosync
        (ensure buffer)
-       (let [n (count @buffer)]
+       (let [n (count @buffer)
+             lag (when (pos? n) (- (now) (last @buffer)))
+             current (and (= n max-clock-intervals)
+                        (< lag 100))]
          {:type :midi,
+          :current current
+          :level :bpm
           :status (cond
-                    (empty? @buffer)           "Inactive, no clock pulses have been received."
-                    (< n  max-clock-intervals) (str "Stalled? Clock pulse buffer has " n " of "
-                                                    max-clock-intervals " pulses in it.")
-                    :else                      "Running, clock pulse buffer is full.")}))))
+                    (empty? @buffer) "Inactive, no clock pulses have been received."
+                    (not current) (str "Stalled? " (if (< n max-clock-intervals)
+                                                     (str "Clock pulse buffer has " n " of "
+                                                          max-clock-intervals " pulses in it.")
+                                                     (str "Last clock pulse received " lag "ms ago.")))
+                    :else "Running, clock pulse buffer is full and current.")}))))
 
 (defn- describe-name-filter
   "Returns a description of a name filter used to narrow down MIDI

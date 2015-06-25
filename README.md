@@ -321,10 +321,6 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   - [x] All dimmer cues are assigned a master chain, defaulting to the
     grand master if none supplied.
 - [x] Get geometry engine and head-movement cues working.
-- [ ] Add button color method to IEffect so mapped RGB controllers can
-  have animated feedback, e.g. dim version of current effect color if
-  off, bright when on; flash it while ending. Update MIDI feedback
-  around ten times per second?
 - [ ] Named cues: Define cues with a unique name so they can have
   parameters saved for them, to be reloaded on future runs, once we
   have a database. Also useful for compound cues, see below.
@@ -386,7 +382,7 @@ TODO: listing of options this app accepts once it can run as a standalone app.
 - [ ] See if I can detect which Pro DJ Link device is the current
   master, and if so, add an option for down beat tracking using that.
 - [x] Add tap tempo support for really low-end sync.
-- [ ] Add machine-readable metronome sync status flag, so Push can
+- [x] Add machine-readable metronome sync status flag, so Push can
   color code it; detect stalled clocks even without stop signals.
   
 ### Ideas

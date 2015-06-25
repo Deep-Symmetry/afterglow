@@ -20,8 +20,13 @@ td.cue-cell {
     -ms-text-overflow: ellipsis;
     -o-text-overflow: ellipsis;
     text-overflow: ellipsis;
-    word-wrap: break-word
+    word-wrap: break-word;
+    -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+    -moz-user-select: none; /* mozilla browsers */
+    -khtml-user-select: none; /* webkit (konqueror) browsers */
+    -ms-user-select: none; /* IE10+ */
 }
+
 .btn-mini {
     padding: 2px 6px;
     font-size: 11px;
@@ -38,10 +43,18 @@ table.metronome {
 
 .table>tbody>tr>td.metronome {
     padding: 0px;
+    -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+    -moz-user-select: none; /* mozilla browsers */
+    -khtml-user-select: none; /* webkit (konqueror) browsers */
+    -ms-user-select: none; /* IE10+ */
 }
 
 .table>tbody>tr>th.metronome {
     padding: 0px;
+    -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+    -moz-user-select: none; /* mozilla browsers */
+    -khtml-user-select: none; /* webkit (konqueror) browsers */
+    -ms-user-select: none; /* IE10+ */
 }
 .table tbody>tr>td.metronome-sync {
     text-align: left;
@@ -68,3 +81,10 @@ table.metronome {
     color: #f77;
 }
 
+#slider-in-bpm .slider-track-high {
+    background: darkslategray;
+}
+
+#slider-in-bpm .slider-selection {
+    background: slategray;
+}

@@ -18,8 +18,12 @@ function updateMetronome( data ) {
         case "phrase":
         case "beat":
         case "bar":
-        case "bpm":
             $("#" + val.id).html(val.val);
+            break;
+
+        case "bpm":
+            $("#bpm").html(val.val);
+            $("#bpm-slider").slider("setValue", Number(val.val));
             break;
 
         case "blink":
@@ -27,6 +31,44 @@ function updateMetronome( data ) {
                 $('#tap-tempo').addClass('metronome-blink');
             } else {
                 $('#tap-tempo').removeClass('metronome-blink');
+            }
+            break;
+
+        case "sync":
+            if (val.val.level) {
+                $("#slider-in-bpm").fadeOut();
+                $("#sync-button").removeClass('btn-primary');
+                if (val.val.current) {
+                    $("#sync-button").removeClass('btn-danger');
+                    $("#sync-button").addClass('btn-success');
+                } else {
+                    $("#sync-button").addClass('btn-danger');
+                    $("#sync-button").removeClass('btn-success');
+                }
+                switch (val.val.level) {
+
+                case "bpm":
+                    $("#tap-tempo").text("Tap Beat");
+                    break;
+
+                case "beat":
+                    $("#tap-tempo").text("Tap Bar");
+                    break;
+
+                case "bar":
+                    $("#tap-tempo").text("Tap Phrase");
+                    break;
+
+                default:
+                    $("#tap-tempo").text("Beat");
+                }
+                    
+            } else {
+                $("#slider-in-bpm").fadeIn();
+                $("#sync-button").addClass('btn-primary');
+                $("#sync-button").removeClass('btn-danger');
+                $("#sync-button").removeClass('btn-success');
+                $("#tap-tempo").text("Tap Tempo");
             }
             break;
         }
@@ -108,6 +150,14 @@ function linkMenuChanged( eventObject ) {
     });
 }
 
+function bpmSlide( eventObject ) {
+    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + this.id),
+                        { "value": this.value,
+                          "__anti-forgery-token": csrf_token } ).fail(function() {
+        console.log("Problem specifying updated BPM value.");
+    });
+}
+
 function decorateMetronomeAdjusters( selector ) {
     $(selector).click(metronomeAdjustClicked);
     $(selector).hover(
@@ -129,5 +179,7 @@ $( document ).ready(function() {
         $("#link-section").fadeIn();
     }
     $("#link-select").change(linkMenuChanged);
+    // See https://github.com/seiyria/bootstrap-slider
+    $("#bpm-slider").slider({id: "slider-in-bpm"}).on("slide", bpmSlide).on("change", bpmSlide);
     updateShow();
 });

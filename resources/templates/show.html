@@ -11,10 +11,10 @@
       <table class="table metronome">
         <tr>
           <th class="metronome">Metronome</th>
-          <th class="metronome division">BPM</td>
-          <th class="metronome division">Phrase</td>
-          <th class="metronome division">Bar</td>
-          <th class="metronome division">Beat</td>
+          <th class="metronome division">BPM</th>
+          <th class="metronome division">Phrase</th>
+          <th class="metronome division">Bar</th>
+          <th class="metronome division">Beat</th>
         </tr>
         <tr>
           <td rowspan="2" class="metronome metronome-sync">
@@ -40,10 +40,9 @@
           <td class="metronome" id="beat">0</td>
         </tr>
         <tr>
-          <td class="metronome metronome-sync">
-            <select id="metronome-sync">
-              <option value="">Manual</option>
-            </select>
+          <td rowspan="2" class="metronome metronome-sync">
+            <a href="#syncModal" role="button" class="btn btn-sm btn-primary"
+               id="sync-button" data-toggle="modal">Sync</a>
           </td>
           <td class="metronome metronome-adjust">
             <span id="bpm-down" class="glyphicon glyphicon-minus-sign metronome-adjust-target"></span>
@@ -56,6 +55,10 @@
           <td class="metronome metronome-adjust">
             <span id="beat-down" class="glyphicon glyphicon-minus-sign metronome-adjust-target"></span>
           </td>
+        </tr>
+        <tr>
+          <td class="metronome" colspan="4"><input id="bpm-slider" data-slider-min="20" data-slider-max="200"
+                                                   data-slider-step="0.1" data-slider-tooltip="hide"></input></td>
         </tr>
       </table>
     </div>
@@ -96,13 +99,39 @@
           <td></td>
         </tr>
       </table>
-      </button>
     </div>
-  </div>  
+</div>
+
+<div id="syncModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Metronome Sync</h4>
+            </div>
+            <div class="modal-body">
+              <p>Establish a BPM or beat synchronization source for this show:
+              <div class="radio">
+                <label><input type="radio" name="sync" value="manual">Manual (no automatic sync).</label>
+              </div>
+              <div class="radio">
+                <label><input type="radio" name="optradio" value="2">Option 2</label>
+              </div>
+              <p id="no-sync-available">No sources of automatic synchronization have been detected.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Sync</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
 {% block page-scripts %}
     {% script "/js/jquery.json.min.js" %}
+    {% style "/css/bootstrap-slider.css" %}
+    {% script "/js/bootstrap-slider.min.js" %}
     {% comment %}{% script "/js/jquery.websocket-0.0.1.js" %}{% endcomment %}
     <script type="text/javascript">
       var page_id = "{{page-id}}";
