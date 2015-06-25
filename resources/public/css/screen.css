@@ -36,13 +36,16 @@ table.metronome {
     text-align: center;
 }
 
+.table>tbody>tr>td.metronome {
+    padding: 0px;
+}
+
+.table>tbody>tr>th.metronome {
+    padding: 0px;
+}
 .table tbody>tr>td.metronome-sync {
     text-align: left;
     vertical-align: middle;
-}
-
-.table tbody>tr>td.metronome-adjust .metronome-active {
-    color: lightblue;
 }
 
 .table tbody>tr>td.metronome-sync .metronome-active {
@@ -52,3 +55,16 @@ table.metronome {
 .table tbody>tr>td.metronome-sync .metronome-blink {
     color: yellow;
 }
+
+.table tbody>tr>td.metronome-adjust .metronome-active {
+    color: lightblue;
+}
+
+.table tbody>tr>td.metronome-reset {
+    color: red;
+}
+
+.table tbody>tr>td.metronome-reset .metronome-active {
+    color: #f77;
+}
+

@@ -18,6 +18,7 @@ function updateMetronome( data ) {
         case "phrase":
         case "beat":
         case "bar":
+        case "bpm":
             $("#" + val.id).html(val.val);
             break;
 
@@ -107,10 +108,9 @@ function linkMenuChanged( eventObject ) {
     });
 }
 
-$( document ).ready(function() {
-    $(".grid-scroll-button").click(moveButtonClicked);
-    $(".metronome-adjust-target").click(metronomeAdjustClicked);
-    $(".metronome-adjust-target").hover(
+function decorateMetronomeAdjusters( selector ) {
+    $(selector).click(metronomeAdjustClicked);
+    $(selector).hover(
         function() {
             $(this).addClass('metronome-active');
         },
@@ -118,6 +118,12 @@ $( document ).ready(function() {
             $(this).removeClass('metronome-active');
         }
     );
+}
+
+$( document ).ready(function() {
+    $(".grid-scroll-button").click(moveButtonClicked);
+    decorateMetronomeAdjusters(".metronome-adjust-target");
+    decorateMetronomeAdjusters(".metronome-reset-target");
     $(".cue-cell").click(cueCellClicked);
     if ($("#link-select option").length > 1) {
         $("#link-section").fadeIn();

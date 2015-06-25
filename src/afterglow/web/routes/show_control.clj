@@ -1,5 +1,6 @@
 (ns afterglow.web.routes.show-control
   (:require [afterglow.web.layout :as layout]
+            [afterglow.midi :as amidi]
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
             [afterglow.show-context :refer [with-show]]
@@ -138,7 +139,8 @@
   (let [[show description] (get @show/shows (Integer/valueOf show-id))
         grid (cue-view show 0 0 8 8)
         page-id (:counter (swap! clients update-in [:counter] inc))]
-    (swap! clients update-in [page-id] assoc :show show :id page-id)
+    (swap! clients update-in [page-id] assoc :show show :id page-id
+           :tap-tempo-handler (amidi/create-tempo-tap-handler (:metronome show)))
     (record-page-grid page-id grid 0 0 8 8)
     (layout/render "show.html" {:show show :title description :grid grid :page-id page-id
                                 :link-menu (build-link-select (update-known-controllers page-id))
@@ -198,7 +200,8 @@
 (defn metronome-states
   [show]
   (let [snap (rhythm/metro-snapshot (:metronome show))]
-    {:phrase (:phrase snap)
+    {:bpm (format "%.1f" (float (:bpm snap)))
+     :phrase (:phrase snap)
      :bar (rhythm/snapshot-bar-within-phrase snap)
      :beat (rhythm/snapshot-beat-within-bar snap)
      :blink (< (rhythm/snapshot-beat-phase snap) 0.15)}))
@@ -340,6 +343,50 @@
                   {:linked id})
               (recur (rest choices)))))))))
 
+(defn metronome-delta-for-event
+  "If the UI event name submitted by a show page corresponds to a
+  metronome shift, return the appropriate number of milliseconds."
+  [page-info kind]
+  (let [metro (:metronome (:show page-info))]
+    (when-let [delta (get {"beat-up" (- (rhythm/metro-tick metro))
+                           "beat-down" (rhythm/metro-tick metro)
+                           "bar-up" (- (rhythm/metro-tock metro))
+                           "bar-down" (rhythm/metro-tock metro)}
+                          kind)]
+      [delta metro])))
+
+(defn metronome-bpm-delta-for-event
+  "If the UI event name submitted by a show page corresponds to a
+  metronome bpm shift, and the metronome is not synced, return the
+  appropriate bpm adjustment."
+  [page-info kind]
+  (with-show (:show page-info)
+    (when (= (:type (show/sync-status)) :manual)
+      (let [metro (:metronome (:show page-info))]
+        (when-let [delta (get {"bpm-up" (/ 1 10)
+                               "bpm-down" (- (/ 1 10))}
+                              kind)]
+          [delta metro])))))
+
+(defn- interpret-tempo-tap
+  "React appropriately to a tempo tap, based on the sync mode of the
+  show metronome. If it is manual, invoke the metronome tap-tempo
+  handler. If MIDI, align the current beat to the tap. If DJ Link, set
+  the current beat to be a down beat (first beat of a bar)."
+  [page-info]
+  (with-show (:show page-info)
+    (let [metronome (get-in page-info [:show :metronome])]
+      (case (:type (show/sync-status))
+        :manual (do ((:tap-tempo-handler page-info))
+                    {:tempo "adjusting"})
+        :midi (do (rhythm/metro-beat-phase metronome 0)
+                  {:started "beat"})
+        :dj-link (do (rhythm/metro-bar-start metronome (rhythm/metro-bar metronome))
+                     {:started "bar"})
+        (let [warning (str "Don't know how to tap tempo for sync type" (show/sync-status))]
+          (warn warning)
+          {:error warning})))))
+
 (defn post-ui-event
   "Route which reports a user interaction with the show web
   interface."
@@ -356,6 +403,21 @@
 
              (= kind "link-select")
              (handle-link-controller-event page-info (get-in req [:params :value]))
+
+             (when-let [[delta metro] (metronome-delta-for-event page-info kind)]
+               (rhythm/metro-adjust metro delta))
+             {:adjusted kind}
+
+             (when-let [[delta metro] (metronome-bpm-delta-for-event page-info kind)]
+               (rhythm/metro-bpm metro (+ (rhythm/metro-bpm metro) delta)))
+             {:adjusted kind}
+
+             (= kind "phrase-reset")
+             (do (rhythm/metro-phrase-start (:metronome (:show page-info)) 1)
+                 {:adjusted kind})
+
+             (= kind "tap-tempo")
+             (interpret-tempo-tap page-info)
 
              ;; We do no recognize this kind of request
              :else

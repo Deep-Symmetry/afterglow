@@ -10,43 +10,50 @@
     <div class="col-md-4">
       <table class="table metronome">
         <tr>
-          <th>Metronome</th>
-          <th class="division">Phrase</td>
-          <th class="division">Bar</td>
-          <th class="division">Beat</td>
+          <th class="metronome">Metronome</th>
+          <th class="metronome division">BPM</td>
+          <th class="metronome division">Phrase</td>
+          <th class="metronome division">Bar</td>
+          <th class="metronome division">Beat</td>
         </tr>
         <tr>
-          <td rowspan="2" class="metronome-sync">
+          <td rowspan="2" class="metronome metronome-sync">
             <button type="button" class="btn btn-sm metronome-adjust-target" id="tap-tempo">Tap Tempo</button>
           </td>
-          <td class="metronome-adjust">
-            <span id="phrase-up" class="glyphicon glyphicon-plus-sign metronome-adjust-target"></span>
+          <td class="metronome metronome-adjust">
+            <span id="bpm-up" class="glyphicon glyphicon-plus-sign metronome-adjust-target"></span>
           </td>
-          <td class="metronome-adjust">
+          <td class="metronome metronome-reset">
+            <span id="phrase-reset" class="glyphicon glyphicon-remove-sign metronome-reset-target"></span>
+          </td>
+          <td class="metronome metronome-adjust">
             <span id="bar-up" class="glyphicon glyphicon-plus-sign metronome-adjust-target"></span>
           </td>
-          <td class="metronome-adjust">
+          <td class="metronome metronome-adjust">
             <span id="beat-up" class="glyphicon glyphicon-plus-sign metronome-adjust-target"></span>
           </td>
         </tr>
         <tr>
-          <td id="phrase">0</td>
-          <td id="bar">0</td>
-          <td id="beat">0</td>
+          <td class="metronome" id="bpm">0</td>
+          <td class="metronome" id="phrase">0</td>
+          <td class="metronome" id="bar">0</td>
+          <td class="metronome" id="beat">0</td>
         </tr>
         <tr>
-          <td class="metronome-sync">
+          <td class="metronome metronome-sync">
             <select id="metronome-sync">
               <option value="">Manual</option>
             </select>
           </td>
-          <td class="metronome-adjust">
-            <span id="phrase-down" class="glyphicon glyphicon-minus-sign metronome-adjust-target"></span>
+          <td class="metronome metronome-adjust">
+            <span id="bpm-down" class="glyphicon glyphicon-minus-sign metronome-adjust-target"></span>
           </td>
-          <td class="metronome-adjust">
+          <td class="metronome">
+          </td>
+          <td class="metronome metronome-adjust">
             <span id="bar-down" class="glyphicon glyphicon-minus-sign metronome-adjust-target"></span>
           </td>
-          <td class="metronome-adjust">
+          <td class="metronome metronome-adjust">
             <span id="beat-down" class="glyphicon glyphicon-minus-sign metronome-adjust-target"></span>
           </td>
         </tr>

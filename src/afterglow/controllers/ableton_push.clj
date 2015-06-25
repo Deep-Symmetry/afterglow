@@ -458,10 +458,11 @@
   "Adjust the current BPM based on how the encoder was twisted, unless
   the metronome is synced."
   [controller message]
-  (when (= (:type (show/sync-status)) :manual)
-    (let [delta (/ (sign-velocity (:velocity message)) 10)
-          bpm (rhythm/metro-bpm (:metronome (:show controller)))]
-      (rhythm/metro-bpm (:metronome (:show controller)) (+ bpm delta)))))
+  (with-show (:show controller)
+    (when (= (:type (show/sync-status)) :manual)
+      (let [delta (/ (sign-velocity (:velocity message)) 10)
+            bpm (rhythm/metro-bpm (:metronome (:show controller)))]
+        (rhythm/metro-bpm (:metronome (:show controller)) (+ bpm delta))))))
 
 (defn- encoder-above-bpm-touched
   "Add a user interface overlay to give feedback when turning the
