@@ -34,7 +34,8 @@
   (when-not @initialized
     ;; Make sure the experimenter does not get blasted with a ton of debug messages
     (timbre/set-config!
-     {:level :info  ; e/o #{:trace :debug :info :warn :error :fatal :report}
+     {:level :info  ; #{:trace :debug :info :warn :error :fatal :report}
+      :enabled? true
 
       ;; Control log filtering by namespaces/patterns. Useful for turning off
       ;; logging in noisy libraries, etc.:
@@ -55,7 +56,7 @@
      {:appenders {:rotor (rotor/rotor-appender {:path "logs/afterglow.log"
                                                 :max-size 100000
                                                 :backlog 5})}})
-    (timbre/merge-config!  {:appenders {:rotor {:min-level :info}}})
+
 
     ;; Disable Selmer's template cache in development mode
     (if (env :dev) (parser/cache-off!))
