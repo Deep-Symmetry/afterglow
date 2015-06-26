@@ -309,7 +309,7 @@
                 :selected (= :manual (:type (show/sync-status)))}]
               (build-sync-list known-midi :midi #(str (:name %) " (MIDI, sync BPM only).")
                                (:source (show/sync-status)))
-              (build-sync-list known-dj :midi #(str (:name %) " (DJ Link Pro, sync BPM and beats).")
+              (build-sync-list known-dj :dj-link #(str % " (DJ Link Pro, sync BPM and beats).")
                                (:source (show/sync-status)))))))
 
 (defn sync-menu-changes
@@ -474,7 +474,7 @@
                     (recur (rest choices)))))))
 
           (.startsWith value "dj-link-")
-          (let [id (Long/valueOf (get (clojure.string/split value #"-") 3))]
+          (let [id (Long/valueOf (get (clojure.string/split value #"-") 2))]
             (loop [choices (:known (:dj-link-sync page-info))]
               (if-not (seq choices)
                 {:error (str "Unrecognized DJ Link sync source id: " id)}
@@ -534,45 +534,48 @@
   "Route which reports a user interaction with the show web
   interface."
   [id kind req]
-  (when-let [page-id (Integer/valueOf id)]
-    (if-let [page-info (get @clients page-id)]
-      ;; Found the page tracking information, process the event.
-      (response
-       (cond (.startsWith kind "cue-")
-             (handle-cue-click-event page-info kind)
-             
-             (.startsWith kind "cues-")
-             (handle-cue-move-event page-info kind)
+  (try (when-let [page-id (Integer/valueOf id)]
+         (if-let [page-info (get @clients page-id)]
+           ;; Found the page tracking information, process the event.
+           (response
+            (cond (.startsWith kind "cue-")
+                  (handle-cue-click-event page-info kind)
+                  
+                  (.startsWith kind "cues-")
+                  (handle-cue-move-event page-info kind)
 
-             (= kind "link-select")
-             (handle-link-controller-event page-info (get-in req [:params :value]))
+                  (= kind "link-select")
+                  (handle-link-controller-event page-info (get-in req [:params :value]))
 
-             (= kind "choose-sync")
-             (handle-sync-choice-event page-info (get-in req [:params :value]))
+                  (= kind "choose-sync")
+                  (handle-sync-choice-event page-info (get-in req [:params :value]))
 
-             (when-let [[delta metro] (metronome-delta-for-event page-info kind)]
-               (rhythm/metro-adjust metro delta))
-             {:adjusted kind}
+                  (when-let [[delta metro] (metronome-delta-for-event page-info kind)]
+                    (rhythm/metro-adjust metro delta))
+                  {:adjusted kind}
 
-             (when-let [[delta metro] (metronome-bpm-delta-for-event page-info kind)]
-               (rhythm/metro-bpm metro (+ (rhythm/metro-bpm metro) delta)))
-             {:adjusted kind}
+                  (when-let [[delta metro] (metronome-bpm-delta-for-event page-info kind)]
+                    (rhythm/metro-bpm metro (+ (rhythm/metro-bpm metro) delta)))
+                  {:adjusted kind}
 
-             (= kind "bpm-slider")
-             (rhythm/metro-bpm (:metronome (:show page-info))
-                               (Float/valueOf (get-in req [:params :value])))
+                  (= kind "bpm-slider")
+                  (rhythm/metro-bpm (:metronome (:show page-info))
+                                    (Float/valueOf (get-in req [:params :value])))
 
-             (= kind "phrase-reset")
-             (do (rhythm/metro-phrase-start (:metronome (:show page-info)) 1)
-                 {:adjusted kind})
+                  (= kind "phrase-reset")
+                  (do (rhythm/metro-phrase-start (:metronome (:show page-info)) 1)
+                      {:adjusted kind})
 
-             (= kind "tap-tempo")
-             (interpret-tempo-tap page-info)
+                  (= kind "tap-tempo")
+                  (interpret-tempo-tap page-info)
 
-             ;; We do no recognize this kind of request
-             :else
-             (do
-               (warn "Unrecognized UI event posted:" kind)
-               {:error (str "Unrecognized UI event kind: " kind)})))
-      ;; Found no page tracking information, advise the page to reload itself.
-      (response {:reload "Page ID not found"}))))
+                  ;; We do no recognize this kind of request
+                  :else
+                  (do
+                    (warn "Unrecognized UI event posted:" kind)
+                    {:error (str "Unrecognized UI event kind: " kind)})))
+           ;; Found no page tracking information, advise the page to reload itself.
+           (response {:reload "Page ID not found"})))
+       (catch Throwable t
+           (warn t "Problem processing web UI event))")
+           (response {:error (str "Unable to process event:" (.getMessage t))}))))
