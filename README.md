@@ -470,20 +470,22 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   [clojure-protobuf](https://github.com/flatland/clojure-protobuf).
 * The incomplete
   [Java OLA client](https://github.com/OpenLightingProject/ola/tree/master/java).
-* If I decide to use JNA to work around problems in tne Mac Java MIDI
+* If I decide to use JNA to work around problems in the Mac Java MIDI
   implementation someday, see
-  [clj-native](https://github.com/bagucode/clj-native).
+  [clj-native](https://github.com/bagucode/clj-native). But most
+  likely I need to stick to lower level, lighter JNI, to avoid
+  polluting the extensions class path.
 
 ### Related Work
 
-- [ ] Rich controller support for
+- [x] Rich controller support for
   [Ableton Push](https://forum.ableton.com/viewtopic.php?f=55&t=193744)!
   - [x] [Color chart](https://forum.ableton.com/viewtopic.php?f=55&t=192920),
     post a followup if my hue theory pans out.
-  - [ ] Nice
+  - [x] Nice
     [breakdown](http://tai-studio.org/index.php/projects/sound-programming/accessing-abletons-push-device/)
     of button sections.
-- [ ] Add a user interface using
+- [x] Add a user interface using
   [Luminus](http://www.luminusweb.net/docs).
 
 ## License
