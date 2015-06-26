@@ -161,30 +161,26 @@
            controllers/pool)))
 
 (defn update-known-dj-link-sync-sources
-  "Scans for sources of Pro DJ Link packets, and updates the cached
-  page information to contain current list, assigning each a unique
-  id number, so they can be selected in the sync interface."
+  "Updates the cached information to contain current list of Pro DJ
+  Link sync sources seen on the network, assigning each a unique id
+  number, so they can be selected in the sync interface."
   [page-id]
   (let [page-info (get @clients page-id)
         old-info (:dj-link-sync page-info)
-        link-finder (dj-link/watch-for-dj-link-sources)]
-    (after 2000
-           #(let [found (amidi/finder-current-sources link-finder)
-                  source-info (loop [result (update-in old-info [:known] select-keys found)
-                                     new-sources (clojure.set/difference found
-                                                                         (set (keys (:known result))))
-                                     counter (inc (:counter result 0))]
-                                (if-not (seq new-sources)
-                                  result
-                                  (recur (-> result
-                                             (assoc-in [:known (first new-sources)] counter)
-                                             (assoc-in [:counter] counter))
-                                         (rest new-sources)
-                                         (inc counter))))]
-              (amidi/finder-finished link-finder)
-              (when (not= old-info source-info)
-                (swap! clients assoc-in [page-id :dj-link-sync] source-info)))
-           controllers/pool)))
+        found (dj-link/current-dj-link-sources)
+        source-info (loop [result (update-in old-info [:known] select-keys found)
+                           new-sources (clojure.set/difference found
+                                                               (set (keys (:known result))))
+                           counter (inc (:counter result 0))]
+                      (if-not (seq new-sources)
+                        result
+                        (recur (-> result
+                                   (assoc-in [:known (first new-sources)] counter)
+                                   (assoc-in [:counter] counter))
+                               (rest new-sources)
+                               (inc counter))))]
+    (when (not= old-info source-info)
+      (swap! clients assoc-in [page-id :dj-link-sync] source-info))))
 
 (defn show-page
   "Renders the web interface for interacting with the specified show."
@@ -309,7 +305,10 @@
                 :selected (= :manual (:type (show/sync-status)))}]
               (build-sync-list known-midi :midi #(str (:name %) " (MIDI, sync BPM only).")
                                (:source (show/sync-status)))
-              (build-sync-list known-dj :dj-link #(str % " (DJ Link Pro, sync BPM and beats).")
+              (build-sync-list known-dj :dj-link #(str (:name %)
+                                                       (when (> (count (dj-link/filter-sources (:name %))) 1)
+                                                         (str " at " (.getHostAddress (:address %))))
+                                                       " (DJ Link Pro, sync precise BPM and beat grid).")
                                (:source (show/sync-status)))))))
 
 (defn sync-menu-changes
@@ -342,18 +341,22 @@
   "Route which delivers any changes which need to be applied to a show
   web interface to reflect differences in the current show state
   compared to when it was last updated."
-  (let [page-id(Integer/valueOf id)]
-    (if-let [last-info (find-page-in-cache page-id)]
-      ;; Found the page tracking information, send an update.
-      (let [[left bottom width height] (:view last-info)]
-        (response (merge {}
-                         (grid-changes page-id left bottom width height)
-                         (button-changes page-id left bottom width height)
-                         (sync-menu-changes page-id)
-                         (link-menu-changes page-id)
-                         (metronome-changes page-id))))
-      ;; Found no page tracking information, advise the page to reload itself.
-      (response {:reload "Page ID not found"}))))
+  (try
+    (let [page-id(Integer/valueOf id)]
+      (if-let [last-info (find-page-in-cache page-id)]
+        ;; Found the page tracking information, send an update.
+        (let [[left bottom width height] (:view last-info)]
+          (response (merge {}
+                           (grid-changes page-id left bottom width height)
+                           (button-changes page-id left bottom width height)
+                           (sync-menu-changes page-id)
+                           (link-menu-changes page-id)
+                           (metronome-changes page-id))))
+        ;; Found no page tracking information, advise the page to reload itself.
+        (response {:reload "Page ID not found"})))
+    (catch Throwable t
+           (warn t "Problem building web UI updates.")
+           (response {:error (str "Unable to build updates:" (.getMessage t))}))))
 
 (defn- handle-cue-click-event
   "Process an interaction with a cue grid cell."
@@ -577,5 +580,5 @@
            ;; Found no page tracking information, advise the page to reload itself.
            (response {:reload "Page ID not found"})))
        (catch Throwable t
-           (warn t "Problem processing web UI event))")
+           (warn t "Problem processing web UI event.")
            (response {:error (str "Unable to process event:" (.getMessage t))}))))

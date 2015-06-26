@@ -343,6 +343,10 @@
     (str "matching " (with-out-str (clojure.pprint/write-out name-filter)) " ")))
 
 (defn- filter-devices
+  "Return only those devices whose name and/or description match the
+  specified pattern. name-filter can either be a Pattern, or a string
+  which will be turned into a pattern which matches in a
+  case-insensitive way anywhere in the name or description."
   [devices name-filter]
   (if (or (nil? name-filter) (and (string? name-filter) (clojure.string/blank? name-filter)))
     devices
