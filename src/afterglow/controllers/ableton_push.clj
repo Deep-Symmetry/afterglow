@@ -680,10 +680,10 @@
   [v len]
   (let [longer (or (:name v) (name (:key v)))
         shorter (or (:short-name v) longer)
-        padding (apply str (repeat len " "))]
+        padding (clojure.string/join (repeat len " "))]
     (if (<= (count longer) len)
-      (apply str (take len (str longer padding)))
-      (apply str (take len (str shorter padding))))))
+      (clojure.string/join (take len (str longer padding)))
+      (clojure.string/join (take len (str shorter padding))))))
 
 (defn- cue-variable-names
   "Determines the names of adjustable variables to display under an
@@ -740,8 +740,8 @@
                       ;; If we don't know what else to do, at least turn ratios to floats
                       (float val))
                     "<ended>")
-        padding (apply str (repeat len " "))]
-    (apply str (take len (str formatted padding)))))
+        padding (clojure.string/join (repeat len " "))]
+    (clojure.string/join (take len (str formatted padding)))))
 
 (defn- cue-variable-values
   "Formats the current values of the adjustable variables to display
