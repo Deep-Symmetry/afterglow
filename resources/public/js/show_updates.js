@@ -83,7 +83,11 @@ function updateLinkMenu( data ) {
         $("#link-section").fadeOut();
     }
     $("#link-select").change(linkMenuChanged);
-}    
+}
+
+function updateSyncMenu( data ) {
+    $('#sync-menu').html(data);
+}
 
 function updateShow() {
     var jqxhr = $.getJSON( (context + "/ui-updates/" + page_id), function( data ) {
@@ -99,6 +103,10 @@ function updateShow() {
 
             case "link-menu-changes":
                 updateLinkMenu(val);
+                break;
+
+            case "sync-menu-changes":
+                updateSyncMenu(val);
                 break;
 
             case "metronome-changes":
@@ -150,6 +158,17 @@ function linkMenuChanged( eventObject ) {
     });
 }
 
+function syncMenuChosen( eventObject ) {
+    var syncValue = $('#sync-menu input:radio:checked').val()
+    if (syncValue) {
+        var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + this.id),
+                            { "value": syncValue,
+                              "__anti-forgery-token": csrf_token } ).fail(function() {
+                                  console.log("Problem requesting metronome sync change.");
+                              });
+    }
+}
+
 function bpmSlide( eventObject ) {
     var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + this.id),
                         { "value": this.value,
@@ -179,6 +198,7 @@ $( document ).ready(function() {
         $("#link-section").fadeIn();
     }
     $("#link-select").change(linkMenuChanged);
+    $("#choose-sync").click(syncMenuChosen);
     // See https://github.com/seiyria/bootstrap-slider
     $("#bpm-slider").slider({id: "slider-in-bpm"}).on("slide", bpmSlide).on("change", bpmSlide);
     updateShow();

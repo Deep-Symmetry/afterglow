@@ -1,0 +1,6 @@
+              <p>Establish a BPM or beat synchronization source for this show:
+{% for element in sync-menu %}              <div class="radio{% if element.selected %} active{% endif %}">
+                <label><input type="radio" name="sync" value="{{element.value}}"{% if element.selected %} checked=""{% endif %}>{{element.label}}</label>
+              </div>
+{% if sync-menu|length-is:1 %}              <p class="text-warning">No sources of automatic synchronization have been detected.</p>{% endif %}
+              </div>{% endfor %}

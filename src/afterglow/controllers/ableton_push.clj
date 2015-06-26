@@ -433,6 +433,16 @@
       :dj-link "DJ Link"
       "Unknown")))
 
+(defn- metronome-sync-color
+  "Determine the color to light the sync pad under the BPM section."
+  [controller]
+  (with-show (:show controller)
+    (if (= (:type (show/sync-status)) :manual)
+      :amber
+      (if (:current (show/sync-status))
+        :green
+        :red))))
+
 (defn- bpm-adjusting-interface
   "Add an arrow showing the BPM is being adjusted, or point out that
   it is being externally synced."
@@ -462,7 +472,8 @@
     (when (= (:type (show/sync-status)) :manual)
       (let [delta (/ (sign-velocity (:velocity message)) 10)
             bpm (rhythm/metro-bpm (:metronome (:show controller)))]
-        (rhythm/metro-bpm (:metronome (:show controller)) (+ bpm delta))))))
+        (rhythm/metro-bpm (:metronome (:show controller)) (min controllers/maximum-bpm
+                                                               (max controllers/minimum-bpm (+ bpm delta))))))))
 
 (defn- encoder-above-bpm-touched
   "Add a user interface overlay to give feedback when turning the
@@ -552,7 +563,7 @@
                    (write-display-cell controller 3 0
                                        (str " Reset   " (metronome-sync-label controller)))
                    (aset (:next-top-pads controller) 0 (top-pad-state :dim :red))
-                   (aset (:next-top-pads controller) 1 (top-pad-state :dim :green)))
+                   (aset (:next-top-pads controller) 1 (top-pad-state :dim (metronome-sync-color controller))))
                  (handle-control-change [this controller message]
                    (case (:note message)
                      3 ; Tap tempo button
@@ -578,7 +589,8 @@
                        ;; TODO: Actually implement a new overlay
                        (add-control-held-feedback-overlay controller 21
                                                           #(aset (:next-top-pads controller)
-                                                                 1 (top-pad-state :bright :green)))
+                                                                 1 (top-pad-state :bright
+                                                                                  (metronome-sync-color controller))))
                        true)))
                  (handle-note-on [this controller message]
                    ;; Whoops, user grabbed encoder closest to beat or BPM display

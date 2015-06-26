@@ -49,7 +49,7 @@
   clock message. Checks whether there are any metronomes being synced to
   that device, and if so, passes along the event."
   [msg]
-  (doseq [handler (vals (get @synced-metronomes (:name (:device msg))))]
+  (doseq [handler (vals (get @synced-metronomes (:device msg)))]
     (handler msg)))
 
 (defn- cc-message-handler
@@ -301,11 +301,11 @@
 
 (defn- add-synced-metronome
   [midi-clock-source metronome sync-fn]
-  (swap! synced-metronomes #(assoc-in % [(:name midi-clock-source) metronome] sync-fn)))
+  (swap! synced-metronomes #(assoc-in % [midi-clock-source metronome] sync-fn)))
 
 (defn- remove-synced-metronome
   [midi-clock-source metronome]
-  (swap! synced-metronomes #(update-in % [(:name midi-clock-source)] dissoc metronome)))
+  (swap! synced-metronomes #(update-in % [midi-clock-source] dissoc metronome)))
 
 ;; A simple object which holds the values necessary to establish a link between an external
 ;; source of MIDI clock messages and the metronome driving the timing of a light show.
@@ -325,6 +325,7 @@
          {:type :midi,
           :current current
           :level :bpm
+          :source midi-clock-source
           :status (cond
                     (empty? @buffer) "Inactive, no clock pulses have been received."
                     (not current) (str "Stalled? " (if (< n max-clock-intervals)

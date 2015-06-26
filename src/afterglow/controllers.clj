@@ -11,6 +11,14 @@
   pool
   (at-at/mk-pool))
 
+(def minimum-bpm
+  "The lowest BPM value which controllers are allowed to set."
+  20)
+
+(def maximum-bpm
+  "The highest BPM value which controllers are allowed to set."
+  200)
+
 (defonce
   ^{:private true
     :doc "Protect protocols against namespace reloads"}

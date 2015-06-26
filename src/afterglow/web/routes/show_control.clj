@@ -1,6 +1,7 @@
 (ns afterglow.web.routes.show-control
   (:require [afterglow.web.layout :as layout]
             [afterglow.midi :as amidi]
+            [afterglow.dj-link :as dj-link]
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
             [afterglow.show-context :refer [with-show]]
@@ -9,7 +10,7 @@
             [com.evocomputing.colors :as colors]
             [compojure.core :refer [defroutes GET]]
             [org.httpkit.server :refer [with-channel on-receive on-close]]
-            [overtone.at-at :refer [now]]
+            [overtone.at-at :refer [now after]]
             [ring.util.response :refer [response]]
             [ring.util.http-response :refer [ok]]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
@@ -133,6 +134,58 @@
   (when-let [new-info (update-known-controllers page-id)]
     {:link-menu-changes (parser/render-file "link_menu.html" {:link-menu (build-link-select new-info)})}))
 
+(defn update-known-midi-sync-sources
+  "Scans for sources of MIDI clock pulses, and updates the cached page
+  information to contain current list, assigning each a unique id
+  number, so they can be selected in the sync interface."
+  [page-id]
+  (let [page-info (get @clients page-id)
+        old-info (:midi-sync page-info)
+        clock-finder (amidi/watch-for-clock-sources)]
+    (after 300
+           #(let [found (amidi/finder-current-sources clock-finder)
+                  source-info (loop [result (update-in old-info [:known] select-keys found)
+                                     new-sources (clojure.set/difference found
+                                                                         (set (keys (:known result))))
+                                     counter (inc (:counter result 0))]
+                                (if-not (seq new-sources)
+                                  result
+                                  (recur (-> result
+                                             (assoc-in [:known (first new-sources)] counter)
+                                             (assoc-in [:counter] counter))
+                                         (rest new-sources)
+                                         (inc counter))))]
+              (amidi/finder-finished clock-finder)
+                  (when (not= old-info source-info)
+                    (swap! clients assoc-in [page-id :midi-sync] source-info)))
+           controllers/pool)))
+
+(defn update-known-dj-link-sync-sources
+  "Scans for sources of Pro DJ Link packets, and updates the cached
+  page information to contain current list, assigning each a unique
+  id number, so they can be selected in the sync interface."
+  [page-id]
+  (let [page-info (get @clients page-id)
+        old-info (:dj-link-sync page-info)
+        link-finder (dj-link/watch-for-dj-link-sources)]
+    (after 2000
+           #(let [found (amidi/finder-current-sources link-finder)
+                  source-info (loop [result (update-in old-info [:known] select-keys found)
+                                     new-sources (clojure.set/difference found
+                                                                         (set (keys (:known result))))
+                                     counter (inc (:counter result 0))]
+                                (if-not (seq new-sources)
+                                  result
+                                  (recur (-> result
+                                             (assoc-in [:known (first new-sources)] counter)
+                                             (assoc-in [:counter] counter))
+                                         (rest new-sources)
+                                         (inc counter))))]
+              (amidi/finder-finished link-finder)
+              (when (not= old-info source-info)
+                (swap! clients assoc-in [page-id :dj-link-sync] source-info)))
+           controllers/pool)))
+
 (defn show-page
   "Renders the web interface for interacting with the specified show."
   [show-id]
@@ -143,6 +196,7 @@
            :tap-tempo-handler (amidi/create-tempo-tap-handler (:metronome show)))
     (record-page-grid page-id grid 0 0 8 8)
     (layout/render "show.html" {:show show :title description :grid grid :page-id page-id
+                                :min-bpm controllers/minimum-bpm :max-bpm controllers/maximum-bpm
                                 :link-menu (build-link-select (update-known-controllers page-id))
                                 :csrf-token *anti-forgery-token*})))
 
@@ -186,6 +240,8 @@
      :cues-left (pos? left)}))
 
 (defn- button-changes
+  "Return the list of changes that should be applied to the cue scroll
+  buttons since the last time they were updated."
   [page-id left bottom width height]
   (let [last-info (get @clients page-id)
         last-states (:button-states last-info)
@@ -198,6 +254,7 @@
     (when (seq changes) {:button-changes changes})))
 
 (defn metronome-states
+  "Gather details about the current state of the main show metronome."
   [show]
   (with-show show
     (let [snap (rhythm/metro-snapshot (:metronome show))]
@@ -206,9 +263,11 @@
        :bar (rhythm/snapshot-bar-within-phrase snap)
        :beat (rhythm/snapshot-beat-within-bar snap)
        :blink (< (rhythm/snapshot-beat-phase snap) 0.15)
-       :sync (dissoc (show/sync-status) :status)})))
+       :sync (dissoc (show/sync-status) :status :source)})))
 
 (defn metronome-changes
+  "Return the list of changes that should be applied to the show
+  metronome section since the last time it was updated."
   [page-id]
   (let [last-info (get @clients page-id)
         last-states (:metronome last-info)
@@ -218,6 +277,55 @@
                                      {:id (name key) :val val})))]
     (swap! clients update-in [page-id] assoc :metronome next-states)
     (when (seq changes) {:metronome-changes changes})))
+
+(defn- build-sync-list
+  "Builds a list of sync sources of a particular type for constructing
+  the user interface."
+  [known kind name-fn selected]
+  (loop [sorted (into (sorted-map-by (fn [key1 key2] (compare [(get known key2) key2]
+                                                              [(get known key1) key1])))
+                      known)
+           result []]
+    (if-not (seq sorted)
+      result
+      (let [[source id] (first sorted)]
+        (recur (rest sorted)
+               (conj result {:label (name-fn source)
+                             :value (str (name kind) "-" id)
+                             :selected (= source selected)}))))))
+
+(defn build-sync-select
+  "Creates the list needed by the template which renders the HTML
+  interface allowing the user to link to one of the currently
+  available controllers, with the current selection, if any, properly
+  identified."
+  [page-id]
+  (let [page-info (get @clients page-id)
+        known-midi (:known (:midi-sync page-info))
+        known-dj (:known (:dj-link-sync page-info))]
+    (with-show (:show page-info)
+      (concat [{:label "Manual (no automatic sync)."
+                :value "manual"
+                :selected (= :manual (:type (show/sync-status)))}]
+              (build-sync-list known-midi :midi #(str (:name %) " (MIDI, sync BPM only).")
+                               (:source (show/sync-status)))
+              (build-sync-list known-dj :midi #(str (:name %) " (DJ Link Pro, sync BPM and beats).")
+                               (:source (show/sync-status)))))))
+
+(defn sync-menu-changes
+  "Return any changes that should be applied to the menu of available
+  metronome sync options since the last time it was updated."
+  [page-id]
+  (let [last-info (get @clients page-id)
+        next-menu (parser/render-file "sync_menu.html" {:sync-menu (build-sync-select page-id)})]
+    (when (or (nil? (:last-sync-refresh last-info))
+              (> (- (now) (:last-sync-refresh last-info)) 2000))
+      (swap! clients assoc-in [page-id :last-sync-refresh] (now))
+      (update-known-dj-link-sync-sources page-id)
+      (update-known-midi-sync-sources page-id))
+    (when (not= next-menu (:sync-menu last-info))
+      (swap! clients assoc-in [page-id :sync-menu] next-menu)
+      {:sync-menu-changes next-menu})))
 
 (defn- find-page-in-cache
   "Looks up the cached show page status for the specified ID, cleaning
@@ -241,6 +349,7 @@
         (response (merge {}
                          (grid-changes page-id left bottom width height)
                          (button-changes page-id left bottom width height)
+                         (sync-menu-changes page-id)
                          (link-menu-changes page-id)
                          (metronome-changes page-id))))
       ;; Found no page tracking information, advise the page to reload itself.
@@ -345,6 +454,38 @@
                   {:linked id})
               (recur (rest choices)))))))))
 
+(defn- handle-sync-choice-event
+  "Process a request to specify a metronome sync source."
+  [page-info value]
+  (with-show (:show page-info)
+    (cond (or (clojure.string/blank? value) (= "manual" value))
+          (do (show/sync-to-external-clock nil)
+              {:sync "manual"})
+
+          (.startsWith value "midi-")
+          (let [id (Long/valueOf (second (clojure.string/split value #"-")))]
+            (loop [choices (:known (:midi-sync page-info))]
+              (if-not (seq choices)
+                {:error (str "Unrecognized MIDI sync source id: " id)}
+                (let [[k v] (first choices)]
+                  (if (= v id)
+                    (do (show/sync-to-external-clock (amidi/sync-to-midi-clock (:name k)))
+                        {:linked value})
+                    (recur (rest choices)))))))
+
+          (.startsWith value "dj-link-")
+          (let [id (Long/valueOf (get (clojure.string/split value #"-") 3))]
+            (loop [choices (:known (:dj-link-sync page-info))]
+              (if-not (seq choices)
+                {:error (str "Unrecognized DJ Link sync source id: " id)}
+                (let [[k v] (first choices)]
+                  (if (= v id)
+                    (do (show/sync-to-external-clock (dj-link/sync-to-dj-link k))
+                        {:linked value})
+                    (recur (rest choices)))))))
+          :else
+          {:error (str "Unrecognized sync option" value)})))
+
 (defn metronome-delta-for-event
   "If the UI event name submitted by a show page corresponds to a
   metronome shift, return the appropriate number of milliseconds."
@@ -405,6 +546,9 @@
 
              (= kind "link-select")
              (handle-link-controller-event page-info (get-in req [:params :value]))
+
+             (= kind "choose-sync")
+             (handle-sync-choice-event page-info (get-in req [:params :value]))
 
              (when-let [[delta metro] (metronome-delta-for-event page-info kind)]
                (rhythm/metro-adjust metro delta))
