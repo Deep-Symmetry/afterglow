@@ -53,7 +53,9 @@
                        :y-rotation (tf/degrees -45))
   (show/patch-fixture! :ws-1 (blizzard/weather-system) universe 161
                        :x (tf/inches 22) :y (tf/inches 7) :z (tf/inches 7)
-                       :x-rotation (tf/degrees 90))
+                       :x-rotation (tf/degrees 180) :y-rotation (tf/degrees 180))
+  (show/patch-fixture! :ws-2 (blizzard/weather-system) universe 187
+                       :x (tf/inches -76) :y (tf/inches 64) :z (tf/inches -4))
   '*show*)
 
 
@@ -348,6 +350,4 @@
   show. But also sets up the cues, if you haven't yet."
   []
   (make-cues)
-  (println "To link to the web interface:")
-  (println "(afterglow.web.routes.show-control/link-controller 1 (first @(:grid-controllers *show*)))")
   (push/bind-to-show *show*))

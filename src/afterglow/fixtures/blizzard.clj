@@ -226,8 +226,25 @@
 ;; TODO: Document origin and default hanging orientation
 
 (defn weather-system
-  "[Weather System](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&layout=item&id=173&Itemid=152)
-  8-fixture LED bar."
+  "[Weather
+  System](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&layout=item&id=173&Itemid=152)
+  8-fixture LED bar. Even though this fixture does not move, it is
+  important to patch it at the correct orientation, so Afterglow can
+  properly reason about the spatial relationships between the eight
+  individual heads.
+
+  The fixture origin is right between the fourth and fifth head, at
+  the level of the lenses. The default orientation is with the bar
+  parallel to the X axis, and the LED display and sockets all facing
+  away from the audience.
+
+  ![Weather System
+  axes](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/WeatherSystem.jpg)
+
+  This fixture can be configured to use either 7 or 26 DMX channels.
+  If you do not specify a mode when patching it, `:26-channel` is
+  assumed; you can pass a value of `:7-channel` for `mode` if you are
+  using it that way."
   {:doc/format :markdown}
   ([]
    (weather-system :26-channel))
