@@ -223,8 +223,6 @@
   {:channels [(chan/color (+ 2 (* 3 index)) :red) (chan/color (+ 3 (* 3 index)) :green) (chan/color (+ 4 (* 3 index)) :blue)]
    :x (get ws-head-offsets index)})
 
-;; TODO: Document origin and default hanging orientation
-
 (defn weather-system
   "[Weather
   System](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&layout=item&id=173&Itemid=152)
