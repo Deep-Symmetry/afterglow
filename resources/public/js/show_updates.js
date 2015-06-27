@@ -86,6 +86,7 @@ function updateLinkMenu( data ) {
 }
 
 function updateSyncMenu( data ) {
+    syncSave = "";
     $('#sync-menu').html(data);
 }
 
@@ -199,6 +200,15 @@ $( document ).ready(function() {
     }
     $("#link-select").change(linkMenuChanged);
     $("#choose-sync").click(syncMenuChosen);
+    $("#syncModal").on("show.bs.modal", function(event) {
+        syncSave = $("#sync-menu").html();
+    });
+    $("#syncModal").on("hidden.bs.modal", function(event) {
+        if (syncSave) {
+            $("#sync-menu").html(syncSave);
+        }
+    });
+    
     // See https://github.com/seiyria/bootstrap-slider
     $("#bpm-slider").slider({id: "slider-in-bpm"}).on("slide", bpmSlide).on("change", bpmSlide);
     updateShow();
