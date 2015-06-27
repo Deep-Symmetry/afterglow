@@ -56,6 +56,7 @@
                        :x-rotation (tf/degrees 180) :y-rotation (tf/degrees 180))
   (show/patch-fixture! :ws-2 (blizzard/weather-system) universe 187
                        :x (tf/inches -76) :y (tf/inches 64) :z (tf/inches -4))
+  (show/patch-fixture! :puck-2 (blizzard/puck-fab5) 1 113 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 40))
   '*show*)
 
 
@@ -270,6 +271,9 @@
                          :priority 100
                          :variables [{:key "chance" :min 0.0 :max 0.4 :start 0.05 :aftertouch true}
                                      {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
+
+    (ct/set-cue! (:cue-grid *show*) 0 6
+                 (cues/function-cue :strobe-all :strobe (show/all-fixtures)))
 
 
     ;; The upper page of torrent config cues

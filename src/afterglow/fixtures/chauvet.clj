@@ -6,7 +6,17 @@
 
 (defn slimpar-hex3-irc
   "[SlimPAR HEX 3 IRC](http://www.chauvetlighting.com/slimpar-hex3irc.html)
-  six-color low-profile LED PAR."
+  six-color low-profile LED PAR.
+
+  This fixture can be configured to use either 6, 8 or 12 DMX
+  channels. If you do not specify a mode when patching it,
+  `:12-channel` is assumed; you can pass a value of `:6-channel` or
+  `:8-channel` for `mode` if you are using it that way.
+
+  When you pass a mode, you can also control whether the amber and UV
+  channels are mixed in when creating colors by passing a boolean
+  value with `:mix-amber` and `:mix-uv`. The default for each is
+  `true`."
   {:doc/format :markdown}
   ([]
    (slimpar-hex3-irc :12-channel))

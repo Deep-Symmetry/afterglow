@@ -223,6 +223,60 @@
   {:channels [(chan/color (+ 2 (* 3 index)) :red) (chan/color (+ 3 (* 3 index)) :green) (chan/color (+ 4 (* 3 index)) :blue)]
    :x (get ws-head-offsets index)})
 
+(defn puck-fab5
+  "[Puck
+  Fab5](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&id=172:the-puck-fab5™&Itemid=71)
+  RGBAW LED.
+
+
+  This fixture can be configured to use either 3, 5 or 12 DMX
+  channels. If you do not specify a mode when patching it,
+  `:12-channel` is assumed; you can pass a value of `:3-channel` or
+  `:5-channel` for `mode` if you are using it that way.
+
+  When you pass a mode, you can also control whether the amber channel
+  is mixed in when creating colors by passing a boolean value with
+  `:mix-amber`. The default is `true`."
+  {:doc/format :markdown}
+  ([]
+   (puck-fab5 :12-channel))
+  ([mode & {:keys [mix-amber] :or {mix-amber true}}]
+   (assoc (case mode
+            :3-channel {:channels [(chan/dimmer 1)
+                                   (chan/functions :strobe 2
+                                                    0 nil
+                                                    16 {:type :strobe
+                                                        :scale-fn (partial function-value-scaler 0.8 25)
+                                                        :label "Strobe (0.66Hz->25Hz)"})
+                                   (chan/functions :control 3
+                                                   0 "R" 5 "G" 9 "B" 13 "A" 17 "W" 21 "RG" 25 "RB" 29 "RA" 32 "RW"
+                                                   36 "GB" 40 "GA" 44 "GW" 48 "BA" 52 "BW" 56 "AW" 60 "BAW" 63 "GAW"
+                                                   67 "GBW" 71 "GBA" 75 "RAW" 79 "RBW" 83 "RBA" 87 "RGW" 91 "RGA"
+                                                   94 "RGB" 98 "RGBA" 102 "RGBW" 106 "RGAW" 110 "RBAW" 114 "GBAW"
+                                                   118 "RGBAW" 121 {:type :chase :label "Chase (slow->fast)"})] }
+            :5-channel {:channels [(chan/color 1 :red) (chan/color 2 :green) (chan/color 3 :blue)
+                                   (chan/color 4 :amber :hue (when mix-amber 45))
+                                   (chan/color 5 :white)]}
+            :12-channel {:channels [(chan/dimmer 1)
+                                    (chan/functions :strobe 2
+                                                    0 nil
+                                                    16 {:type :strobe
+                                                        :scale-fn (partial function-value-scaler 0.8 25)
+                                                        :label "Strobe (0.66Hz->25Hz)"})
+                                    (chan/color 3 :red) (chan/color 4 :green) (chan/color 5 :blue)
+                                    (chan/color 6 :amber :hue (when mix-amber 45))
+                                    (chan/color 7 :white)
+                                    (chan/functions :control 8 0 :color-snap)
+                                    (chan/functions :control 9 0 nil
+                                                    16 {:type :snap-speed :label "Snap speed (slow->fast)"})
+                                    (chan/functions :control 10 0 :color-fade)
+                                    (chan/functions :control 11 0 nil
+                                                    16 {:type :fade-speed :label "Fade speed (slow->fast)"})
+                                    (chan/functions :control 12 0 nil
+                                                    128 {:type :sound-active :label "Sound sensitivity"})]})
+          :name "Blizzard Puck Fab5"
+          :mode mode)))
+
 (defn weather-system
   "[Weather
   System](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&layout=item&id=173&Itemid=152)
