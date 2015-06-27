@@ -86,7 +86,7 @@ function updateLinkMenu( data ) {
 }
 
 function updateSyncMenu( data ) {
-    syncSave = "";
+    syncSave = data;
     $('#sync-menu').html(data);
 }
 
