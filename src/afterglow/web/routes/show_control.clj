@@ -317,14 +317,23 @@
   [page-id]
   (let [last-info (get @clients page-id)
         next-menu (parser/render-file "sync_menu.html" {:sync-menu (build-sync-select page-id)})]
-    (when (or (nil? (:last-sync-refresh last-info))
-              (> (- (now) (:last-sync-refresh last-info)) 2000))
+    (when (> (- (now) (:last-sync-refresh last-info 0)) 2000)
       (swap! clients assoc-in [page-id :last-sync-refresh] (now))
       (update-known-dj-link-sync-sources page-id)
       (update-known-midi-sync-sources page-id))
     (when (not= next-menu (:sync-menu last-info))
       (swap! clients assoc-in [page-id :sync-menu] next-menu)
       {:sync-menu-changes next-menu})))
+
+(defn load-update
+  "If we haven't send a load update in the last half second, send
+  one."
+  [page-id]
+  (let [last-info (get @clients page-id)]
+    (when (> (- (now) (:last-load-update last-info 0)) 500)
+      (swap! clients assoc-in [page-id :last-load-update] (now))
+      (with-show (:show last-info)
+        {:load-level (show/current-load)}))))
 
 (defn- find-page-in-cache
   "Looks up the cached show page status for the specified ID, cleaning
@@ -351,7 +360,8 @@
                            (button-changes page-id left bottom width height)
                            (sync-menu-changes page-id)
                            (link-menu-changes page-id)
-                           (metronome-changes page-id))))
+                           (metronome-changes page-id)
+                           (load-update page-id))))
         ;; Found no page tracking information, advise the page to reload itself.
         (response {:reload "Page ID not found"})))
     (catch Throwable t

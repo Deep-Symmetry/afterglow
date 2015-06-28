@@ -90,6 +90,33 @@ function updateSyncMenu( data ) {
     $('#sync-menu').html(data);
 }
 
+function updateLoad( data ) {
+    var canvas = $("#loadBar")[0];
+    if (canvas.getContext) {
+        var ctx = canvas.getContext("2d");
+        ctx.fillStyle = "rgb(0,0,0)";
+        ctx.fillRect(0,0,100,14);
+        var red = 0;
+        var green = 255;
+        var width = data * 100;
+        if (data > 0.5) {
+            red = (data - 0.5) * 512;
+            if (red > 255) {
+                red = 255;
+            }
+            green = 255 + ((0.5 - data) * 512);
+            if (green < 0) {
+                green = 0;
+            }
+        }
+        if (width > 100) {
+            width = 100;
+        }
+        ctx.fillStyle = "rgb(" + (red|0) + "," + (green|0) + ",0)";
+        ctx.fillRect(0,0,width,14);
+    }
+}
+
 function updateShow() {
     var jqxhr = $.getJSON( (context + "/ui-updates/" + page_id), function( data ) {
         $.each( data, function( key, val ) {
@@ -112,6 +139,10 @@ function updateShow() {
 
             case "metronome-changes":
                 updateMetronome(val);
+                break;
+
+            case "load-level":
+                updateLoad(val);
                 break;
 
             case "reload":

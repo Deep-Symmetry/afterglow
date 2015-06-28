@@ -36,6 +36,7 @@
             [afterglow.rhythm :refer :all]
             [afterglow.show-context :refer [*show* with-show]]
             [afterglow.transform :refer [transform-fixture]]
+            [amalloy.ring-buffer :refer [ring-buffer]]
             [com.climate.claypoole :as cp]
             [environ.core :refer [env]]
             [overtone.at-at :as at-at]
@@ -96,6 +97,11 @@
 
 (declare end-effect!)
 
+(def ^:private frame-count-for-load
+  "The number of frames to keep track of for calculating the current
+  load on the show."
+  30)
+
 (defn- update-stats
   "Update the count of how many frames have been sent, total and
   average time computing them, and warn if the most recent one took
@@ -104,10 +110,25 @@
   (let [duration (- (at-at/now) began)
         total-time (+ duration (:total-time stats 0))
         frames-sent (inc (:frames-sent stats 0))
-        average-duration (float (/ total-time frames-sent))]
+        average-duration (float (/ total-time frames-sent))
+        recent (:recent stats (ring-buffer 30))
+        discarding (if (< (count recent) frame-count-for-load) 0 (- (peek recent)))
+        recent (conj recent duration)
+        recent-total (+ (:recent-total stats 0) duration discarding)
+        recent-average (float (/ recent-total (count recent)))]
     (when (> duration refresh-interval)
       (taoensso.timbre/warn "Frame took" duration "ms to generate, refresh interval is" refresh-interval "ms."))
-    (assoc stats :total-time total-time :frames-sent frames-sent :average-duration average-duration)))
+    (assoc stats :total-time total-time :frames-sent frames-sent :average-duration average-duration
+           :recent recent :recent-total recent-total :recent-average recent-average)))
+
+(defn current-load
+  "Returns a sense of how much headroom there is running the current
+  effects, in the form of the fraction of the available refresh
+  interval that was used calculating and sending the last several
+  frames."
+  {:pre [(some? *show*)]}
+  []
+  (/ (:recent-average @(:statistics *show*) 0) (:refresh-interval *show*)))
 
 (defn- send-dmx
   "Calculate and send the next frame of DMX values for the universes

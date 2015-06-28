@@ -88,3 +88,7 @@ table.metronome {
 #slider-in-bpm .slider-selection {
     background: slategray;
 }
+
+#loadBar {
+    vertical-align: text-top;
+}
