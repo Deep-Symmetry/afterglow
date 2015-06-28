@@ -119,7 +119,8 @@
           ;; the bright, medium, and dim versions.
           :else
           (let [base-hue (colors/hue color)
-                adjusted-hue (if (> base-hue 240)
+                ;; Hue to velocity gets a little non-linear at blue; tweak to look right.
+                adjusted-hue (if (> base-hue 230)
                                (min 360 (* base-hue 1.2))
                                base-hue)
                 hue-section (+ 4 (* 4 (math/floor (* 13 (/ adjusted-hue 360)))))]
