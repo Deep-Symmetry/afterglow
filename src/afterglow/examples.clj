@@ -56,7 +56,9 @@
                        :x-rotation (tf/degrees 180) :y-rotation (tf/degrees 180))
   (show/patch-fixture! :ws-2 (blizzard/weather-system) universe 187
                        :x (tf/inches -76) :y (tf/inches 64) :z (tf/inches -4))
+  (show/patch-fixture! :puck-1 (blizzard/puck-fab5) 1 97 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 52))
   (show/patch-fixture! :puck-2 (blizzard/puck-fab5) 1 113 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 40))
+  (show/patch-fixture! :snowball (blizzard/snowball) 1 33 :x (tf/inches -76) :y (tf/inches 10) :z (tf/inches 60))
   '*show*)
 
 
@@ -329,7 +331,9 @@
                  (cues/function-cue :t2-gobo-rotation :gobo-rotation-counterclockwise (show/fixtures-named "torrent-2")
                                     :effect-name "T2 Spin Gobo CCW" :color (create-color :cyan)))
 
-    ;; TODO: Buttons under these to rotate gobos themselves
+    ;; A couple snowball cues
+    (ct/set-cue! (:cue-grid *show*) 0 10 (cues/function-cue :sb-pos :beams-fixed (show/fixtures-named "snowball")))
+    (ct/set-cue! (:cue-grid *show*) 1 10 (cues/function-cue :sb-pos :beams-moving (show/fixtures-named "snowball")))
 
     ;; The separate page of specific gobo cues for each Torrent
     (make-torrent-gobo-cues :t1 (show/fixtures-named "torrent-1") 15 8)

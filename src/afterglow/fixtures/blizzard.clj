@@ -81,10 +81,12 @@
                                                                        "magenta" "cyan" "orange"])
                               128 {:type :color-clockwise
                                    :label "Color Wheel Clockwise (fast->slow)"
-                                   :var-label "CW (fast->slow)"}
+                                   :var-label "CW (fast->slow)"
+                                   :range :variable}
                               190 "color-stop" 194 {:type :color-counterclockwise
                                                     :label "Color Wheel Counterclockwise (slow->fast)"
-                                                    :var-label "CCW (fast->slow)"})
+                                                    :var-label "CCW (fast->slow)"
+                                                    :range :variable})
               (let [gobo-names ["Rings" "Color Swirl" "Stars" "Optical Tube" "Magenta Bundt"
                                 "Blue MegaHazard" "Turbine"]]
                 (chan/functions :gobo-moving 6
@@ -97,11 +99,13 @@
               (chan/functions :gobo-rotation 7 0 nil
                               4 {:type :gobo-rotation-clockwise
                                  :label "Gobo Rotation Clockwise (fast->slow)"
-                                 :var-label "CW (fast->slow)"}
+                                 :var-label "CW (fast->slow)"
+                                 :range :variable}
                               128 "gobo-rotation-stop"
                               132 {:type :gobo-rotation-counterclockwise
                                    :label "Gobo Rotation Counterlockwise (slow->fast)"
-                                   :var-label "CCW (slow->fast)"})
+                                   :var-label "CCW (slow->fast)"
+                                   :range :variable})
               (let [gobo-names ["Mortar" "4 Rings" "Atom" "Jacks" "Saw" "Sunflower" "45 Adapter"
                                 "Star" "Rose/Fingerprint"]]
                 (chan/functions :gobo-fixed 8
@@ -121,11 +125,13 @@
               (chan/functions :prism 12 0 "prism-out" 6 "prism-in"
                               128 {:type :prism-clockwise
                                    :label "Prism Clockwise (fast->slow)"
-                                   :var-label "CW (fast->slow)"}
+                                   :var-label "CW (fast->slow)"
+                                   :range :variable}
                               190 "prism-stop"
                               194 {:type :prism-counterclockwise
                                    :label "Prism Counterclockwsie (slow->fast)"
-                                   :var-label "CCW (slow->fast)"})
+                                   :var-label "CCW (slow->fast)"
+                                   :range :variable})
               (chan/functions :pan-tilt-speed 13 0 "pan-tilt-speed-normal"
                               1 :pan-tilt-speed-slow
                               226 "blackout-when-head-moving"
@@ -190,7 +196,8 @@
                                     (chan/functions :strobe 11 0 nil
                                                     1 {:type :strobe
                                                        :scale-fn (partial function-value-scaler 1.8 27)
-                                                       :label "Strobe (1.8Hz->27Hz)"})
+                                                       :label "Strobe (1.8Hz->27Hz)"
+                                                       :range :variable})
                                     (chan/dimmer 12)
                                     (chan/functions :control 13
                                                     0 :linear-dimming 26 :fade-step-increase
@@ -247,13 +254,15 @@
                                                     0 nil
                                                     16 {:type :strobe
                                                         :scale-fn (partial function-value-scaler 0.8 25)
-                                                        :label "Strobe (0.66Hz->25Hz)"})
+                                                        :label "Strobe (0.66Hz->25Hz)"
+                                                        :range :variable})
                                    (chan/functions :control 3
                                                    0 "R" 5 "G" 9 "B" 13 "A" 17 "W" 21 "RG" 25 "RB" 29 "RA" 32 "RW"
                                                    36 "GB" 40 "GA" 44 "GW" 48 "BA" 52 "BW" 56 "AW" 60 "BAW" 63 "GAW"
                                                    67 "GBW" 71 "GBA" 75 "RAW" 79 "RBW" 83 "RBA" 87 "RGW" 91 "RGA"
                                                    94 "RGB" 98 "RGBA" 102 "RGBW" 106 "RGAW" 110 "RBAW" 114 "GBAW"
-                                                   118 "RGBAW" 121 {:type :chase :label "Chase (slow->fast)"})] }
+                                                   118 "RGBAW" 121 {:type :chase :label "Chase (slow->fast)"
+                                                                    :range :variable})] }
             :5-channel {:channels [(chan/color 1 :red) (chan/color 2 :green) (chan/color 3 :blue)
                                    (chan/color 4 :amber :hue (when mix-amber 45))
                                    (chan/color 5 :white)]}
@@ -262,18 +271,22 @@
                                                     0 nil
                                                     16 {:type :strobe
                                                         :scale-fn (partial function-value-scaler 0.8 25)
-                                                        :label "Strobe (0.66Hz->25Hz)"})
+                                                        :label "Strobe (0.66Hz->25Hz)"
+                                                        :range :variable})
                                     (chan/color 3 :red) (chan/color 4 :green) (chan/color 5 :blue)
                                     (chan/color 6 :amber :hue (when mix-amber 45))
                                     (chan/color 7 :white)
                                     (chan/functions :control 8 0 :color-snap)
                                     (chan/functions :control 9 0 nil
-                                                    16 {:type :snap-speed :label "Snap speed (slow->fast)"})
+                                                    16 {:type :snap-speed :label "Snap speed (slow->fast)"
+                                                        :range :variable})
                                     (chan/functions :control 10 0 :color-fade)
                                     (chan/functions :control 11 0 nil
-                                                    16 {:type :fade-speed :label "Fade speed (slow->fast)"})
+                                                    16 {:type :fade-speed :label "Fade speed (slow->fast)"
+                                                        :range :variable})
                                     (chan/functions :control 12 0 nil
-                                                    128 {:type :sound-active :label "Sound sensitivity"})]})
+                                                    128 {:type :sound-active :var-label "Sensitivity"
+                                                         :range :variable})]})
           :name "Blizzard Puck Fab5"
           :mode mode)))
 
@@ -311,13 +324,37 @@
                                    (chan/functions :strobe 7 0 nil
                                                    11 {:type :strobe
                                                        :scale-fn (partial function-value-scaler 0.66 25)
-                                                       :label "Strobe (0.66Hz->25Hz)"})]}
+                                                       :label "Strobe (0.66Hz->25Hz)"
+                                                       :range :variable})]}
             :26-channel {:channels [(chan/dimmer 1)
                                     (chan/functions :strobe 26
                                                     0 nil
                                                     11 {:type :strobe
                                                         :scale-fn (partial function-value-scaler 0.66 25)
-                                                        :label "Strobe (0.66Hz->25Hz)"})]
+                                                        :label "Strobe (0.66Hz->25Hz)"
+                                                        :range :variable})]
                          :heads (map ws-head (range 8))})
           :name "Blizzard Weather System"
           :mode mode)))
+
+(defn snowball
+  "[Snowball](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&layout=item&id=100&Itemid=96)
+  multi-beam effect light."
+  {:doc/format :markdown}
+  []
+  {:name "Blizzard Snowball"
+   :channels [(chan/dimmer 1) (chan/color 2 :red) (chan/color 3 :green) (chan/color 4 :blue) (chan/color 5 :white)
+              (chan/functions :strobe 6 0 nil
+                              17 {:type :strobe
+                                  :label "Strobe (?->?Hz)"
+                                  :range :variable})
+              (chan/functions :control 7 0 :color-macros)
+              (chan/functions :control 8
+                              0 {:type :beams-fixed
+                                 :var-label "Beam Position"
+                                 :range :variable}
+                              128 {:type :beams-moving
+                                   :var-label "Move Speed"
+                                   :range :variable})
+              (chan/functions :control 9 0 nil
+                              128 {:type :sound-active :var-label "Sensitivity" :range :variable})]})
