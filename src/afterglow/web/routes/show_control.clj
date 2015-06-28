@@ -284,8 +284,8 @@
   "Builds a list of sync sources of a particular type for constructing
   the user interface."
   [known kind name-fn selected]
-  (loop [sorted (into (sorted-map-by (fn [key1 key2] (compare (name-for-sync-sorting key1)
-                                                              (name-for-sync-sorting key2))))
+  (loop [sorted (into (sorted-map-by (fn [key1 key2] (compare [(name-for-sync-sorting key1) key1]
+                                                              [(name-for-sync-sorting key2) key2])))
                       known)
            result []]
     (if-not (seq sorted)
