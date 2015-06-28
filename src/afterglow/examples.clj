@@ -294,7 +294,7 @@
                                     :color :yellow :effect-name "Hypnotic Red Green"))
     (ct/set-cue! (:cue-grid *show*) 4 3
                  (cues/function-cue :hypnotic-beam :beam-red-blue (show/fixtures-named "hyp-rgb")
-                                    :color :magenta :effect-name "Hypnotic Red Blue"))
+                                    :color :purple :effect-name "Hypnotic Red Blue"))
     (ct/set-cue! (:cue-grid *show*) 5 3
                  (cues/function-cue :hypnotic-beam :beam-green-blue (show/fixtures-named "hyp-rgb")
                                     :color :cyan :effect-name "Hypnotic Green Blue"))
