@@ -63,7 +63,7 @@
 (defn- remove-stale-sources
   "Age out any DJ Link sources we have not heard from in too long."
   []
-  (for [[k v] (:sources-seen @state)]
+  (doseq [[k v] (:sources-seen @state)]
     (when (> (- (now) (:last-seen v)) max-packet-interval)
       (swap! state update-in [:sources-seen] dissoc k))))
 
@@ -78,6 +78,7 @@
            {:packet-count (inc (:packet-count source 0))
             :last-seen (now)
             :source {:name (.trim (String. data 11 20))
+                     :player (aget data 33)
                      :address (.getAddress packet)}}))
   (remove-stale-sources))
 

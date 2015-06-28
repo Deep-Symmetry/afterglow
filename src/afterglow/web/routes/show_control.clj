@@ -274,12 +274,18 @@
     (swap! clients update-in [page-id] assoc :metronome next-states)
     (when (seq changes) {:metronome-changes changes})))
 
+(defn- name-for-sync-sorting
+  "Sort entries in the sync selection menu first by name, then if that
+  is not unique, by player number if there is one."
+  [val]
+  (str (:name val) (:player val)))
+
 (defn- build-sync-list
   "Builds a list of sync sources of a particular type for constructing
   the user interface."
   [known kind name-fn selected]
-  (loop [sorted (into (sorted-map-by (fn [key1 key2] (compare [(get known key2) key2]
-                                                              [(get known key1) key1])))
+  (loop [sorted (into (sorted-map-by (fn [key1 key2] (compare (name-for-sync-sorting key1)
+                                                              (name-for-sync-sorting key2))))
                       known)
            result []]
     (if-not (seq sorted)
@@ -306,8 +312,8 @@
               (build-sync-list known-midi :midi #(str (:name %) " (MIDI, sync BPM only).")
                                (:source (show/sync-status)))
               (build-sync-list known-dj :dj-link #(str (:name %)
-                                                       (when (> (count (dj-link/filter-sources (:name %))) 1)
-                                                         (str " at " (.getHostAddress (:address %))))
+                                                       (when (.startsWith (:name %) "CDJ")
+                                                         (str ", Player " (:player %)))
                                                        " (DJ Link Pro, sync precise BPM and beat grid).")
                                (:source (show/sync-status)))))))
 
