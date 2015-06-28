@@ -12,6 +12,7 @@
             [afterglow.effects.movement :as move]
             [afterglow.effects.oscillators :as oscillators]
             [afterglow.effects.params :as params]
+            [afterglow.fixtures.american-dj :as adj]
             [afterglow.fixtures.blizzard :as blizzard]
             [afterglow.fixtures.chauvet :as chauvet]
             [afterglow.rhythm :refer :all]
@@ -59,6 +60,7 @@
   (show/patch-fixture! :puck-1 (blizzard/puck-fab5) 1 97 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 52))
   (show/patch-fixture! :puck-2 (blizzard/puck-fab5) 1 113 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 40))
   (show/patch-fixture! :snowball (blizzard/snowball) 1 33 :x (tf/inches -76) :y (tf/inches 10) :z (tf/inches 60))
+  (show/patch-fixture! :hyp-rgb (adj/hypnotic-rgb) 1 45)
   '*show*)
 
 
@@ -278,6 +280,37 @@
                  (cues/function-cue :strobe-all :strobe (show/all-fixtures)))
 
 
+    (ct/set-cue! (:cue-grid *show*) 0 3
+                 (cues/function-cue :hypnotic-beam :beam-red (show/fixtures-named "hyp-rgb")
+                                    :color :red :effect-name "Hypnotic Red"))
+    (ct/set-cue! (:cue-grid *show*) 1 3
+                 (cues/function-cue :hypnotic-beam :beam-green (show/fixtures-named "hyp-rgb")
+                                    :color :green :effect-name "Hypnotic Green"))
+    (ct/set-cue! (:cue-grid *show*) 2 3
+                 (cues/function-cue :hypnotic-beam :beam-blue (show/fixtures-named "hyp-rgb")
+                                    :color :blue :effect-name "Hypnotic Blue"))
+    (ct/set-cue! (:cue-grid *show*) 3 3
+                 (cues/function-cue :hypnotic-beam :beam-red-green (show/fixtures-named "hyp-rgb")
+                                    :color :yellow :effect-name "Hypnotic Red Green"))
+    (ct/set-cue! (:cue-grid *show*) 4 3
+                 (cues/function-cue :hypnotic-beam :beam-red-blue (show/fixtures-named "hyp-rgb")
+                                    :color :magenta :effect-name "Hypnotic Red Blue"))
+    (ct/set-cue! (:cue-grid *show*) 5 3
+                 (cues/function-cue :hypnotic-beam :beam-green-blue (show/fixtures-named "hyp-rgb")
+                                    :color :cyan :effect-name "Hypnotic Green Blue"))
+    (ct/set-cue! (:cue-grid *show*) 6 3
+                 (cues/function-cue :hypnotic-beam :beam-red-green-blue (show/fixtures-named "hyp-rgb")
+                                    :color :white :effect-name "Hypnotic Red Green Blue"))
+    (ct/set-cue! (:cue-grid *show*) 7 3
+                 (cues/function-cue :hypnotic-beam :beam-all-random (show/fixtures-named "hyp-rgb")
+                                    :color :white :effect-name "Hypnotic Random"))
+    (ct/set-cue! (:cue-grid *show*) 6 4
+                 (cues/function-cue :hypnotic-spin :beams-ccw (show/fixtures-named "hyp-rgb")
+                                    :color :cyan :effect-name "Hypnotic Rotate CCW" :level 50))
+    (ct/set-cue! (:cue-grid *show*) 7 4
+                 (cues/function-cue :hypnotic-spin :beams-cw (show/fixtures-named "hyp-rgb")
+                                    :color :cyan :effect-name "Hypnotic Rotate Clockwise" :level 50))
+
     ;; The upper page of torrent config cues
     (ct/set-cue! (:cue-grid *show*) 0 15
                  (cues/function-cue :torrent-shutter :shutter-open (show/fixtures-named "torrent")))
@@ -332,8 +365,10 @@
                                     :effect-name "T2 Spin Gobo CCW" :color (create-color :cyan)))
 
     ;; A couple snowball cues
-    (ct/set-cue! (:cue-grid *show*) 0 10 (cues/function-cue :sb-pos :beams-fixed (show/fixtures-named "snowball")))
-    (ct/set-cue! (:cue-grid *show*) 1 10 (cues/function-cue :sb-pos :beams-moving (show/fixtures-named "snowball")))
+    (ct/set-cue! (:cue-grid *show*) 0 10 (cues/function-cue :sb-pos :beams-fixed (show/fixtures-named "snowball")
+                                                             :effect-name "Snowball Fixed"))
+    (ct/set-cue! (:cue-grid *show*) 1 10 (cues/function-cue :sb-pos :beams-moving (show/fixtures-named "snowball")
+                                                             :effect-name "Snowball Moving"))
 
     ;; The separate page of specific gobo cues for each Torrent
     (make-torrent-gobo-cues :t1 (show/fixtures-named "torrent-1") 15 8)

@@ -1,5 +1,5 @@
 (ns afterglow.fixtures.blizzard
-  "Models for fixtures provided by [Blizzard
+  "Definitions for fixtures provided by [Blizzard
   Lighting](http://www.blizzardlighting.com)."
   {:doc/format :markdown}
   (:require [afterglow.channels :as chan]
