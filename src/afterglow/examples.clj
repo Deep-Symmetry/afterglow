@@ -57,10 +57,10 @@
                        :x-rotation (tf/degrees 180) :y-rotation (tf/degrees 180))
   (show/patch-fixture! :ws-2 (blizzard/weather-system) universe 187
                        :x (tf/inches -76) :y (tf/inches 64) :z (tf/inches -4))
-  (show/patch-fixture! :puck-1 (blizzard/puck-fab5) 1 97 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 52))
-  (show/patch-fixture! :puck-2 (blizzard/puck-fab5) 1 113 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 40))
-  (show/patch-fixture! :snowball (blizzard/snowball) 1 33 :x (tf/inches -76) :y (tf/inches 10) :z (tf/inches 60))
-  (show/patch-fixture! :hyp-rgb (adj/hypnotic-rgb) 1 45)
+  (show/patch-fixture! :puck-1 (blizzard/puck-fab5) universe 97 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 52))
+  (show/patch-fixture! :puck-2 (blizzard/puck-fab5) universe 113 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 40))
+  (show/patch-fixture! :snowball (blizzard/snowball) universe 33 :x (tf/inches -76) :y (tf/inches 10) :z (tf/inches 60))
+  (show/patch-fixture! :hyp-rgb (adj/hypnotic-rgb) universe 45)
   '*show*)
 
 
