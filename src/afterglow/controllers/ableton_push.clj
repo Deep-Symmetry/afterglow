@@ -118,7 +118,11 @@
           ;; a single hue, starting with the lightened version, then
           ;; the bright, medium, and dim versions.
           :else
-          (let [hue-section (+ 4 (* 4 (math/floor (* 13 (/ (colors/hue color) 360)))))]
+          (let [base-hue (colors/hue color)
+                adjusted-hue (if (> base-hue 240)
+                               (min 360 (* base-hue 1.2))
+                               base-hue)
+                hue-section (+ 4 (* 4 (math/floor (* 13 (/ adjusted-hue 360)))))]
             (int (+ hue-section brightness-shift))))))
 
 (defonce ^{:doc "The color of buttons that are completely off."}
