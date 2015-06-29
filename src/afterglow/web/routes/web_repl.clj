@@ -1,6 +1,5 @@
 (ns afterglow.web.routes.web-repl
-  (:require [afterglow.examples :as examples]
-            [afterglow.web.layout :as layout]
+  (:require [afterglow.web.layout :as layout]
             [clojure.main :as main]
             [clojure.stacktrace :refer [root-cause]]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
