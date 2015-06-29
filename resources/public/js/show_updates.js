@@ -94,7 +94,7 @@ function updateLoad( data ) {
     var canvas = $("#loadBar")[0];
     if (canvas.getContext) {
         var ctx = canvas.getContext("2d");
-        ctx.fillStyle = "rgb(0,0,0)";
+        ctx.fillStyle = "rgb(136,136,136)";
         ctx.fillRect(0,0,100,14);
         var red = 0;
         var green = 255;
