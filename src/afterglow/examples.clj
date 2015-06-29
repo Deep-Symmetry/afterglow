@@ -47,6 +47,9 @@
   (show/patch-fixture! :torrent-1 (blizzard/torrent-f3) universe 1
                        :x (tf/inches 49) :y (tf/inches 61.5) :z (tf/inches 6)
                        :y-rotation (tf/degrees -45))
+  (show/patch-fixture! :torrent-2 (blizzard/torrent-f3) universe 17
+                       :x (tf/inches -88) :y (tf/inches 12) :z (tf/inches 64)
+                       :y-rotation (tf/degrees 180))
   (show/patch-fixture! :hex-1 (chauvet/slimpar-hex3-irc) universe 129 :y (tf/inches 4) :z (tf/inches 10)
                        :x-rotation (tf/degrees 90))
   (show/patch-fixture! :blade-1 (blizzard/blade-rgbw) universe 270 :y (tf/inches 9))
