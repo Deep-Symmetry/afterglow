@@ -325,6 +325,7 @@
                  (cues/function-cue :strobe-all :strobe (show/all-fixtures) :effect-name "Strobe"))
 
 
+    ;; Some cues to show the Hypnotic RGB Laser
     (ct/set-cue! (:cue-grid *show*) 0 3
                  (cues/function-cue :hypnotic-beam :beam-red (show/fixtures-named "hyp-rgb")
                                     :color :red :effect-name "Hypnotic Red"))
@@ -355,6 +356,27 @@
     (ct/set-cue! (:cue-grid *show*) 7 4
                  (cues/function-cue :hypnotic-spin :beams-cw (show/fixtures-named "hyp-rgb")
                                     :color :cyan :effect-name "Hypnotic Rotate Clockwise" :level 50))
+
+    ;; Dimmer cues to turn on and set brightness of groups of lights
+    (ct/set-cue! (:cue-grid *show*) 0 4
+                 (cues/function-cue :dimmers :dimmer (show/all-fixtures) :level 100 :color :yellow
+                                    :effect-name "All Dimmers" :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
+                                                                          :puck-dimmers :hex-dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 1 4
+                 (cues/function-cue :torrent-dimmers :dimmer (show/fixtures-named "torrent") :level 100 :color :orange
+                                    :effect-name "Torrent Dimmers" :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 2 4
+                 (cues/function-cue :blade-dimmers :dimmer (show/fixtures-named "blade") :level 100 :color :orange
+                                    :effect-name "Blade Dimmers" :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 3 4
+                 (cues/function-cue :ws-dimmers :dimmer (show/fixtures-named "ws") :level 100 :color :orange
+                                    :effect-name "Weather System Dimmers" :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 4 4
+                 (cues/function-cue :puck-dimmers :dimmer (show/fixtures-named "puck") :level 100 :color :orange
+                                    :effect-name "Puck Dimmers" :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 5 4
+                 (cues/function-cue :hex-dimmers :dimmer (show/fixtures-named "hex") :level 100 :color :orange
+                                    :effect-name "Hex Dimmers" :end-keys [:dimmers]))
 
     ;; The upper page of torrent config cues
     (ct/set-cue! (:cue-grid *show*) 0 15
