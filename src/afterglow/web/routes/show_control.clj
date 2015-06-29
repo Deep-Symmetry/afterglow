@@ -8,7 +8,6 @@
             [afterglow.controllers :as controllers]
             [clojure.data.json :refer [read-json write-str]]
             [com.evocomputing.colors :as colors]
-            [compojure.core :refer [defroutes GET]]
             [org.httpkit.server :refer [with-channel on-receive on-close]]
             [overtone.at-at :refer [now after]]
             [ring.util.response :refer [response]]
