@@ -1,5 +1,6 @@
 (ns afterglow.web.routes.web-repl
-  (:require [afterglow.web.layout :as layout]
+  (:require [afterglow.examples :as examples]
+            [afterglow.web.layout :as layout]
             [clojure.main :as main]
             [clojure.stacktrace :refer [root-cause]]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
@@ -26,8 +27,10 @@
  
 (defn bindings-for [session-key]
   (when-not (@repl-sessions session-key)
-    (dosync
-      (commute repl-sessions assoc session-key (current-bindings))))
+    (binding [*ns* *ns*]
+      (in-ns 'afterglow.examples)
+      (dosync
+       (commute repl-sessions assoc session-key (current-bindings)))))
   (@repl-sessions session-key))
  
 (defn store-bindings-for [session-key]
