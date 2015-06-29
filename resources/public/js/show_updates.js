@@ -85,6 +85,8 @@ function updateLinkMenu( data ) {
     $("#link-select").change(linkMenuChanged);
 }
 
+var syncSave = "";
+
 function updateSyncMenu( data ) {
     syncSave = data;
     $('#sync-menu').html(data);
