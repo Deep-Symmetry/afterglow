@@ -16,17 +16,18 @@
             <li {% ifequal page "home.html" %} class="active"{%endifequal%}>
               <a href="{{servlet-context}}/">Home</a>
             </li>
-            <li {% ifequal page "about.html" %} class="active"{%endifequal%}>
-              <a href="{{servlet-context}}/about">About</a>
-            </li>
             <li {% ifequal page "console.html" %} class="active"{%endifequal%}>
               <a href="{{servlet-context}}/console">Console</a>
             </li>
             <li {% ifequal page "visualizer.html" %} class="active"{%endifequal%}>
               <a href="{{servlet-context}}/visualizer">Visualizer</a>
             </li>
+            <li {% ifequal page "about.html" %} class="active"{%endifequal%}>
+              <a href="{{servlet-context}}/about">About</a>
+            </li>
           </ul>
-          <p class="navbar-text">Load: <canvas id="loadBar" width="100" height="14"></p>
+          {% ifequal page "show.html" %}<p class="navbar-text">Load:
+            <canvas id="loadBar" width="100" height="14"></p>{% endifequal %}
         </div>
       </div>
     </div>
