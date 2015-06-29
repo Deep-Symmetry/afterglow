@@ -19,6 +19,7 @@
             [afterglow.show :as show]
             [afterglow.show-context :refer :all]
             [com.evocomputing.colors :refer [color-name create-color hue adjust-hue]]
+            [overtone.osc :as osc]
             [taoensso.timbre :as timbre]))
 
 (defn use-sample-show
@@ -171,16 +172,60 @@
 
 (defn add-xyz-controls
   []
-  #_(show/add-midi-control-to-var-mapping "Slider" 0 4 :x)
-  #_(show/add-midi-control-to-var-mapping "Slider" 0 5 :y)
-  #_(show/add-midi-control-to-var-mapping "Slider" 0 6 :z)
+  (show/add-midi-control-to-var-mapping "Slider" 0 4 :x)
+  (show/add-midi-control-to-var-mapping "Slider" 0 5 :y)
+  (show/add-midi-control-to-var-mapping "Slider" 0 6 :z)
   (show/add-effect! :position
                     (move/direction-effect
                      "Pointer" (params/build-direction-param :x :x :y :y :z :z) (show/all-fixtures)))
   #_(show/add-effect! :position
                     (move/aim-effect
                      "Aimer" (params/build-aim-param :x :x :y :y :z :z) (show/all-fixtures)))
-  #_(show/set-variable! :y  2.6416))  ; Approximate height of ceiling
+  (show/set-variable! :y 2.6416))  ; Approximate height of ceiling
+
+(defonce osc-server
+  (atom nil))
+
+(defn osc-demo
+  "Early experiments with using OSC to control shows. This should grow
+  into a well-defined API, with integration to show variables, cue
+  grids, and the like."
+  []
+  (swap! osc-server (fn [server] (or server (osc/osc-server 16010 "Afterglow"))))
+  (osc/osc-handle @osc-server "/aim" (fn [msg]
+                                       (let [left -2.5
+                                             right 1.65
+                                             width (- right left)
+                                             front -0.7
+                                             rear 3.1
+                                             depth (- rear front)]
+                                         (show/set-variable! :x (+ left (* width (first (:args msg)))))
+                                         (show/set-variable! :z (+ front (* depth (second (:args msg))))))
+                                       #_(timbre/info msg)))
+  (osc/osc-handle @osc-server "/sparkle" (fn [msg]
+                                       (if (pos? (first (:args msg)))
+                                         (show/add-effect! :sparkle (fun/sparkle (show/all-fixtures) :chance 0.1
+                                                                                 :fade-time 100))
+                                         (show/end-effect! :sparkle))))
+  #_(osc/osc-listen @osc-server (fn [msg] (timbre/info msg)) :debug)
+  #_(osc/zero-conf-on)
+  (show/set-variable! :x 0)
+  (show/set-variable! :y 2.6416) ; Approximate height of ceiling
+  (show/set-variable! :z 0)
+  (show/add-effect! :position
+                    (move/aim-effect
+                     "Aimer" (params/build-aim-param :x :x :y :y :z :z) (show/all-fixtures))))
+
+(defn osc-shutdown
+  "Shut down osc server and clean up."
+  []
+  #_(osc/zero-conf-off)
+  (swap! osc-server (fn [server]
+                      (when server
+                        (osc/osc-rm-all-listeners server)
+                        (osc/osc-rm-all-handlers server)
+                        (osc/osc-close server)
+                        nil))))
 
 (defn global-color-cue
   "Create a cue-grid entry which establishes a global color effect."
@@ -277,7 +322,7 @@
                                      {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
 
     (ct/set-cue! (:cue-grid *show*) 0 6
-                 (cues/function-cue :strobe-all :strobe (show/all-fixtures)))
+                 (cues/function-cue :strobe-all :strobe (show/all-fixtures) :effect-name "Strobe"))
 
 
     (ct/set-cue! (:cue-grid *show*) 0 3
