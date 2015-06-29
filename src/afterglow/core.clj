@@ -103,15 +103,18 @@
   (System/exit status))
 
 (defn start-web-server
-  "Start the embedded web UI server."
-  [port]
+  "Start the embedded web UI server on the specified port. If a truthy
+  value is supplied for browser, opens a web browser window on the
+  newly launched server."
+  [port browser]
   (when @web-server (throw (IllegalStateException. "Web UI server is already running.")))
   (reset! web-server
           (http-kit/run-server
            app
            {:port port}))
   ;;Start the expired session cleanup job
-  (reset! session-cleaner (session/start-cleanup-job!)))
+  (reset! session-cleaner (session/start-cleanup-job!))
+  (when browser (browse/browse-url (str "http://localhost:" port))))
 
 (defn start-nrepl
   "Start a network REPL for debugging or remote control."
@@ -147,8 +150,7 @@
     (init-logging)
     (.addShutdownHook (Runtime/getRuntime) (Thread. stop-servers))
     (clojure.pprint/pprint options)
-    (start-web-server (:web-port options))
+    (start-web-server (:web-port options) true)
     (timbre/info (str "\n-=[ afterglow started successfully"
                       (when (env :dev) "using the development profile") "]=-"))
-    (timbre/info "Web UI server on port:" (:web-port options))
-    (browse/browse-url (str "http://localhost:" (:web-port options)))))
+    (timbre/info "Web UI server on port:" (:web-port options))))
