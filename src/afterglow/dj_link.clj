@@ -192,6 +192,7 @@
   which are currently visible on the network."
   []
   (start-if-needed)
+  (remove-stale-sources)
   (set (for [[k v] (:sources-seen @state)] (:source v))))
 
 (defn filter-sources
