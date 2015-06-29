@@ -6,9 +6,9 @@
             [ring.util.response :refer [response]]
             [taoensso.timbre :refer [info warn spy]]))
 
-(defonce repl-sessions (ref {}))
+(defonce ^:private repl-sessions (ref {}))
  
-(defn current-bindings []
+(defn- current-bindings []
   (binding [*ns* *ns*
             *warn-on-reflection* *warn-on-reflection*
             *math-context* *math-context*
@@ -24,7 +24,7 @@
             *e nil]
     (get-thread-bindings)))
  
-(defn bindings-for [session-key]
+(defn- bindings-for [session-key]
   (when-not (@repl-sessions session-key)
     (binding [*ns* *ns*]
       (in-ns 'afterglow.examples)
@@ -32,7 +32,7 @@
        (commute repl-sessions assoc session-key (current-bindings)))))
   (@repl-sessions session-key))
  
-(defn store-bindings-for [session-key]
+(defn- store-bindings-for [session-key]
   (dosync
     (commute repl-sessions assoc session-key (current-bindings))))
  
@@ -43,6 +43,8 @@
       r#)))
  
 (defn do-eval [txt session-key]
+  "Evaluate an expression sent to the web REPL and return the result
+  or an error description."
   (with-session session-key
     (let [form (binding [*read-eval* false] (read-string txt))]
       (with-open [writer (java.io.StringWriter.)]
