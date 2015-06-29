@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="console"/>
+{% endblock %}
+{% block page-scripts %}
+    {% style "/css/web-repl.css" %}
+    {% script "/js/jquery.console.js" %}
+    {% script "/js/web-repl.js" %}
+{% endblock %}  

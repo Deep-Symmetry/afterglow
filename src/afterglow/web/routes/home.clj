@@ -1,6 +1,7 @@
 (ns afterglow.web.routes.home
   (:require [afterglow.web.layout :as layout]
             [afterglow.web.routes.show-control :as show-control]
+            [afterglow.web.routes.web-repl :as web-repl]
             [afterglow.web.routes.visualizer :as visualizer]
             [afterglow.show :as show]
             [compojure.core :refer [defroutes GET POST]]
@@ -28,6 +29,8 @@
   (GET "/show/:id" [id] (show-control/show-page id))
   (GET "/ui-updates/:id" [id] (show-control/get-ui-updates id))
   (POST "/ui-event/:id/:kind" [id kind :as req] (show-control/post-ui-event id kind req))
+  (GET "/console" [] (web-repl/page))
+  (POST "/console" [:as req] (web-repl/handle-command req))
   (GET "/about" [] (about-page))
   (GET "/visualizer" [] (visualizer/page))
   (GET "/visualizer-update" [] (visualizer/update-preview))
