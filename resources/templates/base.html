@@ -20,7 +20,7 @@
               <a href="{{servlet-context}}/console">Console</a>
             </li>
             {% if show %}<li {% ifequal page "visualizer.html" %} class="active"{% endifequal %}>
-              <a href="{{servlet-context}}/visualizer">Visualizer</a>
+              <a href="{{servlet-context}}/visualizer/{{show.id}}">Visualizer</a>
             </li>{% endif %}
             <li {% ifequal page "about.html" %} class="active"{%endifequal%}>
               <a href="{{servlet-context}}/about">About</a>

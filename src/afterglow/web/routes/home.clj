@@ -32,9 +32,9 @@
   (GET "/console" [] (web-repl/page))
   (POST "/console" [:as req] (web-repl/handle-command req))
   (GET "/about" [] (about-page))
-  (GET "/visualizer" [] (visualizer/page))
-  (GET "/visualizer-update" [] (visualizer/update-preview))
-  (GET "/shaders/fragment.glsl" [] (visualizer/shader)))
+  (GET "/visualizer/:id" [id] (visualizer/page id))
+  (GET "/visualizer-update/:id" [id] (visualizer/update-preview id))
+  (GET "/shaders/:id/fragment.glsl" [id] (visualizer/shader id)))
 
 
 

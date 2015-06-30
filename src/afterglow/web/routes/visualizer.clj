@@ -2,10 +2,14 @@
   (:require [afterglow.web.layout :as layout]
             [afterglow.fixtures :as fixtures]
             [afterglow.show :as show]
-            [afterglow.show-context :refer [*show*]]
             [com.evocomputing.colors :as colors])
   (:import [javax.media.j3d Transform3D]
            [javax.vecmath Matrix3d Vector3d]))
+
+(def max-lights
+  "The maximum number of lights that the visualizer will attempt to
+  render. Adjust this based on the performance of your graphics hardware."
+  4)
 
 (defn show-span
   "Determine the degree to which a show spreads over an axis. For the
@@ -74,7 +78,7 @@
   looks like WebGL or THREE.js is a lot happier passing vectors than
   matrices as uniforms."
   [show]
-  (apply concat (for [[_ head] (:visualizer-visible @(:dimensions *show*))]
+  (apply concat (for [[_ head] (:visualizer-visible @(:dimensions show))]
                   (let [rot (Matrix3d.)
                         adjust (Matrix3d.)]
                     ;; Transform from show orientation to shader orientation
@@ -136,7 +140,7 @@
   "Return the fixtures which should currently be rendered, because they
   are emitting light."
   [show]
-  (filter (partial active? show) (:visualizer-visible @(:dimensions *show*))))
+  (filter (partial active? show) (:visualizer-visible @(:dimensions show))))
 
 (defn current-pan-tilts
   "Get the current pan and tilt values of the active spotlights for the visualizer.
@@ -164,37 +168,41 @@
       [(byte-to-float (colors/red color)) (byte-to-float (colors/green color))
        (byte-to-float (colors/blue color)) (byte-to-float (colors/alpha color))])))
 
-;; TODO: These need to be parameterized by show, once we are managing a list of shows.
 (defn page
   "Render the real-time show preview."
-  []
-  (let [scale (shader-scale *show*)
-        lights (active-fixtures *show*)]
+  [show-id]
+  (let [[show description] (get @show/shows (Integer/valueOf show-id))
+        scale (shader-scale show)
+        lights (take max-lights (active-fixtures show))]
     (layout/render
-     "visualizer.html" {:timestamp (:timestamp @(:dimensions *show*))
+     "visualizer.html" {:show show
+                        :timestamp (:timestamp @(:dimensions show))
                         :count (count lights)
-                        :positions (adjusted-positions lights *show* scale)
-                        :colors (current-colors lights *show*)
-                        :rotations (current-pan-tilts lights *show*)})))
+                        :positions (adjusted-positions lights show scale)
+                        :colors (current-colors lights show)
+                        :rotations (current-pan-tilts lights show)})))
 
 (defn shader
   "Render a GLSL shader capable of volumetric rendering of enough
   lights to accommodate the current show."
-  []
-  (let [scale (shader-scale *show*)]
+  [show-id]
+  (let [[show description] (get @show/shows (Integer/valueOf show-id))
+        scale (shader-scale show)]
     (layout/render-with-type
      "fragment.glsl" "x-shader/x-fragment"
-     {:scale scale
-      :max-lights (count (:visualizer-visible @(:dimensions *show*)))})))
+     {:show show
+      :scale scale
+      :max-lights (min max-lights (count (:visualizer-visible @(:dimensions show))))})))
 
 (defn update-preview
   "Render updated lighting information for the preview."
-  []
-  (let [scale (shader-scale *show*)
-        lights (active-fixtures *show*)]
+  [show-id]
+  (let [[show description] (get @show/shows (Integer/valueOf show-id))
+        scale (shader-scale show)
+        lights (take max-lights (active-fixtures show))]
     (layout/render
-     "current-scene.json" {:timestamp (:timestamp @(:dimensions *show*))
+     "current-scene.json" {:timestamp (:timestamp @(:dimensions show))
                            :count (count lights)
-                           :positions (adjusted-positions lights *show* scale)
-                           :colors (current-colors lights *show*)
-                           :rotations (current-pan-tilts lights *show*)})))
+                           :positions (adjusted-positions lights show scale)
+                           :colors (current-colors lights show)
+                           :rotations (current-pan-tilts lights show)})))
