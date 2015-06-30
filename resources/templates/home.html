@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
   <div class="jumbotron">
-    <h1>Afterglow</h1>
+    <h2>Afterglow</h2>
     <p>A lighting controller optimized for live coding.
     <p>
-      <a class="btn btn-primary btn-lg" href="{{servlet-context}}/visualizer" target="_blank">Open visualizer &raquo;</a>
+      <a class="btn btn-primary btn-lg" href="{{servlet-context}}/console">Open console &raquo;</a>
       <a class="btn btn-primary btn-lg" href="http://localhost:9090/new/" target="_blank">Open OLA &raquo;</a>
       <a class="btn btn-info btn-lg" href="http://luminusweb.net">Luminus help &raquo;</a>
     </p>
@@ -12,18 +12,27 @@
 
   <div class="row">
     <div class="span12">
-      <h2>Shows</h2>
-        <ul>
+      <h3>Shows</h3>
+        <div class="list-group">
           {% for show in shows %}
-          <li><a href="{{servlet-context}}/show/{{show.show.id}}">{{ show.description }}</a></li>
+          <a href="{{servlet-context}}/show/{{show.show.id}}"
+             class="list-group-item"><span class="glyphicon text-primary glyphicon-star-empty" aria-hidden="true"></span>
+            <span class="text-primary">{{ show.description }}</span></a>
+          {% empty %}
+          <p class="text-info">
+            <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+            No shows have been registered. Use the
+            <a href="{{servlet-context}}/console">console</a> to start one?
+          </p>
           {% endfor %}
         </ul>
     </div>
   </div>
-
+{% comment %}
   <div class="row">
     <div class="span12">
     {{docs|markdown}}
     </div>
   </div>
+{% endcomment %}
 {% endblock %}
