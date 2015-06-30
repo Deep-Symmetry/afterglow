@@ -3,7 +3,7 @@
             [afterglow.effects.channel :as chan]
             [afterglow.effects.params :as params]
             [afterglow.show :as show]
-            [afterglow.show-context :refer :all]
+            [afterglow.show-context :refer [with-show]]
             [taoensso.timbre :refer [info]])
   (:import (afterglow.effects Effect)))
 
@@ -217,20 +217,20 @@
   launch, and an optional map of cue variable overrides, which can be
   used to change the initial values of any temporary variables
   introduced by that cue."
-  [name cues]
-  {:pre [(some? *show*)]}
+  [name show cues]
   (let [running (filter identity (for [[x y overrides] cues]
-                                   (when-let [id (show/add-effect-from-cue-grid! x y :var-overrides overrides)]
-                                     [id (:key (cues/cue-at (:cue-grid *show*) x y))])))]
+                                   (with-show show
+                                     (when-let [id (show/add-effect-from-cue-grid! x y :var-overrides overrides)]
+                                       [id (:key (cues/cue-at (:cue-grid show) x y))]))))]
     (Effect. name
              (fn [show snapshot]  ; We are still running if any of the nested effects we launched are.
                (some (fn [[id k]]
-                       (with-show *show*
+                       (with-show show
                          (when-let [effect (show/find-effect k)]
                            (= (:id effect) id))))
                       running))
              (fn [show snapshot] nil)  ; We do not assign any values; only the nested effects do.
              (fn [show snapshot]  ; Tell all our launched effects to end.
                (doseq [[id k] running]
-                 (with-show *show*
+                 (with-show show
                    (show/end-effect! k :when-id id)))))))

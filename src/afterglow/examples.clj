@@ -460,10 +460,10 @@
     ;; Some compound cues
     (ct/set-cue! (:cue-grid *show*) 8 0
                  (cues/cue :star-swirl (fn [_] (cues/compound-cues-effect
-                                                "Star Swirl" [[8 12]
-                                                              [10 9]
-                                                              [6 15 {:level 60}]
-                                                              [6 8 {:level 25}]]))))
+                                                "Star Swirl" *show* [[8 12]
+                                                                     [10 9]
+                                                                     [6 15 {:level 60}]
+                                                                     [6 8 {:level 25}]]))))
     ;; What else?
     ))
 
