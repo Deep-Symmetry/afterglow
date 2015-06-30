@@ -209,6 +209,10 @@
            :priority priority
            :held held))))
 
+;; TODO: A compound function cue which takes a vector of functions
+;;       and htp/aftertouch/level/var-label-overrides and builds a
+;;       single effect.
+
 (defn compound-cues-effect
   "Creates an effect which launches the specified cues from the grid,
   stays running as long as they are, and ends them all when it is

@@ -6,6 +6,7 @@
             [clojure.java.io :as io]
             [clojure.core.cache :as cache]
             [clojure.core.async :refer [chan go go-loop <! >!! close!]]
+            [clojure.stacktrace :refer [root-cause]]
             [afterglow.rpc-messages :refer [RpcMessage]]
             [taoensso.timbre :as timbre])
   (:import [java.net Socket]
@@ -38,6 +39,17 @@
   ^{:doc "The channel used to communicate with the thread that talks to the OLA server"}
   channel 
   (atom nil))
+
+(defonce ^:private ^{:doc "If the last attempt to send a message to
+  the OLA server failed, this will contain a description of the problem."}
+  last-failure
+  (atom nil))
+
+(defn failure-description
+  "If the last attempt to communicate with the OLA daemon failed,
+  returns a description of the problem, otherwise returns nil."
+  []
+  @last-failure)
 
 (defn- next-request-id
   "Assign the sequence number for a new request, wrapping at the
@@ -79,6 +91,8 @@
             (catch Exception e
               (info e "Further exception trying to clean up failed olad connection"))))))
     (catch Exception e
+      (reset! last-failure {:description "Unable to connect to olad server, is it running?"
+                            :cause (str (root-cause e))})
       (warn e "Unable to connect to olad server, is it running?"))))
 
 (defn- build-header
@@ -116,6 +130,7 @@
       (.write (:out @connection) message)
       (try
         (.flush (:out @connection))
+        (reset! last-failure nil)
         (catch Exception e
           (warn e "Problem flushing message to olad server; not retrying.")))
       (catch Exception e
@@ -222,7 +237,13 @@
           (let [wrapper (protobuf-load RpcMessage wrapper-bytes)]
             (if (= (:type wrapper) :RESPONSE)
               (handle-response wrapper request-cache)
-              (warn "Ignoring unrecognized response type:" wrapper))))
+              (if (= (:type wrapper) :RESPONSE_FAILED)
+                (do (reset! last-failure {:description "Unable to write to show universe. Does it exist in OLA?"
+                                          :cause "OLA RpcMessage RESPONSE_FAILED"})
+                    (warn "Unable to write to show universe. Does it exist in OLA?"))
+                (do (reset! last-failure {:description "Unknown problem writing control values to OLA daemon."
+                                          :cause (str "Unrecognized OLA RpcMessage type: " (:type wrapper))})
+                  (warn "Ignoring unrecognized response type:" wrapper))))))
         (catch Exception e
           (when @connection
             (warn e "Problem reading from olad, trying to reconnect...")

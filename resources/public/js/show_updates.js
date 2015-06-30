@@ -119,6 +119,32 @@ function updateLoad( data ) {
     }
 }
 
+function updateStatus( data ) {
+    if (data.error) {
+        $('#status').html("Error. ").removeClass('text-success').addClass('text-danger').removeClass('text-warning');
+        $('#errorDetailsButton').show();
+        $('#errorDescription').html(data.error.description);
+        $('#errorCause').html(data.error.cause);
+    } else {
+        $('#status').removeClass('text-danger');
+        $('#errorDetailsButton').hide();
+    }
+    if (data.running) {
+        $('#stopButton').show();
+        $('#startButton').hide();
+        if (!data.error) {
+            $('#status').html("Running. ").addClass('text-success').removeClass('text-warning');
+        }
+    } else {
+        updateLoad(0);
+        $('#stopButton').hide();
+        $('#startButton').show();
+        if (!data.error) {
+            $('#status').html("Stopped. ").removeClass('text-success').addClass('text-warning');
+        }
+    }
+}
+
 function updateShow() {
     var jqxhr = $.getJSON( (context + "/ui-updates/" + page_id), function( data ) {
         $.each( data, function( key, val ) {
@@ -147,6 +173,10 @@ function updateShow() {
                 updateLoad(val);
                 break;
 
+            case "show-status":
+                updateStatus(val);
+                break;
+
             case "reload":
                 console.log("Reloading page since Afterglow does not recognize our page ID.");
                 location.reload(true);
@@ -163,11 +193,15 @@ function updateShow() {
     });
 }
 
-function moveButtonClicked( eventObject ) {
+function uiButtonClicked( eventObject ) {
     var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + this.id),
                         { "__anti-forgery-token": csrf_token } ).fail(function() {
         console.log("Problem requesting cue grid move.");
     });
+}
+
+function errorDetailsClicked( eventObject ) {
+    $("#errorDetailsModal").modal('show');
 }
 
 function metronomeAdjustClicked( eventObject ) {
@@ -224,7 +258,10 @@ function decorateMetronomeAdjusters( selector ) {
 }
 
 $( document ).ready(function() {
-    $(".grid-scroll-button").click(moveButtonClicked);
+    $("#startButton").click(uiButtonClicked);
+    $("#stopButton").click(uiButtonClicked);
+    $("#errorDetailsButton").click(errorDetailsClicked);
+    $(".grid-scroll-button").click(uiButtonClicked);
     decorateMetronomeAdjusters(".metronome-adjust-target");
     decorateMetronomeAdjusters(".metronome-reset-target");
     $(".cue-cell").click(cueCellClicked);

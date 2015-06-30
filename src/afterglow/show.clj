@@ -174,6 +174,13 @@
   [show]
   (into {} (for [universe (:universes show)] [universe (byte-array 512)])))
 
+(defn running?
+  "Returns an indication of whether the show is currently generating and
+  sending values to its associated lighting universes."
+  []
+  {:pre [(some? *show*)]}
+  (some? @(:task *show*)))
+
 (defn start!
   "Starts (or restarts) a scheduled task to calculate and send DMX
   values to the universes controlled by [[*show*]] at the

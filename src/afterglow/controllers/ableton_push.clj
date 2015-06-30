@@ -871,8 +871,9 @@
     (update-metronome-section controller)
 
     ;; If the show has stopped without us noticing, enter stop mode
-    (when (and (nil? @(:task (:show controller))) (not @(:stop-mode controller)))
-      (enter-stop-mode controller))
+    (with-show (:show controller)
+      (when (not (or (show/running?) @(:stop-mode controller)))
+        (enter-stop-mode controller)))
 
     ;; Reflect the shift button state
     (swap! (:next-text-buttons controller)
@@ -1197,7 +1198,8 @@
                    (swap! (:next-text-buttons controller)
                           assoc (:stop control-buttons)
                           (button-state (:stop control-buttons) :bright))
-                   true)
+                   (with-show (:show controller)
+                     (not (show/running?))))
                  (handle-control-change [this controller message]
                    (when (pos? (:velocity message))
                      ;; End stop mode

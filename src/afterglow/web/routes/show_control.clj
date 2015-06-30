@@ -1,5 +1,6 @@
 (ns afterglow.web.routes.show-control
   (:require [afterglow.web.layout :as layout]
+            [afterglow.ola-client :as ola]
             [afterglow.midi :as amidi]
             [afterglow.dj-link :as dj-link]
             [afterglow.rhythm :as rhythm]
@@ -331,14 +332,27 @@
       {:sync-menu-changes next-menu})))
 
 (defn load-update
-  "If we haven't send a load update in the last half second, send
-  one."
+  "If the show is running and we haven't send a load update in the
+  last half second, send one."
   [page-id]
   (let [last-info (get @clients page-id)]
-    (when (> (- (now) (:last-load-update last-info 0)) 500)
-      (swap! clients assoc-in [page-id :last-load-update] (now))
-      (with-show (:show last-info)
+    (with-show (:show last-info)
+      (when (and (show/running?) (> (- (now) (:last-load-update last-info 0)) 500))
+        (swap! clients assoc-in [page-id :last-load-update] (now))
         {:load-level (show/current-load)}))))
+
+(defn status-update
+  "If the running or error status of the show has changed, send an
+  update about it."
+  [page-id]
+  (let [last-info (get @clients page-id)]
+    (with-show (:show last-info)
+      (let [ola-failure (ola/failure-description)
+            status (merge {:running (show/running?)}
+                          (when ola-failure {:error ola-failure}))]
+        (when (not= status (:last-status last-info))
+          (swap! clients assoc-in [page-id :last-status] status)
+          {:show-status status})))))
 
 (defn- find-page-in-cache
   "Looks up the cached show page status for the specified ID, cleaning
@@ -366,7 +380,8 @@
                            (sync-menu-changes page-id)
                            (link-menu-changes page-id)
                            (metronome-changes page-id)
-                           (load-update page-id))))
+                           (load-update page-id)
+                           (status-update page-id))))
         ;; Found no page tracking information, advise the page to reload itself.
         (response {:reload "Page ID not found"})))
     (catch Throwable t
@@ -586,6 +601,18 @@
 
                   (= kind "tap-tempo")
                   (interpret-tempo-tap page-info)
+
+                  (= kind "startButton")
+                  (with-show (:show page-info)
+                    (show/start!)
+                    {:running true})
+
+                  (= kind "stopButton")
+                  (with-show (:show page-info)
+                    (show/stop!)
+                    (Thread/sleep (:refresh-interval (:show page-info)))
+                    (show/blackout-show)
+                    {:running false})
 
                   ;; We do no recognize this kind of request
                   :else

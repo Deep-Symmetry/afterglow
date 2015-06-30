@@ -1,4 +1,23 @@
 {% extends "base.html" %}
+
+{% block page-nav-items %}
+            <li class="navbar-text">Load: <canvas id="loadBar" width="100" height="14"></li>
+            <li class="navbar-text">Status: <span id="status"></span>&nbsp;
+              <button type="button" id="errorDetailsButton" class="btn btn-info btn-mini" aria-label="Left Align"
+                      style="display: none;">
+                <span class="glyphicon glyphicon-info-sign" aria-hidden="true"> Details
+              </button>&nbsp;
+              <button type="button" id="stopButton" class="btn btn-danger btn-mini" aria-label="Left Align"
+                      style="display: none;">
+                <span class="glyphicon glyphicon-off" aria-hidden="true"> Stop
+              </button>
+              <button type="button" id= "startButton" class="btn btn-success btn-mini" aria-label="Left Align"
+                      style="display: none;">
+                <span class="glyphicon glyphicon-off" aria-hidden="true"> Start
+              </button>
+            </li>
+{% endblock %}
+
 {% block content %}
   <div class="row">
     <div class="col-md-12">
@@ -119,6 +138,26 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="choose-sync" data-dismiss="modal">Sync</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="errorDetailsModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Show Error</h4>
+            </div>
+            <div class="modal-body">
+              <h5>Description</h5>
+              <p class="text-primary" id="errorDescription"></p>
+              <h5>Cause</h5>
+              <p class="text-danger"><strong><span  id="errorCause"/></strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
