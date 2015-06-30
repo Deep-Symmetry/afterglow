@@ -456,7 +456,16 @@
                            :variables [{:key "pan" :name "Pan"
                                         :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}
                                        {:key "tilt" :name "Tilt"
-                                        :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}]))))
+                                        :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}]))
+    ;; Some compound cues
+    (ct/set-cue! (:cue-grid *show*) 8 0
+                 (cues/cue :star-swirl (fn [_] (cues/compound-cues-effect
+                                                "Star Swirl" [[8 12]
+                                                              [10 9]
+                                                              [6 15 {:level 60}]
+                                                              [6 8 {:level 25}]]))))
+    ;; What else?
+    ))
 
 (defn use-push
   "A trivial reminder of how to connect the Ableton Push to run the

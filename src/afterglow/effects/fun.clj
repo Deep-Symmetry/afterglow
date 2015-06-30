@@ -61,7 +61,7 @@
                                             :l (* (colors/lightness base-color) intensity)}))))
           assigners (build-head-assigners :color heads f)]
       (Effect. "Metronome"
-               (fn [snow snapshot]  ;; Continue running until the end of a measure
+               (fn [show snapshot]  ;; Continue running until the end of a measure
                  ;; Also need to set up the local snapshot based on our private metronome
                  ;; for the assigners to use.
                  (reset! local-snapshot (rhythm/metro-snapshot metronome))

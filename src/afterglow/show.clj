@@ -504,7 +504,9 @@
 
   The `:from-cue` keyword argument is used to keep track of effects
   which were launched from the cue grid, to help provide feedback on
-  control surfaces and in the web interface."
+  control surfaces and in the web interface. `:var-map` Is used to
+  supply a map of variable bindings associated with the cue, also for
+  use by interfaces which support them."
   {:doc/format :markdown}
   [key f & {:keys [priority from-cue var-map] :or {priority 0}}]
   {:pre [(some? *show*) (some? key) (instance? Effect f) (integer? priority)]}
@@ -568,26 +570,35 @@
   "Creates any temporary variable parameters specified by the cue
   variable list, and returns the var-map that the effect creation
   function will need to be able to find them in the show."
-  [cue x y]
+  [cue x y var-overrides]
   (reduce (fn [result v]
             (if (string? (:key v))
-              (let [temp-var (keyword (str "cue-temp-" x "-" y "-" (:key v)))]
-                (when (:start v)
-                  (set-variable! temp-var (:start v))
+              (let [temp-var (keyword (str "cue-temp-" x "-" y "-" (:key v)))
+                    initial-value (or ((keyword (:key v)) var-overrides) (:start v))]
+                (when initial-value
+                  (set-variable! temp-var initial-value)
                   (assoc result (keyword (:key v)) temp-var)))
               result)) {} (:variables cue)))
 
 (defn add-effect-from-cue-grid!
   "Finds the cue, if any, at the specified grid coordinates, and
   activates its effect with the designated key and priority, after
-  ending any effects whose keys are specified in the cue's :end-keys.
-  Returns the id of the new effect, or nil if no cue was found."
-  [x y]
+  ending any effects whose keys are specified in the cue's
+  `:end-keys`. Returns the id of the new effect, or nil if no cue was
+  found.
+
+  A map of variable keywords to values can be supplied with
+  `:var-overrides`, and the corresponding value will be used rather
+  than the initial value specified in the cue for that variable when
+  it is introduced as a temporary cue variable. This is used by
+  compound cues to launch their nested cues with customized values."
+  {:doc/format :markdown}
+  [x y & {:keys [var-overrides]}]
   {:pre [(some? *show*)]}
   (when-let [cue (controllers/cue-at (:cue-grid *show*) x y)]
     (doseq [k (:end-keys cue)]
       (end-effect! k))
-    (let [var-map (introduce-cue-temp-variables cue x y)
+    (let [var-map (introduce-cue-temp-variables cue x y var-overrides)
           id (add-effect! (:key cue) ((:effect cue) var-map)
                           :priority (:priority cue) :from-cue cue :var-map var-map)]
       (controllers/activate-cue! (:cue-grid *show*) x y id)

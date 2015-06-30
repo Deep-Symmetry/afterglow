@@ -106,15 +106,17 @@
   "Start the embedded web UI server on the specified port. If a truthy
   value is supplied for browser, opens a web browser window on the
   newly launched server."
-  [port browser]
-  (when @web-server (throw (IllegalStateException. "Web UI server is already running.")))
-  (reset! web-server
-          (http-kit/run-server
-           app
-           {:port port}))
-  ;;Start the expired session cleanup job
-  (reset! session-cleaner (session/start-cleanup-job!))
-  (when browser (browse/browse-url (str "http://localhost:" port))))
+  ([port]
+   (start-web-server port false))
+  ([port browser]
+   (when @web-server (throw (IllegalStateException. "Web UI server is already running.")))
+   (reset! web-server
+           (http-kit/run-server
+            app
+            {:port port}))
+   ;;Start the expired session cleanup job
+   (reset! session-cleaner (session/start-cleanup-job!))
+   (when browser (browse/browse-url (str "http://localhost:" port)))))
 
 (defn start-nrepl
   "Start a network REPL for debugging or remote control."

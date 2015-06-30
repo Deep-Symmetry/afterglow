@@ -328,9 +328,20 @@ TODO: listing of options this app accepts once it can run as a standalone app.
     current variable values for saving, and to look them up when
     saved.
 - [ ] Compound cues:
-  - [ ] Unflattened compound cues trigger multiple cues' effects:
-    - [ ] Each effect gets its own priority, parameters.
-    - [ ] The compound finishes when all triggered effects do.
+  - [x] Unflattened compound cues trigger multiple cues' effects:
+    - [x] Each effect gets its own priority, parameters.
+    - [x] The compound finishes when all triggered effects do.
+    - [x] Implement by having the outer cue's effect call
+      `show/add-effect-from-cue-grid!` to launch all the nested
+      effects, recording their IDs. The effect will never return any
+      assigners, but will report that it has ended when all of the
+      nested effects have ended. Telling this effect to end will, in
+      turn, call `show/end-effect!` on all nested cues (passing their
+      recorded id values as `:when-id`, to avoid inadvertently killing
+      later effects run under the same key).
+    - [x] Add a `:variable-overrides` parameter to
+      `show/add-effect-from-cue-grid!` so compound cues can use it to
+      customize the values of parameters introduced by nested cues.
   - [ ] Flattened compound cues flatten their nested cues' effects
     into a single new effect:
     - [ ] This effect gets assigned a new priority.

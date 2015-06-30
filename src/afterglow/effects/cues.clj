@@ -2,7 +2,9 @@
   (:require [afterglow.controllers :as cues]
             [afterglow.effects.channel :as chan]
             [afterglow.effects.params :as params]
-            [afterglow.show :as show])
+            [afterglow.show :as show]
+            [afterglow.show-context :refer :all]
+            [taoensso.timbre :refer [info]])
   (:import (afterglow.effects Effect)))
 
 (defn cue
@@ -206,3 +208,29 @@
            :end-keys end-keys
            :priority priority
            :held held))))
+
+(defn compound-cues-effect
+  "Creates an effect which launches the specified cues from the grid,
+  stays running as long as they are, and ends them all when it is
+  asked to end. Takes a list of three-element tuples identifying the x
+  and y coordinates within the cue grid of the subordinate cues to
+  launch, and an optional map of cue variable overrides, which can be
+  used to change the initial values of any temporary variables
+  introduced by that cue."
+  [name cues]
+  {:pre [(some? *show*)]}
+  (let [running (filter identity (for [[x y overrides] cues]
+                                   (when-let [id (show/add-effect-from-cue-grid! x y :var-overrides overrides)]
+                                     [id (:key (cues/cue-at (:cue-grid *show*) x y))])))]
+    (Effect. name
+             (fn [show snapshot]  ; We are still running if any of the nested effects we launched are.
+               (some (fn [[id k]]
+                       (with-show *show*
+                         (when-let [effect (show/find-effect k)]
+                           (= (:id effect) id))))
+                      running))
+             (fn [show snapshot] nil)  ; We do not assign any values; only the nested effects do.
+             (fn [show snapshot]  ; Tell all our launched effects to end.
+               (doseq [[id k] running]
+                 (with-show *show*
+                   (show/end-effect! k :when-id id)))))))
