@@ -52,10 +52,18 @@
                        :y-rotation (tf/degrees 180))
   (show/patch-fixture! :hex-1 (chauvet/slimpar-hex3-irc) universe 129 :y (tf/inches 4) :z (tf/inches 10)
                        :x-rotation (tf/degrees 90))
-  (show/patch-fixture! :blade-1 (blizzard/blade-rgbw) universe 270 :y (tf/inches 9))
+  (show/patch-fixture! :hex-2 (chauvet/slimpar-hex3-irc) universe 145 :y (tf/inches 4) :z (tf/inches 30)
+                       :x-rotation (tf/degrees 90))
+  (show/patch-fixture! :blade-1 (blizzard/blade-rgbw) universe 225
+                       :x (tf/inches -88) :y (tf/inches 9) :z (tf/inches 66)
+                       :y-rotation (tf/degrees -180))
   (show/patch-fixture! :blade-2 (blizzard/blade-rgbw) universe 240
                        :x (tf/inches 40) :y (tf/inches 58) :z (tf/inches -15)
                        :y-rotation (tf/degrees -45))
+  (show/patch-fixture! :blade-3 (blizzard/blade-rgbw) universe 255
+                       :x (tf/inches -58) :y (tf/inches 9) :z (tf/inches 66)
+                       :y-rotation (tf/degrees 90))
+  (show/patch-fixture! :blade-4 (blizzard/blade-rgbw) universe 270 :y (tf/inches 9))
   (show/patch-fixture! :ws-1 (blizzard/weather-system) universe 161
                        :x (tf/inches 22) :y (tf/inches 7) :z (tf/inches 7)
                        :x-rotation (tf/degrees 180) :y-rotation (tf/degrees 180))
@@ -71,8 +79,9 @@
 (defn global-color-effect
   "Make a color effect which affects all lights in the sample show.
   This became vastly more useful once I implemented dynamic color
-  parameters."
-  [color & {:keys [include-color-wheels]}]
+  parameters. Can include only a specific set of lights by passing
+  them with :lights"
+  [color & {:keys [include-color-wheels lights] :or {lights (show/all-fixtures)}}]
   (try
     (let [[c desc] (cond (= (type color) :com.evocomputing.colors/color)
                        [color (color-name color)]
@@ -81,7 +90,7 @@
                        [color "variable"]
                        :else
                        [(create-color color) color])]
-      (color-effect (str "Color: " desc) c (show/all-fixtures) :include-color-wheels include-color-wheels))
+      (color-effect (str "Color: " desc) c lights :include-color-wheels include-color-wheels))
     (catch Exception e
       (throw (Exception. (str "Can't figure out how to create color from " color) e)))))
 
@@ -313,7 +322,16 @@
                  (cues/cue :color (fn [_] (global-color-effect
                                            (params/build-color-param :s 100 :l 50 :h hue-gradient
                                                                      :adjust-hue hue-bar)))
-                         :short-name "Rainbow Grid+Bar"))
+                           :short-name "Rainbow Grid+Bar"))
+
+    (ct/set-cue! (:cue-grid *show*) 7 1
+                 (cues/cue :color (fn [_] (global-color-effect
+                                           (params/build-color-param :s 100 :l 50 :h hue-gradient
+                                                                     :adjust-hue hue-bar)
+                                           :lights (show/fixtures-named "blade")))
+                         :short-name "Rainbow Blades"))
+
+
     ;; TODO: Write a macro to make it easier to bind cue variables.
     (ct/set-cue! (:cue-grid *show*) 0 7
                  (cues/cue :sparkle (fn [var-map] (fun/sparkle (show/all-fixtures)
