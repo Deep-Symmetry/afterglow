@@ -293,6 +293,17 @@
                           "gobo-moving-optical-tube" "gobo-moving-magenta-bundt"
                           "gobo-moving-blue-megahazard" "gobo-moving-turbine"])]))
 
+(defn make-strobe-cue
+  [name fixtures x y]
+  (ct/set-cue! (:cue-grid *show*) x y	
+               (cues/cue (keyword (str "strobe-" (clojure.string/replace (clojure.string/lower-case name) " " "-")))
+                         (fn [var-map] (fun/strobe (str "Strobe " name) fixtures (:level var-map 50)))
+                           :held true
+                           :priority 100
+                           :variables [{:key "level" :min 0 :max 100 :start 50 :name "Level"
+                                        :aftertouch true :aftertouch-min 25}
+                                       {:key :strobe-lightness :min 0 :max 100 :name "Lightness" :aftertouch true}])))
+
 (defn make-cues
   "Create a bunch of example cues for experimentation."
   []
@@ -481,6 +492,29 @@
                                     (params/build-oscillated-param (oscillators/sine-bar) :min 1)
                                     (show/fixtures-named "puck") :effect-name "Puck Sine Bar"))
                            :color :blue :end-keys [:dimmers]))
+
+    ;; Strobe cues
+    (make-strobe-cue "All" (show/all-fixtures) 0 6)
+    (make-strobe-cue "Torrents" (show/fixtures-named "torrent") 1 6)
+    (make-strobe-cue "Blades" (show/fixtures-named "blade") 2 6)
+    (make-strobe-cue "Weather Systems" (show/fixtures-named "ws") 3 6)
+    (make-strobe-cue "Hexes" (show/fixtures-named "hex") 4 6)
+    (make-strobe-cue "Pucks" (show/fixtures-named "puck") 5 6)
+
+    (ct/set-cue! (:cue-grid *show*) 1 6
+                 (cues/cue :strobe-torrents (fn [var-map] (fun/strobe "Strobe Torrents"
+                                                                      (show/fixtures-named "torrent")
+                                                                      (:level var-map 50)))
+                           :held true
+                           :priority 100
+                           :variables [{:key "level" :min 0 :max 100 :start 50 :name "Level"
+                                        :aftertouch true :aftertouch-min 25}
+                                       {:key :strobe-lightness :min 0 :max 100 :name "Lightness" :aftertouch true}]))
+
+    (ct/set-cue! (:cue-grid *show*) 7 6
+                 (cues/cue :adjust-strobe (fn [_] (fun/adjust-strobe))
+                           :variables [{:key :strobe-hue :min 0 :max 360 :name "Hue"}
+                                       {:key :strobe-saturation :min 0 :max 100 :name "Saturatn"}]))
 
     ;; The upper page of torrent config cues
     (ct/set-cue! (:cue-grid *show*) 0 15

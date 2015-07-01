@@ -132,17 +132,25 @@
   the supplied fixtures or heads which have a range that implements
   the specified function. (Functions are a way for fixtures to use the
   same DMX channel to do multiple things, allocating ranges of values
-  to get more dense use from a smaller number of channel
-  allocations.)
+  to get more dense use from a smaller number of channel allocations.)
+  The `function` argument is the keyword by which the function
+  information will be found for the supplied `fixtures`. The actual
+  value sent for the channel associated with `function` for each
+  fixture will be calculated by treating `level` as a percentage of
+  the way between the lowest and highest DMX values assigned to that
+  named function for the fixture. The name displayed for the effect in
+  user interfaces is determined by `name`.
 
-  If htp? is true, applies highest-takes-precedence (i.e. compares the
-  value to the previous assignment for the channels implementing the
-  function, and lets the highest value remain).
+  If `:htp?` is passed with a `true` value, applies
+  highest-takes-precedence (i.e. compares the value to the previous
+  assignment for the channels implementing the function, and lets the
+  highest value remain).
 
   If you have multiple effects trying to control different functions
   which use the same channel, you are unlikely to get the results you
   want. Hopefully the fixture designers chose how to share channels
   wisely, avoiding this pitfall."
+  {:doc/format :markdown}
   [name function level fixtures & {:keys [htp?]}]
   {:pre [(some? *show*) (some? name) (some? function) (sequential? fixtures)]}
   (params/validate-param-type level Number)
