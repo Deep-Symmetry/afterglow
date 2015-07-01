@@ -194,6 +194,8 @@
   (let [saved-hue (show/get-variable :strobe-hue)
         saved-saturation (show/get-variable :strobe-saturation)]
     (when-not saved-saturation (show/set-variable! :strobe-saturation 100))
+    (when-not saved-hue (show/set-variable! :strobe-hue 277))
+    
     (Effect. "Strobe Adjust" always-active
             (fn [show snapshot] nil)
             (fn [show snapshot]
