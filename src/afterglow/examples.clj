@@ -99,9 +99,10 @@
   Originally this had to be to a static value, but now that dynamic
   parameters exist, it can vary in response to a MIDI mapped show
   variable, an oscillator, or (once geometry is implemented), the
-  location of the fixture."
-  [level]
-  (dimmer-effect level (show/all-fixtures)))
+  location of the fixture. You can override the default name by
+  passing in a value with :effect-name"
+  [level & {:keys [effect-name]}]
+  (dimmer-effect level (show/all-fixtures) :effect-name effect-name))
 
 (defn fiat-lux
   "Start simple with a cool blue color from all the lights."
@@ -342,62 +343,144 @@
                          :variables [{:key "chance" :min 0.0 :max 0.4 :start 0.05 :aftertouch true}
                                      {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
 
-    (ct/set-cue! (:cue-grid *show*) 0 6
+    (ct/set-cue! (:cue-grid *show*) 7 7
                  (cues/function-cue :strobe-all :strobe (show/all-fixtures) :effect-name "Strobe"))
 
 
-    ;; Some cues to show the Hypnotic RGB Laser
-    (ct/set-cue! (:cue-grid *show*) 0 3
-                 (cues/function-cue :hypnotic-beam :beam-red (show/fixtures-named "hyp-rgb")
-                                    :color :red :effect-name "Hypnotic Red"))
-    (ct/set-cue! (:cue-grid *show*) 1 3
-                 (cues/function-cue :hypnotic-beam :beam-green (show/fixtures-named "hyp-rgb")
-                                    :color :green :effect-name "Hypnotic Green"))
-    (ct/set-cue! (:cue-grid *show*) 2 3
-                 (cues/function-cue :hypnotic-beam :beam-blue (show/fixtures-named "hyp-rgb")
-                                    :color :blue :effect-name "Hypnotic Blue"))
-    (ct/set-cue! (:cue-grid *show*) 3 3
-                 (cues/function-cue :hypnotic-beam :beam-red-green (show/fixtures-named "hyp-rgb")
-                                    :color :yellow :effect-name "Hypnotic Red Green"))
-    (ct/set-cue! (:cue-grid *show*) 4 3
-                 (cues/function-cue :hypnotic-beam :beam-red-blue (show/fixtures-named "hyp-rgb")
-                                    :color :purple :effect-name "Hypnotic Red Blue"))
-    (ct/set-cue! (:cue-grid *show*) 5 3
-                 (cues/function-cue :hypnotic-beam :beam-green-blue (show/fixtures-named "hyp-rgb")
-                                    :color :cyan :effect-name "Hypnotic Green Blue"))
-    (ct/set-cue! (:cue-grid *show*) 6 3
-                 (cues/function-cue :hypnotic-beam :beam-red-green-blue (show/fixtures-named "hyp-rgb")
-                                    :color :white :effect-name "Hypnotic Red Green Blue"))
-    (ct/set-cue! (:cue-grid *show*) 7 3
-                 (cues/function-cue :hypnotic-beam :beam-all-random (show/fixtures-named "hyp-rgb")
-                                    :color :white :effect-name "Hypnotic Random"))
-    (ct/set-cue! (:cue-grid *show*) 6 4
-                 (cues/function-cue :hypnotic-spin :beams-ccw (show/fixtures-named "hyp-rgb")
-                                    :color :cyan :effect-name "Hypnotic Rotate CCW" :level 50))
-    (ct/set-cue! (:cue-grid *show*) 7 4
-                 (cues/function-cue :hypnotic-spin :beams-cw (show/fixtures-named "hyp-rgb")
-                                    :color :cyan :effect-name "Hypnotic Rotate Clockwise" :level 50))
-
     ;; Dimmer cues to turn on and set brightness of groups of lights
-    (ct/set-cue! (:cue-grid *show*) 0 4
+    (ct/set-cue! (:cue-grid *show*) 0 2
                  (cues/function-cue :dimmers :dimmer (show/all-fixtures) :level 100 :color :yellow
                                     :effect-name "All Dimmers" :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
                                                                           :puck-dimmers :hex-dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 1 4
+    (ct/set-cue! (:cue-grid *show*) 1 2
                  (cues/function-cue :torrent-dimmers :dimmer (show/fixtures-named "torrent") :level 100 :color :orange
                                     :effect-name "Torrent Dimmers" :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 2 4
+    (ct/set-cue! (:cue-grid *show*) 2 2
                  (cues/function-cue :blade-dimmers :dimmer (show/fixtures-named "blade") :level 100 :color :orange
                                     :effect-name "Blade Dimmers" :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 3 4
+    (ct/set-cue! (:cue-grid *show*) 3 2
                  (cues/function-cue :ws-dimmers :dimmer (show/fixtures-named "ws") :level 100 :color :orange
                                     :effect-name "Weather System Dimmers" :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 4 4
-                 (cues/function-cue :puck-dimmers :dimmer (show/fixtures-named "puck") :level 100 :color :orange
-                                    :effect-name "Puck Dimmers" :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 5 4
+    (ct/set-cue! (:cue-grid *show*) 4 2
                  (cues/function-cue :hex-dimmers :dimmer (show/fixtures-named "hex") :level 100 :color :orange
                                     :effect-name "Hex Dimmers" :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 5 2
+                 (cues/function-cue :puck-dimmers :dimmer (show/fixtures-named "puck") :level 100 :color :orange
+                                    :effect-name "Puck Dimmers" :end-keys [:dimmers]))
+
+    ;; Dimmer oscillator cues: Sawtooth down each beat
+    (ct/set-cue! (:cue-grid *show*) 0 3
+                 (cues/cue :dimmers (fn [_] (global-dimmer-effect
+                                             (params/build-oscillated-param (oscillators/sawtooth-beat :down? true))
+                                             :effect-name "All Saw Down Beat"))
+                           :color :yellow :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
+                                                     :puck-dimmers :hex-dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 1 3
+                 (cues/cue :torrent-dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/sawtooth-beat :down? true))
+                                    (show/fixtures-named "torrent") :effect-name "Torrent Saw Down Beat"))
+                           :color :orange :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 2 3
+                 (cues/cue :blade-dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/sawtooth-beat :down? true))
+                                    (show/fixtures-named "blade") :effect-name "Blade Saw Down Beat"))
+                           :color :orange :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 3 3
+                 (cues/cue :ws-dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/sawtooth-beat :down? true))
+                                    (show/fixtures-named "ws") :effect-name "WS Saw Down Beat"))
+                           :color :orange :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 4 3
+                 (cues/cue :hex-dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/sawtooth-beat :down? true))
+                                    (show/fixtures-named "hex") :effect-name "Hex Saw Down Beat"))
+                           :color :orange :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 5 3
+                 (cues/cue :puck-dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/sawtooth-beat :down? true))
+                                    (show/fixtures-named "puck") :effect-name "Puck Saw Down Beat"))
+                           :color :orange :end-keys [:dimmers]))
+
+    ;; Dimmer oscillator cues: Sawtooth up over 2 beat
+    (ct/set-cue! (:cue-grid *show*) 0 4
+                 (cues/cue :dimmers (fn [_] (global-dimmer-effect
+                                             (params/build-oscillated-param (oscillators/sawtooth-beat :beat-ratio 2))
+                                             :effect-name "All Saw Up 2 Beat"))
+                           :color :yellow :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
+                                                     :puck-dimmers :hex-dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 1 4
+                 (cues/cue :torrent-dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/sawtooth-beat :beat-ratio 2))
+                                    (show/fixtures-named "torrent") :effect-name "Torrent Saw Up 2 Beat"))
+                           :color :orange :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 2 4
+                 (cues/cue :blade-dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/sawtooth-beat :beat-ratio 2))
+                                    (show/fixtures-named "blade") :effect-name "Blade Saw Up 2 Beat"))
+                           :color :orange :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 3 4
+                 (cues/cue :ws-dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/sawtooth-beat :beat-ratio 2))
+                                    (show/fixtures-named "ws") :effect-name "WS Saw Up 2 Beat"))
+                           :color :orange :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 4 4
+                 (cues/cue :hex-dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/sawtooth-beat :beat-ratio 2))
+                                    (show/fixtures-named "hex") :effect-name "Hex Saw Up 2 Beat"))
+                           :color :orange :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 5 4
+                 (cues/cue :puck-dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/sawtooth-beat :beat-ratio 2))
+                                    (show/fixtures-named "puck") :effect-name "Puck Saw Up 2 Beat"))
+                           :color :orange :end-keys [:dimmers]))
+
+    ;; Dimmer oscillator cues: Sine over a bar
+    (ct/set-cue! (:cue-grid *show*) 0 5
+                 (cues/cue :dimmers (fn [_] (global-dimmer-effect
+                                             (params/build-oscillated-param (oscillators/sine-bar) :min 1)
+                                             :effect-name "All Sine Bar"))
+                           :color :cyan :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
+                                                   :puck-dimmers :hex-dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 1 5
+                 (cues/cue :torrent-dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/sine-bar) :min 1)
+                                    (show/fixtures-named "torrent") :effect-name "Torrent Sine Bar"))
+                           :color :blue :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 2 5
+                 (cues/cue :blade-dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/sine-bar) :min 1)
+                                    (show/fixtures-named "blade") :effect-name "Blade Sine Bar"))
+                           :color :blue :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 3 5
+                 (cues/cue :ws-dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/sine-bar) :min 1)
+                                    (show/fixtures-named "ws") :effect-name "WS Sine Bar"))
+                           :color :blue :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 4 5
+                 (cues/cue :hex-dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/sine-bar) :min 1)
+                                    (show/fixtures-named "hex") :effect-name "Hex Sine Bar"))
+                           :color :blue :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 5 5
+                 (cues/cue :puck-dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/sine-bar) :min 1)
+                                    (show/fixtures-named "puck") :effect-name "Puck Sine Bar"))
+                           :color :blue :end-keys [:dimmers]))
 
     ;; The upper page of torrent config cues
     (ct/set-cue! (:cue-grid *show*) 0 15
@@ -482,6 +565,38 @@
                                                                      [10 9]
                                                                      [6 15 {:level 60}]
                                                                      [6 8 {:level 25}]]))))
+    ;; Some cues to show the Hypnotic RGB Laser
+    (ct/set-cue! (:cue-grid *show*) 8 3
+                 (cues/function-cue :hypnotic-beam :beam-red (show/fixtures-named "hyp-rgb")
+                                    :color :red :effect-name "Hypnotic Red"))
+    (ct/set-cue! (:cue-grid *show*) 9 3
+                 (cues/function-cue :hypnotic-beam :beam-green (show/fixtures-named "hyp-rgb")
+                                    :color :green :effect-name "Hypnotic Green"))
+    (ct/set-cue! (:cue-grid *show*) 10 3
+                 (cues/function-cue :hypnotic-beam :beam-blue (show/fixtures-named "hyp-rgb")
+                                    :color :blue :effect-name "Hypnotic Blue"))
+    (ct/set-cue! (:cue-grid *show*) 11 3
+                 (cues/function-cue :hypnotic-beam :beam-red-green (show/fixtures-named "hyp-rgb")
+                                    :color :yellow :effect-name "Hypnotic Red Green"))
+    (ct/set-cue! (:cue-grid *show*) 12 3
+                 (cues/function-cue :hypnotic-beam :beam-red-blue (show/fixtures-named "hyp-rgb")
+                                    :color :purple :effect-name "Hypnotic Red Blue"))
+    (ct/set-cue! (:cue-grid *show*) 13 3
+                 (cues/function-cue :hypnotic-beam :beam-green-blue (show/fixtures-named "hyp-rgb")
+                                    :color :cyan :effect-name "Hypnotic Green Blue"))
+    (ct/set-cue! (:cue-grid *show*) 14 3
+                 (cues/function-cue :hypnotic-beam :beam-red-green-blue (show/fixtures-named "hyp-rgb")
+                                    :color :white :effect-name "Hypnotic Red Green Blue"))
+    (ct/set-cue! (:cue-grid *show*) 15 3
+                 (cues/function-cue :hypnotic-beam :beam-all-random (show/fixtures-named "hyp-rgb")
+                                    :color :white :effect-name "Hypnotic Random"))
+    (ct/set-cue! (:cue-grid *show*) 14 4
+                 (cues/function-cue :hypnotic-spin :beams-ccw (show/fixtures-named "hyp-rgb")
+                                    :color :cyan :effect-name "Hypnotic Rotate CCW" :level 50))
+    (ct/set-cue! (:cue-grid *show*) 15 4
+                 (cues/function-cue :hypnotic-spin :beams-cw (show/fixtures-named "hyp-rgb")
+                                    :color :cyan :effect-name "Hypnotic Rotate Clockwise" :level 50))
+
     ;; What else?
     ))
 

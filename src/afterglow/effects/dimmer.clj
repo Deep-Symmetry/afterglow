@@ -129,7 +129,7 @@
   scale down the values to which they are set. If none is supplied
   when creating the dimmer cue, the show's grand master is used."
   {:doc/format :markdown}
-  [level fixtures & {:keys [htp? master] :or {htp? true master (:grand-master *show*)}}]
+  [level fixtures & {:keys [htp? master effect-name] :or {htp? true master (:grand-master *show*)}}]
   {:pre [(some? *show*)]}
   (let [level (params/bind-keyword-param level Number 255)
         master (params/bind-keyword-param master Master (:grand-master *show*))]
@@ -138,7 +138,7 @@
           level (params/resolve-unless-frame-dynamic level *show* snapshot)
           master (params/resolve-param master *show* snapshot)  ; Can resolve now; value is inherently dynamic.
           label (if (satisfies? params/IParam level) "<dynamic>" level)]
-      (build-parameterized-dimmer-effect (str "Dimmers=" label (when htp?) " (HTP)")
+      (build-parameterized-dimmer-effect (or effect-name (str "Dimmers=" label (when htp?) " (HTP)"))
                                          level *show* dimmers htp? master))))
 
 ;; Deprecated now that you can pass an oscillated parameter to dimmer-effect
