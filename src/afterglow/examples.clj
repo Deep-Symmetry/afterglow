@@ -598,6 +598,11 @@
                                     :color :cyan :effect-name "Hypnotic Rotate Clockwise" :level 50))
 
     ;; What else?
+    ;; TODO: Refine this and make a cue
+    #_(show/add-effect! :torrent-focus (afterglow.effects.channel/function-effect
+                                        "F" :focus (params/build-oscillated-param (oscillators/sine-bar)
+                                                                                  :min 20 :max 200)
+                                        (show/fixtures-named "torrent")))
     ))
 
 (defn use-push
