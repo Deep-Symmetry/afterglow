@@ -121,7 +121,7 @@ function updateLoad( data ) {
 
 function updateStatus( data ) {
     if (data.error) {
-        $('#status').html("Error. ").removeClass('text-success').addClass('text-danger').removeClass('text-warning');
+        $('#status').html("Error ").removeClass('text-success').addClass('text-danger').removeClass('text-warning');
         $('#errorDetailsButton').show();
         $('#errorDescription').html(data.error.description);
         $('#errorCause').html(data.error.cause);
@@ -133,14 +133,14 @@ function updateStatus( data ) {
         $('#stopButton').show();
         $('#startButton').hide();
         if (!data.error) {
-            $('#status').html("Running. ").addClass('text-success').removeClass('text-warning');
+            $('#status').html("Running ").addClass('text-success').removeClass('text-warning');
         }
     } else {
         updateLoad(0);
         $('#stopButton').hide();
         $('#startButton').show();
         if (!data.error) {
-            $('#status').html("Stopped. ").removeClass('text-success').addClass('text-warning');
+            $('#status').html("Stopped ").removeClass('text-success').addClass('text-warning');
         }
     }
 }
