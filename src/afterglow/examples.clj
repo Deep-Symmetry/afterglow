@@ -513,7 +513,7 @@
 
     (ct/set-cue! (:cue-grid *show*) 7 6
                  (cues/cue :adjust-strobe (fn [_] (fun/adjust-strobe))
-                           :variables [{:key :strobe-hue :min 0 :max 360 :name "Hue"}
+                           :variables [{:key :strobe-hue :min 0 :max 360 :name "Hue" :centered true}
                                        {:key :strobe-saturation :min 0 :max 100 :name "Saturatn"}]))
 
     ;; The upper page of torrent config cues
