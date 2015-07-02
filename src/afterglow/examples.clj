@@ -367,7 +367,7 @@
                                                    :effect-name "All Dimmers"))
                            :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
                            :color :yellow :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
-                                                     :puck-dimmers :hex-dimmers]))
+                                                     :puck-dimmers :hex-dimmers :snowball-dimmers]))
     (ct/set-cue! (:cue-grid *show*) 1 2
                  (cues/cue :torrent-dimmers (fn [var-map] (dimmer-effect
                                                            (params/bind-keyword-param (:level var-map 255) Number 255)
@@ -404,6 +404,13 @@
                                                        :effect-name "Puck Dimmers"))
                            :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
                            :color :orange :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 6 2
+                 (cues/cue :snowball-dimmers (fn [var-map] (dimmer-effect
+                                                            (params/bind-keyword-param (:level var-map 255) Number 255)
+                                                            (show/fixtures-named "snowball")
+                                                            :effect-name "Snowball Dimmers"))
+                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :color :orange :end-keys [:dimmers]))
 
 
     ;; Dimmer oscillator cues: Sawtooth down each beat
@@ -412,7 +419,7 @@
                                              (params/build-oscillated-param (oscillators/sawtooth-beat :down? true))
                                              :effect-name "All Saw Down Beat"))
                            :color :yellow :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
-                                                     :puck-dimmers :hex-dimmers]))
+                                                     :puck-dimmers :hex-dimmers :snowball-dimmers]))
     (ct/set-cue! (:cue-grid *show*) 1 3
                  (cues/cue :torrent-dimmers
                            (fn [_] (dimmer-effect
@@ -443,6 +450,12 @@
                                     (params/build-oscillated-param (oscillators/sawtooth-beat :down? true))
                                     (show/fixtures-named "puck") :effect-name "Puck Saw Down Beat"))
                            :color :orange :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 6 3
+                 (cues/cue :snowball-dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/sawtooth-beat :down? true))
+                                    (show/fixtures-named "snowball") :effect-name "Snowball Saw Down Beat"))
+                           :color :orange :end-keys [:dimmers]))
 
     ;; Dimmer oscillator cues: Sawtooth up over 2 beat
     (ct/set-cue! (:cue-grid *show*) 0 4
@@ -450,7 +463,7 @@
                                              (params/build-oscillated-param (oscillators/sawtooth-beat :beat-ratio 2))
                                              :effect-name "All Saw Up 2 Beat"))
                            :color :yellow :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
-                                                     :puck-dimmers :hex-dimmers]))
+                                                     :puck-dimmers :hex-dimmers :snowball-dimmers]))
     (ct/set-cue! (:cue-grid *show*) 1 4
                  (cues/cue :torrent-dimmers
                            (fn [_] (dimmer-effect
@@ -481,6 +494,12 @@
                                     (params/build-oscillated-param (oscillators/sawtooth-beat :beat-ratio 2))
                                     (show/fixtures-named "puck") :effect-name "Puck Saw Up 2 Beat"))
                            :color :orange :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 6 4
+                 (cues/cue :snowball-dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/sawtooth-beat :beat-ratio 2))
+                                    (show/fixtures-named "snowball") :effect-name "Snowball Saw Up 2 Beat"))
+                           :color :orange :end-keys [:dimmers]))
 
     ;; Dimmer oscillator cues: Sine over a bar
     (ct/set-cue! (:cue-grid *show*) 0 5
@@ -488,7 +507,7 @@
                                              (params/build-oscillated-param (oscillators/sine-bar) :min 1)
                                              :effect-name "All Sine Bar"))
                            :color :cyan :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
-                                                   :puck-dimmers :hex-dimmers]))
+                                                   :puck-dimmers :hex-dimmers :snowball-dimmers]))
     (ct/set-cue! (:cue-grid *show*) 1 5
                  (cues/cue :torrent-dimmers
                            (fn [_] (dimmer-effect
@@ -518,6 +537,12 @@
                            (fn [_] (dimmer-effect
                                     (params/build-oscillated-param (oscillators/sine-bar) :min 1)
                                     (show/fixtures-named "puck") :effect-name "Puck Sine Bar"))
+                           :color :blue :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 6 5
+                 (cues/cue :snowball-dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/sine-bar) :min 1)
+                                    (show/fixtures-named "snowball") :effect-name "Snowball Sine Bar"))
                            :color :blue :end-keys [:dimmers]))
 
     ;; Strobe cues
