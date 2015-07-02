@@ -313,7 +313,14 @@
                  (oscillators/sawtooth-bar) :max 360)
         hue-gradient (params/build-spatial-param ; Spread a rainbow across the light grid
                       (show/all-fixtures)
-                      (fn [head] (- (:x head) (:min-x @(:dimensions *show*)))) :end 360)]
+                      (fn [head] (- (:x head) (:min-x @(:dimensions *show*)))) :end 360)
+        hue-z-gradient (params/build-spatial-param ; Spread a rainbow across the light grid
+                      (show/all-fixtures)
+                      (fn [head] (- (:z head) (:min-z @(:dimensions *show*)))) :end 360)
+        x-triangle-phrase (params/build-oscillated-param ; Move back and forth over a phrase
+                           (oscillators/triangle-phrase) :min -5 :max 5)
+        y-triangle-bar (params/build-oscillated-param ; Move back and forth over a phrase
+                        (oscillators/triangle-bar) :min 0.4 :max 5)]
     (global-color-cue "red" 0 0 :include-color-wheels true)
     (global-color-cue "orange" 1 0 :include-color-wheels true)
     (global-color-cue "yellow" 2 0 :include-color-wheels true)
@@ -337,6 +344,17 @@
                                            (params/build-color-param :s 100 :l 50 :h hue-gradient
                                                                      :adjust-hue hue-bar)))
                            :short-name "Rainbow Grid+Bar"))
+
+    (ct/set-cue! (:cue-grid *show*) 4 1
+                 (cues/cue :color (fn [_] (global-color-effect
+                                           (params/build-color-param :s 100 :l 50 :h hue-z-gradient)
+                                           :include-color-wheels true))
+                           :short-name "Z Rainbow Grid"))
+    (ct/set-cue! (:cue-grid *show*) 5 1
+                 (cues/cue :color (fn [_] (global-color-effect
+                                           (params/build-color-param :s 100 :l 50 :h hue-z-gradient
+                                                                     :adjust-hue hue-bar)))
+                           :short-name "Z Rainbow Grid+Bar"))
 
     (ct/set-cue! (:cue-grid *show*) 7 1
                  (cues/cue :color (fn [_] (global-color-effect
@@ -621,6 +639,15 @@
                  (cues/function-cue :t2-gobo-rotation :gobo-rotation-counterclockwise (show/fixtures-named "torrent-2")
                                     :effect-name "T2 Spin Gobo CCW" :color (create-color :cyan)))
 
+    ;; Some basic moving head chases
+    (ct/set-cue! (:cue-grid *show*) 0 9
+                 (cues/cue :movement (fn [var-map]
+                                       (move/aim-effect
+                                        "Can Can"
+                                        (params/build-aim-param :x x-triangle-phrase :y y-triangle-bar
+                                                                :z (tf/inches 300))
+                                        (show/all-fixtures)))))
+    
     ;; A couple snowball cues
     (ct/set-cue! (:cue-grid *show*) 0 10 (cues/function-cue :sb-pos :beams-fixed (show/fixtures-named "snowball")
                                                              :effect-name "Snowball Fixed"))
