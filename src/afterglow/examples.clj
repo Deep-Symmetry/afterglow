@@ -362,24 +362,49 @@
 
     ;; Dimmer cues to turn on and set brightness of groups of lights
     (ct/set-cue! (:cue-grid *show*) 0 2
-                 (cues/function-cue :dimmers :dimmer (show/all-fixtures) :level 100 :color :yellow
-                                    :effect-name "All Dimmers" :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
-                                                                          :puck-dimmers :hex-dimmers]))
+                 (cues/cue :dimmers (fn [var-map] (global-dimmer-effect
+                                                   (params/bind-keyword-param (:level var-map 255) Number 255)
+                                                   :effect-name "All Dimmers"))
+                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :color :yellow :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
+                                                     :puck-dimmers :hex-dimmers]))
     (ct/set-cue! (:cue-grid *show*) 1 2
-                 (cues/function-cue :torrent-dimmers :dimmer (show/fixtures-named "torrent") :level 100 :color :orange
-                                    :effect-name "Torrent Dimmers" :end-keys [:dimmers]))
+                 (cues/cue :torrent-dimmers (fn [var-map] (dimmer-effect
+                                                           (params/bind-keyword-param (:level var-map 255) Number 255)
+                                                           (show/fixtures-named "torrent")
+                                                           :effect-name "Torrent Dimmers"))
+                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 2 2
-                 (cues/function-cue :blade-dimmers :dimmer (show/fixtures-named "blade") :level 100 :color :orange
-                                    :effect-name "Blade Dimmers" :end-keys [:dimmers]))
+                 (cues/cue :blade-dimmers (fn [var-map] (dimmer-effect
+                                                         (params/bind-keyword-param (:level var-map 255) Number 255)
+                                                         (show/fixtures-named "blade")
+                                                         :effect-name "Blade Dimmers"))
+                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 3 2
-                 (cues/function-cue :ws-dimmers :dimmer (show/fixtures-named "ws") :level 100 :color :orange
-                                    :effect-name "Weather System Dimmers" :end-keys [:dimmers]))
+                 (cues/cue :ws-dimmers (fn [var-map] (dimmer-effect
+                                                      (params/bind-keyword-param (:level var-map 255) Number 255)
+                                                      (show/fixtures-named "ws")
+                                                      :effect-name "Weather System Dimmers"))
+                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :color :orange :end-keys [:dimmers]))
+
     (ct/set-cue! (:cue-grid *show*) 4 2
-                 (cues/function-cue :hex-dimmers :dimmer (show/fixtures-named "hex") :level 100 :color :orange
-                                    :effect-name "Hex Dimmers" :end-keys [:dimmers]))
+                 (cues/cue :hex-dimmers (fn [var-map] (dimmer-effect
+                                                       (params/bind-keyword-param (:level var-map 255) Number 255)
+                                                       (show/fixtures-named "hex")
+                                                       :effect-name "Hex Dimmers"))
+                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 5 2
-                 (cues/function-cue :puck-dimmers :dimmer (show/fixtures-named "puck") :level 100 :color :orange
-                                    :effect-name "Puck Dimmers" :end-keys [:dimmers]))
+                 (cues/cue :puck-dimmers (fn [var-map] (dimmer-effect
+                                                       (params/bind-keyword-param (:level var-map 255) Number 255)
+                                                       (show/fixtures-named "puck")
+                                                       :effect-name "Puck Dimmers"))
+                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :color :orange :end-keys [:dimmers]))
+
 
     ;; Dimmer oscillator cues: Sawtooth down each beat
     (ct/set-cue! (:cue-grid *show*) 0 3

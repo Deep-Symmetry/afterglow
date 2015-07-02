@@ -35,7 +35,8 @@
             [afterglow.util :refer [valid-dmx-value?]]
             [com.evocomputing.colors :refer [clamp-percent-float
                                              clamp-rgb-int]]
-            [taoensso.timbre.profiling :refer [pspy]])
+            [taoensso.timbre.profiling :refer [pspy]]
+            [taoensso.timbre :refer [info spy]])
   (:import (afterglow.effects Effect)))
 
 (defn- assign-level
@@ -136,7 +137,7 @@
     (let [dimmers (gather-dimmer-channels fixtures)
           snapshot (metro-snapshot (:metronome *show*))
           level (params/resolve-unless-frame-dynamic level *show* snapshot)
-          master (params/resolve-param master *show* snapshot)  ; Can resolve now; value is inherently dynamic.
+          master (params/resolve-param master *show* snapshot)  ; Can resolve now; value is inherently static.
           label (if (satisfies? params/IParam level) "<dynamic>" level)]
       (build-parameterized-dimmer-effect (or effect-name (str "Dimmers=" label (when htp?) " (HTP)"))
                                          level *show* dimmers htp? master))))
