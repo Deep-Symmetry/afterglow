@@ -207,12 +207,13 @@
   grids, and the like."
   []
   (swap! osc-server (fn [server] (or server (osc/osc-server 16010 "Afterglow"))))
+  (show/set-variable! :y (tf/inches 118))
   (osc/osc-handle @osc-server "/aim" (fn [msg]
-                                       (let [left -2.5
-                                             right 1.65
+                                       (let [left (tf/inches -88)
+                                             right (tf/inches 86)
                                              width (- right left)
-                                             front -0.7
-                                             rear 3.1
+                                             front (tf/inches -21)
+                                             rear (tf/inches 295)
                                              depth (- rear front)]
                                          (show/set-variable! :x (+ left (* width (first (:args msg)))))
                                          (show/set-variable! :z (+ front (* depth (second (:args msg))))))
