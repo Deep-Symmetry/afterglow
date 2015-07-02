@@ -22,7 +22,14 @@ function sendCommand(line) {
                           });
 }
 
+function updateSize() {
+    $('#console').css({ height: $(window).height() - 100 });
+    $('.jquery-console-inner').css({ height: $(window).height() - 120 });
+}
+
 $(document).ready(function () {
+    updateSize();
+    $(window).resize(updateSize);
     $("#console").console({
         promptLabel: 'Afterglow> ',
         commandValidate:function(line) {
@@ -41,5 +48,5 @@ $(document).ready(function () {
         autofocus:true,
         animateScroll:true,
         promptHistory:true
-    })
+    });
 });
