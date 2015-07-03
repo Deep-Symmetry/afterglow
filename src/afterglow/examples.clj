@@ -307,6 +307,14 @@
                                         :aftertouch true :aftertouch-min 25}
                                        {:key :strobe-lightness :min 0 :max 100 :name "Lightness" :aftertouch true}])))
 
+(defn x-phase
+  "Return a value that ranges from zero for the leftmost fixture in a
+  show to 1 for the rightmost, for staggering the phase of an
+  oscillator in making a can-can chase."
+  [head show]
+  (let [dimensions @(:dimensions *show*)]
+    (/ (- (:x head) (:min-x dimensions)) (- (:max-x dimensions) (:min-x dimensions)))))
+
 (defn make-cues
   "Create a bunch of example cues for experimentation."
   []
@@ -317,11 +325,7 @@
                       (fn [head] (- (:x head) (:min-x @(:dimensions *show*)))) :end 360)
         hue-z-gradient (params/build-spatial-param ; Spread a rainbow across the light grid
                       (show/all-fixtures)
-                      (fn [head] (- (:z head) (:min-z @(:dimensions *show*)))) :end 360)
-        x-triangle-phrase (params/build-oscillated-param ; Move back and forth over a phrase
-                           (oscillators/triangle-phrase) :min -5 :max 5)
-        y-triangle-bar (params/build-oscillated-param ; Move back and forth over a phrase
-                        (oscillators/triangle-bar) :min 0.4 :max 5)]
+                      (fn [head] (- (:z head) (:min-z @(:dimensions *show*)))) :end 360)]
     (global-color-cue "red" 0 0 :include-color-wheels true)
     (global-color-cue "orange" 1 0 :include-color-wheels true)
     (global-color-cue "yellow" 2 0 :include-color-wheels true)
@@ -641,13 +645,21 @@
                                     :effect-name "T2 Spin Gobo CCW" :color (create-color :cyan)))
 
     ;; Some basic moving head chases
-    (ct/set-cue! (:cue-grid *show*) 0 9
-                 (cues/cue :movement (fn [var-map]
-                                       (move/aim-effect
-                                        "Can Can"
-                                        (params/build-aim-param :x x-triangle-phrase :y y-triangle-bar
-                                                                :z (tf/inches 300))
-                                        (show/all-fixtures)))))
+    (let [triangle-phrase (params/build-oscillated-param ; Move back and forth over a phrase
+                             (oscillators/triangle-phrase) :min -5 :max 5)
+          staggered-triangle-bar (params/build-spatial-param ; Back and forth over a bar, staggered across grid
+                                  (show/all-fixtures)
+                                  (fn [head]
+                                    (params/build-oscillated-param
+                                     (oscillators/triangle-bar :phase (x-phase head *show*))))
+                                  :start 0.4 :end 5)]
+      (ct/set-cue! (:cue-grid *show*) 0 9
+                   (cues/cue :movement (fn [var-map]
+                                         (move/aim-effect
+                                          "Can Can"
+                                          (params/build-aim-param :x triangle-phrase :y staggered-triangle-bar
+                                                                  :z (tf/inches 300))
+                                          (show/all-fixtures))))))
     
     ;; A couple snowball cues
     (ct/set-cue! (:cue-grid *show*) 0 10 (cues/function-cue :sb-pos :beams-fixed (show/fixtures-named "snowball")

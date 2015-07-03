@@ -397,32 +397,42 @@
       ;; Handle the general case of some dynamic parameters
       (let [dyn (if (= :default frame-dynamic)
                   ;; Default means incoming args control how dynamic we should be
-                  (boolean (some frame-dynamic-param? [color r g b h s l adjust-hue adjust-saturation adjust-lightness]))
+                  (boolean (some frame-dynamic-param?
+                                 [color r g b h s l adjust-hue adjust-saturation adjust-lightness]))
                   ;; We were given an explicit value for frame-dynamic
                   (boolean frame-dynamic))
             eval-fn (fn [show snapshot head]
                       (let [result-color (atom c)]
                         (if (seq (filter identity [r g b]))
-                          (let [red (when r (colors/clamp-rgb-int (math/round (resolve-param r show snapshot head))))
-                                green (when g (colors/clamp-rgb-int (math/round (resolve-param g show snapshot head))))
-                                blue (when b ((colors/clamp-rgb-int (math/round (resolve-param b show snapshot head)))))]
+                          (let [red (when r (colors/clamp-rgb-int
+                                             (math/round (resolve-param r show snapshot head))))
+                                green (when g (colors/clamp-rgb-int
+                                               (math/round (resolve-param g show snapshot head))))
+                                blue (when b ((colors/clamp-rgb-int
+                                               (math/round (resolve-param b show snapshot head)))))]
                             (swap! result-color #(colors/create-color {:r (or red (colors/red %))
                                                                        :g (or green (colors/green %))
                                                                        :b (or blue (colors/blue %))
                                                                        :a (colors/alpha %)}))))
                         (if (seq (filter identity [h s l]))
                           (let [hue (when h (colors/clamp-hue (float (resolve-param h show snapshot head))))
-                                saturation (when s (colors/clamp-percent-float (float (resolve-param s show snapshot head))))
-                                lightness (when l (colors/clamp-percent-float (float (resolve-param l show snapshot head))))]
+                                saturation (when s (colors/clamp-percent-float
+                                                    (float (resolve-param s show snapshot head))))
+                                lightness (when l (colors/clamp-percent-float
+                                                   (float (resolve-param l show snapshot head))))]
                             (swap! result-color #(colors/create-color {:h (or hue (colors/hue %))
                                                                        :s (or saturation (colors/saturation %))
                                                                        :l (or lightness (colors/lightness %))}))))
                                 (when adjust-hue
-                                  (swap! result-color #(colors/adjust-hue % (float (resolve-param adjust-hue show snapshot head)))))
+                                  (swap! result-color
+                                         #(colors/adjust-hue % (float (resolve-param adjust-hue show snapshot head)))))
                                 (when adjust-saturation
-                                  (swap! result-color #(colors/saturate % (float (resolve-param adjust-saturation show snapshot head)))))
+                                  (swap! result-color #(colors/saturate % (float (resolve-param adjust-saturation
+                                                                                   show snapshot head)))))
                                 (when adjust-lightness
-                                  (swap! result-color #(colors/lighten % (float (resolve-param adjust-lightness show snapshot head)))))
+                                  (swap! result-color
+                                         #(colors/lighten % (float (resolve-param
+                                                                    adjust-lightness show snapshot head)))))
                                 @result-color))
             resolve-fn (fn [show snapshot head]
                          (with-show show
@@ -434,8 +444,10 @@
                                               :s (resolve-unless-frame-dynamic s show snapshot head)
                                               :l (resolve-unless-frame-dynamic l show snapshot head)
                                               :adjust-hue (resolve-unless-frame-dynamic adjust-hue show snapshot head)
-                                              :adjust-saturation (resolve-unless-frame-dynamic adjust-saturation show snapshot head)
-                                              :adjust-lightness (resolve-unless-frame-dynamic adjust-lightness show snapshot head)
+                                              :adjust-saturation (resolve-unless-frame-dynamic
+                                                                  adjust-saturation show snapshot head)
+                                              :adjust-lightness (resolve-unless-frame-dynamic
+                                                                 adjust-lightness show snapshot head)
                                               :frame-dynamic dyn)))]
         (reify
           IParam
@@ -653,11 +665,14 @@
     ;; Handle the general case of some dynamic results
     (fn [show snapshot head]
       (let [resolved (reduce (fn [altered-map [k v]]
-                               (assoc altered-map k (resolve-param v show snapshot head))))
+                               (assoc altered-map k (resolve-param v show snapshot head)))
+                             {} results)
             smallest (apply min (vals resolved))
-            largest (apply max (vals resolved))]
-        (scale-spatial-result (get resolved (:id head)) smallest largest)))))
+            largest (apply max (vals resolved))
+            value-range (- largest smallest)]
+        (scale-spatial-result (get resolved (:id head)) smallest value-range start target-range)))))
 
+;; TODO: Need option to turn off result scaling!
 (defn build-spatial-param
   "Returns a dynamic number parameter related to the physical
   arrangement of the supplied fixtures or heads. First the heads of
