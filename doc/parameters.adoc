@@ -320,27 +320,33 @@ way to create one is to call:
 The required parameters are the fixtures and/or heads over which you
 want this parameter to be calculated, and a function which, when invoked
 with a fixture or head, returns a number or a dynamic `Number`
-parameter. The results returned for all included heads will be scaled to
-fall within a standard range, which defaults to `[0-255]`, but can be
-adjusted using optional keyword parameters:
+parameter.
+
+If desired, the results returned for all included heads can be scaled
+to fall within a standard range. Scaling is activated using the
+optional keyword parameters `:max` and `:min`. If neither is supplied,
+scaling is not performed. Passing a value for only `:max` activates
+scaling with a default minimum value of `0`, and passing a value for
+only `:min` activates scaling with a default maximum value of `255`.
+The maximum value must be larger than the minimum value.
 
 [cols=",,",options="header",]
 |=======================================================================
 |Parameter |Default |Purpose
-|`:start` |`0` |The smallest value this dynamic parameter will hold.
-
-|`:end` |`255` |The largest value this dynamic parameter will hold.
-
-|`:frame-dynamic` |n/a |Whether the parameter should be calculated at
+|`:min` | n/a | If present, activates result scaling, and establishes
+the smallest value this dynamic parameter will hold.
+|`:max` | n/a | If present, activates result scaling, and establishes
+the largest value this dynamic parameter will hold.
+|`:frame-dynamic` |n/a | Whether the parameter should be calculated at
 every frame, or just once.
 |=======================================================================
 
-All of these parameters, except for `frame-dynamic`, can themselves be
+As noted above, the values returned by `f` can themselves be
 dynamic parameters, such as show <<variable-parameters,variables>>
 (with the convenience shorthand of just passing in the keyword by which
 the show variable was stored) or <<oscillated-parameters,oscillated
 parameters>>. If `frame-dynamic` is not explicitly set, the spatial
-parameter will be frame dynamic if either `start` or `end` is
+parameter will be frame dynamic if any value returned by `f` is
 frame-dynamic.
 
 Useful things that `f` can do include calculating the distance of the
