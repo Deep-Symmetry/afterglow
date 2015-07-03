@@ -104,11 +104,10 @@
   amount."
   [& {:keys [beat-ratio phase] :or {beat-ratio 1 phase 0.0}}]
   (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-    (let [reached (adjust-phase (rhythm/snapshot-beat-phase snapshot beat-ratio) phase)
-          intensity (adjust-phase (rhythm/snapshot-beat-phase snapshot (/ beat-ratio 2)) phase)]
+    (let [reached (adjust-phase (rhythm/snapshot-beat-phase snapshot beat-ratio) phase)]
       (if (< reached 0.5)
-        intensity
-        (- 1.0 intensity)))))
+        (* reached 2.0)
+        (- 2.0 (* reached 2.0))))))
 
 (defn triangle-bar
   "Returns an oscillator which generates a triangle wave relative to the phase
@@ -118,11 +117,10 @@
   amount."
   [& {:keys [bar-ratio phase] :or {bar-ratio 1 phase 0.0}}]
   (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-    (let [reached (adjust-phase (rhythm/snapshot-bar-phase snapshot bar-ratio) phase)
-          intensity (adjust-phase (rhythm/snapshot-bar-phase snapshot (/ bar-ratio 2)) phase)]
-      (if (< reached 0.5)
-        intensity
-        (- 1.0 intensity)))))
+    (let [reached (adjust-phase (rhythm/snapshot-bar-phase snapshot bar-ratio) phase)]
+            (if (< reached 0.5)
+        (* reached 2.0)
+        (- 2.0 (* reached 2.0))))))
 
 (defn triangle-phrase
   "Returns an oscillator which generates a triangle wave relative to the phase
@@ -132,11 +130,10 @@
   amount."
   [& {:keys [phrase-ratio phase] :or {phrase-ratio 1 phase 0.0}}]
   (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-    (let [reached (adjust-phase (rhythm/snapshot-phrase-phase snapshot phrase-ratio) phase)
-          intensity (adjust-phase (rhythm/snapshot-phrase-phase snapshot (/ phrase-ratio 2)) phase)]
+    (let [reached (adjust-phase (rhythm/snapshot-phrase-phase snapshot phrase-ratio) phase)]
       (if (< reached 0.5)
-        intensity
-        (- 1.0 intensity)))))
+        (* reached 2.0)
+        (- 2.0 (* reached 2.0))))))
 
 (defn square-beat
   "Returns an oscillator which generates a square wave relative to the phase
