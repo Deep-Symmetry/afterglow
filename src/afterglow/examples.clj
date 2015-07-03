@@ -567,6 +567,13 @@
                                     (params/build-oscillated-param (oscillators/sine-bar) :min 1)
                                     (show/fixtures-named "snowball") :effect-name "Snowball Sine Bar"))
                            :color :blue :end-keys [:dimmers]))
+    (ct/set-cue! (:cue-grid *show*) 7 5
+                 (cues/cue :dimmers
+                           (fn [_] (dimmer-effect
+                                    (params/build-oscillated-param (oscillators/triangle-bar) :min 1)
+                                    (show/all-fixtures) :effect-name "All Triangle Bar"))
+                           :color :purple :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
+                                                   :puck-dimmers :hex-dimmers :snowball-dimmers]))
 
     ;; Strobe cues
     (make-strobe-cue "All" (show/all-fixtures) 0 6)
@@ -647,18 +654,16 @@
     ;; Some basic moving head chases
     (let [triangle-phrase (params/build-oscillated-param ; Move back and forth over a phrase
                              (oscillators/triangle-phrase) :min -5 :max 5)
-          staggered-triangle-bar (params/build-spatial-param ; Back and forth over a bar, staggered across grid x
-                                  (show/all-fixtures)
-                                  (fn [head]
-                                    (params/build-oscillated-param
-                                     (oscillators/triangle-bar :phase (x-phase head *show*)) :min 0.4 :max 5)))]
+          staggered-triangle-bar (params/build-spatial-param ; Bounce over a bar, staggered across grid x
+                                   (show/all-fixtures)
+                                   (fn [head]
+                                     (params/build-oscillated-param
+                                      (oscillators/triangle-bar :phase (x-phase head *show*))
+                                      :min 0 :max 5)))
+          can-can-dir (params/build-direction-param :x triangle-phrase :y staggered-triangle-bar :z 3)]
       (ct/set-cue! (:cue-grid *show*) 0 9
                    (cues/cue :movement (fn [var-map]
-                                         (move/aim-effect
-                                          "Can Can"
-                                          (params/build-aim-param :x triangle-phrase :y staggered-triangle-bar
-                                                                  :z (tf/inches 300))
-                                          (show/all-fixtures))))))
+                                         (move/direction-effect "Can Can" can-can-dir (show/all-fixtures))))))
     
     ;; A couple snowball cues
     (ct/set-cue! (:cue-grid *show*) 0 10 (cues/function-cue :sb-pos :beams-fixed (show/fixtures-named "snowball")
@@ -727,8 +732,7 @@
     #_(show/add-effect! :torrent-focus (afterglow.effects.channel/function-effect
                                         "F" :focus (params/build-oscillated-param (oscillators/sine-bar)
                                                                                   :min 20 :max 200)
-                                        (show/fixtures-named "torrent")))
-    ))
+                                        (show/fixtures-named "torrent")))))
 
 (defn use-push
   "A trivial reminder of how to connect the Ableton Push to run the
