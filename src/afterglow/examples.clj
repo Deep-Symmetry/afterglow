@@ -322,10 +322,10 @@
                  (oscillators/sawtooth-bar) :max 360)
         hue-gradient (params/build-spatial-param ; Spread a rainbow across the light grid
                       (show/all-fixtures)
-                      (fn [head] (- (:x head) (:min-x @(:dimensions *show*)))) :end 360)
+                      (fn [head] (- (:x head) (:min-x @(:dimensions *show*)))) :max 360)
         hue-z-gradient (params/build-spatial-param ; Spread a rainbow across the light grid
                       (show/all-fixtures)
-                      (fn [head] (- (:z head) (:min-z @(:dimensions *show*)))) :end 360)]
+                      (fn [head] (- (:z head) (:min-z @(:dimensions *show*)))) :max 360)]
     (global-color-cue "red" 0 0 :include-color-wheels true)
     (global-color-cue "orange" 1 0 :include-color-wheels true)
     (global-color-cue "yellow" 2 0 :include-color-wheels true)
@@ -647,12 +647,11 @@
     ;; Some basic moving head chases
     (let [triangle-phrase (params/build-oscillated-param ; Move back and forth over a phrase
                              (oscillators/triangle-phrase) :min -5 :max 5)
-          staggered-triangle-bar (params/build-spatial-param ; Back and forth over a bar, staggered across grid
+          staggered-triangle-bar (params/build-spatial-param ; Back and forth over a bar, staggered across grid x
                                   (show/all-fixtures)
                                   (fn [head]
                                     (params/build-oscillated-param
-                                     (oscillators/triangle-bar :phase (x-phase head *show*))))
-                                  :start 0.4 :end 5)]
+                                     (oscillators/triangle-bar :phase (x-phase head *show*)) :min 0.4 :max 5)))]
       (ct/set-cue! (:cue-grid *show*) 0 9
                    (cues/cue :movement (fn [var-map]
                                          (move/aim-effect

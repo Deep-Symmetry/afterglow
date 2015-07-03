@@ -649,30 +649,35 @@
   "Create the function which evaluates a dynamic spatial parameter for
   a given point in show time. If any of the parameters are dynamic,
   they must be evaluated each time. Otherwise we can precompute them
-  now, for fast lookup as each DMX frame is rendered."
-  [results start target-range]
+  now, for fast lookup as each DMX frame is rendered. If scaling is
+  requested, scale the results so they fall in the specified range."
+  [results scaling start target-range]
   (if-not (some (partial satisfies? IParam) (vals results))
     ;; Optimize the case of all constant results
-    (let [smallest (apply min (vals results))
-          largest (apply max (vals results))
-          value-range (- largest smallest)
-          precalculated (reduce (fn [altered-map [k v]]
-                                  (assoc altered-map k (scale-spatial-result
-                                                        v smallest value-range start target-range)))
-                                {} results)]
+    (let [precalculated (if scaling
+                          (let [smallest (apply min (vals results))
+                                largest (apply max (vals results))
+                                value-range (- largest smallest)]
+                            (reduce (fn [altered-map [k v]]
+                                      (assoc altered-map k (scale-spatial-result
+                                                            v smallest value-range start target-range)))
+                                    {} results))
+                          results)]
       (fn [show snapshot head] (get precalculated (:id head))))
 
     ;; Handle the general case of some dynamic results
     (fn [show snapshot head]
-      (let [resolved (reduce (fn [altered-map [k v]]
-                               (assoc altered-map k (resolve-param v show snapshot head)))
-                             {} results)
-            smallest (apply min (vals resolved))
-            largest (apply max (vals resolved))
-            value-range (- largest smallest)]
-        (scale-spatial-result (get resolved (:id head)) smallest value-range start target-range)))))
+      (if scaling  ; Need to resolve all heads in order to scale the requested value appropriately
+        (let [resolved (reduce (fn [altered-map [k v]]
+                                 (assoc altered-map k (resolve-param v show snapshot head)))
+                               {} results)
+              smallest (apply min (vals resolved))
+              largest (apply max (vals resolved))
+              value-range (- largest smallest)]
+          (scale-spatial-result (get resolved (:id head)) smallest value-range start target-range))
+        ;; Not scaling, only need to resolve the parameter for the specific head requested
+        (resolve-param (get results (:id head)) show snapshot head)))))
 
-;; TODO: Need option to turn off result scaling!
 (defn build-spatial-param
   "Returns a dynamic number parameter related to the physical
   arrangement of the supplied fixtures or heads. First the heads of
@@ -681,11 +686,16 @@
   fixture or head. It must return a literal number or dynamic number
   parameter.
 
-  When it comes time to evaluate this parameter, any dynamic number
-  parameters are evaluated, and the resulting numbers are scaled as a
-  group (after evaluating `f` for every participating head or fixture)
-  so they fall within the range [`:start`-`:end`], which defaults
-  to [0-255].
+  If you pass a value with either `:max` or `:min` as optional keyword
+  parameters, this activates result scaling. (If you pass only a
+  `:max` value, `:min` defaults to zero; if you pass only `:min`, then
+  `:max` defaults to 255. If you pass neither, scaling is not
+  performed, and the results from `f` are returned unchanged.)
+  With scaling active, when it comes time to evaluate this spatial
+  parameter, any dynamic number parameters are evaluated, and the
+  resulting numbers are scaled as a group (after evaluating `f` for
+  every participating head or fixture) so they fall within the
+  range [`:start`-`:end`].
 
   Useful things that `f` can do include calculating the distance of
   the head from some point, either in 3D or along an axis, its angle
@@ -700,40 +710,44 @@
   spatial parameter will be frame dynamic if any values returned by
   `f` are dynamic parameters which themselves are frame dynamic."
   {:doc/format :markdown}
-  [fixtures-or-heads f & {:keys [start end frame-dynamic]
-                          :or {start 0 end 255 frame-dynamic :default}}]
+  [fixtures-or-heads f & {:keys [min max frame-dynamic] :or {frame-dynamic :default}}]
   {:pre [(some? *show*) (sequential? fixtures-or-heads) (ifn? f)
-         (number? start) (number? end) (< start end)]}
+         (or (nil? min) (number? min)) (or (nil? max) (number? max)) (< (or min 0) (or max 255))]}
   (let [heads (chan/expand-heads fixtures-or-heads)
-        results (zipmap (map :id heads) (map f heads))
-        target-range (math/abs (- start end))]
+        results (zipmap (map :id heads)
+                        (map #(bind-keyword-param (f %) Number nil "spatial-param function result") heads))
+        scaling (or min max)
+        min (or min 0)
+        max (or max 255)
+        target-range (math/abs (- min max))]
     (doseq [v (vals results)] check-type v Number "spatial-param function result")
     (let [dyn (if (= :default frame-dynamic)
                 ;; Default means results of head function control how dynamic to be
                 (boolean (some frame-dynamic-param? results))
                 ;; We were given an explicit value for frame-dynamic-param
                 (boolean frame-dynamic))
-          eval-fn (build-spatial-eval-fn results start target-range)
+          eval-fn (build-spatial-eval-fn results scaling min target-range)
           resolve-fn (fn [show snapshot head]
                        (with-show show
                          (let [resolved (reduce (fn [altered-map [k v]]
                                                   (assoc altered-map k (resolve-unless-frame-dynamic
-                                                                        v show snapshot head))))
-                               resolved-eval-fn (build-spatial-eval-fn resolved start target-range)]
+                                                                        v show snapshot head)))
+                                                {} results)
+                               resolved-eval-fn (build-spatial-eval-fn resolved scaling min target-range)]
                            (reify
                              IParam
-                             (evaluate [this show snapshot] start) ; Needs head to do anything
+                             (evaluate [this show snapshot] min) ; Needs head to do anything
                              (frame-dynamic? [this] dyn)
                              (result-type [this] Number)
                              (resolve-non-frame-dynamic-elements [this show snapshot]
                                this) ; Already resolved
                              IHeadParam
-                             (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))
+                             (evaluate-for-head [this show snapshot head] (resolved-eval-fn show snapshot head))
                              (resolve-non-frame-dynamic-elements-for-head [this show snapshot head]
                                this)))))] ; Already resolved
       (reify
         IParam
-        (evaluate [this show snapshot] start) ; Needs head to do anything
+        (evaluate [this show snapshot] min) ; Needs head to do anything
         (frame-dynamic? [this] dyn)
         (result-type [this] Number)
         (resolve-non-frame-dynamic-elements [this show snapshot]
