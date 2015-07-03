@@ -13,7 +13,7 @@
             [afterglow.transform :as transform]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
-            [taoensso.timbre :refer [error]])
+            [taoensso.timbre :refer [info error]])
   (:import [afterglow.rhythm Metronome]
            [javax.media.j3d Transform3D]
            [javax.vecmath Point3d Vector3d]))
@@ -723,7 +723,7 @@
     (doseq [v (vals results)] check-type v Number "spatial-param function result")
     (let [dyn (if (= :default frame-dynamic)
                 ;; Default means results of head function control how dynamic to be
-                (boolean (some frame-dynamic-param? results))
+                (boolean (some frame-dynamic-param? (vals results)))
                 ;; We were given an explicit value for frame-dynamic-param
                 (boolean frame-dynamic))
           eval-fn (build-spatial-eval-fn results scaling min target-range)
@@ -751,11 +751,11 @@
         (frame-dynamic? [this] dyn)
         (result-type [this] Number)
         (resolve-non-frame-dynamic-elements [this show snapshot]
-          resolve-fn show snapshot nil)
+          this) ; Spatial parameters can't be evaluated or resolved with no head.
         IHeadParam
         (evaluate-for-head [this show snapshot head]
           (eval-fn show snapshot head))
         (resolve-non-frame-dynamic-elements-for-head [this show snapshot head]
-          resolve-fn show snapshot head)))))
+          (resolve-fn show snapshot head))))))
 
 ;; TODO: some kind of random parameter?
