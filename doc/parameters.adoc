@@ -223,9 +223,9 @@ parameters and get lovely shifting rainbow cues, as shown in the
 Direction parameters are one way to tell a group of fixtures to point
 in a particular direction, or move in unison or in a coordinated
 pattern. They are used with <<effects#direction-effects,Direction
-Effects>>. (<<#pan-tilt-parameters,Pan Tilt Parameters>> are the other
-way to work with this kind of effect.) The basic way to create one is
-to call:
+Effects>>. (<<parameters#pan-tilt-parameters,Pan Tilt Parameters>> are
+the other way to work with this kind of effect.) The basic way to
+create one is to call:
 
 [source,clojure]
 ----
@@ -319,12 +319,12 @@ parameters>>.
 ## Pan Tilt Parameters
 
 A more traditional way of aiming fixtures (in contrast to
-<<#direction-parameters,Direction Parameters>>) involves setting pan and
-tilt angles. Afterglow supports this approach as well, although even
-in this case you use angles expressed in the standard show
-<<show_space#show-space,frame of reference>> regardless of how the
-individual fixtures are hung. Pan Tilt parameters are an alternate way
-to work with <<effects#direction-effects,Direction Effects>>. The
+<<parameters#direction-parameters,Direction Parameters>>) involves
+setting pan and tilt angles. Afterglow supports this approach as well,
+although even in this case you use angles expressed in the standard
+show <<show_space#show-space,frame of reference>> regardless of how
+the individual fixtures are hung. Pan Tilt parameters are an alternate
+way to work with <<effects#direction-effects,Direction Effects>>. The
 basic way to create one is to call:
 
 [source,clojure]
