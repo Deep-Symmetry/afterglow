@@ -24,6 +24,15 @@ The building blocks of a dynamic light show, which have a
 to your effects which change over time and space, enabling much more
 interesting and complex appearance and behavior.
 
+<<cues#cues,Cues>>:: Provide a convenient way to organize and trigger
+effects. Each show in Afterglow maintains a cue grid, which can be
+viewed and interacted with through the
+http://deepsymmetry.org/afterglow/doc/afterglow.core.html#var-start-web-server[embedded
+web interface] and MIDI controller mapping implementations which
+register themselves as grid controllers, as does the
+http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
+Push].
+
 <<metronomes#metronomes,Metronomes>>:: Keep track of musical time, in
 terms of beats, bars, and phrases, and can be
 <<mapping_sync#midi-mapping-and-beat-sync,synced>> to DJ equipment and
@@ -70,15 +79,14 @@ but they are controlled through MIDI control surfaces or Open Sound
 Control, so once they are set up, there is great flexibility in how
 you can perform them.
 
-Someday a user interface for building shows and fixture definitions may
-be created, either within Afterglow, or as a companion project, but that
-is not currently planned.
-
-NOTE: Actually, that is a bit of a fib... James has an Ableton Push
-and is already exploring how to build a rich interface using its LCD
-display, color-changing pressure-sensitive pads, and touch-sensitive
-encoders, but that is slightly separate from the main Afterglow
-project.
+Someday a user interface for building shows and fixture definitions
+may be created, either within Afterglow, or as a companion project,
+but that is not currently planned. For now the focus is on building
+rich user interfaces for controlling shows, such as the
+http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
+Push mapping] and web interface, while using the concise expressive
+power of Clojure for writing the fixture definitions, effects, and
+cues.
 
 Afterglow communicates with the lighting hardware using the
 https://www.openlighting.org/ola/[Open Lighting Architecture], so it

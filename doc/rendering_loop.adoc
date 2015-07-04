@@ -41,6 +41,11 @@ sent to the show universes, and the average number of milliseconds spent
 in the rendering loop. If the duration of a rendering cycle ever exceeds
 the refresh interval, Afterglow will log a warning that it is unable to
 keep up with the effects you are trying to run.
+
+If you have a show&rsquo;s web interface open, this atom is what is
+used to display the Load bar at the top of the screen, which fills up
+and turns red as the time within each frame available for calculating
+and sending control values to the lights gets used up.
 ____
 
 
