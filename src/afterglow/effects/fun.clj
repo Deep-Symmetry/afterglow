@@ -7,15 +7,16 @@
             [afterglow.effects.color :refer [htp-merge find-rgb-heads color-effect]]
             [afterglow.effects.dimmer :refer [dimmer-effect]]
             [afterglow.effects.params :as params]
-            [afterglow.rhythm :as rhythm :refer [snapshot-bar-phase
-                                                 snapshot-beat-phase
-                                                 snapshot-down-beat?]]
+            [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
             [afterglow.show-context :refer [*show*]]
+            [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
+            [taoensso.timbre :refer [info spy]]
             [taoensso.timbre.profiling :refer [pspy]])
   (:import (afterglow.effects Effect)
-           (afterglow.rhythm Metronome)))
+           (afterglow.rhythm Metronome)
+           (javax.vecmath Point3d)))
 
 (def default-down-beat-color
   "The default color to flash on the down beats."
@@ -37,8 +38,10 @@
                     other-beat-color default-other-beat-color
                     metronome (:metronome *show*)}}]
   {:pre [(some? *show*)]}
-  (let [down-beat-color (params/bind-keyword-param down-beat-color :com.evocomputing.colors/color default-down-beat-color)
-        other-beat-color (params/bind-keyword-param other-beat-color :com.evocomputing.colors/color default-other-beat-color)
+  (let [down-beat-color (params/bind-keyword-param
+                         down-beat-color :com.evocomputing.colors/color default-down-beat-color)
+        other-beat-color (params/bind-keyword-param
+                          other-beat-color :com.evocomputing.colors/color default-other-beat-color)
         metronome (params/bind-keyword-param metronome Metronome (:metronome *show*))]
     (params/validate-param-type down-beat-color :com.evocomputing.colors/color)
     (params/validate-param-type other-beat-color :com.evocomputing.colors/color)
@@ -53,9 +56,9 @@
           local-snapshot (atom nil)  ; Need to set up a snapshot at start of each run for all assigners
           f (fn [show snapshot target previous-assignment]
               (pspy :metronome-effect
-                    (let [raw-intensity (* 2 (- (/ 1 2) (snapshot-beat-phase @local-snapshot 1)))
+                    (let [raw-intensity (* 2 (- (/ 1 2) (rhythm/snapshot-beat-phase @local-snapshot 1)))
                           intensity (if (neg? raw-intensity) 0 raw-intensity)
-                          base-color (if (snapshot-down-beat? @local-snapshot)
+                          base-color (if (rhythm/snapshot-down-beat? @local-snapshot)
                                        (params/resolve-param down-beat-color show @local-snapshot)
                                        (params/resolve-param other-beat-color show @local-snapshot))]
                       (colors/create-color {:h (colors/hue base-color)
@@ -67,7 +70,7 @@
                  ;; Also need to set up the local snapshot based on our private metronome
                  ;; for the assigners to use.
                  (reset! local-snapshot (rhythm/metro-snapshot metronome))
-                 (or @running (< (snapshot-bar-phase @local-snapshot) 0.9)))
+                 (or @running (< (rhythm/snapshot-bar-phase @local-snapshot) 0.9)))
                (fn [show snapshot] assigners)
                (fn [snow snapshot]  ;; Arrange to shut down at the end of a measure
                  (reset! running false))))))
@@ -202,6 +205,83 @@
               (show/set-variable! :strobe-hue saved-hue)
               (show/set-variable! :strobe-saturation saved-saturation)
               true))))
+
+(def default-color-cycle
+  "The default list of colors to cycle through for the various color
+  cycle chases."
+  [(colors/create-color :red)
+   (colors/create-color :orange)
+   (colors/create-color :yellow)
+   (colors/create-color :green)
+   (colors/create-color :cyan)
+   (colors/create-color :blue)
+   (colors/create-color :purple)
+   (colors/create-color :white)])
+
+(defn max-distance
+  "Calculate the distance from the center of the show to the furthest
+  fixture."
+  [show]
+  (let [dimensions @(:dimensions show)
+        corner-1 (Point3d. (:min-x dimensions) (:min-y dimensions) (:min-z dimensions))
+        corner-2 (Point3d. (:max-x dimensions) (:max-y dimensions) (:max-z dimensions))]
+    (/ (.distance corner-1 corner-2) 2)))
+
+(defn max-xy-distance
+  "Calculate the distance from the center of the show in the x-y plane
+  to the furthest fixture projected onto that plane."
+  [show]
+  (let [dimensions @(:dimensions show)
+        corner-1 (Point3d. (:min-x dimensions) (:min-y dimensions) 0.0)
+        corner-2 (Point3d. (:max-x dimensions) (:max-y dimensions) 0.0)]
+    (/ (.distance corner-1 corner-2) 2)))
+
+(defn target-xy-distance-fraction
+  "Calculate how far the target is from the center of the x-y plane,
+  as a fraction of the largest distance within that plane."
+  [target center max-distance]
+  (let [location (Point3d. (:x target) (:y target) 0.0)]
+    (/ (.distance center location) max-distance)))
+
+(defn radial-wipe-cycle-chase
+  "Returns an effect which changes color on each bar of a phrase,
+  expanding the color from the center of the x-y plane outwards during
+  the down beat."
+  [fixtures & {:keys [color-cycle] :or {color-cycle default-color-cycle}}]
+  {:pre [(some? *show*)]}
+  (let [dimensions @(:dimensions *show*)
+        center (Point3d. (:center-x dimensions) (:center-y dimensions) 0.0)
+        max-distance (max-xy-distance *show*)
+        previous-color (atom nil)
+        color-cycle (map (fn [arg default]
+                           (params/bind-keyword-param arg :com.evocomputing.colors/color default))
+                         color-cycle default-color-cycle)]
+    (doseq [arg color-cycle]
+      (params/validate-param-type arg :com.evocomputing.colors/color))
+    (let [heads (find-rgb-heads fixtures)
+          ending (atom nil)
+          color-cycle (map #(params/resolve-unless-frame-dynamic % *show* (rhythm/metro-snapshot (:metronome *show*)))
+                           color-cycle)
+          f (fn [show snapshot target previous-assignment]
+              (pspy :radial-wipe-cycle-chase-effect
+                    (let [base-color (params/resolve-param (nth (cycle color-cycle)
+                                                                (dec (rhythm/snapshot-bar-within-phrase snapshot)))
+                                                           show snapshot)]
+                      (when (> (rhythm/snapshot-beat-within-bar snapshot) 1) ; Be ready for the next wipe
+                        (reset! previous-color base-color))
+                      (if (or (> (rhythm/snapshot-beat-within-bar snapshot) 1)
+                              (> (+ (rhythm/snapshot-beat-phase snapshot) 0.1)
+                                 (target-xy-distance-fraction target center max-distance)))
+                        base-color
+                        @previous-color))))
+          assigners (build-head-assigners :color heads f)]
+      (Effect. "Radial Wipe"
+               (fn [show snapshot]  ;; Continue running until the end of a phrase.
+                 (or (nil? @ending) (= (:phrase snapshot) @ending)))
+               (fn [show snapshot] assigners)
+               (fn [snow snapshot]  ;; Arrange to shut down at the end of a phrase
+                 (reset! ending (:phrase snapshot))
+                 nil)))))
 
 (defn blast
   "An effect which creates a sphere of light which expands from a

@@ -149,7 +149,8 @@
         (doseq [[kind handler] resolution-handlers]
           (doseq [assigners (vals (get all-assigners kind))]
             (let [[target target-id value] (run-assigners show snapshot assigners)]
-              (p :resolve-value (handler show buffers snapshot target value target-id))))))
+              (when (some? value) ; If the assigner returned nil, it wants to be skipped
+                (p :resolve-value (handler show buffers snapshot target value target-id)))))))
       (p :send-dmx-data (doseq [universe (keys buffers)]
                           (let [levels (get buffers universe)]
                             (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} nil))))

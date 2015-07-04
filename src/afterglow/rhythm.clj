@@ -84,6 +84,10 @@
   (snapshot-beat-within-bar [snapshot]
     "Returns the beat number relative to the start of the bar: The down
     beat is 1, and the range goes up to the beats-per-bar of the metronome.")
+  (snapshot-beat-within-phrase [snapshot]
+    "Returns the beat number relative to the start of the phrase: The
+    first beat is 1, and the range goes up to the beats-per-bar times
+    bars-per-phrase of the metronome.")
   (snapshot-down-beat? [snapshot]
     "True if the current beat is the first beat in the current bar.")
   (snapshot-phrase-phase [snapshot] [snapshot phrase-ratio]
@@ -155,6 +159,9 @@ as fast, 3/4 oscillates 4 times every three markers..."
   (snapshot-beat-within-bar [snapshot]
     (let [beat-size (/ 1 bpb)]
       (inc (int (floor (/ (snapshot-bar-phase snapshot 1) beat-size))))))
+  (snapshot-beat-within-phrase [snapshot]
+    (let [beat-size (/ 1 bpb bpp)]
+      (inc (int (floor (/ (snapshot-phrase-phase snapshot 1) beat-size))))))
   (snapshot-down-beat? [snapshot]
     (let [beat-size (/ 1 bpb)]
       (zero? (floor (/ (snapshot-bar-phase snapshot 1) beat-size)))))

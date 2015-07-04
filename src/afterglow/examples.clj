@@ -653,14 +653,14 @@
 
     ;; Some basic moving head chases
     (let [triangle-phrase (params/build-oscillated-param ; Move back and forth over a phrase
-                             (oscillators/triangle-phrase) :min -5 :max 5)
+                             (oscillators/triangle-phrase) :min -90 :max 90)
           staggered-triangle-bar (params/build-spatial-param ; Bounce over a bar, staggered across grid x
                                    (show/all-fixtures)
                                    (fn [head]
                                      (params/build-oscillated-param
                                       (oscillators/triangle-bar :phase (x-phase head *show*))
-                                      :min 0 :max 5)))
-          can-can-dir (params/build-direction-param :x triangle-phrase :y staggered-triangle-bar :z 3)]
+                                      :min -90 :max 0)))
+          can-can-dir (params/build-pan-tilt-param :pan triangle-phrase :tilt staggered-triangle-bar)]
       (ct/set-cue! (:cue-grid *show*) 0 9
                    (cues/cue :movement (fn [var-map]
                                          (move/direction-effect "Can Can" can-can-dir (show/all-fixtures))))))
@@ -695,6 +695,10 @@
                                                                      [10 9]
                                                                      [6 15 {:level 60}]
                                                                      [6 8 {:level 25}]]))))
+    ;; Some example chases
+    (ct/set-cue! (:cue-grid *show*) 8 1
+                 (cues/cue :color (fn [_] (fun/radial-wipe-cycle-chase (show/all-fixtures)))))
+
     ;; Some cues to show the Hypnotic RGB Laser
     (ct/set-cue! (:cue-grid *show*) 8 3
                  (cues/function-cue :hypnotic-beam :beam-red (show/fixtures-named "hyp-rgb")
