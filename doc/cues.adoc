@@ -16,7 +16,8 @@ http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ab
 Push].
 
 [[creating-cues]]
-~~~~~~~~~~~~~~~~~
+Creating Cues
+~~~~~~~~~~~~~
 
 The
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html[afterglow.effects.cues]
@@ -31,10 +32,10 @@ Controlling Cues
 The
 http://deepsymmetry.org/afterglow/doc/afterglow.controllers.html[afterglow.controllers]
 namespace defines some helpful functions for working with cues, and
-defines a grid controller
-http://deepsymmetry.org/afterglow/doc/afterglow.controllers.html#var-IGridController[protocol]
-which rich controller mappings like the one for the Ableton Push can
-use to attach themselves to a running show, and synchronize with the
-web interface.
+defines a
+http://deepsymmetry.org/afterglow/doc/afterglow.controllers.html#var-IGridController[grid
+controller protocol] which rich controller mappings like the one for
+the Ableton Push can use to attach themselves to a running show, and
+synchronize with the web interface.
 
 TODO: Flesh out, discuss individual functions.

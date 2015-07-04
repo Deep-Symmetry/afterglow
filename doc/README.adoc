@@ -25,13 +25,7 @@ to your effects which change over time and space, enabling much more
 interesting and complex appearance and behavior.
 
 <<cues#cues,Cues>>:: Provide a convenient way to organize and trigger
-effects. Each show in Afterglow maintains a cue grid, which can be
-viewed and interacted with through the
-http://deepsymmetry.org/afterglow/doc/afterglow.core.html#var-start-web-server[embedded
-web interface] and MIDI controller mapping implementations which
-register themselves as grid controllers, as does the
-http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
-Push].
+effects.
 
 <<metronomes#metronomes,Metronomes>>:: Keep track of musical time, in
 terms of beats, bars, and phrases, and can be
