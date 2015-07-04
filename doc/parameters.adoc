@@ -299,7 +299,7 @@ every frame, or just once
 |=======================================================================
 
 Collectively, `x`, `y`, and `z` specify a three-dimensional point
-within the light show’s [[frame of reference|show-space]] telling the
+within the light show’s <<show_space#show-space,frame of reference>> telling the
 lights where to aim. When this vector is supplied to an
 <<effects#aim-effects,Aim Effect>>, it causes the attached lights to
 make the specified movement, if they are capable.
@@ -318,11 +318,11 @@ parameters>>.
 
 A more traditional way of aiming fixtures involves setting pan and
 tilt angles. Afterglow supports this approach as well, although even
-in this case you use angles expressed in the standard show [[frame of
-reference|show-space]] regardless of how the individual fixtures are
-hung. Pan Tilt parameters are an alternate way to work with
-<<effects#direction-effects,Direction Effects>>. The basic way to create one is to
-call:
+in this case you use angles expressed in the standard show
+<<show_space#show-space,frame of reference>> regardless of how the
+individual fixtures are hung. Pan Tilt parameters are an alternate way
+to work with <<effects#direction-effects,Direction Effects>>. The
+basic way to create one is to call:
 
 [source,clojure]
 ----
@@ -349,9 +349,9 @@ every frame, or just once
 
 The rotations requested by `pan` and `tilt` jointly identify the
 direction the light should turn away from the audience. The result of
-the parameter is a direction vector in the light show’s [[frame of
-reference|show-space]] telling the lights which direction they should
-point. When this vector is supplied to a
+the parameter is a direction vector in the light show’s
+<<show_space#show-space,frame of reference>> telling the lights which
+direction they should point. When this vector is supplied to a
 <<effects#direction-effects,Direction Effect>>, it causes the attached
 lights to make the specified movement, if they are capable.
 
