@@ -601,6 +601,9 @@
     ;; The upper page of torrent config cues
     (ct/set-cue! (:cue-grid *show*) 0 15
                  (cues/function-cue :torrent-shutter :shutter-open (show/fixtures-named "torrent")))
+    (ct/set-cue! (:cue-grid *show*) 1 15
+                 (cues/function-cue :torrent-reset :motor-reset (show/fixtures-named "torrent")
+                                    :color (create-color :red) :held true))
 
     (ct/set-cue! (:cue-grid *show*) 6 15
                  (cues/function-cue :t1-focus :focus (show/fixtures-named "torrent-1") :effect-name "Torrent 1 Focus"
