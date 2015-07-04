@@ -165,11 +165,12 @@ effect, and shows up when examining the created effect.
 
 The `direction` parameter is where you specify the direction the
 lights should be pointing. It is a `javax.vector.Vector3d` pointing in
-the direction the lights should, with respect to the show’s
+the direction the lights should face, with respect to the show’s
 <<show_space#show-space,frame of reference>>. An easy way to create
 one is to call
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-direction-param[afterglow.effects.params/build-direction-param].
-This can create static vectors for you, but can also create
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-direction-param[afterglow.effects.params/build-direction-param] or
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-pan-tilt-param[afterglow.effects.params/build-pan-tilt-param].
+These can create static vectors for you, but can also create
 <<parameters#dynamic-parameters,Dynamic Parameters>> whose value
 depends on a <<metronomes#metronomes,Metronome>>, the physical
 location or orientation of the head, or a show variable, perhaps
@@ -177,6 +178,11 @@ location or orientation of the head, or a show variable, perhaps
 to a MIDI control surface. Building dynamic direction parameters with
 <<parameters#oscillated-parameters,oscillated parameters>> can
 create fascinating motions.
+
+If a group of fixtures is assigned the same direction effect, they
+will all face the same direction. If they are assigned the same aim
+effect, they will all face slightly different directions in order to
+aim at the same point in space.
 
 === Aim Effects
 
@@ -207,6 +213,11 @@ location or orientation of the head, or a show variable, perhaps
 control surface. Using a tablet with an OSC or midi interface that
 lets you drag an aiming point around a map of the stage is one fun
 possibility.
+
+If a group of fixtures is assigned the same direction effect, they
+will all face the same direction. If they are assigned the same aim
+effect, they will all face slightly different directions in order to
+aim at the same point in space.
 
 === Function Effects
 
