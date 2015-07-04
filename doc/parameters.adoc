@@ -220,9 +220,10 @@ parameters and get lovely shifting rainbow cues, as shown in the
 
 == Direction Parameters
 
-Direction parameters are a way to tell a group of fixtures to point in a
-particular direction, or move in unison or in a coordinated pattern. The
-basic way to create one is to call:
+Direction parameters are a way to tell a group of fixtures to point in
+a particular direction, or move in unison or in a coordinated pattern.
+They are used with <<effects#direction-effects,Direction Effects>>.
+The basic way to create one is to call:
 
 [source,clojure]
 ----
@@ -255,7 +256,9 @@ matter. The default of `[0, 0, 1]` means the lights point neither left
 nor right, neither up nor down, and straight towards the audience.
 `[1, 0, 0]` would be straight right, `[-1, 0, 0]` straight left, `[0,
 1, 0]` straight up, and `[0, 1, -1]` up and away from the audience at
-a 45° angle.
+a 45° angle. When this vector is supplied to a
+<<effects#direction-effects,Direction Effect>>, it causes the attached
+lights to make the specified movement, if they are capable.
 
 All of these parameters, except for `frame-dynamic`, can themselves be
 dynamic parameters, such as show <<variable-parameters,variables>>
@@ -267,7 +270,8 @@ parameters>>.
 
 Aim parameters are a way to tell a group of fixtures to aim at a
 particular point in space, or track something in unison or in a
-coordinated pattern. The basic way to create one is to call:
+coordinated pattern. They are used with <<effects#aim-effects,Aim
+Effects>>. The basic way to create one is to call:
 
 [source,clojure]
 ----
@@ -294,11 +298,67 @@ point
 every frame, or just once
 |=======================================================================
 
-Collectively, `x`, `y`, and `z` specify a three-dimensional point within
-the light show’s [[frame of reference|show-space]] telling the lights
-where to aim. If you need to convert inches to meters, which are the
+Collectively, `x`, `y`, and `z` specify a three-dimensional point
+within the light show’s [[frame of reference|show-space]] telling the
+lights where to aim. When this vector is supplied to an
+<<effects#aim-effects,Aim Effect>>, it causes the attached lights to
+make the specified movement, if they are capable.
+
+If you need to convert inches to meters, which are the
 standard distance units in Afterglow, you can use
 http://deepsymmetry.org/afterglow/doc/afterglow.transform.html#var-inches[afterglow.transform/inches].
+
+All of these parameters, except for `frame-dynamic`, can themselves be
+dynamic parameters, such as show <<variable-parameters,variables>>
+(with the convenience shorthand of just passing in the keyword by which
+the show variable was stored) or <<oscillated-parameters,oscillated
+parameters>>.
+
+## Pan Tilt Parameters
+
+A more traditional way of aiming fixtures involves setting pan and
+tilt angles. Afterglow supports this approach as well, although even
+in this case you use angles expressed in the standard show [[frame of
+reference|show-space]] regardless of how the individual fixtures are
+hung. Pan Tilt parameters are an alternate way to work with
+<<effects#direction-effects,Direction Effects>>. The basic way to create one is to
+call:
+
+[source,clojure]
+----
+(afterglow.effects.params/build-pan-tilt-param)
+----
+
+By itself this call would simply return a non-dynamic direction telling
+fixtures to point directly at the audience. However, you will use one or
+more of the following optional keyword parameters to get the dynamic
+angles you want:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:pan` |`0` |How many degrees counter-clockwise should the light turn
+around the Y axis.
+
+|`:tilt` |`0` |How many degrees counter-clockwise should the light turn
+around the X axis.
+
+|`:frame-dynamic` |`true` |Whether the parameter should be calculated at
+every frame, or just once
+|=======================================================================
+
+The rotations requested by `pan` and `tilt` jointly identify the
+direction the light should turn away from the audience. The result of
+the parameter is a direction vector in the light show’s [[frame of
+reference|show-space]] telling the lights which direction they should
+point. When this vector is supplied to a
+<<effects#direction-effects,Direction Effect>>, it causes the attached
+lights to make the specified movement, if they are capable.
+
+Note that although internally Afterglow works with angles expressed in
+radians, the values of `pan` and `tilt` are in degrees, and are
+converted to radians for the convenience of the user who is more
+likely accustomed to working with angles expressed in degrees.
 
 All of these parameters, except for `frame-dynamic`, can themselves be
 dynamic parameters, such as show <<variable-parameters,variables>>
