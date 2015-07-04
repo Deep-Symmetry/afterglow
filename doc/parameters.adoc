@@ -341,10 +341,10 @@ angles you want:
 |=======================================================================
 |Parameter |Default |Purpose
 |`:pan` |`0` |How many degrees counter-clockwise should the light turn
-around the Y axis.
+around the Y axis
 
 |`:tilt` |`0` |How many degrees counter-clockwise should the light turn
-around the X axis.
+around the X axis
 
 |`:frame-dynamic` |`true` |Whether the parameter should be calculated at
 every frame, or just once
