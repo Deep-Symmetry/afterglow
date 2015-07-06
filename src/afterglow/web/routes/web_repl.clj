@@ -52,8 +52,8 @@
           (try
             (let [r (pr-str (eval form))]
               {:result (str (.toString writer) (str r))})
-            (catch Exception e
-              {:error (str (root-cause e))})))))))
+            (catch Throwable t
+              {:error (str (root-cause t))})))))))
 
 (defn handle-command
   "Route which processes a command typed into the web console."
