@@ -44,28 +44,27 @@ Eventually you may be able to download binary distributions from somewhere.
 
 ## Status
 
-We’re getting close to an initial release, perhaps in June, although
-bugs in the Mac Java MIDI implementation have caused some
-time-consuming detours. Most of the crazy ideas have panned out and
-been implemented, and I am just circling back and fleshing out the
-basic details needed for everyday use. The examples are starting to be
-intriguing and informative, and the
-[documentation](doc/README.adoc#afterglow-documentation) is getting
-substantial. The modeling of fixtures, channels, etc. is coming
-together nicely, though there have been drastic changes as I gained
-experience with how I want to use them.
+We’re getting close to an initial release, probably in July. Most of
+the crazy ideas have panned out and been implemented, and I am just
+circling back and fleshing out the basic details needed for everyday
+use. The examples are starting to be intriguing and informative, and
+the [documentation](doc/README.adoc#afterglow-documentation) is
+getting substantial. The modeling of fixtures, channels, etc. is
+coming together nicely, though there have been drastic changes as I
+gained experience with how I want to use them.
 
-There is now an embedded web application, which will grow into a user
-interface for people who are not Clojure hackers. It is mostly empty
-so far, but does include the beginnings of a show visualizer for
-designing and working on effects without having to physically hook up
-lights. This is implemented in WebGL using a volumetric ray tracer and
-looks quite promising, at least for a small number of fixtures; it
-will probably overwhelm the graphics processor on most systems once
-you add too many lights. However, the framework can be used by someone
-who actually knows OpenGL programming to build a more scalable preview
-(albeit one that probably doesn’t look quite so photo-realistic with
-beams impacting drifting fog).
+There is now an embedded web application, which is growing into a show
+control interface for people who are not Clojure hackers, and a useful
+adjunct to the Ableton Push control surface interface. It also
+includes the beginnings of a show visualizer for designing and working
+on effects without having to physically hook up lights. This is
+implemented in WebGL using a volumetric ray tracer and looks quite
+promising, at least for a small number of fixtures; it will probably
+overwhelm the graphics processor on most systems once you add too many
+lights. However, the framework can be used by someone who actually
+knows OpenGL programming to build a more scalable preview (albeit one
+that probably doesn’t look quite so photo-realistic with beams
+impacting drifting fog).
 
 ## Usage
 
@@ -81,11 +80,47 @@ Given its current development phase, you will want to use Afterglow in a Clojure
 (in-ns 'afterglow.examples)
 ```
 
-Start the sample show which runs on DMX universe 1. You will want to
-have OLA configured to at least have an ArtNet universe with that ID
-so you can watch the DMX values using its web interface. It would be
-even better if you had an actual DMX interface hooked up, and changed
-the definition of `sample-rig` to include some real lights you have
+You can bring up the web interface (and open a browser window on it)
+with a one-liner like this:
+
+```clojure
+(core/start-web-server 16000 true)
+```
+
+![Web interface](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/WebHome.png)
+    
+As noted at the bottom, the web interface provides a minimal console
+as well, so if you are running Afterglow from a jar and just want to
+tweak something quickly, you can do use that:
+
+![Web console](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/Console.png)
+
+However, this does not offer the valuable support you would have from
+a dedicated REPL like [Cider](https://github.com/clojure-emacs/cider)
+(in Emacs) or [Cursive](https://cursiveclojure.com) (in IntelliJ),
+things like symbol completion, popup documentation, and command-line
+recall, which make for such a vastly more productive exploration
+session, that even when you are running from a jar rather than
+launching from a REPL, you will often want to access a real REPL. You
+can do that by using the console to invoke
+[core/start-nrepl](http://deepsymmetry.org/afterglow/doc/afterglow.core.html#var-start-nrepl)
+and then connecting your favorite REPL environment to the network
+REPL you created.
+
+The web interface does provide a nice show control page, however, with
+access to a scrollable grid of cues, and the ability to track the cues
+displayed on a physical cue grid control surface like the Ableton
+Push, so you can control them from either place, and see the names
+that go with the colored buttons on the control surface:
+
+![Show control](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/ShowGrid.png)
+
+But, getting back to our REPL-based example: We next start the sample
+show, which runs on DMX universe 1. You will want to have OLA
+configured to at least have an ArtNet universe with that ID so you can
+watch the DMX values using its web interface. It would be even better
+if you had an actual DMX interface hooked up, and changed the
+definition of `sample-rig` to include some real lights you have
 connected. Either way, here is how you start the show sending control
 signals to lights:
 
