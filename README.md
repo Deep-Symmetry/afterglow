@@ -91,7 +91,7 @@ with a one-liner like this:
     
 As noted at the bottom, the web interface provides a minimal console
 as well, so if you are running Afterglow from a jar and just want to
-tweak something quickly, you can do use that:
+tweak something quickly, you can use that:
 
 ![Web console](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/Console.png)
 
