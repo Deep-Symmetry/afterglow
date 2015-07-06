@@ -95,19 +95,19 @@ tweak something quickly, you can use that:
 
 ![Web console](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/Console.png)
 
-However, this does not offer the valuable support you would have from
-a dedicated REPL like [Cider](https://github.com/clojure-emacs/cider)
-(in Emacs) or [Cursive](https://cursiveclojure.com) (in IntelliJ),
-things like symbol completion, popup documentation, and command-line
-recall, which make for such a vastly more productive exploration
-session, that even when you are running from a jar rather than
-launching from a REPL, you will often want to access a real REPL. You
-can do that by using the console to invoke
-[core/start-nrepl](http://deepsymmetry.org/afterglow/doc/afterglow.core.html#var-start-nrepl)
-and then connecting your favorite REPL environment to the network
-REPL you created.
+> However, this does not offer the valuable support you would have from
+> a dedicated REPL like [Cider](https://github.com/clojure-emacs/cider)
+> (in Emacs) or [Cursive](https://cursiveclojure.com) (in IntelliJ):
+> things like symbol completion, popup documentation, and command-line
+> recall, which make for such a vastly more productive exploration
+> session. So even when you are running from a jar rather than
+> launching from a REPL, you will often want to access a real REPL. You
+> can accomplish that by using web the console to invoke
+> [core/start-nrepl](http://deepsymmetry.org/afterglow/doc/afterglow.core.html#var-start-nrepl)
+> and then connecting your favorite REPL environment to the network
+> REPL port you created.
 
-The web interface does provide a nice show control page, however, with
+The web interface does provide a nice show control page, though, with
 access to a scrollable grid of cues, and the ability to track the cues
 displayed on a physical cue grid control surface like the Ableton
 Push, so you can control them from either place, and see the names
