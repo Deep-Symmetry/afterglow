@@ -185,7 +185,8 @@
   fixture's center position as the default target value to stay close
   to."
   [angle center-value half-circle-value & {:keys [target-value] :or {target-value center-value}}]
-  (let [candidates (map #(angle-to-dmx-value % center-value half-circle-value) [angle (+ angle two-pi) (- angle two-pi)])
+  (let [candidates (map #(angle-to-dmx-value % center-value half-circle-value)
+                        [angle (+ angle two-pi) (- angle two-pi)])
         legal (filter #(<= 0 % 255.99) candidates)]
     (debug "candidates:" candidates)
     (debug "legal:" legal)
@@ -302,4 +303,44 @@
     (debug "Calculating aim as direction" direction)
     (calculate-position fixture direction former-values)))
 
+(defn calculate-bounds
+  "Given a list of fixtures, determine the corners of the smallest
+  box which contains them all, and the center of that box."
+  [fixtures]
+  (let [all-heads (chan/expand-heads fixtures)
+        min-x (apply min (map :x all-heads))
+        min-y (apply min (map :y all-heads))
+        min-z (apply min (map :z all-heads))
+        max-x (apply max (map :x all-heads))
+        max-y (apply max (map :y all-heads))
+        max-z (apply max (map :z all-heads))
+        center-x (/ (+ min-x max-x) 2)
+        center-y (/ (+ min-y max-y) 2)
+        center-z (/ (+ min-z max-z) 2)]
+    {:min-x min-x :min-y min-y :min-z min-z
+     :max-x max-x :max-y max-y :max-z max-z
+     :center-x center-x :center-y center-y :center-z center-z}))
+
+(defn build-distance-measure
+  "Returns a function which calculates the distance from a fixture or
+  head to a specified point, optionally ignoring one or more axes.
+  Useful in building transitions which depend on the locations of
+  lights, perhaps only within certain planes or along a single axis.
+
+  The function returned takes a fixture definition, and returns its
+  distance from the configured reference point, after discarding any
+  axes which have been marked as ignored by passing true values along
+  with :ignore-x, :ignore-y, or :ignore-z."
+  [x y z & {:keys [ignore-x ignore-y ignore-z]}]
+  (let [reference (Point3d. (if ignore-x 0 x) (if ignore-y 0 y) (if ignore-z 0 z))]
+    (fn [head]
+      (let [location (Point3d. (if ignore-x 0 (:x head)) (if ignore-y 0 (:y head)) (if ignore-z 0 (:z head)))]
+        (.distance reference location)))))
+
+(defn max-distance
+  "Calculates the maximum distance that will ever be returned by a
+  distance measure for a set of fixtures."
+  [measure fixtures]
+  (let [all-heads (chan/expand-heads fixtures)]
+    (apply max (map measure all-heads))))
 

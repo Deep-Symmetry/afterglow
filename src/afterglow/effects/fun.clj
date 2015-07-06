@@ -10,6 +10,7 @@
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
             [afterglow.show-context :refer [*show*]]
+            [afterglow.transform :as transform]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
             [taoensso.timbre :refer [info spy]]
@@ -218,41 +219,40 @@
    (colors/create-color :purple)
    (colors/create-color :white)])
 
-(defn max-distance
-  "Calculate the distance from the center of the show to the furthest
-  fixture."
-  [show]
-  (let [dimensions @(:dimensions show)
-        corner-1 (Point3d. (:min-x dimensions) (:min-y dimensions) (:min-z dimensions))
-        corner-2 (Point3d. (:max-x dimensions) (:max-y dimensions) (:max-z dimensions))]
-    (/ (.distance corner-1 corner-2) 2)))
 
-(defn max-xy-distance
-  "Calculate the distance from the center of the show in the x-y plane
-  to the furthest fixture projected onto that plane."
-  [show]
-  (let [dimensions @(:dimensions show)
-        corner-1 (Point3d. (:min-x dimensions) (:min-y dimensions) 0.0)
-        corner-2 (Point3d. (:max-x dimensions) (:max-y dimensions) 0.0)]
-    (/ (.distance corner-1 corner-2) 2)))
-
-(defn target-xy-distance-fraction
-  "Calculate how far the target is from the center of the x-y plane,
-  as a fraction of the largest distance within that plane."
-  [target center max-distance]
-  (let [location (Point3d. (:x target) (:y target) 0.0)]
-    (/ (.distance center location) max-distance)))
-
-(defn radial-wipe-cycle-chase
-  "Returns an effect which changes color on each bar of a phrase,
-  expanding the color from the center of the x-y plane outwards during
-  the down beat."
-  [fixtures & {:keys [color-cycle] :or {color-cycle default-color-cycle}}]
+;; TODO: Working on:
+;;       Generalize by also taking a transition function, have
+;;       factories that make different kinds of wipes, which also
+;;       can take lists of fixtures for determining boundaries.
+;;       Create no-assigner effects which set color lists and
+;;       transition functions in show variables; the latter
+;;       should also have a variable to set the number of beats
+;;       over which the transition takes place. This will allow
+;;       a panel of composable wipe effects! Can also take a
+;;       function that generates the index into the color list
+;;       so colors can change over different periods.
+(defn color-cycle-chase
+  "Returns an effect which moves through a color cycle on each bar of
+  a phrase, performing a wipe transition as a new color is introduced,
+  using the specified distance measure to determine when each light
+  starts to participate, with the transition taking the specified
+  fraction of the bar. Unless otherwise specified by passing an
+  explicit bounding box with :bounds, the transition is bounded by the
+  fixtures actually participating in it."
+  [fixtures measure & {:keys [bounds color-cycle color-index-function
+                              transition-phase-function transition-end-phase
+                              effect-name]
+                       :or {bounds (transform/calculate-bounds fixtures)
+                            color-cycle default-color-cycle
+                            color-index-function rhythm/snapshot-bar-within-phrase
+                            transition-phase-function rhythm/snapshot-bar-phase
+                            transition-end-phase 0.25
+                            effect-name "Phrase Color Cycle"}}]
   {:pre [(some? *show*)]}
-  (let [dimensions @(:dimensions *show*)
-        center (Point3d. (:center-x dimensions) (:center-y dimensions) 0.0)
-        max-distance (max-xy-distance *show*)
+  (let [max-distance (transform/max-distance measure fixtures)
         previous-color (atom nil)
+        current-bar (atom nil)
+        current-color (atom nil)
         color-cycle (map (fn [arg default]
                            (params/bind-keyword-param arg :com.evocomputing.colors/color default))
                          color-cycle default-color-cycle)]
@@ -263,25 +263,68 @@
           color-cycle (map #(params/resolve-unless-frame-dynamic % *show* (rhythm/metro-snapshot (:metronome *show*)))
                            color-cycle)
           f (fn [show snapshot target previous-assignment]
-              (pspy :radial-wipe-cycle-chase-effect
-                    (let [base-color (params/resolve-param (nth (cycle color-cycle)
-                                                                (dec (rhythm/snapshot-bar-within-phrase snapshot)))
-                                                           show snapshot)]
-                      (when (> (rhythm/snapshot-beat-within-bar snapshot) 1) ; Be ready for the next wipe
-                        (reset! previous-color base-color))
-                      (if (or (> (rhythm/snapshot-beat-within-bar snapshot) 1)
-                              (> (+ (rhythm/snapshot-beat-phase snapshot) 0.1)
-                                 (target-xy-distance-fraction target center max-distance)))
-                        base-color
+              (pspy :color-cycle-chase-effect
+                    ;; Is it time to grab the next color?
+                    (when (not= (color-index-function snapshot) @current-bar)
+                      (reset! current-bar (color-index-function snapshot))
+                      (reset! previous-color @current-color)
+                      (reset! current-color
+                              (params/resolve-param (nth (cycle color-cycle) (dec @current-bar))
+                                                    show snapshot)))
+                    ;; Determine whether this head is covered by the current state of the transition
+                    (let [transition-progress (/ (transition-phase-function snapshot) transition-end-phase)]
+                      (if (or (>= transition-progress 1.0) (> transition-progress (/ (measure target) max-distance)))
+                        @current-color
                         @previous-color))))
           assigners (build-head-assigners :color heads f)]
-      (Effect. "Radial Wipe"
+      (Effect. effect-name
                (fn [show snapshot]  ;; Continue running until the end of a phrase.
                  (or (nil? @ending) (= (:phrase snapshot) @ending)))
                (fn [show snapshot] assigners)
                (fn [snow snapshot]  ;; Arrange to shut down at the end of a phrase
                  (reset! ending (:phrase snapshot))
                  nil)))))
+
+(defn iris-out-color-cycle-chase
+  "Returns an effect which changes color on each bar of a phrase,
+  expanding the color from the center of the x-y plane outwards during
+  the down beat."
+  [fixtures & {:keys [bounds color-cycle color-index-function
+                      transition-phase-function transition-end-phase
+                      effect-name]
+               :or {bounds (transform/calculate-bounds fixtures)
+                    color-cycle default-color-cycle
+                    color-index-function rhythm/snapshot-bar-within-phrase
+                    transition-phase-function rhythm/snapshot-bar-phase
+                    transition-end-phase 0.25
+                    effect-name "Iris Out"}}]
+  {:pre [(some? *show*)]}
+  (let [measure (transform/build-distance-measure (:center-x bounds) (:center-y bounds) (:center-z bounds)
+                                                  :ignore-z true)]
+    (color-cycle-chase fixtures measure :bounds bounds
+                       :color-cycle color-cycle :color-index-function color-index-function
+                       :transition-phase-function transition-phase-function
+                       :transition-end-phase transition-end-phase :effect-name effect-name)))
+
+(defn wipe-right-color-cycle-chase
+  "Returns an effect which changes color on each bar of a phrase,
+  wiping the color from left to right across the x axis."
+  [fixtures & {:keys [bounds color-cycle color-index-function
+                      transition-phase-function transition-end-phase
+                      effect-name]
+               :or {bounds (transform/calculate-bounds fixtures)
+                    color-cycle default-color-cycle
+                    color-index-function rhythm/snapshot-bar-within-phrase
+                    transition-phase-function rhythm/snapshot-bar-phase
+                    transition-end-phase 0.25
+                    effect-name "Wipe Right"}}]
+  {:pre [(some? *show*)]}
+  (let [measure (transform/build-distance-measure (:min-x bounds) 0 0 :ignore-y true :ignore-z true)]
+    (color-cycle-chase fixtures measure :bounds bounds
+                       :color-cycle color-cycle :color-index-function color-index-function
+                       :transition-phase-function transition-phase-function
+                       :transition-end-phase transition-end-phase :effect-name effect-name)))
+
 
 (defn blast
   "An effect which creates a sphere of light which expands from a

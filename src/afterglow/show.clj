@@ -35,7 +35,7 @@
             [afterglow.ola-service :as ola]
             [afterglow.rhythm :refer :all]
             [afterglow.show-context :refer [*show* with-show]]
-            [afterglow.transform :refer [transform-fixture]]
+            [afterglow.transform :as transform]
             [amalloy.ring-buffer :refer [ring-buffer]]
             [com.climate.claypoole :as cp]
             [environ.core :refer [env]]
@@ -681,9 +681,10 @@
       (throw (IllegalArgumentException. (str "Cannot complete patch: Would use addresses up to " max-needed
                                              " which exceeds the DMX upper bound of 512."))))
     (when (seq conflicts)
-      (throw (IllegalStateException. (str "Cannot complete patch: "
-                                          (clojure.string/join ", " (vec (for [[k v] conflicts]
-                                                                           (str "Channel " k " in use by fixture " v))))))))
+      (throw (IllegalStateException.
+              (str "Cannot complete patch: "
+                   (clojure.string/join ", " (vec (for [[k v] conflicts]
+                                                    (str "Channel " k " in use by fixture " v))))))))
     (assoc fixtures
            key (assoc (fixtures/index-color-wheel-hues
                        (fixtures/index-functions fixture)) :key key :id (next-id)))))
@@ -695,23 +696,11 @@
   and heads which might participate in a visualization, in a map whose
   keys are their sorted IDs."
   [show]
-  (let [all-heads (chan/expand-heads (vals @(:fixtures show)))
-        min-x (apply min (map :x all-heads))
-        min-y (apply min (map :y all-heads))
-        min-z (apply min (map :z all-heads))
-        max-x (apply max (map :x all-heads))
-        max-y (apply max (map :y all-heads))
-        max-z (apply max (map :z all-heads))
-        center-x (/ (+ min-x max-x) 2)
-        center-y (/ (+ min-y max-y) 2)
-        center-z (/ (+ min-z max-z) 2)]
-    {:min-x min-x :min-y min-y :min-z min-z
-     :max-x max-x :max-y max-y :max-z max-z
-     :center-x center-x :center-y center-y :center-z center-z
-     :visualizer-visible (into (sorted-map)
-                               (map (fn [head] [(:id head) head])
-                                    (fixtures/visualizer-relevant (vals @(:fixtures show)))))
-     :timestamp (at-at/now)}))
+  (merge (transform/calculate-bounds (vals @(:fixtures show)))
+         {:visualizer-visible (into (sorted-map)
+                                    (map (fn [head] [(:id head) head])
+                                         (fixtures/visualizer-relevant (vals @(:fixtures show)))))
+          :timestamp (at-at/now)}))
 
 (defn patch-fixture!
   "Patch a fixture to a universe in [[*show*]] at a starting DMX
@@ -727,7 +716,7 @@
   {:pre [(some? *show*) (some? fixture) (some? universe) (integer? start-address) (<= 1 start-address 512)]}
   (when-not (contains? (:universes *show*) universe)
     (throw (IllegalArgumentException. (str "Show does not contain universe " universe))))
-  (let [positioned (transform-fixture fixture x y z x-rotation y-rotation z-rotation)]
+  (let [positioned (transform/transform-fixture fixture x y z x-rotation y-rotation z-rotation)]
     (swap! (:fixtures *show*) #(patch-fixture-internal *show* % (keyword key)
                                                        (chan/patch-fixture positioned universe start-address next-id))))
   (swap! (:dimensions *show*) (constantly (calculate-dimensions *show*))))

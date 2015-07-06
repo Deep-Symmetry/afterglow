@@ -22,6 +22,8 @@
             [overtone.osc :as osc]
             [taoensso.timbre :as timbre]))
 
+;; TODO: Get rid of :refer :all from rhythm; change to :as
+
 (defn use-sample-show
   "Set up a sample show for experimenting with Afterglow. By default
   it will create the show to use universe 1, but if for some reason
@@ -700,7 +702,17 @@
                                                                      [6 8 {:level 25}]]))))
     ;; Some example chases
     (ct/set-cue! (:cue-grid *show*) 8 1
-                 (cues/cue :color (fn [_] (fun/radial-wipe-cycle-chase (show/all-fixtures)))))
+                 (cues/cue :color (fn [_] (fun/iris-out-color-cycle-chase (show/all-fixtures)))))
+    (ct/set-cue! (:cue-grid *show*) 9 1
+                 (cues/cue :color (fn [_] (fun/wipe-right-color-cycle-chase
+                                           (show/all-fixtures) :transition-end-phase 1.0))))
+    (ct/set-cue! (:cue-grid *show*) 10 1
+                 (cues/cue :color (fn [_] (fun/wipe-right-color-cycle-chase
+                                           (show/all-fixtures)
+                                           :color-index-function snapshot-beat-within-phrase
+                                           :transition-phase-function snapshot-beat-phase
+                                           :transition-end-phase 1.0
+                                           :effect-name "Wipe Right Beat"))))
 
     ;; Some cues to show the Hypnotic RGB Laser
     (ct/set-cue! (:cue-grid *show*) 8 3
