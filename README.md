@@ -227,16 +227,13 @@ quickly get relief from overly bright lights.
 > you bind the Push to your show, the Push Master encoder is
 > automatically tied to the show master dimmer, with nice graphical
 > feedback in the text area. Plus you get deep control over the show
-> metronome as well, as shown above. Here is how the binding is
-> established:
+> metronome as well, as shown in the photo above. Here is how the
+> binding is established:
 
 ```clojure
 (require '[afterglow.controllers.ableton-push :as push])
 (def controller (push/bind-to-show *show*))
 ```
- ![Push
-  interface](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/PushIntro.jpg)
-    
 Moving on, though... we can change the global color to orange:
 
 ```clojure
