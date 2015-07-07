@@ -95,14 +95,15 @@ tweak something quickly, you can use that:
 
 ![Web console](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/Console.png)
 
-> However, this does not offer the valuable support you would have from
-> a dedicated REPL like [Cider](https://github.com/clojure-emacs/cider)
-> (in Emacs) or [Cursive](https://cursiveclojure.com) (in IntelliJ):
-> things like symbol completion, popup documentation, and command-line
-> recall, which make for such a vastly more productive exploration
-> session. So even when you are running from a jar rather than
-> launching from a REPL, you will often want to access a real REPL. You
-> can accomplish that by using web the console to invoke
+> However, this does not offer the valuable support you would have
+> from a dedicated REPL like
+> [Cider](https://github.com/clojure-emacs/cider) (in Emacs) or
+> [Cursive](https://cursiveclojure.com) (in IntelliJ): things like
+> symbol completion, popup documentation, and command-line recall,
+> which make for a vastly more productive exploration session. So even
+> when you are running from a jar rather than launching from a REPL,
+> you will often want to access a real REPL. You can accomplish that
+> with command-line arguments or by using web the console to invoke
 > [core/start-nrepl](http://deepsymmetry.org/afterglow/doc/afterglow.core.html#var-start-nrepl)
 > and then connecting your favorite REPL environment to the network
 > REPL port you created.
@@ -114,6 +115,24 @@ Push, so you can control them from either place, and see the names
 that go with the colored buttons on the control surface:
 
 ![Show control](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/ShowGrid.png)
+
+Here is the Ableton Push interface tied to that same section of the
+cue grid. This physical control surface lets you trigger more than one
+cue at the same time, and also gives you niceties unavailable with a
+mouse, like pressure sensitivity so your effect intensity, speed,
+color, or other parameters can be varied as you alter the pressure
+with which you are applying to the pad:
+
+![Push interface](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/AbletonInterface.jpg)
+
+You can adjust running effects, scroll around the cue grid, and adjust
+or sync the show metronome from either interface. Other MIDI
+controllers can be mapped to provide similar functionality, and
+hopefully such mappings will make their way into Afterglow soon, but
+it will be hard to find many as nicely designed as the Push. (The
+Afterglow mapping is done entirely on the User layer as well, so it
+coexists gracefully with Ableton Live, and you can switch back and
+forth by pressing the User button if you want to perform with both.)
 
 But, getting back to our REPL-based example: We next start the sample
 show, which runs on DMX universe 1. You will want to have OLA
@@ -206,7 +225,8 @@ quickly get relief from overly bright lights.
 > you bind the Push to your show, the Push Master encoder is
 > automatically tied to the show master dimmer, with nice graphical
 > feedback in the text area. Plus you get deep control over the show
-> metronome as well:
+> metronome as well, as shown above. Here is how the binding is
+> established:
 
 ```clojure
 (require '[afterglow.controllers.ableton-push :as push])
