@@ -80,8 +80,10 @@ Given its current development phase, you will want to use Afterglow in a Clojure
 (in-ns 'afterglow.examples)
 ```
 
-You can bring up the web interface (and open a browser window on it)
-with a one-liner like this:
+You can bring up the web interface, and open a browser window on it,
+with a one-liner like this (the first argument specifies the port on
+which to run the web interface, and the second controls whether a
+browser window should be automatically opened):
 
 ```clojure
 (core/start-web-server 16000 true)
@@ -121,7 +123,7 @@ cue grid. This physical control surface lets you trigger more than one
 cue at the same time, and also gives you niceties unavailable with a
 mouse, like pressure sensitivity so your effect intensity, speed,
 color, or other parameters can be varied as you alter the pressure
-with which you are applying to the pad:
+which you are applying to the pads:
 
 ![Push interface](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/AbletonInterface.jpg)
 

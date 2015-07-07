@@ -138,7 +138,7 @@
   (swap! session-cleaner #(do (when % (future-cancel %)) nil))
   (timbre/info "shutdown complete!"))
 
-;; TODO: Start OSC server too
+;; TODO: Start OSC server too, and nrepl if requested.
 (defn -main
   "The entry point when invoked as a jar from the command line. Parse options
   and start servers on the appropriate ports."
