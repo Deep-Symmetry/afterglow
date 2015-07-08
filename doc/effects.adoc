@@ -341,26 +341,72 @@ examples of how Afterglow can be used to create new things, and we
 hope that people will contribute their own effects for inclusion in
 future releases.
 
-==== Metronome
+==== Color Cycle Chases
 
-The Metronome cue is a great way to check the synchronization of the
-show metronome with your DJ software or mixer if you don't have an
-Ableton Push or an easy way to pull up the web interface, and is
-mostly a nice example of how to write a cue that is driven by a
-metronome.
+This family of related effects are an excellent illustration of why
+Afterglow was created, which was to enable the concise expression and
+implementation of effects like them. They leverage many of the
+building blocks within Afterglow, and provide a framework to combine
+them in flexible ways using functional composition to acheive a
+variety of different looks that change in space at appropriate musical
+times, with very little code required in each. They are useful in
+themselves, and as examples of how to write similar effects.
+
+The
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#iris-out-color-cycle-chase[Iris
+Out] color cycle chase changes the color of a group of fixtures to a
+different color for each bar of a phrase of music. During the down
+beat of each new bar, the color spreads over the participating
+fixtures starting at their geometric center in the x-y plane of
+https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space[show
+space], and spreading in an expanding circle until reaching the
+furthest heads at the end of the down beat.
 
 [source,clojure]
 ----
-(afterglow.effects.fun/metronome-effect (show/all-fixtures))
+(afterglow.effects.fun/iris-out-color-cycle-chase (show/all-fixtures))
 ----
 
-Creates an effect which flashes the heads of the supplied fixtures one
-color on the down beat and another color on the other beats of the
-show metronome. The default down beat color is a lightened red, and
-the other beat color is a darkened yellow; these can be overridden by
-optional keyword parameters. See the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-metronome-effect[API
-documentation] for details.
+If you look at the source code (which you can always get to by
+following the "view source" link at the bottom of the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#iris-out-color-cycle-chase[API
+documentation], or typing `(source
+afterglow.effects.fun/iris-out-color-cycle-chase)` in a REPL or the
+web console), you will see that it is only a few lines, once you get
+past the documentation and parameters, most of which are given default
+values to pass along to
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-color-cycle-chase[color-cycle-chase],
+which is used to actually implement the chase.
+
+Those parameters can be used to change the set of colors in the cycle,
+as well as control when the color changes, and when and how quickly
+the transition occurs. The documentation for `color-cycle-chase`
+explains how.
+
+The body of `iris-out-color-cycle-chase` simply sets up the measure
+function which causes the iris-out effect to behave as described,
+measuring a circular distance in the x-y plane (ignoring the z axis)
+from the center of the fixtures that have been assigned to participate
+in the effect. This is why it is easy to set up a family of similar
+effects which create different spatial transitions for the color cycle
+chase.
+
+For example,
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-wipe-right-color-cycle-chase[Wipe
+Right], which transitions the lights from left to right, ignoring both
+the y and z axes. The work of both of these chases is simplified with
+the help of
+http://deepsymmetry.org/afterglow/doc/afterglow.transform.html#var-build-distance-measure[afterglow.transform/build-distance-measure],
+a function for constructing distance measure functions for use in
+effects like this, and
+http://deepsymmetry.org/afterglow/doc/afterglow.transform.html#var-calculate-bounds[afterglow.transform/calculate-bounds],
+which calculates a bounding box and center for a group of fixtures and
+the heads which make them up.
+
+[source,clojure]
+----
+(afterglow.effects.fun/wipe-right-color-cycle-chase (show/all-fixtures))
+----
 
 ==== Sparkle
 
@@ -385,6 +431,32 @@ documentation] for details.
 ----
 (afterglow.effects.fun/strobe "Strobe All" (show/all-fixtures) 50)
 ----
+
+==== Metronome
+
+The Metronome cue is a way to check the synchronization of the show
+metronome with your DJ software or mixer if you don't have an Ableton
+Push or an easy way to pull up the web interface, and is mostly a nice
+example of how to write a cue that is driven by a metronome. It was
+one of the first clearly metronome-driven effects written, and was
+extremely useful when developing the metronome sync facilities
+(especially since at the time there was no web or Ableton Push
+interface, with their metronome monitoring and adjustment sections).
+Today it is less interesting, especially compared to the color cycle
+chases described above.
+
+[source,clojure]
+----
+(afterglow.effects.fun/metronome-effect (show/all-fixtures))
+----
+
+Creates an effect which flashes the heads of the supplied fixtures one
+color on the down beat and another color on the other beats of the
+show metronome. The default down beat color is a lightened red, and
+the other beat color is a darkened yellow; these can be overridden by
+optional keyword parameters. See the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-metronome-effect[API
+documentation] for details.
 
 [[lifecycle]]
 == The Effect Lifecycle

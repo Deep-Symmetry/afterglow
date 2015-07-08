@@ -169,7 +169,7 @@
 
 (defn strobe
   "A compound effect which sets dimmers to the level determined by the
-  show variable :strobe-dimmers (defaulting to 255), assigns a color
+  show variable `:strobe-dimmers` (defaulting to 255), assigns a color
   based on the show variables `:strobe-hue` (with a default of 277,
   purple) `:strobe-saturation` (with a default of 100), and
   `:strobe-lightness` (with a default of 100, which whites out the hue
