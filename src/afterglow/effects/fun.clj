@@ -119,7 +119,9 @@
   sparkle has been created, it will fade out over the number of
   milliseconds specified by the optional keyword parameter
   `:fade-time`. The initial color of each sparkle can be changed with
-  the optional keyword parameter `:color`."
+  the optional keyword parameter `:color`. All parameters may be
+  dynamic, including show variables with the standard shorthand of
+  passing the variable name as a keyword."
   {:doc/format :markdown}
   [fixtures & {:keys [color chance fade-time] :or {color default-sparkle-color chance 0.001 fade-time 500}}]
   {:pre [(some? *show*)]}
@@ -227,9 +229,9 @@
               (show/set-variable! :strobe-saturation saved-saturation)
               true))))
 
-(def default-color-cycle
-  "The default list of colors to cycle through for the color cycle
-  chases."
+(def ^{:doc/format :markdown} default-color-cycle
+  "The default list of colors to cycle through for
+  the [[color-cycle-chase]]."
   [(colors/create-color :red)
    (colors/create-color :orange)
    (colors/create-color :yellow)

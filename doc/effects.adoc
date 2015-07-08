@@ -344,24 +344,47 @@ future releases.
 ==== Metronome
 
 The Metronome cue is a great way to check the synchronization of the
-show metronome with your DJ software or mixer, and is a nice example of
-how to write a cue that is driven by a metronome.
+show metronome with your DJ software or mixer if you don't have an
+Ableton Push or an easy way to pull up the web interface, and is
+mostly a nice example of how to write a cue that is driven by a
+metronome.
 
 [source,clojure]
 ----
-(afterglow.effects.color/metronome-effect fixtures
-  :down-beat-color color1 :other-beat-color color2)
+(afterglow.effects.fun/metronome-effect (show/all-fixtures))
 ----
 
 Creates an effect which flashes the heads of the supplied fixtures one
 color on the down beat and another color on the other beats of the
-show metronome. The two color keyword parameters are optional; if they
-are omitted, the down beat color is a lightened red, and the other
-beat color is a darkened yellow.
+show metronome. The default down beat color is a lightened red, and
+the other beat color is a darkened yellow; these can be overridden by
+optional keyword parameters. See the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-metronome-effect[API
+documentation] for details.
 
 ==== Sparkle
 
-To be documented shortly!
+Creates a random sparkling effect like a particle generator over the
+supplied fixture heads. See the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-sparkle[API
+documentation] for details.
+
+[source,clojure]
+----
+(afterglow.effects.fun/sparkle (show/all-fixtures))
+----
+
+==== Strobe
+
+A flexible strobe effect designed for intuitive tweaking via pressure-sensitive controllers like the Ableton Push.
+See the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-strobe[API
+documentation] for details.
+
+[source,clojure]
+----
+(afterglow.effects.fun/strobe "Strobe All" (show/all-fixtures) 50)
+----
 
 [[lifecycle]]
 == The Effect Lifecycle
