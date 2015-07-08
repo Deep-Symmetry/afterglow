@@ -705,13 +705,12 @@
                  (cues/cue :color (fn [_] (fun/iris-out-color-cycle-chase (show/all-fixtures)))))
     (ct/set-cue! (:cue-grid *show*) 9 1
                  (cues/cue :color (fn [_] (fun/wipe-right-color-cycle-chase
-                                           (show/all-fixtures) :transition-end-phase 1.0))))
+                                           (show/all-fixtures) :transition-phase-function snapshot-bar-phase))))
     (ct/set-cue! (:cue-grid *show*) 10 1
                  (cues/cue :color (fn [_] (fun/wipe-right-color-cycle-chase
                                            (show/all-fixtures)
                                            :color-index-function snapshot-beat-within-phrase
                                            :transition-phase-function snapshot-beat-phase
-                                           :transition-end-phase 1.0
                                            :effect-name "Wipe Right Beat"))))
 
     ;; Some cues to show the Hypnotic RGB Laser

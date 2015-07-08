@@ -33,7 +33,11 @@
   way to test and understand metronome synchronization. The color of
   the flashes can be controlled by the :down-beat-color
   and :other-beat-color arguments (defaulting to red with lightness
-  70, and yellow with lightness 20, respectively)."
+  70, and yellow with lightness 20, respectively).
+
+  This is no longer as useful as it used to be before there were
+  metronome adjustment interfaces in the Ableton Push and then web
+  interfaces."
   [fixtures & {:keys [down-beat-color other-beat-color metronome]
                :or {down-beat-color default-down-beat-color
                     other-beat-color default-other-beat-color
@@ -191,7 +195,7 @@
   "An auxiliary effect which creates no assigners to directly affect
   lights, but adjusts show variables used by the [[strobe]] effect. It
   is designed to be run as a parallel cue to offer the user controls
-  for adjusting the hue and saturation of the strobe."
+  for adjusting the hue and saturation of any active strobes."
   {:doc/format :markdown}
   []
   {:pre [(some? *show*)]}
@@ -208,8 +212,8 @@
               true))))
 
 (def default-color-cycle
-  "The default list of colors to cycle through for the various color
-  cycle chases."
+  "The default list of colors to cycle through for the color cycle
+  chases."
   [(colors/create-color :red)
    (colors/create-color :orange)
    (colors/create-color :yellow)
@@ -219,34 +223,93 @@
    (colors/create-color :purple)
    (colors/create-color :white)])
 
+(defn transition-during-down-beat
+  "A transition phase function which causes the color cycle transition
+  to occur during the down beat of each bar. See [[color-cycle-chase]]
+  for how this is used."
+  [snapshot]
+  (if (rhythm/snapshot-down-beat? snapshot)
+    (rhythm/snapshot-beat-phase snapshot)  ; Transition is occuring
+    1.0))  ; Transition is complete
 
 ;; TODO: Working on:
-;;       Generalize by also taking a transition function, have
-;;       factories that make different kinds of wipes, which also
-;;       can take lists of fixtures for determining boundaries.
 ;;       Create no-assigner effects which set color lists and
 ;;       transition functions in show variables; the latter
 ;;       should also have a variable to set the number of beats
 ;;       over which the transition takes place. This will allow
-;;       a panel of composable wipe effects! Can also take a
-;;       function that generates the index into the color list
-;;       so colors can change over different periods.
+;;       a panel of composable wipe effects!
 (defn color-cycle-chase
-  "Returns an effect which moves through a color cycle on each bar of
-  a phrase, performing a wipe transition as a new color is introduced,
-  using the specified distance measure to determine when each light
-  starts to participate, with the transition taking the specified
-  fraction of the bar. Unless otherwise specified by passing an
-  explicit bounding box with :bounds, the transition is bounded by the
-  fixtures actually participating in it."
-  [fixtures measure & {:keys [bounds color-cycle color-index-function
-                              transition-phase-function transition-end-phase
-                              effect-name]
-                       :or {bounds (transform/calculate-bounds fixtures)
-                            color-cycle default-color-cycle
+  "Returns an effect which moves through a color cycle over a period
+  of time (by default changing each bar of a phrase), performing a
+  transition as a new color is introduced, using the specified
+  distance measure to determine when each light starts to participate.
+  By default the transition occurs over the down beat (first beat)
+  of the bar. See below for how these defaults can be changed.
+  
+  The distance measure supplied as the second argument is a function
+  which accepts a fixture or head and returns a nonnegative value
+  which controls the point during the transition when that head will
+  change from the old color to the new color. A fixture returning a
+  value of 0 will change as soon as transition has started, and the
+  fixture(s) that return the largest value will change when the
+  transition ends. A value halfway between zero and the largest value
+  would mean the color of that fiture or head would change exactly at
+  the midpoint of the transition. Many interesting looking
+  transtitions can be created using distance measures constructed by
+  calling [[afterglow.transform/build-distance-measure]], as is done
+  by [[iris-out-color-cycle-chase]] and several examples which follow
+  it. There are lots of other kinds of functions which can created,
+  though; at the opposite extreme you can do completely arbitrary
+  things like assigning each head a random \"distance\" when the
+  effect is created.
+
+  The sequence of colors which are cycled through can be changed by
+  passing in a vector with `:color-cycle`. Each value in the vector
+  can either be a color object, or a dynamic parameter which resolves
+  to a color object when the effect is running. As ususal, you can
+  bind to show variables containing a color by passing the variable
+  names as keywords within the vector.
+
+  When the effect is being rendered, the current color index within
+  `:color-cycle` is determined by calling a function with the snapshot
+  obtained from the show metronome at the start of the rendering
+  frame. The default
+  function, [[afterglow.rhythm/snapshot-bar-within-phrase]], will
+  assign a different color for each bar of a phrase. (If there are not
+  enough colors in `:color-cycle` the cycle is repeated as necessary.)
+  You can pass another index function with `:color-index-function` to
+  change how and when the cycle is traversed.
+
+  The function supplied with `:transition-phase-function` determines
+  precisely when the transition takes place and how quickly it occurs.
+  It is also called with the show metronome snapshot, and if the value
+  it returns is zero or less, the transition is considered not to have
+  started yet, and no fixtures will be assigned the current color.
+  Values between zero and one mean the transition is in progress, and
+  lights whose distance measure divided by the largest distance
+  measure is less than or equal to the current phase will change
+  color. Once the transition phase reaches one (or greater), the
+  transition is complete, and all lights will be assigned the color
+  associated with the current cycle index. The default transition
+  phase function causes the transition to be spread over the down beat
+  of each bar. Passing [[rhythm/snapshot-bar-phase]] instead would
+  spread the transition over the entire bar, so that transitions would
+  be feeding right into each other. Other possibilities are limited
+  only by your imagination, although for the transition mechanics to
+  work correctly with respect to assigning old and new color values,
+  it should always start at (or below) zero and progress to one (or
+  beyond). It can pause and reverse directions while in between those
+  extremes, but if you want to reverse the direction of the full
+  transition, do it by reversing the distance measure, not the phase
+  function.
+
+  To give your running effect a meaningful name within user
+  interfaces, pass a short and descriptive value with `:effect-name`."
+  {:doc/format :markdown}
+  [fixtures measure & {:keys [color-cycle color-index-function transition-phase-function effect-name]
+                       :or {color-cycle default-color-cycle
                             color-index-function rhythm/snapshot-bar-within-phrase
-                            transition-phase-function rhythm/snapshot-bar-phase
-                            transition-end-phase 0.25
+                            transition-phase-function transition-during-down-beat
                             effect-name "Phrase Color Cycle"}}]
   {:pre [(some? *show*)]}
   (let [max-distance (transform/max-distance measure fixtures)
@@ -272,10 +335,13 @@
                               (params/resolve-param (nth (cycle color-cycle) (dec @current-bar))
                                                     show snapshot)))
                     ;; Determine whether this head is covered by the current state of the transition
-                    (let [transition-progress (/ (transition-phase-function snapshot) transition-end-phase)]
-                      (if (or (>= transition-progress 1.0) (> transition-progress (/ (measure target) max-distance)))
-                        @current-color
-                        @previous-color))))
+                    (let [transition-progress (transition-phase-function snapshot)]
+                      (cond
+                        (< transition-progress 0.0) @previous-color
+                        (>= transition-progress 1.0) @current-color
+                        :else (if (>= transition-progress (/ (measure target) max-distance))
+                                @current-color
+                                @previous-color)))))
           assigners (build-head-assigners :color heads f)]
       (Effect. effect-name
                (fn [show snapshot]  ;; Continue running until the end of a phrase.
@@ -286,44 +352,56 @@
                  nil)))))
 
 (defn iris-out-color-cycle-chase
-  "Returns an effect which changes color on each bar of a phrase,
-  expanding the color from the center of the x-y plane outwards during
-  the down beat."
-  [fixtures & {:keys [bounds color-cycle color-index-function
-                      transition-phase-function transition-end-phase
-                      effect-name]
+  "Returns an effect which changes the color of a group of fixture
+  heads on the down beat of each bar of a phrase, expanding the color
+  from the center of the show x-y plane outwards during the down beat.
+
+  Unless otherwise specified by passing an explicit bounding box with
+  `:bounds`, the spatial boundaries of the transition (which determine
+  the center point) will be the smallest box which encloses the
+  fixtures actually participating in it.
+
+  You can change the colors used, and when transitions occur, by
+  overriding the default values associated with the optional keyword
+  arguments `:color-cycle`, `:color-index-function`, and
+  `:transition-phase-function`. For details about how these are
+  interpreted, see [[color-cycle-chase]] which is used to implement
+  this chase."
+  {:doc/format :markdown}
+  [fixtures & {:keys [bounds color-cycle color-index-function transition-phase-function effect-name]
                :or {bounds (transform/calculate-bounds fixtures)
                     color-cycle default-color-cycle
                     color-index-function rhythm/snapshot-bar-within-phrase
-                    transition-phase-function rhythm/snapshot-bar-phase
-                    transition-end-phase 0.25
+                    transition-phase-function transition-during-down-beat
                     effect-name "Iris Out"}}]
   {:pre [(some? *show*)]}
   (let [measure (transform/build-distance-measure (:center-x bounds) (:center-y bounds) (:center-z bounds)
                                                   :ignore-z true)]
-    (color-cycle-chase fixtures measure :bounds bounds
-                       :color-cycle color-cycle :color-index-function color-index-function
-                       :transition-phase-function transition-phase-function
-                       :transition-end-phase transition-end-phase :effect-name effect-name)))
+    (color-cycle-chase fixtures measure :color-cycle color-cycle :color-index-function color-index-function
+                       :transition-phase-function transition-phase-function :effect-name effect-name)))
 
 (defn wipe-right-color-cycle-chase
-  "Returns an effect which changes color on each bar of a phrase,
-  wiping the color from left to right across the x axis."
-  [fixtures & {:keys [bounds color-cycle color-index-function
-                      transition-phase-function transition-end-phase
-                      effect-name]
-               :or {bounds (transform/calculate-bounds fixtures)
-                    color-cycle default-color-cycle
+  "Returns an effect which changes color on the down beat of each bar
+  of a phrase, wiping the color from left to right across the show x
+  axis.
+
+  You can change the colors used, and when transitions occur, by
+  overriding the default values associated with the optional keyword
+  arguments `:color-cycle`, `:color-index-function`, and
+  `:transition-phase-function`. For details about how these are
+  interpreted, see [[color-cycle-chase]] which is used to implement
+  this chase."
+  {:doc/format :markdown}
+  [fixtures & {:keys [color-cycle color-index-function transition-phase-function effect-name]
+               :or {color-cycle default-color-cycle
                     color-index-function rhythm/snapshot-bar-within-phrase
-                    transition-phase-function rhythm/snapshot-bar-phase
-                    transition-end-phase 0.25
+                    transition-phase-function transition-during-down-beat
                     effect-name "Wipe Right"}}]
   {:pre [(some? *show*)]}
-  (let [measure (transform/build-distance-measure (:min-x bounds) 0 0 :ignore-y true :ignore-z true)]
-    (color-cycle-chase fixtures measure :bounds bounds
-                       :color-cycle color-cycle :color-index-function color-index-function
-                       :transition-phase-function transition-phase-function
-                       :transition-end-phase transition-end-phase :effect-name effect-name)))
+  (let [measure (transform/build-distance-measure (:min-x (transform/calculate-bounds fixtures)) 0 0
+                                                  :ignore-y true :ignore-z true)]
+    (color-cycle-chase fixtures measure :color-cycle color-cycle :color-index-function color-index-function
+                       :transition-phase-function transition-phase-function :effect-name effect-name)))
 
 
 (defn blast
