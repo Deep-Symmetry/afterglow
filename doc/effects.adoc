@@ -364,7 +364,8 @@ furthest heads at the end of the down beat.
 
 [source,clojure]
 ----
-(afterglow.effects.fun/iris-out-color-cycle-chase (show/all-fixtures))
+(show/add-effect! :color
+  (afterglow.effects.fun/iris-out-color-cycle-chase (show/all-fixtures)))
 ----
 
 If you look at the source code (which you can always get to by
@@ -405,7 +406,8 @@ the heads which make them up.
 
 [source,clojure]
 ----
-(afterglow.effects.fun/wipe-right-color-cycle-chase (show/all-fixtures))
+(show/add-effect! :color
+  (afterglow.effects.fun/wipe-right-color-cycle-chase (show/all-fixtures)))
 ----
 
 ==== Sparkle
@@ -417,7 +419,8 @@ documentation] for details.
 
 [source,clojure]
 ----
-(afterglow.effects.fun/sparkle (show/all-fixtures))
+(show/add-effect! :sparkle
+  (afterglow.effects.fun/sparkle (show/all-fixtures)))
 ----
 
 ==== Strobe
@@ -429,7 +432,8 @@ documentation] for details.
 
 [source,clojure]
 ----
-(afterglow.effects.fun/strobe "Strobe All" (show/all-fixtures) 50)
+(show/add-effect! :strobe-all
+  (afterglow.effects.fun/strobe "Strobe All" (show/all-fixtures) 50))
 ----
 
 ==== Metronome
@@ -447,7 +451,8 @@ chases described above.
 
 [source,clojure]
 ----
-(afterglow.effects.fun/metronome-effect (show/all-fixtures))
+(show/add-effect! :color
+  (afterglow.effects.fun/metronome-effect (show/all-fixtures)))
 ----
 
 Creates an effect which flashes the heads of the supplied fixtures one
