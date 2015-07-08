@@ -353,7 +353,7 @@ times, with very little code required in each. They are useful in
 themselves, and as examples of how to write similar effects.
 
 The
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#iris-out-color-cycle-chase[Iris
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-iris-out-color-cycle-chase[Iris
 Out] color cycle chase changes the color of a group of fixtures to a
 different color for each bar of a phrase of music. During the down
 beat of each new bar, the color spreads over the participating
