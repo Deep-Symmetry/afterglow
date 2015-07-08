@@ -19,25 +19,31 @@
            (afterglow.rhythm Metronome)
            (javax.vecmath Point3d)))
 
-(def default-down-beat-color
-  "The default color to flash on the down beats."
+(def ^{:doc/format :markdown} default-down-beat-color
+  "The default color for [[metronome-effect]] to flash on the down
+  beats."
   (colors/lighten (colors/create-color :red) 20))
 
-(def default-other-beat-color
-  "The default color to flash on beats that are not down beats."
+(def ^{:doc/format :markdown} default-other-beat-color
+  "The default color for [[metronome-effect]] to flash on beats that
+  are not down beats."
   (colors/darken (colors/create-color :yellow) 30))
 
 (defn metronome-effect
   "Returns an effect which flashes the supplied fixtures to the beats
   of the show metronome, emphasizing the down beat, which is a great
   way to test and understand metronome synchronization. The color of
-  the flashes can be controlled by the :down-beat-color
-  and :other-beat-color arguments (defaulting to red with lightness
-  70, and yellow with lightness 20, respectively).
+  the flashes can be controlled by the `:down-beat-color` and
+  `:other-beat-color` optional keyword arguments (defaulting to red
+  with lightness 70, and yellow with lightness 20, respectively).
 
   This is no longer as useful as it used to be before there were
   metronome adjustment interfaces in the Ableton Push and then web
-  interfaces."
+  interfaces, but is still an example of how to write a metronome
+  driven effect, and can be synchronized to metronomes other than the
+  default show metronome by passing them in with optional keyword
+  argument `:metronome`."
+  {:doc/format :markdown}
   [fixtures & {:keys [down-beat-color other-beat-color metronome]
                :or {down-beat-color default-down-beat-color
                     other-beat-color default-other-beat-color
@@ -80,8 +86,8 @@
                (fn [snow snapshot]  ;; Arrange to shut down at the end of a measure
                  (reset! running false))))))
 
-(def default-sparkle-color
-  "The default color for the sparkle effect."
+(def ^{:doc/format :markdown} default-sparkle-color
+  "The default color for the [[sparkle]] effect."
   (colors/create-color "white"))
 
 (defn- remove-finished-sparkles
@@ -104,7 +110,17 @@
 ;; so they can be scaled in time too. Eventually allow randomization of fade time and perhaps
 ;; hue and peak brightness, with control over how much they vary?
 (defn sparkle
-  "A random sparkling effect like a particle generator over the supplied fixture heads."
+  "A random sparkling effect like a particle generator over the
+  supplied fixture heads.
+
+  As each frame of DMX values generated, each participating fixture
+  head has a chance of being assigned a sparkle (this chance is
+  controlled by the optional keyword parameter `:chance`). Once a
+  sparkle has been created, it will fade out over the number of
+  milliseconds specified by the optional keyword parameter
+  `:fade-time`. The initial color of each sparkle can be changed with
+  the optional keyword parameter `:color`."
+  {:doc/format :markdown}
   [fixtures & {:keys [color chance fade-time] :or {color default-sparkle-color chance 0.001 fade-time 500}}]
   {:pre [(some? *show*)]}
   (let [color (params/bind-keyword-param color :com.evocomputing.colors/color default-sparkle-color)
@@ -227,13 +243,13 @@
   "A transition phase function which causes the color cycle transition
   to occur during the down beat of each bar. See [[color-cycle-chase]]
   for how this is used."
+  {:doc/format :markdown}
   [snapshot]
   (if (rhythm/snapshot-down-beat? snapshot)
     (rhythm/snapshot-beat-phase snapshot)  ; Transition is occuring
     1.0))  ; Transition is complete
 
-;; TODO: Working on:
-;;       Create no-assigner effects which set color lists and
+;; TODO: Create no-assigner effects which set color lists and
 ;;       transition functions in show variables; the latter
 ;;       should also have a variable to set the number of beats
 ;;       over which the transition takes place. This will allow
@@ -253,7 +269,7 @@
   value of 0 will change as soon as transition has started, and the
   fixture(s) that return the largest value will change when the
   transition ends. A value halfway between zero and the largest value
-  would mean the color of that fiture or head would change exactly at
+  would mean the color of that fixture or head would change exactly at
   the midpoint of the transition. Many interesting looking
   transtitions can be created using distance measures constructed by
   calling [[afterglow.transform/build-distance-measure]], as is done
@@ -283,25 +299,25 @@
   The function supplied with `:transition-phase-function` determines
   precisely when the transition takes place and how quickly it occurs.
   It is also called with the show metronome snapshot, and if the value
-  it returns is zero or less, the transition is considered not to have
-  started yet, and no fixtures will be assigned the current color.
-  Values between zero and one mean the transition is in progress, and
-  lights whose distance measure divided by the largest distance
-  measure is less than or equal to the current phase will change
-  color. Once the transition phase reaches one (or greater), the
-  transition is complete, and all lights will be assigned the color
-  associated with the current cycle index. The default transition
-  phase function causes the transition to be spread over the down beat
-  of each bar. Passing [[rhythm/snapshot-bar-phase]] instead would
-  spread the transition over the entire bar, so that transitions would
-  be feeding right into each other. Other possibilities are limited
-  only by your imagination, although for the transition mechanics to
-  work correctly with respect to assigning old and new color values,
-  it should always start at (or below) zero and progress to one (or
-  beyond). It can pause and reverse directions while in between those
-  extremes, but if you want to reverse the direction of the full
-  transition, do it by reversing the distance measure, not the phase
-  function.
+  it returns is less than zero, the transition is considered not to
+  have started yet, and no fixtures will be assigned the current
+  color. Values between zero and one mean the transition is in
+  progress, and lights whose distance measure divided by the largest
+  distance measure is less than or equal to the current phase will
+  change color. Once the transition phase reaches one (or greater),
+  the transition is complete, and all lights will be assigned the
+  color associated with the current cycle index. The default
+  transition phase function, [[transition-during-down-beat]], causes
+  the transition to be spread over the down beat of each bar.
+  Passing [[rhythm/snapshot-bar-phase]] instead would spread the
+  transition over the entire bar, so that transitions would be feeding
+  right into each other. Other possibilities are limited only by your
+  imagination, although for the transition mechanics to work correctly
+  with respect to assigning old and new color values, it should always
+  start at (or below) zero and progress to one (or beyond). It can
+  pause and reverse directions while in between those extremes, but if
+  you want to reverse the direction of the full transition, do it by
+  reversing the distance measure, not the phase function.
 
   To give your running effect a meaningful name within user
   interfaces, pass a short and descriptive value with `:effect-name`."
@@ -402,14 +418,3 @@
                                                   :ignore-y true :ignore-z true)]
     (color-cycle-chase fixtures measure :color-cycle color-cycle :color-index-function color-index-function
                        :transition-phase-function transition-phase-function :effect-name effect-name)))
-
-
-(defn blast
-  "An effect which creates a sphere of light which expands from a
-  point, then hollows out as it continues to grow and fade."
-  [fixtures & {:keys [color x y grow-time max-solid-diameter]
-               :or {color default-sparkle-color x (:center-x @(:dimensions *show*))
-                    y (:center-y @(:dimensions *show*)) grow-time 1000
-                    max-solid-diameter 0.2}}]
-  ;; Some kind of gradient slope for edges too?
-  )
