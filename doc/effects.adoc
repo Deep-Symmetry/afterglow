@@ -369,7 +369,7 @@ furthest heads at the end of the down beat.
 
 If you look at the source code (which you can always get to by
 following the "view source" link at the bottom of the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#iris-out-color-cycle-chase[API
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-iris-out-color-cycle-chase[API
 documentation], or typing `(source
 afterglow.effects.fun/iris-out-color-cycle-chase)` in a REPL or the
 web console), you will see that it is only a few lines, once you get
