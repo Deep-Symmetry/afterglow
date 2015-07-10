@@ -604,13 +604,9 @@
   `:var-overrides`, and the corresponding value will be used rather
   than the initial value specified in the cue for that variable when
   it is introduced as a temporary cue variable. This is used by
-  compound cues to launch their nested cues with customized values.
-
-  If a non-nil function is passed with :deactivate-fn, this function
-  will be called, with no arguments, when the activated cue is later
-  being deactivated."
+  compound cues to launch their nested cues with customized values."
   {:doc/format :markdown}
-  [x y & {:keys [var-overrides deactivate-fn]}]
+  [x y & {:keys [var-overrides]}]
   {:pre [(some? *show*)]}
   (when-let [cue (controllers/cue-at (:cue-grid *show*) x y)]
     (doseq [k (:end-keys cue)]
@@ -618,7 +614,7 @@
     (let [var-map (introduce-cue-temp-variables cue x y var-overrides)
           id (add-effect! (:key cue) ((:effect cue) var-map)
                           :priority (:priority cue) :from-cue cue :var-map var-map)]
-      (controllers/activate-cue! (:cue-grid *show*) x y id :deactivate-fn deactivate-fn)
+      (controllers/activate-cue! (:cue-grid *show*) x y id)
       id)))
 
 (defn find-cue-grid-active-effect
@@ -671,9 +667,12 @@
          (integer? feedback-off) (<= 0 feedback-off 127)]}
   (let [show *show*  ; Bind so we can pass it to update functions running on another thread
         feedback-device (when feedback-on (midi/find-midi-out midi-device-name))
-        feedback-fn (when feedback-on  ; Set up to give visual feedback when our launched effect ends
-                      (fn [] (overtone.midi/midi-control feedback-device control-number feedback-off channel)))
         our-id (atom nil)]  ; Track when we have created an effect
+    (when feedback-device  ; Set up to give feedback as cue activation changes
+      (controllers/add-cue-feedback! (:cue-grid show) x y feedback-device channel :control control-number
+                                     :on feedback-on :off feedback-off)
+      (let [[cue active] (find-cue-grid-active-effect show x y)]  ; Was already active, so reflect that
+        (when active (overtone.midi/midi-control feedback-device control-number feedback-on channel))))
     ;; TODO: Add aftertouch support
     (midi/add-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":cue" x "," y)
                               (fn [msg]
@@ -686,7 +685,7 @@
                                         (if active
                                           (end-effect! (:key cue))
                                           (do
-                                            (reset! our-id (add-effect-from-cue-grid! x y :deactivate-fn feedback-fn))
+                                            (reset! our-id (add-effect-from-cue-grid! x y))
                                             (when feedback-on
                                               (overtone.midi/midi-control feedback-device control-number
                                                                           feedback-on channel))))
@@ -704,7 +703,13 @@
   [midi-device-name channel control-number x y]
   {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
          (integer? control-number) (<= 0 control-number 127) (integer? x) (<= 0 x) (integer? y) (<= 0 y)]}
-  (midi/remove-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":cue" x "," y)))
+  (let [feedback-device (midi/find-midi-out midi-device-name)
+        feedback (controllers/clear-cue-feedback! (:cue-grid *show*) x y feedback-device channel
+                                                  :control control-number)]
+    (when feedback  ; We had been giving feedback, see if we need to turn it off
+      (let [[cue active] (find-cue-grid-active-effect *show* x y)]
+        (when active (overtone.midi/midi-control feedback-device control-number (second feedback) channel)))))
+  (midi/remove-control-mapping midi-device-name channel control-number (str "show:" (:id *show*) ":cue" x "," y)))
 
 (defn- address-map-internal
   "Helper function which returns a sorted map whose keys are all
