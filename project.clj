@@ -52,7 +52,7 @@
   ;; :env {:repl-port 16002}
 
   :profiles {:dev {:dependencies [[ring-mock "0.1.5"]
-                                  [ring/ring-devel "1.3.2"]]
+                                  [ring/ring-devel "1.4.0"]]
                    :source-paths ["dev_src"]
                    :resource-paths ["dev_resources"]
                    :repl-options {:init-ns afterglow.examples
