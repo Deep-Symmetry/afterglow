@@ -40,7 +40,8 @@
             [com.climate.claypoole :as cp]
             [environ.core :refer [env]]
             [overtone.at-at :as at-at]
-            [taoensso.timbre :refer [error]]
+            [overtone.midi]
+            [taoensso.timbre :refer [error spy]]
             [taoensso.timbre.profiling :refer [p profile pspy]])
   (:import (afterglow.effects.dimmer Master)
            (afterglow.effects Assigner Effect)
@@ -322,7 +323,8 @@
   [midi-device-name channel control-number variable]
   {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
          (integer? control-number) (<= 0 control-number 127) (some? variable)]}
-  (midi/remove-control-mapping midi-device-name channel control-number (str "show:" (:id *show*) ":var" (keyword variable))))
+  (midi/remove-control-mapping midi-device-name channel control-number (str "show:" (:id *show*)
+                                                                            ":var" (keyword variable))))
 
 (defn add-midi-control-to-master-mapping
   "Cause the specified [[dimmer/master]] in [[*show*]] to be updated
@@ -336,7 +338,8 @@
   containing a dimmer master."
   {:doc/format :markdown}
   [midi-device-name channel control-number & {:keys [master min max] :or {master (:grand-master *show*) min 0 max 100}}]
-  {:pre [(some? *show*) (some? midi-device-name) (number? min) (number? max) (not= min max) (<= 0 min 100) (<= 0 max 100)
+  {:pre [(some? *show*) (some? midi-device-name) (number? min) (number? max) (not= min max)
+         (<= 0 min 100) (<= 0 max 100)
          (integer? channel) (<= 0 channel 15) (integer? control-number) (<= 0 control-number 127)]}
   (let [bound (bind-keyword-param master Master (:grand-master *show*))
         master (resolve-param bound *show* (metro-snapshot (:metronome *show*)))
@@ -345,7 +348,8 @@
                     (fn [midi-val] (float (+ min (/ (* midi-val range) 127)))))
                   (let [range (- min max)]
                     (fn [midi-val] (float (+ max (/ (* midi-val range) 127))))))]
-    (midi/add-control-mapping midi-device-name channel control-number (str "show:" (:id *show*) ":master" (.hashCode master))
+    (midi/add-control-mapping midi-device-name channel control-number
+                              (str "show:" (:id *show*) ":master" (.hashCode master))
                               (fn [msg] (master-set-level master (calc-fn (:velocity msg)))))))
 
 (defn remove-midi-control-to-master-mapping
@@ -357,7 +361,8 @@
          (integer? control-number) (<= 0 control-number 127)]}
   (let [bound (bind-keyword-param master Master (:grand-master *show*))
         master (resolve-param bound *show* (metro-snapshot (:metronome *show*)))]
-    (midi/remove-control-mapping midi-device-name channel control-number (str "show:" (:id *show*) ":master" (.hashCode master)))))
+    (midi/remove-control-mapping midi-device-name channel control-number (str "show:" (:id *show*)
+                                                                              ":master" (.hashCode master)))))
 
 (defn- add-midi-control-metronome-mapping
   "Helper function to perform some action on a metronome when a
@@ -599,9 +604,13 @@
   `:var-overrides`, and the corresponding value will be used rather
   than the initial value specified in the cue for that variable when
   it is introduced as a temporary cue variable. This is used by
-  compound cues to launch their nested cues with customized values."
+  compound cues to launch their nested cues with customized values.
+
+  If a non-nil function is passed with :deactivate-fn, this function
+  will be called, with no arguments, when the activated cue is later
+  being deactivated."
   {:doc/format :markdown}
-  [x y & {:keys [var-overrides]}]
+  [x y & {:keys [var-overrides deactivate-fn]}]
   {:pre [(some? *show*)]}
   (when-let [cue (controllers/cue-at (:cue-grid *show*) x y)]
     (doseq [k (:end-keys cue)]
@@ -609,7 +618,7 @@
     (let [var-map (introduce-cue-temp-variables cue x y var-overrides)
           id (add-effect! (:key cue) ((:effect cue) var-map)
                           :priority (:priority cue) :from-cue cue :var-map var-map)]
-      (controllers/activate-cue! (:cue-grid *show*) x y id)
+      (controllers/activate-cue! (:cue-grid *show*) x y id :deactivate-fn deactivate-fn)
       id)))
 
 (defn find-cue-grid-active-effect
@@ -628,6 +637,74 @@
                      (do (controllers/activate-cue! (:cue-grid show) x y nil)
                          nil)))]
       [cue active])))
+
+(defn add-midi-control-to-cue-mapping
+  "Cause the specified cue from the [[*show*]] cue grid to be
+  triggered by receipt of the specified controller-change message with
+  a non-zero control value. This allows generic MIDI controllers,
+  which do not have enough pads or feedback capabilities to act as a
+  full grid controller like the Ableton Push, to still provide a
+  physical means of triggering cues. The desired cue is identified by
+  passing in its `x` and `y` coordinates within the show cue grid.
+
+  Afterglow will attempt to provide feedback about the progress of the
+  cue by sending control-change values to the same controller when the
+  cue starts and ends. The control values used can be changed by
+  passing in different values with `:feedback-on` and `:feedback-off`,
+  and this behavior can be suppressed entirely by passing `false` with
+  `:feedback-on`.
+
+  Afterglow assumes the control is momentary, meaning it sends a
+  control value of 0 as soon as it is released, and a second press
+  will be used to end the cue unless the cue uses the `:held` modifier
+  to indicate it should be ended when the button is released. If your
+  controller does not have momentary buttons and already requires a
+  second press to turn off the control value, pass `false` with
+  `:momentary` and Afterglow will always end cues when it receives a
+  control value of 0, even if cues are not marked as `:held`."
+  {:doc/format :markdown}
+  [midi-device-name channel control-number x y & {:keys [feedback-on feedback-off momentary]
+                                                  :or {feedback-on 127 feedback-off 0 momentary true}}]
+  {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
+         (integer? control-number) (<= 0 control-number 127) (integer? x) (<= 0 x) (integer? y) (<= 0 y)
+         (or (not feedback-on) (and (integer? feedback-on) (<= 0 feedback-on 127)))
+         (integer? feedback-off) (<= 0 feedback-off 127)]}
+  (let [show *show*  ; Bind so we can pass it to update functions running on another thread
+        feedback-device (when feedback-on (midi/find-midi-out midi-device-name))
+        feedback-fn (when feedback-on  ; Set up to give visual feedback when our launched effect ends
+                      (fn [] (overtone.midi/midi-control feedback-device control-number feedback-off channel)))
+        our-id (atom nil)]  ; Track when we have created an effect
+    ;; TODO: Add aftertouch support
+    (midi/add-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":cue" x "," y)
+                              (fn [msg]
+                                (with-show show
+                                  ;; See if the cue exists and is running
+                                  (let [[cue active] (find-cue-grid-active-effect show x y)]
+                                    (when cue
+                                      (if (pos? (:velocity msg))
+                                        ;; Control has been pressed
+                                        (if active
+                                          (end-effect! (:key cue))
+                                          (do
+                                            (reset! our-id (add-effect-from-cue-grid! x y :deactivate-fn feedback-fn))
+                                            (when feedback-on
+                                              (overtone.midi/midi-control feedback-device control-number
+                                                                          feedback-on channel))))
+                                        ;; Control has been released
+                                        (when (and (some? @our-id) (or (:held cue) (not momentary)))
+                                          (end-effect! (:key cue) :when-id @our-id)
+                                          (reset! our-id nil))))))))))
+
+(defn remove-midi-control-to-cue-mapping
+  "Stop triggering the specified cue from the [[*show*]] cue grid upon
+  receipt of the specified controller-change message. The desired cue
+  is identified by passing in its `x` and `y` coordinates within the
+  show cue grid."
+  {:doc/format :markdown}
+  [midi-device-name channel control-number x y]
+  {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
+         (integer? control-number) (<= 0 control-number 127) (integer? x) (<= 0 x) (integer? y) (<= 0 y)]}
+  (midi/remove-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":cue" x "," y)))
 
 (defn- address-map-internal
   "Helper function which returns a sorted map whose keys are all

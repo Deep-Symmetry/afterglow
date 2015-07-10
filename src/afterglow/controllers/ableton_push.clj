@@ -1377,7 +1377,7 @@
   "One of the pads in the 8x8 pressure-sensitve cue grid was pressed."
   [controller note]
   (let [[cue-x cue-y pad-x pad-y] (note-to-cue-coordinates controller note)
-              [cue active] (show/find-cue-grid-active-effect (:show controller) cue-x cue-y)]
+        [cue active] (show/find-cue-grid-active-effect (:show controller) cue-x cue-y)]
           (when cue
             (with-show (:show controller)
               (if active

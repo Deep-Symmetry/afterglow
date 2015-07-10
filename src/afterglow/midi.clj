@@ -461,3 +461,12 @@
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
     (swap! control-mappings #(update-in % [(:name (first result))
                                            (int channel) (int control-number)] dissoc (keyword key)))))
+
+(defn find-midi-out
+  "Find a MIDI output whose name matches the specified string or regex
+  pattern."
+  [name-filter]
+  (let [result (filter-devices (open-outputs-if-needed!) name-filter)]
+    (if (empty? result)
+      (throw (IllegalArgumentException. (str "No MIDI outputs " (describe-name-filter name-filter) "were found.")))
+      (first result))))

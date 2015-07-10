@@ -115,10 +115,15 @@
   "Records the fact that the cue at the specified grid coordinates was
   activated in a show, and assigned the specified id, which can be
   used later to determine whether the same cue is still running. If id
-  is nil, the cue is deactivated rather than activated."
-  [grid x y id]
+  is nil, the cue is deactivated rather than activated. If a non-nil
+  function is passed with :deactivate-fn, this function will be
+  called, with no arguments, when the activated cue is later being
+  deactivated."
+  [grid x y id & {:keys [deactivate-fn]}]
   (dosync
    (when-let [cue (cue-at grid x y)]
+     (when (:deactivate-fn cue)
+       ((:deactivate-fn cue)))
      (set-cue! grid x y (if (some? id)
-                          (assoc cue :active-id id)
-                          (dissoc cue :active-id))))))
+                          (assoc cue :active-id id :deactivate-fn deactivate-fn)
+                          (dissoc cue :active-id :deactivate-fn))))))
