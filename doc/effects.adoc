@@ -640,3 +640,7 @@ wheels this time, since the color is continually shifting.
 
 The <<effect-types,Effect Types>> section goes into more
 detail about how these effects work.
+
+TIP: Looking at the source code of the <<complex-effects,complex
+effects>> is a great way to learn about how to create effects, and to
+get ideas for ways to vary or build on them.

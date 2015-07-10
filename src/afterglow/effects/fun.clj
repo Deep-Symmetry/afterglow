@@ -314,12 +314,16 @@
   Passing [[rhythm/snapshot-bar-phase]] instead would spread the
   transition over the entire bar, so that transitions would be feeding
   right into each other. Other possibilities are limited only by your
-  imagination, although for the transition mechanics to work correctly
-  with respect to assigning old and new color values, it should always
-  start at (or below) zero and progress to one (or beyond). It can
-  pause and reverse directions while in between those extremes, but if
-  you want to reverse the direction of the full transition, do it by
-  reversing the distance measure, not the phase function.
+  imagination. The transition can run backwards; it can pause or
+  reverse directions multiple times; it does not even necessarily have
+  to happen only once during each index value. This means that if you
+  want to reverse the direction of a transition which lasts for the
+  entire duration of a cycle index value, you can do it by reversing
+  either the distance measure or the phase function, whichever is
+  easier. (If the transition is shorter than the time over which the
+  `:color-index-function` changes, you will want to reverse the
+  distance measure rather than the phase function, because otherwise
+  the order in which the colors appear will be strange.)
 
   To give your running effect a meaningful name within user
   interfaces, pass a short and descriptive value with `:effect-name`."
@@ -332,7 +336,7 @@
   {:pre [(some? *show*)]}
   (let [max-distance (transform/max-distance measure fixtures)
         previous-color (atom nil)
-        current-bar (atom nil)
+        current-index (atom nil)
         current-color (atom nil)
         color-cycle (map (fn [arg default]
                            (params/bind-keyword-param arg :com.evocomputing.colors/color default))
@@ -346,11 +350,11 @@
           f (fn [show snapshot target previous-assignment]
               (pspy :color-cycle-chase-effect
                     ;; Is it time to grab the next color?
-                    (when (not= (color-index-function snapshot) @current-bar)
-                      (reset! current-bar (color-index-function snapshot))
+                    (when (not= (color-index-function snapshot) @current-index)
+                      (reset! current-index (color-index-function snapshot))
                       (reset! previous-color @current-color)
                       (reset! current-color
-                              (params/resolve-param (nth (cycle color-cycle) (dec @current-bar))
+                              (params/resolve-param (nth (cycle color-cycle) (dec @current-index))
                                                     show snapshot)))
                     ;; Determine whether this head is covered by the current state of the transition
                     (let [transition-progress (transition-phase-function snapshot)]
@@ -362,11 +366,11 @@
                                 @previous-color)))))
           assigners (build-head-assigners :color heads f)]
       (Effect. effect-name
-               (fn [show snapshot]  ;; Continue running until the end of a phrase.
-                 (or (nil? @ending) (= (:phrase snapshot) @ending)))
+               (fn [show snapshot]  ;; Continue running until the next color would appear
+                 (or (nil? @ending) (= @current-index @ending)))
                (fn [show snapshot] assigners)
-               (fn [snow snapshot]  ;; Arrange to shut down at the end of a phrase
-                 (reset! ending (:phrase snapshot))
+               (fn [snow snapshot]  ;; Arrange to shut down when the next color starts to appear
+                 (reset! ending @current-index)
                  nil)))))
 
 (defn iris-out-color-cycle-chase
@@ -374,10 +378,11 @@
   heads on the down beat of each bar of a phrase, expanding the color
   from the center of the show x-y plane outwards during the down beat.
 
-  Unless otherwise specified by passing an explicit bounding box with
-  `:bounds`, the spatial boundaries of the transition (which determine
-  the center point) will be the smallest box which encloses the
-  fixtures actually participating in it.
+  Unless otherwise specified by passing an explicit pair of x and y
+  coordinates with `:center` (e.g. `:center [0.0 0.0]`), the starting
+  point of the transition will be the x-y center of the bounding box
+  of the fixtures participating in it (the smallest box containing all
+  of their heads).
 
   You can change the colors used, and when transitions occur, by
   overriding the default values associated with the optional keyword
@@ -386,15 +391,14 @@
   interpreted, see [[color-cycle-chase]] which is used to implement
   this chase."
   {:doc/format :markdown}
-  [fixtures & {:keys [bounds color-cycle color-index-function transition-phase-function effect-name]
-               :or {bounds (transform/calculate-bounds fixtures)
-                    color-cycle default-color-cycle
+  [fixtures & {:keys [center color-cycle color-index-function transition-phase-function effect-name]
+               :or {color-cycle default-color-cycle
                     color-index-function rhythm/snapshot-bar-within-phrase
                     transition-phase-function transition-during-down-beat
                     effect-name "Iris Out"}}]
   {:pre [(some? *show*)]}
-  (let [measure (transform/build-distance-measure (:center-x bounds) (:center-y bounds) (:center-z bounds)
-                                                  :ignore-z true)]
+  (let [center (or center (vals (select-keys (transform/calculate-bounds fixtures) [:center-x :center-y])))
+        measure (transform/build-distance-measure (first center) (second center) 0 :ignore-z true)]
     (color-cycle-chase fixtures measure :color-cycle color-cycle :color-index-function color-index-function
                        :transition-phase-function transition-phase-function :effect-name effect-name)))
 
