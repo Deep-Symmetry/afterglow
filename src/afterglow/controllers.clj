@@ -154,4 +154,6 @@
        (let [velocity (if (some? id) (first feedback) (second feedback))]
          (if (= :control kind)
            (midi/midi-control device note velocity channel)
-           (midi/midi-note-on device note velocity channel)))))))
+           (if (some? id)
+             (midi/midi-note-on device note velocity channel)
+             (midi/midi-note-off device note channel))))))))

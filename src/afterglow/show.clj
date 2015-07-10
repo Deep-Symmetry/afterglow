@@ -636,19 +636,21 @@
 
 (defn add-midi-control-to-cue-mapping
   "Cause the specified cue from the [[*show*]] cue grid to be
-  triggered by receipt of the specified controller-change message with
-  a non-zero control value. This allows generic MIDI controllers,
-  which do not have enough pads or feedback capabilities to act as a
-  full grid controller like the Ableton Push, to still provide a
-  physical means of triggering cues. The desired cue is identified by
-  passing in its `x` and `y` coordinates within the show cue grid.
+  triggered by receipt of the specified note (when `kind` is `:note`)
+  or controller-change (when `kind` is `:control`) message with a
+  non-zero velocity or control value. This allows generic MIDI
+  controllers, which do not have enough pads or feedback capabilities
+  to act as a full grid controller like the Ableton Push, to still
+  provide a physical means of triggering cues. The desired cue is
+  identified by passing in its `x` and `y` coordinates within the show
+  cue grid.
 
   Afterglow will attempt to provide feedback about the progress of the
   cue by sending control-change values to the same controller when the
-  cue starts and ends. The control values used can be changed by
-  passing in different values with `:feedback-on` and `:feedback-off`,
-  and this behavior can be suppressed entirely by passing `false` with
-  `:feedback-on`.
+  cue starts and ends. The note velocities or control values used can
+  be changed by passing in different values with `:feedback-on` and
+  `:feedback-off`, and this behavior can be suppressed entirely by
+  passing `false` with `:feedback-on`.
 
   Afterglow assumes the control is momentary, meaning it sends a
   control value of 0 as soon as it is released, and a second press
@@ -659,57 +661,64 @@
   `:momentary` and Afterglow will always end cues when it receives a
   control value of 0, even if cues are not marked as `:held`."
   {:doc/format :markdown}
-  [midi-device-name channel control-number x y & {:keys [feedback-on feedback-off momentary]
-                                                  :or {feedback-on 127 feedback-off 0 momentary true}}]
-  {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
-         (integer? control-number) (<= 0 control-number 127) (integer? x) (<= 0 x) (integer? y) (<= 0 y)
+  [midi-device-name channel kind note x y & {:keys [feedback-on feedback-off momentary]
+                                                       :or {feedback-on 127 feedback-off 0 momentary true}}]
+  {:pre [(some? *show*) (#{:control :note} kind) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
+         (integer? note) (<= 0 note 127) (integer? x) (<= 0 x) (integer? y) (<= 0 y)
          (or (not feedback-on) (and (integer? feedback-on) (<= 0 feedback-on 127)))
          (integer? feedback-off) (<= 0 feedback-off 127)]}
   (let [show *show*  ; Bind so we can pass it to update functions running on another thread
         feedback-device (when feedback-on (midi/find-midi-out midi-device-name))
-        our-id (atom nil)]  ; Track when we have created an effect
+        our-id (atom nil)  ; Track when we have created an effect
+        midi-handler (fn [msg]
+                       (with-show show
+                         ;; See if the cue exists and is running
+                         (let [[cue active] (find-cue-grid-active-effect show x y)]
+                           (when cue
+                             (if (and (pos? (:velocity msg)) (not= (:command msg) :note-off))
+                               ;; Control or note has been pressed
+                               (if active
+                                 (end-effect! (:key cue))
+                                 (do
+                                   (reset! our-id (add-effect-from-cue-grid! x y))))
+                               ;; Control has been released
+                               (when (and (some? @our-id) (or (:held cue) (not momentary)))
+                                 (end-effect! (:key cue) :when-id @our-id)
+                                 (reset! our-id nil)))))))]
     (when feedback-device  ; Set up to give feedback as cue activation changes
-      (controllers/add-cue-feedback! (:cue-grid show) x y feedback-device channel :control control-number
+      (controllers/add-cue-feedback! (:cue-grid show) x y feedback-device channel kind note
                                      :on feedback-on :off feedback-off)
       (let [[cue active] (find-cue-grid-active-effect show x y)]  ; Was already active, so reflect that
-        (when active (overtone.midi/midi-control feedback-device control-number feedback-on channel))))
+        (when active (case kind
+                      :control (overtone.midi/midi-control feedback-device note feedback-on channel)
+                      :note (overtone.midi/midi-note-on feedback-device note feedback-on channel)))))
     ;; TODO: Add aftertouch support
-    (midi/add-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":cue" x "," y)
-                              (fn [msg]
-                                (with-show show
-                                  ;; See if the cue exists and is running
-                                  (let [[cue active] (find-cue-grid-active-effect show x y)]
-                                    (when cue
-                                      (if (pos? (:velocity msg))
-                                        ;; Control has been pressed
-                                        (if active
-                                          (end-effect! (:key cue))
-                                          (do
-                                            (reset! our-id (add-effect-from-cue-grid! x y))
-                                            (when feedback-on
-                                              (overtone.midi/midi-control feedback-device control-number
-                                                                          feedback-on channel))))
-                                        ;; Control has been released
-                                        (when (and (some? @our-id) (or (:held cue) (not momentary)))
-                                          (end-effect! (:key cue) :when-id @our-id)
-                                          (reset! our-id nil))))))))))
+    (case kind
+      :control (midi/add-control-mapping midi-device-name channel note (str "show:" (:id show) ":cue-control" x "," y)
+                                         midi-handler)
+      :note (midi/add-note-mapping midi-device-name channel note (str "show:" (:id show) ":cue-note" x "," y)
+                                   midi-handler))))
 
 (defn remove-midi-control-to-cue-mapping
   "Stop triggering the specified cue from the [[*show*]] cue grid upon
-  receipt of the specified controller-change message. The desired cue
-  is identified by passing in its `x` and `y` coordinates within the
-  show cue grid."
-  {:doc/format :markdown}
-  [midi-device-name channel control-number x y]
-  {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
-         (integer? control-number) (<= 0 control-number 127) (integer? x) (<= 0 x) (integer? y) (<= 0 y)]}
+  receipt of the specified note or controller-change message. The
+  desired cue is identified by passing in its `x` and `y` coordinates
+  within the show cue grid."
+ {:doc/format :markdown}
+  [midi-device-name channel kind note x y]
+  {:pre [(some? *show*) (#{:control :note} kind) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
+         (integer? note) (<= 0 note 127) (integer? x) (<= 0 x) (integer? y) (<= 0 y)]}
   (let [feedback-device (midi/find-midi-out midi-device-name)
-        feedback (controllers/clear-cue-feedback! (:cue-grid *show*) x y feedback-device channel
-                                                  :control control-number)]
+        feedback (controllers/clear-cue-feedback! (:cue-grid *show*) x y feedback-device channel kind note)]
     (when feedback  ; We had been giving feedback, see if we need to turn it off
       (let [[cue active] (find-cue-grid-active-effect *show* x y)]
-        (when active (overtone.midi/midi-control feedback-device control-number (second feedback) channel)))))
-  (midi/remove-control-mapping midi-device-name channel control-number (str "show:" (:id *show*) ":cue" x "," y)))
+        (when active (case kind
+                       :control (overtone.midi/midi-control feedback-device note (second feedback) channel)
+                       :note (overtone.midi/midi-note-on feedback-device note (second feedback) channel))))))
+  (case kind
+    :control (midi/remove-control-mapping midi-device-name channel note
+                                          (str "show:" (:id *show*) ":cue-control" x "," y))
+    :note (midi/remove-note-mapping midi-device-name channel note (str "show:" (:id *show*) ":cue-note" x "," y))))
 
 (defn- address-map-internal
   "Helper function which returns a sorted map whose keys are all

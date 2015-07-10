@@ -29,6 +29,8 @@
 
 (defonce ^:private control-mappings (atom {}))
 
+(defonce ^:private note-mappings (atom {}))
+
 (defonce ^:private global-handlers (atom #{}))
 
 (defn add-global-handler!
@@ -52,10 +54,20 @@
   (doseq [handler (vals (get @synced-metronomes (:device msg)))]
     (handler msg)))
 
+(defn- note-message-handler
+  "Invoked whenever any midi input device being managed receives a
+  note message. Checks whether there are any handlers (such as for
+  launching cues or mapping show variables) attached to it, and if so,
+  calls them."
+  [msg]
+  (doseq [handler (vals (get-in @note-mappings [(:name (:device msg)) (:channel msg) (:note msg)]))]
+    (handler msg)))
+
 (defn- cc-message-handler
   "Invoked whenever any midi input device being managed receives a
-  control-change message. Checks whether there are show variables
-  mapped to it, and if so, updates them."
+  control change message. Checks whether there are any handlers (such
+  as for launching cues or mapping show variables) attached to it, and
+  if so, calls them."
   [msg]
   (doseq [handler (vals (get-in @control-mappings [(:name (:device msg)) (:channel msg) (:note msg)]))]
     (handler msg)))
@@ -100,6 +112,7 @@
           (case (:status msg)
             (:timing-clock :start :stop) (clock-message-handler msg)
             :control-change (cc-message-handler msg)
+            (:note-on :note-off) (note-message-handler msg)
             nil)
 
           (catch InterruptedException t
@@ -461,6 +474,33 @@
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
     (swap! control-mappings #(update-in % [(:name (first result))
                                            (int channel) (int control-number)] dissoc (keyword key)))))
+
+(defn add-note-mapping
+  "Register a handler to be called whenever a MIDI note message is
+  received from the specified device, on the specified channel and
+  note number. A unique key must be given, by which this mapping
+  can later be removed. Any subsequent MIDI message which matches will
+  be passed to the handler as its single argument. The first MIDI
+  input source whose name or description matches the string or regex
+  pattern supplied for name-filter will be chosen."
+  [name-filter channel note key handler]
+  (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
+    (when (empty? result)
+      (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
+    (swap! note-mappings #(assoc-in % [(:name (first result))
+                                       (int channel) (int note) (keyword key)] handler))))
+
+(defn remove-note-mapping
+  "Unregister a handler previously registered with add-note-mapping,
+  identified by the unique key. The first MIDI input source whose name
+  or description matches the string or regex pattern supplied for
+  name-filter will be chosen."
+  [name-filter channel note key]
+  (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
+    (when (empty? result)
+      (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
+    (swap! note-mappings #(update-in % [(:name (first result))
+                                        (int channel) (int note)] dissoc (keyword key)))))
 
 (defn find-midi-out
   "Find a MIDI output whose name matches the specified string or regex
