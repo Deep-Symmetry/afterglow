@@ -8,20 +8,54 @@ James Elliott <james@deepsymmetry.org>
 ifdef::env-github[:outfilesuffix: .adoc]
 
 Afterglow is designed to work with MIDI controllers and DJ equipment.
-You can bind physical controller elements to show variables, and sync
-the BPM of the show master metronome to MIDI clock pulses from a DJ
-controller or mixer. (Although if you have professional Pioneer gear,
-you are better off syncing the metronome to the Pro DJ Link via an
-Ethernet cable.)
+You can bind physical controller elements to trigger cues and adjust
+show variables, and sync the BPM of the show master metronome to MIDI
+clock pulses from a DJ controller or mixer. (Although if you have
+professional Pioneer gear, you are better off syncing the metronome to
+the Pro DJ Link via an Ethernet cable.)
 
 NOTE: These examples assume you are in a Clojure REPL with Afterglow loaded,
 in the namespace `afterglow.examples`. This is the default namespace you
 get if you check out the project and run `lein repl`. The sample show is
 assumed to be running; if not, `(show/start!)`
 
+== Mapping Cues to a Controller
+
+Although the most convenient and powerful way of running cues with
+Afterglow is to use a large grid controller with color feedback, like
+the Ableton Push which can mirror the cue grid of the web interface,
+you can still accomplish a great deal with a simple controller with a
+few buttons. You will still want to start by creating the cues in the
+show cue grid, not only so you can see and manipulate them with the
+web interface, but also because that is how they can be mapped to MIDI
+controllers.
+
+First you need to identify the MIDI messages that the controller sends
+when you press and release the interface element you want to assign
+the cue. Afterglow can help with that too, as described
+<<finding-mapping-details,below>>. Once you have the cue created and
+the control identified, you can create the mapping using
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-cue-mapping[afterglow.show/add-midi-control-to-cue-mapping], like:
+
+[source,clojure]
+----
+(show/remove-midi-control-to-cue-mapping
+  "nano" 0 :control 43 0 6)
+----
+
+This would cause Afterglow to start or stop the cue at grid position
+(0, 6) when a pad on the device named "nano" is pressed and sends a
+MIDI control change message on controller number 43.
+
+If the controller has LEDs associated with the controls, and you can
+configure it so that its LEDs are in external control mode, Afterglow
+will even give you feedback about when the cue is running, by lighting
+up the pad or button when the cue starts (whether or not you started
+it using this controller), and darkening it when the cue ends.
+
 == Mapping a Control to a Variable
 
-Here is an example of how I can have a knob on one of my MIDI
+Here is an example of how I can have a knob on one of my simple MIDI
 controllers set the hue of all the lights. It shows up with a MIDI port
 name of `SLIDER/KNOB`, and its first rotary controller is control 16 on
 channel 0. I can map that to set a show variable `knob-1` to the values
