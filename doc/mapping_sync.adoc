@@ -39,13 +39,12 @@ http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-t
 
 [source,clojure]
 ----
-(show/remove-midi-control-to-cue-mapping
-  "nano" 0 :control 43 0 6)
+(show/add-midi-control-to-cue-mapping "nano" 0 :control 46 0 6)
 ----
 
 This would cause Afterglow to start or stop the cue at grid position
 (0, 6) when a pad on the device named "nano" is pressed and sends a
-MIDI control change message on controller number 43.
+MIDI control change message on control number 46.
 
 If the controller has LEDs associated with the controls, and you can
 configure it so that its LEDs are in external control mode, Afterglow
