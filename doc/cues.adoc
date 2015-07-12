@@ -15,6 +15,15 @@ register themselves as grid controllers, as does the
 http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
 Push].
 
+You can also trigger cues from simpler MIDI controllers which don't
+register as grid controllers by explicitly mapping notes or control
+changes to cues using
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-cue-mapping[afterglow.show/add-midi-control-to-cue-mapping].
+Regardless of the mechanism by which a cue is triggered, the web
+interface, a registered grid controller, or an explicitly mapped MIDI
+note or control change, feedback will be sent to all interfaces so the
+status of the cue will be represented consistently on all of them.
+
 [[creating-cues]]
 Creating Cues
 ~~~~~~~~~~~~~
