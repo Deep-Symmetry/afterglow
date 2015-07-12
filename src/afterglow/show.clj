@@ -646,20 +646,21 @@
   cue grid.
 
   Afterglow will attempt to provide feedback about the progress of the
-  cue by sending control-change values to the same controller when the
-  cue starts and ends. The note velocities or control values used can
-  be changed by passing in different values with `:feedback-on` and
-  `:feedback-off`, and this behavior can be suppressed entirely by
-  passing `false` with `:feedback-on`.
+  cue by sending note on/off or control-change values to the same
+  controller when the cue starts and ends. The note velocities or
+  control values used can be changed by passing in different values
+  with `:feedback-on` and `:feedback-off`, and this behavior can be
+  suppressed entirely by passing `false` with `:feedback-on`.
 
-  Afterglow assumes the control is momentary, meaning it sends a
-  control value of 0 as soon as it is released, and a second press
-  will be used to end the cue unless the cue uses the `:held` modifier
-  to indicate it should be ended when the button is released. If your
-  controller does not have momentary buttons and already requires a
-  second press to turn off the control value, pass `false` with
-  `:momentary` and Afterglow will always end cues when it receives a
-  control value of 0, even if cues are not marked as `:held`."
+  Afterglow assumes the control is momentary, meaning it sends a note
+  off (or control value of 0) as soon as it is released, and a second
+  press will be used to end the cue unless the cue uses the `:held`
+  modifier to indicate it should be ended when the button is released.
+  If your controller does not have momentary buttons and already
+  requires a second press to turn off the note or control value, pass
+  `false` with `:momentary` and Afterglow will always end cues when it
+  receives a control value of 0, even if cues are not marked as
+  `:held`."
   {:doc/format :markdown}
   [midi-device-name channel kind note x y & {:keys [feedback-on feedback-off momentary]
                                                        :or {feedback-on 127 feedback-off 0 momentary true}}]
