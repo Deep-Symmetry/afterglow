@@ -6,14 +6,36 @@ James Elliott <james@deepsymmetry.org>
 // if you need to support other environments and extensions.
 ifdef::env-github[:outfilesuffix: .adoc]
 
-Cues are a convenient way to organize, identify, trigger, adjust, and
-monitor effects. Each show in Afterglow maintains a cue grid, which
-can be viewed and interacted with through the
+Cues are designed to support creating user interfaces for controlling
+effects. They provide a convenient way to organize, identify, trigger,
+adjust, and monitor effects. Each
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html[show] in
+Afterglow maintains a cue grid, which can be viewed and interacted
+with through the
 http://deepsymmetry.org/afterglow/doc/afterglow.core.html#var-start-web-server[embedded
-web interface] and MIDI controller mapping implementations which
-register themselves as grid controllers, as does the
+web interface] and MIDI controller mapping implementations which can
+be
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-register-grid-controller[registered
+as grid controllers], like the
 http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
 Push].
+
+The cue grid is a two dimensional arrangement of cues, where the
+bottom left corner is assigned coordinates `(0, 0)`. X coordinates
+increase from left to right, and Y coordinates increase from bottom to
+top. The web interface and registered grid controllers display 64 cues
+at a time in an 8&times;8 grid, and can be scrolled around that grid.
+The user can set the web interface to track the scroll position of a
+registered grid controller. When that is done, scrolling either
+interface will cause the other to scroll in the same way, so the
+browser window can act as documentation to help the user learn what
+the cue name associated with each available cue pad on the controller.
+
+.Web interface cue grid
+image::assets/WebHome.png
+
+.Ableton Push cue grid
+image::assets/AbletonInterface.jpg
 
 You can also trigger cues from simpler MIDI controllers which don't
 register as grid controllers by explicitly mapping notes or control
