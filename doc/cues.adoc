@@ -179,10 +179,21 @@ documentation] for the full details.
 |Parameter
 |Purpose
 
+|`:short-name`
+
+|Sets the text to be displayed for the cue in the web cue grid, and in
+the text display of the controller (if it has one) when the cue is
+running. If you don&rsquo;t supply a short name, the name of the
+effect created by the `effect` function is used, but that may be too
+long or not informative enough.
+
 |`:color`
-|sets the color of the cue within the grid for hinting about
-purpose and relatedness to help operators learn and understand the
-interface.
+
+|Sets the color of the cue within the grid for hinting about purpose
+and relatedness to help operators learn and understand the interface.
+If not specified, white is used.
+
+|===
 
 [[controlling-cues]]
 Controlling Cues
