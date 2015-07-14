@@ -118,8 +118,8 @@ status of the cue will be represented consistently on all of them. And
 a cue triggered on one controller can be ended on any other controller
 by simply pressing the lit button or clicking the lit cell there.
 
-For example, to be able to trigger the Sparkle cue which the examples
-namespace places at `(0, 7)` within the sample show cue grid by
+For example, to be able to trigger the Sparkle cue, which the examples
+namespace places at `(0, 7)` within the sample show cue grid, by
 pressing the bottom leftmost button on my inexpensive Korg nanoKontrol
 2 MIDI controller, after using
 http://deepsymmetry.org/afterglow/doc/afterglow.midi.html#var-identify-mapping[afterglow.midi/identify-mapping]
@@ -128,7 +128,6 @@ controller number `43`, I can simply evaluate:
 
 [source,clojure]
 ----
-code,clojure
 (show/add-midi-control-to-cue-mapping "nano" 0 :control 43 0 7)
 ----
 
@@ -142,7 +141,7 @@ sparkles the lights.
 
 In order to enable Afterglow to send feedback about cue status to the
 lights on the nanoKontrol I needed to use the Korg Kontrol Editor to
-set its LED Mode to _External_ (as shipped, they were in Internal
+set its LED Mode to _External_ (as shipped, they were in _Internal_
 mode, and lit themselves when held down). Most MIDI controllers are
 likely to need similar configuration to work as feedback-capable cue
 controllers with Afterglow, but most I have seen do offer
@@ -156,9 +155,34 @@ Creating Cues
 
 The
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html[afterglow.effects.cues]
-namespace provides functions for creating cues.
+namespace provides functions for creating cues. Unsurprisingly, the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-cue[cue]
+function creates a cue. At its most basic, you pass in two parameters,
+`show-key` which is the keyword that will be used to add the
+cue&rsquo;s effect to the show when the cue is triggered, ending any
+other effect running under that same keyword, and `effect`, which is a
+function that will be called when the cue is triggered, and whose
+responsibility is to create and return the effect that the cue should
+add to the show. This is done so that a fresh instance of the effect
+is used each time the cue is triggered, in case the effect is complex
+and maintains its own state. The effect creation function will be
+passed a map containing any cue-specific variable bindings.
 
-TODO: Describe the functions and arguments, link to effect examples.
+There are a number of optional keyword parameters which can be used to
+modify the cue that is created. A summary of some features are
+presented here, but be sure to see the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-cue[API
+documentation] for the full details.
+
+[cols="2", options="header"]
+|===
+|Parameter
+|Purpose
+
+|`:color`
+|sets the color of the cue within the grid for hinting about
+purpose and relatedness to help operators learn and understand the
+interface.
 
 [[controlling-cues]]
 Controlling Cues
@@ -169,8 +193,10 @@ http://deepsymmetry.org/afterglow/doc/afterglow.controllers.html[afterglow.contr
 namespace defines some helpful functions for working with cues, and
 defines a
 http://deepsymmetry.org/afterglow/doc/afterglow.controllers.html#var-IGridController[grid
-controller protocol] which rich controller mappings like the one for
-the Ableton Push can use to attach themselves to a running show, and
-synchronize with the web interface.
+controller protocol] which rich controller mappings, like the one for
+the
+http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
+Push], use to attach themselves to a running show, and synchronize
+with the web interface.
 
 TODO: Flesh out, discuss individual functions.
