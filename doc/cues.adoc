@@ -32,10 +32,10 @@ browser window can act as documentation to help the user learn what
 the cue name associated with each available cue pad on the controller.
 
 .Web interface cue grid
-image::assets/WebHome.png
+image::assets/ShowGrid.png[Web interface]
 
 .Ableton Push cue grid
-image::assets/AbletonInterface.jpg
+image::assets/AbletonInterface.jpg[Ableton Push interface]
 
 You can also trigger cues from simpler MIDI controllers which don't
 register as grid controllers by explicitly mapping notes or control
