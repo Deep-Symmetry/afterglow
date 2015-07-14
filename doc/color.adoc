@@ -17,7 +17,6 @@ could do something like this:
 
 [source,clojure]
 ----
-code,clojure
 (use 'com.evocomputing.colors)
 (def yellow (create-color "yellow"))
 (def hue-param (params/build-oscillated-param
