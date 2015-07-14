@@ -299,6 +299,11 @@
                           "gobo-moving-blue-megahazard" "gobo-moving-turbine"])]))
 
 (defn make-strobe-cue
+  "Create a cue which strobes a set of fixtures as long as the cue pad
+  is held down, letting the operator adjust both the lightness of the
+  strobe color and the level of the strobe function by varying the
+  pressure they are applying to the pad on controllers which support
+  pressure sensitivity."
   [name fixtures x y]
   (ct/set-cue! (:cue-grid *show*) x y	
                (cues/cue (keyword (str "strobe-" (clojure.string/replace (clojure.string/lower-case name) " " "-")))
@@ -382,7 +387,7 @@
                                      {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
 
     (ct/set-cue! (:cue-grid *show*) 7 7
-                 (cues/function-cue :strobe-all :strobe (show/all-fixtures) :effect-name "Strobe"))
+                 (cues/function-cue :strobe-all :strobe (show/all-fixtures) :effect-name "Raw Strobe"))
 
 
     ;; Dimmer cues to turn on and set brightness of groups of lights
@@ -584,16 +589,6 @@
     (make-strobe-cue "Weather Systems" (show/fixtures-named "ws") 3 6)
     (make-strobe-cue "Hexes" (show/fixtures-named "hex") 4 6)
     (make-strobe-cue "Pucks" (show/fixtures-named "puck") 5 6)
-
-    (ct/set-cue! (:cue-grid *show*) 1 6
-                 (cues/cue :strobe-torrents (fn [var-map] (fun/strobe "Strobe Torrents"
-                                                                      (show/fixtures-named "torrent")
-                                                                      (:level var-map 50)))
-                           :held true
-                           :priority 100
-                           :variables [{:key "level" :min 0 :max 100 :start 50 :name "Level"
-                                        :aftertouch true :aftertouch-min 25}
-                                       {:key :strobe-lightness :min 0 :max 100 :name "Lightness" :aftertouch true}]))
 
     (ct/set-cue! (:cue-grid *show*) 7 6
                  (cues/cue :adjust-strobe (fn [_] (fun/adjust-strobe))

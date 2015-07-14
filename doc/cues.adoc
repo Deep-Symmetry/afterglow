@@ -31,7 +31,6 @@ interface will cause the other to scroll in the same way, so the
 browser window can act as documentation to help the user learn what
 the cue name associated with each available cue pad on the controller.
 
-.Web interface cue grid
 image::assets/ShowGrid.png[Web interface]
 
 In addition to names, cues can be assigned colors in the grid, and the
@@ -47,17 +46,65 @@ first column of cues above, in which the &ldquo;All Dimmers&rdquo; cue
 is active and displaying a lightened version of the yellow color
 assigned to it, and the two cues above it, &ldquo;All Saw Down
 Beat&rdquo; and &ldquo;All Saw Up 2 Beat&rdquo; use the same keyword
-and so are displaying a darkened version of the yellow color. This is
-a useful technique for building easy-to-learn cue grids. The same cues
-are shown on the Ableton Push below, so you can see how the color
-relationships help with learning the cue names.
+and color, and so are displaying a darkened version of the yellow
+color. This is a useful technique for building easy-to-learn cue
+grids. The same cues are shown on the Ableton Push below, so you can
+see how the color relationships help with learning the cue names.
 
-.Ableton Push cue grid
 image::assets/AbletonInterface.jpg[Ableton Push interface]
 
-You can also trigger cues from simpler MIDI controllers which don't
-register as grid controllers by explicitly mapping notes or control
-changes to cues using
+To trigger a cue, simply press the corresponding pad on a physical
+interface, or click within the grid cell in the web interface. The
+effect associated with the cue will be created and added to the show,
+and the grid cell will be lightened to indicate that the cue&rsquo;s
+effect is running. If the cue ends itself after a period, the grid
+interface will be updated to reflect that as well.
+
+To end a cue&rsquo;s effect before it would naturally end (or because
+it is open-ended and does not end until asked to), simply press the
+pad corresponding to the running cue (or, again, click the grid cell
+in the web interface). The effect will be asked to end. Some effects
+end instantly, which will be refleced by the cue grid cell returning
+to its normal color. Some effects have a delayed ending, so they can
+fade out, or finish some musically relevant sequence. If this is
+happening, the grid cell will blink while the effect ends, and then
+stay at its normal color once the effect finishes ending. If you want
+the effect to end immediately you can press the pad one more time
+while the effect is performing its gradual ending, and it will be
+killed at that point, regardless of how much longer it was planning to
+run.
+
+Cues can also be created which run only as long as the corresponding
+controller pad is held down (this is done by passing a true value with
+the `:held` optional keyword argument when creating the cue). This is
+often done for intense effects like strobes. Currently, only physical
+controllers, not the web interface, honor the `:held` flag, since with
+the web interface only one cell can be clicked at a time. This may
+change if there is demand for it.
+
+Cues can also offer pressure sensitivity on controllers which support
+it (like the Ableton Push). For such cues, a variable used by the cue
+can be updated by the aftertouch pressure exerted by the operator as
+they hold down the pad. This can make for very expressive effects, as
+exemplified by the
+http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[sparkle]
+and
+http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-strobe-cue[strobe]
+cues in the examples namespace. Of course, this is not possible with
+the web cue grid.
+
+The interface for moving around the cue grid is the diamond of arrows
+at the bottom right of both the web interface and the Ableton Push. If
+there are more cues available in a particular direction, that arrow is
+lit, otherwise it is dark. Pressing the arrow scrolls to the next set
+of eight rows or columns in that direction. (And if the web view is
+linked to a controller, pressing the arrow on either will scroll both.
+For physical controllers which lack scroll buttons, linking them to the
+web interface is the most practical way of scrolling them.)
+
+Cues can also be triggered from simpler MIDI controllers (which don't
+register as grid controllers) by explicitly mapping notes or control
+changes sent by the controller to cues within the grid using
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-cue-mapping[afterglow.show/add-midi-control-to-cue-mapping].
 Regardless of the mechanism by which a cue is triggered, the web
 interface, a registered grid controller, or an explicitly mapped MIDI
