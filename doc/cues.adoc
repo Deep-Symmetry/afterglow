@@ -28,8 +28,8 @@ at a time in an 8&times;8 grid, and can be scrolled around that grid.
 The user can set the web interface to track the scroll position of a
 registered grid controller. When that is done, scrolling either
 interface will cause the other to scroll in the same way, so the
-browser window can act as documentation to help the user learn what
-the cue name associated with each available cue pad on the controller.
+browser window can act as documentation to help the user learn the cue
+names associated with each available cue pad on the controller.
 
 image::assets/ShowGrid.png[Web interface]
 
@@ -83,24 +83,28 @@ the web interface only one cell can be clicked at a time. This may
 change if there is demand for it.
 
 Cues can also offer pressure sensitivity on controllers which support
-it (like the Ableton Push). For such cues, a variable used by the cue
-can be updated by the aftertouch pressure exerted by the operator as
-they hold down the pad. This can make for very expressive effects, as
-exemplified by the
-http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[sparkle]
-and
+this (like the Ableton Push). For such cues, one or more variable used
+by the cue can be updated by the aftertouch pressure exerted by the
+operator as they hold down the pad. This can make for very expressive
+effects, as exemplified by the sparkle cue set up early in the
+examples namespace&rsquo;s
+http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[make-cues]
+function, and its
 http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-strobe-cue[strobe]
-cues in the examples namespace. Of course, this is not possible with
-the web cue grid.
+cues. Of course, this pressure sensitivity is not possible with the
+web cue grid.
 
 The interface for moving around the cue grid is the diamond of arrows
 at the bottom right of both the web interface and the Ableton Push. If
 there are more cues available in a particular direction, that arrow is
-lit, otherwise it is dark. Pressing the arrow scrolls to the next set
-of eight rows or columns in that direction. (And if the web view is
-linked to a controller, pressing the arrow on either will scroll both.
-For physical controllers which lack scroll buttons, linking them to the
-web interface is the most practical way of scrolling them.)
+lit, otherwise it is dark. For the cues pictured above, the bottom
+left corner of the cue grid is being displayed, and there are more
+cues above and to the right, so the up and right scroll arrows are
+lit. Pressing an arrow scrolls to the next set of eight rows or
+columns in that direction. (And if the web view is linked to a grid
+controller, pressing the arrow on either will scroll both. For
+physical grid controllers which lack scroll buttons, linking them to
+the web interface is the most practical way of scrolling them.)
 
 Cues can also be triggered from simpler MIDI controllers (which don't
 register as grid controllers) by explicitly mapping notes or control
