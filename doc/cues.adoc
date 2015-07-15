@@ -168,7 +168,7 @@ responsibility is to create and return the effect that the cue should
 add to the show. This is done so that a fresh instance of the effect
 is used each time the cue is triggered, in case the effect is complex
 and maintains its own state. The effect creation function will be
-passed a map containing any <<#cue-variables,cue-specific variable bindings>>.
+passed a map containing any <<cues#cue-variables,cue-specific variable bindings>>.
 
 NOTE: 
 
