@@ -168,7 +168,9 @@ responsibility is to create and return the effect that the cue should
 add to the show. This is done so that a fresh instance of the effect
 is used each time the cue is triggered, in case the effect is complex
 and maintains its own state. The effect creation function will be
-passed a map containing any <<user-content-cue-variables,cue-specific variable bindings>>.
+passed a map containing any <<#cue-variables,cue-specific variable bindings>>.
+
+NOTE: 
 
 There are a number of optional keyword parameters which can be used to
 modify the cue that is created. A summary of some features are
@@ -346,6 +348,13 @@ creating the cue's effect.
  not specified, the standard `:max` value is used.
 
 |===
+
+
+[[creating-function-cues]]
+Creating Function Cues
+~~~~~~~~~~~~~~~~~~~~~~
+
+
 
 
 [[controlling-cues]]
