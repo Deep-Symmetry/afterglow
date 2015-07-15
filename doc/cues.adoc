@@ -175,8 +175,8 @@ presented here, but be sure to see the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-cue[API
 documentation] for the full details.
 
-[cols="1,5", options="header"]
-.Keyword Parameters
+[cols="1a,5a", options="header"]
+.Keyword parameters to `cue`
 |===
 |Parameter
 |Purpose
