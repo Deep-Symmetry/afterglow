@@ -25,11 +25,12 @@ bottom left corner is assigned coordinates `(0, 0)`. X coordinates
 increase from left to right, and Y coordinates increase from bottom to
 top. The web interface and registered grid controllers display 64 cues
 at a time in an 8&times;8 grid, and can be scrolled around that grid.
-The user can set the web interface to track the scroll position of a
-registered grid controller. When that is done, scrolling either
-interface will cause the other to scroll in the same way, so the
-browser window can act as documentation to help the user learn the cue
-names associated with each available cue pad on the controller.
+The user can configue (&ldquo;link&rdquo;) the web interface to track
+the scroll position of a registered grid controller. When that is
+done, scrolling either interface will cause the other to scroll in the
+same way, so the browser window can act as documentation to help the
+user learn the cue names associated with each available cue pad on the
+controller.
 
 image::assets/ShowGrid.png[Web interface]
 
@@ -174,7 +175,7 @@ presented here, but be sure to see the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-cue[API
 documentation] for the full details.
 
-[cols="2", options="header"]
+[cols="1,6", options="header"]
 |===
 |Parameter
 |Purpose
@@ -189,9 +190,9 @@ long or not informative enough.
 
 |`:color`
 
-|Sets the color of the cue within the grid for hinting about purpose
-and relatedness to help operators learn and understand the interface.
-If not specified, white is used.
+|Sets the color of the cue within the grid for hinting about its
+purpose and relatedness to other cues, to help operators learn and
+understand the interface. If not specified, white is used.
 
 |===
 
