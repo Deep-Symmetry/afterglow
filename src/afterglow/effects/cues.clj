@@ -128,19 +128,7 @@
 
   Passing a value for `:effect-name` sets the name for the effect
   created by this cue. If none is provided, the name of the function
-  is used. `:level` can be used to set the initial level for functions
-  which have a variable effect over their range. Such functions will
-  be automatically assigned a variable parameter which can be used to
-  adjust the level while the cue runs, and which will be visible in
-  the web interface and on controllers which support adjusting cue
-  parameters. Functions with no variable effect will ignore `:level`
-  and will not be assigned variables for adjustment.
-
-  If `:htp` is passed a true value, the created effect applies
-  highest-takes-precedence (i.e. compares the value to the previous
-  assignment for the channels implementing the function, and lets the
-  highest value remain). See [[channel/function-effect]] for more
-  details about the underlying effect.
+  is used.
 
   If supplied, `:short-name` identifies a compact, user-oriented name
   to be displayed in the web interface or controller display (if it
@@ -152,6 +140,20 @@
   help the user identify it. This is only a request, as not all
   control surfaces support all (or any) colors. The color is passed
   to [[interpret-color]], so it can be specified in a variety of ways.
+
+  `:level` can be used to set the initial level for functions which
+  have a variable effect over their range. Such functions will be
+  automatically assigned a variable parameter which can be used to
+  adjust the level while the cue runs, and which will be visible in
+  the web interface and on controllers which support adjusting cue
+  parameters. Functions with no variable effect will ignore `:level`
+  and will not be assigned variables for adjustment.
+
+  If `:htp` is passed a true value, the created effect applies
+  highest-takes-precedence (i.e. compares the value to the previous
+  assignment for the channels implementing the function, and lets the
+  highest value remain). See [[channel/function-effect]] for more
+  details about the underlying effect.
 
   `:end-keys` introduces a sequence of keywords identifying other
   effects which should be ended whenever this one is started. This
