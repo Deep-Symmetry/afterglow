@@ -233,7 +233,6 @@ http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-t
 
 |`:variables`
 
-[[cue-variables]]
 |Specifies a sequence of show variable bindings that
 can be used by the cue's effect. Each variable specification is a map,
 whose content is described in the following table. These
@@ -244,7 +243,7 @@ creating the cue's effect.
 
 |===
 
-[cols="1a,5a", options="header"]
+[[cue-variables]][cols="1a,5a", options="header"]
 .Cue variable specification maps
 |===
 |Key
