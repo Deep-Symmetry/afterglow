@@ -75,13 +75,14 @@ while the effect is performing its gradual ending, and it will be
 killed at that point, regardless of how much longer it was planning to
 run.
 
-Cues can also be created which run only as long as the corresponding
-controller pad is held down (this is done by passing a true value with
-the `:held` optional keyword argument when creating the cue). This is
-often done for intense effects like strobes. Currently, only physical
-controllers, not the web interface, honor the `:held` flag, since with
-the web interface only one cell can be clicked at a time. (This will
-be easy to change if there is demand for it.)
+[[held-flag]]Cues can also be created which run only as long as the
+corresponding controller pad is held down (this is done by passing a
+true value with the `:held` optional keyword argument when creating
+the cue). This is often done for intense effects like strobes.
+Currently, only physical controllers, not the web interface, honor the
+`:held` flag, since with the web interface only one cell can be
+clicked at a time. (This will be easy to change if there is demand for
+it.)
 
 Cues can also offer pressure sensitivity on controllers which support
 this (like the Ableton Push). For such cues, one or more variable used
@@ -167,7 +168,7 @@ responsibility is to create and return the effect that the cue should
 add to the show. This is done so that a fresh instance of the effect
 is used each time the cue is triggered, in case the effect is complex
 and maintains its own state. The effect creation function will be
-passed a map containing any cue-specific variable bindings.
+passed a map containing any <<cue-variables,cue-specific variable bindings>>.
 
 There are a number of optional keyword parameters which can be used to
 modify the cue that is created. A summary of some features are
@@ -220,7 +221,40 @@ is assigned a priority of 100 so it sorts after any chase which may be
 running, and its sparkles can lighten the color which would otherwise
 be present in their fixtures.
 
+|`:held`
+
+|As described <<held-flag,above>>, causes the cue's effect to run only
+as long as the corresponding controller button or pad is held down, if
+the controller supports that capability. Currently the web interface
+does not, but the
+http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
+Push mapping] does, as do mappings to generic MIDI controllers created using
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-cue-mapping[afterglow.show/add-midi-control-to-cue-mapping].
+
+|`:variables`
+
+|[[cue-variables]]Specifies a sequence of show variable bindings that
+can be used by the cue's effect. Each variable specification is a map,
+whose content is described in the following table. These
+specifications are used to create any necessary new variables, and a
+map describing all the cue variables is passed to the `effect`
+function when the cue is triggered, so they can be used as needed when
+creating the cue's effect.
+
 |===
+
+[cols="1a,5a", options="header"]
+.Cue variable specification map entries
+|===
+|Key
+|Purpose
+
+|`:key`
+
+|Identifies the variable that is being bound to the cue.
+
+|===
+
 
 [[controlling-cues]]
 Controlling Cues
