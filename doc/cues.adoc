@@ -225,7 +225,7 @@ be present in their fixtures.
 
 |`:held`
 
-|As described <<user-content-held-flag,above>>, causes the cue's effect to run only
+|As described <<cues#held-flag,above>>, causes the cue's effect to run only
 as long as the corresponding controller button or pad is held down, if
 the controller supports that capability. Currently the web interface
 does not, but the
