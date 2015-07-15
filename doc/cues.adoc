@@ -360,10 +360,10 @@ Creating Function Cues
 
 Often you want a cue to activate a specific feature of a fixture
 (often described as a _function_ in the fixture documentation, and in
-the fixture definition within Afterglow, which can get confusing when
-we are also talking about invokint Clojure functions). To make it easy
-to work with such fixture capabilities, the `afterglow.effects.cues`
-namespace also offers the
+the fixture definition within Afterglow, which can unfortunately get
+confusing when we are talking about invoking Clojure functions). To
+make it easy to work with such fixture capabilities, the
+`afterglow.effects.cues` namespace also offers the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-function-cue[function-cue]
 function. It is quite similar to the `cue` function described
 <<cues#creating-cues,above>>, but it takes care of creating the effect
