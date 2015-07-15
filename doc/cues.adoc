@@ -182,13 +182,15 @@ presented here, but be sure to see the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-cue[API
 documentation] for the full details.
 
-[cols="1a,5a", options="header"]
+[cols="1a,1a,5a", options="header"]
 .Keyword parameters to `cue`
 |===
 |Parameter
+|Default
 |Purpose
 
 |`:short-name`
+|effect name
 
 |Sets the text to be displayed for the cue in the web cue grid, and in
 the text display of the controller (if it has one) when the cue is
@@ -197,6 +199,7 @@ effect created by the `effect` function is used, but that may be too
 long or not informative enough.
 
 |`:color`
+|white
 
 |Sets the color of the cue within the grid for hinting about its
 purpose and relatedness to other cues, to help operators learn and
@@ -215,6 +218,7 @@ all-dimmers cues, but leave the dimmer cues for other light groups
 alone.
 
 |`:priority`
+|`0`
 
 |Sets the effect priority used when adding the cue's effect to the
 show. This can be used to make sure the effect runs before or after
@@ -228,6 +232,7 @@ running, and its sparkles can lighten the color which would otherwise
 be present in their fixtures.
 
 |`:held`
+|`false`
 
 |As described <<cues#held-flag,above>>, causes the cue's effect to run only
 as long as the corresponding controller button or pad is held down, if
@@ -238,6 +243,7 @@ Push mapping] does, as do mappings to generic MIDI controllers created using
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-cue-mapping[afterglow.show/add-midi-control-to-cue-mapping].
 
 |`:variables`
+|none
 
 |Specifies a sequence of show variable bindings that
 can be used by the cue's effect. Each variable specification is a map,
@@ -288,13 +294,14 @@ creating the cue's effect.
  keyword, so a variable is being created just for the cue.
 
 |`:name`
-|cue key
+|variable name
 
-|Provides a name to identify the cue in the web interface and in the
- text area of physical controllers which provide a labeled interface
- for adjusting running effects, like the Ableton Push. If no name is
- supplied, the name of the value passed with `:key` is used; provide
- `:name` in cases where that would be insufficiently descriptive.
+|Provides a name to identify the variable in the web interface and in
+ the text area of physical controllers which provide a labeled
+ interface for adjusting running effects, like the Ableton Push. If no
+ name is supplied, the name of the value passed with `:key` is used;
+ provide `:name` in cases where that would be insufficiently
+ descriptive.
 
 |`:short-name`
 |none
