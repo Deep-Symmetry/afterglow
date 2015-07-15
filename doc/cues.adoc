@@ -24,13 +24,12 @@ The cue grid is a two dimensional arrangement of cues, where the
 bottom left corner is assigned coordinates `(0, 0)`. X coordinates
 increase from left to right, and Y coordinates increase from bottom to
 top. The web interface and registered grid controllers display 64 cues
-at a time in an 8&times;8 grid, and this view can be scrolled around
-within the larger grid. The user can configure ("`link`")
-the web interface to track the scroll position of a registered grid
-controller. When that is done, scrolling either interface will cause
-the other to scroll in the same way, so the browser window can act as
-documentation to help the user learn the cue names associated with
-each available cue pad on the controller.
+at a time in an 8&times;8 grid, and can be scrolled around that grid.
+The user can set the web interface to track the scroll position of a
+registered grid controller. When that is done, scrolling either
+interface will cause the other to scroll in the same way, so the
+browser window can act as documentation to help the user learn the cue
+names associated with each available cue pad on the controller.
 
 image::assets/ShowGrid.png[Web interface]
 
@@ -43,10 +42,10 @@ user about cue compatibility, any cues which are assigned the same
 effect keyword, meaning they will terminate each other when launched,
 will be displayed in a darkened color if an effect with that keyword
 is currently running. Examples of both of these can be seen in the
-first column of cues above, in which the "`All Dimmers`" cue
+first column of cues above, in which the &ldquo;All Dimmers&rdquo; cue
 is active and displaying a lightened version of the yellow color
-assigned to it, and the two cues above it, "`All Saw Down
-Beat`" and "`All Saw Up 2 Beat`" use the same keyword
+assigned to it, and the two cues above it, &ldquo;All Saw Down
+Beat&rdquo; and &ldquo;All Saw Up 2 Beat&rdquo; use the same keyword
 and color, and so are displaying a darkened version of the yellow
 color. This is a useful technique for building easy-to-learn cue
 grids. The same cues are shown on the Ableton Push below, so you can
@@ -57,11 +56,11 @@ image::assets/AbletonInterface.jpg[Ableton Push interface]
 To trigger a cue, simply press the corresponding pad on a physical
 interface, or click within the grid cell in the web interface. The
 effect associated with the cue will be created and added to the show,
-and the grid cell will be lightened to indicate that the cue's
+and the grid cell will be lightened to indicate that the cue&rsquo;s
 effect is running. If the cue ends itself after a period, the grid
 interface will be updated to reflect that as well.
 
-To end a cue's effect before it would naturally end (or because
+To end a cue&rsquo;s effect before it would naturally end (or because
 it is open-ended and does not end until asked to), simply press the
 pad corresponding to the running cue (or, again, click the grid cell
 in the web interface). The effect will be asked to end. Some effects
@@ -88,7 +87,7 @@ this (like the Ableton Push). For such cues, one or more variable used
 by the cue can be updated by the aftertouch pressure exerted by the
 operator as they hold down the pad. This can make for very expressive
 effects, as exemplified by the Sparkle cue set up early in the
-examples namespace's
+examples namespace&rsquo;s
 http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[make-cues]
 function, and its
 http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-strobe-cue[strobe]
@@ -108,7 +107,7 @@ physical grid controllers which lack scroll buttons, linking them to
 the web interface is the most practical way of scrolling them.)
 
 Cues can also be triggered from simpler MIDI controllers (which
-don't register as grid controllers) by explicitly mapping notes
+don&rsquo;t register as grid controllers) by explicitly mapping notes
 or control changes sent by the controller to cues within the grid
 using
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-cue-mapping[afterglow.show/add-midi-control-to-cue-mapping].
@@ -160,7 +159,7 @@ namespace provides functions for creating cues. Unsurprisingly, the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-cue[cue]
 function creates a cue. At its most basic, you pass in two parameters,
 `show-key` which is the keyword that will be used to add the
-cue's effect to the show when the cue is triggered, ending any
+cue&rsquo;s effect to the show when the cue is triggered, ending any
 other effect running under that same keyword, and `effect`, which is a
 function that will be called when the cue is triggered, and whose
 responsibility is to create and return the effect that the cue should
@@ -184,7 +183,7 @@ documentation] for the full details.
 
 |Sets the text to be displayed for the cue in the web cue grid, and in
 the text display of the controller (if it has one) when the cue is
-running. If you don't supply a short name, the name of the
+running. If you don&rsquo;t supply a short name, the name of the
 effect created by the `effect` function is used, but that may be too
 long or not informative enough.
 
@@ -195,8 +194,6 @@ and relatedness to help operators learn and understand the interface.
 If not specified, white is used.
 
 |===
-
-TODO: Document `function-cue` and `compound-cues-effect`
 
 [[controlling-cues]]
 Controlling Cues
