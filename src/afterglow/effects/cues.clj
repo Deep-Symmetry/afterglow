@@ -87,8 +87,8 @@
     which support this.
 
   * `:resolution` specifies the smallest amount by which the variable
-     will be incremented or decremented when the user adjusts it for
-     controllers with continuous encoders. If not specified the
+     will be incremented or decremented when the user adjusts it using
+     a continuous encoder on a physical controller. If not specified the
      resolution is up to the controller, but 1/256 of the range from
      `:min` to `:max` is a recommended default implementation, since that
      allows access to the full DMX parameter space for channel-oriented

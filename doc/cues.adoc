@@ -345,10 +345,10 @@ creating the cue's effect.
 |_varies_
 
 |Specifies the smallest amount by which the variable should be
- adjusted when the user is turning a knob or moving a fader which
- controls it. If not specified, the controller implementation gets to
- decide what to do. The recommended default resolution is no larger
- then 1/256 of the range from `:min` to `:max`.
+ adjusted when the user is turning a continuous encoder knob. If not
+ specified, the controller implementation gets to decide what to do.
+ The recommended default resolution is no larger then 1/256 of the
+ range from `:min` to `:max`.
 
 |`:aftertouch`
 |`false`
