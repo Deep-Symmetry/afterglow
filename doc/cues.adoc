@@ -75,7 +75,7 @@ while the effect is performing its gradual ending, and it will be
 killed at that point, regardless of how much longer it was planning to
 run.
 
-[[#held-flag]]Cues can also be created which run only as long as the
+[[held-flag]]Cues can also be created which run only as long as the
 corresponding controller pad is held down (this is done by passing a
 true value with the `:held` optional keyword argument when creating
 the cue). This is often done for intense effects like strobes.
@@ -168,7 +168,7 @@ responsibility is to create and return the effect that the cue should
 add to the show. This is done so that a fresh instance of the effect
 is used each time the cue is triggered, in case the effect is complex
 and maintains its own state. The effect creation function will be
-passed a map containing any <<cue-variables,cue-specific variable bindings>>.
+passed a map containing any <<user-content-cue-variables,cue-specific variable bindings>>.
 
 There are a number of optional keyword parameters which can be used to
 modify the cue that is created. A summary of some features are
@@ -223,7 +223,7 @@ be present in their fixtures.
 
 |`:held`
 
-|As described <<held-flag,above>>, causes the cue's effect to run only
+|As described <<user-content-held-flag,above>>, causes the cue's effect to run only
 as long as the corresponding controller button or pad is held down, if
 the controller supports that capability. Currently the web interface
 does not, but the
@@ -244,7 +244,7 @@ creating the cue's effect.
 |===
 
 [cols="1a,5a", options="header"]
-.[[#cue-variables]]Cue variable specification maps
+.[[cue-variables]]Cue variable specification maps
 |===
 |Key
 |Purpose
