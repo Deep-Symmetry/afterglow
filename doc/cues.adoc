@@ -233,11 +233,12 @@ http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-t
 
 |`:variables`
 
-|[[cue-variables]]Specifies a sequence of show variable bindings that
+[[cue-variables]]
+|Specifies a sequence of show variable bindings that
 can be used by the cue's effect. Each variable specification is a map,
 whose content is described in the following table. These
 specifications are used to create any necessary new variables, and a
-map describing all the cue variables is passed to the `effect`
+map describing any cue-local variables is passed to the `effect`
 function when the cue is triggered, so they can be used as needed when
 creating the cue's effect.
 
@@ -283,9 +284,8 @@ creating the cue's effect.
 |Provides a name to identify the cue in the web interface and in the
  text area of physical controllers which provide a labeled interface
  for adjusting running effects, like the Ableton Push. If no name is
- supplied, the name of the effect created by the `effect` function is
- used instead; provide `:name` in cases where that would be too long
- or insufficiently descriptive.
+ supplied, the name of the value passed with `:key` is used; provide
+ `:name` in cases where that would be insufficiently descriptive.
 
 |`:short-name`
 
