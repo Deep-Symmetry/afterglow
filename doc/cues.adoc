@@ -206,6 +206,7 @@ purpose and relatedness to other cues, to help operators learn and
 understand the interface. If not specified, white is used.
 
 |`:end-keys`
+|none
 
 |A list of keywords that identify additional effects to be ended when
 launching this cue. See the dimmer cue section of
