@@ -288,7 +288,7 @@ creating the cue's effect.
  keyword, so a variable is being created just for the cue.
 
 |`:name`
-|variable name
+|cue key
 
 |Provides a name to identify the cue in the web interface and in the
  text area of physical controllers which provide a labeled interface
