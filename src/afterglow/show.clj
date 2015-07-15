@@ -589,8 +589,8 @@
               (let [temp-var (keyword (str "cue-temp-" x "-" y "-" (:key v)))
                     initial-value (or ((keyword (:key v)) var-overrides) (:start v))]
                 (when initial-value
-                  (set-variable! temp-var initial-value)
-                  (assoc result (keyword (:key v)) temp-var)))
+                  (set-variable! temp-var initial-value))
+                (assoc result (keyword (:key v)) temp-var))
               result)) {} (:variables cue)))
 
 (defn add-effect-from-cue-grid!
