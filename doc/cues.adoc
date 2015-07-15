@@ -57,11 +57,11 @@ image::assets/AbletonInterface.jpg[Ableton Push interface]
 To trigger a cue, simply press the corresponding pad on a physical
 interface, or click within the grid cell in the web interface. The
 effect associated with the cue will be created and added to the show,
-and the grid cell will be lightened to indicate that the cue&rsquo;s
+and the grid cell will be lightened to indicate that the cue's
 effect is running. If the cue ends itself after a period, the grid
 interface will be updated to reflect that as well.
 
-To end a cue&rsquo;s effect before it would naturally end (or because
+To end a cue's effect before it would naturally end (or because
 it is open-ended and does not end until asked to), simply press the
 pad corresponding to the running cue (or, again, click the grid cell
 in the web interface). The effect will be asked to end. Some effects
@@ -88,7 +88,7 @@ this (like the Ableton Push). For such cues, one or more variable used
 by the cue can be updated by the aftertouch pressure exerted by the
 operator as they hold down the pad. This can make for very expressive
 effects, as exemplified by the Sparkle cue set up early in the
-examples namespace&rsquo;s
+examples namespace's
 http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[make-cues]
 function, and its
 http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-strobe-cue[strobe]
@@ -108,7 +108,7 @@ physical grid controllers which lack scroll buttons, linking them to
 the web interface is the most practical way of scrolling them.)
 
 Cues can also be triggered from simpler MIDI controllers (which
-don&rsquo;t register as grid controllers) by explicitly mapping notes
+don't register as grid controllers) by explicitly mapping notes
 or control changes sent by the controller to cues within the grid
 using
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-cue-mapping[afterglow.show/add-midi-control-to-cue-mapping].
@@ -160,7 +160,7 @@ namespace provides functions for creating cues. Unsurprisingly, the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-cue[cue]
 function creates a cue. At its most basic, you pass in two parameters,
 `show-key` which is the keyword that will be used to add the
-cue&rsquo;s effect to the show when the cue is triggered, ending any
+cue's effect to the show when the cue is triggered, ending any
 other effect running under that same keyword, and `effect`, which is a
 function that will be called when the cue is triggered, and whose
 responsibility is to create and return the effect that the cue should
@@ -185,7 +185,7 @@ documentation] for the full details.
 
 |Sets the text to be displayed for the cue in the web cue grid, and in
 the text display of the controller (if it has one) when the cue is
-running. If you don&rsquo;t supply a short name, the name of the
+running. If you don't supply a short name, the name of the
 effect created by the `effect` function is used, but that may be too
 long or not informative enough.
 
@@ -194,6 +194,31 @@ long or not informative enough.
 |Sets the color of the cue within the grid for hinting about its
 purpose and relatedness to other cues, to help operators learn and
 understand the interface. If not specified, white is used.
+
+|`:end-keys`
+
+|A list of keywords that identify additional effects to be ended when
+launching this cue. See the dimmer cue section of
+http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[make-cues]
+for an example of how this can be helpful: it sets up a couple of rows
+of dimmer cues where the leftmost affects all the dimmers in the
+lighting rig, and cancels all the cues that work on individual light
+groups, while the individual light group dimmer cues cancel the
+all-dimmers cues, but leave the dimmer cues for other light groups
+alone.
+
+|`:priority`
+
+|Sets the effect priority used when adding the cue's effect to the
+show. This can be used to make sure the effect runs before or after
+other effects in the <<rendering_loop#the-rendering-loop,rendering
+loop>>. Effects are run in order, and later effects can modify or
+override the results of earlier ones, like the way the Sparkle effect
+in
+http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[make-cues]
+is assigned a priority of 100 so it sorts after any chase which may be
+running, and its sparkles can lighten the color which would otherwise
+be present in their fixtures.
 
 |===
 
