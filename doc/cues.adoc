@@ -244,12 +244,12 @@ creating the cue's effect.
 |===
 
 [cols="1a,5a", options="header"]
-.anchor:cue-variables[]Cue variable specification maps
+.Cue variable specification maps
 |===
 |Key
 |Purpose
 
-|`:key`
+|anchor:cue-variables[]`:key`
 
 |Identifies the variable that is being bound to the cue. This can
  either be a keyword, and refer to an existing show variable (set
