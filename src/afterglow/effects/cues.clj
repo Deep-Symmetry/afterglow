@@ -50,7 +50,7 @@
   * `:key` identifies the variable that is being bound by the cue (for easy
     adjustment in the user interface while the cue is running). If it is
     a string rather than a keyword, it identifies a temporary variable
-    which should exist only for the duration of the cue. The actual name
+    which need exist only for the duration of the cue. The actual name
     will be assigned when the cue is activated. In order for the effect
     function to be able to access the correct variable, it is passed a
     map whose keys are keywords made from the string `:key` values
@@ -71,8 +71,10 @@
   * `:max` specifies the maximum value to which the variable can be set.
     If not supplied, 100 is assumed.
 
-  * `:start` specifies the value to assign to the variable at the start
-    of the cue, if any.
+  * `:start` specifies the value to assign to the variable at the
+    start of the cue, if any. This is honored only for temporary
+    variables introduced for the cue, in other words when `:key` is
+    given with a string rather than a keyword.
 
   * `:type` identifies the type of the variable, to help formatting
     its display. Supported values are `:integer`, `:float`, possibly
@@ -81,7 +83,8 @@
 
   * `:centered` supplied with a true value requests that the gauge
     displayed when adjusting this variable's value be like a pan
-    gauge, showing deviation from a central value.
+    gauge, showing deviation from a central value, for interfaces
+    which support this.
 
   * `:resolution` specifies the smallest amount by which the variable
      will be incremented or decremented when the user adjusts it for
@@ -92,7 +95,8 @@
      values.
 
   * `:aftertouch` accompanied by a true value enables the variable to
-  be adjusted by aftertouch values on pressure-sensitive controllers.
+    be adjusted by aftertouch pressure while the pad which launched the
+    cue is held down on pressure-sensitive controllers.
 
   * `:aftertouch-min` and `:aftertouch-max` specify the range into
     which MIDI aftertouch values will be mapped, if they are present.

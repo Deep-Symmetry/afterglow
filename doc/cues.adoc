@@ -244,14 +244,107 @@ creating the cue's effect.
 |===
 
 [cols="1a,5a", options="header"]
-.Cue variable specification map entries
+.Cue variable specification maps
 |===
 |Key
 |Purpose
 
 |`:key`
 
-|Identifies the variable that is being bound to the cue.
+|Identifies the variable that is being bound to the cue. This can
+ either be a keyword, and refer to an existing show variable (set
+ using
+ http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-set-variable.21[afterglow.show/set-variable!]),
+ or a string, meaning that a new variable should be introduced for the
+ cue. The actual name of this new variable will be assigned when the
+ cue is activated. In order for the effect to be able to access the
+ correct variable, a map is passed to the `effect` function that
+ creates the cue's effect. Within this map, the keys are keywords
+ created from the strings passed as `:key` values in the cue's
+ variable specification maps, and the corresponding values are the
+ keyword of the variable that was created for the cue to go with that
+ key. An example of using such cue-local variables can be found in the
+ source of the
+ http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-strobe-cue[make-strobe-cue]
+ example, for the variable `level`. That cue also makes use of the
+ independent show variable `:strobe-lightness` which is set by a
+ separate `adjust-strobe` cue running the effect
+ http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-adjust-strobe[afterglow.fun/adjust-strobe],
+ forming an interesting demonstration of interacting cues.
+
+|`:start`
+
+|Specifies the value to assign when creating the cue-local variable.
+ Applies only when the value at `:key` is a string rather than a
+ keyword, so a variable is being created just for the cue.
+
+|`:name`
+
+|Provides a name to identify the cue in the web interface and in the
+ text area of physical controllers which provide a labeled interface
+ for adjusting running effects, like the Ableton Push. If no name is
+ supplied, the name of the effect created by the `effect` function is
+ used instead; provide `:name` in cases where that would be too long
+ or insufficiently descriptive.
+
+|`:short-name`
+
+|If present, gives a shorter version of `:name` to be used in
+ interfaces with limited space.
+
+|`:min`
+
+|Specifies the smallest value that the variable can be adjusted to, for
+ interfaces which support adjustment of cue variables while the cue is
+ running. If not supplied, the minimum value will be `0`.
+
+|`:max`
+
+|Specifies the largest value that the variable can be adjusted to, for
+ interfaces which support adjustment of cue variables while the cue is
+ running. If not supplied, the maximum value will be `100`.
+
+|`:type`
+
+|Provides a hint for how the variable should be formatted in
+ adjustment interfaces. Supported values are `:integer` and `:float`.
+ Others may be added in the future. If not provided (or an
+ unrecognized value is provided), the variable is assumed to hold
+ floating-point values.
+
+|`:centered`
+
+|Requests that variable adjustment interfaces which draw a graphical
+ representation of the current value within its range display this
+ variable as a deviation from a central value, rather than something
+ growing from the left, if they have such options.
+
+|`:resolution`
+
+|Specifies the smallest amount by which the variable should be
+ adjusted when the user is turning a knob or moving a fader which
+ controls it. If not specified, the controller implementation gets to
+ decide what to do. The recommended default resolution is no larger
+ then 1/256 of the range from `:min` to `:max`.
+
+|`:aftertouch`
+
+|If present, with a true value, requests that the variable value be
+ adjusted by aftertouch pressure while the operator is holding down
+ the button or pad which launched the cue, on controllers which have
+ pressure sensitivity.
+
+|`:aftertouch-min`
+
+|If present (and `:aftertouch` is active), specifies the smallest
+ value the variable should be set to by MIDI aftertouch pressure. If
+ not specified, the standard `:min` value is used.
+
+|`:aftertouch-max`
+
+|If present (and `:aftertouch` is active), specifies the largest
+ value the variable should be set to by MIDI aftertouch pressure. If
+ not specified, the standard `:max` value is used.
 
 |===
 
