@@ -249,7 +249,7 @@ creating the cue's effect.
 |Key
 |Purpose
 
-|anchor:cue-variables[]`:key`
+|[[cue-variables]]`:key`
 
 |Identifies the variable that is being bound to the cue. This can
  either be a keyword, and refer to an existing show variable (set
