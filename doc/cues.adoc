@@ -249,13 +249,15 @@ creating the cue's effect.
 
 |===
 
-[cols="1a,5a", options="header"]
+[cols="1a,1a,5a", options="header"]
 .[[cue-variables]]Cue variable specification maps
 |===
 |Key
+|Default
 |Purpose
 
 |`:key`
+|_n/a_
 
 |Identifies the variable that is being bound to the cue. This can
  either be a keyword, and refer to an existing show variable (set
@@ -279,12 +281,14 @@ creating the cue's effect.
  forming an interesting demonstration of interacting cues.
 
 |`:start`
+|`nil`
 
 |Specifies the value to assign when creating the cue-local variable.
  Applies only when the value at `:key` is a string rather than a
  keyword, so a variable is being created just for the cue.
 
 |`:name`
+|variable name
 
 |Provides a name to identify the cue in the web interface and in the
  text area of physical controllers which provide a labeled interface
@@ -293,23 +297,27 @@ creating the cue's effect.
  `:name` in cases where that would be insufficiently descriptive.
 
 |`:short-name`
+|none
 
 |If present, gives a shorter version of `:name` to be used in
  interfaces with limited space.
 
 |`:min`
+|`0`
 
 |Specifies the smallest value that the variable can be adjusted to, for
  interfaces which support adjustment of cue variables while the cue is
- running. If not supplied, the minimum value will be `0`.
+ running. If not supplied, the minimum value will be zero.
 
 |`:max`
+|`100`
 
 |Specifies the largest value that the variable can be adjusted to, for
  interfaces which support adjustment of cue variables while the cue is
- running. If not supplied, the maximum value will be `100`.
+ running. If not supplied, the maximum value will be one hundred.
 
 |`:type`
+|`:float`
 
 |Provides a hint for how the variable should be formatted in
  adjustment interfaces. Supported values are `:integer` and `:float`.
@@ -318,6 +326,7 @@ creating the cue's effect.
  floating-point values.
 
 |`:centered`
+|`false`
 
 |Requests that variable adjustment interfaces which draw a graphical
  representation of the current value within its range display this
@@ -325,6 +334,7 @@ creating the cue's effect.
  growing from the left, if they have such options.
 
 |`:resolution`
+|_varies_
 
 |Specifies the smallest amount by which the variable should be
  adjusted when the user is turning a knob or moving a fader which
@@ -333,6 +343,7 @@ creating the cue's effect.
  then 1/256 of the range from `:min` to `:max`.
 
 |`:aftertouch`
+|`false`
 
 |If present, with a true value, requests that the variable value be
  adjusted by aftertouch pressure while the operator is holding down
@@ -340,12 +351,14 @@ creating the cue's effect.
  pressure sensitivity.
 
 |`:aftertouch-min`
+|`:min`
 
 |If present (and `:aftertouch` is active), specifies the smallest
  value the variable should be set to by MIDI aftertouch pressure. If
  not specified, the standard `:min` value is used.
 
 |`:aftertouch-max`
+|`:max`
 
 |If present (and `:aftertouch` is active), specifies the largest
  value the variable should be set to by MIDI aftertouch pressure. If
@@ -398,30 +411,35 @@ modify the cue that is created, and are described below. See the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-function-cue[API
 documentation] for more details.
 
-[cols="1a,5a", options="header"]
+[cols="1a,1a,5a", options="header"]
 .Keyword parameters to `function-cue`
 |===
 |Parameter
+|Default
 |Purpose
 
 |`:effect-name`
+|function name
 
 |Sets the name to assign the effect created by the cue. If none is
  provided, the name of the `function` keyword is used.
 
 |`:short-name`
+|none
 
 |Can be used to provide a shorter name to be displayed for the cue in
 the web cue grid, and in the text display of the controller (if it has
 one) when the cue is running.
 
 |`:color`
+|white
 
 |Sets the color of the cue within the grid for hinting about its
 purpose and relatedness to other cues, to help operators learn and
 understand the interface. If not specified, white is used.
 
 |`:level`
+|`0`
 
 |If provided, and the function supports a range of values with
  different meanings (such as a focus range, movement speed, or the
@@ -434,6 +452,7 @@ understand the interface. If not specified, white is used.
  to the highest.
 
 |`:htp`
+|`false`
 
 |If supplied along with a true value, causes the effect that is
  created for this cue to operate with _highest-takes-precedence_ rules
@@ -443,6 +462,7 @@ understand the interface. If not specified, white is used.
  value.
 
 |`:end-keys`
+|none
 
 |A list of keywords that identify additional effects to be ended when
 launching this cue. See the dimmer cue section of
@@ -455,6 +475,7 @@ all-dimmers cues, but leave the dimmer cues for other light groups
 alone.
 
 |`:priority`
+|`0`
 
 |Sets the effect priority used when adding the cue's effect to the
 show. This can be used to make sure the effect runs before or after
@@ -468,6 +489,7 @@ running, and its sparkles can lighten the color which would otherwise
 be present in their fixtures.
 
 |`:held`
+|`false`
 
 |As described <<cues#held-flag,above>>, causes the cue's effect to run only
 as long as the corresponding controller button or pad is held down, if
@@ -478,6 +500,7 @@ Push mapping] does, as do mappings to generic MIDI controllers created using
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-cue-mapping[afterglow.show/add-midi-control-to-cue-mapping].
 
 |`:aftertouch`
+|`false`
 
 |If present, with a true value, requests that the function value be
  adjusted by aftertouch pressure while the operator is holding down
@@ -485,6 +508,7 @@ http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-t
  pressure sensitivity.
 
 |`:aftertouch-min`
+|`0`
 
 |If present (and `:aftertouch` is active), specifies the smallest
  value the function should be set to by MIDI aftertouch pressure. If
@@ -492,6 +516,7 @@ http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-t
  DMX value the fixture definition identifies for the function.
 
 |`:aftertouch-max`
+|`100`
 
 |If present (and `:aftertouch` is active), specifies the largest value
  the variable should be set to by MIDI aftertouch pressure. If not

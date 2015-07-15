@@ -517,7 +517,7 @@
 
   The `:from-cue` keyword argument is used to keep track of effects
   which were launched from the cue grid, to help provide feedback on
-  control surfaces and in the web interface. `:var-map` Is used to
+  control surfaces and in the web interface. `:var-map` is used to
   supply a map of variable bindings associated with the cue, also for
   use by interfaces which support them."
   {:doc/format :markdown}
