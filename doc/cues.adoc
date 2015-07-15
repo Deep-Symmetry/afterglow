@@ -244,14 +244,14 @@ creating the cue's effect.
 |===
 
 [cols="1a,5a", options="header"]
-.Cue variable specification maps
+.anchor:cue-variables[]Cue variable specification maps
 |===
 |Key
 |Purpose
 
 |`:key`
 
-[[cue-variables]]|Identifies the variable that is being bound to the cue. This can
+|Identifies the variable that is being bound to the cue. This can
  either be a keyword, and refer to an existing show variable (set
  using
  http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-set-variable.21[afterglow.show/set-variable!]),
