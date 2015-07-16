@@ -259,8 +259,12 @@ function bpmSlide( eventObject ) {
     });
 }
 
-function decorateMetronomeAdjusters( selector ) {
-    $(selector).click(metronomeAdjustClicked);
+function decorateMetronomeAdjusters( selector, onMouseDown ) {
+    if (onMouseDown) {
+        $(selector).mousedown(metronomeAdjustClicked);
+    } else {
+        $(selector).click(metronomeAdjustClicked);
+    }
     $(selector).hover(
         function() {
             $(this).addClass('metronome-active');
@@ -276,8 +280,9 @@ $( document ).ready(function() {
     $("#stopButton").click(uiButtonClicked);
     $("#errorDetailsButton").click(errorDetailsClicked);
     $(".grid-scroll-button").click(uiButtonClicked);
-    decorateMetronomeAdjusters(".metronome-adjust-target");
-    decorateMetronomeAdjusters(".metronome-reset-target");
+    decorateMetronomeAdjusters(".metronome-tap-target", true);
+    decorateMetronomeAdjusters(".metronome-adjust-target", false);
+    decorateMetronomeAdjusters(".metronome-reset-target", false);
     $(".cue-cell").mousedown(cueCellClicked);
     if ($("#link-select option").length > 1) {
         $("#link-section").fadeIn();
