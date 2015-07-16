@@ -389,7 +389,7 @@
            (response {:error (str "Unable to build updates:" (.getMessage t))}))))
 
 (defn- handle-cue-click-event
-  "Process an interaction with a cue grid cell."
+  "Process a mouse down on a cue grid cell."
   [page-info kind]
   (let [[left bottom] (:view page-info)
         [_ column row] (clojure.string/split kind #"-")
@@ -398,9 +398,27 @@
     (if cue
       (with-show (:show page-info)
         (if active
-          (show/end-effect! (:key cue))
-          (show/add-effect-from-cue-grid! x y))
-        {:hit kind})
+          (do (show/end-effect! (:key cue))
+              {:ended kind})
+          (let [id (show/add-effect-from-cue-grid! x y)]
+            (if (:held cue)
+                {:holding id}
+                {:started id}))))
+      {:error (str "No cue found for cell: " kind)})))
+
+(defn- handle-cue-release-event
+  "Process a mouse up after clicking a cue grid cell."
+  [page-info kind]
+  (let [[left bottom] (:view page-info)
+        [_ _ column row id] (clojure.string/split kind #"-")
+        [x y] (map + (map #(Integer/valueOf %) [column row]) [left bottom])
+        [cue active] (show/find-cue-grid-active-effect (:show page-info) x y)]
+    (if cue
+      (with-show (:show page-info)
+        (if (:held cue)
+          (do (show/end-effect! (:key cue) :when-id (Integer/valueOf id))
+              {:ended id})
+          {:error (str "Cue was not held for cell: " kind)}))
       {:error (str "No cue found for cell: " kind)})))
 
 (defn- move-view
@@ -573,6 +591,9 @@
            (response
             (cond (.startsWith kind "cue-")
                   (handle-cue-click-event page-info kind)
+                  
+                  (.startsWith kind "release-cue-")
+                  (handle-cue-release-event page-info kind)
                   
                   (.startsWith kind "cues-")
                   (handle-cue-move-event page-info kind)

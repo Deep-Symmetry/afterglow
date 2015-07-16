@@ -211,11 +211,25 @@ function metronomeAdjustClicked( eventObject ) {
     });
 }
 
+var $doc = $(document);
+
 function cueCellClicked( eventObject ) {
-    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + this.id),
-                        { "__anti-forgery-token": csrf_token } ).fail(function() {
-        console.log("Problem requesting cue toggle.");
-    });
+    var cell = this.id;
+    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + cell),
+                        { "__anti-forgery-token": csrf_token }, function(data) {
+                            if ('holding' in data) {
+                                $doc.mouseup(function() {
+                                    var jqxhr2 = $.post( (context + "/ui-event/" + page_id +
+                                                          "/release-" + cell + "-" + data['holding']),
+                                                         { "__anti-forgery-token": csrf_token } ).fail(function() {
+                                                             console.log("Problem reporting held cue release.");
+                                                         });
+                                    $doc.unbind('mouseup');
+                                });
+                            }
+                        }).fail(function() {
+                            console.log("Problem requesting cue toggle.");
+                        });
 }
 
 function linkMenuChanged( eventObject ) {
@@ -264,7 +278,7 @@ $( document ).ready(function() {
     $(".grid-scroll-button").click(uiButtonClicked);
     decorateMetronomeAdjusters(".metronome-adjust-target");
     decorateMetronomeAdjusters(".metronome-reset-target");
-    $(".cue-cell").click(cueCellClicked);
+    $(".cue-cell").mousedown(cueCellClicked);
     if ($("#link-select option").length > 1) {
         $("#link-section").fadeIn();
     }
