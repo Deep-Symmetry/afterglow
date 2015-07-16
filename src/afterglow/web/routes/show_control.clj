@@ -22,20 +22,20 @@
   currently running in that show, a cue, and the currently-running
   effect launched by that cue (if any), determines the color with
   which that cue cell should be drawn in the web interface."
-  [show active-keys cue cue-effect]
+  [show active-keys cue cue-effect held?]
   (let [ending (and cue-effect (:ending cue-effect))
         l-boost (if (zero? (colors/saturation (:color cue))) 20.0 0.0)]
     (colors/create-color
      :h (colors/hue (:color cue))
-     ;; Figure the brightness. Active, non-ending cues are full brightness;
-     ;; when ending, they blink between middle and low. If they are not active,
-     ;; they are at middle brightness unless there is another active effect with
-     ;; the same keyword, in which case they are dim.
+     ;; Figure the lightness. Held cues are the lightest, followed by active, non-ending
+     ;; cues. When ending, cues blink between middle and low. If they are not active,
+     ;; they are at middle lightness unless there is another active effect with the same
+     ;; keyword, in which case they are dim.
      :s (colors/saturation (:color cue))
      :l (+ (if cue-effect
              (if ending
                (if (> (rhythm/metro-beat-phase (:metronome show)) 0.4) 20.0 40.0)
-               65.0)
+               (if held? 80.0 65.0))
              (if (active-keys (:key cue)) 25.0 40.0))
            l-boost))))
 
@@ -49,13 +49,14 @@
   assigned a unique cue ID (identifying page-relative coordinates,
   with zero at the lower left) so they can be updated if a cue is
   created for that slot while the page is still up."
-  [show left bottom width height]
+  [show left bottom width height holding]
   (let [active-keys (show/active-effect-keys show)]
     (for [y (range (dec (+ bottom height)) (dec bottom) -1)]
       (for [x (range left (+ left width))]
         (assoc
          (if-let [[cue active] (show/find-cue-grid-active-effect show x y)]
-           (let [color (current-cue-color show active-keys cue active)]
+           (let [held? (and holding (= holding [x y (:id active)]))
+                 color (current-cue-color show active-keys cue active held?)]
              (assoc cue :current-color color
                     :style-color (str "style=\"background-color: " (colors/rgb-hexstr color) "\"")))
            ;; No actual cue found, start with an empty map
@@ -186,7 +187,7 @@
   "Renders the web interface for interacting with the specified show."
   [show-id]
   (let [[show description] (get @show/shows (Integer/valueOf show-id))
-        grid (cue-view show 0 0 8 8)
+        grid (cue-view show 0 0 8 8 nil)
         page-id (:counter (swap! clients update-in [:counter] inc))]
     (swap! clients update-in [page-id] assoc :show show :id page-id
            :tap-tempo-handler (amidi/create-tempo-tap-handler (:metronome show)))
@@ -212,7 +213,7 @@
   record."
   [page-id left bottom width height]
   (let [last-info (get @clients page-id)
-        grid (cue-view (:show last-info) left bottom width height)
+        grid (cue-view (:show last-info) left bottom width height (:holding last-info))
         changes (filter identity (flatten (for [[last-row row] (map list (:grid last-info) grid)]
                                             (for [[last-cell cell] (map list last-row row)]
                                               (when (not= last-cell cell)
@@ -390,33 +391,38 @@
 
 (defn- handle-cue-click-event
   "Process a mouse down on a cue grid cell."
-  [page-info kind]
+  [page-info kind req]
   (let [[left bottom] (:view page-info)
         [_ column row] (clojure.string/split kind #"-")
         [x y] (map + (map #(Integer/valueOf %) [column row]) [left bottom])
-        [cue active] (show/find-cue-grid-active-effect (:show page-info) x y)]
+        [cue active] (show/find-cue-grid-active-effect (:show page-info) x y)
+        shift (get-in req [:params :shift])]
     (if cue
       (with-show (:show page-info)
         (if active
           (do (show/end-effect! (:key cue))
               {:ended kind})
           (let [id (show/add-effect-from-cue-grid! x y)]
-            (if (:held cue)
-                {:holding id}
-                {:started id}))))
+            (if (and (:held cue) (not shift))
+              (do
+                ;; Let the grid know a momentary cue is being held, so proper feedback can be shown
+                (swap! clients assoc-in [(:id page-info) :holding] [x y id])
+                {:holding {:x x :y y :id id}})
+              {:started id}))))
       {:error (str "No cue found for cell: " kind)})))
 
 (defn- handle-cue-release-event
-  "Process a mouse up after clicking a cue grid cell."
+  "Process a mouse up after clicking a momentary cue grid cell."
   [page-info kind]
   (let [[left bottom] (:view page-info)
-        [_ _ column row id] (clojure.string/split kind #"-")
-        [x y] (map + (map #(Integer/valueOf %) [column row]) [left bottom])
+        [_ x y id] (clojure.string/split kind #"-")
+        [x y id] (map #(Integer/valueOf %) [x y id])
         [cue active] (show/find-cue-grid-active-effect (:show page-info) x y)]
+    (swap! clients update-in [(:id page-info)] dissoc :holding)
     (if cue
       (with-show (:show page-info)
         (if (:held cue)
-          (do (show/end-effect! (:key cue) :when-id (Integer/valueOf id))
+          (do (show/end-effect! (:key cue) :when-id id)
               {:ended id})
           {:error (str "Cue was not held for cell: " kind)}))
       {:error (str "No cue found for cell: " kind)})))
@@ -590,9 +596,9 @@
            ;; Found the page tracking information, process the event.
            (response
             (cond (.startsWith kind "cue-")
-                  (handle-cue-click-event page-info kind)
+                  (handle-cue-click-event page-info kind req)
                   
-                  (.startsWith kind "release-cue-")
+                  (.startsWith kind "release-")
                   (handle-cue-release-event page-info kind)
                   
                   (.startsWith kind "cues-")

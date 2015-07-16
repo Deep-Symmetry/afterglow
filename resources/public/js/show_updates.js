@@ -215,12 +215,16 @@ var $doc = $(document);
 
 function cueCellClicked( eventObject ) {
     var cell = this.id;
-    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + cell),
+    var shiftParam = eventObject.shiftKey ? "?shift=down" : "";
+    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + cell + shiftParam),
                         { "__anti-forgery-token": csrf_token }, function(data) {
                             if ('holding' in data) {
+                                var id = data['holding']['id'];
+                                var x = data['holding']['x'];
+                                var y = data['holding']['y'];
                                 $doc.mouseup(function() {
                                     var jqxhr2 = $.post( (context + "/ui-event/" + page_id +
-                                                          "/release-" + cell + "-" + data['holding']),
+                                                          "/release-" + x + "-" + y + "-" + id),
                                                          { "__anti-forgery-token": csrf_token } ).fail(function() {
                                                              console.log("Problem reporting held cue release.");
                                                          });

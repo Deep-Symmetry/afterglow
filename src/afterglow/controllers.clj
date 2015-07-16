@@ -143,7 +143,10 @@
   "Records the fact that the cue at the specified grid coordinates was
   activated in a show, and assigned the specified id, which can be
   used later to determine whether the same cue is still running. If id
-  is nil, the cue is deactivated rather than activated."
+  is nil, the cue is deactivated rather than activated. Sends
+  appropriate MIDI feedback events to any non-grid controllers which
+  have requested them for that cue, so they can update their
+  interfaces appropriately."
   [grid x y id]
   (dosync
    (when-let [cue (cue-at grid x y)]

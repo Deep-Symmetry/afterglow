@@ -173,10 +173,12 @@ special-purpose `function-cue` described
 <<cues#creating-function-cues,below>>.
 
 There are a number of optional keyword parameters which can be used to
-modify the cue that is created. A summary of some features are
-presented here, but be sure to see the
+modify the cue that is created. Remember that you can also consult the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-cue[API
-documentation] for the full details.
+documentation] for another explanation of these functions, and for
+links to examine the source code, which is the most authoritative
+explanation of how they work, and can offer inspiration for variations
+that you might want to create yourself.
 
 [cols="1a,1a,5a", options="header"]
 .Keyword parameters to `cue`
@@ -231,14 +233,23 @@ be present in their fixtures.
 |`:held`
 |`false`
 
-|As described <<cues#held-flag,above>>, causes the cue's effect to run only
-as long as the corresponding controller button or pad is held down, if
-the controller supports that capability. All current
+|As described <<cues#held-flag,above>>, causes the cue's effect to run
+only as long as the corresponding controller button or pad is held
+down, if the controller supports that capability. All current
 controller implementations, including the web interface, the
 http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
 Push mapping], and mappings to generic MIDI controllers created using
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-cue-mapping[afterglow.show/add-midi-control-to-cue-mapping],
-do honor this setting.
+do honor this setting. The web interface and controllers like the
+Push, which can vary the color of cue grid cells, will provide
+feedback that a cue will last only as long as it is held by displaying
+a whitened version of the cue color while it is held down.
+
+Show operators can override the `:held` flag by holding down the
+`Shift` key when triggering the cue on interfaces which have `Shift`
+keys (like the web interface and Ableton Push). This will cause the
+cue to run until the corresponding pad or grid cell is pressed again,
+and will not whiten the cue color while it is held down.
 
 |`:variables`
 |none
@@ -377,8 +388,8 @@ Creating Function Cues
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Often you want a cue to activate a specific feature of a fixture
-(often described as a _function_ in the fixture documentation, and in
-the fixture definition within Afterglow, which can unfortunately get
+(often described as a _function_ in the fixture manual, and in the
+fixture definition within Afterglow, which can unfortunately get
 confusing when we are talking about invoking Clojure functions). To
 make it easy to work with such fixture capabilities, the
 `afterglow.effects.cues` namespace also offers the
@@ -503,7 +514,16 @@ controller implementations, including the web interface, the
 http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
 Push mapping], and mappings to generic MIDI controllers created using
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-cue-mapping[afterglow.show/add-midi-control-to-cue-mapping],
-do honor this setting.
+do honor this setting. The web interface and controllers like the
+Push, which can vary the color of cue grid cells, will provide
+feedback that a cue will last only as long as it is held by displaying
+a whitened version of the cue color while it is held down.
+
+Show operators can override the `:held` flag by holding down the
+`Shift` key when triggering the cue on interfaces which have `Shift`
+keys (like the web interface and Ableton Push). This will cause the
+cue to run until the corresponding pad or grid cell is pressed again,
+and will not whiten the cue color while it is held down.
 
 |`:aftertouch`
 |`false`
@@ -546,4 +566,25 @@ http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ab
 Push], use to attach themselves to a running show, and synchronize
 with the web interface.
 
-TODO: Flesh out, discuss individual functions.
+If you are implementing a new grid controller mapping, you will want
+to study that protocol, and will likely find the Ableton Push mapping
+a useful example and starting point for your own work. (And please,
+when you are done, submit a pull request to add your implementation to
+Afterglow!)
+
+When you are setting up the cue grid for your show, you will use
+http://deepsymmetry.org/afterglow/doc/afterglow.controllers.html#var-set-cue.21[set-cue!]
+to arrange the cues you want it to contain. The
+http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[make-cues]
+function in the examples namespace contains a lot of examples of doing
+this. As cues are added to the grid, its dimensions are updated, and
+the web interfaces and any registered grid controllers will
+immediately reflect the new cue and dimensions.
+
+You can remove a cue from the grid with
+http://deepsymmetry.org/afterglow/doc/afterglow.controllers.html#var-clear-cue.21[clear-cue].
+
+The rest of the functions in the `afterglow.controllers` namespace are used by
+controller implementations and running shows to mediate their
+interactions with the cue grid; dig into them if you are writing code
+in those spaces.

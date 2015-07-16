@@ -1382,25 +1382,27 @@
             (with-show (:show controller)
               (if active
                 (show/end-effect! (:key cue))
-                (let [id (show/add-effect-from-cue-grid! cue-x cue-y)]
+                (let [id (show/add-effect-from-cue-grid! cue-x cue-y)
+                      holding (and (:held cue) (not @(:shift-mode controller)))]
                   (add-overlay controller
                                (reify IOverlay
                                  (captured-controls [this] #{})
                                  (captured-notes [this] #{note})
                                  (adjust-interface [this controller]
-                                   (let [color (colors/create-color
-                                                :h (colors/hue (:color cue))
-                                                :s (colors/saturation (:color cue))
-                                                :l 75)]
-                                     (aset (:next-grid-pads controller) (+ pad-x (* pad-y 8))
-                                           (velocity-for-color color)))
+                                   (when holding
+                                     (let [color (colors/create-color
+                                                  :h (colors/hue (:color cue))
+                                                  :s (colors/saturation (:color cue))
+                                                  :l 75)]
+                                       (aset (:next-grid-pads controller) (+ pad-x (* pad-y 8))
+                                             (velocity-for-color color))))
                                    true)
                                  (handle-control-change [this controller message]
                                    false)
                                  (handle-note-on [this controller message]
                                    false)
                                  (handle-note-off [this controller message]
-                                   (when (:held cue)
+                                   (when holding
                                      (with-show (:show controller)
                                        (show/end-effect! (:key cue) :when-id id)))
                                    :done)

@@ -427,10 +427,6 @@ TODO: listing of options this app accepts once it can run as a standalone app.
   metadata with the variables so the page can provide appropriate
   editing tools and validation. Values live-update when controllers
   change them.
-- [ ] Add show status query, reports statistics as well as list of
-  current effects and priorities, perhaps when they were added, the
-  list of targets each is currently assigning, other stuff? Could turn
-  into the start of a web interface.
 - [ ] When it comes time to save data and settings, the luminus
   approach looks good, including
   [yesql](https://yobriefca.se/blog/2014/11/25/yesql-sql-in-sql-in-clojure/)

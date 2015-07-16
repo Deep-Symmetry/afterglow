@@ -42,7 +42,10 @@
   If `:held` is passed with a true value, then the cue will be active
   only as long as the corresponding pad or button on the control
   surface is held down, for controllers which support this feature.
-  This can be useful for very intense cues like strobes.
+  This can be useful for very intense cues like strobes. Show
+  operators can override the `:held` flag by holding down the `Shift`
+  key when triggering the cue on interfaces which have `Shift` keys,
+  like the web interface and Ableton Push.
 
   `:variables` introduces a list of variable bindings for the cue,
   each of which is a map with the following keys:
@@ -170,7 +173,10 @@
   If `:held` is passed with a true value, then the cue will be active
   only as long as the corresponding pad or button on the control
   surface is held down, for controllers which support this feature.
-  This can be useful for very intense cues like strobes.
+  This can be useful for very intense cues like strobes. Show
+  operators can override the `:held` flag by holding down the `Shift`
+  key when triggering the cue on interfaces which have `Shift` keys,
+  like the web interface and Ableton Push.
 
   If the function being controlled has a variable effect, and thus a
   cue variable is being introduced to adjust it, `:aftertouch`,
