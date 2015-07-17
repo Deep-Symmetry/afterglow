@@ -333,7 +333,11 @@ synchronized for you. To configure that synchronization, click the
 `Sync` button once you have the clock or DJ link signals reaching the
 machine running Afterglow, and choose the sync source you want to use.
 
-TODO: Screen shot of sync
+image:assets/MetronomeSync.png[Metronome sync]
+
+TIP: When you are synchronizing with Pro DJ Link, you will almost
+always want to sync to the mixer, rather than one of the CDJs, so you
+stay in sync as the DJs mix between tracks.
 
 Once your sync is established, the `Tap Tempo` button changes. If you
 are using MIDI clock to sync the BPM, it becomes a `Tap Beat` button,
@@ -341,3 +345,12 @@ which simply establishes where the beat falls. If you are locked in to
 a Pro DJ Link beat grid, it becomes a `Tap Bar` button which, when
 pressed, indicates that the current beat is the down beat (start) of a
 bar.
+
+image:assets/MetronomeSynced.png[Metronome synced]
+
+The Sync button also turns green to indicate that sync is in effect.
+If something interrupts the sync process (such as the network link
+being broken, or the DJ software's MIDI clock generator being turned
+off), the button will turn red to warn you that it is not working.
+Pressing the Sync button again will give you more information to
+troubleshoot the problem
