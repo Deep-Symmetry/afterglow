@@ -244,13 +244,12 @@ The text labels within the cue cells are to help identify their
 purpose, and are established when the cues are created. Similarly, the
 colors are intended to help identify related cues.
 
+image:assets/CueScroll.png[Show control,float="right"]
 The show may have many more cues than fit on the screen at once; the
 diamond of blue arrows at the bottom right allow you to page through
 the larger grid. If there are more cues available in a given
 direction, that arrow will be enabled, otherwise it is dimmed.
 Clicking an active arrow scrolls the view one page in that direction.
-
-image:assets/CueScroll.png[Show control,align="right",float="left"]
 
 If you have any grid controllers you can attach them to the show. An
 Ableton Push would be bound as follows:
