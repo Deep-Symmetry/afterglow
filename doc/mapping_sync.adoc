@@ -144,9 +144,11 @@ If you are using a mixer or DJ software like Traktor which supports only
 MIDI clock sync, it is a lot better than nothing! Here is how to take
 advantage of it.
 
-____
-TODO: Explain how to set Traktor up to send MIDI clock.
-____
+TIP: Native Instruments has an informative Knowledge Base article
+which
+http://www.native-instruments.com/en/support/knowledge-base/show/750/how-to-send-a-midi-clock-sync-signal-in-traktor/[explains]
+how to configure Traktor to send the MIDI clock pulses that Afterglow
+can sync to.
 
 Once you have your MIDI clock pulses reaching the system on which
 Afterglow is running, start Afterglow. Because of limitations inherent
