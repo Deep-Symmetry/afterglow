@@ -18,7 +18,7 @@
                  [amalloy/ring-buffer "1.1"]
                  [com.climate/claypoole "1.0.0"]
                  [org.flatland/protobuf "0.8.1"]
-                 [selmer "0.8.4"]
+                 [selmer "0.8.5"]
                  [org.clojars.brunchboy/colors "1.0.2-SNAPSHOT"]
                  [environ "1.0.0"]
                  [com.taoensso/timbre "4.0.2"]
