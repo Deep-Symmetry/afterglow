@@ -353,4 +353,4 @@ If something interrupts the sync process (such as the network link
 being broken, or the DJ software's MIDI clock generator being turned
 off), the button will turn red to warn you that it is not working.
 Pressing the Sync button again will give you more information to
-troubleshoot the problem
+troubleshoot the problem.
