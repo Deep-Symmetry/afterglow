@@ -599,7 +599,7 @@ up, but that is not yet implemented, so for now you will need to use
 the <<README#metronome-control,web interface>> to configure it.
 
 NOTE: The pad does already change color to let you know the sync
-status: Amber means manual, green means successful automatic sync, and
+status: amber means manual, green means successful automatic sync, and
 red means a requested automatic sync has failed. It is likely that the
 second release of Afterglow will let you press this pad to choose your
 sync source.
