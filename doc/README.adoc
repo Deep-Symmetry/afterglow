@@ -223,7 +223,7 @@ lighting effects was used up. As you add more complex effects, the
 bar will fill in and turn red, warning you if Afterglow might not be
 able to keep up.
 
-The red Stop button next to it can be used to temporarily shut down
+The red `Stop` button next to it can be used to temporarily shut down
 the show, blacking out all universes that it controls. Clicking it
 again restarts the show where it would have been had it not stopped.
 If there is a problem communicating with the Open Lighting
