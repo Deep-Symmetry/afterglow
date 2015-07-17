@@ -335,13 +335,14 @@ Trying to keep up with tempo changes during dynamic shows can be very
 difficult, so you will hopefully be able to take advantage of
 Afterglow's metronome synchronization features. If you can get the DJ
 to feed you <<mapping_sync#syncing-to-midi-clock,MIDI clock pulses>>
-or connect via an Ethernet network to Pioneer professional DJ gear so
-you can lock into the beat grid established by
+or connect via a Local Area Network to Pioneer professional DJ gear to
+lock into the beat grid established by
 <<mapping_sync#syncing-to-pro-dj-link,Pro DJ Link>>, Afterglow can
 keep the BPM (with MIDI) and even the beats (with Pro DJ Link)
 synchronized for you. To configure that synchronization, click the
-`Sync` button once you have the clock or DJ link signals reaching the
-machine running Afterglow, and choose the sync source you want to use.
+`Sync` button once you have the MIDI clock or network Pro DJ Link
+signals reaching the machine running Afterglow, and choose the sync
+source you want to use.
 
 image:assets/MetronomeSync.png[Metronome sync]
 
