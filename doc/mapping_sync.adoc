@@ -446,6 +446,7 @@ TODO: Make "below" a link in para above.
 
 === Scrolling
 
+[.right]
 image:assets/PushScroll.jpg[Push scroll diamond,300,337,float="right",align="right"]
 The show will likely have many more cues than fit on the pad grid; the
 diamond of arrow buttons at the bottom right allow you to page through
