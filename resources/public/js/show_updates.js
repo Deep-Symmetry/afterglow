@@ -12,6 +12,8 @@ function updateButtons( data ) {
     });
 }
 
+var bpmSliderBeingDragged = false;
+
 function updateMetronome( data ) {
     $.each( data, function( key, val ) {
         switch (val.id) {
@@ -23,7 +25,9 @@ function updateMetronome( data ) {
 
         case "bpm":
             $("#bpm").html(val.val);
-            $("#bpm-slider").slider("setValue", Number(val.val));
+            if (!bpmSliderBeingDragged) {
+                $("#bpm-slider").slider("setValue", Number(val.val));
+            }
             break;
 
         case "blink":
@@ -255,12 +259,20 @@ function syncMenuChosen( eventObject ) {
     }
 }
 
+function bpmSlideStart( eventObject ) {
+    bpmSliderBeingDragged = true;
+}
+
 function bpmSlide( eventObject ) {
     var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + this.id),
                         { "value": this.value,
                           "__anti-forgery-token": csrf_token } ).fail(function() {
         console.log("Problem specifying updated BPM value.");
     });
+}
+
+function bpmSlideStop( eventObject ) {
+    bpmSliderBeingDragged = false;
 }
 
 function decorateMetronomeAdjusters( selector, onMouseDown ) {
@@ -303,6 +315,6 @@ $( document ).ready(function() {
     });
     
     // See https://github.com/seiyria/bootstrap-slider
-    $("#bpm-slider").slider({id: "slider-in-bpm"}).on("slide", bpmSlide).on("change", bpmSlide);
+    $("#bpm-slider").slider({id: "slider-in-bpm"}).on("slideStart", bpmSlideStart).on("slide", bpmSlide).on("slideStop", bpmSlideStop);
     updateShow();
 });
