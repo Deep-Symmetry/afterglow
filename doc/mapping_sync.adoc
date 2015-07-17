@@ -344,6 +344,11 @@ You will see a brief startup animation, and Afterglow's Push interface
 will start. Here is an overview:
 
 image::assets/PushNoEffects.jpg[Push interface]
+=== Show Control
+
+Once you have the push linked to a show, it becomes a very intuitive
+way to monitor and control the cues and other aspects of the show.
+
 
 The text area at the top of the Push displays the effects currently
 running, and can optionally display
@@ -355,21 +360,18 @@ above the parameter.
 
 The rightmost encoder, past the text area, adjusts the show Grand
 Master, which controls the maximum brightness that any dimmer cue can
-achieve, so yo can always use it to adjust the overall brightness of
+achieve, so you can always use it to adjust the overall brightness of
 the show. As soon as you touch the encoder, the current Grand Master
 level will appear, and be updated as you turn the encoder. When you
 release it, the display returns to showing whatever it was before.
 
 image::assets/GrandMaster.jpg[Grand Master adjustment]
 
-=== Show Control
-
-Once you have the push linked to a show, it becomes a very intuitive
-way to monitor and control the cues and other aspects of the show.
-
 The red `Stop` button to the right of the top of the cue grid can be
 used to temporarily shut down the show, blacking out all universes
 that it controls.
+
+image::assets/ShowStop.jpg[Show stopped]
 
 Pressing it again restarts the show where it would
 have been had it not stopped.
