@@ -511,6 +511,6 @@ dimmed to hint that pressing them would replace the active cue.
 
 This dimming can also be seen in the web interface view of the cue grid:
 
-image::assets/GoboCues.jpg[Gobo cues]
+image::assets/GoboCues.png[Gobo cues]
 
  === Metronome Control
