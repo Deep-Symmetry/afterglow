@@ -308,11 +308,12 @@
   (ct/set-cue! (:cue-grid *show*) x y	
                (cues/cue (keyword (str "strobe-" (clojure.string/replace (clojure.string/lower-case name) " " "-")))
                          (fn [var-map] (fun/strobe (str "Strobe " name) fixtures (:level var-map 50)))
-                           :held true
-                           :priority 100
-                           :variables [{:key "level" :min 0 :max 100 :start 50 :name "Level"
-                                        :aftertouch true :aftertouch-min 25}
-                                       {:key :strobe-lightness :min 0 :max 100 :name "Lightness" :aftertouch true}])))
+                         :color :purple
+                         :held true
+                         :priority 100
+                         :variables [{:key "level" :min 0 :max 100 :start 50 :name "Level"
+                                      :aftertouch true :aftertouch-min 25}
+                                     {:key :strobe-lightness :min 0 :max 100 :name "Lightness" :aftertouch true}])))
 
 (defn x-phase
   "Return a value that ranges from zero for the leftmost fixture in a
@@ -579,7 +580,7 @@
                            (fn [_] (dimmer-effect
                                     (params/build-oscillated-param (oscillators/triangle-bar) :min 1)
                                     (show/all-fixtures) :effect-name "All Triangle Bar"))
-                           :color :purple :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
+                           :color :red :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
                                                    :puck-dimmers :hex-dimmers :snowball-dimmers]))
 
     ;; Strobe cues
@@ -592,6 +593,7 @@
 
     (ct/set-cue! (:cue-grid *show*) 7 6
                  (cues/cue :adjust-strobe (fn [_] (fun/adjust-strobe))
+                           :color :purple
                            :variables [{:key :strobe-hue :min 0 :max 360 :name "Hue" :centered true}
                                        {:key :strobe-saturation :min 0 :max 100 :name "Saturatn"}]))
 
