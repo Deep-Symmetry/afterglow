@@ -147,6 +147,13 @@ also designed to work with MIDI controllers, both to trigger effects,
 and to synchronize with music, as described in
 <<mapping_sync#midi-mapping-and-beat-sync,MIDI Mapping and Beat Sync>>.
 
+Of course, you are not going to want to have to type and evaluate
+Clojure expressions to create your effects in the heat of the moment
+of running a light show, so Afterglow shows incorporate a grid of
+<<cues#cues,Cues>> that you can trigger and adjust quickly, both
+through the embedded web interface described below, and dedicated grid
+controllers or simpler MIDI controllers.
+
 == The Embedded Web Interface
 
 Although a physical grid controller (especially one as well-designed
