@@ -66,5 +66,8 @@ able to aim at things and coordinate looks for you.
 
 When it comes to picking your origin, it is up to you. Picking the
 center of your lighting grid makes conceptual sense, although if you
-want to make it easy to create aiming effects that hit particular spots
-on the floor, having the Y axis start at floor level could be handy.
+want to make it easy to create aiming effects that hit particular
+spots on the floor, having the Y axis start at floor level is handy.
+That is what I have found most convenient in setting up shows so far:
+my X and Z origins are in the center of the lighting rig, and Y is 0
+at the floor.
