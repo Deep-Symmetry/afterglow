@@ -169,13 +169,12 @@ you can bring it up by evaluating:
 (core/start-web-server 16000 true)
 ----
 
-----
-The `16000` specifies the port number on which the web interface
+TIP: The `16000` specifies the port number on which the web interface
 will run. You can use a different port number if you wan, just pick an
 unused port and type it instead. The `true` requests the browser
 window; it will be opened on whatever port you told the web interface
 to use.
-----
 
-https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/WebHome.png[Web interface]
+.The Web Interface
+image:assets/WebHome.png[Web interface]
     
