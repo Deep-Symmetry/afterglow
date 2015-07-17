@@ -391,9 +391,14 @@ same time.
 You can activate any cue shown by pressing its pad; running cues will
 light up, and darken again when they end. The effects which cues
 create will also appear in the text area above the cue pad, from left
-to right, with the most recent effect on the right.
+to right, with the most recent effect on the right. In the photo
+below, &ldquo;Sparkle&rdquo; is the most recent effect, and it has two
+parameters, `chance` and `Fade`, which can be adjusted by turning the
+encoders above them. The `chance` value is changing rapidly because it
+is configured to also be adjusted through the pressure sensitive cue
+pad that was used to launch it.
 
-TODO: Photo of effect area, link to discussion of adjusting effects.
+image::assets/SparklePressure.jpg[Sparkle effect, ajusting chance variable]
 
 To stop a running cue, press its pad again, or press the red `End`
 pad underneath its effect entry in the text area. Some cues will
@@ -416,18 +421,17 @@ override this behavior, you can hold down the `Shift` button
 it will activate as a normal cue, staying on until you press it a
 second time.
 
-Cues can also be configured to react to pressure sensitivity, so that
-as you vary the pressure with which you are holding down the cue pad,
-some visible parameter of the cue is altered. The strobe and sparkle
-cues in created by
+As noted above, cues can also be configured to take advantage of the
+pressure sensitivity of the Push cue pads, so that as you vary the
+pressure with which you are holding down the pad, some visible
+parameter of the cue is altered. The strobe and sparkle cues in
+created by
 http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[afterglow.examples/make-cues]
 for the sample show work this way: the intensity and lightness of the
 strobe are increased by pressure, and so is the chance that a sparkle
 will be assigned to a light on each frame. You can see these
 parameters change in the text area above the cue's effect name while
-you are adjusting them:
-
-image::assets/SparklePressure.jpg[Sparkle effect, ajusting chance variable]
+you are adjusting them, as shown in the photo above.
 
 Cues may be mutually exclusive by nature, and if they were created to
 reflect this (by using the same keyword to register their effects with
@@ -446,15 +450,15 @@ The show will likely have many more cues than fit on the pad grid; the
 diamond of arrow buttons at the bottom right allow you to page through
 the larger show grid. If there are more cues available in a given
 direction, that arrow will be lit, otherwise it is dark. Pressing an
-active arrow scrolls the view one &ldqou;page&rdquo; in that
+active arrow scrolls the view one &ldquo;page&rdquo; in that
 direction. In this photo below, it is currently possible to scroll up
 and to the right.
 
 image::assets/PushScroll.jpg[Push scroll diamond]
 
 If you hold down the `Shift` button, the arrows gain a different
-purpose, allowing you to scroll the text area left and right, to see
-and <<mapping_sync#effect-control,adjust>> all of the currently
+purpose, allowing you to scroll the text display left and right, to
+see and <<mapping_sync#effect-control,adjust>> all of the currently
 running effects, even though only four at a time (or three, if the
 <<mapping_sync#metronome-control,metronome section>> is showing) fit
 in the display. Pressing the left or right arrows scrolls the next
