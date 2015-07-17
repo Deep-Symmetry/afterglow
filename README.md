@@ -68,7 +68,29 @@ impacting drifting fog).
 
 ## Usage
 
-Given its current development phase, you will want to use Afterglow in a Clojure repl.
+Although you will often want to use Afterglow from a Clojure repl, you
+can also bring it up as an executable jar, and run it using `java
+-jar` with command-line arguments:
+
+```
+> java -jar target/uberjar/afterglow.jar help
+
+Afterglow, a functional lighting control environment.
+
+Usage: afterglow [options]
+
+Options:
+  -w, --web-port PORT   16000  Port number for web UI
+  -o, --osc-port PORT   16001  Port number for OSC server
+  -r, --repl-port PORT         Port number for REPL, if desired
+
+Please see https://github.com/brunchboy/afterglow for more information.
+```
+
+Assuming you are using it from within a REPL, there is a namespace
+`afterglow.examples` which is intended to help you get started quickly
+in exploring the environment, as well as serving as an example of how
+to configure your own shows, fixtures, effects, and cues.
 
 > The next two lines are not needed if you are using a checkout of the
 > Afterglow source code rather than the library version described

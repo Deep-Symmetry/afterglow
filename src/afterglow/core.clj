@@ -148,7 +148,7 @@
     (cond
       (:help options) (exit 0 (usage summary))
       (not= (count arguments) 0) (exit 1 (usage summary))
-      errors (exit 1 (error-msg errors)))
+      errors (exit 1 (str (error-msg errors) "\n\n" (usage summary))))
     (init-logging)
     (.addShutdownHook (Runtime/getRuntime) (Thread. stop-servers))
     (clojure.pprint/pprint options)
