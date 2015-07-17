@@ -345,12 +345,75 @@ will start. Here is an overview:
 
 image::assets/PushNoEffects.jpg[Push interface]
 
+=== Show Control
+
+Once you have the push linked to a show, it becomes a very intuitive
+way to monitor and control the cues and other aspects of the show.
+
+The red `Stop` button to the right of the top of the cue grid can be
+used to temporarily shut down the show, blacking out all universes
+that it controls.
+
+Pressing it again restarts the show where it would
+have been had it not stopped.
+
+=== Cues
+
 Most of the space on the interface is dedicated to an 8&times;8 grid
 of color coded cue trigger pads, which provide a window onto the
-show's overall cue grid. The Push can be
+show's overall <<cues#cues,cue grid>>. The Push can be
 <<README#scrolling-and-linked-controllers,linked>> to the
 <<README#the-embedded-web-interface,web interface>> so that both
 always display the same section of the cue grid, and the web interface
 can remind you of the names of the cues you are looking at, or it can
 be scrolled independently, allowing you access to more cues at the
 same time.
+
+You can activate any cue shown by pressing its pad; running cues will
+light up, and darken again when they end. The effects which cues
+create will also appear in the text area above the cue pad, from left
+to right, with the most recent effect on the right.
+
+TODO: Photo of effect area, link to discussion of adjusting effects.
+
+To stop a running cue, press its pad again, or press the red `End`
+pad underneath its effect entry in the text area. Some cues will
+end immediately, others will continue to run until they reach what
+they feel is an appropriate stopping point. While they are in the
+process of ending, the cue pad will blink, and &ldquo;Ending&rdquo;
+will appear underneath the cue's effect name in the text area. If you
+want the cue to end immediately even though it would otherwise run for
+a while longer, you can press the blinking cue pad (or effect `End`
+pad) again and it will be killed right then.
+
+The colors assigned to cue pads by the creator of the cue grid are
+intended to help identify related cues. Some cues (especially intense
+ones like strobes) are configured to run only as long as they are held
+down. In that case, when you press cue pad, it lights up with a
+whitened version of the cue color as a hint that this is happening,
+and as soon as you release the pad, the cue will end. If you want to
+override this behavior, you can hold down the `Shift` button
+(towards the bottom right of the Push) as you press the cue pad, and
+it will activate as a normal cue, staying on until you press it a
+second time.
+
+Cues can also be configured to react to pressure sensitivity, so that
+as you vary the pressure with which you are holding down the cue pad,
+some visible parameter of the cue is altered. The strobe and sparkle
+cues in created by
+http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[afterglow.examples/make-cues]
+for the sample show work this way: the intensity and lightness of the
+strobe are increased by pressure, and so is the frequency with which
+sparkles appear. You can see these parameters change in the text area
+above the cue's effect name while you are adjusting them:
+
+image::assets/SparklePressure.jpg[Sparkle effect adjustinc chance variable]
+
+Cues may be mutually exclusive by nature, and if they were created to
+reflect this (by using the same keyword to register their effects with
+the show), when you activate one, the other cues which use the same
+keyword are dimmed. This is a hint that when you activate one of them,
+it will _replace_ the others, rather than running at the same time. In
+the photo below, the rest of the Torrent 1 fixed gobo cues (the
+leftmost blue cues) are dimmed because they would replace the running
+&ldquo;T1 atom shake&rdquo; cue.
