@@ -218,7 +218,7 @@ There are a number of different things you can control from this page.
 The load indicator in the middle of the navigation bar gives you a
 sense of how much headroom your system has, by showing you what
 fraction of the time available for rendering the last few frames of
-lighting effects were used up. As you add more complex effects, the
+lighting effects was used up. As you add more complex effects, the
 bar will fill in and turn red, warning you if Afterglow might not be
 able to keep up.
 
@@ -249,6 +249,8 @@ diamond of blue arrows at the bottom right allow you to page through
 the larger grid. If there are more cues available in a given
 direction, that arrow will be enabled, otherwise it is dimmed.
 Clicking an active arrow scrolls the view one page in that direction.
+
+image:assets/CueScroll.png[Show control]
 
 If you have any grid controllers you can attach them to the show. An
 Ableton Push would be bound as follows:
