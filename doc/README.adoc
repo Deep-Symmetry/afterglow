@@ -208,6 +208,8 @@ https://github.com/brunchboy/afterglow#usage[command-line arguments],
 or by using the web console to invoke
 http://deepsymmetry.org/afterglow/doc/afterglow.core.html#var-start-nrepl[core/start-nrepl].
 
+=== Show Control
+
 Once you have the web interface open, and a show running, you will
 spend most of your time on the show page. Here is the bottom left
 corner of the cue grid that gets created for the sample show by
@@ -230,6 +232,8 @@ If there is a problem communicating with the Open Lighting
 Architecture daemon, the status indicator will show Error, and there
 will be a `Details` button you can click to get more information about
 the problem Afterglow is encountering.
+
+==== Cues
 
 The majority of the page is taken up by an 8&times;8 window on to the
 <<cues#cues,Cue grid>> attached to the show. You can activate any cue
@@ -261,6 +265,8 @@ it will _replace_ the others, rather than running at the same time. In
 the image above, the &ldquo;All Sine Bar&rdquo;, &ldquo;All Saw Up 2
 Beat&rdquo;, and &ldquo;All Saw Down Beat&rdquo; cues are dimmed
 because they would replace the running &ldquo;All Dimmers&rdquo; cue.
+
+==== Scrolling and Linked Controllers
 
 The show may have many more cues than fit on the screen at once; the
 diamond of blue arrows at the bottom right allow you to page through
@@ -294,6 +300,8 @@ example so you could have access to one set of cues on the physical
 buttons of your controller, while simultaneously being able to control
 others via the screen and mouse. To do that, simply use the link menu
 to turn off the link.
+
+==== Metronome Control
 
 The final section of the show control interface lets you view and
 adjust the Metronome that the show is using to keep time with the
