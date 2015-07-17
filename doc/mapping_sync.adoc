@@ -126,11 +126,11 @@ doesn’t help, you will need to troubleshoot your MIDI setup.
 NOTE: These examples show how to perform low-level MIDI mapping. Over
 time, you might find that someone has written a rich user interface
 binding for your controller, as is happening for the
-http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
-Push], which would let you jump right in without having to worry about
-such details. These examples can still help explain how your
-controller's binding works, or encourage you to write and share a
-binding for a new controller that you happen to have.
+<<mapping_sync#using-ableton-push,Ableton Push>>, which would let you
+jump right in without having to worry about such details. These
+examples can still help explain how your controller's binding works,
+or encourage you to write and share a binding for a new controller
+that you happen to have.
 
 == Syncing to MIDI Clock
 
@@ -324,11 +324,12 @@ or even black things out:
 Some controllers have such rich capabilities that they deserve their
 own custom mapping implementations to exploit their capabilities as a
 show control interface. The Ableton Push is one, and a powerful
-mapping is being created. You can already use it to do most of the
-things that you would use the <<README#the-embedded-web-interface,web
-interface>> for, and often with deeper control, since you can press
-multiple cue trigger pads at the same time, and they respond to
-variations in pressure.
+http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[mapping]
+is being created. You can already use it to do most of the things that
+you would use the <<README#the-embedded-web-interface,web interface>>
+for, and often with deeper control, since you can press multiple cue
+trigger pads at the same time, and they respond to variations in
+pressure.
 
 Assuming you had an Ableton Push connected to the machine running
 Afterglow when it was started up, you can activate the Push mapping

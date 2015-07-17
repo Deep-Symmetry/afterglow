@@ -78,10 +78,10 @@ Someday a user interface for building shows and fixture definitions
 may be created, either within Afterglow, or as a companion project,
 but that is not currently planned. For now the focus is on building
 rich user interfaces for controlling shows, such as the
-http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
-Push mapping] and web interface, while using the concise expressive
-power of Clojure for writing the fixture definitions, effects, and
-cues.
+<<mapping_sync#using-ableton-push,Ableton Push mapping>> and
+<<README#the-embedded-web-interface,web interface>>, while using the
+concise expressive power of Clojure for writing the fixture
+definitions, effects, and cues.
 
 Afterglow communicates with the lighting hardware using the
 https://www.openlighting.org/ola/[Open Lighting Architecture], so it

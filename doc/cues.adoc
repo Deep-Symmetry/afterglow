@@ -233,8 +233,8 @@ be present in their fixtures.
 only as long as the corresponding controller button or pad is held
 down, if the controller supports that capability. All current
 controller implementations, including the web interface, the
-http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
-Push mapping], and mappings to generic MIDI controllers created using
+<<mapping_sync#using-ableton-push,Ableton Push mapping>>, and mappings
+to generic MIDI controllers created using
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-cue-mapping[afterglow.show/add-midi-control-to-cue-mapping],
 do honor this setting. The web interface and controllers like the
 Push, which can vary the color of cue grid cells, will provide
@@ -508,8 +508,8 @@ be present in their fixtures.
 only as long as the corresponding controller button or pad is held
 down, if the controller supports that capability. All current
 controller implementations, including the web interface, the
-http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
-Push mapping], and mappings to generic MIDI controllers created using
+<<mapping_sync#using-ableton-push,Ableton Push mapping>>, and mappings
+to generic MIDI controllers created using
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-cue-mapping[afterglow.show/add-midi-control-to-cue-mapping],
 do honor this setting. The web interface and controllers like the
 Push, which can vary the color of cue grid cells, will provide
@@ -558,10 +558,8 @@ namespace defines some helpful functions for working with cues, and
 defines a
 http://deepsymmetry.org/afterglow/doc/afterglow.controllers.html#var-IGridController[grid
 controller protocol] which rich controller mappings, like the one for
-the
-http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
-Push], use to attach themselves to a running show, and synchronize
-with the web interface.
+the <<mapping_sync#using-ableton-push,Ableton Push>>, use to attach
+themselves to a running show, and synchronize with the web interface.
 
 If you are implementing a new grid controller mapping, you will want
 to study that protocol, and will likely find the Ableton Push mapping

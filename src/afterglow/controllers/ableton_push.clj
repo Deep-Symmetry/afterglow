@@ -1,7 +1,9 @@
 (ns afterglow.controllers.ableton-push
   "Allows the Ableton Push to be used as a control surface for
-  Afterglow."
-  {:author "James Elliott"
+  Afterglow. Its features are described in
+  the (https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#using-ableton-push)[online
+  documentation]."
+ {:author "James Elliott"
    :doc/format :markdown}
   (:require [afterglow.controllers :as controllers]
             [afterglow.effects.dimmer :refer [master-get-level master-set-level]]
