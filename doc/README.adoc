@@ -199,3 +199,10 @@ embedded `nrepl` server, which can be brought up via either
 https://github.com/brunchboy/afterglow#usage[command-line arguments],
 or by using the web console to invoke
 http://deepsymmetry.org/afterglow/doc/afterglow.core.html#var-start-nrepl[core/start-nrepl].
+
+Once you have the web interface open, and a show running, you will
+spend most of your time on the show page. Here is the bottom left
+corner of the cue grid that gets created for the sample show by
+http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[afterglow.examples/make-cues]:
+
+image:assets/ShowGrid.png[Show control]
