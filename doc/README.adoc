@@ -267,7 +267,7 @@ direction, that arrow will be enabled, otherwise it is dimmed.
 Clicking an active arrow scrolls the view one page in that direction.
 In this grid, it is currently possible to scroll up and to the right.
 
-image:assets/CueScroll.png[Show control,align="right"]
+image:assets/CueScrollLink.png[Cue scroll arrows and link menu,align="right"]
 
 If you have any grid controllers you can attach them to the show. An
 Ableton Push would be bound as follows:
