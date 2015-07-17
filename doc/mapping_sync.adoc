@@ -433,28 +433,27 @@ will be assigned to a light on each frame. You can see these
 parameters change in the text area above the cue's effect name while
 you are adjusting them, as shown in the photo above.
 
-Cues may be mutually exclusive by nature, and if they were created to
-reflect this (by using the same keyword to register their effects with
-the show), when you activate one, the other cues which use the same
-keyword are dimmed. This is a hint that when you activate one of them,
-it will _replace_ the others, rather than running at the same time. In
-the photo below, the rest of the Torrent 1 fixed gobo cues (the
-leftmost blue cues) are dimmed because they would replace the running
-&ldquo;T1 atom shake&rdquo; cue.
-
-TODO: Make "below" a link in para above.
+[[exclusivity]]Cues may be mutually exclusive by nature, and if they
+were created to reflect this (by using the same keyword to register
+their effects with the show), when you activate one, the other cues
+which use the same keyword are dimmed. This is a hint that when you
+activate one of them, it will _replace_ the others, rather than
+running at the same time. In the photo
+<<mapping_sync#gobo-photo,below>>, the rest of the Torrent 1 fixed
+gobo cues (the leftmost blue cues) are dimmed because they would
+replace the running &ldquo;T1 atom shake&rdquo; cue.
 
 === Scrolling
 
-[.right]
-image:assets/PushScroll.jpg[Push scroll diamond,300,337,float="right",align="right"]
 The show will likely have many more cues than fit on the pad grid; the
 diamond of arrow buttons at the bottom right allow you to page through
 the larger show grid. If there are more cues available in a given
 direction, that arrow will be lit, otherwise it is dark. Pressing an
 active arrow scrolls the view one &ldquo;page&rdquo; in that
 direction. In the photo below, it is currently possible to scroll up
-and to the right.
+and to the right:
+
+image:assets/PushScroll.jpg[Push scroll diamond,300,337]
 
 If you hold down the `Shift` button, the arrows gain a different
 purpose, allowing you to scroll the text display left and right, to
@@ -479,8 +478,8 @@ encoder knob above the parameter. For example, in addition to varying
 the sparkle `chance` parameter using the pad pressure, as was done
 above, its `Fade` parameter can be adjusted using the effect parameter
 encoder above it. As soon as you touch the encode knob associated with
-a parameter, a graphical representation of the current value appears,
-and updates as you turn the encoder to change the value.
+a parameter, a graphical representation of the current value replaces
+its name, and updates as you turn the encoder to change the value.
 
 image::assets/AdjustingFade.jpg[Adjusting Fade parameter]
 
@@ -489,6 +488,29 @@ entire effect area, and you can use either encoder to adjust it, as
 when adjusting a Focus <<cues#creating-function-cues,function cue>>
 for the Torrent moving head spot:
 
+[[gobo-photo]]
 image::assets/AdjustingFocus.jpg[Adjusting Focus cue]
 
-=== Metronome Control
+When you release the encoder knob, the adjustment graph disappears,
+and the parameter name reappears.
+
+The <- indicator at the left of the text area in the above photo is an
+indicator that there are older effects which have been scrolled to the
+left, off the display. You will see -> at the bottom right of the
+display when there are newer effects to the right. You can scroll to
+them using the `Shift` button with the scroll arrow buttons as
+described <<mapping_sync#scrolling,above>>.
+
+This photo also illustrates the dimming of incompatible cues discussed
+<<mapping_cues#exclusivity,above>>: The leftmost columns of blue cues
+all establish settings for the fixed gobo wheel of one of the Torrent
+moving-head spots. Since one of them is active (the &ldquo;atom
+shake&rdquo; effect at the left of the text area corresponds to the
+bright blue button three rows down the second column), the others are
+dimmed to hint that pressing them would replace the active cue.
+
+This dimming can also be seen in the web interface view of the cue grid:
+
+image::assets/GoboCues.jpg[Gobo cues]
+
+ === Metronome Control
