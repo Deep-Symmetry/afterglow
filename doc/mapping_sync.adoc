@@ -28,7 +28,8 @@ you can still accomplish a great deal with a simple controller with a
 few buttons. You will still want to start by creating the cues in the
 show cue grid, not only so you can see and manipulate them with the
 web interface, but also because that is how they can be mapped to MIDI
-controllers.
+controllers. (The Push mapping is described in detail
+<<mapping_sync#using-ableton-push,below>>.)
 
 First you need to identify the MIDI messages that the controller sends
 when you press and release the interface element you want to assign
@@ -246,7 +247,7 @@ to port 50001 from the mixer are not making it to the machine running
 Afterglow.
 
 
-= Checking your Sync
+== Checking your Sync
 
 An easy way to see how well your show is syncing the beat is to use the
 `metronome-effect`, which flashes a bright pink pulse on the down beat, and a
@@ -317,3 +318,29 @@ or even black things out:
 ----
 (show/clear-effects!)
 ----
+
+== Using Ableton Push
+
+Some controllers have such rich capabilities that they deserve their
+own custom mapping implementations to exploit their capabilities as a
+show control interface. The Ableton Push is one, and a powerful
+mapping is being created. You can already use it to do most of the
+things that you would use the <<README#the-embedded-web-interface,web
+interface>> for, and often with deeper control, since you can press
+multiple cue trigger pads at the same time, and they respond to
+variations in pressure.
+
+Assuming you had an Ableton Push connected to the machine running
+Afterglow when it was started up, you can activate the Push mapping
+and attach it to the current default show like this:
+
+[source,clojure]
+----
+(require '[afterglow.controllers.ableton-push :as push])
+(def controller (push/bind-to-show *show*))
+----
+
+You will see a brief startup animation, and Afterglow's Push interface
+will start. Here is an overview:
+
+image::assets/PushNoEffects.jpg[Push interface]

@@ -347,15 +347,11 @@ And darken the universe you were playing with.
 > once there were were no active effects, all the DMX values would
 > settle back at zero and stay there until you stopped the show.
 
-## Options
-
-TODO: listing of options this app accepts once it can run as a standalone app.
-
-### Bugs
+## Bugs
 
 ...
 
-### Tasks
+## Tasks
 
 - [x] Sync metronomes to MIDI
 - [x] Add metronome chase for clear sync testing
