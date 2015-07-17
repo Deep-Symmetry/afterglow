@@ -245,12 +245,12 @@ And then the last fader acts as my grand master dimmer, and I can
 quickly get relief from overly bright lights.
 
 > If you have access to an Ableton Push, it is even easier to have
-> intutive control over your show’s grand master dimmer. As soon as
-> you bind the Push to your show, the Push Master encoder is
-> automatically tied to the show master dimmer, with nice graphical
-> feedback in the text area. Plus you get deep control over the show
-> metronome as well, as shown in the photo above. Here is how the
-> binding is established:
+> [intutive control](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#using-ableton-push)
+> over your show’s grand master dimmer. As soon as you bind the Push
+> to your show, the Push Master encoder is automatically tied to the
+> show master dimmer, with nice graphical feedback in the text area.
+> Plus you get deep control over the show metronome as well, as shown
+> in the photo above. Here is how the binding is established:
 
 ```clojure
 (require '[afterglow.controllers.ableton-push :as push])
