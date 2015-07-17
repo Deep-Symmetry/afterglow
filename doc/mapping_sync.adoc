@@ -446,6 +446,7 @@ TODO: Make "below" a link in para above.
 
 === Scrolling
 
+image::assets/PushScroll.jpg[Push scroll diamond,300,337,float="right"]
 The show will likely have many more cues than fit on the pad grid; the
 diamond of arrow buttons at the bottom right allow you to page through
 the larger show grid. If there are more cues available in a given
@@ -453,7 +454,6 @@ direction, that arrow will be lit, otherwise it is dark. Pressing an
 active arrow scrolls the view one &ldquo;page&rdquo; in that
 direction. In the photo below, it is currently possible to scroll up
 and to the right.
-image::assets/PushScroll.jpg[Push scroll diamond,300,337,float="right"]
 
 If you hold down the `Shift` button, the arrows gain a different
 purpose, allowing you to scroll the text display left and right, to
