@@ -427,7 +427,7 @@ will be assigned to a light on each frame. You can see these
 parameters change in the text area above the cue's effect name while
 you are adjusting them:
 
-image::assets/SparklePressure.jpg[Sparkle effect adjustinc chance variable]
+image::assets/SparklePressure.jpg[Sparkle effect, ajusting chance variable]
 
 Cues may be mutually exclusive by nature, and if they were created to
 reflect this (by using the same keyword to register their effects with
@@ -437,3 +437,33 @@ it will _replace_ the others, rather than running at the same time. In
 the photo below, the rest of the Torrent 1 fixed gobo cues (the
 leftmost blue cues) are dimmed because they would replace the running
 &ldquo;T1 atom shake&rdquo; cue.
+
+TODO: Make "below" a link in para above.
+
+=== Scrolling
+
+The show will likely have many more cues than fit on the pad grid; the
+diamond of arrow buttons at the bottom right allow you to page through
+the larger show grid. If there are more cues available in a given
+direction, that arrow will be lit, otherwise it is dark. Pressing an
+active arrow scrolls the view one &ldqou;page&rdquo; in that
+direction. In this photo below, it is currently possible to scroll up
+and to the right.
+
+image::assets/PushScroll.jpg[Push scroll diamond]
+
+If you hold down the `Shift` button, the arrows gain a different
+purpose, allowing you to scroll the text area left and right, to see
+and <<mapping_sync#effect-control,adjust>> all of the currently
+running effects, even though only four at a time (or three, if the
+<<mapping_sync#metronome-control,metronome section>> is showing) fit
+in the display. Pressing the left or right arrows scrolls the next
+group of effects in that direction into view; pressing the up arrow
+scrolls to the oldest (leftmost) effect, and pressing the down arrow
+scrolls to the most recent (rightmost) effect. While `Shift` is
+pressed, the arrows will light up according to whether they can scroll
+effects rather than cues in the corresponding direction.
+
+=== Effect Control
+
+=== Metronome Control
