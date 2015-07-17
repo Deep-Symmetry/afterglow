@@ -14,9 +14,7 @@ Afterglow maintains a cue grid, which can be viewed and interacted
 with through the <<README#the-embedded-web-interface,embedded web
 interface>> and MIDI controller mapping implementations which can be
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-register-grid-controller[registered
-as grid controllers], like the
-http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
-Push].
+as grid controllers], like the <<mapping_sync#using-ableton-push,Ableton Push>>.
 
 The cue grid is a two dimensional arrangement of cues, where the
 bottom left corner is assigned coordinates `(0, 0)`. X coordinates

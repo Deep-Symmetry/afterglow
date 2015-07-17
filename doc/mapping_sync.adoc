@@ -344,3 +344,13 @@ You will see a brief startup animation, and Afterglow's Push interface
 will start. Here is an overview:
 
 image::assets/PushNoEffects.jpg[Push interface]
+
+Most of the space on the interface is dedicated to an 8&times;8 grid
+of color coded cue trigger pads, which provide a window onto the
+show's overall cue grid. The Push can be
+<<README#scrolling-and-linked-controllers,linked>> to the
+<<README#the-embedded-web-interface,web interface>> so that both
+always display the same section of the cue grid, and the web interface
+can remind you of the names of the cues you are looking at, or it can
+be scrolled independently, allowing you access to more cues at the
+same time.

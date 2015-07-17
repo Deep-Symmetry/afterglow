@@ -158,15 +158,13 @@ physical grid controllers or simpler MIDI controllers.
 == The Embedded Web Interface
 
 Although a physical grid controller (especially one as well-designed
-as the
-http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
-Push]) offers the ideal control surface for running a light show, you
-can do a lot with just the web interface built in to Afterglow. And
-even when you have a Push or other grid controller, the web interface
-makes it all the more powerful by adding at-a-glance documentation of
-cue names, as well as alternate ways of doing things, or the
-opportunity to interact with more than one section of the cue grid at
-once.
+as the <<mapping_sync#using-ableton-push,Ableton Push>>) offers the
+ideal control surface for running a light show, you can do a lot with
+just the web interface built in to Afterglow. And even when you have a
+Push or other grid controller, the web interface makes it all the more
+powerful by adding at-a-glance documentation of cue names, as well as
+alternate ways of doing things, or the opportunity to interact with
+more than one section of the cue grid at once.
 
 If you have started Afterglow by running the jar file, it will have
 opened a browser window on the web interface by default. Otherwise,
