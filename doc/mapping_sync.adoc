@@ -557,10 +557,33 @@ In order to make longer chases and effects line up properly with the
 music, you will also want to make sure the count is right, that the
 beat number shows `1` on the down beat, and that the bar numbers are
 right as well, so that the start of a phrase is reflected as bar
-number `1`. You can adjust those with the `+` and `-` buttons around
-the Bar and Beat numbers. A shortcut that you can use right as a
-phrase begins is to click the red `x` button above the phrase number,
-which resets the metronome to Phrase 1, Bar 1, Beat 1.
+number `1`. You can adjust those with the beat encoder, the rightmost
+encoder below the metronome button.
+
+image:assets/PushBeat.jpg[Beat encoder]
+
+While you are holding this encoder, the symbol &uparrow; appears below
+the beat number as a visual reminder of what value you are adjusting.
+Turning the encoder clockwise jumps to the next beat, turning
+counterclockwise jumps back to the previous one. As a tactile reminder
+that you are adjusting whole beats, this encoder moves with a distinct
+click as it changes value, while the BPM encoder turns smoothly as you
+scroll through fractional BPM values.
+
+While the metronome section is showing, you can also use the encoder
+above the Beat value to adjust it. But you can grab the dedicated Beat
+encoder below the `Metronome` button even when the metronome section
+is not showing, and it will appear while you have the encoder in your
+hand, so you can adjust the beat number quickly, and then get back to
+what you were doing.
+
+If you press the `Shift` button, the Beat encoder can be used to
+adjust the current bar within the phrase instead of the current beat.
+While `Shift` is down, the &uparrow; will point at the bar instead of
+the beat, and turning the encoder will jump that value forwards or
+backwards:
+
+image:assets/PushBar.jpg[Bar jumping]
 
 Trying to keep up with tempo changes during dynamic shows can be very
 difficult, so you will hopefully be able to take advantage of
@@ -570,7 +593,16 @@ connect via a Local Area Network to Pioneer professional DJ gear to
 lock into the beat grid established by
 <<mapping_sync#syncing-to-pro-dj-link,Pro DJ Link>>, Afterglow can
 keep the BPM (with MIDI) and even the beats (with Pro DJ Link)
-synchronized for you. The Sync pad in the Metronome section will
-eventually allow you to set this up, but that is not yet implemented,
-so for now you will need to use the <<README#metronome-control,web
-interface>> to configure it.
+synchronized for you. The Sync pad in the Metronome section (showing
+`Manual` sync in these photos) will eventually allow you to set this
+up, but that is not yet implemented, so for now you will need to use
+the <<README#metronome-control,web interface>> to configure it. The
+pad does already change color to let you know the sync status: Amber
+means manual, green means successful automatic sync, and red means a
+requested automatic sync has failed. It is likely that the second
+release of Afterglow will let you press this pad to choose your sync
+source.
+
+Future releases will also take advantage of more of the buttons on the
+controller, as well as the nice big touch strip to the left of the cue
+grid.
