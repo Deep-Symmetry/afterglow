@@ -321,4 +321,14 @@ the Bar and Beat numbers. A shortcut that you can use right as a
 phrase begins is to click the red `x` button above the phrase number,
 which resets the metronome to Phrase 1, Bar 1, Beat 1.
 
-
+Trying to keep up with tempo changes during dynamic shows can be very
+difficult, so you will hopefully be able to take advantage of
+Afterglow's metronome synchronization features. If you can get the DJ
+to feed you <<mapping_sync#syncing-to-midi-clock,MIDI clock pulses>>
+or connect via an Ethernet network to Pioneer professional DJ gear so
+you can lock into the beat grid established by
+<<mapping_sync#syncing-to-pro-dj-link,Pro DJ Link>>, Afterglow can
+keep the BPM (with MIDI) and even the beats (with Pro DJ Link)
+synchronized for you. To configure that synchronization, click the
+`Sync` button once you have the clock or DJ link signals reaching the
+machine running Afterglow, and choose the sync source you want to use.
