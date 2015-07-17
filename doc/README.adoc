@@ -257,7 +257,7 @@ Cues may be mutually exclusive by nature, and if they were created to
 reflect this (by using the same keyword to register their effects with
 the show), when you activate one, the other cues which use the same
 keyword are dimmed. This is a hint that when you activate one of them,
-it will _replace_ the one you just started, rather than running at the
+it will _replace_ the others, rather than running at the
 same time.
 
 The show may have many more cues than fit on the screen at once; the
@@ -265,6 +265,7 @@ diamond of blue arrows at the bottom right allow you to page through
 the larger grid. If there are more cues available in a given
 direction, that arrow will be enabled, otherwise it is dimmed.
 Clicking an active arrow scrolls the view one page in that direction.
+In this grid, it is currently possible to scroll up and to the right.
 
 image:assets/CueScroll.png[Show control,align="right"]
 
@@ -291,3 +292,33 @@ example so you could have access to one set of cues on the physical
 buttons of your controller, while simultaneously being able to control
 others via the screen and mouse. To do that, simply use the link menu
 to turn off the link.
+
+The final section of the show control interface lets you view and
+adjust the Metronome that the show is using to keep time with the
+music that is being played. Since Afterglow's effects are generally
+defined with respect to the metronome, it is important to keep it
+synchronized with the music. The metronome section shows the current
+speed, in Beats Per Minute, of the metronome, and the `Tap Tempo`
+button label flashes yellow at each beat. It also shows you the
+current phrase number, the bar within that phrase, and beat within
+that bar which has been reached.
+
+image:assets/Metronome.png[Metronome]
+
+The most basic way of synchronizing the metronome is to click the `Tap
+Tempo` button at each beat of the music. After a few clicks, the
+metronome will be approximately synchronized to the music. You can
+also adjust the BPM by dragging the slider along the bottom, or
+fine-tune it with the `+` and `-` buttons around the current BPM
+value.
+
+In order to make longer chases and effects line up properly with the
+music, you will also want to make sure the count is right, that the
+beat number shows `1` on the down beat, and that the bar numbers are
+right as well, so that the start of a phrase is reflected as bar
+number `1`. You can adjust those with the `+` and `-` buttons around
+the Bar and Beat numbers. A shortcut that you can use right as a
+phrase begins is to click the red `x` button above the phrase number,
+which resets the metronome to Phrase 1, Bar 1, Beat 1.
+
+
