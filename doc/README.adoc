@@ -257,8 +257,10 @@ Cues may be mutually exclusive by nature, and if they were created to
 reflect this (by using the same keyword to register their effects with
 the show), when you activate one, the other cues which use the same
 keyword are dimmed. This is a hint that when you activate one of them,
-it will _replace_ the others, rather than running at the
-same time.
+it will _replace_ the others, rather than running at the same time. In
+the image above, the &ldquo;All Sine Bar&rdquo;, &ldquo;All Saw Up 2
+Beat&rdquo;, and &ldquo;All Saw Down Beat&rdquo; cues are dimmed
+because they would replace the running &ldquo;All Dimmers&rdquo; cue.
 
 The show may have many more cues than fit on the screen at once; the
 diamond of blue arrows at the bottom right allow you to page through
