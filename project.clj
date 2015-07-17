@@ -19,7 +19,7 @@
                  [com.climate/claypoole "1.0.0"]
                  [org.flatland/protobuf "0.8.1"]
                  [selmer "0.8.5"]
-                 [org.clojars.brunchboy/colors "1.0.2-SNAPSHOT"]
+                 [com.evocomputing/colors "1.0.2"]
                  [environ "1.0.0"]
                  [com.taoensso/timbre "4.0.2"]
                  [com.taoensso/tower "3.0.2"]
