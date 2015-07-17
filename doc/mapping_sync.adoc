@@ -502,7 +502,7 @@ them using the `Shift` button with the scroll arrow buttons as
 described <<mapping_sync#scrolling,above>>.
 
 This photo also illustrates the dimming of incompatible cues discussed
-<<mapping_cues#exclusivity,above>>: The leftmost columns of blue cues
+<<mapping_sync#exclusivity,above>>: The leftmost columns of blue cues
 all establish settings for the fixed gobo wheel of one of the Torrent
 moving-head spots. Since one of them is active (the &ldquo;atom
 shake&rdquo; effect at the left of the text area corresponds to the
