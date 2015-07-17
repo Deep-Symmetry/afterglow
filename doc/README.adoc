@@ -175,6 +175,24 @@ unused port and type it instead. The `true` requests the browser
 window; it will be opened on whatever port you told the web interface
 to use.
 
-.The Web Interface
 image:assets/WebHome.png[Web interface]
     
+The home page offers some buttons which can take you to this
+documentation, the Open Lighting Architecture console in case you want
+to monitor DMX values or configure the universe(s) that your show will
+be using, and an embedded web REPL that can be used to evaluate
+arbitrary expressions to configure and control Afterglow. The primary
+interface, however, is the show page, which is reached by a link in
+the Shows section. However, when you first start Afterglow on its own,
+there will be no shows running. The Console can be used to change that:
+
+image:assets/Console.png[Web console]
+
+NOTE: As menioned in the main project Readme, the web console is there
+for quick hacks, and is no substitute for a rich Clojure development
+environment. For any real work you will want to either start Afterglow
+from your development REPL in the first place, or to connect it via
+`nrepl` if you have launched Afterglow through a jar file. Afterglow
+can offer an embedded `nrepl` server, which can be brought up via
+either command-line arguments, or by using the web console to invoke
+http://deepsymmetry.org/afterglow/doc/afterglow.core.html#var-start-nrepl[core/start-nrepl].
