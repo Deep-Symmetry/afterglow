@@ -228,7 +228,7 @@ the show, blacking out all universes that it controls. Clicking it
 again restarts the show where it would have been had it not stopped.
 If there is a problem communicating with the Open Lighting
 Architecture daemon, the status indicator will show Error, and there
-will be a Details button you can click to get more information about
+will be a `Details` button you can click to get more information about
 the problem Afterglow is encountering.
 
 The majority of the page is taken up by an 8&times;8 window on to the
