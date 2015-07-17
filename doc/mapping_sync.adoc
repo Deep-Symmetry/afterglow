@@ -470,4 +470,25 @@ effects rather than cues in the corresponding direction.
 
 === Effect Control
 
+As described above, the effects created by cues appear in the text
+display area, and can be scrolled through and ended by pressing the
+corresponding red `End` pad which appears underneath them. If they
+have parameters assigned to them, the parameter names and values will
+appear above the effect name, and they can be adjusted using the
+encoder knob above the parameter. For example, in addition to varying
+the sparkle `chance` parameter using the pad pressure, as was done
+above, its `Fade` parameter can be adjusted using the effect parameter
+encoder above it. As soon as you touch the encode knob associated with
+a parameter, a graphical representation of the current value appears,
+and updates as you turn the encoder to change the value.
+
+image::assets/AdjustingFade.jpg[Adjusting Fade parameter]
+
+If an effect has only one adjustable parameter, it will take up the
+entire effect area, and you can use either encoder to adjust it, as
+when adjusting a Focus <<cues#creating-function-cues,function cue>>
+for the Torrent moving head spot:
+
+image::assets/AdjustingFocus.jpg[Adjusting Focus cue]
+
 === Metronome Control

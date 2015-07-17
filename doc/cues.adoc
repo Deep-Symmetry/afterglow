@@ -401,11 +401,12 @@ Afterglow will find it in each fixture definition, and send the right
 values to each fixture.
 
 `function-cue` also automatically creates a temporary cue-local
-variable for adjusting the function level if the function is not fixed
-over its range. This makes it essentially a one-liner to create a
-button in your cue grid which activates a function and then, if your
-controller supports it, lets you tweak that function while is running.
-Examples include the Torrent gobo, focus, and prism cues created by
+variable for <<<mapping_sync#effect-control,adjusting>> the function
+level if the function is not fixed over its range. This makes it
+essentially a one-liner to create a button in your cue grid which
+activates a function and then, if your controller supports it, lets
+you tweak that function while is running. Examples include the Torrent
+gobo, focus, and prism cues created by
 http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[make-cues].
 
 Minimally, `function-cue` requires three parameters: `show-key` which
