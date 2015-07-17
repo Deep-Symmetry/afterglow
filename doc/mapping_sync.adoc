@@ -504,7 +504,7 @@ described <<mapping_sync#scrolling,above>>.
 This photo also illustrates the dimming of incompatible cues discussed
 <<mapping_sync#exclusivity,above>>: The leftmost columns of blue cues
 all establish settings for the fixed gobo wheel of one of the Torrent
-moving-head spots. Since one of them is active (the &ldquo;atom
+moving-head spots. Since one of them is active (the &ldquo;T1 atom
 shake&rdquo; effect at the left of the text area corresponds to the
 bright blue button three rows down the second column), the others are
 dimmed to hint that pressing them would replace the active cue.
@@ -513,4 +513,64 @@ This dimming can also be seen in the web interface view of the cue grid:
 
 image::assets/GoboCues.png[Gobo cues]
 
- === Metronome Control
+=== Metronome Control
+
+The top left section of the Push lets you view and adjust the
+Metronome that the show is using to keep time with the music that is
+being played. Since Afterglow's effects are generally defined with
+respect to the metronome, it is important to keep it synchronized with
+the music. When active, the metronome section takes over the leftmost
+quarter of the text area (so there are room to see only three effects,
+rather than the normal four). To toggle the metronome section, press
+the `Metronome` button. It will appear if it was not showing, and
+disappear if it was there. The `Metronome` button is lit more brightly
+when the section is active.
+
+The metronome section shows the current speed, in Beats Per Minute, of
+the metronome, and the `Tap Tempo` button label flashes at each beat
+(this flashing happens regardless of whether the metronome section is
+visible in the text area). The metronome section also shows you the
+current phrase number, the bar within that phrase, and the beat within
+that bar which has been reached.
+
+image:assets/PushMetronome.png[Metronome section]
+
+The most basic way of synchronizing the metronome is to tap the `Tap
+Tempo` button at each beat of the music. After a few taps, the
+metronome will be approximately synchronized to the music. You can
+also adjust the BPM by turning the BPM encoder, which is the leftmost
+encoder below the Metronome button.
+
+image:assets/PushBPM.jpg[BPM encoder]
+
+While you are holding this encoder, the symbol &uparrow; appears below
+the BPM value as a visual reminder of what value you are adjusting.
+Turning the encoder clockwise raises the BPM, turning counterclockwise
+lowers it. While the metronome section is showing, you can also use
+the encoder above the BPM value to adjust it. But you can grab the
+dedicated BPM encoder below the `Metronome` button even when the
+metronome section is not showing, and it will appear while you have
+the encoder in your hand, so you can adjust the BPM quickly, and then
+get back to what you were doing.
+
+In order to make longer chases and effects line up properly with the
+music, you will also want to make sure the count is right, that the
+beat number shows `1` on the down beat, and that the bar numbers are
+right as well, so that the start of a phrase is reflected as bar
+number `1`. You can adjust those with the `+` and `-` buttons around
+the Bar and Beat numbers. A shortcut that you can use right as a
+phrase begins is to click the red `x` button above the phrase number,
+which resets the metronome to Phrase 1, Bar 1, Beat 1.
+
+Trying to keep up with tempo changes during dynamic shows can be very
+difficult, so you will hopefully be able to take advantage of
+Afterglow's metronome synchronization features. If the DJ can send you
+<<mapping_sync#syncing-to-midi-clock,MIDI clock pulses>>, or you can
+connect via a Local Area Network to Pioneer professional DJ gear to
+lock into the beat grid established by
+<<mapping_sync#syncing-to-pro-dj-link,Pro DJ Link>>, Afterglow can
+keep the BPM (with MIDI) and even the beats (with Pro DJ Link)
+synchronized for you. The Sync pad in the Metronome section will
+eventually allow you to set this up, but that is not yet implemented,
+so for now you will need to use the <<README#metronome-control,web
+interface>> to configure it.
