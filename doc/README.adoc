@@ -250,7 +250,7 @@ the larger grid. If there are more cues available in a given
 direction, that arrow will be enabled, otherwise it is dimmed.
 Clicking an active arrow scrolls the view one page in that direction.
 
-image:assets/CueScroll.png[Show control]
+image:assets/CueScroll.png[Show control,align="right",float="left"]
 
 If you have any grid controllers you can attach them to the show. An
 Ableton Push would be bound as follows:
