@@ -177,5 +177,5 @@ window; it will be opened on whatever port you told the web interface
 to use.
 ----
 
-![Web interface](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/WebHome.png)
+https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/WebHome.png[Web interface]
     

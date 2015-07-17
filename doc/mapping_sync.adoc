@@ -172,6 +172,11 @@ you want to sync to:
   (afterglow.midi/sync-to-midi-clock "traktor"))
 ----
 
+NOTE: This section describes the low-level mechanisms available for
+establishing MIDI sync from code and the REPL. A much easier way is to
+just click the Sync button in the Metronome section at the bottom of
+the <<README#the-embedded-web-interface,embedded Web interface>>.
+
 From then on, as the BPM of that device changes, Afterglow will track it
 automatically. To check on the sync status, you can invoke:
 
