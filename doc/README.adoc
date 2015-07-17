@@ -332,3 +332,12 @@ keep the BPM (with MIDI) and even the beats (with Pro DJ Link)
 synchronized for you. To configure that synchronization, click the
 `Sync` button once you have the clock or DJ link signals reaching the
 machine running Afterglow, and choose the sync source you want to use.
+
+TODO: Screen shot of sync
+
+Once your sync is established, the `Tap Tempo` button changes. If you
+are using MIDI clock to sync the BPM, it becomes a `Tap Beat` button,
+which simply establishes where the beat falls. If you are locked in to
+a Pro DJ Link beat grid, it becomes a `Tap Bar` button which, when
+pressed, indicates that the current beat is the down beat (start) of a
+bar.
