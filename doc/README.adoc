@@ -146,3 +146,36 @@ it is worth learning how to configure and interact with them. It is
 also designed to work with MIDI controllers, both to trigger effects,
 and to synchronize with music, as described in
 <<mapping_sync#midi-mapping-and-beat-sync,MIDI Mapping and Beat Sync>>.
+
+== The Embedded Web Interface
+
+Although a physical grid controller (especially one as well-designed
+as the
+http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
+Push]) offers the ideal control surface for running a light show, you
+can do a lot with just the web interface built in to Afterglow. And
+even when you have a Push or other grid controller, the web interface
+makes it all the more powerful by adding at-a-glance documentation of
+cue names, as well as alternate ways of doing things, or the
+opportunity to interact with more than one section of the cue grid at
+once.
+
+If you have started Afterglow by running the jar file, it will have
+opened a browser window on the web interface by default. Otherwise,
+you can bring it up by evaluating:
+
+[source,clojure]
+----
+(core/start-web-server 16000 true)
+----
+
+----
+The `16000` specifies the port number on which the web interface
+will run. You can use a different port number if you wan, just pick an
+unused port and type it instead. The `true` requests the browser
+window; it will be opened on whatever port you told the web interface
+to use.
+----
+
+![Web interface](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/WebHome.png)
+    
