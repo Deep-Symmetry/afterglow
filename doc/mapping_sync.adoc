@@ -345,6 +345,23 @@ will start. Here is an overview:
 
 image::assets/PushNoEffects.jpg[Push interface]
 
+The text area at the top of the Push displays the effects currently
+running, and can optionally display
+<<mapping_sync#metronome-control,metronome>> information as well. If a
+cue was defined with adjustable parameters for its effect, they will
+also be displayed in the text area, and you will be able to
+<<mapping_sync#effect-control,adjust>> them by turning the encoder
+above the parameter.
+
+The rightmost encoder, past the text area, adjusts the show Grand
+Master, which controls the maximum brightness that any dimmer cue can
+achieve, so yo can always use it to adjust the overall brightness of
+the show. As soon as you touch the encoder, the current Grand Master
+level will appear, and be updated as you turn the encoder. When you
+release it, the display returns to showing whatever it was before.
+
+image::assets/GrandMaster.jpg[Grand Master adjustment]
+
 === Show Control
 
 Once you have the push linked to a show, it becomes a very intuitive
@@ -403,9 +420,10 @@ some visible parameter of the cue is altered. The strobe and sparkle
 cues in created by
 http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[afterglow.examples/make-cues]
 for the sample show work this way: the intensity and lightness of the
-strobe are increased by pressure, and so is the frequency with which
-sparkles appear. You can see these parameters change in the text area
-above the cue's effect name while you are adjusting them:
+strobe are increased by pressure, and so is the chance that a sparkle
+will be assigned to a light on each frame. You can see these
+parameters change in the text area above the cue's effect name while
+you are adjusting them:
 
 image::assets/SparklePressure.jpg[Sparkle effect adjustinc chance variable]
 
