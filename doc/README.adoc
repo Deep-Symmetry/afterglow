@@ -339,6 +339,21 @@ TIP: When you are synchronizing with Pro DJ Link, you will almost
 always want to sync to the mixer, rather than one of the CDJs, so you
 stay in sync as the DJs mix between tracks.
 
+The actual list of choices you will see depends on what MIDI and DJ
+Link Pro traffic Afterglow has seen in the last few seconds, and will
+update as players and mixers start and stop sending clock or beat grid
+information.
+
+NOTE: Limitations in the Java MIDI drivers (at least on the Mac)
+currently require any MIDI devices, whether real or virtual, to be
+connected when Afterglow first starts in order for them to be visible.
+We may write our own MIDI provider extension to resolve this issue,
+but it will involve a lot of tedious JNI code, and so far we have not
+wanted to delay other aspects of Afterglow to tackle this side
+project. It would be nice if Oracle solved this long-standing issue
+themselves, but they keep postponing it. DJ Link Pro does not suffer
+from such limitations.
+
 Once your sync is established, the `Tap Tempo` button changes. If you
 are using MIDI clock to sync the BPM, it becomes a `Tap Beat` button,
 which simply establishes where the beat falls. If you are locked in to
