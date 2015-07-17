@@ -73,7 +73,7 @@ can also bring it up as an executable jar, and run it using `java
 -jar` with command-line arguments:
 
 ```
-> java -jar target/uberjar/afterglow.jar help
+> java -jar afterglow.jar help
 
 Afterglow, a functional lighting control environment.
 

@@ -11,10 +11,8 @@ effects. They provide a convenient way to organize, identify, trigger,
 adjust, and monitor effects. Each
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html[show] in
 Afterglow maintains a cue grid, which can be viewed and interacted
-with through the
-http://deepsymmetry.org/afterglow/doc/afterglow.core.html#var-start-web-server[embedded
-web interface] and MIDI controller mapping implementations which can
-be
+with through the <<README#the-embedded-web-interface,embedded web
+interface>> and MIDI controller mapping implementations which can be
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-register-grid-controller[registered
 as grid controllers], like the
 http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[Ableton
