@@ -596,13 +596,25 @@ keep the BPM (with MIDI) and even the beats (with Pro DJ Link)
 synchronized for you. The Sync pad in the Metronome section (showing
 `Manual` sync in these photos) will eventually allow you to set this
 up, but that is not yet implemented, so for now you will need to use
-the <<README#metronome-control,web interface>> to configure it. The
-pad does already change color to let you know the sync status: Amber
-means manual, green means successful automatic sync, and red means a
-requested automatic sync has failed. It is likely that the second
-release of Afterglow will let you press this pad to choose your sync
-source.
+the <<README#metronome-control,web interface>> to configure it.
 
-Future releases will also take advantage of more of the buttons on the
-controller, as well as the nice big touch strip to the left of the cue
-grid.
+NOTE: The pad does already change color to let you know the sync
+status: Amber means manual, green means successful automatic sync, and
+red means a requested automatic sync has failed. It is likely that the
+second release of Afterglow will let you press this pad to choose your
+sync source.
+
+Once your sync is established, the meaning of the `Tap Tempo` button
+changes. If you are using MIDI clock to sync the BPM, it becomes a
+`Tap Beat` button, which simply establishes where the beat falls. If
+you are locked in to a Pro DJ Link beat grid, it becomes a `Tap Bar`
+button which, when pressed, indicates that the current beat is the
+down beat (start) of a bar.
+
+If you try to adjust the BPM encoder while sync is active, it will
+have no effect, and Afterglow will highlight the sync mode to explain
+why it is ignoring your adjustments.
+
+NOTE: Future releases will also take advantage of more of the buttons
+on the controller, as well as the nice big touch strip to the left of
+the cue grid.
