@@ -533,7 +533,7 @@ visible in the text area). The metronome section also shows you the
 current phrase number, the bar within that phrase, and the beat within
 that bar which has been reached.
 
-image:assets/PushMetronome.png[Metronome section]
+image:assets/PushMetronome.jpg[Metronome section]
 
 The most basic way of synchronizing the metronome is to tap the `Tap
 Tempo` button at each beat of the music. After a few taps, the
