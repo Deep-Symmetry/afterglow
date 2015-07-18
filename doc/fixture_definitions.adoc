@@ -42,7 +42,68 @@ The namespace
 http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.chauvet.html[afterglow.fixtures.chauvet]
 is for fixtures made by Chauvet. The only one in there so far is for a
 six-color (RGB, amber, white, and ultraviolet) LED Par.
-TODO: Write this page.
+
+== Structure of a Fixture Definition
+
+Once created, a fixture definition is simply a Clojure map with keys
+and values that tell Afterglow how to control it. The fixture
+definition functions linked to above simply create and return these
+maps.
+
+Fixtures may have multiple _modes_ which change the number and meaning
+of the control channels they use. For such fixtures, the mode is
+generally given as an argument to the fixture definition function, and
+tells it what version of the map to return. For convenience, the
+function may let you call it with no argument, and assume a default
+mode. Its documentation should reflect this, see for example the
+http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.blizzard.html#var-blade-rgbw[blade-rgbw]
+documentation.
+
+When you are learning how to write fixture definitions, it can be
+helpful to compare the fixture definition functions, which call helper
+functions described on this page, with the actual maps that they
+return. This can be facilitated by using `clojure.pprint/pprint` to
+pretty-print the map that you get when calling the function. For
+example:
+
+[source,clojure]
+----
+(clojure.pprint/pprint (afterglow.fixtures.blizzard/snowball))
+; {:name "Blizzard Snowball",
+;  :channels
+;  [{:offset 1,
+;    :type :dimmer,
+;    :functions
+;    [{:start 0,
+;      :end 255,
+;      :range :variable,
+;      :type :dimmer,
+;      :label "Dimmer"}]}
+;   {:offset 2,
+;    :type :color,
+;    :functions
+;    [{:start 0, :end 255, :range :variable, :type :red, :label "Red"}],
+;    :color :red}
+; [...many channels omitted for brevity...]
+;   {:offset 9,
+;    :type :control,
+;    :functions
+;    [{:start 0,
+;      :range :fixed,
+;      :type :no-function,
+;      :label "No function",
+;      :end 127}
+;     {:range :variable,
+;      :label "Sound-active",
+;      :type :sound-active,
+;      :var-label "Sensitivity",
+;      :start 128,
+;      :end 255}]}]}
+; -> nil
+----
+
+
+TODO: Finish this page.
 
 * Document how to write them, analyzing examples like the
 http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.blizzard.html[Blizzard]
