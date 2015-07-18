@@ -125,11 +125,11 @@ they want to make, doing all of one type before moving on to the next
 type. The type ordering is established by
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-resolution-handlers[show/resolution-handlers]
 and starts with low-level, single channel `:channel` assigners, then
-moves up to more complex `:function`, `:color`, and `:direction`
-assigners. The resolution-handler functions finally resolve any
+moves up to more complex `:function`, `:color`, `:direction`, and
+`:aim` assigners. The resolution-handler functions finally resolve any
 remaining dynamic parameters, and then turn abstractions like color
-objects into appropriate DMX channel values for the target that is being
-assigned.
+objects and aiming vectors into appropriate DMX channel values for the
+target that is being assigned.
 
 . Finally, the resulting buffers of DMX values, with zeros in any
 channels which were not affected by assigners, are sent to their
@@ -140,11 +140,51 @@ effects.
 Assigners
 ~~~~~~~~~
 
-TODO: Flesh out
+As described above, the role of an assigner in the rendering loop is
+to actually decide what _value_ (color, direction, or the like) is
+going to be sent to a _target_ (a lighting fixture head for more
+abstract assigners, or a simple DMX channel for Channel assigners), at
+a given point in time. It really is the heart of implementing an effect.
+
+The assigner fulfills this responsibility by implementing the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-assign[assign]
+function in the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-IAssigner[IAssigner]
+protocol. It is passed the show, the metronome snapshot which
+identifies the point in musical time that has been reached, the target
+being assigned, and the value that any earlier assigners of the same
+type have decided should be assigned to the target.
+
+It performs its magic, using the values established in setting up the
+effect, and the algorithm that the effect author designed, to come up
+with the resulting value that it wants assigned to the target, which
+may or may not be influenced by the previous assignment, and returns
+that value for Afterglow to either use, or pass on to the next
+assigner of that type in the effect chain.
+
+The best way to understand this is probably to look at examples of
+effects that ship with Afterglow, starting with simple ones like
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.color.html#var-color-effect[color-effect],
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.dimmer.html[dimmer-effect],
+and
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.movement.html#var-direction-effect[direction-effect],
+then slightly more complex
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-strobe[strobe]
+and
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-sparkle[sparkle]
+effects, and on up to more sophisticated compound effects like
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-color-cycle-chase[color-cycle-chase],
+and the spatially mapped elaborations of it like
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-iris-out-color-cycle-chase[iris-out-color-cycle-chase].
+
+Once you can understand how all of those pieces fit together, you will
+be ready to build your own complex and mesmerizing effects!
 
 [[channel-assigners]]
 Channel Assigners
 ^^^^^^^^^^^^^^^^^
+TODO: Briefly describe the different kind of assigners, and how they get resolved to DMX.
+
 
 [[function-assigners]]
 Function Assigners
