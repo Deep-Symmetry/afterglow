@@ -38,7 +38,7 @@ is taxing your hardware by looking at the show’s `:statistics` atom:
 ; ->  :recent #amalloy/ring-buffer [30 (0 0 0 0...1 0 0 0 0 0 0 1 0 0 1)],
 ; ->  :recent-total 6,
 ; ->  :recent-average 0.2}
-; -> ----
+----
 ____
 This tells you how many milliseconds have been spent in the rendering
 loop while the show is running, how many frames of DMX data have been
