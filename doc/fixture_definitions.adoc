@@ -268,6 +268,93 @@ different axes. Tilt motions are rotations around the fixture X axis.
 
 === Head Specifications
 
+As described above, the `:heads` entry in a fixture definition map is
+a list that describes each individually controllable head within that
+fixture. It may be a separate moving head, or it may just be an
+individually-addressable pixel. Each element of the list is a map with
+the following content:
+
+[cols="2l,5a", options="header"]
+|===
+|Key
+|Purpose
+
+|:name
+
+|A string which identifies the manufacturer and model of fixture.
+
+|:channels
+
+| A list of channel specifications which tell Afterglow about the DMX
+channels that this individual head responds to. These have exactly the
+same structure as the channel specifications for the main fixture, as
+described <<channel-specifications,above>>. A channel can only be
+listed in one place or the other. If it affects the entire fixture, it
+should be in the main list; if it affects only a single head, it
+should be in that head's list.
+
+|:x
+
+|The offset along the fixture X axis, in meters, from the geometric
+ center of the fixture (the point at which Afterglow is told the
+ fixture is located when patching the fixture) and the geometric
+ center of this head. If this head is centered within the fixture X
+ axis, you can omit this value or you can supply it with a value of
+ 0.0. The <<show_space#show-space,Show Space>> page illustrates the
+ axes and links to a function you can use for converting inches to
+ meters.
+
+|:y
+
+|The offset along the fixture Y axis, in meters, from the geometric
+ center of the fixture (the point at which Afterglow is told the
+ fixture is located when patching the fixture) and the geometric
+ center of this head. If this head is centered within the fixture Y
+ axis, you can omit this value or you can supply it with a value of
+ 0.0. The <<show_space#show-space,Show Space>> page illustrates the
+ axes and links to a function you can use for converting inches to
+ meters.
+
+|:z
+
+|The offset along the fixture Z axis, in meters, from the geometric
+ center of the fixture (the point at which Afterglow is told the
+ fixture is located when patching the fixture) and the geometric
+ center of this head. If this head is centered within the fixture X
+ axis, you can omit this value or you can supply it with a value of
+ 0.0. The <<show_space#show-space,Show Space>> page illustrates the
+ axes and links to a function you can use for converting inches to
+ meters.
+
+|:x-rotation
+
+|If this head aims in a different direction than the fixture as a
+ whole, this value tells afterglow the angle in radians it is rotated
+ around the X axis. The <<show_space#show-space,Show Space>> page
+ illustrates the axes, explains how to calculate the sign of a
+ rotation, and links to a function you can use for converting degrees
+ to radians.
+
+|:y-rotation
+
+|If this head aims in a different direction than the fixture as a
+ whole, this value tells afterglow the angle in radians it is rotated
+ around the Y axis. The <<show_space#show-space,Show Space>> page
+ illustrates the axes, explains how to calculate the sign of a
+ rotation, and links to a function you can use for converting degrees
+ to radians.
+
+|:z-rotation
+
+|If this head aims in a different direction than the fixture as a
+ whole, this value tells afterglow the angle in radians it is rotated
+ around the Z axis. The <<show_space#show-space,Show Space>> page
+ illustrates the axes, explains how to calculate the sign of a
+ rotation, and links to a function you can use for converting degrees
+ to radians.
+
+|===
+
 TODO: Finish this page.
 
 * Document how to write them, analyzing examples like the
