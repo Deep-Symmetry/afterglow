@@ -50,12 +50,13 @@ and values that tell Afterglow how to control it. The fixture
 definition functions linked to above simply create and return these
 maps.
 
-Fixtures may have multiple _modes_ which change the number and meaning
-of the control channels they use. For such fixtures, the mode is
-generally given as an argument to the fixture definition function, and
-tells it what version of the map to return. For convenience, the
-function may let you call it with no argument, and assume a default
-mode. Its documentation should reflect this, see for example the
+Fixtures may have multiple "personalities" or _modes_ which change the
+number and meaning of the control channels they use, and the features
+that are available. For such fixtures, the mode is generally given as
+an argument to the fixture definition function, and tells it what
+version of the map to return. For convenience, the function may let
+you call it with no argument, and assume a default mode. Its
+documentation should reflect this, see for example the
 http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.blizzard.html#var-blade-rgbw[blade-rgbw]
 documentation.
 
@@ -102,6 +103,106 @@ example:
 ; -> nil
 ----
 
+Even though most of the channels were cut out to shorten that example,
+it is still pretty long. Still, it gives a sense of the shape of a
+fixture definition. You may have noticed that there were only two
+top-level keys in the map returned, `:name`, and `:channels`. Those
+are the only two that need to be there for a simple fixture. And
+almost all of the information Afterglow needs is found in the
+`:channels` list, so that is where you will spend most of your work in
+creating the fixture definition.
+
+If you had already looked at the source for
+http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.blizzard.html#var-snowball[snowball]
+(which you can get to by clicking the `view source` button at the
+bottom of all the API documentation entries), you might have noticed
+that the source is a lot shorter than the resulting map. That's
+because it can take advantage of a bunch of helper functions described
+on this page to help with the tedious and repetetive parts of
+constructing the map. And when you patch a fixture into a show using
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-patch-fixture.21[afterglow.show/patch-fixture!]
+the map gets much bigger again, as Afterglow annotates it with
+information you provided during the patching process, assigning the
+actual universes and DMX channels for each logical channel in the
+fixture definition, and figuring out the location in space and aiming
+direction, potentially of several heads of a multi-head fixture.
+
+So, let's look at the fixture definition map contents in detail.
+
+[cols="1a,5a", options="header]
+|===
+|Key
+|Purpose
+
+|`:name`
+
+|A string which identifies the manufacturer and model of fixture.
+
+|`:channels`
+
+| A list of channel specifications which tell Afterglow about the DMX
+channels that the fixture responds to, and how to make it do different
+things. This is the meat of the fixture definition, and is described
+in detail <<channel-specifications,below>>.
+
+|`:mode`
+
+|If present, identifies the fixture mode in which this definition map
+ was created. As desrcibed above, some fixtures can be configured to
+ have different "personalities" which use a different number of DMX
+ channels and provide a different set of features. Their feature
+ definition functions will use a mode argument to determine the mode
+ in which the fixture is operating, and return an appropriate map.
+ That map will include the chosen mode keyword as the value at this
+ key.
+
+|`:heads`
+
+|If a fixture has multiple independent heads, which can be controlled
+ individually, the channels which control the heads are grouped into a
+ list under this key. Each entry in the list is a map which explains a
+ single head. It will contain its own `:channels` key with the channel
+ specifications controlling that specific head, and will also contain
+ geometric information about the offset of that particular head from
+ the geometric center of the fixture, so Afterglow can figure out
+ where the head is in space when the fiture is patched into the show.
+ This is described in more detail <<head-specifications,below>>.
+
+|`:pan-center`
+
+|If this fixture is a moving head capable of pan movements, this entry
+ tells afterglow the DMX value to send the fixture to pan it directly
+ at the audience when the fixture is hung at its standard orientation.
+ (The documentation you create for your fixture definition needs to
+ explain what this default orientation is, so that people patching
+ your fixture can figure out the proper angle information to tell
+ Afterglow if they hung it in a different orientation, as explained in
+ <<show_space#show-space,Show Space>>.
+
+Many fixtures can pan more than once around a full circle, so you may
+have a choice of values to supply here, all of which pan the fixture
+directly towards the audience in your default hanging orientation. If
+so, pick one towards the middle of the DMX range, giving Afterglow
+room to maneuver without having to flip to the opposite end of the pan
+range regardless of how the fixture has been hung.
+
+|`:pan-half-circle`
+
+|.
+
+|`:tilt-center`
+
+|.
+
+|`:tilt-half-circle`
+
+|.
+
+|===
+
+== Channel Specifications
+
+== Head Specifications
 
 TODO: Finish this page.
 
