@@ -425,15 +425,15 @@ the beta new UI, much more convenient and easy to learn. With a
 default installation, once you have `olad` running, you can find that
 at http://localhost:9090/new/[http://localhost:9090/new/].
 
-. Find or create fixture definitions. Once you are able to get your
-lights to do things by manipulating the Faders section of the OLA web
-interface, it is time to get Afterglow ready to talk to them. There
-are a vast number of fixture types out there, and at this early stage
-almost none of them are built in to Afterglow, so you will probably
-need to create your own
-<<fixture_definitions#fixture-definitions,fixture definitions>>. You
-can study the existing fixture definitions for examples of how it is
-done. You can also ask for help on the
+. Find or create <<fixture_definitions#fixture-definitions,fixture
+definitions>>. Once you are able to get your lights to do things by
+manipulating the Faders section of the OLA web interface, it is time
+to get Afterglow ready to talk to them. There are a vast number of
+fixture types out there, and at this early stage almost none of them
+are built in to Afterglow, so you will probably need to create your
+own. The <<fixture_definitions#fixture-definitions,documentation>>
+explains how, and links to existing fixture definitions as examples.
+You can also ask for help on the
 https://github.com/brunchboy/afterglow/wiki/Questions[wiki].
 
 . Patch your actual fixture channels and locations. Once you have
