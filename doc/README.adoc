@@ -9,9 +9,12 @@ ifdef::env-github[:outfilesuffix: .adoc]
 
 To keep page sizes manageable, this information is split into several
 pages. This page provides an <<what-is-afterglow,introduction>> and
-overview, and links to other sections as needed. If you know what you
-are looking for, you can also dive right into it by jumping to the
-page you want:
+overview, and links to other sections as needed. It is worth reading
+through this whole page once if you are new to Afterglow, because the
+orientation it provides will be helpful, and it ends with a guide to
+help you get started on your way to creating your own light show. Once
+you know what you are looking for, you can also dive right into it by
+jumping to the page you want:
 
 ****
 
@@ -443,27 +446,61 @@ the Hypnotic RGB laser is present.
 The namespace
 http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.blizzard.html[afterglow.fixtures.blizzard]
 is the most complete so far, mostly because the author lives close to
-Blizzard and has mostly fixures made by them. It includes definitions
+Blizzard and mostly owns fixures made by them. It includes definitions
 for a full-featured moving head spot (the Torrent F3), a moving head
 color-mixing LED fixture (the Blade RGBW), an LED five-color Par (the
-Puck Fab5), an eight-head RGB system (the Weather System), and an RGB
+Puck Fab5), an eight-head RGB system (the Weather System), and an RGBW
 moonflower effect (the Snowball). These might be useful examples for
 fixtures you want to create.
 +
 The namespace
 http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.chauvet.html[afterglow.fixtures.chauvet]
 is for fixtures made by Chauvet. The only one in there so far is for a
-six color (RGB, amber, white, and ultraviolet) LED Par.
+six-color (RGB, amber, white, and ultraviolet) LED Par.
 
-. Patch your actual fixture channels and locations.
+. Patch your actual fixture channels and locations. Once you have
+working definitions for your fixtures, you will want to create a show
+that tells Afterglow what fixtures you have, and the DMX universes and
+channels you have them connected to, and how you have them arranged in
+physical space. You will want to create a namespace for your show
+along the lines of
+http://deepsymmetry.org/afterglow/doc/afterglow.examples.html[afterglow.examples],
+and a function like
+http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-use-sample-show[use-sample-show]
+which sets up your own show.
 
-. Create the cues you want.
+. Create the cues you want. Much as the
+http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[make-cues]
+function in the examples namespace creates a bunch of cues that work
+with the sample show's fixtures, you will want cues that create
+effects to make your lights do interesting things, and which are
+arranged, labeled, and colored in a way that makes sense to you.
 
-. Map some cues to a controller, if you have one.
+. Map some cues to a controller, if you have one. If you have an
+Ableton Push, you are in luck because you will be able to take
+advantage of the built in
+https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#using-ableton-push[support]
+Afterglow offers. But even if you just have a simple MIDI controller
+with a few buttons and faders, or even a keyboard, you can
+https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#midi-mapping-and-beat-sync[map]
+keys, buttons, and faders to do trigger cues and adjust variables used
+by the cues.
 
-. Run the show!
+. Run the show! With or without a physical controller, you can create
+your show by calling the function you wrote modeled on
+`use-sample-show`, then bring up the
+<<README#the-embedded-web-interface,embedded web interface>> to
+trigger your cues and watch the results.
 
-. Create your own custom effects if you want to be fancy.
+. Create your own custom effects if you want to be fancy. Once you
+feel constrained by the limits of the <<effects#effects,effects>> that
+are built in to the current release of Afterglow, the whole point of
+the environment it offers is to enable people to imagine and create
+brand new effects. You have the full power of the language used to
+create Afterglow at your fingertips at every moment to create and
+explore new ideas; you are not constrained to the limited scripting
+environment that most lighting control software offers, if it offers
+any at all.
 
 . Don't forget to contribute your fixture definitions and effects to
 the Afterglow community! If you are confident that you have fully
