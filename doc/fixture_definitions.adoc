@@ -307,7 +307,7 @@ Each channel specification map has the following content:
  number (DMX channels range from 1 to 512). That configuration defines
  the _first_ channel the fixture listens to. The `:offset` value tells
  Afterglow how the current channel specification relates to the
- fixtures configured (starting) channel number. An offset of `1`
+ fixture's configured (starting) channel number. An offset of `1`
  corresponds to the first channel the fixture is listening to, which
  would be the channel number configured on the fixture's front panel
  (or via its DIP switches or jumpers if it is really old-school). The
@@ -321,16 +321,16 @@ fixture is configured to listen, most lighting manuals describe their
 fixture channels with numbers that start with `1`, so Afterglow
 follows that convention.
 
-The offsets for all the channels a given fixture should form a
-continuous series of numbers starting from 1 and going up to the
-number of channels the fixture supports. It is an error if more than
-one channel specification in the fixture definition uses the same
-offset value, and if there are any gaps it probably means that you
-have missed a channel specification (except for multi-byte channels,
-as described in the next row). You don't need to define the channels
-in the same order as their offsets in your fixture definition,
-although that is a reasonable practice, making it easier to match them
-up with the manual.
+The offsets for all the channel specifications in a fixture definition
+should form a continuous series of integers starting from 1 and going
+up to the number of channels the fixture supports. It is an error if
+more than one channel specification in the fixture definition uses the
+same offset value, and if there are any gaps it probably means that
+you have missed a channel specification (except for multi-byte
+channels, as described in the next row). You don't need to define the
+channels in the same order as their offsets in your fixture
+definition, although that is a reasonable practice, making it easier
+to match them up with the manual.
 
 |:fine-offset
 
