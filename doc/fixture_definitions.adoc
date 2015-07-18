@@ -293,7 +293,7 @@ necessarily need to understand it all to create fixture definitions,
 because Afterglow provides <<channel-creation-functions,channel
 creation functions>> to create these maps for you.
 
- Each channel specification map has the following content:
+Each channel specification map has the following content:
 
 [cols="2l,5a", options="header"]
 |===
