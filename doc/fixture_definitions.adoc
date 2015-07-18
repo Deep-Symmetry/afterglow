@@ -177,8 +177,8 @@ in detail <<channel-specifications,below>>.
  explain what this default orientation is, so that people patching
  your fixture can figure out the proper angle information to tell
  Afterglow if they hung it in a different orientation, as explained in
- <<show_space#show-space,Show Space>>. The `:pan-center` value should
- tilt the light so it is aimed exactly along the show Z axis when also
+ <<show_space#show-space,Show Space>>.) The `:pan-center` value should
+ pan the light so it is aimed exactly along the show Z axis when also
  tilted to `:tilt-center`.
 
 Many fixtures can pan more than once around a full circle, so you may
@@ -224,8 +224,8 @@ different axes. Pan motions are rotations around the fixture Y axis.
  definition needs to explain what this default orientation is, so that
  people patching your fixture can figure out the proper angle
  information to tell Afterglow if they hung it in a different
- orientation, as explained in <<show_space#show-space,Show Space>>. The
- `:tilt-center` value should tilt the light so it is aimed exactly
+ orientation, as explained in <<show_space#show-space,Show Space>>.)
+ The `:tilt-center` value should tilt the light so it is aimed exactly
  along the show Z axis when also panned to `:pan-center`.
 
 Some fixtures can tilt more than once around a full circle, so you may
