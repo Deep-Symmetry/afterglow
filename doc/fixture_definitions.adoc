@@ -16,6 +16,22 @@ probably need to create your own. You can study the existing fixture
 definitions for examples of how it is done. You can also ask for help
 on the https://github.com/brunchboy/afterglow/wiki/Questions[wiki].
 
+TIP: When you first embark on the project of creating a fixture
+definition, it might seem overwhelming. This page is long, and
+includes a great deal of complicated detail. But don't despair! First,
+remember that most fixtures only do a subset of the kinds of things
+that the fixture definition mechanism needs to handle, so you do not
+need to learn and understand all of it at once. And even more helpful
+to beginners, realize that you do not need to finish your fixture
+definition before you can start using and testing it. Your fixture may
+be capable of many things, but start out by defining just a couple of
+channels that will make it at least light up, and see if you can get
+those working in a show. Once they are, you can already use the
+fixture at least at that level. And that success can be a foundation
+for digging deeper into other types of channels, which you can add to
+your definition one at a time, building on what you learn as you go
+along.
+
 The namespace
 http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.html[afterglow.fixtures]
 has definitions for very basic one-channel generic dimmers and
@@ -279,10 +295,6 @@ the following content:
 |Key
 |Purpose
 
-|:name
-
-|A string which identifies the manufacturer and model of fixture.
-
 |:channels
 
 | A list of channel specifications which tell Afterglow about the DMX
@@ -298,7 +310,7 @@ should be in that head's list.
 |The offset along the fixture X axis, in meters, from the geometric
  center of the fixture (the point at which Afterglow is told the
  fixture is located when patching the fixture) and the geometric
- center of this head. If this head is centered within the fixture X
+ center of this head. If this head is centered along the fixture X
  axis, you can omit this value or you can supply it with a value of
  0.0. The <<show_space#show-space,Show Space>> page illustrates the
  axes and links to a function you can use for converting inches to
@@ -309,7 +321,7 @@ should be in that head's list.
 |The offset along the fixture Y axis, in meters, from the geometric
  center of the fixture (the point at which Afterglow is told the
  fixture is located when patching the fixture) and the geometric
- center of this head. If this head is centered within the fixture Y
+ center of this head. If this head is centered along the fixture Y
  axis, you can omit this value or you can supply it with a value of
  0.0. The <<show_space#show-space,Show Space>> page illustrates the
  axes and links to a function you can use for converting inches to
@@ -320,7 +332,7 @@ should be in that head's list.
 |The offset along the fixture Z axis, in meters, from the geometric
  center of the fixture (the point at which Afterglow is told the
  fixture is located when patching the fixture) and the geometric
- center of this head. If this head is centered within the fixture X
+ center of this head. If this head is centered along the fixture X
  axis, you can omit this value or you can supply it with a value of
  0.0. The <<show_space#show-space,Show Space>> page illustrates the
  axes and links to a function you can use for converting inches to
