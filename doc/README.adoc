@@ -368,7 +368,10 @@ are using MIDI clock to sync the BPM, it becomes a `Tap Beat` button,
 which simply establishes where the beat falls. If you are locked in to
 a Pro DJ Link beat grid, it becomes a `Tap Bar` button which, when
 pressed, indicates that the current beat is the down beat (start) of a
-bar.
+bar. Similarly, if you press the metronome Reset button (the red x
+above the phrase counter) while synced to a Pro DJ Link beat grid, the
+beat itself will not move, but the beat closest to when you pressed
+the pad will be identified as Beat 1.
 
 image:assets/MetronomeSynced.png[Metronome synced]
 

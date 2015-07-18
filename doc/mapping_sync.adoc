@@ -350,7 +350,6 @@ image::assets/PushNoEffects.jpg[Push interface]
 Once you have the push linked to a show, it becomes a very intuitive
 way to monitor and control the cues and other aspects of the show.
 
-
 The text area at the top of the Push displays the effects currently
 running, and can optionally display
 <<mapping_sync#metronome-control,metronome>> information as well. If a
@@ -401,15 +400,14 @@ pad that was used to launch it.
 
 image::assets/SparklePressure.jpg[Sparkle effect, ajusting chance variable]
 
-To stop a running cue, press its pad again, or press the red `End`
-pad underneath its effect entry in the text area. Some cues will
-end immediately, others will continue to run until they reach what
-they feel is an appropriate stopping point. While they are in the
-process of ending, the cue pad will blink, and &ldquo;Ending&rdquo;
-will appear underneath the cue's effect name in the text area. If you
-want the cue to end immediately even though it would otherwise run for
-a while longer, you can press the blinking cue pad (or effect `End`
-pad) again and it will be killed right then.
+To stop a running cue, press its pad again, or press the red `End` pad
+underneath its effect entry in the text area. Some cues will end
+immediately, others will continue to run until they reach what they
+feel is an appropriate stopping point. While they are in the process
+of ending, the cue pad will blink, and the `End` pad will be labeled
+`Ending`. If you want the cue to end immediately even though it would
+otherwise run for a while longer, you can press the blinking cue pad
+(or effect `Ending` pad) again and it will be killed right then.
 
 The colors assigned to cue pads by the creator of the cue grid are
 intended to help identify related cues. Some cues (especially intense
@@ -586,6 +584,10 @@ backwards:
 
 image:assets/PushBar.jpg[Bar jumping]
 
+If you know a phrase is about to begin, you can press the red Reset
+pad in the metronome section right as it does. This will reset the
+count to Phrase 1, Bar 1, Beat 1.
+
 Trying to keep up with tempo changes during dynamic shows can be very
 difficult, so you will hopefully be able to take advantage of
 Afterglow's metronome synchronization features. If the DJ can send you
@@ -610,7 +612,10 @@ changes. If you are using MIDI clock to sync the BPM, it becomes a
 `Tap Beat` button, which simply establishes where the beat falls. If
 you are locked in to a Pro DJ Link beat grid, it becomes a `Tap Bar`
 button which, when pressed, indicates that the current beat is the
-down beat (start) of a bar.
+down beat (start) of a bar. (Similarly, if you press the metronome
+Reset pad while synced to a Pro DJ Link beat grid, the beat itself
+will not move, but the beat closest to when you pressed the pad will
+be identified as Beat 1.)
 
 If you try to adjust the BPM encoder while sync is active, it will
 have no effect, and Afterglow will highlight the sync mode to explain
