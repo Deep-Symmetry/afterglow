@@ -107,13 +107,17 @@ the appropriate type for the assignment, and Afterglow records it,
 potentially to pass it to another assigner of the same type which
 wants to affect the same target. The assigner can also veto any
 previous assignment and say that nothing should happen by returning
-`nil`. + The input to `assign` might be a
+`nil`.
++
+The input to `assign` might be a
 <<parameters#dynamic-parameters,Dynamic Parameter>>, and the return
 value may be as well, or the assigner may choose to resolve it into a
 non-dynamic value, in order to decide between or blend competing
-assignments. + At the end of this process, Afterglow is left with a
-single assigned value for every target which any effect wanted to
-influence for the current frame.
+assignments.
++
+At the end of this process, Afterglow is left with a single assigned
+value for every target which any effect wanted to influence for the
+current frame.
 
 . Afterglow uses these assignment results to establish actual DMX
 values for the frame. It splits them based on the kind of assignment
