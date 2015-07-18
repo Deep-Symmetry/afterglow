@@ -129,23 +129,23 @@ direction, potentially of several heads of a multi-head fixture.
 
 So, let's look at the fixture definition map contents in detail.
 
-[cols="2a,5a", options="header"]
+[cols="2l,5a", options="header"]
 |===
 |Key
 |Purpose
 
-|`:name`
+|:name
 
 |A string which identifies the manufacturer and model of fixture.
 
-|`:channels`
+|:channels
 
 | A list of channel specifications which tell Afterglow about the DMX
 channels that the fixture responds to, and how to make it do different
 things. This is the meat of the fixture definition, and is described
 in detail <<channel-specifications,below>>.
 
-|`:mode`
+|:mode
 
 |If present, identifies the fixture mode in which this definition map
  was created. As desrcibed above, some fixtures can be configured to
@@ -156,7 +156,7 @@ in detail <<channel-specifications,below>>.
  map. That map will include the chosen mode keyword as the value at
  this key.
 
-|`:heads`
+|:heads
 
 |If a fixture has multiple independent heads, which can be controlled
  individually, the channels which control the heads are grouped into a
@@ -168,7 +168,7 @@ in detail <<channel-specifications,below>>.
  where the head is in space when the fiture is patched into the show.
  This is described in more detail <<head-specifications,below>>.
 
-|`:pan-center`
+|:pan-center
 
 |If this fixture is a moving head capable of pan movements, this entry
  tells afterglow the DMX value to send the fixture to pan it directly
@@ -196,7 +196,7 @@ legal DMX range which would cause the fixture to pan that far if it
 were legal and possible, and Afterglow will still be able to figure
 out and use the legal movements that the fixture is capable of.
 
-|`:pan-half-circle`
+|:pan-half-circle
 
 |If this fixture is a moving head capable of pan movements, this entry
  tells Afterglow the amount it needs to add to the DMX value sent on
@@ -215,7 +215,7 @@ The <<show_space#show-space,Show Space>> page explains how to figure
 out which rotations are clockwise or counterclockwise with respect to
 different axes. Pan motions are rotations around the fixture Y axis.
 
-|`:tilt-center`
+|:tilt-center
 
 |If this fixture is a moving head capable of tilt movements, this
  entry tells afterglow the DMX value to send the fixture to tilt it
@@ -243,7 +243,7 @@ legal DMX range which would cause the fixture to tilt that far if it
 were legal and possible, and Afterglow will still be able to figure
 out and use the legal movements that the fixture is capable of.
 
-|`:tilt-half-circle`
+|:tilt-half-circle
 
 |If this fixture is a moving head capable of tilt movements, this entry
  tells Afterglow the amount it needs to add to the DMX value sent on
