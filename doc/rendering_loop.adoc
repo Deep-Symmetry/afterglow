@@ -31,9 +31,14 @@ is taxing your hardware by looking at the show’s `:statistics` atom:
 [source,clojure]
 ----
 @(:statistics *show*)
-; -> {:total-time 382127, :frames-sent 87769, :average-duration 4.35378}
-----
-
+; -> {:afterglow-version "0.1.0-SNAPSHOT",
+; ->  :total-time 70429,
+; ->  :frames-sent 105828,
+; ->  :average-duration 0.6655044,
+; ->  :recent #amalloy/ring-buffer [30 (0 0 0 0...1 0 0 0 0 0 0 1 0 0 1)],
+; ->  :recent-total 6,
+; ->  :recent-average 0.2}
+; -> ----
 ____
 This tells you how many milliseconds have been spent in the rendering
 loop while the show is running, how many frames of DMX data have been
@@ -42,12 +47,11 @@ in the rendering loop. If the duration of a rendering cycle ever exceeds
 the refresh interval, Afterglow will log a warning that it is unable to
 keep up with the effects you are trying to run.
 
-If you have a show&rsquo;s web interface open, this atom is what is
-used to display the Load bar at the top of the screen, which fills up
-and turns red as the time within each frame available for calculating
-and sending control values to the lights gets used up.
+If you have a show&rsquo;s web interface open, the `:recent` keys in
+this atom are used to display the Load bar at the top of the screen,
+which fills up and turns red as the time within each frame available
+for calculating and sending control values to the lights gets used up.
 ____
-
 
 When it is time to determine the next set of values to send to the
 show’s patched fixtures, this is what happens:
@@ -103,16 +107,13 @@ the appropriate type for the assignment, and Afterglow records it,
 potentially to pass it to another assigner of the same type which
 wants to affect the same target. The assigner can also veto any
 previous assignment and say that nothing should happen by returning
-`nil`.
-+
-The input to `assign` might be a <<parameters#parameters,Dynamic
-Parameter>>, and the return value may be as well,
-or the assigner may choose to resolve it into a non-dynamic value, in
-order to decide between or blend competing assignments.
-+
-At the end of this process, Afterglow is left with a single assigned
-value for every target which any effect wanted to influence for the
-current frame.
+`nil`. + The input to `assign` might be a
+<<parameters#dynamic-parameters,Dynamic Parameter>>, and the return
+value may be as well, or the assigner may choose to resolve it into a
+non-dynamic value, in order to decide between or blend competing
+assignments. + At the end of this process, Afterglow is left with a
+single assigned value for every target which any effect wanted to
+influence for the current frame.
 
 . Afterglow uses these assignment results to establish actual DMX
 values for the frame. It splits them based on the kind of assignment
