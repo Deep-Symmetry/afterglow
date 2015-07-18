@@ -129,7 +129,7 @@ direction, potentially of several heads of a multi-head fixture.
 
 So, let's look at the fixture definition map contents in detail.
 
-[cols="2l,5a", options="header"]
+[cols="2a,5a", options="header"]
 |===
 |Key
 |Purpose
