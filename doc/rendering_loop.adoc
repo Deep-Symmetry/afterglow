@@ -66,7 +66,7 @@ for a particular channel on this frame, a zero value will be sent for
 it.
 
 . Then Afterglow loops over all
-<<effects#effects,Effects that are currently active
+<<effects#effects,Effects>> that are currently active
 for the show, and asks if any are ready to end, as described in the
 <<effects#lifecycle,Effect Lifecycle>> section. If any are,
 they are removed from the list of active effects.
