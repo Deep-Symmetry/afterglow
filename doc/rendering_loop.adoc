@@ -35,7 +35,7 @@ is taxing your hardware by looking at the show’s `:statistics` atom:
 ; ->  :total-time 70429,
 ; ->  :frames-sent 105828,
 ; ->  :average-duration 0.6655044,
-; ->  :recent #amalloy/ring-buffer [30 (0 0 0 0...1 0 0 0 0 0 0 1 0 0 1)],
+; ->  :recent #amalloy/ring-buffer [30 (0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 1 0 0 1)],
 ; ->  :recent-total 6,
 ; ->  :recent-average 0.2}
 ----
