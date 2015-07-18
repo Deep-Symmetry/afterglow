@@ -782,11 +782,12 @@
                  x first-cell]
             (let [effect (:effect (first fx))
                   info (first fx-meta)
+                  ending ((:key info) (:ending fx-info))
                   cue (:cue info)]
               (write-display-cell controller 0 x (cue-variable-names cue))
               (write-display-cell controller 1 x (cue-variable-values controller cue))
               (write-display-cell controller 2 x (or (:name cue) (:name (first fx))))
-              (write-display-cell controller 3 x "  End")
+              (write-display-cell controller 3 x (if ending " Ending" "  End"))
               (aset (:next-top-pads controller) (* 2 x) (top-pad-state :dim :red))
               (when (seq (rest fx))
                 (recur (rest fx) (rest fx-meta) (inc x)))))

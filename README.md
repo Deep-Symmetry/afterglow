@@ -127,7 +127,7 @@ tweak something quickly, you can use that:
 > which make for a vastly more productive exploration session. So even
 > when you are running from a jar rather than launching from a REPL,
 > you will often want to access a real REPL. You can accomplish that
-> with command-line arguments or by using web the console to invoke
+> with command-line arguments or by using the web console to invoke
 > [core/start-nrepl](http://deepsymmetry.org/afterglow/doc/afterglow.core.html#var-start-nrepl)
 > and then connecting your favorite REPL environment to the network
 > REPL port you created.
@@ -162,10 +162,9 @@ But, getting back to our REPL-based example: We next start the sample
 show, which runs on DMX universe 1. You will want to have OLA
 configured to at least have an ArtNet universe with that ID so you can
 watch the DMX values using its web interface. It would be even better
-if you had an actual DMX interface hooked up, and changed the
-definition of `sample-rig` to include some real lights you have
-connected. Either way, here is how you start the show sending control
-signals to lights:
+if you had an actual DMX interface hooked up, and changed the show to
+include some real lights you have connected. Either way, here is how
+you start the show sending control signals to lights:
 
 ```clojure
 (use-sample-show) ; Create the sample show that uses universe 1.
