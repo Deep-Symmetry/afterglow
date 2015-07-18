@@ -295,7 +295,7 @@ creation functions>> to create these maps for you.
 
 Each channel specification map has the following content:
 
-[cols="2l^.<,5a", options="header"]
+[cols="^.<2l,5a", options="header"]
 |===
 |Key
 |Purpose
