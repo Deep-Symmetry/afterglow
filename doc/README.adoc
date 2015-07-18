@@ -384,11 +384,94 @@ troubleshoot the problem.
 
 == Getting Started
 
-TODO: Write up an overview of the steps you need to take to get your own show up.
+There is a lot to Afterglow, and already a lot of documentation. In an
+effort to help you find your way through it, here is a guide to the
+steps you'll want to take to get a basic light show up and running.
+Once you are there, you can branch off and explore extending it in any
+direction you like, and hopefully contribute back the fixture
+definitions and new effects and cues you come up with!
 
-* Set up your universe(s) in OLA.
-* Find or create fixture definitions.
-* Patch your actual fixture channels and locations.
-* Create the cues you want.
-* Create your own custom effects if you want to be fancy.
-* Run the show!
+. If you don't know any Clojure, you are going to want to learn at
+least a little. Luckily, it is a fantastic, helpful community, and an
+amazing language (the existence of Afterglow after a couple of months
+of spare time work is good proof of that)! The
+http://clojure.org/getting_started[Getting Started] page on
+clojure.org has links to some great resources. Don't miss
+http://www.braveclojure.com[Clojure for the Brave and True], a fun
+book under development which can be read in its entirety online.
+
+. Install Afterglow. For now the best way to do that is following the
+steps in the
+https://github.com/brunchboy/afterglow#installation[Installation]
+section on the main project page, to install the Open Lighting
+Architecture, then create a new Clojure project with Leiningen that
+includes Afterglow as a dependency.
+
+. Set up your universe(s) in OLA. Their own
+https://www.openlighting.org/ola/getting-started/[Getting Started]
+page may be helpful. Until OLA is successfully communicating with your
+lights, whether over a USB DMX interface, Artnet over a LAN, or the
+like, Afterglow will not be able to control them. Even though their
+examples show using the command-line tools to configure your
+interface, today you will likely find the web interface, especially
+the beta new UI, much more convenient and easy to learn. With a
+default installation, once you have `olad` running, you can find that
+at http://localhost:9090/new/[http://localhost:9090/new/].
+
+. Find or create fixture definitions. Once you are able to get your
+lights to do things by manipulating the Faders in the OLA web
+interface, it is time to get Afterglow ready to talk to them. There
+are a vast number of fixture types out there, and at this early stage
+almost none of them are built in to Afterglow, so you will probably
+need to create your own fixture definitions. You will want to study
+existing fixture definitions for examples of how it is done. You can
+also ask for help on the
+https://github.com/brunchboy/afterglow/wiki/Questions[wiki].
++
+The namespace
+http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.html[afterglow.fixtures]
+has definitions for very basic one-channel generic dimmers and
+switches. Looking at the source for those can illustrate the most
+basic structure of a fixture definition. It also contains some helper
+functions Afterglow uses in processing fixture definitions.
++
+The namespace
+http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.american-dj.html[afterglow.fixtures.american-dj]
+contains definitions for fixtures made by American DJ. Currently, only
+the Hypnotic RGB laser is present.
++
+The namespace
+http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.blizzard.html[afterglow.fixtures.blizzard]
+is the most complete so far, mostly because the author lives close to
+Blizzard and has mostly fixures made by them. It includes definitions
+for a full-featured moving head spot (the Torrent F3), a moving head
+color-mixing LED fixture (the Blade RGBW), an LED five-color Par (the
+Puck Fab5), an eight-head RGB system (the Weather System), and an RGB
+moonflower effect (the Snowball). These might be useful examples for
+fixtures you want to create.
++
+The namespace
+http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.chauvet.html[afterglow.fixtures.chauvet]
+is for fixtures made by Chauvet. The only one in there so far is for a
+six color (RGB, amber, white, and ultraviolet) LED Par.
+
+. Patch your actual fixture channels and locations.
+
+. Create the cues you want.
+
+. Map some cues to a controller, if you have one.
+
+. Run the show!
+
+. Create your own custom effects if you want to be fancy.
+
+. Don't forget to contribute your fixture definitions and effects to
+the Afterglow community! If you are confident that you have fully
+mapped out the functions of a fixture, please make a pull request to
+include it in afterglow, either within the existing namespace for its
+manufacturer, or creating a new namespace for a new manufacturer.
+Similarly, if you have created an awesome new kind of effect, please
+consider a pull request to add it somewhere within the effects
+namespace hierarchy. And if you are just tinkering with something new
+and experimental, please post about it on the
+https://github.com/brunchboy/afterglow/wiki[wiki]!
