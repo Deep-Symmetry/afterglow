@@ -71,42 +71,48 @@ for the show, and asks if any are ready to end, as described in the
 <<effects#lifecycle,Effect Lifecycle>> section. If any are,
 they are removed from the list of active effects.
 
-. Then it makes another loop over any functions that did not end, to
-see how they want to affect the lights. It does this by calling, in
-order, each effect’s
+. Then it makes another loop over any effects that did not end, to see
+how they want to affect the lights. It does this by calling, in order,
+each effect’s
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-generate[generate]
 function, passing in the show and the metronome snapshot. In order to
-affect the lights, each function will return a list of
-[[Assigners|the-rendering-loop#assigners]] for the things it wants to
-affect. These are gathered in the order they were returned by each
+make the lights do things, each effect returns a list of
+<<rendering_loop#assigners,Assigners>> specifying the things it wants
+to happen. These are gathered in the order they were returned by each
 effect. Since the effects are run in priority order (lower priority
 first, with effects of the same priority running in the order in which
 they were added to the show), higher-priority and more recent effects’
 assigners will get the chance to modify or veto any assigners from
-earlier and lower-priority effects which are trying to control the same
-thing. If the effect doesn’t want to do anything this frame, it can
-simply return an empty assigner list.
+earlier and lower-priority effects which are trying to control the
+same thing. If the effect doesn’t want to do anything this frame, it
+can simply return an empty assigner list.
 
 . Once all the assigners have been collected, Each assigner’s
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-assign[assign]
 function is called, again passing in the show and the metronome
 snapshot, the target which is being assigned (a DMX channel in a show
-universe, or a fixture or fixture head, depending on the assigner type),
-as well as the assignment value the effect wanted to establish
+universe, or a fixture or fixture head, depending on the assigner
+type), as well as the assignment value the effect wanted to establish
 (a number, color, or head direction, again depending on the assigner
-type), and the previous assignment (if any) that an earlier effect
+type), and the previous assignment (if any) that an earlier assigner
 wanted to set for this target. The assigner can decide what to do with
-the previous assignment: Ignore it, blend the current assignment with it
-somehow, or honor it, depending on the nature and configuration of the
-assigner. The `assign` function returns a single resolved value of the
-appropriate type for the assignment, and Afterglow records it,
-potentially to pass it to another assigner of the same type which wants
-to affect the same target. The input to `assign` might be a [[Dynamic
-Parameter|dynamic-parameters]], and the return value may be as well, or
-the assigner may choose to resolve it in order to decide between or
-blend competing assignments. At the end of this process, Afterglow is
-left with a single assigned value for every target which any effect
-wanted to affect for the current frame.
+the previous assignment: Ignore it, blend the current assignment with
+it somehow, or honor it, depending on the nature and configuration of
+the assigner. The `assign` function returns a single resolved value of
+the appropriate type for the assignment, and Afterglow records it,
+potentially to pass it to another assigner of the same type which
+wants to affect the same target. The assigner can also veto any
+previous assignment and say that nothing should happen by returning
+`nil`.
+
+The input to `assign` might be a [[Dynamic
+Parameter|dynamic-parameters]], and the return value may be as well,
+or the assigner may choose to resolve it into a non-dynamic value, in
+order to decide between or blend competing assignments.
+
+At the end of this process, Afterglow is left with a single assigned
+value for every target which any effect wanted to influence for the
+current frame.
 
 . Afterglow uses these assignment results to establish actual DMX
 values for the frame. It splits them based on the kind of assignment
