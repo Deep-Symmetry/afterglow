@@ -300,7 +300,7 @@ Each channel specification map has the following content:
 |Key
 |Purpose
 
-|:offset
+.<|:offset
 
 |The number that identifies the channel. Each fixture listens to one
  or more channels, and is configured to start listening on a partcular
