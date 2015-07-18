@@ -381,3 +381,14 @@ being broken, or the DJ software's MIDI clock generator being turned
 off), the button will turn red to warn you that it is not working.
 Pressing the Sync button again will give you more information to
 troubleshoot the problem.
+
+== Getting Started
+
+TODO: Write up an overview of the steps you need to take to get your own show up.
+
+* Set up your universe(s) in OLA.
+* Find or create fixture definitions.
+* Patch your actual fixture channels and locations.
+* Create the cues you want.
+* Create your own custom effects if you want to be fancy.
+* Run the show!
