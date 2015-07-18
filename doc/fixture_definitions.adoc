@@ -295,12 +295,12 @@ creation functions>> to create these maps for you.
 
 Each channel specification map has the following content:
 
-[cols="^.<2l,5a", options="header"]
+[cols="2l,5a", options="header"]
 |===
 |Key
 |Purpose
 
-.<|:offset
+|:offset
 
 |The number that identifies the channel. Each fixture listens to one
  or more channels, and is configured to start listening on a partcular
@@ -325,13 +325,16 @@ continuous series of numbers starting from 1 and going up to the
 number of channels the fixture supports. It is an error if more than
 one channel specification in the fixture definition uses the same
 offset value, and if there are any gaps it probably means that you
-have missed a channel specification. You do not need to define the
-channels in the same order as their offsets in your fixture
-definition, although that is a reasonable default, making it easier to
-match them up with the manual.
+have missed a channel specification (except for multi-byte channels,
+as described in the next row). You don't need to define the channels
+in the same order as their offsets in your fixture definition,
+although that is a reasonable practice, making it easier to match them
+up with the manual.
 
-There is one circumstance in which there _will_ be gaps in the offset
-values for your channel definitions, however. Sometimes a pair of
+|:fine-offset
+
+|There is one circumstance in which there _will_ be gaps in the
+`:offset` values for your channel definitions. Sometimes a pair of
 channels are used to express a single value, such as pan, tilt, or a
 dimmer level, because the normal DMX value range, from 0 to 255, does
 not give enough precision to allow smooth movements or fades. In those
