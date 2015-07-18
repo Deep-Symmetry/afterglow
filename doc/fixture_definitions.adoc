@@ -1,6 +1,6 @@
 = Fixture Definitions
-:icons: font
 James Elliott <james@deepsymmetry.org>
+:icons: font
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
@@ -282,6 +282,128 @@ different axes. Tilt motions are rotations around the fixture X axis.
 
 === Channel Specifications
 
+The `:channels` entry for a fixture or head definition map tells
+Afterglow the control channels that can be used to make that fixture
+or head do things. It is a list of maps, each of which describes the
+nature and capabilities of a single channel that the fixture or head
+responds to.
+
+TIP: Although there is a lot of detail in this table, you don't
+necessarily need to understand it all to create fixture definitions,
+because Afterglow provides <<channel-creation-functions,channel
+creation functions>> to create these maps for you.
+
+ Each channel specification map has the following content:
+
+[cols="2l,5a", options="header"]
+|===
+|Key
+|Purpose
+
+|:offset
+
+|The number that identifies the channel. Each fixture listens to one
+ or more channels, and is configured to start listening on a partcular
+ DMX channel number. The offset value tells Afterglow how this channel
+ specification relates to that starting channel number. An offset of
+ `1` corresponds to the first channel the fixture is listening to,
+ which would be the channel number configured on the fixture's front
+ panel (or via its DIP switches or jumpers if it is really
+ old-school). The second channel would have offset `2`, and would
+ correspond to the channel one greater than the fixture is configured
+ to listen to.
+
+Although it might seem more natural (at least to a programmer) to
+start the offset with `0`, because then you could calculate the actual
+channel number by simply adding the offset to the address at which the
+fixture is configured to listen, most lighting manuals describe their
+fixture channels with numbers that start with `1`, so Afterglow
+follows that convention.
+
+The offsets for all the channels a given fixture should form a
+continuous series of numbers starting from 1 and going up to the
+number of channels the fixture supports. It is an error if more than
+one channel specification in the fixture definition uses the same
+offset value, and if there are any gaps it probably means that you
+have missed a channel specification. You do not need to define the
+channels in the same order as their offsets in your fixture
+definition, although that is a reasonable default, making it easier to
+match them up with the manual.
+
+There is one circumstance in which there _will_ be gaps in the offset
+values for your channel definitions, however. Sometimes a pair of
+channels are used to express a single value, such as pan, tilt, or a
+dimmer level, because the normal DMX value range, from 0 to 255, does
+not give enough precision to allow smooth movements or fades. In those
+cases, you specify the channel number containing the
+most-significant-byte (MSB) of the value as the `:offset`, and the
+channel containing the least-significant-byte (LSB) is specified in
+the same channel specification using the key `:fine-offset`. The
+function
+http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-fine-channel[afterglow.channels/fine-channel]
+helps create such a channel specification map. (In fact, it has other
+handy features which make it useful even when you are creating a
+channel specification that does not need a `:fine-offset` value).
+
+|:type
+
+|Tells afterglow the kind of channel this is. Special values include
+ `:color` for a channel that contains a color intensity, `:dimmer` for
+ controlling brightness independent of color, and `:pan` and `:tilt`
+ for controlling moving heads. Other channels may use keywords that
+ Afterglow does not recognize. A common keyword used for a grab-bag
+ channel which may do many things depending on the exact DMX value
+ sent is `:control`.
+
+|:color
+
+|When the channel `:type` is `:color`, this key is also present to
+ tell Afterglow what color the channel controls the intensity of.
+ Afterglow uses this information to enable color mixing using multiple
+ color channels. The value of this key will be a keyword. The values
+ `:red`, `:green`, `:blue`, and `:white` are understood and supported
+ for color mixing automatically. If your fixture has LEDs of other
+ colors and you would like Afterglow to include them in its color
+ mixing calculations, in addition to supplying a `:color` value for
+ their channel, you will need to specify a `:hue` value (below), so
+ Afterglow knows how to mix them in.
+
+|:hue
+
+|When the channel `:type` is `:color`, this key is optionally present
+ to tell Afterglow the hue value of the LEDs controlled by the
+ channel. This allows Afterglow to perform color mixing with
+ non-standard LED colors. Its value is the numeric hue (expressed in
+ terms of degrees around the color circle) of the LEDs. The best way
+ to find that is with a colorimeter, but since most of us can't afford
+ them, you can approximate it by working with graphic design software,
+ or even entering the color name on
+ https://www.wolframalpha.com[Wolfram Alpha].
+
+If you don't want Afterglow to mix colors using this channel, leave
+out the `:hue` entry. The fixture definition function for the Chauvet
+http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.chauvet.html#var-slimpar-hex3-irc[SlimPar
+Hex3 IRC] uses optional keyword arguments to let the show creator
+decide whether or not to include them for its amber and ultraviolet
+channels.
+
+|:functions
+
+|A list of <<function-specifications,Function Specification>> which
+ identify ranges of DMX values that can be sent to the channel, and
+ which perform particular functions. Fixture manufacturers often use a
+ single DMX channel to achieve many different kinds of effects, in
+ order to not use up the DMX address space, especially when it would
+ not make sense to try to activate two or more of the functions at the
+ same time. Afterglow effects and cues can work in terms of these
+ function definitions, and it often makes sense to do so even for
+ channels which implement only a single function, so you don't need to
+ worry about how a function is implemented when designing your effect
+ or cue. Because of that, the channel creation functions add a
+ function map even when you are creating a single-function channel.
+
+|===
+
 === Head Specifications
 
 As described above, the `:heads` entry in a fixture definition map is
@@ -367,14 +489,11 @@ should be in that head's list.
 
 |===
 
-TODO: Finish this page.
+=== Function Specifications
 
-* Document how to write them, analyzing examples like the
-http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.blizzard.html[Blizzard]
-definitions, with special attention on how to document default
-orientations and head positions with respect to
-<<show_space#show-space,show space>> so the geometry
-works out.
+== Channel Creation Functions
+
+TODO: Finish this page.
 
 * Explain how to create function specifications in all their variations,
 with range helpers, etc., and list naming conventions established so
