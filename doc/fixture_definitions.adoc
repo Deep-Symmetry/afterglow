@@ -106,7 +106,7 @@ example:
 Even though most of the channels were cut out to shorten that example,
 it is still pretty long. Still, it gives a sense of the shape of a
 fixture definition. You may have noticed that there were only two
-top-level keys in the map returned, `:name`, and `:channels`. Those
+top-level keys in the returned map, `:name` and `:channels`. Those
 are the only two that need to be there for a simple fixture. And
 almost all of the information Afterglow needs is found in the
 `:channels` list, so that is where you will spend most of your work in
@@ -149,12 +149,12 @@ in detail <<channel-specifications,below>>.
 
 |If present, identifies the fixture mode in which this definition map
  was created. As desrcibed above, some fixtures can be configured to
- have different "personalities" which use a different number of DMX
- channels and provide a different set of features. Their feature
- definition functions will use a mode argument to determine the mode
- in which the fixture is operating, and return an appropriate map.
- That map will include the chosen mode keyword as the value at this
- key.
+ have different &ldquo;personalities&rdquo; which use a different
+ number of DMX channels and provide a different set of features. Their
+ feature definition functions will use a mode argument to determine
+ the mode in which the fixture is operating, and return an appropriate
+ map. That map will include the chosen mode keyword as the value at
+ this key.
 
 |`:heads`
 
