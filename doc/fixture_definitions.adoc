@@ -303,15 +303,16 @@ Each channel specification map has the following content:
 |:offset
 
 |The number that identifies the channel. Each fixture listens to one
- or more channels, and is configured to start listening on a partcular
- DMX channel number. The offset value tells Afterglow how this channel
- specification relates to that starting channel number. An offset of
- `1` corresponds to the first channel the fixture is listening to,
- which would be the channel number configured on the fixture's front
- panel (or via its DIP switches or jumpers if it is really
- old-school). The second channel would have offset `2`, and would
- correspond to the channel one greater than the fixture is configured
- to listen to.
+ or more channels, and is itself configured to a partcular DMX channel
+ number (DMX channels range from 1 to 512). That configuration defines
+ the _first_ channel the fixture listens to. The `:offset` value tells
+ Afterglow how the current channel specification relates to the
+ fixtures configured (starting) channel number. An offset of `1`
+ corresponds to the first channel the fixture is listening to, which
+ would be the channel number configured on the fixture's front panel
+ (or via its DIP switches or jumpers if it is really old-school). The
+ second channel would have offset `2`, and would correspond to the
+ channel one greater than the fixture is configured to listen to.
 
 Although it might seem more natural (at least to a programmer) to
 start the offset with `0`, because then you could calculate the actual
