@@ -8,13 +8,14 @@ James Elliott <james@deepsymmetry.org>
 ifdef::env-github[:outfilesuffix: .adoc]
 
 To keep page sizes manageable, this information is split into several
-pages. This page provides an <<what-is-afterglow,introduction>> and
-overview, and links to other sections as needed. It is worth reading
-through this whole page once if you are new to Afterglow, because the
-orientation it provides will be helpful, and it ends with a guide to
-help you get started on your way to creating your own light show. Once
-you know what you are looking for, you can also dive right into it by
-jumping to the page you want:
+pages. This page provides an <<introduction,introduction>> and
+<<overview,overview>>, explains the <<the-embedded-web-interface,built
+in web interface>>, and links to other sections as needed. It is worth
+reading through this whole page once if you are new to Afterglow,
+because the orientation it provides will be helpful, and it ends with
+a <<getting-started,guide>> to help you get started on your way to
+creating your own light show. Once you know what you are looking for,
+you can also dive right into it by jumping to the page you want:
 
 ****
 
@@ -61,6 +62,7 @@ people who are ready to create their own custom effect algorithms.
 
 ****
 
+[[introduction]]
 == What is Afterglow?
 
 Afterglow is a lighting controller designed to support
@@ -95,6 +97,7 @@ https://github.com/brunchboy/afterglow#installation[installing OLA] is
 included in the project
 https://github.com/brunchboy/afterglow[README].
 
+[[overview]]
 == How Afterglow Works
 
 The fundamental task of Afterglow is to make light shows happen. It
