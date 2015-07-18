@@ -56,7 +56,8 @@ synchronizing its metronome with DJ equipment.
 
 <<rendering_loop#the-rendering-loop,The Rendering Loop>>:: Explains in
 detail how a frame of lighting control data is calculated and sent to
-the lights in the show.
+the lights in the show. This is advanced, low-level information for
+people who are ready to create their own custom effect algorithms.
 
 ****
 
@@ -422,41 +423,15 @@ default installation, once you have `olad` running, you can find that
 at http://localhost:9090/new/[http://localhost:9090/new/].
 
 . Find or create fixture definitions. Once you are able to get your
-lights to do things by manipulating the Faders in the OLA web
+lights to do things by manipulating the Faders section of the OLA web
 interface, it is time to get Afterglow ready to talk to them. There
 are a vast number of fixture types out there, and at this early stage
 almost none of them are built in to Afterglow, so you will probably
-need to create your own fixture definitions. You will want to study
-existing fixture definitions for examples of how it is done. You can
-also ask for help on the
+need to create your own
+<<fixture_definitions#fixture-definitions,fixture definitions>>. You
+can study the existing fixture definitions for examples of how it is
+done. You can also ask for help on the
 https://github.com/brunchboy/afterglow/wiki/Questions[wiki].
-+
-The namespace
-http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.html[afterglow.fixtures]
-has definitions for very basic one-channel generic dimmers and
-switches. Looking at the source for those can illustrate the most
-basic structure of a fixture definition. It also contains some helper
-functions Afterglow uses in processing fixture definitions.
-+
-The namespace
-http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.american-dj.html[afterglow.fixtures.american-dj]
-contains definitions for fixtures made by American DJ. Currently, only
-the Hypnotic RGB laser is present.
-+
-The namespace
-http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.blizzard.html[afterglow.fixtures.blizzard]
-is the most complete so far, mostly because the author lives close to
-Blizzard and mostly owns fixures made by them. It includes definitions
-for a full-featured moving head spot (the Torrent F3), a moving head
-color-mixing LED fixture (the Blade RGBW), an LED five-color Par (the
-Puck Fab5), an eight-head RGB system (the Weather System), and an RGBW
-moonflower effect (the Snowball). These might be useful examples for
-fixtures you want to create.
-+
-The namespace
-http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.chauvet.html[afterglow.fixtures.chauvet]
-is for fixtures made by Chauvet. The only one in there so far is for a
-six-color (RGB, amber, white, and ultraviolet) LED Par.
 
 . Patch your actual fixture channels and locations. Once you have
 working definitions for your fixtures, you will want to create a show
