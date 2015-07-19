@@ -784,9 +784,9 @@ speed of the fixture, since `:strobe` is a very common function, and
 it is nice to try to get different models of fixtures to react
 similarly when a given value for that function is assigned to them.
 
-> The example in the `:strobe` standard function discussion
+> The discussion of the `:strobe` standard function
   <<strobe-function,below>> provides another example of this approach,
-  and discusses it further.
+  and explains it further.
 
 This is followed by another fixed-range function of type
 `:shutter-open-2` from `96`-`127` set up using the String shortcut,
@@ -926,6 +926,7 @@ yours.
 
 |:strobe
 
+[[strobe-function]]
 |Causes the fixture to flash on and off abruptly (and usually
  rapidly). This is typically a variable-range function, so different
  values within the function range cause the fixture to strobe at
@@ -937,7 +938,6 @@ yours.
  fixture will strobe in rough tandem with other fixtures being
  strobed.
 
-[[strobe-function]]
 Take a look at the strobe function definitions for the
 existing fixtures for examples how to do this. All you need to do is
 measure the slowest and fastest rates at which your fixture actually
