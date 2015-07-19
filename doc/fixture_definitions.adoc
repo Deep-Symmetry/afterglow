@@ -614,7 +614,12 @@ yours.
  also a fundamental channel type in Afterglow, and has a category of
  <<effects#dimmer-effects,Dimmer Effects>> to work with it.
 
-|:red, :green, :blue, :white, :amber, :uv
+|:red
+:green
+:blue
+:white
+:amber
+:uv
 
 |These identify functions (usually entire channels) which control the
  intensity of a particular color, usually on LED fixtures. When you
