@@ -749,6 +749,8 @@ cases you can use the shorthand of passing a keyword, which will be
 expanded into a variable-range function with the a type of the keyword
 you supplied, or a string, which will be expanded into a fixed-range
 function with a type of a keyword made from the string you supplied.
+If you pass a `nil` after the number, it tells Afterglow to not create
+a function at all for that part of the range.
 
 The range specifications need to be in order of increasing starting
 values, and the ending values for each will be figured out by context.
@@ -809,7 +811,9 @@ unique to the Torrent, so no effort was made to scale it.
 NOTE: The various shutter-open ranges all do the same thing, but need
 to be given different names, since function names must be unique; it
 is a quirk of this fixture that it has multiple ranges with the same
-function.
+function. Another valid approach for handling the redundant later
+ranges would have been to pass `nil` after the number to tell
+Afterglow to not create a function for them.
 
 ==== Generic Channels
 
@@ -954,12 +958,14 @@ strobes, as best you can, and use them like this:
 ----
 
 In this example, the fixture's strobe channel is at offset `7`, and
-the range from `0`-`10` does not strobe, while at `11` it begins to
-strobe approximately 0.66 times per second (or 6.6 times every ten
-seconds, which gives a more useful spread of strobe values across the
-normal function value assignment range of 1-100), and strobes faster
-for higher values, finally reaching around ten times per second at the
-maximum function value of `100`.
+the range from `0`-`10` does not strobe (the `nil` function
+specification tells Afterglow to skip creating a function for that
+range), while at `11` it begins to strobe approximately 0.66 times per
+second (or 6.6 times every ten seconds, which gives a more useful
+spread of strobe values across the normal function value assignment
+range of 1-100), and strobes faster for higher values, finally
+reaching around ten times per second at the maximum function value of
+`100`.
 
 > Measuring the actual strobing rate of arbitrary fixtures is
   difficult to get right, I am not yet quite satisfied with the
