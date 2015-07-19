@@ -868,7 +868,6 @@ yours.
  <<effects#direction-effects,Direction Effects>> and
  <<effects#aim-effects,Aim Effects>> to work with them.
 
-[[strobe-function]]
 |:strobe
 
 |Causes the fixture to flash on and off abruptly (and usually
@@ -880,10 +879,13 @@ yours.
  when creating a strobe function so that the function level is
  interpreted as an approximate Hz rate for the strobe, and your new
  fixture will strobe in rough tandem with other fixtures being
- strobed. Take a look at the strobe function definitions for the
- existing fixtures for examples how to do this. All you need to do is
- measure the slowest and fastest rates at which your fixture actually
- strobes, as best you can, and use them like this:
+ strobed.
+
+[[strobe-function]]
+Take a look at the strobe function definitions for the
+existing fixtures for examples how to do this. All you need to do is
+measure the slowest and fastest rates at which your fixture actually
+strobes, as best you can, and use them like this:
 
 [source,clojure]
 ----
