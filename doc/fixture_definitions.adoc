@@ -687,14 +687,27 @@ yours.
                     :range :variable})
 ----
 
-|:color-macros
+|:focus
 
-|.
+|Adjusts the focal plane of the fixture, usually a moving-head spot
+ with the ability to project gobos (templates).
+
+|:frost
+
+|Controls a frost effect, softening the beam of light.
+
+|:iris
+
+|Controls the iris size, widening or narrowing the beam of light.
+
+|:zoom
+
+|Adjusts the rate at which the beam spreads as it travels further from the fixture.
 
 |:sound-active
 
-|.
-
-
+|Puts the fixture in a mode where it decides what to do by listening
+ to music in the environment, rather than being directly controlled by
+ its DMX channels.
 
 |===
