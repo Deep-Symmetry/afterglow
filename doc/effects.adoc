@@ -70,7 +70,7 @@ an effect that will set the dimmer level of a fixture, use:
 
 [source,clojure]
 ----
-(afterglow.effects.dimmer/dimmer-effect level fixtures htp?)
+(afterglow.effects.dimmer/dimmer-effect level fixtures)
 ----
 
 This effect finds all the dimmer channels associated with the specified
@@ -80,9 +80,19 @@ brightness. If `htp?` is true, uses highest-takes-precedence rules when
 replacing any earlier or lower-priority effects which attempted to set
 this particular dimmer in the current rendering cycle. In other words,
 if an earlier effect chose a higher value, let it win, otherwise use the
-value this effect wants. If `htp?` is false, this effect will simply
+value this effect wants.
+
+The
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.dimmer.html#var-dimmer-effect[API
+documentation] also identifies two optional keyword arguments you can
+pass. If `:htp?` passed with a `false`, value this effect will simply
 overwrite any previous assignments it finds for the dimmers it is
-controlling. Omitting `htp?` is the same as passing a `true` value.
+controlling. Omitting `:htp?` is the same as passing it with a `true`
+value. And you can change the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.dimmer.html#var-master[master]
+that scales the dimmer value by passing one along with `:master`. If
+you do not, the effect will be tied directly to the show's grand
+master.
 
 TIP: If you want your dimmer cue to affect only one head of a fixture, you
 can pass it just that head, rather than the entire fixture.

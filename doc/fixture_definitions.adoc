@@ -393,7 +393,7 @@ channels.
 
 |:functions
 
-|A list of <<function-specifications,Function Specification>> which
+|A list of <<function-specifications,Function Specifications>> which
  identify ranges of DMX values that can be sent to the channel, and
  which perform particular functions. Fixture manufacturers often use a
  single DMX channel to achieve many different kinds of effects, in
@@ -549,7 +549,7 @@ that range. Each map has the following content:
 |Tells Afterglow what kind of a function range this is. Some functions
  are simply either off or on, and even if multiple DMX values exist
  within the function range, the result of using any of them is no
- different from using another. Such function are identified by a
+ different from using another. Such functions are identified by a
  `:range` type of `:fixed`. Other functions, such as a rotation speed
  or focus, will have different effects for every value in the range,
  and are identified by a `:range` type of `:variable`. This helps
@@ -565,6 +565,11 @@ that range. Each map has the following content:
  create, and it will appear in places like the
  <<mapping_sync#effect-control,Ableton Push Effect Control interface>>.
 
+|:scale-fn
+
+|A function that will be called to scale the function value being
+ requested by an effect. TODO: explain.
+
 |===
 
 == Channel Creation Functions
@@ -577,3 +582,62 @@ far, so that new fixtures can participate when they have similar
 capabilities.
 
 ## Standard Function Types
+
+<<effects#function-effects,Function Effects>> and
+<<cues#creating-function-cues,Function Cues>> trigger and control
+specific functions, potentially across a range of different fixture
+types from different manufacturers. In order for that to work, the
+<<function-specifications,Function Specifications>> must be created
+with consistent `:type` keywords. When you are creating a new fixture
+definition, check to see if any of the functions that it provides are
+covered by this table, and if so, use the same keywords to identify
+them, so your fixture can participate with other fixtures in effects
+using that function.
+
+If your function does not fit into this list, make up a keyword that
+makes sense for it, following the style shown here. And also please
+consider opening an
+https://github.com/brunchboy/afterglow/issues[issue] requesting that
+your new function type be added to this list so that when other people
+create definitions for similar fixtures, they can interoperate with
+yours.
+
+[cols="2l,5a", options="header"]
+|===
+|Function Key
+|Description
+
+|:dimmer
+
+|Controls the overall brightness of the fixture or head, independent
+ of any color intensity channels which might also affect it. This is
+ also a fundamental channel type in Afterglow, and has a category of
+ <<effects#dimmer-effects,Dimmer Effects>> to work with it.
+
+|:red, :green, :blue, :white, :amber, :uv
+
+|These identify functions (usually entire channels) which control the
+ intensity of a particular color, usually on LED fixtures. When you
+ create a channel of type `:color`, it will have a `:color` key with
+ this value, and a corresponding function range. If your fixture has
+ LEDs of colors other than these, use the color name to identify the
+ function. (This will happen automatically when you use the
+ http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-color[color]
+ channel helper function to create the channel.
+
+|:pan
+|:tilt
+
+|:strobe
+
+|:color-macros
+
+|.
+
+|:sound-active
+
+|.
+
+
+
+|===
