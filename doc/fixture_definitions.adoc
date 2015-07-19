@@ -600,8 +600,9 @@ definitions that ship with Afterglow use
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.channel.html#var-function-value-scaler[afterglow.effects.channel/function-value-scaler]
 to build `:scale-fn` functions for their `:strobe` functions so that,
 rather than a percentage, the strobe function value is interpreted as
-an approximate Hz rate (flashes per second), normalized for each
-fixture.
+an approximate tenth-Hz rate (flashes per ten seconds), normalized for
+each fixture. The example in the <<function-channels,Function
+Channels>> section below explains this further.
 
 |===
 
@@ -758,31 +759,57 @@ specification for channel 9 of the Torrent F3:
 [source,clojure]
 ----
 (chan/functions :shutter 9 0 "shutter-closed" 32 "shutter-open"
-                              64 :strobe
-                              96 "shutter-open-2" 128 :pulse-strobe 160 "shutter-open-3"
-                              192 :random-strobe
-                              224 "shutter-open-4")
+                           64 {:type :strobe
+                               :scale-fn (partial function-value-scaler 14 100)
+                               :label "Strobe (1.4Hz->10Hz)"
+                               :range :variable}
+                           96 "shutter-open-2" 128 :pulse-strobe 160 "shutter-open-3"
+                           192 :random-strobe
+                           224 "shutter-open-4")
 ----
 
-This sets up a channel of type `:shutter` with offset `9`. It has a
-fixed-ranged function of type `:shutter-closed` from `0`-`31`, another fixed-range function of type `:shutter-open` from `32`-`63`. Then there is a variable-range function of type `:strobe` from `64`-`95`.
+This sets up a channel of type `:shutter` with offset `9`. The
+remaining arguments are pairs which define function ranges.
 
-This is followed by a fixed-range function of type `:shutter-open-2`
-from `96`-`127`, and another variable-range function of type
-`:pulse-strobe` from `128`-`159`, a fixed-range function of type
-`:shutter-open-3` from `160`-`191`, a variable-range function of type
-`:random-strobe` from `192`-`223`, and finally a fixed-range function
-of type `:shutter-open-4` from `224` to the largest legal DMX value of
-`255`.
+The first two pairs use the String shortcut to set up a fixed-ranged
+function of type `:shutter-closed` from `0`-`31`, and another fixed-range
+function of type `:shutter-open` from `32`-`63`.
+
+Then there is a more complex function specification, using the map
+approach to set up a variable-range function of type `:strobe` from
+`64`-`95`, assign it a function label of `Strobe (1.4Hz->10Hz)`, and
+assign it a scaling function, which maps the values from 14 to 100
+onto tenth-Hertz frequency values, to try to normalize the strobe
+speed of the fixture, since `:strobe` is a very common function, and
+it is nice to try to get different models of fixtures to react
+similarly when a given value for that function is assigned to them.
+
+> The example in the `:strobe` standard function discussion
+  <<strobe-function,below>> provides another example of this approach,
+  and discusses it further.
+
+This is followed by another fixed-range function of type
+`:shutter-open-2` from `96`-`127` set up using the String shortcut,
+and a simpler variable-range function of type `:pulse-strobe` from
+`128`-`159` set up using the keyword shortcut rather than a map. That
+line finishes with a fixed-range function of type `:shutter-open-3`
+from `160`-`191` created using the String shortcut. Since the
+Torrent's pulse strobe mode is not something any of the other fixtures
+support, there was no need to try to use a scaling function to make it
+approximate another fixture's speed.
+
+The last two pairs should be easily understood by now, as we have seen
+their like before. The second-to-last line uses the keyword shortcut
+to create a variable-range function of type `:random-strobe` from
+`192`-`223`, and the last line uses the String shortcut to create a
+fixed-range function of type `:shutter-open-4` from `224` to the
+largest legal DMX value of `255`. Again, random strobing is a function
+unique to the Torrent, so no effort was made to scale it.
 
 NOTE: The various shutter-open ranges all do the same thing, but need
 to be given different names, since function names must be unique; it
 is a quirk of this fixture that it has multiple ranges with the same
 function.
-
-> See also the example in the `:strobe` standard function
-  discussion <<strobe-function,below>>, which includes a more complex
-  function range specification.
 
 ==== Generic Channels
 
