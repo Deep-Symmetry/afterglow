@@ -591,7 +591,7 @@ fixture.
 
 |===
 
-== Channel Creation Functions
+=== Channel Creation Functions
 
 The
 http://deepsymmetry.org/afterglow/doc/afterglow.channels.html[afterglow.channels]
@@ -599,6 +599,8 @@ namespace provides a number of functions to help you create channel
 specifications in your fixture definitions. You will see these used
 all over the place in the fixture definitions which ship with
 Afterglow; here is an introduction to how they work.
+
+==== Color
 
 http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-color[afterglow.channels/color]
 returns a channel specification for a channel that controls an
