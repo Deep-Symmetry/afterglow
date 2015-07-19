@@ -628,7 +628,8 @@ yours.
  LEDs of colors other than these, use the color name to identify the
  function. (This will happen automatically when you use the
  http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-color[color]
- channel helper function to create the channel.
+ <<channel-creation-functions,channel creation function>> to create
+ the channel.
 
 |:pan
 |:tilt
