@@ -912,7 +912,7 @@ yours.
  function. (This will happen automatically when you use the
  http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-color[color]
  channel <<channel-creation-functions,creation function>> to create
- the channel. Color channels are fundamental channel types in
+ the channel.) Color channels are fundamental channel types in
  Afterglow, and the colors `:red`, `:green`, `:blue`, and `:white`
  will automatically participate in the color mixing Afterglow performs
  with <<effects#color-effects,Color Effects>>. The others can too if,
