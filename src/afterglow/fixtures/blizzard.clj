@@ -116,7 +116,10 @@
                                      :var-label "CW Speed"
                                      :range :variable}))
               (chan/functions :shutter 9 0 "shutter-closed" 32 "shutter-open"
-                              64 :strobe
+                              64 {:type :strobe
+                                  :scale-fn (partial function-value-scaler 14 100)
+                                  :label "Strobe (1.4Hz->10Hz)"
+                                  :range :variable}
                               96 "shutter-open-2" 128 :pulse-strobe 160 "shutter-open-3"
                               192 :random-strobe
                               224 "shutter-open-4")
@@ -195,8 +198,8 @@
                                     (chan/fine-channel :custom-color 10)
                                     (chan/functions :strobe 11 0 nil
                                                     1 {:type :strobe
-                                                       :scale-fn (partial function-value-scaler 1.8 27)
-                                                       :label "Strobe (1.8Hz->27Hz)"
+                                                       :scale-fn (partial function-value-scaler 18 100)
+                                                       :label "Strobe (1.8Hz->10Hz)"
                                                        :range :variable})
                                     (chan/dimmer 12)
                                     (chan/functions :control 13
@@ -253,8 +256,8 @@
                                    (chan/functions :strobe 2
                                                     0 nil
                                                     16 {:type :strobe
-                                                        :scale-fn (partial function-value-scaler 0.8 25)
-                                                        :label "Strobe (0.8Hz->25Hz)"
+                                                        :scale-fn (partial function-value-scaler 8 100)
+                                                        :label "Strobe (0.8Hz->10Hz)"
                                                         :range :variable})
                                    (chan/functions :control 3
                                                    0 "R" 5 "G" 9 "B" 13 "A" 17 "W" 21 "RG" 25 "RB" 29 "RA" 32 "RW"
@@ -270,8 +273,8 @@
                                     (chan/functions :strobe 2
                                                     0 nil
                                                     16 {:type :strobe
-                                                        :scale-fn (partial function-value-scaler 0.8 25)
-                                                        :label "Strobe (0.66Hz->25Hz)"
+                                                        :scale-fn (partial function-value-scaler 8 100)
+                                                        :label "Strobe (0.8Hz->10Hz)"
                                                         :range :variable})
                                     (chan/color 3 :red) (chan/color 4 :green) (chan/color 5 :blue)
                                     (chan/color 6 :amber :hue (when mix-amber 45))
@@ -323,15 +326,15 @@
                                    (chan/fine-channel :mic-sensitivity 6)
                                    (chan/functions :strobe 7 0 nil
                                                    11 {:type :strobe
-                                                       :scale-fn (partial function-value-scaler 0.66 25)
-                                                       :label "Strobe (0.66Hz->25Hz)"
+                                                       :scale-fn (partial function-value-scaler 6.6 100)
+                                                       :label "Strobe (0.66Hz->10Hz)"
                                                        :range :variable})]}
             :26-channel {:channels [(chan/dimmer 1)
                                     (chan/functions :strobe 26
                                                     0 nil
                                                     11 {:type :strobe
-                                                        :scale-fn (partial function-value-scaler 0.66 25)
-                                                        :label "Strobe (0.66Hz->25Hz)"
+                                                        :scale-fn (partial function-value-scaler 6.6 100)
+                                                        :label "Strobe (0.66Hz->10Hz)"
                                                         :range :variable})]
                          :heads (map ws-head (range 8))})
           :name "Blizzard Weather System"

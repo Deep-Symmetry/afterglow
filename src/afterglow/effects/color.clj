@@ -34,21 +34,55 @@
   and blue color channel."
   ([fixtures]
    (find-rgb-heads fixtures false))
-  ([fixtures include-color-wheels]
+  ([fixtures include-color-wheels?]
    (filter #(or (= 3 (count (filter #{:red :green :blue} (map :color (:channels %)))))
-                (and include-color-wheels (seq (:color-wheel-hue-map %))))
+                (and include-color-wheels? (seq (:color-wheel-hue-map %))))
            (channels/expand-heads fixtures))
    ))
 
-;; TODO: Support different kinds of color mixing, blending, HTP...
+(defn build-htp-color-assigner
+  "Returns an assigner that applies highest-takes-precedence color
+  mixing of a dynamic color parameter to the supplied head or fixture.
+  If the parameter is not frame-dynamic, it gets resolved when
+  creating this assigner. Otherwise, resolution is deferred to frame
+  rendering time. At that time, both the previous assignment and the
+  current parameter are resolved, and the red, green, and blue values
+  of the color are set to whichever of the previous and current
+  assignment held the highest."
+  [head param show snapshot]
+  (let [resolved (params/resolve-unless-frame-dynamic param show snapshot head)]
+    (build-head-assigner :color head
+                         (fn [show snapshot target previous-assignment]
+                           (if (some? previous-assignment)
+                             (let [current (params/resolve-param resolved show snapshot head)
+                                   previous (params/resolve-param previous-assignment show snapshot head)]
+                               (htp-merge previous current))
+                             resolved)))))
+
+(defn build-htp-color-assigners
+  "Returns a list of assigners which apply highest-takes-precedence
+  color mixing to all the supplied heads or fixtures."
+  [heads param show]
+  (let [snapshot (rhythm/metro-snapshot (:metronome show))]
+    (map #(build-htp-color-assigner % param show snapshot) heads)))
+
+;; TODO: Support other kinds of color mixing, blending...
 (defn color-effect
   "Returns an effect which assigns a color parameter to all heads of
-  the fixtures supplied when invoked."
-  [name color fixtures & {:keys [include-color-wheels]}]
+  the fixtures supplied when invoked. If :include-color-wheels? is
+  passed with a true value, then fixtures which use color wheels are
+  included, otherwise only color-mixing fixtures are included.
+  If :htp? is passed with a true value, highest-takes-precedence
+  assignment is used with the red, green, and blue color values to
+  blend this color with any previous color that might have been
+  assigned to the affected fixtures."
+  [name color fixtures & {:keys [include-color-wheels? htp?]}]
   {:pre [(some? *show*) (some? name) (sequential? fixtures)]}
   (params/validate-param-type color :com.evocomputing.colors/color)
-  (let [heads (find-rgb-heads fixtures include-color-wheels)
-        assigners (build-head-parameter-assigners :color heads color *show*)]
+  (let [heads (find-rgb-heads fixtures include-color-wheels?)
+        assigners (if htp?
+                    (build-htp-color-assigners heads color *show*)
+                    (build-head-parameter-assigners :color heads color *show*))]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
 ;; Deprecated in favor of new composable dynamic parameter mechanism

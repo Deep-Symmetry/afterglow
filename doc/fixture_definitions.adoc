@@ -563,7 +563,7 @@ that range. Each map has the following content:
 
 |Specifies a label that should be used when creating a user interface
  that refers to this function. <<cues#creating-function-cues,Function
- Cues>> will use this as the label text on the grid cell they create
+ Cues>> will use this as the label text in the grid cell they create
  in the <<README#the-embedded-web-interface,web interface>>. If
  omitted, a capitalzed version of the value of the `:type` keyword
  (without its leading colon) is used as the label; this entry allows

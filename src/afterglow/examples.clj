@@ -85,7 +85,7 @@
   This became vastly more useful once I implemented dynamic color
   parameters. Can include only a specific set of lights by passing
   them with :lights"
-  [color & {:keys [include-color-wheels lights] :or {lights (show/all-fixtures)}}]
+  [color & {:keys [include-color-wheels? lights] :or {lights (show/all-fixtures)}}]
   (try
     (let [[c desc] (cond (= (type color) :com.evocomputing.colors/color)
                        [color (color-name color)]
@@ -94,7 +94,7 @@
                        [color "variable"]
                        :else
                        [(create-color color) color])]
-      (color-effect (str "Color: " desc) c lights :include-color-wheels include-color-wheels))
+      (color-effect (str "Color: " desc) c lights :include-color-wheels? include-color-wheels?))
     (catch Exception e
       (throw (Exception. (str "Can't figure out how to create color from " color) e)))))
 
@@ -111,7 +111,7 @@
 (defn fiat-lux
   "Start simple with a cool blue color from all the lights."
   []
-  (show/add-effect! :color (global-color-effect "slateblue" :include-color-wheels true))
+  (show/add-effect! :color (global-color-effect "slateblue" :include-color-wheels? true))
   (show/add-effect! :dimmers (global-dimmer-effect 255))
   (show/add-effect! :torrent-shutter
                     (afterglow.effects.channel/function-effect
@@ -247,8 +247,8 @@
 
 (defn global-color-cue
   "Create a cue-grid entry which establishes a global color effect."
-  [color x y & {:keys [include-color-wheels held]}]
-  (let [cue (cues/cue :color (fn [_] (global-color-effect color :include-color-wheels include-color-wheels))
+  [color x y & {:keys [include-color-wheels? held]}]
+  (let [cue (cues/cue :color (fn [_] (global-color-effect color :include-color-wheels? include-color-wheels?))
                       :held held
                       :color (create-color color))]
     (ct/set-cue! (:cue-grid *show*) x y cue)))
@@ -300,20 +300,19 @@
 
 (defn make-strobe-cue
   "Create a cue which strobes a set of fixtures as long as the cue pad
-  is held down, letting the operator adjust both the lightness of the
-  strobe color and the level of the strobe function by varying the
-  pressure they are applying to the pad on controllers which support
-  pressure sensitivity."
+  is held down, letting the operator adjust the lightness of the
+  strobe color by varying the pressure they are applying to the pad on
+  controllers which support pressure sensitivity."
   [name fixtures x y]
   (ct/set-cue! (:cue-grid *show*) x y	
                (cues/cue (keyword (str "strobe-" (clojure.string/replace (clojure.string/lower-case name) " " "-")))
-                         (fn [var-map] (fun/strobe (str "Strobe " name) fixtures (:level var-map 50)))
+                         (fn [var-map] (fun/strobe (str "Strobe " name) fixtures
+                                                   (:level var-map 50) (:lightness var-map 100)))
                          :color :purple
                          :held true
                          :priority 100
-                         :variables [{:key "level" :min 0 :max 100 :start 50 :name "Level"
-                                      :aftertouch true :aftertouch-min 25}
-                                     {:key :strobe-lightness :min 0 :max 100 :name "Lightness" :aftertouch true}])))
+                         :variables [{:key "level" :min 0 :max 100 :start 100 :name "Level"}
+                                     {:key "lightness" :min 0 :max 100 :name "Lightness" :aftertouch true}])))
 
 (defn x-phase
   "Return a value that ranges from zero for the leftmost fixture in a
@@ -334,13 +333,13 @@
         hue-z-gradient (params/build-spatial-param ; Spread a rainbow across the light grid
                       (show/all-fixtures)
                       (fn [head] (- (:z head) (:min-z @(:dimensions *show*)))) :max 360)]
-    (global-color-cue "red" 0 0 :include-color-wheels true)
-    (global-color-cue "orange" 1 0 :include-color-wheels true)
-    (global-color-cue "yellow" 2 0 :include-color-wheels true)
-    (global-color-cue "green" 3 0 :include-color-wheels true)
-    (global-color-cue "blue" 4 0 :include-color-wheels true)
-    (global-color-cue "purple" 5 0 :include-color-wheels true)
-    (global-color-cue "white" 6 0 :include-color-wheels true)
+    (global-color-cue "red" 0 0 :include-color-wheels? true)
+    (global-color-cue "orange" 1 0 :include-color-wheels? true)
+    (global-color-cue "yellow" 2 0 :include-color-wheels? true)
+    (global-color-cue "green" 3 0 :include-color-wheels? true)
+    (global-color-cue "blue" 4 0 :include-color-wheels? true)
+    (global-color-cue "purple" 5 0 :include-color-wheels? true)
+    (global-color-cue "white" 6 0 :include-color-wheels? true)
 
 
     (ct/set-cue! (:cue-grid *show*) 0 1
@@ -350,7 +349,7 @@
     (ct/set-cue! (:cue-grid *show*) 1 1
                  (cues/cue :color (fn [_] (global-color-effect
                                            (params/build-color-param :s 100 :l 50 :h hue-gradient)
-                                           :include-color-wheels true))
+                                           :include-color-wheels? true))
                            :short-name "Rainbow Grid"))
     (ct/set-cue! (:cue-grid *show*) 2 1
                  (cues/cue :color (fn [_] (global-color-effect
@@ -361,7 +360,7 @@
     (ct/set-cue! (:cue-grid *show*) 4 1
                  (cues/cue :color (fn [_] (global-color-effect
                                            (params/build-color-param :s 100 :l 50 :h hue-z-gradient)
-                                           :include-color-wheels true))
+                                           :include-color-wheels? true))
                            :short-name "Z Rainbow Grid"))
     (ct/set-cue! (:cue-grid *show*) 5 1
                  (cues/cue :color (fn [_] (global-color-effect

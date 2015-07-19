@@ -171,10 +171,11 @@
   "A compound effect which sets dimmers to the level determined by the
   show variable `:strobe-dimmers` (defaulting to 255), assigns a color
   based on the show variables `:strobe-hue` (with a default of 277,
-  purple) `:strobe-saturation` (with a default of 100), and
-  `:strobe-lightness` (with a default of 100, which whites out the hue
-  until it is lowered), and then sets the fixtures' strobe channel to
-  the specified level, which may be a dynamic parameter.
+  purple) `:strobe-saturation` (with a default of 100), and and the
+  specified `lightness` (which may be a dynamic parameter), with a
+  default of 100, which would white out the hue until it was lowered.
+  The effect then sets the fixtures' strobe channel to the specified
+  `level`, which may also be a dynamic parameter.
 
   This is designed to be run as a high priority queue, ideally while
   held and with aftertouch adjusting a cue-introduced variable for
@@ -184,17 +185,17 @@
   variables, either by aftertouch or by another effect with no assigners,
   like [[adjust-strobe]]."
   {:doc/format :markdown}
-  [name fixtures level]
+  [name fixtures level lightness]
   {:pre [(some? *show*)]}
-  (let [hue-param (params/bind-keyword-param :strobe-hue Number 277)
+  (let [level-param (params/bind-keyword-param level Number 50)
+        lightness-param (params/bind-keyword-param lightness Number 100)
+        hue-param (params/bind-keyword-param :strobe-hue Number 277)
         saturation-param (params/bind-keyword-param :strobe-saturation Number 100)
-        lightness-param (params/bind-keyword-param :strobe-lightness Number 100)
         dimmer-param (params/bind-keyword-param :strobe-dimmers Number 255)
-        level-param (params/bind-keyword-param level Number 50)
         dimmers (dimmer-effect dimmer-param fixtures)
         color (color-effect "strobe color"
                             (params/build-color-param :h hue-param :s saturation-param :l lightness-param)
-                            fixtures :include-color-wheels :true)
+                            fixtures :include-color-wheels? true)  ; :htp true tends to wash out right away
         function (function-effect "strobe level" :strobe level-param fixtures)]
     (Effect. name always-active
              (fn [show snapshot] (concat
