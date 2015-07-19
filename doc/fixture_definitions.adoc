@@ -593,6 +593,40 @@ fixture.
 
 == Channel Creation Functions
 
+The
+http://deepsymmetry.org/afterglow/doc/afterglow.channels.html[afterglow.channels]
+namespace provides a number of functions to help you create channel
+specifications in your fixture definitions. You will see these used
+all over the place in the fixture definitions which ship with
+Afterglow; here is an introduction to how they work.
+
+http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-color[afterglow.channels/color]
+returns a channel specification for a channel that controls an
+individual color intensity (such as with an RGB LED fixture). Its two
+mandatory arguments are the channel `offset` (the channel number
+reported in the fixture manual, assuming they are numbered starting
+with `1`), and the `color`, a keyword naming the color. The standard
+colors `:red`, `:green`, `:blue`, and `:white` will automatically
+participate in Afterglow's color mixing for
+<<effects#color-effects,Color Effects>>. If your fixture has other
+color channels, and you would like them to participate in color mixing
+as well, pass the hue value of the color channel with the optional
+keyword argument `:hue`. (See the discussion <<hue-mixing,above>> for
+ways to determine the hue value of your color channel.)
+
+If your fixture supports two-byte color values for more precise color
+mixing, use the most-significant-byte as the `offset` value, and pass
+the offset of least-significant byte along with the optional keyword
+argument `:fine-offset`.
+
+If you want to use a label which differs from the name of the `color`
+keyword in the user interface when
+<<mapping_sync#effect-control,adjusting>>
+<<cues#creating-function-cues,Function Cues>> (for example, if the
+keyword is hyphenated, and you want the label to use a space), specify
+your desired label with the optional keyword argument
+`:function-label`.
+
 TODO: Finish this page.
 
 * Explain how to create function specifications in all their variations,
@@ -695,7 +729,7 @@ In this example, the fixture's strobe channel is at offset `7`, and
 the range from `0`-`10` does not strobe, while at `11` it begins to
 strobe approximately 0.66 times per second (or twice every three
 seconds), and strobes faster for higher values, finally reaching
-around 25 times per second at the maximum legal DMX value of 255.
+around 25 times per second at the maximum legal DMX value of `255`.
 
 |:focus
 
