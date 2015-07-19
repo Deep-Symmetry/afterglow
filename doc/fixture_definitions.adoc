@@ -562,10 +562,23 @@ that range. Each map has the following content:
 |:label
 
 |Specifies a label that should be used when creating a user interface
- for adjusting this function. <<cues#creating-function-cues,Function
- Cues>> will use this as the label for the cue-local variable they
- create, and it will appear in places like the
- <<mapping_sync#effect-control,Ableton Push Effect Control interface>>.
+ that refers to this function. <<cues#creating-function-cues,Function
+ Cues>> will use this as the label text on the grid cell they create
+ in the <<README#the-embedded-web-interface,web interface>>. If
+ omitted, a capitalzed version of the value of the `:type` keyword
+ (without its leading colon) is used as the label; this entry allows
+ you to specify something more readable.
+
+|:var-label
+
+|Specifies a label that should be used when creating a user interface
+ for adjusting the value associated with this function (so it makes
+ sense to set this only when `:range` is `:variable`).
+ <<cues#creating-function-cues,Function Cues>> will use this as the
+ label for the cue-local variable they create, and it will appear in
+ places like the <<mapping_sync#effect-control,Ableton Push Effect
+ Control interface>>. If omitted, the generic label
+ &ldquo;Level&rdquo; will be displayed under the encoder knob.
 
 |:scale-fn
 
