@@ -3,7 +3,17 @@
   {:author "James Elliott"}
   (:require [com.evocomputing.colors :as colors]))
 
-(defn channel [offset]
+(defn channel
+  "Creates a minimal channel specification, containing just the
+  address offset within the fixture's list of channels. The first
+  channel used by a fixture is, by convention, given offset 1.
+
+  You probably want to use [[fine-channel]] rather than this function
+  to create even channels which do not have a `:fine-offset` because
+  of the other helpful features it offers, such as setting up the
+  channel function specification for you."
+  {:doc/format :markdown}
+  [offset]
   {:offset offset})
 
 (defn- assign-channel [universe start-address raw-channel]
@@ -22,14 +32,15 @@
          :fixture fixture :id (id-fn)))
 
 (defn- patch-heads
-  "Assigns the heads of a fixture to a DMX universe and starting channel; resolves all of
-  their channel assignments."
+  "Assigns the heads of a fixture to a DMX universe and starting
+  channel; resolves all of their channel assignments."
   [fixture channel-assigner id-fn]
   (let [assigner (partial patch-head channel-assigner fixture id-fn)]
     (update-in fixture [:heads] #(map assigner %))))
 
 (defn patch-fixture
-  "Assign a fixture to a DMX universe and starting channel; resolves all of its channel assignments."
+  "Assign a fixture to a DMX universe and starting channel; resolves
+  all of its channel assignments."
   [fixture universe start-address id-fn]
   (let [assigner (partial assign-channel universe start-address)]
     (update-in (patch-heads fixture assigner id-fn) [:channels] #(map assigner %))))
@@ -72,9 +83,40 @@
          (when var-label {:var-label var-label})))
 
 (defn fine-channel
-  "Defines a channel for which sometimes multi-byte values are
-  desired, via a separate channel which specifies the fractional value
-  to be added to the main channel."
+  "Defines a channel of type `chan-type` which may be paired with a
+  second channel in order to support multi-byte values. When a value
+  is passed in with `:fine-offset`, the channel specified by `offset`
+  is understood as containing the most-significant byte of a two-byte
+  value, with the least-significant byte carried in the channel whose
+  offset followed `:fine-offset`.
+
+  Automatically creates a [function
+  specification](https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#function-specifications)
+  which spans all the legal DMX values for the channel. By default,
+  the function type is taken to be the same as `chan-type`, but this
+  can be changed by passing in a different keyword with
+  `:function-type`.
+
+  Similarly, the name of the function created is, by default, a
+  capitalized version of the function type (without its leading
+  colon). Since this name is displayed in the [web
+  interface](https://github.com/brunchboy/afterglow/blob/master/doc/README.adoc#the-embedded-web-interface)
+  as the text label in the cue grid cell for [Function
+  Cues](https://github.com/brunchboy/afterglow/blob/master/doc/cues.adoc#creating-function-cues)
+  created for the function, you may wish to specify a more readable
+  name, which you can do by passing it with `:function-name`.
+
+  Finally, you may specify a label to be used when creating a user
+  interface for adjusting the value associated with this
+  function. [Function
+  Cues](https://github.com/brunchboy/afterglow/blob/master/doc/cues.adoc#creating-function-cues)
+  will use this as the label for the cue-local variable they create,
+  and it will appear in places like the [Ableton Push Effect Control
+  interface](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#effect-control).
+  You can specify what this variable label should be with
+  `:var-label`; if you do not, the generic label `Level` will be
+  used."
+  {:doc/format :markdown}
   [chan-type offset & {:keys [fine-offset function-type function-name var-label] :or {function-type chan-type}}]
   {:pre (some? chan-type) (integer? offset) (<= 1 offset 512)}
   (let [chan-type (keyword chan-type)
@@ -171,19 +213,33 @@
   "Defines a channel whose values are divided up into different ranges
   which perform different functions. After the channel type and DMX
   offset, pass a list of starting values and function specifications.
+
   The simplest form of specification is a keyword or string
   identifying the function type; this will be expanded into a
   variable-range (for keywords) or fixed-range (for strings) function
-  of that type. For more complex functions, pass in a map containing
-  the :type keyword and any other settings you need to
-  make (e.g. :label, :range, :var-label), and the rest will be filled
-  in for you. The ranges need to be in order of increasing starting
+  of that type.
+
+  For more complex functions, pass in a map containing the `:type`
+  keyword and any other settings you need to make (e.g. `:label`,
+  `:range`, `:var-label`), and the rest will be filled in for you.
+
+  To skip a range, pass `nil` for its specification.
+
+  The ranges need to be in order of increasing starting
   values, and the ending values for each will be figured out by
   context, e.g.
+
+  ```
   (functions :strobe 40
              0 nil
              10 \"strobe-random\"
-             20 :strobe"
+             20 :strobe)
+  ```
+
+  See the [online
+  documentation](https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#function-channels)
+  for more details and examples."
+  {:doc/format :markdown}
   [chan-type offset & functions]
   {:pre (some? chan-type) (integer? offset) (<= 1 offset 512)}
   (let [chan-type (keyword chan-type)]
@@ -245,8 +301,26 @@
    (fine-channel :dimmer offset :fine-offset fine-offset :range-label "Intensity")))
 
 (defn color
-  "A channel which controls a color component, with an optional second
-  channel for fine control."
+  "A channel which controls a color component. If `:hue` is supplied
+  along with a hue value, this channel will participate in color
+  mixing even if `color` is not one of the standard values `:red`,
+  `:green`, `:blue`, or `:white` whose hues and contributions to color
+  mixing are automatically understood.
+
+  By default, the function created for the channel uses the name of
+  the `color` keyword as its function label. Since this label is
+  displayed in the [web
+  interface](https://github.com/brunchboy/afterglow/blob/master/doc/README.adoc#the-embedded-web-interface)
+  as the text label in the cue grid cell for [Function
+  Cues](https://github.com/brunchboy/afterglow/blob/master/doc/cues.adoc#creating-function-cues)
+  created for the function, you may wish to specify a more readable
+  name, which you can do by passing it in with `:function-label`.
+
+  If the fixture uses two-byte values for this color component, pass
+  the offset of the channel containing the most-significant byte in
+  `offset`, and specify the offset of the channel containing the
+  least-significant byte with `:fine-offset`."
+  {:doc/format :markdown}
   [offset color & {:keys [hue function-label fine-offset]}]
   {:pre (some? color)}
   (let [color (keyword color)]
