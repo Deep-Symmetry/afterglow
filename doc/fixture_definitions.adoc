@@ -341,8 +341,8 @@ channels are used to express a single value, such as pan, tilt, or a
 dimmer level, because the normal DMX value range, from 0 to 255, does
 not give enough precision to allow smooth movements or fades. In those
 cases, you specify the channel number containing the
-most-significant-byte (MSB) of the value as the `:offset`, and the
-channel containing the least-significant-byte (LSB) is specified in
+most-significant byte (MSB) of the value as the `:offset`, and the
+channel containing the least-significant byte (LSB) is specified in
 the same channel specification using the key `:fine-offset`. The
 function
 http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-fine-channel[afterglow.channels/fine-channel]
@@ -619,7 +619,7 @@ channel with the optional keyword argument `:hue`. (See the discussion
 channel.)
 
 If your fixture supports two-byte color values for more precise color
-mixing, use the most-significant-byte as the `offset` value, and pass
+mixing, use the most-significant byte as the `offset` value, and pass
 the offset of least-significant byte using the optional keyword
 argument `:fine-offset`.
 
@@ -640,7 +640,120 @@ fixture or head. It always takes at least one argument, the channel
 two-byte values for more precise dimmer control, pass the offset of
 the channel that controls the most-significant byte as the `offset`
 argument, and pass the offset of the channel that controls the
-least-significant-byte as the second argument, `fine-offset`.
+least-significant byte as the second argument, `fine-offset`.
+
+==== Focus Channels
+
+http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-focus[afterglow.channels/focus]
+returns a specification for a channel that controls the focal plane of
+a fixture or head, usually a moving head spot which can project gobo
+(template) images. It always takes at least one argument, the channel
+`offset` (as described <<channel-offset,above>>). If the fixture uses
+two-byte values for more precise focus control, pass the offset of
+the channel that controls the most-significant byte as the `offset`
+argument, and pass the offset of the channel that controls the
+least-significant byte as the second argument, `fine-offset`.
+
+==== Frost Channels
+
+http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-frost[afterglow.channels/frost]
+returns a specification for a channel that controls the frost effect
+of a fixture or head, softening the beam of light it emits. It always
+takes at least one argument, the channel `offset` (as described
+<<channel-offset,above>>). If the fixture uses two-byte values for
+more precise focus control, pass the offset of the channel that
+controls the most-significant byte as the `offset` argument, and pass
+the offset of the channel that controls the least-significant byte as
+the second argument, `fine-offset`.
+
+==== Iris Channels
+
+http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-iris[afterglow.channels/iris]
+returns a specification for a channel that controls the iris
+(aperture) of a fixture or head, widening or narrowing the beam of
+light it emits. It always takes at least one argument, the channel
+`offset` (as described <<channel-offset,above>>). If the fixture uses
+two-byte values for more precise iris control, pass the offset of the
+channel that controls the most-significant byte as the `offset`
+argument, and pass the offset of the channel that controls the
+least-significant byte as the second argument, `fine-offset`.
+
+==== Pan Channels
+
+http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-pan[afterglow.channels/pan]
+returns a specification for a channel that controls the pan (rotation
+around the Y axis) of a fixture or head. It always takes at least one
+argument, the channel `offset` (as described
+<<channel-offset,above>>). If the fixture uses two-byte values for
+more precise pan control, pass the offset of the channel that controls
+the most-significant byte as the `offset` argument, and pass the
+offset of the channel that controls the least-significant byte as the
+second argument, `fine-offset`.
+
+==== Tilt Channels
+
+http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-tilt[afterglow.channels/tilt]
+returns a specification for a channel that controls the tilt (rotation
+around the X axis) of a fixture or head. It always takes at least one
+argument, the channel `offset` (as described
+<<channel-offset,above>>). If the fixture uses two-byte values for
+more precise tilt control, pass the offset of the channel that controls
+the most-significant byte as the `offset` argument, and pass the
+offset of the channel that controls the least-significant byte as the
+second argument, `fine-offset`.
+
+==== Zoom Channels
+
+http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-zoom[afterglow.channels/zoom]
+returns a specification for a channel that controls the zoom of a
+fixture or head, changing how much the beam spreads as it travels from
+the fixture. It always takes at least one argument, the channel
+`offset` (as described <<channel-offset,above>>). If the fixture uses
+two-byte values for more precise zoom control, pass the offset of the
+channel that controls the most-significant byte as the `offset`
+argument, and pass the offset of the channel that controls the
+least-significant byte as the second argument, `fine-offset`.
+
+==== Function Channels
+
+http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-functions[afterglow.channels/functions]
+returns a specification for a channel that implements a list of
+different functions for different ranges of DMX values. Its first two arguments are `chan-type`, the keyword which identifies the type of the channel (please see the list of
+<<standard-function-types,standard function types>> below and try to
+reuse one if it is appropriate, or at least create your keyword in a
+way that follows their conventions), and the channel `offset` (as
+described <<channel-offset,above>>).
+
+These are followed by a variable number of function range
+specifications, which take the form of a number (which identifies the
+starting DMX value for the function range) followed by the function
+specification itself. This can either be a
+<<function-specifications,function specification map>> as described
+above (without the `:start` and `:end` keys, which will be figured out
+from the starting ranges supplied to this function), or in many simple
+cases you can use the shorthand of passing a keyword, which will be
+expanded into a variable-range function with the a type of the keyword
+you supplied, or a string, which will be expanded into a fixed-range
+function with a type of a keyword made from the string you supplied.
+
+The range specifications need to be in order of increasing starting
+values, and the ending values for each will be figured out by context.
+
+The best way to understand this is to look at an example, like the
+specification for channel 9 of the Torrent F3:
+
+[source,clojure]
+----
+(chan/functions :shutter 9 0 "shutter-closed" 32 "shutter-open"
+                              64 :strobe
+                              96 "shutter-open-2" 128 :pulse-strobe 160 "shutter-open-3"
+                              192 :random-strobe
+                              224 "shutter-open-4")
+----
+
+> See also the example in the `:strobe` standard function discussion
+  <<strobe-function,below>>, which includes a more complex function
+  range specification.
 
 ==== Generic Channels
 
@@ -657,8 +770,8 @@ way that follows their conventions), and the channel `offset` (as
 described <<channel-offset,above>>).
 
 If the channel uses two-byte values for more precise control, use the
-most-significant-byte as the `offset` value, and pass the offset of
-least-significant byte using the optional keyword argument
+most-significant byte as the `offset` value, and pass the offset of
+the least-significant byte using the optional keyword argument
 `:fine-offset`.
 
 If for some reason the channel's function type should differ from the
@@ -673,13 +786,6 @@ channel's function type keyword in the user interface when
 keyword is hyphenated, and you want the label to use a space), specify
 your desired label with the optional keyword argument
 `:var-label`.
-
-TODO: Finish this page.
-
-* Explain how to create function specifications in all their variations,
-with range helpers, etc., and list naming conventions established so
-far, so that new fixtures can participate when they have similar
-capabilities.
 
 === Function Creation Functions
 
@@ -762,6 +868,7 @@ yours.
  <<effects#direction-effects,Direction Effects>> and
  <<effects#aim-effects,Aim Effects>> to work with them.
 
+[[strobe-function]]
 |:strobe
 
 |Causes the fixture to flash on and off abruptly (and usually

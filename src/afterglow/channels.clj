@@ -182,8 +182,8 @@
   context, e.g.
   (functions :strobe 40
              0 nil
-             10 \"strobe-on\"
-             20 :strobe-variable-speed)"
+             10 \"strobe-random\"
+             20 :strobe"
   [chan-type offset & functions]
   {:pre (some? chan-type) (integer? offset) (<= 1 offset 512)}
   (let [chan-type (keyword chan-type)]
