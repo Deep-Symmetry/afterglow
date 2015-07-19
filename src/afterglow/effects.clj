@@ -38,7 +38,6 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
       "Arrange to finish as soon as possible; return true if can end immediately."))))
 
 
-;; TODO: Really document this, both as API docs and on the Wiki.
 ;; So...
 ;;
 ;; We are going to have types of assigners: :channel, :head-color, :head-rotation. Each will be

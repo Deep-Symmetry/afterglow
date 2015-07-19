@@ -58,10 +58,6 @@
   (into {} (for [[axis origin available-span] [["x" -0.5 1.0] ["y" -0.25 0.5] ["z" 0 0.5]]]
              (axis-shift show axis origin available-span scale))))
 
-;; TODO: There is actually some kind of rotation going on that I need to
-;;       figure out and get right, because much craziness is happening with
-;;       the current approach.
-
 (defn adjusted-positions
   "Move the spotlights so they all fit within the shader's bounding
   cube, which extends from [-0.5, 0.25, 0.5] to [0.5, -0.25, 0]."

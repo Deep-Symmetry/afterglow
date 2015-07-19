@@ -15,14 +15,12 @@
             [afterglow.fixtures.american-dj :as adj]
             [afterglow.fixtures.blizzard :as blizzard]
             [afterglow.fixtures.chauvet :as chauvet]
-            [afterglow.rhythm :refer :all]
+            [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
             [afterglow.show-context :refer :all]
             [com.evocomputing.colors :refer [color-name create-color hue adjust-hue]]
             [overtone.osc :as osc]
             [taoensso.timbre :as timbre]))
-
-;; TODO: Get rid of :refer :all from rhythm; change to :as
 
 (defn use-sample-show
   "Set up a sample show for experimenting with Afterglow. By default
@@ -162,12 +160,13 @@
    (test-phases 20))
   ([iterations]
    (dotimes [n iterations]
-     (let [snap (metro-snapshot (:metronome *show*))]
+     (let [snap (rhythm/metro-snapshot (:metronome *show*))]
        (println
         (format "Beat %4d (phase %.3f) bar %4d (phase %.3f) 1:%.3f, 2:%.3f, 4:%.3f, 1/2:%.3f, 1/4:%.3f, 3/4:%.3f"
                 (:beat snap) (:beat-phase snap) (:bar snap) (:bar-phase snap)
-                (snapshot-beat-phase snap 1) (snapshot-beat-phase snap 2) (snapshot-beat-phase snap 4)
-                (snapshot-beat-phase snap 1/2) (snapshot-beat-phase snap 1/4) (snapshot-beat-phase snap 3/4)))
+                (rhythm/snapshot-beat-phase snap 1) (rhythm/snapshot-beat-phase snap 2)
+                (rhythm/snapshot-beat-phase snap 4) (rhythm/snapshot-beat-phase snap 1/2)
+                (rhythm/snapshot-beat-phase snap 1/4) (rhythm/snapshot-beat-phase snap 3/4)))
        (Thread/sleep 33)))))
 
 ;; Temporary for working on light aiming code
@@ -701,12 +700,12 @@
                  (cues/cue :color (fn [_] (fun/iris-out-color-cycle-chase (show/all-fixtures)))))
     (ct/set-cue! (:cue-grid *show*) 9 1
                  (cues/cue :color (fn [_] (fun/wipe-right-color-cycle-chase
-                                           (show/all-fixtures) :transition-phase-function snapshot-bar-phase))))
+                                           (show/all-fixtures) :transition-phase-function rhythm/snapshot-bar-phase))))
     (ct/set-cue! (:cue-grid *show*) 10 1
                  (cues/cue :color (fn [_] (fun/wipe-right-color-cycle-chase
                                            (show/all-fixtures)
-                                           :color-index-function snapshot-beat-within-phrase
-                                           :transition-phase-function snapshot-beat-phase
+                                           :color-index-function rhythm/snapshot-beat-within-phrase
+                                           :transition-phase-function rhythm/snapshot-beat-phase
                                            :effect-name "Wipe Right Beat"))))
 
     ;; Some cues to show the Hypnotic RGB Laser

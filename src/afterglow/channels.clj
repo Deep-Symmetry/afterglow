@@ -69,7 +69,6 @@
   [fixtures pred]
   (filter #(some pred (:channels %)) (expand-heads fixtures)))
 
-;; TODO: is this a good range data structure for finding which one a value falls into?
 (defn build-function
   "Returns a function spefication that encompasses a range of possible
   DMX values for a channel. If start and end are not specified, the
