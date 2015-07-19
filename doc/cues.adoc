@@ -402,7 +402,7 @@ values to each fixture.
 
 NOTE: Function cues are able to figure out how to do the right thing
 for each fixture because they can scan the fixture definitions for
-<<fixture_definitions#function-specificatons,Function Specifications>>
+<<fixture_definitions#function-specifications,Function Specifications>>
 matching the keyword you gave when creating the cue. When you patch a
 fixture into a show, Afterglow indexes its function ranges in order to
 make this efficient.
