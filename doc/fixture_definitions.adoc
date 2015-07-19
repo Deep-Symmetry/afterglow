@@ -555,7 +555,7 @@ that range. Each map has the following content:
  and are identified by a `:range` type of `:variable`. This helps
  Afterglow build an appropriate user interface for interacting with
  <<effects#function-effects,Function Effects>> in places like the
- mapping_sync#effect-control[Ableton Push Effect Control interface].
+ <<mapping_sync#effect-control,Ableton Push Effect Control interface>>.
 
 |:label
 
@@ -563,7 +563,7 @@ that range. Each map has the following content:
  for adjusting this function. <<cues#creating-function-cues,Function
  Cues>> will use this as the label for the cue-local variable they
  create, and it will appear in places like the
- mapping_sync#effect-control[Ableton Push Effect Control interface].
+ <<mapping_sync#effect-control,Ableton Push Effect Control interface>>.
 
 |===
 
