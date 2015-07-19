@@ -495,6 +495,78 @@ should be in that head's list.
 
 === Function Specifications
 
+Function specifications allow a single channel to be broken up into a
+series of value ranges which accomplish different purposes. As noted
+above, fixture manufacturers often do this so that they can provide a
+lot of functionality without taking up too much of the DMX address
+space. And since fixtures often have functions which cannot be
+activated at the same time, such as selecting a particular gobo on a
+gobo wheel, it makes great sense.
+
+The `:functions` entry in a channel specification map lists all the
+functions that a given channel offers. In order to work well with
+<<effects#function-effects,Function Effects>> and
+<<cues#creating-function-cues,Function Cues>> it is best to provide a
+function list even for channels which only perform a single function.
+A function list is a list of maps, each of which identifies a range of
+values that do something when the channel is set to a value within
+that range. Each map has the following content:
+
+[cols="2l,5a", options="header"]
+|===
+|Key
+|Purpose
+
+|:start
+
+|The beginning of the function range: the lowest DMX value which
+ activates this function on the channel. Must be a legal DMX value,
+ from `0` to `255`, and less than or equal to `:end`. Ranges must not
+ overlap, so this value must be greater than the `:end` value of any
+ other function range defined for the channel.
+
+|:end
+
+|The end of the function range: the highest DMX value which activates
+ this function on the channel. Must be a legal DMX value, from `0` to
+ `255`, and greater than or equal to `:start`. Ranges must not
+ overlap, so this value must be less than the `:start` value of any
+ other function range defined for the channel.
+
+|:type
+
+|A keyword which identifies the nature of the function. This is how
+ <<effects#function-effects,Function Effects>> and
+ <<cues#creating-function-cues,Function Cues>> will find the effect,
+ so it is important to be consistent when assigning function types.
+ The list of <<standard-function-types,standard function types>> is a
+ good starting point. If you feel there is a common kind of function
+ which should be added to that list, please open an
+ https://github.com/brunchboy/afterglow/issues[issue] requesting it.
+
+|:range
+
+|Tells Afterglow what kind of a function range this is. Some functions
+ are simply either off or on, and even if multiple DMX values exist
+ within the function range, the result of using any of them is no
+ different from using another. Such function are identified by a
+ `:range` type of `:fixed`. Other functions, such as a rotation speed
+ or focus, will have different effects for every value in the range,
+ and are identified by a `:range` type of `:variable`. This helps
+ Afterglow build an appropriate user interface for interacting with
+ <<effects#function-effects,Function Effects>> in places like the
+ mapping_sync#effect-control[Ableton Push Effect Control interface].
+
+|:label
+
+|Specifies a label that should be used when creating a user interface
+ for adjusting this function. <<cues#creating-function-cues,Function
+ Cues>> will use this as the label for the cue-local variable they
+ create, and it will appear in places like the
+ mapping_sync#effect-control[Ableton Push Effect Control interface].
+
+|===
+
 == Channel Creation Functions
 
 TODO: Finish this page.
@@ -503,3 +575,5 @@ TODO: Finish this page.
 with range helpers, etc., and list naming conventions established so
 far, so that new fixtures can participate when they have similar
 capabilities.
+
+## Standard Function Types
