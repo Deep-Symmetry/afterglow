@@ -374,6 +374,7 @@ channel specification that does not need a `:fine-offset` value).
 
 |:hue
 
+[[hue-mixing]]
 |When the channel `:type` is `:color`, this key is optionally present
  to tell Afterglow the hue value of the LEDs controlled by the
  channel. This allows Afterglow to perform color mixing with
@@ -628,13 +629,26 @@ yours.
  LEDs of colors other than these, use the color name to identify the
  function. (This will happen automatically when you use the
  http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-color[color]
- <<channel-creation-functions,channel creation function>> to create
- the channel.
+ channel <<channel-creation-functions,creation function>> to create
+ the channel. Color channels are fundamental channel types in
+ Afterglow, and the colors `:red`, `:green`, `:blue`, and `:white`
+ automatically participate in the color mixing Afterglow performs with
+ <<effects#color-effects,Color Effects>>. The others can if, as
+ described <<hue-mixing,above>>, the `:color` channel has a `:hue`
+ entry.
 
 |:pan
-|:tilt
+:tilt
+
+|Rotates the fixture about its Y (in the case of `:pan`) or X (in the
+ case of `:tilt`) axis. These are also fundamental channel types in
+ Afterglow, and have categories of
+ <<effects#direction-effects,Direction Effects>> and
+ <<effects#aim-effects,Aim Effects>> to work with them.
 
 |:strobe
+
+|.
 
 |:color-macros
 
