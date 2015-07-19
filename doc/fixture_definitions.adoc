@@ -569,7 +569,25 @@ that range. Each map has the following content:
 |:scale-fn
 
 |A function that will be called to scale the function value being
- requested by an effect. TODO: explain.
+ requested by an effect. For functions whose `:range` is `:variable`,
+ Afterglow function effects can vary the value being sent to activate
+ the function. They normally do this as a percentage, where 0 maps to
+ the `:start` of the range, and 100 maps to the `:end`, and values in
+ between are scaled appropriately.
+
+If there is a reason to tweak the values on the way in, you can store
+a function at this key in the function specification, and Afterglow
+will call the function with the percentage value the effect requested,
+and expect the function to return a modified percentage value to use
+to actually pick the DMX value to send. A good example of a reason to
+do this is with the `strobe` function, so that different fixtures can
+be coaxed into strobing at roughly the same rate. The fixture
+definitions that ship with Afterglow use
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.channel.html#var-function-value-scaler[afterglow.effects.channel/function-value-scaler]
+to build `:scale-fn` functions for their `:strobe` functions so that,
+rather than a percentage, the strobe function value is interpreted as
+an approximate Hz rate (flashes per second), normalized for each
+fixture.
 
 |===
 
@@ -648,7 +666,26 @@ yours.
 
 |:strobe
 
-|.
+|Causes the fixture to flash on and off abruptly (and usually
+ rapidly). This is typically a variable-range function, so different
+ values within the function range cause the fixture to strobe at
+ different speeds. If possible, use a `:scale-fn` function (with the
+ help of
+ http://deepsymmetry.org/afterglow/doc/afterglow.effects.channel.html#var-function-value-scaler[afterglow.effects.channel/function-value-scaler])
+ when creating a strobe function so that the function level is
+ interpreted as an approximate Hz rate for the strobe, and your new
+ fixture will strobe in rough tandem with other fixtures being
+ strobed. Take a look at the strobe function definitions for the
+ existing fixtures for examples how to do this:
+
+[source,clojure]
+----
+(chan/functions :strobe 7 0 nil
+                11 {:type :strobe
+                    :scale-fn (partial function-value-scaler 0.66 25)
+                    :label "Strobe (0.66Hz->25Hz)"
+                    :range :variable})
+----
 
 |:color-macros
 

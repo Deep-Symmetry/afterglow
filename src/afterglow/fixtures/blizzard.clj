@@ -254,7 +254,7 @@
                                                     0 nil
                                                     16 {:type :strobe
                                                         :scale-fn (partial function-value-scaler 0.8 25)
-                                                        :label "Strobe (0.66Hz->25Hz)"
+                                                        :label "Strobe (0.8Hz->25Hz)"
                                                         :range :variable})
                                    (chan/functions :control 3
                                                    0 "R" 5 "G" 9 "B" 13 "A" 17 "W" 21 "RG" 25 "RB" 29 "RA" 32 "RW"
