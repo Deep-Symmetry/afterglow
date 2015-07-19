@@ -751,9 +751,25 @@ specification for channel 9 of the Torrent F3:
                               224 "shutter-open-4")
 ----
 
-> See also the example in the `:strobe` standard function discussion
-  <<strobe-function,below>>, which includes a more complex function
-  range specification.
+This sets up a channel of type `:shutter` with offset `9`. It has a
+fixed-ranged function of type `:shutter-closed` from `0`-`31`, another fixed-range function of type `:shutter-open` from `32`-`63`. Then there is a variable-range function of type `:strobe` from `64`-`95`.
+
+This is followed by a fixed-range function of type `:shutter-open-2`
+from `96`-`127`, and another variable-range function of type
+`:pulse-strobe` from `128`-`159`, a fixed-range function of type
+`:shutter-open-3` from `160`-`191`, a variable-range function of type
+`:random-strobe` from `192`-`223`, and finally a fixed-range function
+of type `:shutter-open-4` from `224` to the largest legal DMX value of
+`255`.
+
+NOTE: The various shutter-open ranges all do the same thing, but need
+to be given different names, since function names must be unique; it
+is a quirk of this fixture that it has multiple ranges with the same
+function.
+
+> See also the example in the `:strobe` standard function
+  discussion <<strobe-function,below>>, which includes a more complex
+  function range specification.
 
 ==== Generic Channels
 
