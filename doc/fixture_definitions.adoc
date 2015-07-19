@@ -948,16 +948,24 @@ strobes, as best you can, and use them like this:
 (chan/functions :strobe 7
                 0 nil
                 11 {:type :strobe
-                    :scale-fn (partial function-value-scaler 0.66 25)
-                    :label "Strobe (0.66Hz->25Hz)"
+                    :scale-fn (partial function-value-scaler 6.6 100)
+                    :label "Strobe (0.66Hz->10Hz)"
                     :range :variable})
 ----
 
 In this example, the fixture's strobe channel is at offset `7`, and
 the range from `0`-`10` does not strobe, while at `11` it begins to
-strobe approximately 0.66 times per second (or twice every three
-seconds), and strobes faster for higher values, finally reaching
-around 25 times per second at the maximum legal DMX value of `255`.
+strobe approximately 0.66 times per second (or 6.6 times every ten
+seconds, which gives a more useful spread of strobe values across the
+normal function value assignment range of 1-100), and strobes faster
+for higher values, finally reaching around ten times per second at the
+maximum function value of `100`.
+
+> Measuring the actual strobing rate of arbitrary fixtures is
+  difficult to get right, I am not yet quite satisfied with the
+  scaling function values for my lighting rig, but for all practical
+  purposes, the audience does not notice the difference when being
+  dazzled by strobes.
 
 |:focus
 
