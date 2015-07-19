@@ -615,7 +615,8 @@ using that function.
 
 If your function does not fit into this list, make up a keyword that
 makes sense for it, following the style shown here. And also please
-consider opening an
+consider (if the function type is likely to be present on other
+fixtures and useful to other people) opening an
 https://github.com/brunchboy/afterglow/issues[issue] requesting that
 your new function type be added to this list so that when other people
 create definitions for similar fixtures, they can interoperate with
@@ -650,9 +651,9 @@ yours.
  channel <<channel-creation-functions,creation function>> to create
  the channel. Color channels are fundamental channel types in
  Afterglow, and the colors `:red`, `:green`, `:blue`, and `:white`
- automatically participate in the color mixing Afterglow performs with
- <<effects#color-effects,Color Effects>>. The others can if, as
- described <<hue-mixing,above>>, the `:color` channel has a `:hue`
+ will automatically participate in the color mixing Afterglow performs
+ with <<effects#color-effects,Color Effects>>. The others can too if,
+ as described <<hue-mixing,above>>, the `:color` channel has a `:hue`
  entry.
 
 |:pan
@@ -676,16 +677,25 @@ yours.
  interpreted as an approximate Hz rate for the strobe, and your new
  fixture will strobe in rough tandem with other fixtures being
  strobed. Take a look at the strobe function definitions for the
- existing fixtures for examples how to do this:
+ existing fixtures for examples how to do this. All you need to do is
+ measure the slowest and fastest rates at which your fixture actually
+ strobes, as best you can, and use them like this:
 
 [source,clojure]
 ----
-(chan/functions :strobe 7 0 nil
+(chan/functions :strobe 7
+                0 nil
                 11 {:type :strobe
                     :scale-fn (partial function-value-scaler 0.66 25)
                     :label "Strobe (0.66Hz->25Hz)"
                     :range :variable})
 ----
+
+In this example, the fixture's strobe channel is at offset `7`, and
+the range from `0`-`10` does not strobe, while at `11` it begins to
+strobe approximately 0.66 times per second (or twice every three
+seconds), and strobes faster for higher values, finally reaching
+around 25 times per second at the maximum legal DMX value of 255.
 
 |:focus
 
