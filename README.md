@@ -375,7 +375,7 @@ And darken the universe you were playing with.
   strobe effect to be set to a rough Hz value despite differences in
   fixture implementation.
 - [x] Add color wheel support.
-- [ ] Review existing fixture definitions for consistency of function
+- [x] Review existing fixture definitions for consistency of function
   names, start a style guide in the docs for others creating fixture
   definitions.
 - [ ] Make pass over all source, flesh out API doc and preconditions.

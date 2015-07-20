@@ -184,12 +184,39 @@ be ready to build your own complex and mesmerizing effects!
 [[channel-assigners]]
 Channel Assigners
 ^^^^^^^^^^^^^^^^^
-TODO: Briefly describe the different kind of assigners, and how they get resolved to DMX.
 
+Channel assigners have a `kind` of `:channel`, and their `target-id`
+is a keyword of the form `:u1a234` which would represent an assignment
+to universe `1`, address `234`. The assignment values they return are
+either a valid DMX data value (see next paragraph), a dynamic
+parameter which will resolve to a valid DMX data value, or `nil`,
+meaning no assignment should take place.
+
+
+[[dmx-values]] The DMX data value is a number in the range `[0-256)`.
+In other words, it can take any value from zero up to but not reaching
+256. Non-integer values are supported, because the channel might be a
+https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#generic-channels[fine-channel]
+which uses two bytes to offer more precision in control than a single
+byte can offer. In that case, the integer portion of the value is sent
+as the most-significant byte on the main channel, and the fractional
+portion is converted to a least-significant byte and sent on the fine
+channel. If the channel does not have a fine channel attached to it,
+any fractional part of the assigned value is simply discarded.
 
 [[function-assigners]]
 Function Assigners
 ^^^^^^^^^^^^^^^^^^
+
+Function assigners have a `kind` of `:function`, and their `target-id`
+is a keyword of the form `:3-strobe` which would represent an
+assignment to the fixture or head with ID 3, setting the value of that
+head's `:strobe`
+https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#function-specifications[function].
+The assignment values they return are either a valid DMX data value
+(as described <<dmx-values,above>>), a dynamic parameter which will
+resolve to a valid DMX data value, or `nil`, meaning no assignment
+should take place.
 
 [[color-assigners]]
 Color Assigners
