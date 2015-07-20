@@ -12,6 +12,8 @@ Fixture definitions tell afterglow what capabilities a given piece of
 lighting hardware has, and how to control it to get the effects that are
 being requested.
 
+== Overview
+
 There are a vast number of fixture types out there, and at this early
 stage almost none of them are built in to Afterglow, so you will
 probably need to create your own. You can study the existing fixture
