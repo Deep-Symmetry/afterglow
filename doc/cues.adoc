@@ -1,6 +1,8 @@
 = Cues
 James Elliott <james@deepsymmetry.org>
 :icons: font
+:toc:
+:toc-placement: preamble
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
@@ -15,6 +17,8 @@ with through the <<README#the-embedded-web-interface,embedded web
 interface>> and MIDI controller mapping implementations which can be
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-register-grid-controller[registered
 as grid controllers], like the <<mapping_sync#using-ableton-push,Ableton Push>>.
+
+== The Cue Grid
 
 The cue grid is a two dimensional arrangement of cues, where the
 bottom left corner is assigned coordinates `(0, 0)`. X coordinates
@@ -144,8 +148,7 @@ configuration tools to enable this kind of external control.
 ====
 
 [[creating-cues]]
-Creating Cues
-~~~~~~~~~~~~~
+== Creating Cues
 
 The
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html[afterglow.effects.cues]
@@ -378,10 +381,8 @@ creating the cue's effect.
 
 |===
 
-
 [[creating-function-cues]]
-Creating Function Cues
-~~~~~~~~~~~~~~~~~~~~~~
+== Creating Function Cues
 
 Often you want a cue to activate a specific feature of a fixture
 (often described as a _function_ in the fixture manual, and in the
@@ -556,8 +557,7 @@ and will not whiten the cue color while it is held down.
 |===
 
 [[controlling-cues]]
-Controlling Cues
-~~~~~~~~~~~~~~~~
+== Controlling Cues
 
 The
 http://deepsymmetry.org/afterglow/doc/afterglow.controllers.html[afterglow.controllers]
