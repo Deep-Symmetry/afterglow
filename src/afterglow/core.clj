@@ -10,6 +10,7 @@
             [clojure.tools.nrepl.server :as nrepl]
             [cider.nrepl :refer [cider-nrepl-handler]]
             [clojure.java.browse :as browse]
+            [overtone.osc :as osc]
             [selmer.parser :as parser]
             [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders.3rd-party.rotor :as rotor])
@@ -20,6 +21,9 @@
 
 (defonce ^{:doc "Holds the running web UI server, if there is one, for later shutdown."}
   web-server (atom nil))
+
+(defonce ^{:doc "Holds the running OSC server, if there is one, for later shutdown."}
+  osc-server (atom nil))
 
 (defonce ^{:doc "Holds the future which is cleaning up expired web sessions, if any."}
   session-cleaner (atom nil))
@@ -118,6 +122,26 @@
    (reset! session-cleaner (session/start-cleanup-job!))
    (when browser (browse/browse-url (str "http://localhost:" port)))))
 
+(defn start-osc-server
+  "Start the embedded OSC server on the specified port."
+  [port]
+  (when @osc-server (throw (IllegalStateException. "OSC server is already running.")))
+  (reset! osc-server (osc/osc-server port "Afterglow")))
+
+(defn stop-osc-server
+  "Shut down the embedded OSC server if it is running."
+  []
+  #_(osc/zero-conf-off)
+  (try
+    (swap! osc-server (fn [server]
+                        (when server
+                          (osc/osc-rm-all-listeners server)
+                          (osc/osc-rm-all-handlers server)
+                          (osc/osc-close server)
+                          nil)))
+    (catch Throwable t
+      (timbre/error "failed to shut down OSC server" t))))
+
 (defn start-nrepl
   "Start a network REPL for debugging or remote control."
   [port]
@@ -128,17 +152,16 @@
     (catch Throwable t
       (timbre/error "failed to start nREPL" t))))
 
-;; TODO: Stop OSC server too
 (defn stop-servers
   "Shut down the embedded web UI, OSC and NREPL servers."
   []
   (timbre/info "shutting down embedded servers...")
   (swap! web-server #(do (when % (% :timeout 100)) nil))
+  (stop-osc-server)
   (swap! nrepl-server #(do (when % (nrepl/stop-server %)) nil))
   (swap! session-cleaner #(do (when % (future-cancel %)) nil))
   (timbre/info "shutdown complete!"))
 
-;; TODO: Start OSC server too, and nrepl if requested.
 (defn -main
   "The entry point when invoked as a jar from the command line. Parse options
   and start servers on the appropriate ports."
@@ -153,6 +176,11 @@
     (.addShutdownHook (Runtime/getRuntime) (Thread. stop-servers))
     (clojure.pprint/pprint options)
     (start-web-server (:web-port options) true)
-    (timbre/info (str "\n-=[ afterglow started successfully"
-                      (when (env :dev) "using the development profile") "]=-"))
-    (timbre/info "Web UI server on port:" (:web-port options))))
+    (timbre/info "Web UI server on port:" (:web-port options))
+    (start-osc-server (:osc-port options))
+    (timbre/info "OSC server on port:" (:osc-port options))
+    (when-let [port (:repl-port options)]
+      (start-nrepl port)
+      (timbre/info "nrepl server on port:" port))
+    (timbre/info (str "\n-=[ afterglow startup concluded successfully"
+                      (when (env :dev) "using the development profile") "]=-"))))

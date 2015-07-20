@@ -199,32 +199,30 @@
                      "Aimer" (params/build-aim-param :x :x :y :y :z :z) (show/all-fixtures)))
   (show/set-variable! :y 2.6416))  ; Approximate height of ceiling
 
-(defonce osc-server
-  (atom nil))
-
 (defn osc-demo
   "Early experiments with using OSC to control shows. This should grow
   into a well-defined API, with integration to show variables, cue
   grids, and the like."
   []
-  (swap! osc-server (fn [server] (or server (osc/osc-server 16010 "Afterglow"))))
+  (when (nil? @core/osc-server) (core/start-osc-server 16010))
   (show/set-variable! :y (tf/inches 118))
-  (osc/osc-handle @osc-server "/aim" (fn [msg]
-                                       (let [left (tf/inches -88)
-                                             right (tf/inches 86)
-                                             width (- right left)
-                                             front (tf/inches -21)
-                                             rear (tf/inches 295)
-                                             depth (- rear front)]
-                                         (show/set-variable! :x (+ left (* width (first (:args msg)))))
-                                         (show/set-variable! :z (+ front (* depth (second (:args msg))))))
-                                       #_(timbre/info msg)))
-  (osc/osc-handle @osc-server "/sparkle" (fn [msg]
-                                       (if (pos? (first (:args msg)))
-                                         (show/add-effect! :sparkle (fun/sparkle (show/all-fixtures) :chance 0.1
-                                                                                 :fade-time 100))
-                                         (show/end-effect! :sparkle))))
-  #_(osc/osc-listen @osc-server (fn [msg] (timbre/info msg)) :debug)
+  (osc/osc-handle @core/osc-server "/aim" (fn [msg]
+                                            (let [left (tf/inches -88)
+                                                  right (tf/inches 86)
+                                                  width (- right left)
+                                                  front (tf/inches -21)
+                                                  rear (tf/inches 295)
+                                                  depth (- rear front)]
+                                              (show/set-variable! :x (+ left (* width (first (:args msg)))))
+                                              (show/set-variable! :z (+ front (* depth (second (:args msg))))))
+                                            #_(timbre/info msg)))
+  (osc/osc-handle @core/osc-server "/sparkle" (fn [msg]
+                                                (if (pos? (first (:args msg)))
+                                                  (show/add-effect! :sparkle (fun/sparkle (show/all-fixtures)
+                                                                                          :chance 0.1
+                                                                                          :fade-time 100))
+                                                  (show/end-effect! :sparkle))))
+  #_(osc/osc-listen @core/osc-server (fn [msg] (timbre/info msg)) :debug)
   #_(osc/zero-conf-on)
   (show/set-variable! :x 0)
   (show/set-variable! :y 2.6416) ; Approximate height of ceiling
@@ -236,13 +234,7 @@
 (defn osc-shutdown
   "Shut down osc server and clean up."
   []
-  #_(osc/zero-conf-off)
-  (swap! osc-server (fn [server]
-                      (when server
-                        (osc/osc-rm-all-listeners server)
-                        (osc/osc-rm-all-handlers server)
-                        (osc/osc-close server)
-                        nil))))
+  (core/stop-osc-server))
 
 (defn global-color-cue
   "Create a cue-grid entry which establishes a global color effect."
