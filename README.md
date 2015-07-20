@@ -1,6 +1,6 @@
 # Afterglow
 
-<image class="callout" width="256" src="doc/assets/Afterglow-logo.png">
+<image align="left" width="256" src="doc/assets/Afterglow-logo.png">
 An environment supporting
 [live coding](https://en.wikipedia.org/wiki/Live_coding) for the
 creation of dynamic light shows in [Clojure](http://clojure.org),
