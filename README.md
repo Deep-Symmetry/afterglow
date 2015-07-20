@@ -40,7 +40,11 @@ among the entire user community.
    [![Clojars Project](http://clojars.org/afterglow/latest-version.svg)](http://clojars.org/afterglow)
    [![Dependencies Status](http://jarkeeper.com/brunchboy/afterglow/status.png)](http://jarkeeper.com/brunchboy/afterglow)
 
-Eventually you may be able to download binary distributions from somewhere.
+If you want to run Afterglow as a standalone executable, you can
+download the executable &uuml;berjar from the
+[releases](https://github.com/brunchboy/afterglow/releases) page. (But
+see the warning in [usage](#usage) about this being much less tested
+than in-repl use so far.)
 
 ## Status
 
