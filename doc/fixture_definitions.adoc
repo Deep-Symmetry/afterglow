@@ -8,7 +8,7 @@ James Elliott <james@deepsymmetry.org>
 // if you need to support other environments and extensions.
 ifdef::env-github[:outfilesuffix: .adoc]
 
-Fixture definitions tell afterglow what capabilities a given piece of
+Fixture definitions tell Afterglow what capabilities a given piece of
 lighting hardware has, and how to control it to get the effects that are
 being requested.
 
