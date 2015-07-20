@@ -1,10 +1,21 @@
 = The Rendering Loop
 James Elliott <james@deepsymmetry.org>
 :icons: font
+:toc:
+:toc-placement: preamble
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
 ifdef::env-github[:outfilesuffix: .adoc]
+
+This page contains advanced, low-level information for people who are
+ready to create their own custom effect algorithms. Not to scare you
+off, but don't be discouraged if you are new to Afterglow, and this
+content seems rather difficult. Start experimenting in other places,
+and by the time you need this information, it will make much more
+sense!
+
+== Frame Rendering Stages
 
 When an afterglow show is running, that is, from when
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-start.21[(show/start!)]
@@ -138,8 +149,7 @@ corresponding universes, causing the lights to produce the desired
 effects.
 
 [[assigners]]
-Assigners
-~~~~~~~~~
+== Assigners
 
 As described above, the role of an assigner in the rendering loop is
 to actually decide what _value_ (color, direction, or the like) is
@@ -182,8 +192,7 @@ Once you can understand how all of those pieces fit together, you will
 be ready to build your own complex and mesmerizing effects!
 
 [[channel-assigners]]
-Channel Assigners
-^^^^^^^^^^^^^^^^^
+=== Channel Assigners
 
 Channel assigners have a `kind` of `:channel`, and their `target-id`
 is a keyword of the form `:u1a234` which would represent an assignment
@@ -206,8 +215,7 @@ channel. If the channel does not have a fine channel attached to it,
 any fractional part of the assigned value is simply discarded.
 
 [[function-assigners]]
-Function Assigners
-^^^^^^^^^^^^^^^^^^
+=== Function Assigners
 
 Function assigners have a `kind` of `:function`, and their `target-id`
 is a keyword of the form `:3-strobe` which would represent an
@@ -228,8 +236,7 @@ fixture, and the assigned percentage was 50.0, then the assignment for
 that fixture would send a value of 25 to the function's channel.
 
 [[color-assigners]]
-Color Assigners
-^^^^^^^^^^^^^^^
+=== Color Assigners
 
 Color assigners have a `kind` of `:color`, and their `target-id` is a
 keyword of the form `:i42` which would represent an assignment to the
@@ -260,8 +267,7 @@ adjust this tolerance by setting a different value in the show
 variable `:color-wheel-hue-tolerance`.
 
 [[direction-assigners]]
-Direction Assigners
-^^^^^^^^^^^^^^^^^^^
+=== Direction Assigners
 
 Direction assigners have a `kind` of `:direction`, and their
 `target-id` is a keyword of the form `:i68` which would represent an
@@ -283,8 +289,7 @@ they will all be aimed in exactly the same direction, regardless of
 the location and orientation with which they were hung.
 
 [[aim-assigners]]
-Aim Assigners
-^^^^^^^^^^^^^
+=== Aim Assigners
 
 Aim assigners have a `kind` of `:aim`, and their `target-id` is a
 keyword of the form `:i17` which would represent an assignment to the
