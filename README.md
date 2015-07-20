@@ -15,7 +15,7 @@ via its
 Beyond building on pieces of Overtone, the entire Afterglow project
 was [inspired](https://vimeo.com/22798433) by it.
 
-<span class="align-center"></span>
+<hr>
 
 ## Documentation
 
