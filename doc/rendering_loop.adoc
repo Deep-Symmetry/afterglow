@@ -245,6 +245,17 @@ channels whose hue has been
 <<fixture_definitions#hue-mixing,specified>> in the fixture
 definition.
 
+If the head or fixture uses a color wheel to make colors, rather than
+trying to mix colors using channel intensities, Afterglow will find
+the <<fixture_definitions#color-wheel-hue,color wheel hue>> closest to
+the hue of the color being assigned, and send the function value
+needed to set the color wheel to that position. The color wheel hue
+has to be &ldquo;close enough&rdquo; to the assigned hue for Afterglow
+to use it. By default, as long as the hue values are within 60&deg; of
+each other (which is very lenient), Afterglow will use it. You can
+adjust this tolerance by setting a different value in the show
+variable `:color-wheel-hue-tolerance`.
+
 [[direction-assigners]]
 Direction Assigners
 ^^^^^^^^^^^^^^^^^^^
