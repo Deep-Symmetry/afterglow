@@ -7,7 +7,6 @@ James Elliott <james@deepsymmetry.org>
 // if you need to support other environments and extensions.
 ifdef::env-github[:outfilesuffix: .adoc]
 
-image:assets/Afterglow-logo-padded-left.png[Afterglow logo,275,255,float="right"]
 To keep page sizes manageable, this information is split into several
 pages. This page provides an <<introduction,introduction>> and
 <<overview,overview>>, explains the <<the-embedded-web-interface,built
@@ -17,6 +16,9 @@ because the orientation it provides will be helpful, and it ends with
 a <<getting-started,guide>> to help you get started on your way to
 creating your own light show. Once you know what you are looking for,
 you can also dive right into it by jumping to the page you want:
+
+image:assets/Afterglow-logo.png[Afterglow logo,128,127,align="center"]
+
 
 ****
 
