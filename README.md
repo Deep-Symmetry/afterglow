@@ -46,7 +46,9 @@ Eventually you may be able to download binary distributions from somewhere.
 
 Although Afterglow is far from finished, its first release reflects
 the fact that it is ready for the world to start exploring it and
-helping decide the directions in which to grow next (as well as identifying areas where the documentation needs clarification or reinforcement!)
+helping decide the directions in which to grow next (as well as
+identifying areas where the documentation needs clarification or
+reinforcement).
 
 Most of the crazy ideas have panned out and been implemented, and I am
 fleshing out the basic details needed for everyday use. The examples
@@ -60,9 +62,9 @@ There is now an embedded web application, which is growing into a show
 control interface for people who are not Clojure hackers, and a useful
 adjunct to the Ableton Push control surface interface. Both are
 explained in the documentation link above. Afterglow also includes the
-beginnings (a proof of concept, really, at this point) of a show
-visualizer for designing and working on effects without having to
-physically hook up lights. This is implemented in WebGL using a
+beginnings of a show visualizer for designing and working on effects
+without having to physically hook up lights (a proof of concept,
+really, at this point). This is implemented in WebGL using a
 volumetric ray tracer and looks quite promising, at least for a small
 number of fixtures; it will probably overwhelm the graphics processor
 on most systems once you add too many lights. However, the framework
@@ -92,12 +94,12 @@ Options:
 Please see https://github.com/brunchboy/afterglow for more information.
 ```
 
-NOTE: At this early stage of development, bear in mind that using
-Afterglow as an executable jar is wildly untested territory, and you
-are likely to discover surprising bugs. Although the project will
-evolve into a system that non-Clojure hackers can use, for now you are
-really best off playing with it inside a Clojure development
-environment.
+> :heavy_exclamation_mark: At this early stage of development, bear in
+> mind that using Afterglow as an executable jar is wildly untested
+> territory, and you are likely to discover surprising bugs. Although
+> the project will evolve into a system that non-Clojure hackers can
+> use, for now you are really best off playing with it inside a
+> Clojure development environment.
 
 Assuming you are using it from within a REPL, there is a namespace
 `afterglow.examples` which is intended to help you get started quickly
