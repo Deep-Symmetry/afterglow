@@ -1,6 +1,6 @@
 # Afterglow
 
-<image align="left" width="256" src="doc/assets/Afterglow-logo.png">
+<image align="right" width="256" src="doc/assets/Afterglow-logo.png">
 An environment supporting
 [live coding](https://en.wikipedia.org/wiki/Live_coding) for the
 creation of dynamic light shows in [Clojure](http://clojure.org),
@@ -14,6 +14,8 @@ via its
 [RPC Service](https://docs.openlighting.org/doc/latest/rpc_system.html).
 Beyond building on pieces of Overtone, the entire Afterglow project
 was [inspired](https://vimeo.com/22798433) by it.
+
+<div style="clear: both;"></div>
 
 ## Documentation
 
