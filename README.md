@@ -364,7 +364,12 @@ And darken the universe you were playing with.
 
 ## Bugs
 
-...
+Although there are none known as of the time of this release, I am
+sure some will be found, especially if you are tracking the master
+branch to keep up with the current rapid pace of development. Please
+feel free to log
+[issues](https://github.com/brunchboy/afterglow/issues) as you
+encounter them!
 
 ## Tasks
 
