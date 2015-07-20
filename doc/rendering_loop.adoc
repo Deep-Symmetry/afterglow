@@ -188,9 +188,10 @@ Channel Assigners
 Channel assigners have a `kind` of `:channel`, and their `target-id`
 is a keyword of the form `:u1a234` which would represent an assignment
 to universe `1`, address `234`. The assignment values they return are
-either a valid DMX data value (see next paragraph), a dynamic
-parameter which will resolve to a valid DMX data value, or `nil`,
-meaning no assignment should take place.
+either a valid DMX data value (see next paragraph), a
+<<parameters#dynamic-parameters,dynamic parameter>> which will resolve
+to a valid DMX data value, or `nil`, meaning no assignment should take
+place.
 
 
 [[dmx-values]] The DMX data value is a number in the range `[0-256)`.
@@ -214,8 +215,9 @@ assignment to the fixture or head with ID 3, setting the value of that
 head's `:strobe`
 https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#function-specifications[function].
 The assignment values they return are either a percentage value, a
-dynamic parameter which will resolve to a percentage value, or `nil`,
-meaning no assignment should take place.
+<<parameters#dynamic-parameters,dynamic parameter>> which will resolve
+to a percentage value, or `nil`, meaning no assignment should take
+place.
 
 When the assignment is resolved,
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.channel.html#var-function-assignment-resolver[function-assignment-resolver]
@@ -234,8 +236,9 @@ keyword of the form `:i42` which would represent an assignment to the
 fixture or head with ID 42. The assignment values they return are
 either a
 https://github.com/brunchboy/afterglow/blob/master/doc/color.adoc#working-with-color[color]
-object, a dynamic parameter which will resolve to a color object, or
-`nil`, meaning no assignment should take place.
+object, a <<parameters#color-parameters,dynamic parameter>> which will
+resolve to a color object, or `nil`, meaning no assignment should take
+place.
 
 When the assignment is resolved, Afterglow uses all available color
 channels in the target head to mix the specified color. It is
@@ -263,9 +266,10 @@ Direction Assigners
 Direction assigners have a `kind` of `:direction`, and their
 `target-id` is a keyword of the form `:i68` which would represent an
 assignment to the fixture or head with ID 68. The assignment values
-they return are either a `javax.vecmath.Vector3d`, a dynamic parameter
-which will resolve to a `Vector3d` object, or `nil`, meaning no
-assignment should take place.
+they return are either a `javax.vecmath.Vector3d`, a
+<<parameters#direction-parameters,dynamic parameter>> which will
+resolve to a `Vector3d` object, or `nil`, meaning no assignment should
+take place.
 
 When the assignment is resolved, the vector indicates the direction in
 the <<show_space#show-space,frame of reference of the show>> to aim
@@ -282,12 +286,12 @@ the location and orientation with which they were hung.
 Aim Assigners
 ^^^^^^^^^^^^^
 
-Aim assigners have a `kind` of `:aim`, and their
-`target-id` is a keyword of the form `:i17` which would represent an
-assignment to the fixture or head with ID 17. The assignment values
-they return are either a `javax.vecmath.Point3d`, a dynamic parameter
-which will resolve to a `Point3d` object, or `nil`, meaning no
-assignment should take place.
+Aim assigners have a `kind` of `:aim`, and their `target-id` is a
+keyword of the form `:i17` which would represent an assignment to the
+fixture or head with ID 17. The assignment values they return are
+either a `javax.vecmath.Point3d`, a
+<<parameters#aim-parameters,dynamic parameter>> which will resolve to
+a `Point3d` object, or `nil`, meaning no assignment should take place.
 
 When the assignment is resolved, the point identifies the precise
 location in the <<show_space#show-space,frame of reference of the
