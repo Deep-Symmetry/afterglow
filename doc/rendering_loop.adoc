@@ -260,6 +260,42 @@ variable `:color-wheel-hue-tolerance`.
 Direction Assigners
 ^^^^^^^^^^^^^^^^^^^
 
+Direction assigners have a `kind` of `:direction`, and their
+`target-id` is a keyword of the form `:i68` which would represent an
+assignment to the fixture or head with ID 68. The assignment values
+they return are either a `javax.vecmath.Vector3d`, a dynamic parameter
+which will resolve to a `Vector3d` object, or `nil`, meaning no
+assignment should take place.
+
+When the assignment is resolved, the vector indicates the direction in
+the <<show_space#show-space,frame of reference of the show>> to aim
+the fixture or head. Afterglow translates this vector to the
+appropriate values to send to the fixture's pan and tilt channels to
+aim it in the specified direction, if possible. Otherwise it gets as
+close as the fixture allows.
+
+If multiple fixtures or heads are assigned the same direction vector,
+they will all be aimed in exactly the same direction, regardless of
+the location and orientation with which they were hung.
+
 [[aim-assigners]]
 Aim Assigners
 ^^^^^^^^^^^^^
+
+Aim assigners have a `kind` of `:aim`, and their
+`target-id` is a keyword of the form `:i17` which would represent an
+assignment to the fixture or head with ID 17. The assignment values
+they return are either a `javax.vecmath.Point3d`, a dynamic parameter
+which will resolve to a `Point3d` object, or `nil`, meaning no
+assignment should take place.
+
+When the assignment is resolved, the point identifies the precise
+location in the <<show_space#show-space,frame of reference of the
+show>> to aim the fixture or head. Afterglow translates this point to
+the appropriate values to send to the fixture's pan and tilt channels
+to aim it at that exact spot, if possible. Otherwise it gets as close
+as the fixture allows.
+
+If multiple fixtures or heads are assigned the same aiming point, they
+will all be aimed at exactly the same spot, regardless of the location
+and orientation with which they were hung.
