@@ -342,7 +342,7 @@
 
 (defn snowball
   "[Snowball](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&layout=item&id=100&Itemid=96)
-  multi-beam effect light."
+  multi-beam moonflower effect light."
   {:doc/format :markdown}
   []
   {:name "Blizzard Snowball"
