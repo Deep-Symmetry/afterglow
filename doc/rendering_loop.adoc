@@ -213,14 +213,37 @@ is a keyword of the form `:3-strobe` which would represent an
 assignment to the fixture or head with ID 3, setting the value of that
 head's `:strobe`
 https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#function-specifications[function].
-The assignment values they return are either a valid DMX data value
-(as described <<dmx-values,above>>), a dynamic parameter which will
-resolve to a valid DMX data value, or `nil`, meaning no assignment
-should take place.
+The assignment values they return are either a percentage value, a
+dynamic parameter which will resolve to a percentage value, or `nil`,
+meaning no assignment should take place.
+
+When the assignment is resolved,
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.channel.html#var-function-assignment-resolver[function-assignment-resolver]
+translates the percentage to an actual DMX value along the range
+defined in each fixture's function specification. For example, if the
+function was defined as existing on the range 20-29 for a particular
+fixture, and the assigned percentage was 50.0, then the assignment for
+that fixture would send a value of 25 to the function's channel.
 
 [[color-assigners]]
 Color Assigners
 ^^^^^^^^^^^^^^^
+
+Color assigners have a `kind` of `:color`, and their `target-id` is a
+keyword of the form `:i42` which would represent an assignment to the
+fixture or head with ID 42. The assignment values they return are
+either a
+https://github.com/brunchboy/afterglow/blob/master/doc/color.adoc#working-with-color[color]
+object, a dynamic parameter which will resolve to a color object, or
+`nil`, meaning no assignment should take place.
+
+When the assignment is resolved, Afterglow uses all available color
+channels in the target head to mix the specified color. It is
+automatically able to use `:color` intensity channels of type `:red`,
+`:green`, `:blue`, and `:white`. It will also use any other `:color`
+channels whose hue has been
+<<fixture_definitions#hue-mixing,specified>> in the fixture
+definition.
 
 [[direction-assigners]]
 Direction Assigners
