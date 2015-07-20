@@ -554,13 +554,15 @@ encounter them!
   shows with non-Clojurists.
 - [ ] See if [thi-ng/color](https://github.com/thi-ng/color) is a
   better fit.
-- [ ] Once I release the first version, answer this StackOverflow
+- [x] Once I release the first version, answer this StackOverflow
   [question](http://stackoverflow.com/questions/9582192/dmx-software-to-control-lights-with-programmable-interface).
-  - [ ] Also submit a link to
+  - [x] Also submit a link to
     [TOPLAP](http://toplap.org/contact-page/).
   - [ ] Also post a followup to this
     [article](http://radar.oreilly.com/2015/05/creative-computing-with-clojure.html)
-    and reach out to some of the artists themselves.
+    and reach out to some of the artists themselves. (Sadly too late
+    to post a comment on the thread, but I should try contacting the
+    artists!)
 
 ### References
 
