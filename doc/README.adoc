@@ -17,10 +17,6 @@ a <<getting-started,guide>> to help you get started on your way to
 creating your own light show. Once you know what you are looking for,
 you can also dive right into it by jumping to the page you want:
 
-[.center.text-center]
-image:assets/Afterglow-logo.png[Afterglow logo,128,127,align="center"]
-
-
 ****
 
 [horizontal]
@@ -65,6 +61,8 @@ the lights in the show. This is advanced, low-level information for
 people who are ready to create their own custom effect algorithms.
 
 ****
+
+image:assets/Afterglow-logo.png[Afterglow logo,128,127,align="center"]
 
 [[introduction]]
 == What is Afterglow?
