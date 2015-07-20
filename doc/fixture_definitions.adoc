@@ -419,8 +419,15 @@ channels.
 As described above, the `:heads` entry in a fixture definition map is
 a list that describes each individually controllable head within that
 fixture. It may be a separate moving head, or it may just be an
-individually-addressable pixel. Each element of the list is a map with
-the following content:
+individually-addressable pixel. If a fixture has only one
+light-emitting head, it does not need a head specification list at
+all; everthing Afterglow needs to know about it will be contained in
+the main fixture definition. But if there is more than one place on
+the fixture that can be controlled independently, you will want to
+organize them into heads, and tell Afterglow their spatial
+relationships as well as which channels control which head, using a
+head specifications list. Each element of the list is a map with the
+following content:
 
 [cols="2l,5a", options="header"]
 |===
