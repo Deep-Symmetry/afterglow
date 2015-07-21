@@ -488,6 +488,13 @@ encounter them!
 - [x] Add tap tempo support for really low-end sync.
 - [x] Add machine-readable metronome sync status flag, so Push can
   color code it; detect stalled clocks even without stop signals.
+- [ ] See how Afterglow works as a hosted Max package, with an Inlet
+  to send Clojure code to be evaluated, and an outlet for the results.
+  This could be a quick way to add beat detection, sound spectrum
+  analysis, etc.
+  https://pcm.peabody.jhu.edu/~gwright/stdmp/docs/writingmaxexternalsinjava.pdf
+  https://docs.cycling74.com/max7/tutorials/jitterchapter51
+  https://docs.cycling74.com/max7/vignettes/packages
   
 ### Ideas
 
