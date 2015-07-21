@@ -596,7 +596,7 @@ encounter them!
 
 ## License
 
-<img align="right" src="doc/assets/DS-logo-bw-200.png">
+<img align="right" alt="Deep Symmetry" src="doc/assets/DS-logo-bw-200-padded-left.png">
 Copyright © 2015 [Deep Symmetry, LLC](http://deepsymmetry.org)
 
 Distributed under the
