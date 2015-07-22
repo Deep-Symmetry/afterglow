@@ -1,5 +1,5 @@
 (defproject afterglow "0.1.1-SNAPSHOT"
-  :description "A functional lighting controller working the Open Lighting Architecture, using bits of Overtone."
+  :description "A live-coding environment for light shows, built on the Open Lighting Architecture, using bits of Overtone."
   :url "https://github.com/brunchboy/afterglow"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
