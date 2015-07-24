@@ -16,9 +16,6 @@
             [taoensso.timbre.appenders.3rd-party.rotor :as rotor])
   (:gen-class))
 
-(defonce ^{:doc "Keeps track of whether init has been called."}
-  initialized (atom false))
-
 (defonce ^{:doc "Holds the running web UI server, if there is one, for later shutdown."}
   web-server (atom nil))
 
@@ -31,41 +28,53 @@
 (defonce ^{:doc "Holds the running REPL server, if there is one, for later shutdown."}
   nrepl-server (atom nil))
 
+(defonce ^{:private true
+           :doc "The default log appenders, which rotate between files
+           in a logs subdirectory."}
+  appenders (atom {:rotor (rotor/rotor-appender {:path "logs/afterglow.log"
+                                                 :max-size 100000
+                                                 :backlog 5})}))
+
+(defn- init-logging-internal
+  "Performs the actual initialization of the logging environment,
+  protected by the delay below to insure it happens only once."
+  []
+  (timbre/set-config!
+   {:level :info  ; #{:trace :debug :info :warn :error :fatal :report}
+    :enabled? true
+
+    ;; Control log filtering by namespaces/patterns. Useful for turning off
+    ;; logging in noisy libraries, etc.:
+    :ns-whitelist  [] #_["my-app.foo-ns"]
+    :ns-blacklist  [] #_["taoensso.*"]
+    
+    :middleware [] ; (fns [data]) -> ?data, applied left->right
+    
+    :timestamp-opts timbre/default-timestamp-opts ; {:pattern _ :locale _ :timezone _}
+    
+    :output-fn timbre/default-output-fn ; (fn [data]) -> string
+    })
+
+  ;; Install the desired log appenders
+  (timbre/merge-config!
+   {:appenders @appenders})
+
+  ;; Disable Selmer's template cache in development mode
+  (if (env :dev) (parser/cache-off!)))
+
+(defonce ^{:private true
+           :doc "Used to ensure log initialization takes place exactly once."}
+  initialized (delay (init-logging-internal)))
+
 (defn init-logging
   "Set up the logging environment for Afterglow. Called by main when invoked
-  as a jar, and by the examples namespace when brought up in a REPL for exploration."
-  []
-  (when-not @initialized
-    ;; Make sure the experimenter does not get blasted with a ton of debug messages
-    (timbre/set-config!
-     {:level :info  ; #{:trace :debug :info :warn :error :fatal :report}
-      :enabled? true
-
-      ;; Control log filtering by namespaces/patterns. Useful for turning off
-      ;; logging in noisy libraries, etc.:
-      :ns-whitelist  [] #_["my-app.foo-ns"]
-      :ns-blacklist  [] #_["taoensso.*"]
-      
-      :middleware [] ; (fns [data]) -> ?data, applied left->right
-      
-      ;; Clj only:
-      :timestamp-opts timbre/default-timestamp-opts ; {:pattern _ :locale _ :timezone _}
-      
-      :output-fn timbre/default-output-fn ; (fn [data]) -> string
-      })
-
-    ;; Provide a nice, organized set of log files to help hunt down problems, especially
-    ;; for exceptions which occur on background threads.
-    (timbre/merge-config!
-     {:appenders {:rotor (rotor/rotor-appender {:path "logs/afterglow.log"
-                                                :max-size 100000
-                                                :backlog 5})}})
-
-
-    ;; Disable Selmer's template cache in development mode
-    (if (env :dev) (parser/cache-off!))
-
-    (reset! initialized true)))
+  as a jar, and by the examples namespace when brought up in a REPL for exploration,
+  and by extensions such as afterglow-max which host Afterglow in Cycling '74's Max."
+  ([] ;; Resolve the delay, causing initialization to happen if it has not yet.
+   @initialized)
+  ([appenders-map] ;; Override the default appenders, then initialize as above.
+   (reset! appenders appenders-map)
+   (init-logging)))
 
 (def cli-options
   "The command-line options supported by Afterglow."
