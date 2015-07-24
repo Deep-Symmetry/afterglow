@@ -47,6 +47,11 @@ download the executable &uuml;berjar from the
 see the warning in [usage](#usage) about this being much less tested
 than in-repl use so far.)
 
+For an example of a project which uses Afterglow as a dependency, as
+described above, see
+[afterglow-max](https://github.com/brunchboy/afterglow-max#afterglow-max),
+which hosts Afterglow inside [Cycling ‘74’s Max](https://cycling74.com/).
+
 ## Status
 
 Although Afterglow is far from finished, its first release reflects
