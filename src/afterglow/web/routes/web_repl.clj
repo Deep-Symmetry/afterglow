@@ -1,4 +1,5 @@
 (ns afterglow.web.routes.web-repl
+  "Provides a web interface for interacting with the Clojure environment."
   (:require [afterglow.web.layout :as layout]
             [clojure.main :as main]
             [clojure.stacktrace :refer [root-cause]]
@@ -6,9 +7,15 @@
             [ring.util.response :refer [response]]
             [taoensso.timbre :refer [info warn spy]]))
 
-(defonce ^:private repl-sessions (ref {}))
+(defonce ^{:private true
+           :doc "Stores thread-local bindings for each web REPL session."}
+  repl-sessions (ref {}))
  
-(defn- current-bindings []
+(defn- current-bindings
+  "Wrap a new layer of bindings around the dynamically bound variables
+  we want to isolate for each web REPL sessions, initializing a few we
+  want to start with clean values."
+  []
   (binding [*ns* *ns*
             *warn-on-reflection* *warn-on-reflection*
             *math-context* *math-context*
@@ -24,19 +31,29 @@
             *e nil]
     (get-thread-bindings)))
  
-(defn- bindings-for [session-key]
+(defn- bindings-for
+  "Look up the dynamic bindings specific to this web REPL session,
+  creating fresh ones if this is the first time it is being used.
+  Start out in the afterglow.examples namespace."
+ [session-key]
   (when-not (@repl-sessions session-key)
+    (require '[afterglow.examples])
     (binding [*ns* *ns*]
       (in-ns 'afterglow.examples)
       (dosync
        (commute repl-sessions assoc session-key (current-bindings)))))
   (@repl-sessions session-key))
  
-(defn- store-bindings-for [session-key]
+(defn- store-bindings-for
+  "Store the dynamic bindings specific to this web REPL session."
+ [session-key]
   (dosync
     (commute repl-sessions assoc session-key (current-bindings))))
  
-(defmacro with-session [session-key & body]
+(defmacro with-session
+  "Wrap the body in a session-specific set of dynamic variable
+  bindings."
+  [session-key & body]
   `(with-bindings (bindings-for ~session-key)
     (let [r# ~@body]
       (store-bindings-for ~session-key)
@@ -66,3 +83,26 @@
   "Route which renders the web console interface."
   []
   (layout/render "console.html" {:csrf-token *anti-forgery-token*}))
+
+(defn- still-needed?
+  "Returns true if the bindings have a key that either refers to a
+  non-expired web session, or is not a String, which means that it
+  does not come from a web session at all, but rather a hosting
+  environment like
+  [afterglow-max](https://github.com/brunchboy/afterglow-max#afterglow-max),
+  which does not expire."
+  [web-sessions [id _]]
+  (or (not (string? id))
+      (some? (web-sessions id))))
+
+(defn clean-expired-bindings
+  "Clean out the dynamic variable bindings stored for web sessions
+  which have expired. Ignores bindings whose keys are not strings,
+  because they do not come from web sessions, but from hosting
+  environments like
+  [afterglow-max](https://github.com/brunchboy/afterglow-max#afterglow-max)
+  which do not expire."
+  {:doc/format :markdown}
+  [web-sessions]
+  (dosync
+   (commute repl-sessions #(->> % (filter (partial still-needed? web-sessions)) (into {})))))
