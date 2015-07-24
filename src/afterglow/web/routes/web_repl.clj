@@ -59,9 +59,27 @@
       (store-bindings-for ~session-key)
       r#)))
  
-(defn do-eval [txt session-key]
+(defn discard-bindings
+  "Clean up the thread-local bindings stored for a non-web hosted repl
+  session, such as those used by
+  [afterglow-max](https://github.com/brunchboy/afterglow-max#afterglow-max),
+  which are not automatically timed out. `session-key` is the unique,
+  non-String key used to identify the REPL session to [[do-eval]]."
+  [session-key]
+  (dosync
+   (commute repl-sessions dissoc session-key)))
+
+(defn do-eval
   "Evaluate an expression sent to the web REPL and return the result
-  or an error description."
+  or an error description. Also supports evaluation of expressions in
+  non-web hosting contexts like 
+  [afterglow-max](https://github.com/brunchboy/afterglow-max#afterglow-max)
+  by passing in a unique non-String value for `session-key`. In such
+  cases the thread local bindings will not be automatically cleaned
+  up, and it is the responsibility of the hosting implementation to
+  call [[discard-bindings]] when they are no longer needed."
+  {:doc/format :markdown}
+  [txt session-key]
   (with-session session-key
     (let [form (binding [*read-eval* false] (read-string txt))]
       (with-open [writer (java.io.StringWriter.)]
@@ -91,6 +109,7 @@
   environment like
   [afterglow-max](https://github.com/brunchboy/afterglow-max#afterglow-max),
   which does not expire."
+  {:doc/format :markdown}
   [web-sessions [id _]]
   (or (not (string? id))
       (some? (web-sessions id))))
