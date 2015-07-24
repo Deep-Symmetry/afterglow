@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/core.cache "0.6.4"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
+                 [org.clojure/data.json "0.2.6"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/tools.nrepl "0.2.10"]
                  [org.clojure/tools.cli "0.3.1"]
@@ -18,7 +19,7 @@
                  [overtone/osc-clj "0.9.0"]
                  [amalloy/ring-buffer "1.1"]
                  [com.climate/claypoole "1.0.0"]
-                 [org.flatland/protobuf "0.8.1"]
+                 [org.clojars.brunchboy/protobuf "0.8.3"]
                  [selmer "0.8.5"]
                  [com.evocomputing/colors "1.0.2"]
                  [environ "1.0.0"]
@@ -33,7 +34,6 @@
                                                                       org.clojure/tools.reader
                                                                       org.clojure/java.classpath]]
                  [metosin/ring-http-response "0.6.3"]
-                 [bouncer "0.3.3"]
                  [prone "0.8.2"]
                  [buddy "0.6.0"]
                  [instaparse "1.4.1"]
@@ -62,7 +62,7 @@
 
              :uberjar {:env {:production true}
                        :aot :all}}
-  :plugins [[lein-protobuf "0.4.3" :exclusions [leinjacker]]
+  :plugins [[org.clojars.brunchboy/lein-protobuf "0.4.3" :exclusions [leinjacker]]
             [codox "0.8.12"]
             [lein-environ "1.0.0"]
             [lein-ancient "0.6.7"]]
