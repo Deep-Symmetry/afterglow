@@ -118,17 +118,20 @@
 (defn start-web-server
   "Start the embedded web UI server on the specified port. If a truthy
   value is supplied for browser, opens a web browser window on the
-  newly launched server."
+  newly launched server. If the server was already running, logs a
+  warning. Either way, makes sure the background thread which cleans
+  up expired sessions is running."
   ([port]
    (start-web-server port false))
   ([port browser]
-   (when @web-server (throw (IllegalStateException. "Web UI server is already running.")))
-   (reset! web-server
-           (http-kit/run-server
-            app
-            {:port port}))
-   ;;Start the expired session cleanup job
-   (reset! session-cleaner (session/start-cleanup-job!))
+   (swap! web-server #(if %
+                       (timbre/warn "Not starting web server because it is already running.")
+                       (http-kit/run-server app {:port port})))
+
+   ;;Start the expired session cleanup job if needed
+   (swap! session-cleaner #(or % (session/start-cleanup-job!)))
+
+   ;; Launch the browser if requested
    (when browser (browse/browse-url (str "http://localhost:" port)))))
 
 (defn start-osc-server
