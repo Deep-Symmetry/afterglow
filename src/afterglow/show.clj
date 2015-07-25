@@ -41,7 +41,7 @@
             [environ.core :refer [env]]
             [overtone.at-at :as at-at]
             [overtone.midi]
-            [taoensso.timbre :refer [error spy]]
+            [taoensso.timbre :as timbre :refer [error spy]]
             [taoensso.timbre.profiling :refer [p profile pspy]])
   (:import (afterglow.effects.dimmer Master)
            (afterglow.effects Assigner Effect)
@@ -490,13 +490,14 @@
   "Helper function which adds an effect with a specified key and priority to the priority
   list structure maintained for the show, replacing any existing effect with the same key.
   Tracks the effect instance id, cue-grid source, and variable binding map as metadata."
-  [fns key f priority id from-cue var-map]
+  [fns key f priority id from-cue x y var-map]
   (let [base (remove-effect-internal fns key)
         index (find-insertion-index (:meta base) priority)]
     {:effects (vec-insert (:effects base) index f)
      :indices (insert-key (:indices base) key index)
      :meta (vec-insert (:meta base) index (merge {:key key :priority priority :id id :started (at-at/now)}
                                                  (when from-cue {:cue from-cue})
+                                                 (when x {:x x}) (when y {:y y})
                                                  (when var-map {:variables var-map})))
      :ending (:ending base)}))
 
@@ -515,16 +516,16 @@
   Returns the unique id assigned to this particular effect activation,
   so that user interfaces can detect whether it is still active.
 
-  The `:from-cue` keyword argument is used to keep track of effects
-  which were launched from the cue grid, to help provide feedback on
-  control surfaces and in the web interface. `:var-map` is used to
-  supply a map of variable bindings associated with the cue, also for
-  use by interfaces which support them."
+  The `:from-cue` keyword argument is used, along with `:x` and `:y`,
+  to keep track of effects which were launched from the cue grid, to
+  help provide feedback on control surfaces and in the web interface.
+  `:var-map` is used to supply a map of variable bindings associated
+  with the cue, also for use by interfaces which support them."
   {:doc/format :markdown}
-  [key f & {:keys [priority from-cue var-map] :or {priority 0}}]
+  [key f & {:keys [priority from-cue x y var-map] :or {priority 0}}]
   {:pre [(some? *show*) (some? key) (instance? Effect f) (integer? priority)]}
   (let [id (swap! (:next-id *show*) inc)]
-    (swap! (:active-effects *show*) #(add-effect-internal % (keyword key) f priority id from-cue var-map))
+    (swap! (:active-effects *show*) #(add-effect-internal % (keyword key) f priority id from-cue x y var-map))
     id))
 
 (defn- vec-remove
@@ -535,7 +536,8 @@
 (defn find-effect
   "Looks up the specified effect keyword in list of active effects
   for [[*show*]]. Returns a map of the effect metadata, with the
-  effect itself under the key `:effect`."
+  effect itself under the key `:effect`. If the effect is in the
+  process of ending, the keyword `:ending` will have a `true` value."
   {:doc/format :markdown}
   [key]
   {:pre [(some? *show*) (some? key)]}
@@ -550,7 +552,9 @@
   end (and waiting until it reports completion); forcibly stopping it
   simply immediately removes it from the show. If an id is specified
   with `:when-id`, the effect will only be ended if the id of the
-  currently-running effect matches the one supplied."
+  currently-running effect matches the one supplied. If it was created
+  from a cue grid, notify any controllers that might be tracking the
+  cue state."
   {:doc/format :markdown}
   [key & {:keys [force when-id]}]
   {:pre [(some? *show*) (some? key)]}
@@ -562,8 +566,14 @@
       ;; See if it should be forcibly or gently ended
       (if (or force ((:ending @(:active-effects *show*)) key)
               (fx/end effect *show* (metro-snapshot (:metronome *show*))))
-        (swap! (:active-effects *show*) #(remove-effect-internal % key))
-        (swap! (:active-effects *show*) #(update-in % [:ending] conj key))))))
+        (do  ; Actually ended
+          (when (every? #(% found) [:cue :x :y])
+            (controllers/activate-cue! (:cue-grid *show*) (:x found) (:y found) nil))
+          (swap! (:active-effects *show*) #(remove-effect-internal % key)))
+        (do  ; Starting to end gracefully
+          (when (every? #(% found) [:cue :x :y])
+            (controllers/report-cue-ending (:cue-grid *show*) (:x found) (:y found) (:id found)))
+          (swap! (:active-effects *show*) #(update-in % [:ending] conj key)))))))
 
 (defn clear-effects!
   "Remove all effects currently active in [[*show*]], leading to a
@@ -613,10 +623,13 @@
       (end-effect! k))
     (let [var-map (introduce-cue-temp-variables cue x y var-overrides)
           id (add-effect! (:key cue) ((:effect cue) var-map)
-                          :priority (:priority cue) :from-cue cue :var-map var-map)]
+                          :priority (:priority cue) :from-cue cue :x x :y y :var-map var-map)]
       (controllers/activate-cue! (:cue-grid *show*) x y id)
       id)))
 
+;; TODO: Now that grid controllers are actively informed of cues ending,
+;;       the code that checks for matching IDs and send end events may
+;;       no longer be needed.
 (defn find-cue-grid-active-effect
   "Find the cue at a particular cue grid location. If it is marked as
   active, check whether there is still an effect running under that

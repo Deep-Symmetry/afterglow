@@ -4,7 +4,8 @@
   (:require [afterglow.effects.params :as params]
             [afterglow.effects]
             [overtone.at-at :as at-at]
-            [overtone.midi :as midi])
+            [overtone.midi :as midi]
+            [taoensso.timbre :as timbre])
   (:import (afterglow.effects Effect)))
 
 (defonce
@@ -67,7 +68,10 @@
    :cues (ref {})
    ;; Also track any non-grid controllers which have bound controls or
    ;; notes to cues and want feedback as they activate and deactivate.
-   :midi-feedback (ref {})})
+   :midi-feedback (ref {})
+   ;; Also allow arbitrary functions to be called when cues change state.
+   :fn-feedback (ref {})
+   })
 
 (defn cue-at
   "Find the cue, if any, at the specified coordinates."
@@ -123,7 +127,8 @@
   {:pre [(integer? x) (integer? y) (not (neg? x)) (not (neg? y)) (some? (:midi-feedback grid))
          (#{:control :note} kind) (integer? on) (integer? off) (<= 0 on 127) (<= 0 off 127)]}
   (dosync
-   (alter (:midi-feedback grid) assoc-in [[x y] [device channel note kind]] [on off])))
+   (alter (:midi-feedback grid) assoc-in [[x y] [device channel note kind]] [on off]))
+  nil)
 
 (defn clear-cue-feedback!
   "Ceases sending the specified non-grid MIDI controller feedback
@@ -139,24 +144,73 @@
      (alter (:midi-feedback grid) assoc [x y] (dissoc entry [device channel note kind]))
      former)))
 
+(defn add-cue-fn!
+  "Arranges for the supplied function to be called when the cue grid
+  location activates or deactivates. It will be called with three
+  arguments: the first, a keyword identifying the state to which the
+  cue has transitioned, either `:started`, `:ending`, or `:ended`, the
+  keyword with which the cue created an effect in the show, and the
+  unique numeric ID assigned to the effect when it was started. The
+  last two argumetnts can be used with [[end-effect!]] and its
+  `:when-id` argument to avoid accidentally ending a different cue."
+  {:doc/format :markdown}
+  [grid x y f]
+  {:pre [(integer? x) (integer? y) (not (neg? x)) (not (neg? y)) (fn? f) (some? (:fn-feedback grid))]}
+  (dosync
+   ;; TODO: Consider putting the actual cue as the value, and logging a warning and ending the feedback
+   ;;       if a different cue gets stored there.
+   (alter (:fn-feedback grid) assoc-in [[x y] f] true))
+  nil)
+
+(defn clear-cue-fn!
+  "Ceases calling the supplied function when the cue grid location
+  activates or deactivates."
+  [grid x y f]
+  {:pre [(integer? x) (integer? y) (not (neg? x)) (not (neg? y)) (fn? f) (some? (:fn-feedback grid))]}
+  (dosync
+   (let [entry (get (ensure (:fn-feedback grid)) [x y])]
+     (alter (:fn-feedback grid) assoc [x y] (dissoc entry f))))
+  nil)
+
 (defn activate-cue!
   "Records the fact that the cue at the specified grid coordinates was
-  activated in a show, and assigned the specified id, which can be
-  used later to determine whether the same cue is still running. If id
-  is nil, the cue is deactivated rather than activated. Sends
-  appropriate MIDI feedback events to any non-grid controllers which
-  have requested them for that cue, so they can update their
-  interfaces appropriately."
+  activated in a show, and assigned the specified `id`, which can be
+  used later to determine whether the same cue is still running. If
+  `id` is `nil`, the cue is deactivated rather than activated.
+
+  Sends appropriate MIDI feedback events to any non-grid controllers
+  which have requested them for that cue, so they can update their
+  interfaces appropriately, then calls any registered functions that
+  want updates about the cue state letting them know it has started,
+  its effect keyword, and the `id` of the effect that was created
+  or ended."
+  {:doc/format :markdown}
   [grid x y id]
   (dosync
    (when-let [cue (cue-at grid x y)]
-     (set-cue! grid x y (if (some? id)
-                          (assoc cue :active-id id)
-                          (dissoc cue :active-id)))
-     (doseq [[[device channel note kind] feedback] (get @(:midi-feedback grid) [x y])]
-       (let [velocity (if (some? id) (first feedback) (second feedback))]
-         (if (= :control kind)
-           (midi/midi-control device note velocity channel)
-           (if (some? id)
-             (midi/midi-note-on device note velocity channel)
-             (midi/midi-note-off device note channel))))))))
+     (let [former-id (:active-id cue)]
+       (set-cue! grid x y (if (some? id)
+                            (assoc cue :active-id id)
+                            (dissoc cue :active-id)))
+       (doseq [[[device channel note kind] feedback] (get @(:midi-feedback grid) [x y])]
+         (let [velocity (if (some? id) (first feedback) (second feedback))]
+           (if (= :control kind)
+             (midi/midi-control device note velocity channel)
+             (if (some? id)
+               (midi/midi-note-on device note velocity channel)
+               (midi/midi-note-off device note channel)))))
+       (doseq [[f _] (get @(:fn-feedback grid) [x y])]
+         (if (some? id)
+           (f :started (:key cue) id)
+           (when (some? former-id)
+             (f :ended (:key cue) former-id))))))))
+
+(defn report-cue-ending
+  "Calls any registered functions that want updates about the cue
+  state to inform them it has begun to gracefully end, its effect
+  keyword, and the `id` of the effect that is ending."
+  {:doc/format :markdown}
+  [grid x y id]
+  (when-let [cue (cue-at grid x y)]
+    (doseq [[f _] (get @(:fn-feedback grid) [x y])]
+      (f :ending (:key cue) id))))
