@@ -20,7 +20,7 @@
                  [amalloy/ring-buffer "1.1"]
                  [com.climate/claypoole "1.0.0"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
-                 [selmer "0.8.6"]
+                 [selmer "0.8.7"]
                  [com.evocomputing/colors "1.0.2"]
                  [environ "1.0.0"]
                  [com.taoensso/timbre "4.0.2"]
