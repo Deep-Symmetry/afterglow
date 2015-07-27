@@ -277,18 +277,42 @@
     (midi/sync-status sync-in-effect)
     {:type :manual}))
 
-;; TODO: Someday generate feedback on assigned MIDI channels, etc...
+(defn add-variable-set-fn!
+  "Arranges for the supplied function to be called when the the show
+  variable with the specified keyword is set. The function will be
+  called with two arguments: the keyword, and the new value which is
+  being set."
+  [key f]
+  {:pre [(some? *show*) (fn? f)]}
+  (swap! (:variables *show*) assoc-in ["set-fn" (keyword key) f] true)
+  nil)
+
+(defn clear-variable-set-fn!
+  "Ceases calling the supplied function when the show variable with
+  the specified keyword is set."
+  [key f]
+  {:pre [(some? *show*) (fn? f)]}
+  (swap! (:variables *show*) (fn [vars]
+                               (let [key (keyword key)
+                                     entry (get-in vars ["set-fn" key])]
+                                 (assoc-in vars ["set-fn" key] (dissoc entry f)))))
+  nil)
+
 (defn set-variable!
   "Set a value for a variable associated with [[*show*]]."
   {:doc/format :markdown}
   [key newval]
   {:pre [(some? *show*) (some? key)]}
-  (swap! (:variables *show*) #(if (some? newval)
-                                (assoc % (keyword key) newval)
-                                (dissoc % (keyword key)))))
+  (let [key (keyword key)]
+    (swap! (:variables *show*) #(if (some? newval)
+                                  (assoc % key newval)
+                                  (dissoc % key)))
+    ;; Call any functions which registered an interest in changes to the variable's value
+    (doseq [[f _] (get-in @(:variables *show*) ["set-fn" key])]
+      (f key newval))))
 
 (defn get-variable
-  "Get the value of a variable associated with [[*show]]."
+  "Get the value of a variable associated with [[*show*]]."
   {:doc/format :markdown}
   [key]
   {:pre [(some? key)]}
