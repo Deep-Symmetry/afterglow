@@ -5,6 +5,7 @@
   {:author "James Elliott"
    :doc/format :markdown}
   (:require [afterglow.controllers :as controllers]
+            [afterglow.effects.cues :as cues]
             [afterglow.effects.dimmer :refer [master-get-level master-set-level]]
             [afterglow.midi :as amidi]
             [afterglow.rhythm :as rhythm]
@@ -702,50 +703,17 @@
            (fit-cue-variable-name (second (:variables cue)) 8)))
     ""))
 
-(defn- find-cue-variable-keyword
-  "Finds the keyword by which a cue variable is accessed; it may be
-  directly bound to a show variable, or may be a temporary variable
-  introduced for the cue, whose name needs to be looked up in the
-  effect's variable map."
-  [controller cue v]
-  (with-show (:show controller)
-    (if (keyword? (:key v))
-      (:key v)
-      (let [effect (show/find-effect (:key cue))]
-        ((keyword (:key v)) (:variables effect))))))
-
-(defn- find-cue-variable-value
-  "Finds the current value of a cue variable, which may be directly
-  bound to a show variable, or may be a temporary variable introduced
-  for the cue, whose name needs to be looked up in the effect's
-  variable map."
-  [controller cue v]
-  (with-show (:show controller)
-    (when-let [k (find-cue-variable-keyword controller cue v)]
-      ;; Effect is still running to look up value
-      (show/get-variable k))))
-
-(defn- set-cue-variable-value
-  "Sets the current value of a cue variable, which may be directly
-  bound to a show variable, or may be a temporary variable introduced
-  for the cue, whose name needs to be looked up in the effect's
-  variable map."
-  [controller cue v value]
-  (when-let [k (find-cue-variable-keyword controller cue v)]
-    (with-show (:show controller)
-      (show/set-variable! k value))))
-
 (defn- fit-cue-variable-value
   "Truncates the current value of a cue variable to fit available
   space."
   [controller cue v len]
-  (let [val (find-cue-variable-value controller cue v)
+  (let [val (cues/get-cue-variable-value controller cue v)
         formatted (if val
                     (case (:type v)
                       :integer (int val)
                       ;; If we don't know what else to do, at least turn ratios to floats
                       (float val))
-                    "<ended>")
+                    "...")
         padding (clojure.string/join (repeat len " "))]
     (clojure.string/join (take len (str formatted padding)))))
 
@@ -1415,7 +1383,7 @@
                                              high (or (:aftertouch-max v) (:max v) 100)
                                              range (- high low)
                                              value (+ low (* (/ (:velocity message) 127) range))]
-                                         (set-cue-variable-value controller cue v value)))))))))))))
+                                         (cues/set-cue-variable-value! controller cue v value)))))))))))))
 
 (defn- control-for-top-encoder-note
   "Return the control number on which rotation of the encoder whose
@@ -1426,7 +1394,7 @@
 (defn- draw-variable-gauge
   "Display the value of a variable being adjusted in the effect list."
   [controller cell width offset cue v]
-  (let [value (find-cue-variable-value controller cue v)
+  (let [value (cues/get-cue-variable-value controller cue v)
         low (min value (:min v))  ; In case user set "out of bounds".
         high (max value (:max v))
         gauge (if (:centered v)
@@ -1438,12 +1406,12 @@
   "Handle a control change from turning an encoder associated with a
   variable being adjusted in the effect list."
   [controller message cue v]
-  (let [value (find-cue-variable-value controller cue v)
+  (let [value (cues/get-cue-variable-value controller cue v)
         low (min value (:min v))  ; In case user set "out of bounds".
         high (max value (:max v))
         resolution (or (:resolution v) (/ (- high low) 200))
         delta (* (sign-velocity (:velocity message)) resolution)]
-    (set-cue-variable-value controller cue v (max low (min high (+ value delta))))))
+    (cues/set-cue-variable-value! controller cue v (max low (min high (+ value delta))))))
 
 (defn- same-effect-active
   "See if the specified effect is still active with the same id."

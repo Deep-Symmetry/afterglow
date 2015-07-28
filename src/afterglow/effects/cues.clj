@@ -250,3 +250,37 @@
                (doseq [[id k] running]
                  (with-show show
                    (show/end-effect! k :when-id id)))))))
+
+
+(defn find-cue-variable-keyword
+  "Finds the keyword by which a cue variable is accessed; it may be
+  directly bound to a show variable, or may be a temporary variable
+  introduced for the cue, whose name needs to be looked up in the
+  effect's variable map."
+  [controller cue v]
+  (with-show (:show controller)
+    (if (keyword? (:key v))
+      (:key v)
+      (let [effect (show/find-effect (:key cue))]
+        ((keyword (:key v)) (:variables effect))))))
+
+(defn get-cue-variable-value
+  "Finds the current value of a cue variable, which may be directly
+  bound to a show variable, or may be a temporary variable introduced
+  for the cue, whose name needs to be looked up in the effect's
+  variable map."
+  [controller cue v]
+  (with-show (:show controller)
+    (when-let [k (find-cue-variable-keyword controller cue v)]
+      ;; Effect is still running to look up value
+      (show/get-variable k))))
+
+(defn set-cue-variable-value!
+  "Sets the current value of a cue variable, which may be directly
+  bound to a show variable, or may be a temporary variable introduced
+  for the cue, whose name needs to be looked up in the effect's
+  variable map."
+  [controller cue v value]
+  (when-let [k (find-cue-variable-keyword controller cue v)]
+    (with-show (:show controller)
+      (show/set-variable! k value))))
