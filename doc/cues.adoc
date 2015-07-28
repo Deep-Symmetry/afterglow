@@ -297,9 +297,16 @@ creating the cue's effect.
 |`:start`
 |`nil`
 
-|Specifies the value to assign when creating the cue-local variable.
- Applies only when the value at `:key` is a string rather than a
- keyword, so a variable is being created just for the cue.
+|When not `nil`, specifies the value to assign to the variable when
+ the cue starts. Most important when the value at `:key` is a string
+ rather than a keyword, so a variable is being created just for the
+ cue, because otherwise the variable will start out empty, and
+ whatever effect parameter is using it will fall back to its default
+ value. But you can also assign starting values to cue variables that
+ are bound to regular show variables, and they will get set when the
+ cue starts. You will probably not want to do that in cases where you
+ are using a shared variable to adjust the appearance of many cues,
+ unless you want the start of this cue to affect them all.
 
 |`:name`
 |variable name
