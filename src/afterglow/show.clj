@@ -141,8 +141,9 @@
     (let [began (at-at/now)
           snapshot (metro-snapshot (:metronome show))]
       (p :clear-buffers (doseq [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
-      (p :clean-finished-effects (let [indexed (cp/pmap @(:pool show) vector (iterate inc 0)
-                                                        (:effects @(:active-effects show)))]
+      (p :clean-finished-effects (let [indexed (cp/pmap @(:pool show)
+                                                        vector (range) (:effects @(:active-effects show)))]
+                                   ;; TODO: If I really want this parallelized, the doseq matters more, no?
                                    (doseq [[index effect] indexed]
                                      (when-not (fx/still-active? effect show snapshot)
                                        (end-effect! (:key (get (:meta @(:active-effects show)) index)) :force true)))))
@@ -606,26 +607,31 @@
   {:doc/format :markdown}
   []
   {:pre [(some? *show*)]}
-  (reset! (:active-effects *show*) {:effects [],
-                                    :indices {},
-                                    :meta [],
-                                    :priorities []
-                                    :ending #{}}))
+  (doseq [k (map :key (:meta @(:active-effects *show*)))]
+    (end-effect! k :force true)))
 
 ;; TODO: Consider someday cleaning up these variables when the cue ends.
-(defn- introduce-cue-temp-variables
+(defn- introduce-cue-variables
   "Creates any temporary variable parameters specified by the cue
   variable list, and returns the var-map that the effect creation
-  function will need to be able to find them in the show."
+  function will need to be able to find them in the show.
+
+  Also initializes any variables that have `:start` values configured
+  for them in the cue, whether or not they are temporary. These
+  initial values can be overridden by the values passed in
+  `var-overrides` as described in <<add-effect-from-cue-grid!>>."
   [cue x y var-overrides]
   (reduce (fn [result v]
-            (if (string? (:key v))
-              (let [temp-var (keyword (str "cue-temp-" x "-" y "-" (:key v)))
-                    initial-value (or ((keyword (:key v)) var-overrides) (:start v))]
-                (when initial-value
-                  (set-variable! temp-var initial-value))
-                (assoc result (keyword (:key v)) temp-var))
-              result)) {} (:variables cue)))
+            (let [initial-value (or ((keyword (:key v)) var-overrides) (:start v))]
+              (if (string? (:key v))
+                ;; Needs to be introduced as a temp variable
+                (let [temp-var (keyword (str "cue-temp-" x "-" y "-" (:key v)))]
+                  (when initial-value (set-variable! temp-var initial-value))
+                  (assoc result (keyword (:key v)) temp-var))
+                ;; Not a temp variable, just set starting value if needed
+                (do
+                  (when initial-value (set-variable! (:key v) initial-value))
+                  result)))) {} (:variables cue)))
 
 (defn add-effect-from-cue-grid!
   "Finds the cue, if any, at the specified grid coordinates, and
