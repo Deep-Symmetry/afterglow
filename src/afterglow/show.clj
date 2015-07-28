@@ -642,16 +642,19 @@
 
   A map of variable keywords to values can be supplied with
   `:var-overrides`, and the corresponding value will be used rather
-  than the initial value specified in the cue for that variable when
-  it is introduced as a temporary cue variable. This is used by
-  compound cues to launch their nested cues with customized values."
+  than the `:start` value specified in the cue for that variable when
+  it is introduced as a cue variable. This is used by compound cues to
+  launch their nested cues with customized values, and by
+  [afterglow-max](https://github.com/brunchboy/afterglow-max) to start
+  cues with alternate values if its patchers have been configured to
+  do so."
   {:doc/format :markdown}
   [x y & {:keys [var-overrides]}]
   {:pre [(some? *show*)]}
   (when-let [cue (controllers/cue-at (:cue-grid *show*) x y)]
     (doseq [k (:end-keys cue)]
       (end-effect! k))
-    (let [var-map (introduce-cue-temp-variables cue x y var-overrides)
+    (let [var-map (introduce-cue-variables cue x y var-overrides)
           id (add-effect! (:key cue) ((:effect cue) var-map)
                           :priority (:priority cue) :from-cue cue :x x :y y :var-map var-map)]
       (controllers/activate-cue! (:cue-grid *show*) x y id)
