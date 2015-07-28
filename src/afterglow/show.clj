@@ -571,6 +571,13 @@
            :effect (get (:effects @(:active-effects *show*)) index)
            :ending ((:ending @(:active-effects *show*)) (keyword key)))))
 
+(defn- clean-cue-temporary-variables
+  "Removes any temporary variables which were introduced for an effect
+  which has ended."
+  [var-map]
+  (doseq [k (vals var-map)]
+    (set-variable! k nil)))
+
 (defn end-effect!
   "Shut down an effect that is running in [[*show*]]. Unless a `true`
   value is passed for `:force`, this is done by asking the effect to
@@ -594,7 +601,8 @@
         (do  ; Actually ended
           (when (every? #(% found) [:cue :x :y])
             (controllers/activate-cue! (:cue-grid *show*) (:x found) (:y found) nil))
-          (swap! (:active-effects *show*) #(remove-effect-internal % key)))
+          (swap! (:active-effects *show*) #(remove-effect-internal % key))
+          (clean-cue-temporary-variables (:variables found)))
         (do  ; Starting to end gracefully
           (when (every? #(% found) [:cue :x :y])
             (controllers/report-cue-ending (:cue-grid *show*) (:x found) (:y found) (:id found)))
@@ -610,7 +618,6 @@
   (doseq [k (map :key (:meta @(:active-effects *show*)))]
     (end-effect! k :force true)))
 
-;; TODO: Consider someday cleaning up these variables when the cue ends.
 (defn- introduce-cue-variables
   "Creates any temporary variable parameters specified by the cue
   variable list, and returns the var-map that the effect creation
