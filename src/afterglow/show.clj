@@ -295,8 +295,10 @@
   {:pre [(some? *show*) (fn? f)]}
   (swap! (:variables *show*) (fn [vars]
                                (let [key (keyword key)
-                                     entry (get-in vars ["set-fn" key])]
-                                 (assoc-in vars ["set-fn" key] (dissoc entry f)))))
+                                     entry (dissoc (get-in vars ["set-fn" key]) f)]
+                                 (if (empty? entry)
+                                   (assoc vars "set-fn" (dissoc (get vars "set-fn") key))
+                                   (assoc-in vars ["set-fn" key] entry)))))
   nil)
 
 (defn set-variable!
