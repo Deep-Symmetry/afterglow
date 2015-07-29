@@ -9,7 +9,7 @@
                  [org.clojure/data.json "0.2.6"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/tools.nrepl "0.2.10"]
-                 [org.clojure/tools.cli "0.3.1"]
+                 [org.clojure/tools.cli "0.3.2"]
                  [cider/cider-nrepl "0.9.1"]
                  [java3d/vecmath "1.3.1"]
                  [java3d/j3d-core "1.3.1"]
