@@ -4,8 +4,8 @@
             [afterglow.web.routes.web-repl :as web-repl]
             [afterglow.web.routes.visualizer :as visualizer]
             [afterglow.show :as show]
+            [afterglow.version :as version]
             [compojure.core :refer [defroutes GET POST]]
-            [environ.core :refer [env]]
             [ring.util.http-response :refer [ok]]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
             [clojure.java.io :as io]))
@@ -17,7 +17,7 @@
     (layout/render
      "home.html" {:shows shows
                   :docs (-> "docs/docs.md" io/resource slurp)
-                  :version (env :afterglow-version)
+                  :version (str (version/title) " " (version/tag))
                   :csrf-token *anti-forgery-token*})))
 
 (defn about-page []

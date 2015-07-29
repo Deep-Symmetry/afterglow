@@ -45,7 +45,11 @@
 
   :target-path "target/%s"
   :uberjar-name "afterglow.jar"
-;;  :jvm-opts ["-server"]
+  :manifest {"Name" ~#(str (clojure.string/replace (:group %) "." "/")
+                            "/" (:name %) "/")
+             "Package" ~#(str (:group %) "." (:name %))
+             "Specification-Title" ~#(:name %)
+             "Specification-Version" ~#(:version %)}
 
   ;; enable to start the nREPL server when the application launches
   ;; :env {:repl-port 16002}
@@ -55,7 +59,7 @@
                    :source-paths ["dev_src"]
                    :resource-paths ["dev_resources"]
                    :repl-options {:init-ns afterglow.examples
-                                  :welcome (println "Afterglow loaded.")}
+                                  :welcome (println "afterglow loaded.")}
                    :env {:dev true}}
 
              :gen {:prep-tasks ^:replace ["protobuf" "javac" "compile"]}

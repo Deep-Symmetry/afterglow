@@ -12,8 +12,8 @@
             [afterglow.show :as show]
             [afterglow.show-context :refer [with-show]]
             [afterglow.util :as util]
+            [afterglow.version :as version]
             [clojure.math.numeric-tower :as math]
-            [environ.core :refer [env]]
             [com.evocomputing.colors :as colors]
             [overtone.midi :as midi]
             [overtone.at-at :as at-at]
@@ -963,9 +963,9 @@
 (defn- welcome-animation
   "Provide a fun animation to make it clear the Push is online."
   [controller]
-  (set-display-line controller 0 (concat (repeat 24 \space) (seq "Welcome toAfterglow")))
+  (set-display-line controller 0 (concat (repeat 24 \space) (seq (str "Welcome to" (version/title)))))
   (set-display-line controller 2 (concat (repeat 27 \space)
-                              (seq (str "version" (env  :afterglow-version)))))
+                              (seq (str "version" (version/tag)))))
   (let [counter (atom 0)
         task (atom nil)]
     (reset! task (at-at/every 30 #(welcome-frame controller counter task)

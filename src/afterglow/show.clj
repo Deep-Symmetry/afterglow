@@ -36,9 +36,9 @@
             [afterglow.rhythm :refer :all]
             [afterglow.show-context :refer [*show* with-show]]
             [afterglow.transform :as transform]
+            [afterglow.version :as version]
             [amalloy.ring-buffer :refer [ring-buffer]]
             [com.climate.claypoole :as cp]
-            [environ.core :refer [env]]
             [overtone.at-at :as at-at]
             [overtone.midi]
             [taoensso.timbre :as timbre :refer [error spy]]
@@ -232,7 +232,7 @@
    :grand-master (master nil)  ; Only the grand master can have no show, or parent.
    :fixtures (atom {})
    :movement (atom {})  ; Used to smooth head motion between frames
-   :statistics (atom { :afterglow-version (env :afterglow-version)})
+   :statistics (atom { :afterglow-version (version/tag) :afterglow-title (version/title)})
    :dimensions (atom {})
    :grid-controllers (atom #{})
    :task (atom nil)
