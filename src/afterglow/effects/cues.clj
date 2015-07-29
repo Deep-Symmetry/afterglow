@@ -4,7 +4,7 @@
             [afterglow.effects.params :as params]
             [afterglow.show :as show]
             [afterglow.show-context :refer [with-show]]
-            [taoensso.timbre :refer [info]])
+            [taoensso.timbre :as timbre :refer [info]])
   (:import (afterglow.effects Effect)))
 
 (defn cue
@@ -256,31 +256,66 @@
   "Finds the keyword by which a cue variable is accessed; it may be
   directly bound to a show variable, or may be a temporary variable
   introduced for the cue, whose name needs to be looked up in the
-  effect's variable map."
-  [controller cue v]
-  (with-show (:show controller)
-    (if (keyword? (:key v))
-      (:key v)
-      (let [effect (show/find-effect (:key cue))]
-        ((keyword (:key v)) (:variables effect))))))
+  running effect's variable map. If a temporary variable, the id of
+  the effect which is expected to be running for the cue must be
+  passed with `:when-id`, and this id must match the id of the actual
+  effect currently running under that key, or `nil` will be returned.
 
-(defn get-cue-variable-value
-  "Finds the current value of a cue variable, which may be directly
-  bound to a show variable, or may be a temporary variable introduced
-  for the cue, whose name needs to be looked up in the effect's
-  variable map."
-  [controller cue v]
-  (with-show (:show controller)
-    (when-let [k (find-cue-variable-keyword controller cue v)]
-      ;; Effect is still running to look up value
-      (show/get-variable k))))
-
-(defn set-cue-variable-value!
-  "Sets the current value of a cue variable, which may be directly
-  bound to a show variable, or may be a temporary variable introduced
-  for the cue, whose name needs to be looked up in the effect's
-  variable map."
-  [controller cue v value]
-  (when-let [k (find-cue-variable-keyword controller cue v)]
+  If a controller is passed with the `:controller` optional keyword
+  argument, the effect is looked up in the show associated with that
+  controller. Otherwise, it is looked up in the default show."
+  {:doc/format :markdown}
+  [cue var-spec & {:keys [controller when-id]}]
+  (if controller
     (with-show (:show controller)
-      (show/set-variable! k value))))
+      (find-cue-variable-keyword cue var-spec :when-id when-id))
+    (let [effect (show/find-effect (:key cue))]
+      (if (keyword? (:key var-spec))
+        (when (or (nil? when-id) (= when-id (:id effect)))
+          (:key var-spec))
+        (when (and (some? effect) (= when-id (:id effect)))
+          ((keyword (:key var-spec)) (:variables effect)))))))
+
+(defn get-cue-variable
+  "Finds the current value of the supplied cue variable, which may be
+  directly bound to a show variable, or may be a temporary variable
+  introduced for the cue, whose name needs to be looked up in the
+  running effect's variable map. If a temporary variable, the id of
+  the effect which is expected to be running for the cue must be
+  passed with `:when-id`, and this id must match the id of the actual
+  effect currently running under that key, or `nil` will be returned.
+
+  Permanent variables associated with the cue can always be retrieved by
+  omitting `:with-id`. If you want to only get the variable when a
+  particular effect is running, however, you can do so by passing in
+  that effect's id with `:with-id`, and the same restriction will then
+  be applied as is for temporary variables.
+
+  If a controller is passed with the `:controller` optional keyword
+  argument, the effect is looked up in the show associated with that
+  controller. Otherwise, it is looked up in the default show."
+  [cue var-spec & {:keys [controller when-id]}]
+  (when-let [k (find-cue-variable-keyword cue var-spec :controller controller :when-id when-id)]
+    (show/get-variable k)))
+
+(defn set-cue-variable!
+  "Sets the current value of the supplied cue variable, which may be
+  directly bound to a show variable, or may be a temporary variable
+  introduced for the cue, whose name needs to be looked up in the
+  running effect's variable map. If a temporary variable, the id of
+  the effect which is expected to be running for the cue must be
+  passed with `:when-id`, and this id must match the id of the actual
+  effect currently running under that key, or nothing will be set.
+
+  Permanent variables associated with the cue can always be set by
+  omitting `:with-id`. If you want to only affect the variable when a
+  particular effect is running, however, you can do so by passing in
+  that effect's id with `:with-id`, and the same restriction will then
+  be applied as is for temporary variables.
+
+  If a controller is passed with the `:controller` optional keyword
+  argument, the effect is looked up in the show associated with that
+  controller. Otherwise, it is looked up in the default show."
+  [cue var-spec value & {:keys [controller when-id]}]
+  (when-let [k (find-cue-variable-keyword cue var-spec :controller controller :when-id when-id)]
+    (show/set-variable! k value)))

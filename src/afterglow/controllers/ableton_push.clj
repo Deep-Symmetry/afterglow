@@ -706,8 +706,8 @@
 (defn- fit-cue-variable-value
   "Truncates the current value of a cue variable to fit available
   space."
-  [controller cue v len]
-  (let [val (cues/get-cue-variable-value controller cue v)
+  [controller cue v len effect-id]
+  (let [val (cues/get-cue-variable cue v :controller controller :when-id effect-id)
         formatted (if val
                     (case (:type v)
                       :integer (int val)
@@ -720,12 +720,12 @@
 (defn- cue-variable-values
   "Formats the current values of the adjustable variables to display
   under an active cue."
-  [controller cue]
+  [controller cue effect-id]
   (if (seq (:variables cue))
     (if (= (count (:variables cue)) 1)
-      (fit-cue-variable-value controller cue (first (:variables cue)) 17)
-      (str (fit-cue-variable-value controller cue (first (:variables cue)) 8) " "
-           (fit-cue-variable-value controller cue (second (:variables cue)) 8)))
+      (fit-cue-variable-value controller cue (first (:variables cue)) 17 effect-id)
+      (str (fit-cue-variable-value controller cue (first (:variables cue)) 8 effect-id) " "
+           (fit-cue-variable-value controller cue (second (:variables cue)) 8 effect-id)))
     ""))
 
 (defn- room-for-effects
@@ -753,7 +753,7 @@
                   ending ((:key info) (:ending fx-info))
                   cue (:cue info)]
               (write-display-cell controller 0 x (cue-variable-names cue))
-              (write-display-cell controller 1 x (cue-variable-values controller cue))
+              (write-display-cell controller 1 x (cue-variable-values controller cue (:id info)))
               (write-display-cell controller 2 x (or (:name cue) (:name (first fx))))
               (write-display-cell controller 3 x (if ending " Ending" "  End"))
               (aset (:next-top-pads controller) (* 2 x) (top-pad-state :dim :red))
@@ -1383,7 +1383,8 @@
                                              high (or (:aftertouch-max v) (:max v) 100)
                                              range (- high low)
                                              value (+ low (* (/ (:velocity message) 127) range))]
-                                         (cues/set-cue-variable-value! controller cue v value)))))))))))))
+                                         (cues/set-cue-variable! cue v value
+                                                                 :controller controller :when-id id)))))))))))))
 
 (defn- control-for-top-encoder-note
   "Return the control number on which rotation of the encoder whose
@@ -1393,8 +1394,8 @@
 
 (defn- draw-variable-gauge
   "Display the value of a variable being adjusted in the effect list."
-  [controller cell width offset cue v]
-  (let [value (cues/get-cue-variable-value controller cue v)
+  [controller cell width offset cue v effect-id]
+  (let [value (cues/get-cue-variable cue v :controller controller :when-id effect-id)
         low (min value (:min v))  ; In case user set "out of bounds".
         high (max value (:max v))
         gauge (if (:centered v)
@@ -1405,13 +1406,13 @@
 (defn- adjust-variable-value
   "Handle a control change from turning an encoder associated with a
   variable being adjusted in the effect list."
-  [controller message cue v]
-  (let [value (cues/get-cue-variable-value controller cue v)
+  [controller message cue v effect-id]
+  (let [value (cues/get-cue-variable cue v :controller controller :when-id effect-id)
         low (min value (:min v))  ; In case user set "out of bounds".
         high (max value (:max v))
         resolution (or (:resolution v) (/ (- high low) 200))
         delta (* (sign-velocity (:velocity message)) resolution)]
-    (cues/set-cue-variable-value! controller cue v (max low (min high (+ value delta))))))
+    (cues/set-cue-variable! cue v (max low (min high (+ value delta))) :controller controller :when-id effect-id)))
 
 (defn- same-effect-active
   "See if the specified effect is still active with the same id."
@@ -1449,10 +1450,10 @@
                              (captured-notes [this] #{note paired-note})
                              (adjust-interface [this controller]
                                (when (same-effect-active controller cue (:id info))
-                                 (draw-variable-gauge controller x 17 0 cue (first (:variables cue)))
+                                 (draw-variable-gauge controller x 17 0 cue (first (:variables cue)) (:id info))
                                  true))
                              (handle-control-change [this controller message]
-                               (adjust-variable-value controller message cue (first (:variables cue))))
+                               (adjust-variable-value controller message cue (first (:variables cue)) (:id info)))
                              (handle-note-on [this controller message]
                                true)
                              (handle-note-off [this controller message]
@@ -1467,10 +1468,10 @@
                            (adjust-interface [this controller]
                              (when (same-effect-active controller cue (:id info))
                                (draw-variable-gauge controller x 8 (* 9 var-index)
-                                                    cue (get (:variables cue) var-index))
+                                                    cue (get (:variables cue) var-index) (:id info))
                                true))
                            (handle-control-change [this controller message]
-                             (adjust-variable-value controller message cue (get (:variables cue) var-index)))
+                             (adjust-variable-value controller message cue (get (:variables cue) var-index)) (:id info))
                            (handle-note-on [this controller message]
                              false)
                            (handle-note-off [this controller message]
