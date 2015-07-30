@@ -680,7 +680,7 @@
     (ct/set-cue! (:cue-grid *show*) 0 8
                  (cues/cue :torrent-dir (fn [var-map]
                                           (move/direction-effect
-                                           "Direction"
+                                           "Pan/Tilt"
                                            (params/build-pan-tilt-param :pan (:pan var-map 0.0)
                                                                          :tilt (:tilt var-map 0.0)
                                                                          :degrees true)
@@ -689,6 +689,20 @@
                                         :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}
                                        {:key "tilt" :name "Tilt"
                                         :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}]))
+    (ct/set-cue! (:cue-grid *show*) 1 8
+                 (cues/cue :torrent-dir (fn [var-map]
+                                          (move/aim-effect
+                                           "Aim"
+                                           (params/build-aim-param :x (:x var-map 0.0)
+                                                                   :y (:y var-map 0.0)
+                                                                   :z (:z var-map 1.0))
+                                           (show/all-fixtures)))
+                           :variables [{:key "x" :name "X"
+                                        :min -20.0 :max 20.0 :start 0.0 :centered true :resolution 0.05}
+                                       {:key "z" :name "Z"
+                                        :min -20.0 :max 20.0 :start 0.0 :centered true :resolution 0.05}
+                                       {:key "y" :name "Y"
+                                        :min 0.0 :max 20.0 :start 0.0 :centered false :resolution 0.05}]))
     ;; Some compound cues
     (ct/set-cue! (:cue-grid *show*) 8 0
                  (cues/cue :star-swirl (fn [_] (cues/compound-cues-effect
