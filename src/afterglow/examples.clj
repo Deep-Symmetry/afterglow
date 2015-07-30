@@ -22,21 +22,30 @@
             [overtone.osc :as osc]
             [taoensso.timbre :as timbre]))
 
+(defonce ^{:doc "Holds the sample show if it has been created,
+  so it can be unregistered if it is beign re-created."}
+  sample-show
+  (atom nil))
+
 (defn use-sample-show
   "Set up a sample show for experimenting with Afterglow. By default
-  it will create the show to use universe 1, but if for some reason
-  your OLA environment makes using a different universe ID more
-  convenient, you can override that by supplying a different ID
-  after :universe"
+  it will create the show to use universe 1, but if you want to use a
+  different universe (for example, a dummy universe on ID 0, because
+  your DMX interface isn't handy right now), you can override that by
+  supplying a different ID after :universe."
   [& {:keys [universe] :or {universe 1}}]
   ;; Since this class is an entry point for interactive REPL usage,
   ;; make sure a sane logging environment is established.
   (core/init-logging)
 
-  ;; Create a show on the chosen OLA universe, for demonstration purposes.
-  ;; Make it the default show so we don't need to wrap everything below
-  ;; in a (with-show sample-show ...) binding.
-  (set-default-show! (show/show :universes [universe]))
+  ;; Create, or re-create the show, on the choen OLA universe, for demonstration
+  ;; purposes. Make it the default show so we don't need to wrap everything below
+  ;; in a (with-show sample-show ...) binding
+  (set-default-show! (swap! sample-show (fn [s]
+                                          (when s
+                                            (show/unregister-show s)
+                                            (with-show s (show/stop!)))
+                                          (show/show :universes [universe]))))
 
   ;; TODO: Should this be automatic? If so, creating the show should assign the name too.
   ;; Register it with the web interface.
