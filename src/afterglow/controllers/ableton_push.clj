@@ -1471,7 +1471,7 @@
                                                     cue (get (:variables cue) var-index) (:id info))
                                true))
                            (handle-control-change [this controller message]
-                             (adjust-variable-value controller message cue (get (:variables cue) var-index)) (:id info))
+                             (adjust-variable-value controller message cue (get (:variables cue) var-index) (:id info)))
                            (handle-note-on [this controller message]
                              false)
                            (handle-note-off [this controller message]
