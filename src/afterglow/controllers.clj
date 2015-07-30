@@ -200,10 +200,12 @@
                (midi/midi-note-on device note velocity channel)
                (midi/midi-note-off device note channel)))))
        (doseq [[f _] (get @(:fn-feedback grid) [x y])]
-         (if (some? id)
-           (f :started (:key cue) id)
-           (when (some? former-id)
-             (f :ended (:key cue) former-id))))))))
+         (when (some? former-id)
+             (f :ended (:key cue) former-id))
+         (when (some? id)
+           ;; Delay :started notifications so watchers can recognize the ID that
+           ;; show/add-effect-from-cue-grid! is about to return to them.
+           (at-at/after 1 #(f :started (:key cue) id) pool)))))))
 
 (defn report-cue-ending
   "Calls any registered functions that want updates about the cue
