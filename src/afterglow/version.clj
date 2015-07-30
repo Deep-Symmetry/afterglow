@@ -10,7 +10,8 @@
   mode, or from the JAR manifest if running from a production build."
   []
   (or (env :afterglow-version)
-      (.getSpecificationVersion (.getPackage (class context/set-default-show!)))
+      (when-let [pkg (.getPackage (class context/set-default-show!))]
+        (.getSpecificationVersion pkg))
       "DEV")) ; Must be running in dev mode embedded in another project
 
 (defn title
@@ -19,5 +20,6 @@
   mode, or from the JAR manifest if running from a production build."
   []
   (or (env :afterglow-title)
-      (.getSpecificationTitle (.getPackage (class context/set-default-show!)))
+      (when-let [pkg (.getPackage (class context/set-default-show!))]
+        (.getSpecificationTitle pkg))
       "afterglow"))
