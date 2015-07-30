@@ -963,7 +963,7 @@
 (defn- welcome-animation
   "Provide a fun animation to make it clear the Push is online."
   [controller]
-  (set-display-line controller 0 (concat (repeat 24 \space) (seq (str "Welcome to" (version/title)))))
+  (set-display-line controller 1 (concat (repeat 24 \space) (seq (str "Welcome to" (version/title)))))
   (set-display-line controller 2 (concat (repeat 27 \space)
                               (seq (str "version" (version/tag)))))
   (let [counter (atom 0)
