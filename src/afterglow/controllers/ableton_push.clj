@@ -1395,7 +1395,7 @@
 (defn- draw-variable-gauge
   "Display the value of a variable being adjusted in the effect list."
   [controller cell width offset cue v effect-id]
-  (let [value (cues/get-cue-variable cue v :controller controller :when-id effect-id)
+  (let [value (or (cues/get-cue-variable cue v :controller controller :when-id effect-id) 0)
         low (min value (:min v))  ; In case user set "out of bounds".
         high (max value (:max v))
         gauge (if (:centered v)
@@ -1407,7 +1407,7 @@
   "Handle a control change from turning an encoder associated with a
   variable being adjusted in the effect list."
   [controller message cue v effect-id]
-  (let [value (cues/get-cue-variable cue v :controller controller :when-id effect-id)
+  (let [value (or (cues/get-cue-variable cue v :controller controller :when-id effect-id) 0)
         low (min value (:min v))  ; In case user set "out of bounds".
         high (max value (:max v))
         resolution (or (:resolution v) (/ (- high low) 200))
