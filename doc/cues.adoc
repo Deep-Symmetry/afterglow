@@ -82,10 +82,10 @@ the cue). This is often done for intense effects like strobes.
 
 Cues can also offer pressure sensitivity on controllers which support
 this (like the Ableton Push). For such cues, one or more variable used
-by the cue can be updated by the aftertouch pressure exerted by the
-operator as they hold down the pad. This can make for very expressive
-effects, as exemplified by the Sparkle cue set up early in the
-examples namespace's
+by the cue can be updated by the strike and aftertouch pressure
+exerted by the operator as they hold down the pad. This can make for
+very expressive effects, as exemplified by the Sparkle cue set up
+early in the examples namespace's
 http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[make-cues]
 function, and its
 http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-strobe-cue[strobe]
@@ -364,27 +364,27 @@ creating the cue's effect.
  The recommended default resolution is no larger then 1/256 of the
  range from `:min` to `:max`.
 
-|`:aftertouch`
+|`:velocity`
 |`false`
 
 |If present, with a true value, requests that the variable value be
- adjusted by aftertouch pressure while the operator is holding down
- the button or pad which launched the cue, on controllers which have
- pressure sensitivity.
+ adjusted by strike and aftertouch pressure while the operator is
+ holding down the button or pad which launched the cue, on controllers
+ which have pressure sensitivity.
 
-|`:aftertouch-min`
+|`:velocity-min`
 |`:min`
 
-|If present (and `:aftertouch` is active), specifies the smallest
- value the variable should be set to by MIDI aftertouch pressure. If
- not specified, the standard `:min` value is used.
+|If present (and `:velocity` is active), specifies the smallest value
+ the variable should be set to by MIDI strike velocity and aftertouch
+ pressure. If not specified, the standard `:min` value is used.
 
-|`:aftertouch-max`
+|`:velocity-max`
 |`:max`
 
-|If present (and `:aftertouch` is active), specifies the largest
- value the variable should be set to by MIDI aftertouch pressure. If
- not specified, the standard `:max` value is used.
+|If present (and `:velocity` is active), specifies the largest value
+ the variable should be set to by MIDI strike velocity and aftertouch
+ pressure. If not specified, the standard `:max` value is used.
 
 |===
 
@@ -537,29 +537,31 @@ keys (like the web interface and Ableton Push). This will cause the
 cue to run until the corresponding pad or grid cell is pressed again,
 and will not whiten the cue color while it is held down.
 
-|`:aftertouch`
+|`:velocity`
 |`false`
 
 |If present, with a true value, requests that the function value be
- adjusted by aftertouch pressure while the operator is holding down
- the button or pad which launched the cue, on controllers which have
- pressure sensitivity.
+ adjusted by strike velocity and aftertouch pressure while the
+ operator is holding down the button or pad which launched the cue, on
+ controllers which have pressure sensitivity.
 
-|`:aftertouch-min`
+|`:velocity-min`
 |`0`
 
-|If present (and `:aftertouch` is active), specifies the smallest
- value the function should be set to by MIDI aftertouch pressure. If
- not specified, `0` is used, which corresponds to the lowest legal
- DMX value the fixture definition identifies for the function.
+|If present (and `:velocity` is active), specifies the smallest value
+ the function should be set to by MIDI strike velocity and aftertouch
+ pressure. If not specified, `0` is used, which corresponds to the
+ lowest legal DMX value the fixture definition identifies for the
+ function.
 
-|`:aftertouch-max`
+|`:velocity-max`
 |`100`
 
-|If present (and `:aftertouch` is active), specifies the largest value
- the variable should be set to by MIDI aftertouch pressure. If not
- specified, `100` is used, which corresponds to the highest legal DMX
- value the fixture definition identifies for the function.
+|If present (and `:velocity` is active), specifies the largest value
+ the variable should be set to by MIDI strike velocity and aftertouch
+ pressure. If not specified, `100` is used, which corresponds to the
+ highest legal DMX value the fixture definition identifies for the
+ function.
 
 |===
 

@@ -17,7 +17,7 @@
             [com.evocomputing.colors :as colors]
             [overtone.midi :as midi]
             [overtone.at-at :as at-at]
-            [taoensso.timbre :refer [info warn]])
+            [taoensso.timbre :as timbre :refer [info warn]])
   (:import [java.util Arrays]))
 
 (defonce
@@ -1345,14 +1345,15 @@
 
 (defn- cue-grid-pressed
   "One of the pads in the 8x8 pressure-sensitve cue grid was pressed."
-  [controller note]
+  [controller note velocity]
   (let [[cue-x cue-y pad-x pad-y] (note-to-cue-coordinates controller note)
         [cue active] (show/find-cue-grid-active-effect (:show controller) cue-x cue-y)]
           (when cue
             (with-show (:show controller)
               (if active
                 (show/end-effect! (:key cue))
-                (let [id (show/add-effect-from-cue-grid! cue-x cue-y)
+                (let [vars (controllers/starting-vars-for-velocity cue velocity)
+                      id (show/add-effect-from-cue-grid! cue-x cue-y :var-overrides vars)
                       holding (and (:held cue) (not @(:shift-mode controller)))]
                   (add-overlay controller
                                (reify IOverlay
@@ -1378,13 +1379,10 @@
                                    :done)
                                  (handle-aftertouch [this controller message]
                                    (doseq [v (:variables cue)]
-                                     (when (:aftertouch v)
-                                       (let [low (or (:aftertouch-min v) (:min v) 0)
-                                             high (or (:aftertouch-max v) (:max v) 100)
-                                             range (- high low)
-                                             value (+ low (* (/ (:velocity message) 127) range))]
-                                         (cues/set-cue-variable! cue v value
-                                                                 :controller controller :when-id id)))))))))))))
+                                     (when (:velocity v)
+                                       (cues/set-cue-variable! cue v
+                                                               (controllers/value-for-velocity v (:velocity message))
+                                                               :controller controller :when-id id))))))))))))
 
 (defn- control-for-top-encoder-note
   "Return the control number on which rotation of the encoder whose
@@ -1487,7 +1485,7 @@
           (display-encoder-touched controller note)
 
           (<= 36 note 99)
-          (cue-grid-pressed controller note)
+          (cue-grid-pressed controller note (:velocity message))
 
           :else
           ;; Some other UI element was touched

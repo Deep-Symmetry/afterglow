@@ -216,3 +216,27 @@
   (when-let [cue (cue-at grid x y)]
     (doseq [[f _] (get @(:fn-feedback grid) [x y])]
       (f :ending (:key cue) id))))
+
+(defn value-for-velocity
+  "Given a cue variable which has been configured to respond to MIDI
+  velocity, and the velocity of a MIDI message affecting
+  it (presumably either Note On or Aftertouch / Poly Pressure),
+  calculate the value which should be assigned to that variable."
+  [v velocity]
+  (let [low (or (:velocity-min v) (:min v) 0)
+        high (or (:velocity-max v) (:max v) 100)
+        range (- high low)]
+    (+ low (* (/ velocity 127) range))))
+
+(defn starting-vars-for-velocity
+  "Given a cue and the velocity of the MIDI message which is causing
+  it to start, gather all cue variables which have been configured to
+  respond to MIDI velocity, and assign their initial values based on
+  the velocity of the MIDI message. Returns a map suitable for use
+  with the `:var-overrides` argument to
+  <<show/add-effect-from-cue-grid!>>." {:doc/format :markdown}
+  [cue velocity]
+  (reduce (fn [result v] (if (:velocity v)
+                           (assoc result (keyword (:key v)) (value-for-velocity v velocity))
+                           result))
+          {} (:variables cue)))

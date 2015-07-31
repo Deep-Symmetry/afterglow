@@ -97,13 +97,14 @@
      allows access to the full DMX parameter space for channel-oriented
      values.
 
-  * `:aftertouch` accompanied by a true value enables the variable to
-    be adjusted by aftertouch pressure while the pad which launched the
-    cue is held down on pressure-sensitive controllers.
+  * `:velocity` accompanied by a true value enables the variable to be
+     set by strike pressure and adjusted by aftertouch pressure while the
+     pad which launched the cue is held down on pressure-sensitive
+     controllers.
 
-  * `:aftertouch-min` and `:aftertouch-max` specify the range into
-    which MIDI aftertouch values will be mapped, if they are present.
-    Otherwise the standard `:min` and `:max` values will be used."
+  * `:velocity-min` and `:velocity-max` specify the range into
+     which MIDI velocity and aftertouch values will be mapped, if they are present.
+     Otherwise the standard `:min` and `:max` values will be used."
   {:doc/format :markdown}
   [show-key effect & {:keys [short-name color end-keys priority held variables]
                       :or {short-name (:name (effect {})) color :white priority 0}}]
@@ -179,14 +180,14 @@
   like the web interface and Ableton Push.
 
   If the function being controlled has a variable effect, and thus a
-  cue variable is being introduced to adjust it, `:aftertouch`,
-  `:aftertouch-min`, and `:aftertouch-max` will be used when creating
-  that variable, allowing it to be controlled by aftertouch pressure
-  on control surfaces which support that feature, as described
+  cue variable is being introduced to adjust it, `:velocity`,
+  `:velocity-min`, and `:velocity-max` will be used when creating
+  that variable, allowing it to be controlled by strike and aftertouch
+  pressure on control surfaces which support that feature, as described
   in [[cue]]."
   {:doc/format :markdown}
   [show-key function fixtures & {:keys [level htp? effect-name short-name color end-keys priority held
-                                        aftertouch aftertouch-min aftertouch-max]
+                                        velocity velocity-min velocity-max]
                                  :or {color :white level 0 priority 0}}]
   (let [function (keyword function)
         heads (chan/find-heads-with-function function fixtures)
@@ -209,9 +210,9 @@
              :priority priority
              :held held
              :variables [(merge {:key "level" :min 0 :max 100 :start level :name label}
-                                (when aftertouch {:aftertouch aftertouch})
-                                (when aftertouch-min {:aftertouch-max aftertouch-min})
-                                (when aftertouch-max {:aftertouch-max aftertouch-max}))]))
+                                (when velocity {:velocity velocity})
+                                (when velocity-min {:velocity-max velocity-min})
+                                (when velocity-max {:velocity-max velocity-max}))]))
       ;; It's a fixed function, no variable required
       (cue show-key (fn [_] (chan/function-effect effect-name function (params/bind-keyword-param level Number 0)
                                                   fixtures :htp? htp?))
@@ -222,7 +223,7 @@
            :held held))))
 
 ;; TODO: A compound function cue which takes a vector of functions
-;;       and htp/aftertouch/level/var-label-overrides and builds a
+;;       and htp/velocity/level/var-label-overrides and builds a
 ;;       single effect.
 
 (defn compound-cues-effect

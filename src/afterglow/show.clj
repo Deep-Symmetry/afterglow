@@ -653,7 +653,9 @@
   `:var-overrides`, and the corresponding value will be used rather
   than the `:start` value specified in the cue for that variable when
   it is introduced as a cue variable. This is used by compound cues to
-  launch their nested cues with customized values, and by
+  launch their nested cues with customized values, for setting the
+  initial values of cue values which are affected by MIDI velocity,
+  and by
   [afterglow-max](https://github.com/brunchboy/afterglow-max) to start
   cues with alternate values if its patchers have been configured to
   do so."

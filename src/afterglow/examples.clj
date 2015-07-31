@@ -312,7 +312,7 @@
                          :held true
                          :priority 100
                          :variables [{:key "level" :min 0 :max 100 :start 100 :name "Level"}
-                                     {:key "lightness" :min 0 :max 100 :name "Lightness" :aftertouch true}])))
+                                     {:key "lightness" :min 0 :max 100 :name "Lightness" :velocity true}])))
 
 (defn x-phase
   "Return a value that ranges from zero for the leftmost fixture in a
@@ -383,7 +383,7 @@
                                                                :fade-time (:fade-time var-map 50)))
                          :held true
                          :priority 100
-                         :variables [{:key "chance" :min 0.0 :max 0.4 :start 0.05 :aftertouch true}
+                         :variables [{:key "chance" :min 0.0 :max 0.4 :start 0.05 :velocity true}
                                      {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
 
     (ct/set-cue! (:cue-grid *show*) 7 7
