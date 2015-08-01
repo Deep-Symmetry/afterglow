@@ -15,13 +15,13 @@
   "A time-keeping tool for music-related systems."
   (metro-start [metro] [metro start-beat]
     "Returns the start time of the metronome. Also restarts the
-     metronome at start-beat if given.")
+  metronome at start-beat if given.")
   (metro-bar-start [metro start-bar]
     "Restarts the metronome at start-bar, keeping the beat phase
-    unchanged in case it is being synced to an external source.")
+  unchanged in case it is being synced to an external source.")
   (metro-phrase-start [metro start-phrase]
     "Restarts the metronome at start-phrase, keeping the beat phase
-    unchanged in case it is being synced to an external source.")
+  unchanged in case it is being synced to an external source.")
   (metro-adjust [metro ms]
     "Adds a number of milliseconds to the start time of the metronome.")
   (metro-tick [metro]
@@ -32,30 +32,32 @@
     "Returns the duration of one phrase in milliseconds.")
   (metro-beat [metro] [metro beat]
     "Returns the next beat number or the timestamp (in milliseconds) of the
-     given beat.")
+  given beat.")
   (metro-beat-phase [metro] [metro phase]
     "Returns the distance traveled into the current beat [0.0, 1.0), or
-       adjusts the phase to match the one supplied.")
+  adjusts the phase to match the one supplied.")
   (metro-bar [metro] [metro bar]
     "Returns the next bar number or the timestamp (in milliseconds) of the
-     given bar")
+  given bar")
   (metro-bar-phase [metro] [metro phase]
     "Returns the distance traveled into the current bar [0.0, 1.0), or
        adjusts the phase to match the one supplied.")
   (metro-phrase [metro] [metro phrase]
     "Returns the next phrase number or the timestamp (in milliseconds)
-     of the given phrase")
+  of the given phrase")
   (metro-phrase-phase [metro] [metro phase]
     "Returns the distance traveled into the current phrase [0.0, 1.0),
-       or adjusts the phase to match the one supplied.")
+  or adjusts the phase to match the one supplied.")
   (metro-bpb [metro] [metro new-bpb]
     "Get the current beats per bar or change it to new-bpb")
   (metro-bpp [metro] [metro new-bpp]
     "Get the current bars per phrase, or change it to new-bpp")
   (metro-bpm [metro] [metro new-bpm]
     "Get the current bpm or change the bpm to new-bpm.")
-  (metro-snapshot [metro]
-    "Take a snapshot of the current beat, bar, phrase, and phase state.")
+  (metro-snapshot [metro] [metro offset]
+    "Take a snapshot of the current beat, bar, phrase, and phase state.
+  If an offset is supplied, calculates a snapshot based on adding that
+  many milliseconds to the current time.")
   (metro-marker [metro]
     "Returns the current time as phrase.bar.beat"))
 
@@ -329,12 +331,14 @@ as fast, 3/4 oscillates 4 times every three markers..."
        (ref-set bpp new-bpp))))
 
   (metro-snapshot [metro]
+    (metro-snapshot metro 0))
+  (metro-snapshot [metro offset]
     (dosync
      (ensure start)
      (ensure bpm)
      (ensure bpb)
      (ensure bpp)
-     (let [instant (now)
+     (let [instant (+ (now) offset)
            beat (marker-number instant @start (metro-tick metro))
            bar (marker-number instant @start (metro-tock metro))
            phrase (marker-number instant @start (metro-ding metro))

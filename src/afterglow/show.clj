@@ -103,8 +103,8 @@
   "Update the count of how many frames have been sent, total and
   average time computing them, and warn if the most recent one took
   longer than the frame interval."
-  [stats began refresh-interval]
-  (let [duration (- (at-at/now) began)
+  [stats scheduled refresh-interval]
+  (let [duration (- (at-at/now) scheduled)
         total-time (+ duration (:total-time stats 0))
         frames-sent (inc (:frames-sent stats 0))
         average-duration (float (/ total-time frames-sent))
@@ -128,6 +128,52 @@
   (/ (:recent-average @(:statistics *show*) 0) (:refresh-interval *show*)))
 
 (defn- send-dmx
+  "Calculate and send a single frame of DMX values for the universes
+  and effects run by a show. Arguments are the show being rendered,
+  the DMX buffers for its universes, and the metronome snapshot
+  reflecting the current instant, for effects to reference."
+  [show buffers snapshot]
+  (p :clear-buffers (doseq [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
+  (p :clean-finished-effects (let [indexed (cp/pmap @(:pool show)
+                                                    vector (range) (:effects @(:active-effects show)))]
+                               ;; TODO: If I really want this parallelized, the doseq matters more, no?
+                               (doseq [[index effect] indexed]
+                                 (when-not (fx/still-active? effect show snapshot)
+                                   (end-effect! (:key (get (:meta @(:active-effects show)) index)) :force true)))))
+  (let [all-assigners (gather-assigners show snapshot)]
+    (doseq [[kind handler] resolution-handlers]
+      (doseq [assigners (vals (get all-assigners kind))]
+        (let [[target target-id value] (run-assigners show snapshot assigners)]
+          (when (some? value) ; If the assigner returned nil, it wants to be skipped
+            (p :resolve-value (handler show buffers snapshot target value target-id)))))))
+  (p :send-dmx-data (doseq [universe (keys buffers)]
+                      (let [levels (get buffers universe)]
+                        (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} nil))))
+  (swap! (:movement *show*) #(dissoc (assoc % :previous (:current %)) :current))
+  (swap! (:statistics *show*) update-stats (:instant snapshot) (:refresh-interval show)))
+
+(defn add-frame-fn!
+  "Arranges for the supplied function to be called when Afterglow is
+  going to sleep prior to rendering the next frame of lighting
+  effects. The function will be given the metronome snapshot that will
+  be in effect when the next frame gets rendered, so that it can
+  preconfigure anything needed for the rendering process. This is
+  used, for example, to allow afterglow-max patchers to set show
+  variables for the next frame, since they cannot be queried directly
+  during the rendering process."
+  [f]
+  {:pre [(some? *show*) (fn? f)]}
+  (swap! (:frame-fns *show*) conj f)
+  nil)
+
+(defn clear-frame-fn!
+  "Ceases calling the supplied function from the rendering loop."
+  [f]
+  {:pre [(some? *show*) (fn? f)]}
+  (swap! (:frame-fns *show*) disj f)
+  nil)
+
+(defn- rendering-loop
   "The loop that calculate and sends frames of DMX values for the
   universes and effects run by this show, as described in
   [The Rendering
@@ -136,39 +182,27 @@
   the future is canceled by [[stop!]]."
  {:doc/format :markdown}
   [show buffers]
-  (loop [began (at-at/now)
-         snapshot (metro-snapshot (:metronome show))
+  (loop [snapshot (metro-snapshot (:metronome show))
          still-running (atom true)]
     (try
-      (p :clear-buffers (doseq [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
-      (p :clean-finished-effects (let [indexed (cp/pmap @(:pool show)
-                                                        vector (range) (:effects @(:active-effects show)))]
-                                   ;; TODO: If I really want this parallelized, the doseq matters more, no?
-                                   (doseq [[index effect] indexed]
-                                     (when-not (fx/still-active? effect show snapshot)
-                                       (end-effect! (:key (get (:meta @(:active-effects show)) index)) :force true)))))
-      (let [all-assigners (gather-assigners show snapshot)]
-        (doseq [[kind handler] resolution-handlers]
-          (doseq [assigners (vals (get all-assigners kind))]
-            (let [[target target-id value] (run-assigners show snapshot assigners)]
-              (when (some? value) ; If the assigner returned nil, it wants to be skipped
-                (p :resolve-value (handler show buffers snapshot target value target-id)))))))
-      (p :send-dmx-data (doseq [universe (keys buffers)]
-                          (let [levels (get buffers universe)]
-                            (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} nil))))
-      (swap! (:movement *show*) #(dissoc (assoc % :previous (:current %)) :current))
-      (swap! (:statistics *show*) update-stats began (:refresh-interval show))
-      (let [ended (at-at/now)
-            duration (- ended began)
-            sleep-time (math/round (max 1 (- (:refresh-interval show) duration)))]
-        ;; TODO: Send anyone who registered interest an update about when the next frame is due
-        (Thread/sleep sleep-time))
+      (send-dmx show buffers snapshot)
       (catch Throwable t
         (if (instance? java.lang.InterruptedException t)
           (reset! still-running false)  ; Just means the show was stopped
           (error t "Problem trying to run cues"))))
     (when (and @still-running @(:pool show))  ; We have not been shut down
-      (recur (at-at/now) (metro-snapshot (:metronome show)) still-running))))
+      (let [ended (at-at/now)
+            duration (- ended (:instant snapshot))
+            sleep-time (math/round (max 1 (- (:refresh-interval show) duration)))
+            next-frame-snapshot (metro-snapshot (:metronome show) sleep-time)]
+        ;; TODO: Send anyone who registered interest an update about when the next frame is due
+        (doseq [f @(:frame-fns show)]
+          (try
+            (f next-frame-snapshot)
+            (catch Throwable t
+              (error t "Problem trying to call frame-notification function"))))
+        (Thread/sleep sleep-time)
+        (when @(:pool show) (recur next-frame-snapshot still-running))))))
 
 (defonce ^{:doc "Keeps track of all running shows."
            :private true}
@@ -211,7 +245,7 @@
   (let [buffers (create-buffers *show*)]
     (swap! (:pool *show*) #(or % (cp/threadpool (cp/ncpus) :name (str "show-" (:id *show*)))))
     (swap! (:task *show*) #(do (when % (future-cancel %))
-                               (future (send-dmx *show* buffers)))))
+                               (future (rendering-loop *show* buffers)))))
   nil)
 
 (defonce ^{:doc "Used to give each show a unique ID, for registering
@@ -280,6 +314,7 @@
                 :statistics (atom { :afterglow-version (version/tag) :afterglow-title (version/title)})
                 :dimensions (atom {})
                 :grid-controllers (atom #{})
+                :frame-fns (atom #{})
                 :task (atom nil)
                 :pool (atom nil)
                 :cue-grid (controllers/cue-grid)}]
@@ -1003,7 +1038,9 @@
   ([iterations]
    {:pre [(some? *show*) (integer? iterations) (pos? iterations)]}
    (let [buffers (create-buffers *show*)]
-     (profile :info :Frame (dotimes [i iterations] (send-dmx *show* buffers))))))
+     (profile :info :Frame (dotimes [i iterations]
+                             (let [snapshot (metro-snapshot (:metronome *show*))]
+                               (send-dmx *show* buffers snapshot)))))))
 
 (defn register-grid-controller
   "Add a cue grid controller to the list available for linking in the
