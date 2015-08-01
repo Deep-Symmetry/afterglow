@@ -541,15 +541,15 @@ and will not whiten the cue color while it is held down.
 |`false`
 
 |If present, with a true value, requests that the function value be
- adjusted by strike velocity and aftertouch pressure while the
- operator is holding down the button or pad which launched the cue, on
+ adjusted by MIDI velocity and aftertouch pressure while the operator
+ is holding down the button or pad which launched the cue, on
  controllers which have pressure sensitivity.
 
 |`:velocity-min`
 |`0`
 
 |If present (and `:velocity` is active), specifies the smallest value
- the function should be set to by MIDI strike velocity and aftertouch
+ the function should be set to by MIDI velocity and aftertouch
  pressure. If not specified, `0` is used, which corresponds to the
  lowest legal DMX value the fixture definition identifies for the
  function.
@@ -558,7 +558,7 @@ and will not whiten the cue color while it is held down.
 |`100`
 
 |If present (and `:velocity` is active), specifies the largest value
- the variable should be set to by MIDI strike velocity and aftertouch
+ the variable should be set to by MIDI velocity and aftertouch
  pressure. If not specified, `100` is used, which corresponds to the
  highest legal DMX value the fixture definition identifies for the
  function.
