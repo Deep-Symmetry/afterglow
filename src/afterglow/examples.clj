@@ -23,7 +23,7 @@
             [taoensso.timbre :as timbre]))
 
 (defonce ^{:doc "Holds the sample show if it has been created,
-  so it can be unregistered if it is beign re-created."}
+  so it can be unregistered if it is being re-created."}
   sample-show
   (atom nil))
 
@@ -45,11 +45,7 @@
                                           (when s
                                             (show/unregister-show s)
                                             (with-show s (show/stop!)))
-                                          (show/show :universes [universe]))))
-
-  ;; TODO: Should this be automatic? If so, creating the show should assign the name too.
-  ;; Register it with the web interface.
-  (show/register-show *show* "Sample Show")
+                                          (show/show :universes [universe] :description "Sample Show"))))
 
   ;; Throw a couple of fixtures in there to play with. For better fun, use
   ;; fixtures and addresses that correspond to your actual hardware.

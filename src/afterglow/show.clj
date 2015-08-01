@@ -206,38 +206,72 @@
   show-counter
   (atom 0))
 
+(defonce ^{:doc "Holds the registered shows, if any, for display in the web server."}
+  shows (atom {}))
+
+(defn register-show
+  "Add a show to the list of available shows in the web interface."
+  [show description]
+  (swap! shows assoc (:id show) [show description]))
+
+(defn unregister-show
+  "Remove a show from the list of available shows in the web interface."
+  [show]
+  (swap! shows dissoc (:id show)))
+
 ;; TODO: Should some of these atoms be refs and use dosync?
 (defn show
   "Create a show coordinator to calculate and send DMX values to the
   specified universe(s), with a [[rhythm/metronome]] to coordinate
-  timing. Values are computed and sent at the specified refresh
-  interval (in milliseconds), which defaults to a frame rate of thirty
-  times per second."
+  timing. The metronome to use can be specified with the optional
+  keyword argument `:base-metronome`; otherwise, a new metronome is
+  created for the show, with a starting `bpm` of 120.
+
+  Values are computed and sent at a fixed refresh interval (in
+  milliseconds), which defaults to a frame rate of thirty times per
+  second, but can be specified using the optional keyword argument
+  `:refresh-interval`.
+  
+  If a description is supplied with the `:description` argument, the
+  show will be registered under that description for the user to
+  choose in the embedded web interface. If you recreate the show
+  because you are in the process of working out its details, be sure
+  to unregister the old version (with [[unregister-show]]) first, or
+  you will end up with multiple shows with the same description in the
+  web interface. There is an example of how to handle this
+  automatically at the start
+  of [[afterglow.examples/use-sample-show]] (click the `view source`
+  link below the description to see the `sample-show` atom and `swap!`
+  invocation within `set-default-show!` it uses to make sure there is
+  only ever one version registered)."
   {:doc/format :markdown}
-  [& {:keys [universes base-metronome refresh-interval]
+  [& {:keys [universes base-metronome refresh-interval description]
       :or {universes [1] base-metronome (metronome 120) refresh-interval default-refresh-interval}}]
   {:pre [(sequential? universes) (pos? (count universes)) (every? integer? universes) (not-any? neg? universes)
          (satisfies? IMetronome base-metronome) (number? refresh-interval) (pos? refresh-interval)]}
-  {:id (swap! show-counter inc)
-   :metronome base-metronome
-   :sync (atom nil)
-   :refresh-interval refresh-interval
-   :universes (set universes)
-   :next-id (atom 0)
-   :active-effects (atom {:effects []
-                          :indices {}
-                          :meta []
-                          :ending #{}})
-   :variables (atom {})
-   :grand-master (master nil)  ; Only the grand master can have no show, or parent.
-   :fixtures (atom {})
-   :movement (atom {})  ; Used to smooth head motion between frames
-   :statistics (atom { :afterglow-version (version/tag) :afterglow-title (version/title)})
-   :dimensions (atom {})
-   :grid-controllers (atom #{})
-   :task (atom nil)
-   :pool (atom nil)
-   :cue-grid (controllers/cue-grid)})
+  (let [result {:id (swap! show-counter inc)
+                :metronome base-metronome
+                :sync (atom nil)
+                :refresh-interval refresh-interval
+                :universes (set universes)
+                :next-id (atom 0)
+                :active-effects (atom {:effects []
+                                       :indices {}
+                                       :meta []
+                                       :ending #{}})
+                :variables (atom {})
+                :grand-master (master nil) ; Only the grand master can have no show, or parent.
+                :fixtures (atom {})
+                :movement (atom {}) ; Used to smooth head motion between frames
+                :statistics (atom { :afterglow-version (version/tag) :afterglow-title (version/title)})
+                :dimensions (atom {})
+                :grid-controllers (atom #{})
+                :task (atom nil)
+                :pool (atom nil)
+                :cue-grid (controllers/cue-grid)}]
+    (when-not (clojure.string/blank? description)
+      (register-show result description))
+    result))
 
 (defn stop-all!
   "Kills all scheduled tasks which shows may have created to output
@@ -948,9 +982,6 @@
   (doseq [universe (:universes *show*)]
     (blackout-universe universe)))
 
-(defonce ^{:doc "Holds the registered shows, if any, for display in the web server."}
-  shows (atom {}))
-
 (defn register-grid-controller
   "Add a cue grid controller to the list available for linking in the
   web interface. The argument must implement the [[IGridController]]
@@ -967,13 +998,3 @@
   [controller]
   {:pre [(some? *show*) (satisfies? controllers/IGridController controller)]}
   (swap! (:grid-controllers *show*) disj controller))
-
-(defn register-show
-  "Add a show to the list of available shows for the web interface."
-  [show description]
-  (swap! shows assoc (:id show) [show description]))
-
-(defn unregister-show
-  "Remove a show from the list of available shows for the web interface."
-  [show]
-  (swap! shows dissoc (:id show)))
