@@ -38,6 +38,7 @@
             [afterglow.transform :as transform]
             [afterglow.version :as version]
             [amalloy.ring-buffer :refer [ring-buffer]]
+            [clojure.math.numeric-tower :as math]
             [com.climate.claypoole :as cp]
             [overtone.at-at :as at-at]
             [overtone.midi]
@@ -53,11 +54,6 @@
   here is 30 Hz, thirty frames per second."}
   default-refresh-interval
   (/ 1000 30))
-
-(defonce ^{:doc "Provides thread scheduling for all shows' DMX data generation."
-           :private true}
-  scheduler
-  (at-at/mk-pool))
 
 (def resolution-handlers
   "The order in which assigners should be evaluated, and the functions
@@ -132,14 +128,18 @@
   (/ (:recent-average @(:statistics *show*) 0) (:refresh-interval *show*)))
 
 (defn- send-dmx
-  "Calculate and send the next frame of DMX values for the universes
-  and effects run by this show, as described in
-  [The Rendering Loop](https://github.com/brunchboy/afterglow/blob/master/doc/rendering_loop.adoc#the-rendering-loop)."
-  {:doc/format :markdown}
+  "The loop that calculate and sends frames of DMX values for the
+  universes and effects run by this show, as described in
+  [The Rendering
+  Loop](https://github.com/brunchboy/afterglow/blob/master/doc/rendering_loop.adoc#the-rendering-loop).
+  This runs forever, and so is executed on a future by [[start!]] and
+  the future is canceled by [[stop!]]."
+ {:doc/format :markdown}
   [show buffers]
-  (try
-    (let [began (at-at/now)
-          snapshot (metro-snapshot (:metronome show))]
+  (loop [began (at-at/now)
+         snapshot (metro-snapshot (:metronome show))
+         still-running (atom true)]
+    (try
       (p :clear-buffers (doseq [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
       (p :clean-finished-effects (let [indexed (cp/pmap @(:pool show)
                                                         vector (range) (:effects @(:active-effects show)))]
@@ -157,9 +157,23 @@
                           (let [levels (get buffers universe)]
                             (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} nil))))
       (swap! (:movement *show*) #(dissoc (assoc % :previous (:current %)) :current))
-      (swap! (:statistics *show*) update-stats began (:refresh-interval show)))
-    (catch Throwable t
-      (error t "Problem trying to run cues"))))
+      (swap! (:statistics *show*) update-stats began (:refresh-interval show))
+      (let [ended (at-at/now)
+            duration (- ended began)
+            sleep-time (math/round (max 1 (- (:refresh-interval show) duration)))]
+        ;; TODO: Send anyone who registered interest an update about when the next frame is due
+        (Thread/sleep sleep-time))
+      (catch Throwable t
+        (if (instance? java.lang.InterruptedException t)
+          (reset! still-running false)  ; Just means the show was stopped
+          (error t "Problem trying to run cues"))))
+    (when (and @still-running @(:pool show))  ; We have not been shut down
+      (recur (at-at/now) (metro-snapshot (:metronome show)) still-running))))
+
+(defonce ^{:doc "Keeps track of all running shows."
+           :private true}
+  active-shows
+  (atom #{}))
 
 (defn stop!
   "Shuts down and removes the scheduled task which is sending DMX
@@ -167,8 +181,9 @@
   {:doc/format :markdown}
   []
   {:pre [(some? *show*)]}
-  (swap! (:task *show*) #(do (when % (at-at/stop %)) nil))
+  (swap! (:task *show*) #(do (when % (future-cancel %)) nil))
   (swap! (:pool *show*) #(do (when % (cp/shutdown %)) nil))
+  (swap! active-shows disj *show*)
   @(:statistics *show*))
 
 (defn- create-buffers
@@ -192,12 +207,11 @@
   []
   {:pre [(some? *show*)]}
   (stop!)
+  (swap! active-shows conj *show*)
   (let [buffers (create-buffers *show*)]
     (swap! (:pool *show*) #(or % (cp/threadpool (cp/ncpus) :name (str "show-" (:id *show*)))))
-    (swap! (:task *show*) #(do (when % (at-at/stop %))
-                             (at-at/every (:refresh-interval *show*)
-                                          (fn [] (send-dmx *show* buffers))
-                                          scheduler))))
+    (swap! (:task *show*) #(do (when % (future-cancel %))
+                               (future (send-dmx *show* buffers)))))
   nil)
 
 (defonce ^{:doc "Used to give each show a unique ID, for registering
@@ -273,14 +287,46 @@
       (register-show result description))
     result))
 
-(defn stop-all!
-  "Kills all scheduled tasks which shows may have created to output
-  their DMX values. You should still call stop! on each show you have
-  started in order to clean up that show's thread pool. But this can
-  quickly stop a runaway train if you don't know which show is to
-  blame."
+(defn blackout-universe
+  "Sends zero to every channel of the specified universe. Will be
+  quickly overwritten if there are any active shows transmitting to
+  that universe."
+  [universe]
+  {:pre [(some? universe)]}
+  (let [levels (byte-array 512)]
+    (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} nil)))
+
+(defn blackout-show
+  "Sends zero to every channel of every universe associated
+  with [[*show*]]. Will quickly be overwritten if the show is running
+  and there are any active effects, so this is mostly useful when a
+  show has been suspended and you want to darken the lights it left
+  on."
+  {:doc/format :markdown}
   []
-  (at-at/stop-and-reset-pool! scheduler))
+  {:pre [(some? *show*)]}
+  (doseq [universe (:universes *show*)]
+    (blackout-universe universe)))
+
+(defn stop-all!
+  "Stops all running shows. Afterglow registers a shutdown hook to
+  call this when the Java environment is shutting down, to clean up
+  gracefully."
+  []
+  (doseq [s @active-shows]
+    (with-show s
+      (stop!)
+      (blackout-show))))
+
+(defonce ^{:doc "Cleans up any running shows when Java is shutting down."
+           :private true}
+  shutdown-hook
+  (do
+    (let [hook (Thread. (fn []
+                            (timbre/info "Stopping all shows because Java is shutting down.")
+                            (stop-all!)))]
+      (.addShutdownHook (Runtime/getRuntime) hook)
+      hook)))
 
 (defn sync-to-external-clock
   "Stops or sarts synchronizing the show metronome attached
@@ -960,27 +1006,6 @@
    {:pre [(some? *show*) (integer? iterations) (pos? iterations)]}
    (let [buffers (create-buffers *show*)]
      (profile :info :Frame (dotimes [i iterations] (send-dmx *show* buffers))))))
-
-(defn blackout-universe
-  "Sends zero to every channel of the specified universe. Will be
-  quickly overwritten if there are any active shows transmitting to
-  that universe."
-  [universe]
-  {:pre [(some? universe)]}
-  (let [levels (byte-array 512)]
-    (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} nil)))
-
-(defn blackout-show
-  "Sends zero to every channel of every universe associated
-  with [[*show*]]. Will quickly be overwritten if the show is running
-  and there are any active effects, so this is mostly useful when a
-  show has been suspended and you want to darken the lights it left
-  on."
-  {:doc/format :markdown}
-  []
-  {:pre [(some? *show*)]}
-  (doseq [universe (:universes *show*)]
-    (blackout-universe universe)))
 
 (defn register-grid-controller
   "Add a cue grid controller to the list available for linking in the

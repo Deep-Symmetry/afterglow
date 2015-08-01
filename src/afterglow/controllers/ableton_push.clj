@@ -1631,7 +1631,19 @@
   (swap! active-bindings dissoc (:id controller)))
 
 (defn deactivate-all
-  "Deactivates all controller bindings which are currently active."
+  "Deactivates all controller bindings which are currently active.
+  This will be regustered as a shutdown hook to be called when the
+  Java environment is shutting down, to clean up gracefully."
   []
   (doseq [[_ controller] @active-bindings]
     (deactivate controller)))
+
+(defonce ^{:doc "Deactivates any Push bindings when Java is shutting down."
+           :private true}
+  shutdown-hook
+  (do
+    (let [hook (Thread. (fn []
+                            (timbre/info "Deactivating all Push bindings because Java is shutting down.")
+                            (deactivate-all)))]
+      (.addShutdownHook (Runtime/getRuntime) hook)
+      hook)))
