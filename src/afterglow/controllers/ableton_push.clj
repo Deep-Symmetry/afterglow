@@ -1642,8 +1642,6 @@
            :private true}
   shutdown-hook
   (do
-    (let [hook (Thread. (fn []
-                            (timbre/info "Deactivating all Push bindings because Java is shutting down.")
-                            (deactivate-all)))]
+    (let [hook (Thread. (fn [] (deactivate-all)))]
       (.addShutdownHook (Runtime/getRuntime) hook)
       hook)))

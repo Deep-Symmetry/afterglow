@@ -322,9 +322,7 @@
            :private true}
   shutdown-hook
   (do
-    (let [hook (Thread. (fn []
-                            (timbre/info "Stopping all shows because Java is shutting down.")
-                            (stop-all!)))]
+    (let [hook (Thread. (fn [] (stop-all!)))]
       (.addShutdownHook (Runtime/getRuntime) hook)
       hook)))
 
