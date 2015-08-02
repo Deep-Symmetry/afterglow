@@ -340,18 +340,24 @@
 
     (ct/set-cue! (:cue-grid *show*) 0 1
                  (cues/cue :color (fn [_] (global-color-effect
-                                           (params/build-color-param :s 100 :l 50 :h hue-bar)))
-                           :short-name "Rainbow Bar Fade"))
+                                           (params/build-color-param :s :rainbow-saturation :l 50 :h hue-bar)))
+                           :short-name "Rainbow Bar Fade"
+                           :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
+                                         :type :integer}]))
     (ct/set-cue! (:cue-grid *show*) 1 1
                  (cues/cue :color (fn [_] (global-color-effect
-                                           (params/build-color-param :s 100 :l 50 :h hue-gradient)
+                                           (params/build-color-param :s :rainbow-saturation :l 50 :h hue-gradient)
                                            :include-color-wheels? true))
-                           :short-name "Rainbow Grid"))
+                           :short-name "Rainbow Grid"
+                           :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
+                                         :type :integer}]))
     (ct/set-cue! (:cue-grid *show*) 2 1
                  (cues/cue :color (fn [_] (global-color-effect
-                                           (params/build-color-param :s 100 :l 50 :h hue-gradient
+                                           (params/build-color-param :s :rainbow-saturation :l 50 :h hue-gradient
                                                                      :adjust-hue hue-bar)))
-                           :short-name "Rainbow Grid+Bar"))
+                           :short-name "Rainbow Grid+Bar"
+                           :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
+                                         :type :integer}]))
 
     (ct/set-cue! (:cue-grid *show*) 4 1
                  (cues/cue :color (fn [_] (global-color-effect
