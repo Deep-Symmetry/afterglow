@@ -15,7 +15,7 @@ via its
 Beyond building on pieces of Overtone, the entire Afterglow project
 was [inspired](https://vimeo.com/22798433) by it.
 
-## Documentation Overview
+### Documentation Overview
 
 This page provides an introduction in how to install and use
 Afterglow. The main
