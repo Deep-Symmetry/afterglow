@@ -15,7 +15,7 @@ via its
 Beyond building on pieces of Overtone, the entire Afterglow project
 was [inspired](https://vimeo.com/22798433) by it.
 
-### Documentation Overview
+## Documentation Overview
 
 This page provides an introduction in how to install and use
 Afterglow. The main
@@ -26,6 +26,65 @@ Finally, the project
 [wiki](https://github.com/brunchboy/afterglow/wiki) offers a place for
 more-rapid discussion of ideas and sharing of code and discoveries
 among the entire user community.
+
+## Why Explore Afterglow?
+
+As suggested by the live-coding orientation mentioned above, which is
+designed to let you inject your own code right into the frame
+rendering process, Afterglow takes a very different approach to
+controlling light shows than other software. It won't be right for
+everyone, but will be extremely compelling to a particular niche. The
+early stages of its
+[rendering loop](https://github.com/brunchboy/afterglow/blob/master/doc/rendering_loop.adoc#the-rendering-loop)
+can offer higher levels of abstraction than the usual DMX
+[channel value](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#channel-effects)
+or
+[fixture function](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#function-effects)
+(although those are fully supported too):
+
+* You can express your desired results in terms of an abstract
+  [color](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#color-effects),
+  including support for the hue-saturation-lightness model, which is
+  great for algorithmic looks, and have it translated to whatever
+  color channels (or color wheel) your fixture supports.
+
+* Groups of moving heads can be told to face particular
+  [directions](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#direction-effects)
+  by specifying parameterized vectors, or to
+  [aim](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#aim-effects)
+  at a particular point in space, and Afterglow figures out how to
+  translate that into DMX control values given its understanding of
+  the
+  [fixture](https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#fixture-definitions)
+  and
+  [where](https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space),
+  and at what angle, you hung it.
+
+* There are a variety of
+  [oscillators](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#oscillators)
+  which can efficiently drive effect parameters.
+
+* You can also create
+  [complex effects](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#complex-effects),
+  with
+  [adjustable parameters](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters)
+  that can be controlled through a rich binding to an
+  [Ableton Push](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#using-ableton-push)
+  controller.
+
+* The timing of effects is pervasively influenced by a deep notion of
+  [musical time](https://github.com/brunchboy/afterglow/blob/master/doc/metronomes.adoc#metronomes),
+  with support for synchronization via
+  [MIDI clock](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#syncing-to-midi-clock)
+  or Pioneer
+  [Pro DJ Link](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#syncing-to-pro-dj-link)
+  beat grids.
+
+* You can even fully host Afterglow within
+  [Cycling ‘74’s Max](https://cycling74.com/) visual interactive
+  environment.
+
+If any of this sounds interesting to you, here is how to get started:
 
 ## Installation
 
