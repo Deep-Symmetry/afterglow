@@ -98,7 +98,7 @@ If any of this sounds interesting to you, here is how to get started:
 2. For now set up a Clojure project using [Leiningen](http://leiningen.org).
 3. Add this project as a dependency:
    [![Clojars Project](http://clojars.org/afterglow/latest-version.svg)](http://clojars.org/afterglow)
-   [![Dependencies Status](http://jarkeeper.com/brunchboy/afterglow/status.png)](http://jarkeeper.com/brunchboy/afterglow)
+<!--   [![Dependencies Status](http://jarkeeper.com/brunchboy/afterglow/status.png)](http://jarkeeper.com/brunchboy/afterglow) -->
 
 If you want to run Afterglow as a standalone executable, you can
 download the executable &uuml;berjar from the
