@@ -409,6 +409,7 @@ encounter them!
 - [x] Review existing fixture definitions for consistency of function
   names, start a style guide in the docs for others creating fixture
   definitions.
+- [ ] Add configuration support for running OLA on a different machine.
 - [ ] Make pass over all source, flesh out API doc and preconditions.
 - [ ] Sparkle effect, essentially a particle generator with
   configurable maximum brightness, fade time, distribution.
