@@ -80,7 +80,7 @@ or
   [Pro DJ Link](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#syncing-to-pro-dj-link)
   beat grids.
 
-* You can even fully host Afterglow within
+* You can even host Afterglow within
   [Cycling ‘74’s Max](https://cycling74.com/) visual interactive
   environment.
 
@@ -95,15 +95,25 @@ If any of this sounds interesting to you, here is how to get started:
    [web server](http://localhost:9090/ola.html), which is very helpful
    in seeing whether anything is working; you can even watch live DMX
    values changing.
+
+   > :wrench: If you are installing Afterglow on Windows, see the
+   > [Wiki discussion](https://github.com/brunchboy/afterglow/wiki/Questions#ola-and-windows)
+   > about how to talk to OLA.
+   
 2. For now set up a Clojure project using [Leiningen](http://leiningen.org).
+
 3. Add this project as a dependency:
    [![Clojars Project](http://clojars.org/afterglow/latest-version.svg)](http://clojars.org/afterglow)
 
+> :wrench: If you want to use an Ableton Push controller, and are
+> using a Mac, you will need to work around some bugs in Java MIDI
+> support on the Mac. The
+> [Wiki](https://github.com/brunchboy/afterglow/wiki/Questions#midi-from-java-on-the-mac)
+> explains how to do that.
+
 If you want to run Afterglow as a standalone executable, you can
 download the executable &uuml;berjar from the
-[releases](https://github.com/brunchboy/afterglow/releases) page. (But
-see the warning in [usage](#usage) about this being much less tested
-than in-repl use so far.)
+[releases](https://github.com/brunchboy/afterglow/releases) page.
 
 For an example of a project which uses Afterglow as a dependency, as
 described above, see
@@ -162,12 +172,16 @@ Options:
 Please see https://github.com/brunchboy/afterglow for more information.
 ```
 
-> :heavy_exclamation_mark: At this early stage of development, bear in
-> mind that using Afterglow as an executable jar is wildly untested
-> territory, and you are likely to discover surprising bugs. Although
-> the project will evolve into a system that non-Clojure hackers can
-> use, for now you are really best off playing with it inside a
-> Clojure development environment.
+> :heavy_exclamation_mark: At the earlys stage of development, using
+> Afterglow as an executable jar has been less-tested territory, and
+> you ma surprising bugs. That is becomng less of an issue since the
+> advent of
+> [afterglow-max](https://github.com/brunchboy/afterglow-max#afterglow-max),
+> which is putting Afterglow through its paces as an embedded jar. So
+> although the project will gradually evolve into a system that
+> non-Clojure hackers can use, for now you are probably best off
+> playing with it inside a Clojure development environment, or within
+> Max, likely with a Clojure environment connected via nREPL.
 
 Assuming you are using it from within a REPL, there is a namespace
 `afterglow.examples` which is intended to help you get started quickly
