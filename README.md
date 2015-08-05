@@ -98,7 +98,7 @@ If any of this sounds interesting to you, here is how to get started:
 
    > :wrench: If you are installing Afterglow on Windows, see the
    > [Wiki discussion](https://github.com/brunchboy/afterglow/wiki/Questions#ola-and-windows)
-   > about how to talk to OLA.
+   > about OLA options.
    
 2. For now set up a Clojure project using [Leiningen](http://leiningen.org).
 
