@@ -9,7 +9,7 @@
             [clojure.stacktrace :refer [root-cause]]
             [afterglow.rpc-messages :refer [RpcMessage]]
             [taoensso.timbre :as timbre])
-  (:import [java.net Socket]
+  (:import [java.net Socket InetSocketAddress]
            [java.nio ByteBuffer ByteOrder]
            [java.io InputStream]
            [flatland.protobuf PersistentProtocolBufferMap]
@@ -23,9 +23,27 @@
 (def ^:private version-masked (bit-and (bit-shift-left protocol-version 28) version-mask))
 (def ^:private size-mask 0x0fffffff)
 
-(def ^:private olad-port
-  "The local port on which the OLA server listens"
-  9010)
+(defonce olad-port
+  ^{:doc "The port on which to contact the OLA server. Unless you have
+  changed your OLA configuration, this should work."}
+  (atom 9010))
+
+(defonce olad-host
+  ^{:doc "The host on your OLA server is running. For best performance,
+  run it on the same machine as Afterglow, and leave this setting alone.
+  If you are on Windows, and so need to run OLA on a different machine,
+  set this atom to the name or IP address of the machine running olad."}
+  (atom "localhost"))
+
+(def ^:private
+  socket-timeout
+  "How many milliseconds to wait for socket operations (both open and
+  read/write) to complete. The default is two seconds, which is
+  ridiculously long since Afterglow is designed to work with the OLA
+  server on a local socket. But this was added in order to support
+  Windows use where OLA cannot run locally. Hopefully this will be
+  more than long enough."
+  2000)
 
 (def ^:private
   request-cache-ttl
@@ -33,7 +51,7 @@
   If an hour has gone by, we can be sure that request is never going to
   see a response."
   (.convert java.util.concurrent.TimeUnit/MILLISECONDS
-                                           1 java.util.concurrent.TimeUnit/HOURS))
+            1 java.util.concurrent.TimeUnit/HOURS))
 
 (defonce ^:private
   ^{:doc "The channel used to communicate with the thread that talks to the OLA server"}
@@ -79,7 +97,10 @@
   (when (:socket conn)
     (disconnect-server conn)) ;; Clean up any old connection, e.g. if a read failed
   (try
-    (let [sock (Socket. "localhost" olad-port)]
+    (let [addr (InetSocketAddress. @olad-host @olad-port)
+          sock (Socket.)]
+      (.connect sock addr socket-timeout)
+      (.setSoTimeout sock socket-timeout)
       (try
         (let [in (io/input-stream sock)
               out (io/output-stream sock)]
@@ -220,8 +241,11 @@
 
     (debug "channel" channel "connection" connection)
     
-    ;; Run core.async loop which takes requests on the internal channel and writes them to the OLA server socket
-    (channel-loop channel connection request-cache)
+    (if @connection
+      ;; Run core.async loop which takes requests on the internal channel and writes them to the OLA server socket
+      (channel-loop channel connection request-cache)
+      ;; We were not able to obtain a connection, so shut down.
+      (close! channel))
     
     ;; An ordinary loop which reads from the OLA server socket and dispatches responses to their handlers
     (while @connection

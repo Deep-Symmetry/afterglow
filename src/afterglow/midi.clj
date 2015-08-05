@@ -100,6 +100,9 @@
         ;; First call the global message handlers
         (doseq [handler @global-handlers]
           (try
+            ;; TODO: This is not really safe because if the handler blocks it ties up all future
+            ;;       MIDI dispatch. Should do in a future with a timeout? A claypoole thread pool
+            ;;       if they support timeouts? Don't want to use a million threads for this either...
             (handler msg)
             (catch Throwable t
               (error t "Problem runing global MIDI event handler"))))
