@@ -35,7 +35,7 @@
                                                                       org.clojure/java.classpath]]
                  [metosin/ring-http-response "0.6.3"]
                  [prone "0.8.2"]
-                 [buddy "0.6.0"]
+                 [buddy "0.6.1"]
                  [instaparse "1.4.1"]
                  [http-kit "2.1.19"]]
   :source-paths ["src" "generated"]
