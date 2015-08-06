@@ -2,7 +2,9 @@
   "This is the main class for running Afterglow as a self-contained JAR application.
   When you are learning and experimenting in your REPL, the main
   namespace you want to be using is afterglow.examples"
-  (:require [afterglow.web.handler :refer [app]]
+  (:require [afterglow.ola-client :as ola-client]
+            [afterglow.version :as version]
+            [afterglow.web.handler :refer [app]]
             [afterglow.web.session :as session]
             [org.httpkit.server :as http-kit]
             [environ.core :refer [env]]
@@ -14,6 +16,7 @@
             [selmer.parser :as parser]
             [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders.3rd-party.rotor :as rotor])
+  (:import [java.net InetAddress])
   (:gen-class))
 
 (defonce ^{:doc "Holds the running web UI server, if there is one, for later shutdown."}
@@ -76,6 +79,15 @@
    (reset! appenders appenders-map)
    (init-logging)))
 
+(defn- valid-host?
+  "Check whether a string represents a valid host name."
+  [name]
+  (try
+    (InetAddress/getByName name)
+    true
+    (catch Exception e
+      false)))
+
 (def cli-options
   "The command-line options supported by Afterglow."
   [["-w" "--web-port PORT" "Port number for web UI"
@@ -89,6 +101,13 @@
    ["-r" "--repl-port PORT" "Port number for REPL, if desired"
     :default (env :repl-port)
     :parse-fn #(Integer/parseInt %)
+    :validate [#(< 0 % 0x10000) "Must be a number between 0 and 65536"]]
+   ["-h" "--olad-host HOST" "Host name or address of OLA daemon, if not local"
+    :default (or (env :olad-host) "localhost")
+    :validate [valid-host? "Must be a valid host name"]]
+   ["-p" "--olad-port PORT" "Port number OLA daemon is listening on"
+    :default (or (when-let [default (env :olad-port)] (Integer/parseInt default)) 9010)
+    :parse-fn #(Integer/parseInt %)
     :validate [#(< 0 % 0x10000) "Must be a number between 0 and 65536"]]])
 
 (defn usage
@@ -96,7 +115,8 @@
   [options-summary]
   (clojure.string/join
    \newline
-   ["Afterglow, a functional lighting control environment."
+   ["Afterglow, a live-coding environment for light shows."
+    (str "Version " (version/tag))
     ""
     "Usage: afterglow [options]"
     ""
@@ -186,7 +206,9 @@
       errors (exit 1 (str (error-msg errors) "\n\n" (usage summary))))
     (init-logging)
     (.addShutdownHook (Runtime/getRuntime) (Thread. stop-servers))
-    (clojure.pprint/pprint options)
+    (reset! ola-client/olad-host (:olad-host options))
+    (reset! ola-client/olad-port (:olad-port options))
+    (timbre/info "Will find OLA daemon on host" @ola-client/olad-host ", port" @ola-client/olad-port)
     (start-web-server (:web-port options) true)
     (timbre/info "Web UI server on port:" (:web-port options))
     (start-osc-server (:osc-port options))
