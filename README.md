@@ -191,25 +191,22 @@ in a file `my-show.clj` and then invoke Afterglow as `java -jar afterglow.jar my
 ```clojure
 (ns my-show
   "Set up the fixtures, effects, and cues I actually want to use."
+  ;; TODO: Your list of required namespaces will differ from this, depending on
+  ;;       what fixtures you actually use, and what effects and cues you create.
   (:require [afterglow.core :as core]
             [afterglow.transform :as tf]
-            [afterglow.controllers :as ct]
-            [afterglow.controllers.ableton-push :as push]
             [afterglow.effects.color :refer [color-effect]]
             [afterglow.effects.cues :as cues]
-            [afterglow.effects.dimmer :refer [dimmer-effect master-set-level]]
+            [afterglow.effects.dimmer :refer [dimmer-effect]]
             [afterglow.effects.fun :as fun]
             [afterglow.effects.movement :as move]
             [afterglow.effects.oscillators :as oscillators]
             [afterglow.effects.params :as params]
-            [afterglow.fixtures.american-dj :as adj]
             [afterglow.fixtures.blizzard :as blizzard]
-            [afterglow.fixtures.chauvet :as chauvet]
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
-            [afterglow.show-context :refer :all]
-            [com.evocomputing.colors :refer [color-name create-color hue adjust-hue]]
-            [overtone.osc :as osc]
+            [afterglow.show-context :refer [*show* set-default-show!]
+            [com.evocomputing.colors :refer [color-create-color hue adjust-hue]]
             [taoensso.timbre :as timbre]))
 
 (defonce ^{:doc "Holds my show if it has been created,
@@ -249,6 +246,18 @@ in a file `my-show.clj` and then invoke Afterglow as `java -jar afterglow.jar my
 ;; TODO: Add your custom effects, then assign them to cues with sensible colors
 ;;       See afterglow.examples for examples.
 ```
+
+As noted, you will want to look at the
+[afterglow.examples](https://github.com/brunchboy/afterglow/blob/master/src/afterglow/examples.clj)
+namespace for some examples of how to populate this file. The
+`:require` section at the top is set up to make it easy to cut and
+paste examples from there, although it is not complete, and you will
+eventually need to learn how to adjust and optimize it yourself.
+
+As your show gets more complex, you may want to split this into
+multiple files, which you can either load by listing them all on the
+command line, or by using Clojure's `load-file` function from within
+the first file.
 
 > :heavy_exclamation_mark: At this early stage of development, using
 > Afterglow as an executable jar has been less-tested territory, and
