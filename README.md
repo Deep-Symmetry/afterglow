@@ -261,9 +261,9 @@ As noted, you will want to look at the
 namespace for some examples of how to populate this file; the rest of
 this section gives an overview and walk-through of how pieces of that
 namespace work. The `:require` section at the top of `my-show.clj` is
-set up to make it easy to cut and paste examples from these examples,
-although it is not complete, and you will eventually need to learn how
-to adjust and optimize it yourself.
+set up to make it easy to cut and paste from these examples, although
+it is not complete, and you will eventually need to learn how to
+adjust and optimize it yourself.
 
 As your show gets more complex, you may want to split this into
 multiple files, which you can either load by listing them all on the
