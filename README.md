@@ -232,8 +232,9 @@ in a file `my-show.clj` and then invoke Afterglow as `java -jar afterglow.jar my
                     (show/show :universes [1] :description "My Show"))))
 
   ;; TODO: Replace this to patch in an actual fixture in your show, at its actual
-  ;;       location and orientation, then add all your other fixtures one by one.
-  (show/patch-fixture! :torrent-1 (blizzard/torrent-f3) universe 1
+  ;;       universe, DMX address, physical location and orientation, then add all
+  ;;       your other fixtures one by one.
+  (show/patch-fixture! :torrent-1 (blizzard/torrent-f3) 1 1
                        :x (tf/inches 44) :y (tf/inches 51.75) :z (tf/inches -4.75)
                        :y-rotation (tf/degrees 0))
   
@@ -250,9 +251,10 @@ in a file `my-show.clj` and then invoke Afterglow as `java -jar afterglow.jar my
 As noted, you will want to look at the
 [afterglow.examples](https://github.com/brunchboy/afterglow/blob/master/src/afterglow/examples.clj)
 namespace for some examples of how to populate this file. The
-`:require` section at the top is set up to make it easy to cut and
-paste examples from there, although it is not complete, and you will
-eventually need to learn how to adjust and optimize it yourself.
+`:require` section at the top of `my-show` is set up to make it easy
+to cut and paste examples from there, although it is not complete, and
+you will eventually need to learn how to adjust and optimize it
+yourself.
 
 As your show gets more complex, you may want to split this into
 multiple files, which you can either load by listing them all on the
@@ -260,13 +262,13 @@ command line, or by using Clojure's `load-file` function from within
 the first file.
 
 > :heavy_exclamation_mark: At this early stage of development, using
-> Afterglow as an executable jar has been less-tested territory, and
-> you may find surprising bugs. This is becomng less of an issue
+> Afterglow as an executable jar is less-tested territory, and you may
+> find surprising bugs... though this is becoming less of an issue
 > since the advent of
 > [afterglow-max](https://github.com/brunchboy/afterglow-max#afterglow-max),
-> which is putting Afterglow through its paces as an embedded jar. So
-> although the project will gradually evolve into a system that
-> non-Clojure hackers can use, for now you are probably best off
+> which is putting Afterglow through its paces as an embedded jar. In
+> any case, although the project will gradually evolve into a system
+> that non-Clojure hackers can use, for now you are probably best off
 > playing with it inside a Clojure development environment, or within
 > Max, likely with a Clojure environment connected via nREPL.
 
