@@ -268,7 +268,10 @@ adjust and optimize it yourself.
 As your show gets more complex, you may want to split this into
 multiple files, which you can either load by listing them all on the
 command line, or by using Clojure's `load-file` function from within
-the first file.
+the first file. Or, once you are comfortable with idomatic Clojure
+development, by organizing them into a hierarchy of namespaces, and
+using the normal `:require` mechanism that is used to pull in
+Afterglow's own namespaces.
 
 > :heavy_exclamation_mark: At this early stage of development, using
 > Afterglow as an executable jar is less-tested territory, and you may
