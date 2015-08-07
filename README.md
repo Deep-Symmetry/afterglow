@@ -213,7 +213,7 @@ in a file `my-show.clj` and then invoke Afterglow as `java -jar afterglow.jar my
             [afterglow.fixtures.blizzard :as blizzard]
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
-            [afterglow.show-context :refer [*show* set-default-show!]
+            [afterglow.show-context :refer :all]
             [com.evocomputing.colors :refer [color-create-color hue adjust-hue]]
             [taoensso.timbre :as timbre]))
 
