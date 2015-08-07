@@ -438,6 +438,13 @@ explains how, and links to existing fixture definitions as examples.
 You can also ask for help on the
 https://github.com/brunchboy/afterglow/wiki/Questions[wiki].
 
+At this point you are almost certainly writing enough code that you
+want to save it for later reuse. The
+https://github.com/brunchboy/afterglow#usage[Usage] section of the
+project page explains how you can have Afterglow load files when it
+starts up when you are running it as a standalone jar, which makes it
+easier to use your own configuration files.
+
 . Patch your actual fixture channels and locations. Once you have
 working definitions for your fixtures, you will want to create a show
 that tells Afterglow what fixtures you have, and the DMX universes and

@@ -153,6 +153,14 @@ the areas I will be working on immediately after the first release.
 
 ## Usage
 
+> The rest of this document primarily provides an introduction to the
+> configuration of Afterglow from the command line and text files. The
+> show control interface is explained in the
+> [web](https://github.com/brunchboy/afterglow/blob/master/doc/README.adoc#the-embedded-web-interface)
+> and
+> [Push](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#using-ableton-push)
+> sections.
+
 Although you will often want to use Afterglow from a Clojure repl, you
 can also bring it up as an executable jar, and run it using `java
 -jar` with command-line arguments:
@@ -250,11 +258,12 @@ in a file `my-show.clj` and then invoke Afterglow as `java -jar afterglow.jar my
 
 As noted, you will want to look at the
 [afterglow.examples](https://github.com/brunchboy/afterglow/blob/master/src/afterglow/examples.clj)
-namespace for some examples of how to populate this file. The
-`:require` section at the top of `my-show` is set up to make it easy
-to cut and paste examples from there, although it is not complete, and
-you will eventually need to learn how to adjust and optimize it
-yourself.
+namespace for some examples of how to populate this file; the rest of
+this section gives an overview and walk-through of how pieces of that
+namespace work. The `:require` section at the top of `my-show.clj` is
+set up to make it easy to cut and paste examples from these examples,
+although it is not complete, and you will eventually need to learn how
+to adjust and optimize it yourself.
 
 As your show gets more complex, you may want to split this into
 multiple files, which you can either load by listing them all on the
