@@ -158,21 +158,31 @@ can also bring it up as an executable jar, and run it using `java
 -jar` with command-line arguments:
 
 ```
-> java -jar afterglow.jar help
+> java -jar afterglow.jar --help
 
-Afterglow, a functional lighting control environment.
+Afterglow, a live-coding environment for light shows.
+Version 0.1.2
 
-Usage: afterglow [options]
+Usage: afterglow [options] [init-file ...]
+  Any init-files specified as arguments will be loaded at startup,
+  in the order they are given, before creating any embedded servers.
 
 Options:
-  -w, --web-port PORT   16000  Port number for web UI
-  -o, --osc-port PORT   16001  Port number for OSC server
-  -r, --repl-port PORT         Port number for REPL, if desired
+  -w, --web-port PORT   16000               Port number for web UI
+  -o, --osc-port PORT   16001               Port number for OSC server
+  -r, --repl-port PORT                      Port number for REPL, if desired
+  -l, --log-file PATH   logs/afterglow.log  File into which log is written
+  -H, --olad-host HOST  localhost           Host name or address of OLA daemon
+  -P, --olad-port PORT  9010                Port number OLA daemon listens on
+  -h, --help                                Display help information and exit
+
+If you do not explicitly specify a log file, and Afterglow cannot write to
+the default log file path, logging will be silently suppressed.
 
 Please see https://github.com/brunchboy/afterglow for more information.
 ```
 
-> :heavy_exclamation_mark: At the earlys stage of development, using
+> :heavy_exclamation_mark: At this early stage of development, using
 > Afterglow as an executable jar has been less-tested territory, and
 > you ma surprising bugs. That is becomng less of an issue since the
 > advent of

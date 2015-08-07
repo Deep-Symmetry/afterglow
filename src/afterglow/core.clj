@@ -2,7 +2,8 @@
   "This is the main class for running Afterglow as a self-contained JAR application.
   When you are learning and experimenting in your REPL, the main
   namespace you want to be using is afterglow.examples"
-  (:require [afterglow.ola-client :as ola-client]
+  (:require [afterglow.init]
+            [afterglow.ola-client :as ola-client]
             [afterglow.version :as version]
             [afterglow.web.handler :refer [app]]
             [afterglow.web.session :as session]
@@ -31,12 +32,17 @@
 (defonce ^{:doc "Holds the running REPL server, if there is one, for later shutdown."}
   nrepl-server (atom nil))
 
+(defn- create-appenders
+  "Create a set of appenders which rotate the file at the specified path."
+  [path]
+  {:rotor (rotor/rotor-appender {:path path
+                                 :max-size 100000
+                                 :backlog 5})})
+
 (defonce ^{:private true
            :doc "The default log appenders, which rotate between files
            in a logs subdirectory."}
-  appenders (atom {:rotor (rotor/rotor-appender {:path "logs/afterglow.log"
-                                                 :max-size 100000
-                                                 :backlog 5})}))
+  appenders (atom (create-appenders "logs/afterglow.log")))
 
 (defn- init-logging-internal
   "Performs the actual initialization of the logging environment,
@@ -88,6 +94,47 @@
     (catch Exception e
       false)))
 
+(defn- println-err
+  "Prints objects to stderr followed by a newline."
+  [& more]
+  (binding [*out* *err*]
+    (apply println more)))
+
+(def ^:private log-file-error
+  "Holds the validation failure message if the log file argument was
+  not acceptable."
+  (atom nil))
+
+(defn- bad-log-arg
+  "Records a validation failure message for the log file argument, so
+  a more specific diagnosis can be given to the user. Returns false to
+  make it easy to invoke from the validation function, to indicate
+  that validation failed after recording the reason."
+  [& messages]
+  (reset! log-file-error (clojure.string/join " " messages))
+  false)
+
+(defn- valid-log-file?
+  "Check whether a string identifies a file that can be used for logging."
+  [path]
+  (let [f (clojure.java.io/file path)
+        dir (or (.getParentFile f) (.. f (getAbsoluteFile) (getParentFile)))]
+    (if (.exists f)
+      (cond  ; The file exists, so make sure it is writable and a plain file
+        (not (.canWrite f)) (bad-log-arg "Cannot write to log file")
+        (.isDirectory f) (bad-log-arg "Requested log file is actually a directory")
+        ;; Requested existing file looks fine, make sure we can roll over
+        :else (or (.canWrite dir)
+                  (bad-log-arg "Cannot create rollover log files in directory" (.getPath dir))))
+      ;; The requested file does not exist, make sure we can create it
+      (if (.exists dir)
+        (and (or (.isDirectory dir)
+                 (bad-log-arg "Log directory is not a directory:" (.getPath dir)))
+             (or (.canWrite dir) ; The parent directory exists, make sure we can write to it
+                 (bad-log-arg "Cannot create log file in directory" (.getPath dir))))
+        (or (.mkdirs dir) ; The parent directory doesn't exist, make sure we can create it
+          (bad-log-arg "Cannot create log directory" (.getPath dir)))))))
+
 (def cli-options
   "The command-line options supported by Afterglow."
   [["-w" "--web-port PORT" "Port number for web UI"
@@ -102,13 +149,17 @@
     :default (env :repl-port)
     :parse-fn #(Integer/parseInt %)
     :validate [#(< 0 % 0x10000) "Must be a number between 0 and 65536"]]
-   ["-h" "--olad-host HOST" "Host name or address of OLA daemon, if not local"
+   ["-l" "--log-file PATH" "File into which log is written"
+    :default (or (env :log-file) "logs/afterglow.log")
+    :validate [valid-log-file? @log-file-error]]
+   ["-H" "--olad-host HOST" "Host name or address of OLA daemon"
     :default (or (env :olad-host) "localhost")
     :validate [valid-host? "Must be a valid host name"]]
-   ["-p" "--olad-port PORT" "Port number OLA daemon is listening on"
+   ["-P" "--olad-port PORT" "Port number OLA daemon listens on"
     :default (or (when-let [default (env :olad-port)] (Integer/parseInt default)) 9010)
     :parse-fn #(Integer/parseInt %)
-    :validate [#(< 0 % 0x10000) "Must be a number between 0 and 65536"]]])
+    :validate [#(< 0 % 0x10000) "Must be a number between 0 and 65536"]]
+   ["-h" "--help" "Display help information and exit"]])
 
 (defn usage
   "Print message explaining command-line invocation options."
@@ -118,10 +169,15 @@
    ["Afterglow, a live-coding environment for light shows."
     (str "Version " (version/tag))
     ""
-    "Usage: afterglow [options]"
+    "Usage: afterglow [options] [init-file ...]"
+    "  Any init-files specified as arguments will be loaded at startup,"
+    "  in the order they are given, before creating any embedded servers."
     ""
     "Options:"
     options-summary
+    ""
+    "If you do not explicitly specify a log file, and Afterglow cannot write to"
+    "the default log file path, logging will be silently suppressed."
     ""
     "Please see https://github.com/brunchboy/afterglow for more information."]))
 
@@ -132,7 +188,7 @@
 
 (defn exit [status msg]
   "Terminate execution with a message to the command-line user."
-  (println msg)
+  (println-err msg)
   (System/exit status))
 
 (defn start-web-server
@@ -172,7 +228,7 @@
                           (osc/osc-close server)
                           nil)))
     (catch Throwable t
-      (timbre/error "failed to shut down OSC server" t))))
+      (timbre/error t "failed to shut down OSC server"))))
 
 (defn start-nrepl
   "Start a network REPL for debugging or remote control."
@@ -182,7 +238,7 @@
                              (nrepl/start-server :port port :handler cider-nrepl-handler)))
     (timbre/info "nREPL server started on port" port)
     (catch Throwable t
-      (timbre/error "failed to start nREPL" t))))
+      (timbre/error t "failed to start nREPL"))))
 
 (defn stop-servers
   "Shut down the embedded web UI, OSC and NREPL servers."
@@ -199,12 +255,30 @@
   and start servers on the appropriate ports."
   [& args]
   (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)]
+
     ;; Handle help and error conditions
     (cond
       (:help options) (exit 0 (usage summary))
-      (not= (count arguments) 0) (exit 1 (usage summary))
       errors (exit 1 (str (error-msg errors) "\n\n" (usage summary))))
+ 
+    ;; Set up the logging environment
+    (reset! appenders (create-appenders (:log-file options)))
     (init-logging)
+
+    ;; Load any requested initialization files
+    (doseq [f arguments]
+      (try
+        (timbre/info "Loading init-file" f)
+        (binding [*ns* (the-ns 'afterglow.init)]
+          (load-file f))
+        (catch Throwable t
+          (timbre/error t "Problem loading init-file" f)
+          (println-err "Failed to load init-file" f)
+          (println-err (.getMessage t))
+          (println-err "See" (:log-file options) "for stack trace.")
+          (System/exit 1))))
+
+    ;; Set up embedded servers
     (.addShutdownHook (Runtime/getRuntime) (Thread. stop-servers))
     (reset! ola-client/olad-host (:olad-host options))
     (reset! ola-client/olad-port (:olad-port options))
@@ -216,5 +290,5 @@
     (when-let [port (:repl-port options)]
       (start-nrepl port)
       (timbre/info "nrepl server on port:" port))
-    (timbre/info (str "\n-=[ afterglow startup concluded successfully"
-                      (when (env :dev) "using the development profile") "]=-"))))
+
+    (timbre/info "Startup complete:" (version/title) (version/tag))))
