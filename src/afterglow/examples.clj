@@ -38,7 +38,7 @@
   ;; make sure a sane logging environment is established.
   (core/init-logging)
 
-  ;; Create, or re-create the show, on the choen OLA universe, for demonstration
+  ;; Create, or re-create the show, on the chosen OLA universe, for demonstration
   ;; purposes. Make it the default show so we don't need to wrap everything below
   ;; in a (with-show sample-show ...) binding
   (set-default-show! (swap! sample-show (fn [s]

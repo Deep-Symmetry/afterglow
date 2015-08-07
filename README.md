@@ -182,10 +182,75 @@ the default log file path, logging will be silently suppressed.
 Please see https://github.com/brunchboy/afterglow for more information.
 ```
 
+As noted, you can pass a list of init-files when you run Afterglow
+this way, which gives you the opportunity to set up the actual
+universes, fixtures, effects, and cues that you want to use in your
+show. As a starting point, you could put something like the following
+in a file `my-show.clj` and then invoke Afterglow as `java -jar afterglow.jar my-show.clj`:
+
+```clojure
+(ns my-show
+  "Set up the fixtures, effects, and cues I actually want to use."
+  (:require [afterglow.core :as core]
+            [afterglow.transform :as tf]
+            [afterglow.controllers :as ct]
+            [afterglow.controllers.ableton-push :as push]
+            [afterglow.effects.color :refer [color-effect]]
+            [afterglow.effects.cues :as cues]
+            [afterglow.effects.dimmer :refer [dimmer-effect master-set-level]]
+            [afterglow.effects.fun :as fun]
+            [afterglow.effects.movement :as move]
+            [afterglow.effects.oscillators :as oscillators]
+            [afterglow.effects.params :as params]
+            [afterglow.fixtures.american-dj :as adj]
+            [afterglow.fixtures.blizzard :as blizzard]
+            [afterglow.fixtures.chauvet :as chauvet]
+            [afterglow.rhythm :as rhythm]
+            [afterglow.show :as show]
+            [afterglow.show-context :refer :all]
+            [com.evocomputing.colors :refer [color-name create-color hue adjust-hue]]
+            [overtone.osc :as osc]
+            [taoensso.timbre :as timbre]))
+
+(defonce ^{:doc "Holds my show if it has been created,
+  so it can be unregistered if it is being re-created."}
+  my-show
+  (atom nil))
+
+(defn use-my-show
+  "Set up the show on the OLA universes it actually needs."
+  []
+
+  ;; Create, or re-create the show. Make it the default show so we don't
+  ;; need to wrap everything below in a (with-show sample-show ...) binding.
+  (set-default-show! (swap! my-show (fn [s]
+                                      (when s
+                                        (show/unregister-show s)
+                                        (with-show s (show/stop!)))
+                                      ;; TODO: Edit this to list the actual OLA universe(s) that
+                                      ;;       your show needs to use if they are different than
+                                      ;;       just universe 1, as below, and change the description
+                                      ;;       to something descriptive and in your own style:
+                                      (show/show :universes [1] :description "My Show"))))
+
+  ;; TODO: Replace this to patch in an actual fixture in your show, at its actual location and
+  ;;       orientation, then add all your other fixtures one by one.
+  (show/patch-fixture! :torrent-1 (blizzard/torrent-f3) universe 1
+                       :x (tf/inches 44) :y (tf/inches 51.75) :z (tf/inches -4.75)
+                       :y-rotation (tf/degrees 0))
+  
+  ;; Return the show's symbol, rather than the actual map, which gets huge with all the
+  ;; expanded, patched fixtures in it.
+  '*show*)
+
+;; TODO: Add your custom effects, then assign them to cues with sensible colors and parameters.
+;;       See afterglow.examples for examples.
+```
+
 > :heavy_exclamation_mark: At this early stage of development, using
 > Afterglow as an executable jar has been less-tested territory, and
-> you ma surprising bugs. That is becomng less of an issue since the
-> advent of
+> you may find surprising bugs. This is becomng less of an issue
+> since the advent of
 > [afterglow-max](https://github.com/brunchboy/afterglow-max#afterglow-max),
 > which is putting Afterglow through its paces as an embedded jar. So
 > although the project will gradually evolve into a system that
