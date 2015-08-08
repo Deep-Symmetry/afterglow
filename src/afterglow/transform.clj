@@ -66,6 +66,11 @@
   [in]
   (* in 0.0254))
 
+(defn feet
+  "Converts a number of feet to the corresponding number of meters."
+  [f]
+  (inches (* f 12)))
+
 (defn degrees
   "Converts a number of degrees into the corresponding number of
   radians."
