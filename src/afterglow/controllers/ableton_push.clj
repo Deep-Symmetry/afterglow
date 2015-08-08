@@ -968,7 +968,7 @@
                               (seq (str "version" (version/tag)))))
   (let [counter (atom 0)
         task (atom nil)]
-    (reset! task (at-at/every 30 #(welcome-frame controller counter task)
+    (reset! task (at-at/every 45 #(welcome-frame controller counter task)
                               controllers/pool))))
 
 (defn clear-interface
