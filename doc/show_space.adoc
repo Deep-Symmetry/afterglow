@@ -36,8 +36,10 @@ image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/Sh
 show axes]
 
 Distance units are in meters, but if you find it easier to measure
-inches, you can call
+inches or feet, you can call
 http://deepsymmetry.org/afterglow/doc/afterglow.transform.html#var-inches[afterglow.transform/inches]
+and
+http://deepsymmetry.org/afterglow/doc/afterglow.transform.html#var-feet[afterglow.transform/feet]
 to convert them to meters for you.
 
 To express rotations, the same frame of reference is used. If a light

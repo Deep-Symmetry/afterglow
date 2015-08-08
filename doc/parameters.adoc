@@ -306,9 +306,11 @@ lights where to aim. When this vector is supplied to an
 <<effects#aim-effects,Aim Effect>>, it causes the attached lights to
 make the specified movement, if they are capable.
 
-If you need to convert inches to meters, which are the
+If you need to convert inches or feet to meters, which are the
 standard distance units in Afterglow, you can use
-http://deepsymmetry.org/afterglow/doc/afterglow.transform.html#var-inches[afterglow.transform/inches].
+http://deepsymmetry.org/afterglow/doc/afterglow.transform.html#var-inches[afterglow.transform/inches]
+and
+http://deepsymmetry.org/afterglow/doc/afterglow.transform.html#var-feet[afterglow.transform/feet].
 
 All of these parameters, except for `frame-dynamic`, can themselves be
 dynamic parameters, such as show <<variable-parameters,variables>>
