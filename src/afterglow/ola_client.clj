@@ -37,12 +37,11 @@
 
 (def ^:private
   socket-timeout
-  "How many milliseconds to wait for socket operations (both open and
-  read/write) to complete. The default is two seconds, which is
-  ridiculously long since Afterglow is designed to work with the OLA
-  server on a local socket. But this was added in order to support
-  Windows use where OLA cannot run locally. Hopefully this will be
-  more than long enough."
+  "How many milliseconds to wait when trying to open the socket to the
+  OLA daemon. The default is two seconds, which is ridiculously long
+  since Afterglow is designed to work with the OLA server on a local
+  socket. But this was added in order to support Windows use where OLA
+  cannot run locally. Hopefully this will be more than long enough."
   2000)
 
 (def ^:private
@@ -100,7 +99,6 @@
     (let [addr (InetSocketAddress. @olad-host @olad-port)
           sock (Socket.)]
       (.connect sock addr socket-timeout)
-      (.setSoTimeout sock socket-timeout)
       (try
         (let [in (io/input-stream sock)
               out (io/output-stream sock)]
