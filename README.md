@@ -545,6 +545,30 @@ And darken the universe you were playing with.
 > once there were were no active effects, all the DMX values would
 > settle back at zero and stay there until you stopped the show.
 
+## Troubleshooting
+
+When afterglow has important events to report, or encounters problems,
+it writes log entries. In its default configuration, it tries to write
+to a `logs` directory located in the current working directory from
+which it was run. If that directory does not exist, and you have not
+explicitly configured a path to a log file, it assumes you are not
+interested in the logs, and silently suppresses them. So if things are
+not going right, the first step is to enable logging. You can either
+do this by creating a `logs` folder for Afterglow to use, or by
+running it with the `-l` command-line argument to set an explicit log
+file path, as described in the [Usage](#usage) section above. If you
+do that, afterglow will create any missing directories in the log file
+path, and fail with a clear error message if it is unable to log to
+the place you asked it to.
+
+The Open Lighting Architecture's
+[web interface](http://localhost:9090/new/#/), which you can find on
+port 9090 of the machine running afterglow-max if you installed it in
+the normal way, can be useful in troubleshooting as well. You can see
+if the universes that afterglow is expecting to interact with actually
+exist, are configured to talk to the lighting interfaces you expect,
+and are sending DMX channel values that seem reasonable.
+
 ## Bugs
 
 Although there are none known as of the time of this release, I am
