@@ -23,7 +23,7 @@
                  [selmer "0.8.8"]
                  [com.evocomputing/colors "1.0.2"]
                  [environ "1.0.0"]
-                 [com.taoensso/timbre "4.0.2"]
+                 [com.taoensso/timbre "4.1.0"]
                  [com.taoensso/tower "3.0.2"]
                  [markdown-clj "0.9.67"]
                  [environ "1.0.0"]
