@@ -250,11 +250,11 @@ controller `2`, C as controller `3`, and D as controller `4`). In
 order for Afterglow to know which deck to pay attention to if more
 than one is playing at the same time, whenever a different deck
 becomes the Tempo Master, a message identifying the deck is sent out
-as a Control Change message on controller `0`. (The same number to deck
-correspondence is used.) When no deck is Tempo Master, a value Control
+as a Control Change message on controller `0`. (The same number to
+deck correspondence is used.) When no deck is Tempo Master, a Control
 Change with value `0` is sent on controller `0`.
 
-Afterglow will only look for the special Control Change messages if
+Afterglow will only look for these special Control Change messages if
 the name of the MIDI device on which the messages are being received
 contains the string "Traktor". This will automatically be the case
 with Internal Sync on the Mac; if you are using MIDI over a network,
