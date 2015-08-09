@@ -223,9 +223,9 @@ you can configure Traktor to send its beat phase information in a way
 that Afterglow can detect and analyze, giving you the same kind of
 beat grid synchronization.
 
-In order to do that, download the Afterglow Traktor Controller
-Mapping,
-https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/Afterglow.tsi[Afterglow.tsi],
+In order to do that, download and unzip the Afterglow Traktor
+Controller Mapping,
+https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/Afterglow.tsi.zip[Afterglow.tsi],
 and import it into Traktor. It will create a Device named `Clock,
 Afterglow` within the Traktor Controller Manager:
 
