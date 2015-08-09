@@ -413,7 +413,7 @@
 (defrecord ClockFinder [listener results traktor-candidates]
   IClockFinder
   (finder-current-sources [this]
-    (annotate-traktor-grid-sources @results @traktor-candidates))
+    (set (annotate-traktor-grid-sources @results @traktor-candidates)))
   (finder-finished [this]
     (remove-global-handler! listener)
     (reset! results nil)
