@@ -424,10 +424,11 @@
   [controller]
   (with-show (:show controller)
     (let [metronome (get-in controller [:show :metronome])]
-      (case (:type (show/sync-status))
-        :manual ((:tap-tempo-handler controller))
-        :midi (rhythm/metro-beat-phase metronome 0)
-        :dj-link (rhythm/metro-bar-start metronome (rhythm/metro-bar metronome))
+      (case (:level (show/sync-status))
+        nil ((:tap-tempo-handler controller))
+        :bpm (rhythm/metro-beat-phase metronome 0)
+        :beat (rhythm/metro-bar-start metronome (rhythm/metro-bar metronome))
+        :bar (rhythm/metro-phrase-start metronome (rhythm/metro-bar metronome))
         (warn "Don't know how to tap tempo for sync type" (show/sync-status))))))
 
 (defn- metronome-sync-label
@@ -438,6 +439,7 @@
       :manual " Manual"
       :midi "  MIDI"
       :dj-link "DJ Link"
+      :traktor-beat-phase "Traktor"
       "Unknown")))
 
 (defn- metronome-sync-color

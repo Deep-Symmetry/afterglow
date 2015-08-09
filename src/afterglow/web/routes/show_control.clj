@@ -310,7 +310,10 @@
       (concat [{:label "Manual (no automatic sync)."
                 :value "manual"
                 :selected (= :manual (:type (show/sync-status)))}]
-              (build-sync-list known-midi :midi #(str (:name %) " (MIDI, sync BPM only).")
+              (build-sync-list known-midi :midi #(str (:name %)
+                                                      (if (:traktor-beat-phase %)
+                                                        " (Traktor, sync BPM and beat phase)."
+                                                        " (MIDI, sync BPM only)."))
                                (:source (show/sync-status)))
               (build-sync-list known-dj :dj-link #(str (:name %)
                                                        (when (.startsWith (:name %) "CDJ")
@@ -576,13 +579,15 @@
   [page-info]
   (with-show (:show page-info)
     (let [metronome (get-in page-info [:show :metronome])]
-      (case (:type (show/sync-status))
-        :manual (do ((:tap-tempo-handler page-info))
-                    {:tempo "adjusting"})
-        :midi (do (rhythm/metro-beat-phase metronome 0)
-                  {:started "beat"})
-        :dj-link (do (rhythm/metro-bar-start metronome (rhythm/metro-bar metronome))
-                     {:started "bar"})
+      (case (:level (show/sync-status))
+        nil (do ((:tap-tempo-handler page-info))
+                {:tempo "adjusting"})
+        :bpm (do (rhythm/metro-beat-phase metronome 0)
+                 {:started "beat"})
+        :beat (do (rhythm/metro-bar-start metronome (rhythm/metro-bar metronome))
+                  {:started "bar"})
+        :bar (do (rhythm/metro-phrase-start metronome (rhythm/metro-bar metronome))
+                 {:started "phrase"})
         (let [warning (str "Don't know how to tap tempo for sync type" (show/sync-status))]
           (warn warning)
           {:error warning})))))

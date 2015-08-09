@@ -176,6 +176,13 @@ as fast, 3/4 oscillates 4 times every three markers..."
     (let [phrase-size (/ 1 bpp)]
       (zero? (floor (/ (snapshot-phrase-phase snapshot 1) phrase-size))))))
 
+(defn normalize-phase
+  "Makes sure a phase value is in the range [0.0,1.0)"
+  [phase]
+  (if (neg? phase)
+    (+ 1 (- phase (long phase)))
+    (- phase (long phase))))
+
 (defrecord Metronome [start bpm bpb bpp]
   IMetronome
   (metro-start [metro] @start)
@@ -232,7 +239,7 @@ as fast, 3/4 oscillates 4 times every three markers..."
   (metro-beat-phase [metro phase]
     (dosync
      (ensure bpm)
-     (let [delta (- phase (metro-beat-phase metro))
+     (let [delta (- (normalize-phase phase) (metro-beat-phase metro))
            shift (round (* (metro-tick metro) (if (> delta 0.5) (dec delta)
                                                   (if (< delta -0.5) (inc delta) delta))))]
        (alter start - shift))))
@@ -259,7 +266,7 @@ as fast, 3/4 oscillates 4 times every three markers..."
     (dosync
      (ensure bpm)
      (ensure bpb)
-     (let [delta (- phase (metro-bar-phase metro))
+     (let [delta (- (normalize-phase phase) (metro-bar-phase metro))
            shift (round (* (metro-tock metro) (if (> delta 0.5) (dec delta)
                                                   (if (< delta -0.5) (inc delta) delta))))]
        (alter start - shift))))
@@ -290,7 +297,7 @@ as fast, 3/4 oscillates 4 times every three markers..."
      (ensure bpm)
      (ensure bpb)
      (ensure bpp)
-     (let [delta (- phase (metro-phrase-phase metro))
+     (let [delta (- (normalize-phase phase) (metro-phrase-phase metro))
            shift (round (* (metro-ding metro) (if (> delta 0.5) (dec delta)
                                                   (if (< delta -0.5) (inc delta) delta))))]
        (alter start - shift))))

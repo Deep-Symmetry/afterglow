@@ -114,7 +114,8 @@
         (try
           (case (:status msg)
             (:timing-clock :start :stop) (clock-message-handler msg)
-            :control-change (cc-message-handler msg)
+            :control-change (do (cc-message-handler msg)
+                                (clock-message-handler msg)) ; In case it is a Traktor beat phase message
             (:note-on :note-off) (note-message-handler msg)
             nil)
 
@@ -302,45 +303,68 @@
   If it is a clock pulse, update the ring buffer in which we are
   collecting timestamps, and if we have enough, calculate a BPM value
   and update the associated metronome."
-  [msg buffer metronome]
+  [msg buffer metronome traktor-info]
   (dosync
+   (ensure traktor-info)
    (case (:status msg)
-     :timing-clock (let [timestamp (now)]
+     :timing-clock (let [timestamp (now)]  ; Ordinary clock pulse
                      (alter buffer conj timestamp)
                      (when (> (count @buffer) 2)
                        (let [passed (- timestamp (peek @buffer))
                              intervals (dec (count @buffer))
                              mean (/ passed intervals)]
                          (metro-bpm metronome (double (/ 60000 (* mean 24)))))))
-            (:start :stop) (ref-set buffer (ring-buffer max-clock-intervals)) ; Clock is being reset!
-            nil)))
+     (:start :stop) (ref-set buffer (ring-buffer max-clock-intervals))  ; Clock is being reset!
+     :control-change (when (and (some? @traktor-info) (< (:note msg) 5))  ; Traktor beat phase update
+                       (when (zero? (:note msg))  ; Switching the current master deck
+                         (alter traktor-info assoc :current-deck (:velocity msg)))
+                       (when (nil? (:current-deck @traktor-info))  ; No explicit master deck, assume this one
+                         (alter traktor-info assoc :current-deck (:note msg)))
+                       (when (= (:current-deck @traktor-info) (:note msg))  ; Beat phase for master deck, use it
+                         (let [target-phase (/ (- (:velocity msg) 64) 127)]
+                           ;; Only move when we are towards the middle of a beat, to make it more subtle
+                           (when (< 0.2 target-phase 0.8) 
+                             (metro-beat-phase metronome target-phase)))
+                         (alter traktor-info assoc :last-sync (now))))
+     nil)))
 
 (defn- add-synced-metronome
   [midi-clock-source metronome sync-fn]
-  (swap! synced-metronomes #(assoc-in % [midi-clock-source metronome] sync-fn)))
+  (swap! synced-metronomes #(assoc-in % [(dissoc midi-clock-source :traktor-beat-phase) metronome] sync-fn)))
 
 (defn- remove-synced-metronome
   [midi-clock-source metronome]
-  (swap! synced-metronomes #(update-in % [midi-clock-source] dissoc metronome)))
+  (swap! synced-metronomes #(update-in % [(dissoc  midi-clock-source :traktor-beat-phase)] dissoc metronome)))
+
+(defn- traktor-beat-phase-current
+  "Checks whether our clock is being synced to ordinary MIDI clock, or
+  enhanced Traktor beat phase using the custom Afterglow Traktor
+  controller mapping."
+  [traktor-info]
+  (dosync
+   (and (some? traktor-info)
+        (< (- (now) (:last-sync traktor-info 0)) 100))))
 
 ;; A simple object which holds the values necessary to establish a link between an external
 ;; source of MIDI clock messages and the metronome driving the timing of a light show.
-(defrecord ClockSync [metronome midi-clock-source buffer] 
+(defrecord ClockSync [metronome midi-clock-source buffer traktor-info] 
     IClockSync
     (sync-start [this]
-      (add-synced-metronome midi-clock-source metronome (fn [msg] (sync-handler msg buffer metronome))))
+      (add-synced-metronome midi-clock-source metronome (fn [msg] (sync-handler msg buffer metronome traktor-info))))
     (sync-stop [this]
       (remove-synced-metronome midi-clock-source metronome))
     (sync-status [this]
       (dosync
        (ensure buffer)
+       (ensure traktor-info)
        (let [n (count @buffer)
              lag (when (pos? n) (- (now) (last @buffer)))
              current (and (= n max-clock-intervals)
-                        (< lag 100))]
-         {:type :midi,
+                          (< lag 100))
+             traktor-current (traktor-beat-phase-current @traktor-info)]
+         {:type (if traktor-current :traktor-beat-phase :midi)
           :current current
-          :level :bpm
+          :level (if traktor-current :beat :bpm)
           :source midi-clock-source
           :status (cond
                     (empty? @buffer) "Inactive, no clock pulses have been received."
@@ -373,26 +397,61 @@
                    (re-find pattern (:description %1)))
               devices))))
 
+(defn- annotate-traktor-grid-sources
+  "Add the :traktor-beat-phase key to any clock sources which appear to
+  be sending beat grid information from the Traktor Afterglow device
+  mapping."
+  [sources traktor-candidates]
+(for [candidate sources]
+  (merge candidate (when-let [traktor-info (get traktor-candidates candidate)]
+                     (when-let [beat-message-count (:control-change traktor-info)]
+                       (when (< (/ (:timing-clock traktor-info) beat-message-count) 3)
+                         {:traktor-beat-phase true}))))))
+
 ;; A simple object to help provide a user interface for selecting between available MIDI
 ;; clock sync sources
-(defrecord ClockFinder [listener results]
+(defrecord ClockFinder [listener results traktor-candidates]
   IClockFinder
-  (finder-current-sources [this] @results)
+  (finder-current-sources [this]
+    (annotate-traktor-grid-sources @results @traktor-candidates))
   (finder-finished [this]
     (remove-global-handler! listener)
-    (reset! results nil)))
+    (reset! results nil)
+    (reset! traktor-candidates nil)))
+
+(defn- check-for-traktor-beat-phase
+  "Examines an incoming MIDI message to see if it seems to be coming
+  from the Afterglow Traktor controller mapping, providing beat grid
+  information. If so, makes a note of that fact so the clock source
+  can be marked as offering this extra feature."
+  [msg traktor-sources]
+  (when (re-find #"(?i)traktor" (:name (:device msg)))
+    (case (:status msg)
+      :timing-clock (swap! traktor-sources update-in [(:device msg) :timing-clock] (fnil inc 0))
+      :control-change (when (< (:note msg) 5)
+                        (swap! traktor-sources update-in [(:device msg) :control-change] (fnil inc 0)))
+      nil)))
 
 (defn watch-for-clock-sources
   "Returns a clock finder that will watch for sources of MIDI clock
-  pulses until you tell it to stop."
+  pulses until you tell it to stop. It also watches if any of the
+  candidates whose names contain the word Traktor are also sending
+  beat grid information provided by the custom Afterglow Traktor
+  controller mapping. If so, they will be specially annotated when
+  returned."
   []
   (open-inputs-if-needed!)
   (let [clock-sources (atom #{})
+        traktor-sources (atom {})
         clock-listener (fn [msg]
-                         (when (= (:status msg) :timing-clock)
-                           (swap! clock-sources conj (:device msg))))]
+                         (try
+                           (when (= (:status msg) :timing-clock)
+                             (swap! clock-sources conj (:device msg)))
+                           (check-for-traktor-beat-phase msg traktor-sources)
+                           (catch Throwable t
+                             (error t "Problem looking for MIDI clock sources"))))]
     (add-global-handler! clock-listener)
-    (ClockFinder. clock-listener clock-sources)))
+    (ClockFinder. clock-listener clock-sources traktor-sources)))
 
 (defn sync-to-midi-clock
   "Returns a sync function that will cause the beats-per-minute
@@ -417,14 +476,14 @@
          0 (throw (IllegalArgumentException. (str "No MIDI clock sources " (describe-name-filter name-filter)
                                                   "were found.")))
          1 (fn [^afterglow.rhythm.Metronome metronome]
-             (let [sync-handler (ClockSync. metronome (first result) (ref (ring-buffer max-clock-intervals)))]
+             (let [traktor-info (when (re-find #"(?i)traktor" (:name (first result))) {})
+                   sync-handler (ClockSync. metronome (first result) (ref (ring-buffer max-clock-intervals))
+                                            (ref traktor-info))]
                (sync-start sync-handler)
                sync-handler))
 
          (throw (IllegalArgumentException. (str "More than one MIDI clock source " (describe-name-filter name-filter)
                                                 "was found."))))))))
-
-
 
 (defn identify-mapping
   "Report on the next MIDI control or note message received, to aid in

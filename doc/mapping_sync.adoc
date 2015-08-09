@@ -151,7 +151,9 @@ TIP: Native Instruments has an informative Knowledge Base article
 which
 http://www.native-instruments.com/en/support/knowledge-base/show/750/how-to-send-a-midi-clock-sync-signal-in-traktor/[explains]
 how to configure Traktor to send the MIDI clock pulses that Afterglow
-can sync to.
+can sync to. Also see
+<<mapping_sync#syncing-to-traktor-beat-phase,below>> for how to sync
+to the actual beat phase information when you are using Traktor.
 
 Once you have your MIDI clock pulses reaching the system on which
 Afterglow is running, start Afterglow. Because of limitations inherent
@@ -211,6 +213,54 @@ sync source:
 (show/sync-status)
 ; -> {:type :manual}
 ----
+
+== Syncing to Traktor Beat Phase
+
+If you are using Traktor as your source of MIDI clock synchronization,
+although you cannot quite attain the kind of smoothly precise BPM lock
+as you can with <<mapping_sync#syncing-to-pro-dj-link,Pro DJ Link>>,
+you can configure Traktor to send its beat phase information in a way
+that Afterglow can detect and analyze, giving you the same kind of
+beat grid synchronization.
+
+In order to do that, download the Afterglow Traktor Controller
+Mapping,
+https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/Afterglow.tsi[Afterglow.tsi],
+and import it into Traktor. It will create a Device named `Clock,
+Afterglow` within the Traktor Controller Manager:
+
+image::assets/TraktorMapping.png[Afterglow Traktor Device Mapping]
+
+Use that rather than the Generic MIDI device you would create in the
+process described in the Traktor Knowledge Base article linked above,
+and it will send additional MIDI messages that Afterglow will
+recognize and use to remain synchronized to the Traktor beat grid.
+
+WARNING: In order to avoid extra MIDI clock pulses being sent, which
+will cause the BPM calculations to be wildly incorrect, make sure not
+to create more than one Generic MIDI device on the Traktor Virtual
+Output port. If you created one following the directions in the above
+section, be sure to delete it, and leave only the Afterglow Traktor
+controller mapping.
+
+The way the Afterglow mapping works is that it sends out Control
+Change messages for all currently playing decks containing the current
+beat phase on that deck. (Deck A is sent as controller `1`, B as
+controller `2`, C as controller `3`, and D as controller `4`). In
+order for Afterglow to know which deck to pay attention to if more
+than one is playing at the same time, whenever a different deck
+becomes the Tempo Master, a message identifying the deck is sent out
+as a Control Change message on controller `0`. (The same number to deck
+correspondence is used.) When no deck is Tempo Master, a value Control
+Change with value `0` is sent on controller `0`.
+
+Afterglow will only look for the special Control Change messages if
+the name of the MIDI device on which the messages are being received
+contains the string "Traktor". This will automatically be the case
+with Internal Sync on the Mac; if you are using MIDI over a network,
+or creating your own virtual MIDI devices on Windows, be sure to make
+Traktor part of the MIDI port name, so Afterglow can know to watch for
+these special messages.
 
 == Syncing to Pro DJ Link
 
@@ -347,6 +397,7 @@ You will see a brief startup animation, and Afterglow's Push interface
 will start. Here is an overview:
 
 image::assets/PushNoEffects.jpg[Push interface]
+
 === Show Control
 
 Once you have the push linked to a show, it becomes a very intuitive

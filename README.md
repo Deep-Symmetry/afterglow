@@ -497,7 +497,8 @@ Clojure seize control of your lights!
 If you have DJ software or a mixer sending you MIDI clock data, you
 can sync the show’s BPM to it (see the
 [docs](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#syncing-to-midi-clock)
-for details):
+for details, and for a Traktor controller mapping file that lets you
+sync to its beat phase information as well):
 
 ```clojure
 (show/sync-to-external-clock (afterglow.midi/sync-to-midi-clock "traktor"))
