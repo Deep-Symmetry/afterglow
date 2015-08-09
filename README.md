@@ -679,9 +679,9 @@ encounter them!
   [yesql](https://yobriefca.se/blog/2014/11/25/yesql-sql-in-sql-in-clojure/)
   and h2 as the database. Need to figure out where it would be stored,
   though.
-- [ ] See if I can get Traktor to just send beat notes for master
+- [x] See if I can get Traktor to just send beat notes for master
   track; if so, add mode for MIDI sync to ride them like DJ link.
-  - [ ] See example on page 166 of Traktor Bible; it is close, but I
+  - [x] See example on page 166 of Traktor Bible; it is close, but I
     want to add a condition that makes sure these pulses are sent only
     for the deck which is currently the tempo master. Write to the
     author for advice? Alternately, send separate messages when each
