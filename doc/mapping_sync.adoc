@@ -254,13 +254,12 @@ as a Control Change message on controller `0`. (The same number to
 deck correspondence is used.) When no deck is Tempo Master, a Control
 Change with value `0` is sent on controller `0`.
 
-Afterglow will only look for these special Control Change messages if
-the name of the MIDI device on which the messages are being received
-contains the string "Traktor". This will automatically be the case
-with Internal Sync on the Mac; if you are using MIDI over a network,
-or creating your own virtual MIDI devices on Windows, be sure to make
-Traktor part of the MIDI port name, so Afterglow can know to watch for
-these special messages.
+Whenever Afterglow detects a coordinated stream of messages on
+controllers `0` through `4` which are consistent with beat-phase
+information from this Traktor mapping, it offers that MIDI input
+device as a source of Traktor beat-phase synchronization, and if it is
+synchronizing a metronome with the MIDI clock messages on that port,
+will also synchronize the beats.
 
 == Syncing to Pro DJ Link
 

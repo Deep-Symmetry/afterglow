@@ -141,28 +141,25 @@
   number, so they can be selected in the sync interface."
   [page-id]
   (let [page-info (get @clients page-id)
-        old-info (:midi-sync page-info)
-        clock-finder (amidi/watch-for-clock-sources)]
-    (after 300
-           #(try
-              (let [found (amidi/finder-current-sources clock-finder)
-                    source-info (loop [result (update-in old-info [:known] select-keys found)
-                                       new-sources (clojure.set/difference found
-                                                                           (set (keys (:known result))))
-                                       counter (inc (:counter result 0))]
-                                  (if-not (seq new-sources)
-                                    result
-                                    (recur (-> result
-                                               (assoc-in [:known (first new-sources)] counter)
-                                               (assoc-in [:counter] counter))
-                                           (rest new-sources)
-                                           (inc counter))))]
-                (when (not= old-info source-info)
-                  (swap! clients assoc-in [page-id :midi-sync] source-info)))
-              (catch Throwable t
-                (error t "Problem updating list of MIDI clock sources"))
-              (finally (amidi/finder-finished clock-finder)))
-           controllers/pool)))
+        old-info (:midi-sync page-info)]
+    (try
+      (let [found (amidi/current-clock-sources)
+            source-info (loop [result (update-in old-info [:known] select-keys found)
+                               new-sources (clojure.set/difference found
+                                                                   (set (keys (:known result))))
+                               counter (inc (:counter result 0))]
+                          (if-not (seq new-sources)
+                            result
+                            (recur (-> result
+                                       (assoc-in [:known (first new-sources)] counter)
+                                       (assoc-in [:counter] counter))
+                                   (rest new-sources)
+                                   (inc counter))))]
+        (when (not= old-info source-info)
+          (swap! clients assoc-in [page-id :midi-sync] source-info)))
+      (catch Throwable t
+        (error t "Problem updating list of MIDI clock sources")))
+    controllers/pool))
 
 (defn update-known-dj-link-sync-sources
   "Updates the cached information to contain current list of Pro DJ
@@ -308,13 +305,14 @@
   [page-id]
   (let [page-info (get @clients page-id)
         known-midi (:known (:midi-sync page-info))
-        known-dj (:known (:dj-link-sync page-info))]
+        known-dj (:known (:dj-link-sync page-info))
+        traktor-beat-phase (amidi/current-traktor-beat-phase-sources)]
     (with-show (:show page-info)
       (concat [{:label "Manual (no automatic sync)."
                 :value "manual"
                 :selected (= :manual (:type (show/sync-status)))}]
               (build-sync-list known-midi :midi #(str (:name %)
-                                                      (if (:traktor-beat-phase %)
+                                                      (if (traktor-beat-phase %)
                                                         " (Traktor, sync BPM and beat phase)."
                                                         " (MIDI, sync BPM only)."))
                                (:source (show/sync-status)))

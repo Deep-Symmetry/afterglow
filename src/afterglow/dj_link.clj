@@ -4,8 +4,7 @@
   This is purely experimental and based on network traffic capture, but
   unless they change the protocol, it works really well, providing rock
   solid BPM, beat, and measure-phase tracking."
-  (:require [afterglow.midi :refer [IClockSync sync-start sync-stop sync-status
-                                    IClockFinder finder-current-sources finder-finished]]
+  (:require [afterglow.midi :refer [IClockSync sync-start sync-stop sync-status]]
             [afterglow.rhythm :refer :all]
             [afterglow.util :refer [unsign]]
             [overtone.at-at :refer [now]]
