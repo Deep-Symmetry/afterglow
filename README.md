@@ -122,19 +122,17 @@ which hosts Afterglow inside [Cycling ‘74’s Max](https://cycling74.com/).
 
 ## Status
 
-Although Afterglow is far from finished, its first release reflects
-the fact that it is ready for the world to start exploring it and
-helping decide the directions in which to grow next (as well as
-identifying areas where the documentation needs clarification or
-reinforcement).
+Although Afterglow is far from finished, it's ready for the world to
+start exploring, and helping decide directions in which to grow next
+(as well as identifying areas where the documentation needs
+clarification or reinforcement).
 
 Most of the crazy ideas have panned out and been implemented, and I am
 fleshing out the basic details needed for everyday use. The examples
 are starting to be intriguing and informative, and the
 [documentation](doc/README.adoc#afterglow-documentation) is getting
 substantial. The modeling of fixtures, channels, etc. is coming
-together nicely, though there have been drastic changes as I gained
-experience with how I want to use them.
+together nicely, though there may be a few more changes.
 
 There is now an embedded web application, which is growing into a show
 control interface for people who are not Clojure hackers, and a useful
@@ -148,8 +146,8 @@ number of fixtures; it will probably overwhelm the graphics processor
 on most systems once you add too many lights. However, the framework
 can be used by someone who actually knows OpenGL programming to build
 a more scalable preview (albeit one that probably doesn’t look quite
-so photo-realistic with beams impacting drifting fog). This is one of
-the areas I will be working on immediately after the first release.
+so photo-realistic with beams impacting drifting fog). This is an area
+where I would love some help if it sounds interesting!
 
 ## Usage
 
