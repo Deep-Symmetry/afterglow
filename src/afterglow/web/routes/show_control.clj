@@ -15,7 +15,7 @@
             [ring.util.http-response :refer [ok]]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
             [selmer.parser :as parser]
-            [taoensso.timbre :refer [info warn spy]]))
+            [taoensso.timbre :as timbre :refer [info warn error]]))
 
 (defn- current-cue-color
   "Given a show, the set of keys identifying effects that are
@@ -144,21 +144,24 @@
         old-info (:midi-sync page-info)
         clock-finder (amidi/watch-for-clock-sources)]
     (after 300
-           #(let [found (amidi/finder-current-sources clock-finder)
-                  source-info (loop [result (update-in old-info [:known] select-keys found)
-                                     new-sources (clojure.set/difference found
-                                                                         (set (keys (:known result))))
-                                     counter (inc (:counter result 0))]
-                                (if-not (seq new-sources)
-                                  result
-                                  (recur (-> result
-                                             (assoc-in [:known (first new-sources)] counter)
-                                             (assoc-in [:counter] counter))
-                                         (rest new-sources)
-                                         (inc counter))))]
-              (amidi/finder-finished clock-finder)
-                  (when (not= old-info source-info)
-                    (swap! clients assoc-in [page-id :midi-sync] source-info)))
+           #(try
+              (let [found (amidi/finder-current-sources clock-finder)
+                    source-info (loop [result (update-in old-info [:known] select-keys found)
+                                       new-sources (clojure.set/difference found
+                                                                           (set (keys (:known result))))
+                                       counter (inc (:counter result 0))]
+                                  (if-not (seq new-sources)
+                                    result
+                                    (recur (-> result
+                                               (assoc-in [:known (first new-sources)] counter)
+                                               (assoc-in [:counter] counter))
+                                           (rest new-sources)
+                                           (inc counter))))]
+                (when (not= old-info source-info)
+                  (swap! clients assoc-in [page-id :midi-sync] source-info)))
+              (catch Throwable t
+                (error t "Problem updating list of MIDI clock sources"))
+              (finally (amidi/finder-finished clock-finder)))
            controllers/pool)))
 
 (defn update-known-dj-link-sync-sources

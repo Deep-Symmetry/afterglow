@@ -469,21 +469,22 @@
    (sync-to-midi-clock nil))
   ([name-filter]
    (let [clock-finder (watch-for-clock-sources)]
-     (Thread/sleep 300)
-     (let [result (filter-devices (finder-current-sources clock-finder) name-filter)]
-       (finder-finished clock-finder)
-       (case (count result)
-         0 (throw (IllegalArgumentException. (str "No MIDI clock sources " (describe-name-filter name-filter)
-                                                  "were found.")))
-         1 (fn [^afterglow.rhythm.Metronome metronome]
-             (let [traktor-info (when (re-find #"(?i)traktor" (:name (first result))) {})
-                   sync-handler (ClockSync. metronome (first result) (ref (ring-buffer max-clock-intervals))
-                                            (ref traktor-info))]
-               (sync-start sync-handler)
-               sync-handler))
+     (try
+       (Thread/sleep 300)
+       (let [result (filter-devices (finder-current-sources clock-finder) name-filter)]
+         (case (count result)
+           0 (throw (IllegalArgumentException. (str "No MIDI clock sources " (describe-name-filter name-filter)
+                                                    "were found.")))
+           1 (fn [^afterglow.rhythm.Metronome metronome]
+               (let [traktor-info (when (re-find #"(?i)traktor" (:name (first result))) {})
+                     sync-handler (ClockSync. metronome (first result) (ref (ring-buffer max-clock-intervals))
+                                              (ref traktor-info))]
+                 (sync-start sync-handler)
+                 sync-handler))
 
-         (throw (IllegalArgumentException. (str "More than one MIDI clock source " (describe-name-filter name-filter)
-                                                "was found."))))))))
+           (throw (IllegalArgumentException. (str "More than one MIDI clock source " (describe-name-filter name-filter)
+                                                  "was found.")))))
+       (finally (finder-finished clock-finder))))))
 
 (defn identify-mapping
   "Report on the next MIDI control or note message received, to aid in
