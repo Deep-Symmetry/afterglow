@@ -465,7 +465,7 @@
   Traktor controller mapping."
   []
   (set (for [[k v] @clock-sources]
-         (when (< (- (now) (:traktor-beat-phase v)) 300) k))))
+         (when (< (- (now) (:traktor-beat-phase v 0)) 300) k))))
 
 (defn sync-to-midi-clock
   "Returns a sync function that will cause the beats-per-minute
