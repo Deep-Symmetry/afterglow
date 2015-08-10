@@ -1,4 +1,4 @@
-(defproject afterglow "0.1.2-SNAPSHOT"
+(defproject afterglow "0.1.2"
   :description "A live-coding environment for light shows, built on the Open Lighting Architecture, using bits of Overtone."
   :url "https://github.com/brunchboy/afterglow"
   :license {:name "Eclipse Public License"
@@ -25,7 +25,7 @@
                  [environ "1.0.0"]
                  [com.taoensso/timbre "4.1.0"]
                  [com.taoensso/tower "3.0.2"]
-                 [markdown-clj "0.9.67"]
+                 [markdown-clj "0.9.68"]
                  [environ "1.0.0"]
                  [compojure "1.4.0" :exclusions [org.eclipse.jetty/jetty-server]]
                  [ring/ring-defaults "0.1.5"]
