@@ -99,6 +99,9 @@
     (let [addr (InetSocketAddress. @olad-host @olad-port)
           sock (Socket.)]
       (.connect sock addr socket-timeout)
+      ;; Set TCP_NODELAY option on the socket, for important throughput reasons, as documented
+      ;; at http://docs.openlighting.org/ola/doc/latest/rpc_system.html#sec_RPCHeader
+      (.setTcpNoDelay sock true)
       (try
         (let [in (io/input-stream sock)
               out (io/output-stream sock)]
@@ -143,21 +146,27 @@
   "Recursive portion of write-safely, try to write a message to the
   olad server, reopen connection and recur if that fails and it is the
   first failure."
-  [^bytes header ^bytes message ^Boolean first-try ^clojure.lang.Atom connection]
-  (try
-      (.write (:out @connection) header)
-      (.write (:out @connection) message)
-      (try
-        (.flush (:out @connection))
-        (reset! last-failure nil)
-        (catch Exception e
-          (warn e "Problem flushing message to olad server; not retrying.")))
-      (catch Exception e
-        (warn e "Problem writing message to olad server")
-        (when first-try
-          (info "Reopening connection and retrying...")
-          (swap! connection connect-server)
-          (write-safely-internal header message false connection)))))
+  ([^bytes header ^bytes message ^Boolean first-try ^clojure.lang.Atom connection]
+   ;; Combine the header and message into a single write, for important throughput reasons, as documented
+   ;; at http://docs.openlighting.org/ola/doc/latest/rpc_system.html#sec_RPCHeader
+   (let [combined (byte-array (+ (count header) (count message)))]
+      (System/arraycopy header 0 combined 0 (count header))
+      (System/arraycopy message 0 combined (count header) (count message))
+      (write-safely-internal combined first-try connection)))
+  ([^bytes header-and-message ^Boolean first-try  ^clojure.lang.Atom connection]
+   (try
+     (.write (:out @connection) header-and-message)
+     (try
+       (.flush (:out @connection))
+       (reset! last-failure nil)
+       (catch Exception e
+         (warn e "Problem flushing message to olad server; not retrying.")))
+     (catch Exception e
+       (warn e "Problem writing message to olad server")
+       (when first-try
+         (info "Reopening connection and retrying...")
+         (swap! connection connect-server)
+         (write-safely-internal header-and-message false connection))))))
 
 (defn- write-safely
   "Try to write a message to the olad server, reopen connection and

@@ -26,7 +26,6 @@
                  [com.taoensso/timbre "4.1.0"]
                  [com.taoensso/tower "3.0.2"]
                  [markdown-clj "0.9.68"]
-                 [environ "1.0.0"]
                  [compojure "1.4.0" :exclusions [org.eclipse.jetty/jetty-server]]
                  [ring/ring-defaults "0.1.5"]
                  [ring/ring-session-timeout "0.1.0"]
