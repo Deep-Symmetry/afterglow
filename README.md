@@ -1,17 +1,13 @@
 # Afterglow
 
-<image align="right" width="275" src="doc/assets/Afterglow-logo-padded-left.png">
-An environment supporting
-[live coding](https://en.wikipedia.org/wiki/Live_coding) for the
-creation of dynamic light shows in [Clojure](http://clojure.org),
-leveraging the
-[Open Lighting Architecture](https://www.openlighting.org/ola/), and
-pieces of the [Overtone](http://overtone.github.io) toolkit. For
-efficiency, Afterglow uses
-[Protocol Buffers](https://developers.google.com/protocol-buffers/docs/overview)
-to communicate with the `olad` process running on the local machine
-via its
-[RPC Service](https://docs.openlighting.org/doc/latest/rpc_system.html).
+<image align="right" width="275"
+src="doc/assets/Afterglow-logo-padded-left.png"> An environment
+supporting [live coding](https://en.wikipedia.org/wiki/Live_coding)
+for the creation of algorithmic light shows in
+[Clojure](http://clojure.org), leveraging the
+[Open Lighting Architecture](https://www.openlighting.org/ola/) with the help of
+[ola-clojure](https://github.com/brunchboy/ola-clojure#ola-clojure), and
+pieces of the [Overtone](http://overtone.github.io) toolkit.
 Beyond building on pieces of Overtone, the entire Afterglow project
 was [inspired](https://vimeo.com/22798433) by it.
 
