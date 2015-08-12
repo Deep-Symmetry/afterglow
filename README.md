@@ -108,10 +108,9 @@ If any of this sounds interesting to you, here is how to get started:
 > explains how to do that.
 
 If you want to run Afterglow as a standalone executable, you can
-download the executable &uuml;berjar
-[![&uuml;berjar](https://img.shields.io/github/downloads/brunchboy/afterglow/latest/afterglow.jar.svg)](http://https://github.com/brunchboy/afterglow/releases/download/latest/afterglow.jar)
-from the [releases](https://github.com/brunchboy/afterglow/releases)
-page.
+download the executable &uuml;berjar from the
+[releases](https://github.com/brunchboy/afterglow/releases) page.
+[![&uuml;berjar](https://img.shields.io/github/downloads/brunchboy/afterglow/latest/afterglow.jar.svg)](https://github.com/brunchboy/afterglow/releases/download/latest/afterglow.jar)
 
 For an example of a project which uses Afterglow as a dependency, as
 described above, see
