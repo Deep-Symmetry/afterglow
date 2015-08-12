@@ -1171,7 +1171,9 @@
                           assoc (:stop control-buttons)
                           (button-state (:stop control-buttons) :bright))
                    (with-show (:show controller)
-                     (not (show/running?))))
+                     (when (show/running?)
+                       (reset! (:stop-mode controller) false))
+                     @(:stop-mode controller)))
                  (handle-control-change [this controller message]
                    (when (pos? (:velocity message))
                      ;; End stop mode
