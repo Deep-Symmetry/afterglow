@@ -3,10 +3,10 @@
   When you are learning and experimenting in your REPL, the main
   namespace you want to be using is afterglow.examples"
   (:require [afterglow.init]
-            [afterglow.ola-client :as ola-client]
             [afterglow.version :as version]
             [afterglow.web.handler :refer [app]]
             [afterglow.web.session :as session]
+            [ola-clojure.ola-client :as ola-client]
             [org.httpkit.server :as http-kit]
             [environ.core :refer [env]]
             [clojure.tools.cli :refer [parse-opts]]

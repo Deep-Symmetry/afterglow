@@ -32,13 +32,14 @@
             [afterglow.effects.params :refer [bind-keyword-param resolve-param]]
             [afterglow.fixtures :as fixtures]
             [afterglow.midi :as midi]
-            [afterglow.ola-service :as ola]
+            [ola-clojure.ola-service :as ola]
             [afterglow.rhythm :refer :all]
             [afterglow.show-context :refer [*show* with-show]]
             [afterglow.transform :as transform]
             [afterglow.version :as version]
             [amalloy.ring-buffer :refer [ring-buffer]]
             [clojure.math.numeric-tower :as math]
+            [clojure.stacktrace :refer [root-cause]]
             [com.climate.claypoole :as cp]
             [overtone.at-at :as at-at]
             [overtone.midi]
@@ -54,6 +55,17 @@
   here is 30 Hz, thirty frames per second."}
   default-refresh-interval
   (/ 1000 30))
+
+(defonce ^:private ^{:doc "If the last attempt to send a message to
+  the OLA server failed, this will contain a description of the problem."}
+  ola-failure
+  (atom nil))
+
+(defn ola-failure-description
+  "If the last attempt to communicate with the OLA daemon failed,
+  returns a description of the problem, otherwise returns nil."
+  []
+  @ola-failure)
 
 (def resolution-handlers
   "The order in which assigners should be evaluated, and the functions
@@ -127,6 +139,16 @@
   []
   (/ (:recent-average @(:statistics *show*) 0) (:refresh-interval *show*)))
 
+(defn- response-handler
+  "Called by the OLA communication library to report on the result of
+  our request to update DMX data for a show universe."
+  [result]
+  (if (:response result)
+    (reset! ola-failure nil)  ; All went well
+    (reset! ola-failure (merge {:description (:failed result)}
+                               (when (:cause result)
+                                 {:cause (str (root-cause (:cause result)))})))))
+
 (defn- send-dmx
   "Calculate and send a single frame of DMX values for the universes
   and effects run by a show. Arguments are the show being rendered,
@@ -148,7 +170,7 @@
             (p :resolve-value (handler show buffers snapshot target value target-id)))))))
   (p :send-dmx-data (doseq [universe (keys buffers)]
                       (let [levels (get buffers universe)]
-                        (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} nil))))
+                        (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} response-handler))))
   (swap! (:movement *show*) #(dissoc (assoc % :previous (:current %)) :current))
   (swap! (:statistics *show*) update-stats (:instant snapshot) (:refresh-interval show)))
 

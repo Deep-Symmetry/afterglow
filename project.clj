@@ -20,6 +20,7 @@
                  [amalloy/ring-buffer "1.1"]
                  [com.climate/claypoole "1.0.0"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
+                 [ola-clojure "0.1.0-SNAPSHOT"]
                  [selmer "0.8.8"]
                  [com.evocomputing/colors "1.0.2"]
                  [environ "1.0.0"]
@@ -37,8 +38,6 @@
                  [buddy "0.6.1"]
                  [instaparse "1.4.1"]
                  [http-kit "2.1.19"]]
-  :source-paths ["src" "generated"]
-  :prep-tasks [["with-profile" "+gen,+dev" "run" "-m" "afterglow.src-generator"] "protobuf" "javac" "compile"]
 
   :main afterglow.core
 
@@ -55,22 +54,15 @@
 
   :profiles {:dev {:dependencies [[ring-mock "0.1.5"]
                                   [ring/ring-devel "1.4.0"]]
-                   :source-paths ["dev_src"]
-                   :resource-paths ["dev_resources"]
                    :repl-options {:init-ns afterglow.examples
                                   :welcome (println "afterglow loaded.")}
                    :env {:dev true}}
 
-             :gen {:prep-tasks ^:replace ["protobuf" "javac" "compile"]}
-
              :uberjar {:env {:production true}
                        :aot :all}}
-  :plugins [[org.clojars.brunchboy/lein-protobuf "0.4.3" :exclusions [leinjacker]]
-            [codox "0.8.12"]
+  :plugins [[codox "0.8.12"]
             [lein-environ "1.0.0"]
             [lein-ancient "0.6.7"]]
-
-  :aliases {"gen" ["with-profile" "+gen,+dev" "run" "-m" "afterglow.src-generator"]}
 
   :codox {:src-dir-uri "http://github.com/brunchboy/afterglow/blob/master/"
           :src-linenum-anchor-prefix "L"

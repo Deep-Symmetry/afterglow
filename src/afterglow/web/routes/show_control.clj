@@ -1,6 +1,5 @@
 (ns afterglow.web.routes.show-control
   (:require [afterglow.web.layout :as layout]
-            [afterglow.ola-client :as ola]
             [afterglow.midi :as amidi]
             [afterglow.dj-link :as dj-link]
             [afterglow.rhythm :as rhythm]
@@ -352,7 +351,7 @@
   [page-id]
   (let [last-info (get @clients page-id)]
     (with-show (:show last-info)
-      (let [ola-failure (ola/failure-description)
+      (let [ola-failure (show/ola-failure-description)
             status (merge {:running (show/running?)}
                           (when ola-failure {:error ola-failure}))]
         (when (not= status (:last-status last-info))
