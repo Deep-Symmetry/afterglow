@@ -99,7 +99,7 @@ If any of this sounds interesting to you, here is how to get started:
 2. For now set up a Clojure project using [Leiningen](http://leiningen.org).
 
 3. Add this project as a dependency:
-   [![Clojars Project](http://clojars.org/afterglow/latest-version.svg)](http://clojars.org/afterglow)
+   [![Clojars Project](https://img.shields.io/clojars/v/afterglow.svg)](http://clojars.org/afterglow)
 
 > :wrench: If you want to use an Ableton Push controller, and are
 > using a Mac, you will need to work around some bugs in Java MIDI
@@ -108,8 +108,10 @@ If any of this sounds interesting to you, here is how to get started:
 > explains how to do that.
 
 If you want to run Afterglow as a standalone executable, you can
-download the executable &uuml;berjar from the
-[releases](https://github.com/brunchboy/afterglow/releases) page.
+download the executable &uuml;berjar
+[![&uuml;berjar](https://img.shields.io/github/downloads/brunchboy/afterglow/latest/afterglow.jar.svg)](http://https://github.com/brunchboy/afterglow/releases/download/latest/afterglow.jar)
+from the [releases](https://github.com/brunchboy/afterglow/releases)
+page.
 
 For an example of a project which uses Afterglow as a dependency, as
 described above, see
