@@ -799,8 +799,8 @@ encounter them!
   - [x] Nice
     [breakdown](http://tai-studio.org/index.php/projects/sound-programming/accessing-abletons-push-device/)
     of button sections.
-- [x] Add a user interface using
-  [Luminus](http://www.luminusweb.net/docs).
+- [x] Add a user interface using [Luminus](http://www.luminusweb.net/docs).
+- [x] Separate [ola-clojure](https://github.com/brunchboy/ola-clojure#ola-clojure) into its own project.
 
 ## License
 
