@@ -21,7 +21,7 @@
                  [com.climate/claypoole "1.0.0"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
                  [ola-clojure "0.1.0"]
-                 [selmer "0.8.8"]
+                 [selmer "0.8.9"]
                  [com.evocomputing/colors "1.0.2"]
                  [environ "1.0.0"]
                  [com.taoensso/timbre "4.1.0"]
