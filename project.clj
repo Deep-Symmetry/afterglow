@@ -7,6 +7,7 @@
                  [org.clojure/core.cache "0.6.4"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [org.clojure/data.json "0.2.6"]
+                 [org.clojure/data.zip "0.1.1"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/tools.nrepl "0.2.10"]
                  [org.clojure/tools.cli "0.3.2"]

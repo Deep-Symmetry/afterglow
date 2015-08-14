@@ -1,7 +1,11 @@
 (ns afterglow.fixtures
   "Utility functions common to fixture definitions."
   {:author "James Elliott"}
-  (:require [afterglow.channels :as chan]))
+  (:require [clojure.java.io :as io]
+            [clojure.xml :as xml]
+            [clojure.zip :as zip]
+            [clojure.data.zip.xml :as zip-xml]
+            [afterglow.channels :as chan]))
 
 (defn- build-function-map
   "Gathers all the functions defined on the channels a fixture or head
@@ -81,7 +85,52 @@
   product such as the [Chauvet
   DMX-4](http://www.chauvetlighting.com/dmx-4.html), its channels can
   be patched as four of these, or four [[generic-dimmer]], or some
-  combination." {:doc/format :markdown}
+  combination."
+  {:doc/format :markdown}
   []
   {:channels [(chan/functions :switch 1 0 "off" 1 nil 255 "on")]
    :name "Generic switch"})
+
+(defn- qxf-creator->map
+  "Builds a map containing the creator information from a QLC+ fixture
+  definition."
+  [creator]
+  {:name (zip-xml/xml1-> creator :Name zip-xml/text)
+   :version (zip-xml/xml1-> creator :Version zip-xml/text)
+   :author (zip-xml/xml1-> creator :Author zip-xml/text)})
+
+(defn- qxf-channel->map
+  "Builds a map containing a channel specification from a QLC+ fixture
+  definition."
+  [ch]
+  {:name (zip-xml/attr ch :Name)
+   :group (zip-xml/xml1-> ch :Group zip-xml/text)})
+
+(defn convert-qxf
+  "Read a fixture definition in the format used by
+  [QLC+](http://www.qlcplus.org/), and use it as the starting point of
+  an Afterglow fixture definition."
+  {:doc/format :markdown}
+  [path]
+  (let [doc (-> path io/file xml/parse)
+        root (zip/xml-zip doc)]
+    (when-not (= (:tag doc) :FixtureDefinition)
+      (throw (Exception. "Root element is not FixtureDefinition")))
+    (when-not (= (get-in doc [:attrs :xmlns]) "http://qlcplus.sourceforge.net/FixtureDefinition")
+      (throw (Exception. "File does not use XML Namespace http://qlcplus.sourceforge.net/FixtureDefinition")))
+    {:creator (qxf-creator->map (zip-xml/xml1-> root :Creator))
+     :channels (into {}
+                     (for [ch (zip-xml/xml-> root :Channel)]
+                       [(zip-xml/attr ch :Name) (qxf-channel->map ch)]))}))
+
+(defn fixture-groups
+  "Returns the set of group values used by channels in a fixture definition."
+  [f]
+  (reduce conj #{} (map :group (vals (:channels (convert-qxf f))))))
+
+(defn gather-groups
+  "Find all the different group values in the QLC fixture
+  definitions."
+  []
+  (let [files (file-seq (clojure.java.io/file "/Users/jim/git/qlcplus/resources/fixtures"))]
+    (reduce clojure.set/union (map fixture-groups (filter #(.endsWith (.getName %) ".qxf") files)))))
