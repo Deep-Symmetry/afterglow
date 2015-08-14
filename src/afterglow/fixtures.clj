@@ -99,15 +99,33 @@
    :version (zip-xml/xml1-> creator :Version zip-xml/text)
    :author (zip-xml/xml1-> creator :Author zip-xml/text)})
 
+(defn- qxf-capability->map
+  "Builds a map containing a channel specification from a QLC+ fixture
+  definition."
+  [c]
+  {:min (Integer/valueOf (zip-xml/attr c :Min))
+   :max (Integer/valueOf (zip-xml/attr c :Max))
+   :label (zip-xml/text c)})
+
 (defn- qxf-channel->map
   "Builds a map containing a channel specification from a QLC+ fixture
   definition."
   [ch]
   {:name (zip-xml/attr ch :Name)
-   :group (zip-xml/xml1-> ch :Group zip-xml/text)})
+   :group (zip-xml/xml1-> ch :Group zip-xml/text)
+   :byte (Integer/valueOf (zip-xml/attr (zip-xml/xml1-> ch :Group) :Byte))
+   :capabilities (mapv qxf-capability->map
+                       (zip-xml/xml-> ch :Capability))})
+
+(defn- qxf-mode->map
+  "Builds a map containing a mode specification from a QLC+ fixture
+  definition. Currently ignores the Physical documentation."
+  [m]
+  {:name (zip-xml/attr m :Name)
+   :channels (mapv zip-xml/text (zip-xml/xml-> m :Channel))})
 
 (defn convert-qxf
-  "Read a fixture definition in the format used by
+  "Read a fixture definition file in the format (.qxf) used by
   [QLC+](http://www.qlcplus.org/), and use it as the starting point of
   an Afterglow fixture definition."
   {:doc/format :markdown}
@@ -119,18 +137,46 @@
     (when-not (= (get-in doc [:attrs :xmlns]) "http://qlcplus.sourceforge.net/FixtureDefinition")
       (throw (Exception. "File does not use XML Namespace http://qlcplus.sourceforge.net/FixtureDefinition")))
     {:creator (qxf-creator->map (zip-xml/xml1-> root :Creator))
+     :manufacturer (zip-xml/text (zip-xml/xml1-> root :Manufacturer))
+     :model (zip-xml/text (zip-xml/xml1-> root :Model))
+     :type (zip-xml/text (zip-xml/xml1-> root :Type))
      :channels (into {}
                      (for [ch (zip-xml/xml-> root :Channel)]
-                       [(zip-xml/attr ch :Name) (qxf-channel->map ch)]))}))
+                       [(zip-xml/attr ch :Name) (qxf-channel->map ch)]))
+     :modes (into {}
+                  (for [m (zip-xml/xml-> root :Mode)]
+                    [(zip-xml/attr m :Name) (qxf-mode->map m)]))}))
 
-(defn fixture-groups
-  "Returns the set of group values used by channels in a fixture definition."
-  [f]
-  (reduce conj #{} (map :group (vals (:channels (convert-qxf f))))))
+;; These functions were used to help analyze the contents of all QLC+ fixture definitions.
+;; They are left here in case the format changes or expands in the future and they become
+;; useful again, either directly, or as examples.
 
-(defn gather-groups
-  "Find all the different group values in the QLC fixture
+(def ^:private qlc-fixtures-path
+  "The directory in which all the QLC+ fixture definitions can be found. You will need to set this."
+  "/Users/jim/git/qlcplus/resources/fixtures")
+
+(defn- qlc-fixture-definitions
+  "Returns a sequence of all QLC+ fixture definitions."
+  []
+  (let [files (file-seq (clojure.java.io/file qlc-fixtures-path))]
+    (filter #(.endsWith (.getName %) ".qxf") files)))
+
+(defn- qlc-fixture-channel-values
+  "Returns the set of distinct values found under a particular keyword
+  in any channel in a fixture definition."
+  [k f]
+  (reduce conj #{} (map k (vals (:channels (convert-qxf f))))))
+
+(defn- qlc-gather-groups
+  "Find all the different channel group values in the QLC fixture
   definitions."
   []
-  (let [files (file-seq (clojure.java.io/file "/Users/jim/git/qlcplus/resources/fixtures"))]
-    (reduce clojure.set/union (map fixture-groups (filter #(.endsWith (.getName %) ".qxf") files)))))
+  (let [files (file-seq (clojure.java.io/file qlc-fixtures-path))]
+    (reduce clojure.set/union (map (partial qlc-fixture-channel-values :group) (qlc-fixture-definitions)))))
+
+(defn- qlc-gather-bytes
+  "Find all the different channel byte values in the QLC fixture
+  definitions."
+  []
+  (let [files (file-seq (clojure.java.io/file qlc-fixtures-path))]
+    (reduce clojure.set/union (map (partial qlc-fixture-channel-values :byte) (qlc-fixture-definitions)))))
