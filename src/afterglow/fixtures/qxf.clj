@@ -48,11 +48,12 @@
   "Builds a map containing a channel specification from a QLC+ fixture
   definition."
   [ch]
-  {:name (zip-xml/attr ch :Name)
-   :group (zip-xml/xml1-> ch :Group zip-xml/text)
-   :byte (Integer/valueOf (zip-xml/attr (zip-xml/xml1-> ch :Group) :Byte))
-   :capabilities (mapv qxf-capability->map
-                       (zip-xml/xml-> ch :Capability))})
+  (let [color (zip-xml/xml1-> ch :Colour zip-xml/text)]
+    (merge {:name (zip-xml/attr ch :Name)
+            :group (zip-xml/xml1-> ch :Group zip-xml/text)
+            :byte (Integer/valueOf (zip-xml/attr (zip-xml/xml1-> ch :Group) :Byte))
+            :capabilities (mapv qxf-capability->map (zip-xml/xml-> ch :Capability))}
+           (when color {:color color}))))
 
 (defn qxf-channnel-assigment->vector
   "Builds a vector containing the offset at which a channel exists in
@@ -69,26 +70,31 @@
   [h]
   (mapv #(inc (Integer/parseInt %)) (zip-xml/xml-> h :Channel zip-xml/text)))
 
+(defn- qxf-mark-pan-tilt
+  "Adds an flag to a fixture or head when its channel map
+  includes a pan or tilt channel."
+  [channel-specs h]
+  (merge h (when (some #{"Pan" "Tilt"} (map :group (map #(get channel-specs (second %)) (:channels h))))
+             {:has-pan-tilt true})))
+
 (defn- qxf-process-heads
   "Extracts any head-specific channels from a QLC+ mode, given a
   sequence of Head nodes and the vector of mode channel assignments."
-  ([heads all-channels]
-   ;; Just starting; see if there is anything to do, if so set up structures we need
-   (if (seq heads)  ; There are some heads to deal with
-     (let [channel-map (into {} all-channels)]
-       (qxf-process-heads heads channel-map []))
-     [nil all-channels]))  ; There were no heads
+  ([heads channel-map channel-specs]
+   ;; Kick off recursive arity with an empty response vector
+   (qxf-process-heads heads channel-map channel-specs []))
 
-  ([remaining-heads remaining-channel-map heads-processed]
+  ([remaining-heads remaining-channel-map channel-specs results]
    ;; Recursive head processing
    (if (empty? remaining-heads)
-     [heads-processed (vec remaining-channel-map)] ; Finished, return results
+     [results (vec remaining-channel-map)] ; Finished, return results
      ;; Process the next head
      (loop [head-channel-numbers (sort (qxf-head->vector (first remaining-heads)))
             head-channel-result []
             channels-left remaining-channel-map]
        (if (empty? head-channel-numbers)  ; Finished processing this head
-         (qxf-process-heads (rest remaining-heads) channels-left (conj heads-processed head-channel-result))
+         (qxf-process-heads (rest remaining-heads) channels-left channel-specs
+                            (conj results (qxf-mark-pan-tilt channel-specs {:channels head-channel-result})))
          (let [current (first head-channel-numbers)]
            (recur (rest head-channel-numbers)
                   (conj head-channel-result [current (get channels-left current)])
@@ -97,12 +103,15 @@
 (defn- qxf-mode->map
   "Builds a map containing a mode specification from a QLC+ fixture
   definition. Currently ignores the Physical documentation."
-  [m]
-  (let [all-channels (mapv qxf-channnel-assigment->vector (zip-xml/xml-> m :Channel))
-        [heads other-channels] (qxf-process-heads (zip-xml/xml-> m :Head) all-channels)]
-    {:name (zip-xml/attr m :Name)
-     :channels other-channels
-     :heads heads}))
+  [channel-specs m]
+  (let [channel-specs (into {} (for [spec channel-specs]  ; Turn specs into a map for efficient searching
+                                 [(:name spec) spec]))
+        all-channels (mapv qxf-channnel-assigment->vector (zip-xml/xml-> m :Channel))
+        channel-map (into {} all-channels)
+        [heads other-channels] (qxf-process-heads (zip-xml/xml-> m :Head) channel-map channel-specs)]
+    (qxf-mark-pan-tilt channel-specs {:name (zip-xml/attr m :Name)
+                                      :channels other-channels
+                                      :heads heads})))
 
 (defn translate-definition
   "Converts a map read by [[convert-qxf]] into an Afterglow fixture
@@ -129,9 +138,9 @@
        :model (zip-xml/text (zip-xml/xml1-> root :Model))
        :type (zip-xml/text (zip-xml/xml1-> root :Type))
        :channels channels
-       :modes (mapv qxf-mode->map (zip-xml/xml-> root :Mode))
+       :modes (mapv (partial qxf-mode->map channels) (zip-xml/xml-> root :Mode))
        :has-pan-channel (some #(= "Pan" (:group %)) channels)
-       :has-tilt-channel (some #(= "Pan" (:group %)) channels)})))
+       :has-tilt-channel (some #(= "Tilt" (:group %)) channels)})))
 
 (defn convert-qxf
   "Read a fixture definition file in the format (.qxf) used by
