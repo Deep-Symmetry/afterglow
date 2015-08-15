@@ -54,12 +54,55 @@
    :capabilities (mapv qxf-capability->map
                        (zip-xml/xml-> ch :Capability))})
 
+(defn qxf-channnel-assigment->vector
+  "Builds a vector containing the offset at which a channel exists in
+  a mode and the channel name. Offsets are one-based, to parallel
+  fixture manuals. In other words, the DMX address assigned to the
+  fixture corresponds to offset 1, the next address to offset 2, and
+  so on."
+  [a]
+  [(inc (Integer/parseInt (zip-xml/attr a :Number))) (zip-xml/text a)])
+
+(defn- qxf-head->vector
+  "Builds a vector containing the channel offsets belonging to a
+  single head."
+  [h]
+  (mapv #(inc (Integer/parseInt %)) (zip-xml/xml-> h :Channel zip-xml/text)))
+
+(defn- qxf-process-heads
+  "Extracts any head-specific channels from a QLC+ mode, given a
+  sequence of Head nodes and the vector of mode channel assignments."
+  ([heads all-channels]
+   ;; Just starting; see if there is anything to do, if so set up structures we need
+   (if (seq heads)  ; There are some heads to deal with
+     (let [channel-map (into {} all-channels)]
+       (qxf-process-heads heads channel-map []))
+     [nil all-channels]))  ; There were no heads
+
+  ([remaining-heads remaining-channel-map heads-processed]
+   ;; Recursive head processing
+   (if (empty? remaining-heads)
+     [heads-processed (vec remaining-channel-map)]  ; Finished, return results
+     ;; Process the next head
+     (loop [head-channel-numbers (qxf-head->vector (first remaining-heads))
+            head-channel-result []
+            channels-left remaining-channel-map]
+       (if (empty? head-channel-numbers)  ; Finished processing this head
+         (qxf-process-heads (rest remaining-heads) channels-left (conj heads-processed head-channel-result))
+         (let [current (first head-channel-numbers)]
+           (recur (rest head-channel-numbers)
+                  (conj head-channel-result [current (get channels-left current)])
+                  (dissoc channels-left current))))))))
+
 (defn- qxf-mode->map
   "Builds a map containing a mode specification from a QLC+ fixture
   definition. Currently ignores the Physical documentation."
   [m]
-  {:name (zip-xml/attr m :Name)
-   :channels (mapv zip-xml/text (zip-xml/xml-> m :Channel))})
+  (let [all-channels (mapv qxf-channnel-assigment->vector (zip-xml/xml-> m :Channel))
+        [heads other-channels] (qxf-process-heads (zip-xml/xml-> m :Head) all-channels)]
+    {:name (zip-xml/attr m :Name)
+     :channels other-channels
+     :heads heads}))
 
 (defn translate-definition
   "Converts a map read by [[convert-qxf]] into an Afterglow fixture
