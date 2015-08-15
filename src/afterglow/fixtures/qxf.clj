@@ -14,9 +14,19 @@
             [camel-snake-kebab.core :as csk]
             [afterglow.web.layout]  ; To set up the Selmer template path
             [selmer.parser :as parser]
-            [selmer.filters :as filters]))
+            [selmer.filters :as filters]
+            [taoensso.timbre :as timbre]))
+
+(defn sanitize-name
+  "Removes non-alphanumeric characters in a string, then turns it into
+  a suitable Clojure identifier."
+  [s]
+  (-> s
+      (clojure.string/replace #"[^a-zA-Z0-9]+" " ")
+      csk/->kebab-case))
 
 (filters/add-filter! :kebab csk/->kebab-case)
+(filters/add-filter! :sanitize sanitize-name)
 
 (defn- qxf-creator->map
   "Builds a map containing the creator information from a QLC+ fixture
@@ -70,16 +80,15 @@
       (throw (Exception. "Root element is not FixtureDefinition")))
     (when-not (= (get-in doc [:attrs :xmlns]) "http://qlcplus.sourceforge.net/FixtureDefinition")
       (throw (Exception. "File does not use XML Namespace http://qlcplus.sourceforge.net/FixtureDefinition")))
-    (let [modes (into {}
-                      (for [m (zip-xml/xml-> root :Mode)]
-                        [(zip-xml/attr m :Name) (qxf-mode->map m)]))]
+    (let [channels (mapv qxf-channel->map (zip-xml/xml-> root :Channel))]
       {:creator (qxf-creator->map (zip-xml/xml1-> root :Creator))
-               :manufacturer (zip-xml/text (zip-xml/xml1-> root :Manufacturer))
-               :model (zip-xml/text (zip-xml/xml1-> root :Model))
-               :type (zip-xml/text (zip-xml/xml1-> root :Type))
-               :channels (mapv qxf-channel->map (zip-xml/xml-> root :Channel))
-               :modes modes
-               :default-mode (first (keys modes))})))
+       :manufacturer (zip-xml/text (zip-xml/xml1-> root :Manufacturer))
+       :model (zip-xml/text (zip-xml/xml1-> root :Model))
+       :type (zip-xml/text (zip-xml/xml1-> root :Type))
+       :channels channels
+       :modes (mapv qxf-mode->map (zip-xml/xml-> root :Mode))
+       :has-pan-channel (some #(= "Pan" (:group %)) channels)
+       :has-tilt-channel (some #(= "Pan" (:group %)) channels)})))
 
 (defn convert-qxf
   "Read a fixture definition file in the format (.qxf) used by
