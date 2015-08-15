@@ -55,10 +55,13 @@
      (assoc (case mode{% for m in modes %}
                   :{{m.name|sanitize}}
                   {:channels [{% for ch in m.channels %}{% if not forloop.first %}
-                              {% endif %}(build-channel :{{ch|sanitize}} {{forloop.counter}}){% endfor %}]}{% endfor %})
+                              {% endif %}(build-channel :{{ch.1|sanitize}} {{ch.0}}){% endfor %}]}{%
+ if m.heads|not-empty %}
+                              :heads [{% for head in m.heads %}{% if not forloop.first %}
+                                      {% endif %}{% if m.heads|length > 1 %}{:x 0 :y 0 :z 0  ; TODO: specify actual location! (and perhaps rotation?)
+                                       {% endif %}:channels [{% for ch in head %}{% if not forloop.first %}
+                                                  {% endif %}(build-channel :{{ch.1|sanitize}} {{ch.0}}){% endfor %}]}{% endfor %}]{% endif %}{% endfor %})
             :name "{{model}}"
             :mode mode{% if has-pan-channel %}
             :pan-center 128 :pan-half-circle 128    ; TODO: Fix these values{% endif %}{% if has-tilt-channel %}
-            :tilt-center 128 :tilt-half-circle 128  ; TODO: Fix these values{% endif %}
-            ;; To be fleshed out 2: heads
-            ))){% endif %})
+            :tilt-center 128 :tilt-half-circle 128  ; TODO: Fix these values{% endif %}))){% endif %})

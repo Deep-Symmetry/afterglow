@@ -82,9 +82,9 @@
   ([remaining-heads remaining-channel-map heads-processed]
    ;; Recursive head processing
    (if (empty? remaining-heads)
-     [heads-processed (vec remaining-channel-map)]  ; Finished, return results
+     [heads-processed (vec remaining-channel-map)] ; Finished, return results
      ;; Process the next head
-     (loop [head-channel-numbers (qxf-head->vector (first remaining-heads))
+     (loop [head-channel-numbers (sort (qxf-head->vector (first remaining-heads)))
             head-channel-result []
             channels-left remaining-channel-map]
        (if (empty? head-channel-numbers)  ; Finished processing this head
