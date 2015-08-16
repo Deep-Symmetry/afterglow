@@ -72,10 +72,12 @@
 
 (defn- check-capabilities
   "Makes sure a capability list is sorted in increasing order and has
-  no gaps, adding nil sections for any unused ranges."
+  no gaps, adding nil sections for any unused ranges, and adding
+  trailing numbers to make all labels unique if needed."
   [caps]
   (loop [remaining (sort-by :min caps)
          last-end -1
+         labels {}
          result []]
     (if (empty? remaining)
       (if (< last-end 255)  ; Fill in final gap
@@ -84,8 +86,14 @@
       (let [current (first remaining)
             adjusted (if (< (inc last-end) (:min current))  ; Fill in a gap in capabilities
                        (conj result {:min (inc last-end) :max (dec (:min current))})
-                       result)]
-        (recur (rest remaining) (:max current) (conj adjusted current))))))
+                       result)
+            label (:label current)
+            label-count (when label (inc (get labels (:label current) 0)))
+            unique (if (and label (> label-count 1))
+                     (assoc current :label (str label " " label-count))
+                     current)
+            updated-labels (if label (assoc labels label label-count) labels)]
+        (recur (rest remaining) (:max current) updated-labels (conj adjusted unique))))))
 
 (defn expand-capability
   "Returns an Afterglow function specification corresponding to a
