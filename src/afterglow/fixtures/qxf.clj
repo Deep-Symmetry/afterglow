@@ -15,6 +15,7 @@
             [afterglow.web.layout]  ; To set up the Selmer template path
             [selmer.parser :as parser]
             [selmer.filters :as filters]
+            [selmer.filter-parser :refer [compile-filter-body]]
             [taoensso.timbre :as timbre]))
 
 (defn sanitize-name
@@ -27,6 +28,69 @@
 
 (filters/add-filter! :kebab csk/->kebab-case)
 (filters/add-filter! :sanitize sanitize-name)
+
+(defn- define-color-channel
+  "If the supplied channel specification map is a recognizable color
+  channel, emit a function which defines it at the specified offset."
+  [specs offset]
+  (when (and (= "Intensity" (:group specs)) (:color specs))
+    (let [color (keyword (sanitize-name (:color specs)))]
+      (str "(chan/color " offset " " color ")"
+           (when-not (#{:red :green :blue :white} color) "  ; TODO: add :hue key if you want to color mix this")))))
+
+(defn- define-dimmer-channel
+  "If the supplied channel specification map seems to be a dimmer
+  channel, emit a function which defines it at the specified offset."
+  [specs offset]
+  (when (and (= "Intensity" (:group specs)) (re-find #"(?i)dimmer" (:name specs)))
+    (str "(chan/dimmer " offset ")")))
+
+(defn- define-special-channel
+  "If the supplied channel specification map contains a single
+  function using the entire range, and it is one of the special kinds
+  of channels we recognize, emit a function which defines it at the
+  specified offset."
+  [specs offset]
+  (let [caps (:capabilities specs)]
+    (when (and (= 1 (count caps)) (zero? (:min (first caps))) (= 255 (:max (first caps))))
+      (or (define-color-channel specs offset)
+          (define-dimmer-channel specs offset)))))
+
+(defn- define-channel
+  "Generates a function call which defines the specified
+  channel (given its specification map), at the specified offset."
+  [specs offset]
+  (or (define-special-channel specs offset)
+      (str "\"Define function channel for " (:name specs) " at offset " offset "\"")))
+
+(defn- channel-tag
+  "A Selmer custom tag that generates a channel definition given its
+  specification, assuming the local symbol `offset` contains the
+  channel offset."
+  {:doc/format :markdown}
+  [args context-map]
+  (let [[chan-expr] args
+        chan-fn (compile-filter-body chan-expr false)
+        specs (chan-fn context-map)]
+    (define-channel specs "offset")))
+
+(defn- channel-by-name-tag
+  "A Selmer custom tag that generates a channel definition at a
+  specified offset, looking up the channel specification by name."
+  [args context-map]
+  (let [[name-expr offset-expr] args
+        name-fn (compile-filter-body name-expr false)
+        offset-fn (compile-filter-body offset-expr false)
+        channel-name (name-fn context-map)
+        offset (offset-fn context-map)
+        found (filter #(= channel-name (:name %)) (:channels context-map))]
+    (case (count found)
+      0 (throw (IllegalStateException. (str "Could not find a channel named " channel-name)))
+      1 (define-channel (first found) offset)
+      (throw (IllegalStateException. (str "Found more than one channel named " channel-name))))))
+
+(parser/add-tag! :channel channel-tag)
+(parser/add-tag! :channel-by-name channel-by-name-tag)
 
 (defn- qxf-creator->map
   "Builds a map containing the creator information from a QLC+ fixture

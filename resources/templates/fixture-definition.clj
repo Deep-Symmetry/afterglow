@@ -37,21 +37,24 @@
   definitions:
   http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.blizzard.html"
   {% if modes|length < 2 %}[]
-  {:channels [{% for ch in m.channels %}{% if not forloop.first %}
-              {% endif %}nil{% endfor %}]
-   :name "{{model}}"{% if has-pan-channel %}
-   :pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
-   {% endif %}{% if has-tilt-channel %}
-   :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
-   {% endif %}
-   ;; To be fleshed out 1: heads
-   }
-{% else %}([]
+  {{open-curly}}{% if modes.0.has-pan-channel %}:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
+   {% endif %}{% if modes.0.has-tilt-channel %}:tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
+   {% endif %}:channels [{% for ch in modes.0.channels %}{% if not forloop.first %}
+              {% endif %}{% channel-by-name ch.1 ch.0 %}{% endfor %}]{% if modes.0.heads|not-empty %}
+   :heads [{% for head in modes.0.heads %}{% if not forloop.first %}
+           {% endif %}{{open-curly}}{% if modes.0.heads|length > 1 %}:x 0 :y 0 :z 0 ; TODO: specify actual location! (and perhaps rotation?)
+            {% endif %}{% if head.has-pan-channel %}:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
+            {% endif %}{% if head.has-tilt-channel %}:tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
+            {% endif %}:channels [{% for ch in head.channels %}{% if not forloop.first %}
+                              {% endif %}{% channel-by-name ch.1 ch.0 %}{% endfor %}]}{% endfor %}]{% endif %}
+   :name "{{model}}"}{% else %}([]
    ({{model|sanitize}} :{{modes.0.name|sanitize}}))
   ([mode]
+   ;; Set up channel definitions functions for channels used by any mode
    (let [build-channel (fn [c offset]
                          (case c{% for ch in channels %}
-                           :{{ch.name|sanitize}} nil{% endfor %}))]
+                           :{{ch.name|sanitize}} {% channel ch %} {% endfor %}))]
+     ;; Define the channels actually used by the chosen mode
      (assoc (case mode{% for m in modes %}
                   :{{m.name|sanitize}}
                   {{open-curly}}{% if m.has-pan-channel %}:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
