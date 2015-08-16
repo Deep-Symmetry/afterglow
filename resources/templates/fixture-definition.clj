@@ -4,7 +4,7 @@
 
   This was created by Afterglow from the QLC+ Fixture Definintion
   (.qxf) file, and will almost certainly need some manual adjustment
-  in order to enable full Afterglow capabilities.{% if any has-pan-channel has-tilt-channel %} For example, this
+  in order to enable full Afterglow capabilities.{% if has-pan-tilt %} For example, this
   fixture has pan/tilt channels, so you need to configure the scaling
   parameters (marked with TODO below), as described in Afterglow's
   Fixture Definitions documentation:
@@ -54,14 +54,15 @@
                            :{{ch.name|sanitize}} nil{% endfor %}))]
      (assoc (case mode{% for m in modes %}
                   :{{m.name|sanitize}}
-                  {:channels [{% for ch in m.channels %}{% if not forloop.first %}
-                              {% endif %}(build-channel :{{ch.1|sanitize}} {{ch.0}}){% endfor %}]}{%
- if m.heads|not-empty %}
-                              :heads [{% for head in m.heads %}{% if not forloop.first %}
-                                      {% endif %}{% if m.heads|length > 1 %}{:x 0 :y 0 :z 0  ; TODO: specify actual location! (and perhaps rotation?)
-                                       {% endif %}:channels [{% for ch in head %}{% if not forloop.first %}
-                                                  {% endif %}(build-channel :{{ch.1|sanitize}} {{ch.0}}){% endfor %}]}{% endfor %}]{% endif %}{% endfor %})
+                  {{open-curly}}{% if m.has-pan-channel %}:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
+                   {% endif %}{% if m.has-tilt-channel %}:tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
+                   {% endif %}:channels [{% for ch in m.channels %}{% if not forloop.first %}
+                              {% endif %}(build-channel :{{ch.1|sanitize}} {{ch.0}}){% endfor %}]{% if m.heads|not-empty %}
+                   :heads [{% for head in m.heads %}{% if not forloop.first %}
+                           {% endif %}{{open-curly}}{% if m.heads|length > 1 %}:x 0 :y 0 :z 0 ; TODO: specify actual location! (and perhaps rotation?)
+                            {% endif %}{% if head.has-pan-channel %}:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
+                            {% endif %}{% if head.has-tilt-channel %}:tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
+                            {% endif %}:channels [{% for ch in head.channels %}{% if not forloop.first %}
+                                       {% endif %}(build-channel :{{ch.1|sanitize}} {{ch.0}}){% endfor %}]}{% endfor %}]{% endif %}}{% endfor %})
             :name "{{model}}"
-            :mode mode{% if has-pan-channel %}
-            :pan-center 128 :pan-half-circle 128    ; TODO: Fix these values{% endif %}{% if has-tilt-channel %}
-            :tilt-center 128 :tilt-half-circle 128  ; TODO: Fix these values{% endif %}))){% endif %})
+            :mode mode))){% endif %})

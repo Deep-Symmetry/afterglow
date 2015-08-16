@@ -71,11 +71,13 @@
   (mapv #(inc (Integer/parseInt %)) (zip-xml/xml-> h :Channel zip-xml/text)))
 
 (defn- qxf-mark-pan-tilt
-  "Adds an flag to a fixture or head when its channel map
-  includes a pan or tilt channel."
+  "Adds flags to a fixture or head when its channel map includes pan
+  or tilt channels."
   [channel-specs h]
-  (merge h (when (some #{"Pan" "Tilt"} (map :group (map #(get channel-specs (second %)) (:channels h))))
-             {:has-pan-tilt true})))
+  (let [groups (set (map :group (map #(get channel-specs (second %)) (:channels h))))]
+    (merge h
+           (when (groups "Pan") {:has-pan-channel true})
+           (when (groups "Tilt") {:has-tilt-channel true}))))
 
 (defn- qxf-process-heads
   "Extracts any head-specific channels from a QLC+ mode, given a
@@ -87,7 +89,7 @@
   ([remaining-heads remaining-channel-map channel-specs results]
    ;; Recursive head processing
    (if (empty? remaining-heads)
-     [results (vec remaining-channel-map)] ; Finished, return results
+     [results (vec (sort remaining-channel-map))] ; Finished, return results
      ;; Process the next head
      (loop [head-channel-numbers (sort (qxf-head->vector (first remaining-heads)))
             head-channel-result []
@@ -139,8 +141,8 @@
        :type (zip-xml/text (zip-xml/xml1-> root :Type))
        :channels channels
        :modes (mapv (partial qxf-mode->map channels) (zip-xml/xml-> root :Mode))
-       :has-pan-channel (some #(= "Pan" (:group %)) channels)
-       :has-tilt-channel (some #(= "Tilt" (:group %)) channels)})))
+       :has-pan-tilt (some? (some #(#{"Pan" "Tilt"} (:group %)) channels))
+       :open-curly "{"})))
 
 (defn convert-qxf
   "Read a fixture definition file in the format (.qxf) used by
