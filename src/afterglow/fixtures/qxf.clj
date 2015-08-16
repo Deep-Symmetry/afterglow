@@ -46,6 +46,14 @@
   (when (and (= "Intensity" (:group specs)) (re-find #"(?i)dimmer" (:name specs)))
     (str "(chan/dimmer " offset (when fine-offset (str " " fine-offset)) ")")))
 
+(defn- define-named-channel
+  "If the supplied channel specification map seems to be another type
+  we have a special name for, emit a function which defines it at the
+  specified offsets."
+  [specs offset fine-offset type-name]
+  (when (re-find (re-pattern (str "(?i)" type-name)) (:name specs))
+    (str "(chan/" type-name " " offset (when fine-offset (str " " fine-offset)) ")")))
+
 (defn- define-pan-tilt-channel
   "If the supplied channel specification map seems to be a pan or tilt
   channel, emit a function which defines it at the specified offsets."
@@ -65,6 +73,7 @@
       (or (define-color-channel specs offset fine-offset)
           (define-dimmer-channel specs offset fine-offset)
           (define-pan-tilt-channel specs offset fine-offset)
+          (some (partial define-named-channel specs offset fine-offset) ["focus" "frost" "iris" "zoom"])
           (str "(chan/fine-channel " (keyword (sanitize-name (:name specs))) " " offset
                (when fine-offset (str " :fine-offset " fine-offset))
                "\n                                 :function-name \"" (:name specs)
@@ -271,7 +280,6 @@
   "Converts a map read by [[convert-qxf]] into an Afterglow fixture
   definition."
   [qxf]
-  (clojure.pprint/pprint qxf)
   (parser/render-file "fixture-definition.clj" qxf))
 
 (defn parse-qxf
