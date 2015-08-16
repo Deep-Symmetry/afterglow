@@ -54,23 +54,27 @@
     (str "(chan/" (clojure.string/lower-case (:group specs)) " " offset
          (when fine-offset (str " " fine-offset)) ")")))
 
-(defn- define-special-channel
+(defn- define-single-function-channel
   "If the supplied channel specification map contains a single
-  function using the entire range, and it is one of the special kinds
-  of channels we recognize, emit a function which defines it at the
-  specified offsets."
+  function using the entire range, emit a function which defines it at
+  the specified offsets. If it is one of the special kinds of channels
+  we recognize, use the corresponding generator."
   [specs offset fine-offset]
   (let [caps (:capabilities specs)]
     (when (and (= 1 (count caps)) (zero? (:min (first caps))) (= 255 (:max (first caps))))
       (or (define-color-channel specs offset fine-offset)
           (define-dimmer-channel specs offset fine-offset)
-          (define-pan-tilt-channel specs offset fine-offset)))))
+          (define-pan-tilt-channel specs offset fine-offset)
+          (str "(chan/fine-channel " (keyword (sanitize-name (:name specs))) " " offset
+               (when fine-offset (str " :fine-offset " fine-offset))
+               "\n                                 :function-name \"" (:name specs)
+               "\"\n                                 :var-label \"" (:label (first caps)) "\")")))))
 
 (defn- define-channel
   "Generates a function call which defines the specified
   channel (given its specification map), at the specified offsets."
   [specs offset fine-offset]
-  (or (define-special-channel specs offset fine-offset)
+  (or (define-single-function-channel specs offset fine-offset)
       (str "\"Define function channel for " (:name specs) " at offset " offset "\"")))
 
 (defn- channel-tag
