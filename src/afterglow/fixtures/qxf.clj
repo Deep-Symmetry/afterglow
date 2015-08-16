@@ -70,12 +70,42 @@
                "\n                                 :function-name \"" (:name specs)
                "\"\n                                 :var-label \"" (:label (first caps)) "\")")))))
 
+(defn- check-capabilities
+  "Makes sure a capability list is sorted in increasing order and has
+  no gaps, adding nil sections for any unused ranges."
+  [caps]
+  (loop [remaining (sort-by :min caps)
+         last-end -1
+         result []]
+    (if (empty? remaining)
+      (if (< last-end 255)  ; Fill in final gap
+        (conj result {:min (inc last-end) :max 255})
+        result)
+      (let [current (first remaining)
+            adjusted (if (< (inc last-end) (:min current))  ; Fill in a gap in capabilities
+                       (conj result {:min (inc last-end) :max (dec (:min current))})
+                       result)]
+        (recur (rest remaining) (:max current) (conj adjusted current))))))
+
+(defn expand-capability
+  "Returns an Afterglow function specification corresponding to a
+  QLC+ capability range."
+  [cap prefix]
+  (str "\n" (apply str (repeat 30 " ")) (:min cap)
+       (if (some? (:label cap))
+         (str " {:type " (keyword (sanitize-name (str prefix (:label cap))))
+              "\n" (apply str (repeat (+ 32 (count (str (:min cap)))) " ")) ":label \"" (:label cap)
+              "\"\n" (apply str (repeat (+ 32 (count (str (:min cap)))) " ")) ":range :variable}")
+         "nil")))
+
 (defn- define-channel
   "Generates a function call which defines the specified
   channel (given its specification map), at the specified offsets."
   [specs offset fine-offset]
   (or (define-single-function-channel specs offset fine-offset)
-      (str "\"Define function channel for " (:name specs) " at offset " offset "\"")))
+      (str "(chan/functions " (keyword (sanitize-name (:name specs))) " " offset
+           (apply str (for [c (check-capabilities (:capabilities specs))]
+                        (expand-capability c (str (:name specs) " ")))) ")")))
 
 (defn- channel-tag
   "A Selmer custom tag that generates a channel definition at a
