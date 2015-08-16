@@ -74,27 +74,13 @@
       (str "\"Define function channel for " (:name specs) " at offset " offset "\"")))
 
 (defn- channel-tag
-  "A Selmer custom tag that generates a channel definition given its
-  specification, assuming the local symbols `offset` and `fine-offset`
-  contain the channel offset and any associated LSB offset."
-  {:doc/format :markdown}
+  "A Selmer custom tag that generates a channel definition at a
+  specified offset and optional fine-offset, looking up the channel
+  specification by name."
   [args context-map]
   (let [[chan-expr] args
         chan-fn (compile-filter-body chan-expr false)
-        specs (chan-fn context-map)]
-    (define-channel specs "offset" "fine-offset")))
-
-(defn- channel-by-name-tag
-  "A Selmer custom tag that generates a channel definition at a
-  specified offset, looking up the channel specification by name."
-  [args context-map]
-  (let [[name-expr offset-expr fine-expr] args
-        name-fn (compile-filter-body name-expr false)
-        offset-fn (compile-filter-body offset-expr false)
-        fine-fn (compile-filter-body fine-expr false)
-        channel-name (name-fn context-map)
-        offset (offset-fn context-map)
-        fine-offset (fine-fn context-map)
+        [offset channel-name fine-offset] (chan-fn context-map)
         found (filter #(= channel-name (:name %)) (:channels context-map))]
     (case (count found)
       0 (throw (IllegalStateException. (str "Could not find a channel named " channel-name)))
@@ -102,7 +88,6 @@
       (throw (IllegalStateException. (str "Found more than one channel named " channel-name))))))
 
 (parser/add-tag! :channel channel-tag)
-(parser/add-tag! :channel-by-name channel-by-name-tag)
 
 (defn- qxf-creator->map
   "Builds a map containing the creator information from a QLC+ fixture

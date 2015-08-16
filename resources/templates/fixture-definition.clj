@@ -40,13 +40,13 @@
   {{open-curly}}{% if modes.0.has-pan-channel %}:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
    {% endif %}{% if modes.0.has-tilt-channel %}:tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
    {% endif %}:channels [{% for ch in modes.0.channels %}{% if not forloop.first %}
-              {% endif %}{% channel-by-name ch.1 ch.0 ch.2 %}{% endfor %}]{% if modes.0.heads|not-empty %}
+              {% endif %}{% channel ch %}{% endfor %}]{% if modes.0.heads|not-empty %}
    :heads [{% for head in modes.0.heads %}{% if not forloop.first %}
            {% endif %}{{open-curly}}{% if modes.0.heads|length > 1 %}:x 0 :y 0 :z 0 ; TODO: specify actual location! (and perhaps rotation?)
             {% endif %}{% if head.has-pan-channel %}:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
             {% endif %}{% if head.has-tilt-channel %}:tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
             {% endif %}:channels [{% for ch in head.channels %}{% if not forloop.first %}
-                              {% endif %}{% channel-by-name ch.1 ch.0 ch.2 %}{% endfor %}]}{% endfor %}]{% endif %}
+                              {% endif %}{% channel ch %}{% endfor %}]}{% endfor %}]{% endif %}
    :name "{{model}}"}{% else %}([]
    ({{model|sanitize}} :{{modes.0.name|sanitize}}))
   ([mode]
@@ -57,10 +57,10 @@
                 {{open-curly}}{% if m.has-pan-channel %}:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
                  {% endif %}{% if m.has-tilt-channel %}:tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
                  {% endif %}:channels [{% for ch in m.channels %}{% if not forloop.first %}
-                            {% endif %}{% channel-by-name ch.1 ch.0 ch.2 %}{% endfor %}]{% if m.heads|not-empty %}
+                            {% endif %}{% channel ch %}{% endfor %}]{% if m.heads|not-empty %}
                  :heads [{% for head in m.heads %}{% if not forloop.first %}
                          {% endif %}{{open-curly}}{% if m.heads|length > 1 %}:x 0 :y 0 :z 0 ; TODO: specify actual location! (and perhaps rotation?)
                           {% endif %}{% if head.has-pan-channel %}:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
                           {% endif %}{% if head.has-tilt-channel %}:tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
                           {% endif %}:channels [{% for ch in head.channels %}{% if not forloop.first %}
-                                     {% endif %}{% channel-by-name ch.1 ch.0 ch.2 %}{% endfor %}]}{% endfor %}]{% endif %}}{% endfor %}))){% endif %})
+                                     {% endif %}{% channel ch %}{% endfor %}]}{% endfor %}]{% endif %}}{% endfor %}))){% endif %})
