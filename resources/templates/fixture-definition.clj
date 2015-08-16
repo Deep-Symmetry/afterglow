@@ -50,22 +50,17 @@
    :name "{{model}}"}{% else %}([]
    ({{model|sanitize}} :{{modes.0.name|sanitize}}))
   ([mode]
-   ;; Set up channel definitions functions for channels used by any mode
-   (let [build-channel (fn [c offset fine-offset]
-                         (case c{% for ch in channels %}
-                           :{{ch.name|sanitize}} {% channel ch %} {% endfor %}))]
-     ;; Define the channels actually used by the chosen mode
-     (assoc (case mode{% for m in modes %}
-                  :{{m.name|sanitize}}
-                  {{open-curly}}{% if m.has-pan-channel %}:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
-                   {% endif %}{% if m.has-tilt-channel %}:tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
-                   {% endif %}:channels [{% for ch in m.channels %}{% if not forloop.first %}
-                              {% endif %}(build-channel :{{ch.1|sanitize}} {{ch.0}} {{ch.2|default:"nil"}}){% endfor %}]{% if m.heads|not-empty %}
-                   :heads [{% for head in m.heads %}{% if not forloop.first %}
-                           {% endif %}{{open-curly}}{% if m.heads|length > 1 %}:x 0 :y 0 :z 0 ; TODO: specify actual location! (and perhaps rotation?)
-                            {% endif %}{% if head.has-pan-channel %}:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
-                            {% endif %}{% if head.has-tilt-channel %}:tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
-                            {% endif %}:channels [{% for ch in head.channels %}{% if not forloop.first %}
-                                       {% endif %}(build-channel :{{ch.1|sanitize}} {{ch.0}} {{ch.2|default:"nil"}}){% endfor %}]}{% endfor %}]{% endif %}}{% endfor %})
-            :name "{{model}}"
-            :mode mode))){% endif %})
+   (merge {:name "{{model}}"
+           :mode mode}
+          (case mode{% for m in modes %}
+                :{{m.name|sanitize}}
+                {{open-curly}}{% if m.has-pan-channel %}:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
+                 {% endif %}{% if m.has-tilt-channel %}:tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
+                 {% endif %}:channels [{% for ch in m.channels %}{% if not forloop.first %}
+                            {% endif %}{% channel-by-name ch.1 ch.0 ch.2 %}{% endfor %}]{% if m.heads|not-empty %}
+                 :heads [{% for head in m.heads %}{% if not forloop.first %}
+                         {% endif %}{{open-curly}}{% if m.heads|length > 1 %}:x 0 :y 0 :z 0 ; TODO: specify actual location! (and perhaps rotation?)
+                          {% endif %}{% if head.has-pan-channel %}:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
+                          {% endif %}{% if head.has-tilt-channel %}:tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
+                          {% endif %}:channels [{% for ch in head.channels %}{% if not forloop.first %}
+                                     {% endif %}{% channel-by-name ch.1 ch.0 ch.2 %}{% endfor %}]}{% endfor %}]{% endif %}}{% endfor %}))){% endif %})
