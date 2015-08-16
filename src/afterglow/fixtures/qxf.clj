@@ -32,61 +32,73 @@
 (defn- define-color-channel
   "If the supplied channel specification map is a recognizable color
   channel, emit a function which defines it at the specified offset."
-  [specs offset]
+  [specs offset fine-offset]
   (when (and (= "Intensity" (:group specs)) (:color specs))
     (let [color (keyword (sanitize-name (:color specs)))]
-      (str "(chan/color " offset " " color ")"
+      (str "(chan/color " offset " " color
+           (when fine-offset (str " :fine-offset " fine-offset)) ")"
            (when-not (#{:red :green :blue :white} color) "  ; TODO: add :hue key if you want to color mix this")))))
 
 (defn- define-dimmer-channel
   "If the supplied channel specification map seems to be a dimmer
-  channel, emit a function which defines it at the specified offset."
-  [specs offset]
+  channel, emit a function which defines it at the specified offsets."
+  [specs offset fine-offset]
   (when (and (= "Intensity" (:group specs)) (re-find #"(?i)dimmer" (:name specs)))
-    (str "(chan/dimmer " offset ")")))
+    (str "(chan/dimmer " offset (when fine-offset (str " " fine-offset)) ")")))
+
+(defn- define-pan-tilt-channel
+  "If the supplied channel specification map seems to be a pan or tilt
+  channel, emit a function which defines it at the specified offsets."
+  [specs offset fine-offset]
+  (when (#{"Pan" "Tilt"} (:group specs))
+    (str "(chan/" (clojure.string/lower-case (:group specs)) " " offset
+         (when fine-offset (str " " fine-offset)) ")")))
 
 (defn- define-special-channel
   "If the supplied channel specification map contains a single
   function using the entire range, and it is one of the special kinds
   of channels we recognize, emit a function which defines it at the
-  specified offset."
-  [specs offset]
+  specified offsets."
+  [specs offset fine-offset]
   (let [caps (:capabilities specs)]
     (when (and (= 1 (count caps)) (zero? (:min (first caps))) (= 255 (:max (first caps))))
-      (or (define-color-channel specs offset)
-          (define-dimmer-channel specs offset)))))
+      (or (define-color-channel specs offset fine-offset)
+          (define-dimmer-channel specs offset fine-offset)
+          (define-pan-tilt-channel specs offset fine-offset)))))
 
 (defn- define-channel
   "Generates a function call which defines the specified
-  channel (given its specification map), at the specified offset."
-  [specs offset]
-  (or (define-special-channel specs offset)
+  channel (given its specification map), at the specified offsets."
+  [specs offset fine-offset]
+  (or (define-special-channel specs offset fine-offset)
       (str "\"Define function channel for " (:name specs) " at offset " offset "\"")))
 
 (defn- channel-tag
   "A Selmer custom tag that generates a channel definition given its
-  specification, assuming the local symbol `offset` contains the
-  channel offset."
+  specification, assuming the local symbols `offset` and `fine-offset`
+  contain the channel offset and any associated LSB offset."
   {:doc/format :markdown}
   [args context-map]
   (let [[chan-expr] args
         chan-fn (compile-filter-body chan-expr false)
         specs (chan-fn context-map)]
-    (define-channel specs "offset")))
+    (define-channel specs "offset" "fine-offset")))
 
 (defn- channel-by-name-tag
   "A Selmer custom tag that generates a channel definition at a
   specified offset, looking up the channel specification by name."
   [args context-map]
-  (let [[name-expr offset-expr] args
+  (let [[name-expr offset-expr fine-expr] args
         name-fn (compile-filter-body name-expr false)
         offset-fn (compile-filter-body offset-expr false)
+        fine-fn (compile-filter-body fine-expr false)
         channel-name (name-fn context-map)
         offset (offset-fn context-map)
+        fine-offset (fine-fn context-map)
         found (filter #(= channel-name (:name %)) (:channels context-map))]
     (case (count found)
       0 (throw (IllegalStateException. (str "Could not find a channel named " channel-name)))
-      1 (define-channel (first found) offset)
+      1 (define-channel (first found) offset fine-offset)
       (throw (IllegalStateException. (str "Found more than one channel named " channel-name))))))
 
 (parser/add-tag! :channel channel-tag)
@@ -143,9 +155,57 @@
            (when (groups "Pan") {:has-pan-channel true})
            (when (groups "Tilt") {:has-tilt-channel true}))))
 
+(defn- potential-pair?
+  "Check whether a pair of channel specs could potentially be a pair
+  controlling two bytes of the same value. Since QLC+ doesn't make
+  this explicit the way Afterglow does, be conservative."
+  [spec-1 spec-2]
+  (and
+   (not= spec-1 spec-2)
+   (not= (:byte spec-1) (:byte spec-2))
+   (= (:group spec-1) (:group spec-2))
+   (case (:group spec-1)
+     ("Pan" "Tilt") true
+     "Intensity" (or (= (:color spec-1) (:color spec-2))
+                     (and (re-find #"(?i)dimmer" (:name spec-1))
+                          (re-find #"(?i)dimmer" (:name spec-2))))
+     false)))
+
+
+(defn- paired-channel
+  "Try to identify a channel which is paired as two bytes controlling
+  a single value. Since QLC+ does not make this explicit the way
+  Afterglow does, we can't be certain, so be a bit conservative. If
+  we find a single potential match, return its name."
+  [name related-specs]
+  (let [specs (get related-specs name)
+        candidates (filter (partial potential-pair? specs) (vals related-specs))]
+    (when (= 1 (count candidates))
+      (:name (first candidates)))))
+
+(defn- merge-fine-channels
+  "Try to identify any channels which are paired as two bytes
+  controlling a single value. QLC+ does not make this explicit, like
+  Afterglow does, so this is not going to be perfect. Takes the map of
+  all channel specifications found in the QXF file, as well as the set
+  which are being mapped in the current mode and perhaps head; that
+  narrowing of focus can hopefully reduce ambiguity."
+  [channel-specs channels]
+  (let [relevant-specs (select-keys channel-specs (map second channels))
+        offsets (into {} (for [[offset name] channels] [name offset]))
+        merged (filter identity (for [[offset name] channels]
+                                  (if-let [paired-name (paired-channel name relevant-specs)]
+                                    (let [specs (get relevant-specs name)]
+                                      (when (zero? (:byte specs))
+                                        [offset name (get offsets paired-name)]))
+                                    [offset name])))]
+    (vec (sort-by first merged))))
+
 (defn- qxf-process-heads
   "Extracts any head-specific channels from a QLC+ mode, given a
-  sequence of Head nodes and the vector of mode channel assignments."
+  sequence of Head nodes and the vector of mode channel assignments,
+  then tries to merge any fine channels found in the resulting smaller
+  channel groupings."
   ([heads channel-map channel-specs]
    ;; Kick off recursive arity with an empty response vector
    (qxf-process-heads heads channel-map channel-specs []))
@@ -153,14 +213,15 @@
   ([remaining-heads remaining-channel-map channel-specs results]
    ;; Recursive head processing
    (if (empty? remaining-heads)
-     [results (vec (sort remaining-channel-map))] ; Finished, return results
+     [results (merge-fine-channels channel-specs remaining-channel-map)] ; Finished, return results
      ;; Process the next head
      (loop [head-channel-numbers (sort (qxf-head->vector (first remaining-heads)))
             head-channel-result []
             channels-left remaining-channel-map]
        (if (empty? head-channel-numbers)  ; Finished processing this head
-         (qxf-process-heads (rest remaining-heads) channels-left channel-specs
-                            (conj results (qxf-mark-pan-tilt channel-specs {:channels head-channel-result})))
+         (let [merged-channels (merge-fine-channels channel-specs head-channel-result)]
+           (qxf-process-heads (rest remaining-heads) channels-left channel-specs
+                              (conj results (qxf-mark-pan-tilt channel-specs {:channels merged-channels}))))
          (let [current (first head-channel-numbers)]
            (recur (rest head-channel-numbers)
                   (conj head-channel-result [current (get channels-left current)])
