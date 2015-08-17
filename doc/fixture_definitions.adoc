@@ -21,7 +21,6 @@ definitions for examples of how it is done. You can also ask for help
 on the https://github.com/brunchboy/afterglow/wiki/Questions[wiki].
 
 [TIP]
-.Getting Started with Defining Fixtures
 ====
 When you first embark on the project of creating a fixture
 definition, it might seem overwhelming. This page is long, and
@@ -41,8 +40,9 @@ along.
 
 Also, as of version 0.1.3, Afterglow can read fixture definitions from
 the http://www.qlcplus.org[QLC+] lighting controller and use those to
-create a starting point for you. Since there are far more fixtures
-already defined for QLC+, that can be a huge help.
+<<translating-qlc-fixture-definitions,create a starting point>> for
+you. Since there are far more fixtures already defined for QLC+, that
+can be a huge help.
 ====
 
 The namespace
@@ -1020,4 +1020,107 @@ reaching around ten times per second at the maximum function value of
 
 ## Translating QLC+ Fixture Definitions
 
-To be fleshed out.
+http://www.qlcplus.org[QLC+] is an established and powerful free and
+open-source lighting control system aimed at more traditional
+workflows than Afterglow. If you were not already aware of it, you
+should definitely take a look. And since it has been around a while,
+used by an increasing variety of people, it has had time to accumulate
+a bunch of fixture definitions for lights that you are likely to
+encounter or own.
+
+Even though QLC+ does not model fixtures in as much detail as
+Afterglow, so their definitions are incomplete from our perspective
+(lacking geometry information for aim and direction cues, and explicit
+links between channels that pair up to control a single fixture
+function, among other things), Afterglow can still use them as a
+starting point to help you creating a fixture definition, and save a
+whole lot of time, reading fixture manuals, and trial and error,
+especially when it comes to channels with a lot of functions, like
+gobo wheels. So when you decide to create an Afterglow fixture
+definition, start by looking to see if QLC+ already has one for that
+fixture.
+
+You can find its current set of fixture definitions on
+https://github.com/mcallegari/qlcplus/tree/master/resources/fixtures[GitHub].
+If you see one for the fixture you want, you can either click on it
+and download it individually (after choosing the `Raw` view for the
+file in its header bar), or, if you are already using git, you can
+clone the entire project to get local copies of all the fixture
+definitions.
+
+Once you have downloaded the QLC+ fixture definition file, you can
+invoke Afterglow from the command line, as described in the
+https://github.com/brunchboy/afterglow#usage[Usage] section on the
+project page, to translate it into an Afterglow fixture definition.
+For example, translating the definition for the
+https://github.com/mcallegari/qlcplus/blob/master/resources/fixtures/American-DJ-ECO-UV-BAR-DMX.qxf[American
+DJ Eco UV Bar], like so:
+
+```
+% java -jar target/uberjar/afterglow.jar -q American-DJ-ECO-UV-BAR-DMX.qxf
+Translated fixture definition written to eco-uv-bar-dmx.clj
+```
+
+would result in the following Afterglow fixture definition file:
+
+```clojure
+(ns afterglow.fixtures.american-dj
+  "Translated definition for the fixture ECO UV BAR DMX
+  from American DJ.
+
+  This was created by Afterglow from the QLC+ Fixture Definintion
+  (.qxf) file, and will almost certainly need some manual adjustment
+  in order to enable full Afterglow capabilities.
+
+  If you have more than one fixture definition for this manufacturer,
+  you can consolidate them into a single file if you like, with a
+  single copy of this namespace definition, since it is the same for
+  all fixture definitions translated by Afterglow.
+
+  Once you have completed the fixture definition, and are happy with
+  the way everything is being controlled by Afterglow, please consider
+  submitting it for inclusion with Afterglow, either as a Pull Request
+  at https://github.com/brunchboy/afterglow/pulls if you are
+  comfortable putting that together, or just on the Wiki if that's
+  easier for you:
+  https://github.com/brunchboy/afterglow/wiki/Questions#defining-fixtures
+
+  The original fixture defintition was created by Rob G.
+  using Q Light Controller Plus version 5.0.0 GIT.
+  QLC+ Fixture Type: Other"
+  (:require [afterglow.channels :as chan]
+            [afterglow.effects.channel :as chan-fx]))
+
+(defn eco-uv-bar-dmx
+  "ECO UV BAR DMX.
+
+  Please flesh out this documentation if you are submitting this for
+  inclusion into Afterglow. See, for example, the Blizzard fixture
+  definitions:
+  http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.blizzard.html"
+  []
+  {:channels [(chan/color 1 :uv)  ; TODO: add :hue key if you want to color mix this
+              (chan/fine-channel :strobing 2
+                                 :function-name "Strobing"
+                                 :var-label "Strobing (slow -> fast)")
+              (chan/functions :dimmer-curve 3
+                              0 {:type :dimmer-curve-no-dimmer-curve
+                                 :label "No dimmer curve"
+                                 :range :variable}
+                              21 {:type :dimmer-curve-dimmer-curve-1
+                                  :label "Dimmer curve 1"
+                                  :range :variable}
+                              41 {:type :dimmer-curve-dimmer-curve-2
+                                  :label "Dimmer curve 2"
+                                  :range :variable}
+                              61 {:type :dimmer-curve-dimmer-curve-3
+                                  :label "Dimmer curve 3"
+                                  :range :variable}
+                              81 {:type :dimmer-curve-dimmer-curve-4
+                                  :label "Dimmer curve 4"
+                                  :range :variable}
+                              101 {:type :dimmer-curve-delay-mode-control
+                                   :label "Delay mode control"
+                                   :range :variable})]
+   :name "ECO UV BAR DMX"})
+```
