@@ -1166,16 +1166,18 @@ values that activate that function, because QLC+ does not distinguish
 between fixed and variable functions. In the event that the function
 actually has no adjustable behavior, you will want to change `:range
 :variable` in the corresponding function specification entry to
-`:range :fixed`. I am pretty sure that is something that should be
-done for all the ranges in this example, but I don't have the actual
-fixture to test it and see. Function specifications are explained in
-more depth <<function-specifications,above>>.
+`:range :fixed`, so that the user interface of a function cue created
+for this fixture properly reflects the fixture's behavior. I am pretty
+sure that is something that should be done for all the ranges in this
+example, but I don't have the actual fixture to test it and see.
+Function specifications are explained in more depth
+<<function-specifications,above>>.
 
 The types and labels assigned to the function ranges are derived from
 the labels in the `.qxf` file, and uniqueness is enforced, but they
 are probably too long in many cases (especially if you want them to be
 readable in the Web or Ableton Push interfaces), and in some cases
-should be adjusted to fit in with the
+should be adjusted to match up with the
 <<standard-function-types,standard types>> so that they can
 automatically work with cues. (This is especially likely to be the
 case with strobe cues, for example. Compare the translated definitions
@@ -1213,22 +1215,22 @@ mixing an optional feature when using the fixture definition.
 
 DMX parameter values are integers which only range from 0-255. That is
 not enough to achieve precise pan and tilt movements, and some
-fixtures even want to allow more precise dimming values than that. In
-order to achieve that, they use more than one channel to communicate a
-single parameter value. QLC+ fixture definition files reflect this to
-an extent, using their `Group` tags which have a `Byte` value of 0 or
-1. But there is no explicit link in the `.qxf` file between the
-channels that are controlling the same value. Afterglow is able to
-figure it out in simple cases, such as where there are two channels
-controlling the intensity of the color red, using bytes 0 and 1. But
-if there are more than two channels serving the same purpose, it
-cannot figure out the relationships, and you will have to sort that
-out using the fixture's manual. Once you do, get rid of the channel
-specification for the least-significant byte in the fixture
-definition, and specify that channel as the `fine-channel` value for
-the channel specification of the most-significant byte, as documented
-in the <<channel-creation-functions,Channel Creation Functions>>
-section.
+fixtures even want to allow more precise dimming values and color
+intensities. In order to achieve that, they use more than one channel
+to communicate a single parameter value. QLC+ fixture definition files
+reflect this to an extent, using their `Group` tags which have a
+`Byte` value of 0 or 1. But there is no explicit link in the `.qxf`
+file between the channels that are controlling the same value.
+Afterglow is able to figure it out in simple cases, such as where
+there are two channels controlling the intensity of the color red,
+using bytes 0 and 1. But if there are more than two channels serving
+the same purpose, it cannot figure out the relationships, and you will
+have to sort that out using the fixture's manual. Once you do, get rid
+of the channel specification for the least-significant byte in the
+fixture definition, and specify that channel as the `fine-channel`
+value for the channel specification of the most-significant byte, as
+documented in the <<channel-creation-functions,Channel Creation
+Functions>> section.
 
 #### Geometric Information
 
