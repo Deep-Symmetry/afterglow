@@ -1158,6 +1158,8 @@ simple cases like this example, you will find things that you can make
 better by hand-editing the results based on your understanding of the
 fixture, after reading its manual or working with it for a bit.
 
+#### Function Specifications
+
 First off, all fixture function ranges are created as `:variable`,
 meaning that they do slightly different things along the range of
 values that activate that function, because QLC+ does not distinguish
@@ -1168,3 +1170,112 @@ actually has no adjustable behavior, you will want to change `:range
 done for all the ranges in this example, but I don't have the actual
 fixture to test it and see. Function specifications are explained in
 more depth <<function-specifications,above>>.
+
+The types and labels assigned to the function ranges are derived from
+the labels in the `.qxf` file, and uniqueness is enforced, but they
+are probably too long in many cases (especially if you want them to be
+readable in the Web or Ableton Push interfaces), and in some cases
+should be adjusted to fit in with the
+<<standard-function-types,standard types>> so that they can
+automatically work with cues. (This is especially likely to be the
+case with strobe cues, for example. Compare the translated definitions
+with some that ship with Afterglow as you are starting to get a feel
+for these issues.)
+
+#### Channel Types
+
+Afterglow tries to guess what kinds of channels it finds, based on
+their name, and aspects of their structure. For simple cases it will
+get it right, and save you time, but it might be wrong. This is
+especially important to double-check for dimmer channels, to make sure
+they are properly detected, since only then will they participate in
+<<effects#dimmer-effects,Dimmer Effects>> and the Master chain. (And
+you don't want inappropriate channels to be mapped as dimmer channels
+for the opposite reason.)
+
+#### Color Channels
+
+Colors are fairly well represented and identified in the QLC+ format,
+and if you have a channel controlling a red, green, blue, or white
+channel, chances are good that it will be properly translated. If you
+have an LED fixture with other colors, like amber, UV, or beyond, and
+want these other channels to participate in Afterglow's automatic
+color mixing capabilities, as noted by the `TODO:` comment in the
+translation example above, you will need to add a `:hue` key to the
+color channel definition, containing the actual hue value of the LEDs
+controlled by that channel. The Chauvet SlimPar Hex IRC
+https://github.com/brunchboy/afterglow/blob/master/src/afterglow/fixtures/chauvet.clj[definition]
+that ships with Afterglow contains a nice example of doing this for
+its amber and UV channels, and shows how to make this extended color
+mixing an optional feature when using the fixture definition.
+
+#### Two-Byte Channels
+
+DMX parameter values are integers which only range from 0-255. That is
+not enough to achieve precise pan and tilt movements, and some
+fixtures even want to allow more precise dimming values than that. In
+order to achieve that, they use more than one channel to communicate a
+single parameter value. QLC+ fixture definition files reflect this to
+an extent, using their `Group` tags which have a `Byte` value of 0 or
+1. But there is no explicit link in the `.qxf` file between the
+channels that are controlling the same value. Afterglow is able to
+figure it out in simple cases, such as where there are two channels
+controlling the intensity of the color red, using bytes 0 and 1. But
+if there are more than two channels serving the same purpose, it
+cannot figure out the relationships, and you will have to sort that
+out using the fixture's manual. Once you do, get rid of the channel
+specification for the least-significant byte in the fixture
+definition, and specify that channel as the `fine-channel` value for
+the channel specification of the most-significant byte, as documented
+in the <<channel-creation-functions,Channel Creation Functions>>
+section.
+
+#### Geometric Information
+
+If the fixture includes a Pan or Tilt channel, you will see additional
+`TODO:` comments telling you that you need to add information about
+how the channel actually physically rotates the fixture, in order for
+Afterglow to be able to accurately calculate
+<<effects#direction-effects,Direction>> and
+<<effects#aim-effects,Aim>> effects with it. The
+<<structure-of-a-fixture-definition,Structure section above>>
+describes the `:pan-center`, `:pan-half-circle`, `:tilt-center`, and
+`:tilt-half-circle` values that you will need to figure out
+experimentally.
+
+> We hope to someday help automate part of this process, which will
+> make it easier for all of us!
+
+Similarly, if the fixture has multiple heads, you will see `TODO:`
+entries where you need to fill in their
+<<head-specifications,locations>> relative to the origin of the
+fixture itself, so that <<parameters#spatial-parameters,Spatial
+Parameters>> can work properly with them.
+
+### Don't Panic!
+
+Even though this sounds like a lot of things that can go wrong trying
+to build an Afterglow fixture definition, most of the problem areas
+are subtle, or relate to the more advanced capabilities of Afterglow.
+Chances are very good that the automatically generated fixture
+definition will at least enable basic control of the fixture right
+away. So try that, and gain some confidence, as you gradually explore
+the areas where it isn't quite doing what you want, and tackle those
+one at a time. And, as you do, remember that you can get help:
+
+## When Things Go Awry
+
+Not all definitions have been tested with the translator, and there
+may be scenarios that it gets fundamentally wrong. If so, please raise
+an https://github.com/brunchboy/afterglow/issues[Issue], so we can see
+if it is something that can be fixed, or a fundamental limitation of
+the translation approach that should be documented here.
+
+If you are having trouble figuring out the details of how to finish or
+use your fixture definition, please ask for help on the
+https://github.com/brunchboy/afterglow/wiki/Questions#defining-fixtures[Wiki].
+Not only will that hopefully get you going faster, but it might help
+others in the future, especially if it leads to improvements in the
+documentation or Afterglow itself.
+
+
