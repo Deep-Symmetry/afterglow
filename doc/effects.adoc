@@ -107,12 +107,13 @@ the dimmer is also set to 50% brightness, the final red output will be
 at 25% brightness.
 
 In addition to passing in a literal number for the `level` parameter,
-you can pass a [[Dynamic Parameter|dynamic parameters]] whose value
-depends on a [[Metronome|metronomes]], the physical location or
-orientation of the head, or a show variable, perhaps
-[[bound|midi-mapping-and-beat-sync#mapping-a-control-to-a-variable]] to
-a MIDI control surface. It often makes sense to use [[oscillated
-parameters|dynamic-parameters#oscillated-parameters]] with dimmer cues.
+you can pass a <<parameters#dynamic-parameters,Dynamic Parameter>>
+whose value depends on a <<metronomes#metronomes,Metronome>>, the
+physical location or orientation of the head, or a show variable,
+perhaps <<mapping_sync#mapping-a-control-to-a-variable,bound>> to a
+MIDI control surface. It often makes sense to use
+<<parameters#oscillated-parameters,oscillated parameters>> with dimmer
+cues.
 
 TIP: If you have color effects running for a light and you aren’t seeing
 anything, make sure you have a dimmer effect setting the dimmer to some
@@ -503,10 +504,10 @@ finish. Ongoing effects will simply always return `true`, or if they
 want to end gracefully, will return `true` until they have been asked to
 end, and their graceful ending has completed.
 
-Assuming the effect has not reported completion, its
-`(generate [this show snapshot])` function will be called, as described
-in the [[rendering loop|rendering-loop]] section, to create the effect
-it represents at this point in time.
+Assuming the effect has not reported completion, its `(generate [this
+show snapshot])` function will be called, as described in the
+<<rendering_loop#the-rendering-loop,rendering loop>> section, to
+create the effect it represents at this point in time.
 
 At some point, the show operator may indicate a desire for the effect to
 end, by calling `(show/end-effect! :keyword force)`. If `force` is true,
