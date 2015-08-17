@@ -474,14 +474,13 @@ optional keyword parameters. See the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-metronome-effect[API
 documentation] for details.
 
-[[lifecycle]]
 == The Effect Lifecycle
 
 When an effect is added to a show via `(show/add-effect! :keyword
 effect)` it immediately replaces any other effect which had been
 previously added with the same keyword. The former effect does not get
 a chance to gracefully finish its effects, it is simply gone. The new
-effect is added to the <<rendering_loop#rendering-loop,rendering
+effect is added to the <<rendering_loop#the-rendering-loop,rendering
 loop>> in a position determined by the priority value, if any,
 specified after the optional `:priority` keyword argument. If no
 priority argument is supplied, a priority of zero is used. The new
