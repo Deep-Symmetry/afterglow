@@ -166,20 +166,25 @@ can also bring it up as an executable jar, and run it using `java
 > java -jar afterglow.jar --help
 
 Afterglow, a live-coding environment for light shows.
-Version 0.1.2
+Version 0.1.3
 
 Usage: afterglow [options] [init-file ...]
   Any init-files specified as arguments will be loaded at startup,
   in the order they are given, before creating any embedded servers.
 
+  If you translate a QLC+ fixture definition file, Afterglow will
+  try to write its version in the same directory, but will not
+  overwrite an existing file.
+
 Options:
-  -w, --web-port PORT   16000               Port number for web UI
-  -o, --osc-port PORT   16001               Port number for OSC server
-  -r, --repl-port PORT                      Port number for REPL, if desired
-  -l, --log-file PATH   logs/afterglow.log  File into which log is written
-  -H, --olad-host HOST  localhost           Host name or address of OLA daemon
-  -P, --olad-port PORT  9010                Port number OLA daemon listens on
-  -h, --help                                Display help information and exit
+  -w, --web-port PORT    16000               Port number for web UI
+  -o, --osc-port PORT    16001               Port number for OSC server
+  -r, --repl-port PORT                       Port number for REPL, if desired
+  -l, --log-file PATH    logs/afterglow.log  File into which log is written
+  -H, --olad-host HOST   localhost           Host name or address of OLA daemon
+  -P, --olad-port PORT   9010                Port number OLA daemon listens on
+  -q, --convert-qxf PATH                     Convert QLC+ fixture file and exit
+  -h, --help                                 Display help information and exit
 
 If you do not explicitly specify a log file, and Afterglow cannot write to
 the default log file path, logging will be silently suppressed.

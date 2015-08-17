@@ -6,6 +6,7 @@
             [afterglow.version :as version]
             [afterglow.web.handler :refer [app]]
             [afterglow.web.session :as session]
+            [afterglow.fixtures.qxf :as qxf]
             [ola-clojure.ola-client :as ola-client]
             [org.httpkit.server :as http-kit]
             [environ.core :refer [env]]
@@ -159,6 +160,7 @@
     :default (or (when-let [default (env :olad-port)] (Integer/parseInt default)) 9010)
     :parse-fn #(Integer/parseInt %)
     :validate [#(< 0 % 0x10000) "Must be a number between 0 and 65536"]]
+   ["-q" "--convert-qxf PATH" "Convert QLC+ fixture file and exit"]
    ["-h" "--help" "Display help information and exit"]])
 
 (defn usage
@@ -173,6 +175,10 @@
     "  Any init-files specified as arguments will be loaded at startup,"
     "  in the order they are given, before creating any embedded servers."
     ""
+    "  If you translate a QLC+ fixture definition file, Afterglow will"
+    "  try to write its version in the same directory, but will not"
+    "  overwrite an existing file."
+    ""
     "Options:"
     options-summary
     ""
@@ -181,14 +187,18 @@
     ""
     "Please see https://github.com/brunchboy/afterglow for more information."]))
 
-(defn error-msg [errors]
+(defn error-msg
   "Format an error message related to command-line invocation."
+  [errors]
   (str "The following errors occurred while parsing your command:\n\n"
        (clojure.string/join \newline errors)))
 
-(defn exit [status msg]
+(defn exit
   "Terminate execution with a message to the command-line user."
-  (println-err msg)
+  [status msg]
+  (if (zero? status)
+    (println msg)
+    (println-err msg))
   (System/exit status))
 
 (defn start-web-server
@@ -256,10 +266,12 @@
   [& args]
   (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)]
 
-    ;; Handle help and error conditions
+    ;; Handle help, error conditions, and fixture definition translation
     (cond
       (:help options) (exit 0 (usage summary))
-      errors (exit 1 (str (error-msg errors) "\n\n" (usage summary))))
+      errors (exit 1 (str (error-msg errors) "\n\n" (usage summary)))
+      (:convert-qxf options) (let [[status message] (qxf/convert-qxf (:convert-qxf options))]
+                               (exit status message)))
  
     ;; Set up the logging environment
     (reset! appenders (create-appenders (:log-file options)))

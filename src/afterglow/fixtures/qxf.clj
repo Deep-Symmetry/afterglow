@@ -308,13 +308,18 @@
   "Read a fixture definition file in the format (.qxf) used by
   [QLC+](http://www.qlcplus.org/), and write a Clojure file based on
   it that can be used as the starting point of an Afterglow fixture
-  definition." {:doc/format :markdown}
+  definition. Returns an exit status and message for the user."
+ {:doc/format :markdown}
   [path]
   (let [source (io/file path)
         qxf (parse-qxf source)
         dest (io/file (.getParent source) (str (csk/->kebab-case (:model qxf)) ".clj"))]
-    (spit dest (translate-definition qxf))
-    (println "Translated fixture definition written to" (.getCanonicalPath dest))))
+    (cond
+      (.exists dest) [1 (str "Will not replace existing file " (.getCanonicalPath dest))]
+      (not (.canWrite (.getParentFile dest))) [1 (str "Cannot write to " (.getCanonicalPath dest))]
+      :else (do
+              (spit dest (translate-definition qxf))
+              [0 (str "Translated fixture definition written to " (.getCanonicalPath dest))]))))
 
 ;; These functions were used to help analyze the contents of all QLC+ fixture definitions.
 ;; They are left here in case the format changes or expands in the future and they become

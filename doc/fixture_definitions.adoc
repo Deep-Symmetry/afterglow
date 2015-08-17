@@ -20,7 +20,10 @@ probably need to create your own. You can study the existing fixture
 definitions for examples of how it is done. You can also ask for help
 on the https://github.com/brunchboy/afterglow/wiki/Questions[wiki].
 
-TIP: When you first embark on the project of creating a fixture
+[TIP]
+.Getting Started with Defining Fixtures
+====
+When you first embark on the project of creating a fixture
 definition, it might seem overwhelming. This page is long, and
 includes a great deal of complicated detail. But don't despair! First,
 remember that most fixtures only do a subset of the kinds of things
@@ -35,6 +38,12 @@ fixture at least at that level. And that success can be a foundation
 for digging deeper into other types of channels, which you can add to
 your definition one at a time, building on what you learn as you go
 along.
+
+Also, as of version 0.1.3, Afterglow can read fixture definitions from
+the http://www.qlcplus.org[QLC+] lighting controller and use those to
+create a starting point for you. Since there are far more fixtures
+already defined for QLC+, that can be a huge help.
+====
 
 The namespace
 http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.html[afterglow.fixtures]
@@ -1008,3 +1017,7 @@ reaching around ten times per second at the maximum function value of
  its DMX channels.
 
 |===
+
+## Translating QLC+ Fixture Definitions
+
+To be fleshed out.
