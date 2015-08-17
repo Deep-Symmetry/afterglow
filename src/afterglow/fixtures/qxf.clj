@@ -113,7 +113,7 @@
          (str " {:type " (keyword (sanitize-name (str prefix (:label cap))))
               "\n" (apply str (repeat (+ 32 (count (str (:min cap)))) " ")) ":label \"" (:label cap)
               "\"\n" (apply str (repeat (+ 32 (count (str (:min cap)))) " ")) ":range :variable}")
-         "nil")))
+         " nil")))
 
 (defn- define-channel
   "Generates a function call which defines the specified
