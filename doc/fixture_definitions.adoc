@@ -1034,7 +1034,7 @@ Afterglow, so their definitions are incomplete from our perspective
 links between channels that pair up to control a single fixture
 function, among other things), Afterglow can still use them as a
 starting point to help you creating a fixture definition, and save a
-whole lot of time, reading fixture manuals, and trial and error,
+whole lot of time reading fixture manuals, and trial and error...
 especially when it comes to channels with a lot of functions, like
 gobo wheels. So when you decide to create an Afterglow fixture
 definition, start by looking to see if QLC+ already has one for that
@@ -1057,7 +1057,7 @@ https://github.com/mcallegari/qlcplus/blob/master/resources/fixtures/American-DJ
 DJ Eco UV Bar], like so:
 
 ```
-% java -jar target/uberjar/afterglow.jar -q American-DJ-ECO-UV-BAR-DMX.qxf
+% java -jar afterglow.jar -q American-DJ-ECO-UV-BAR-DMX.qxf
 Translated fixture definition written to eco-uv-bar-dmx.clj
 ```
 
@@ -1124,3 +1124,26 @@ would result in the following Afterglow fixture definition file:
                                    :range :variable})]
    :name "ECO UV BAR DMX"})
 ```
+
+> Of course this is a very simple fixture, but I didn't want to waste
+> a ton of space on the example, and it shows the basic idea.
+
+The new definition file will be written to the same directory as the
+`.qxf` file it was based on. It is not named properly nor placed in a
+directory hierarchy that would enable it to be loaded using a normal
+Clojure `require` form, because it is intended to be loaded
+individualy using Afterglow's init-file mechanism, also described in
+https://github.com/brunchboy/afterglow#usage[Usage], and by
+https://github.com/brunchboy/afterglow-max#afterglow-max[afterglow-max]'s
+`load-init-file` function. If you are creating definitions for several
+fixtures from the same manufacturer, you are encouraged to combine
+them into a single file, as described in the API documentation at the
+top of the example above. The `ns` form places the fixture definition
+functions in a package named after the manufacturer, and so needs to
+appear only once at the top of the file, and all the fixture
+definition functions themselves can be listed after it.
+
+Using the fixture definition from this example, once the file is
+loaded, is as simple as calling
+`(afterglow.fixtures.american-dj/eco-uv-bar-dmx)` within
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-patch-fixture.21[show/patch-fixture!].
