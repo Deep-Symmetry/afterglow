@@ -1129,21 +1129,42 @@ would result in the following Afterglow fixture definition file:
 > a ton of space on the example, and it shows the basic idea.
 
 The new definition file will be written to the same directory as the
-`.qxf` file it was based on. It is not named properly nor placed in a
-directory hierarchy that would enable it to be loaded using a normal
-Clojure `require` form, because it is intended to be loaded
-individualy using Afterglow's init-file mechanism, also described in
-https://github.com/brunchboy/afterglow#usage[Usage], and by
-https://github.com/brunchboy/afterglow-max#afterglow-max[afterglow-max]'s
-`load-init-file` function. If you are creating definitions for several
-fixtures from the same manufacturer, you are encouraged to combine
-them into a single file, as described in the API documentation at the
-top of the example above. The `ns` form places the fixture definition
-functions in a package named after the manufacturer, and so needs to
-appear only once at the top of the file, and all the fixture
-definition functions themselves can be listed after it.
+`.qxf` file it was based on. It is not named in a way (nor placed in
+the necessary directory hierarchy) that would enable it to be loaded
+using a normal Clojure `require` form, because it is intended to be
+loaded individualy using Afterglow's init-file mechanism, also
+described in https://github.com/brunchboy/afterglow#usage[Usage], and
+within
+https://github.com/brunchboy/afterglow-max#afterglow-max[afterglow-max],
+by the `load-init-file` function. If you are creating definitions for
+several fixtures from the same manufacturer, you are encouraged to
+combine them into a single file, as described in the API documentation
+at the top of the example above, using your favorite text editor. The
+`ns` form places the fixture definition functions in a package named
+after the manufacturer, and so needs to appear only once at the top of
+the file, and all the fixture definition functions themselves can be
+listed after it.
 
 Using the fixture definition from this example, once the file is
 loaded, is as simple as calling
 `(afterglow.fixtures.american-dj/eco-uv-bar-dmx)` within
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-patch-fixture.21[show/patch-fixture!].
+
+### What's Missing from Translated Fixture Definitions
+
+As mentioned in the introduction, there are some things that Afterglow
+simply cannot guess from translated fixture definitions. Even in
+simple cases like this example, you will find things that you can make
+better by hand-editing the results based on your understanding of the
+fixture, after reading its manual or working with it for a bit.
+
+First off, all fixture function ranges are created as `:variable`,
+meaning that they do slightly different things along the range of
+values that activate that function, because QLC+ does not distinguish
+between fixed and variable functions. In the event that the function
+actually has no adjustable behavior, you will want to change `:range
+:variable` in the corresponding function specification entry to
+`:range :fixed`. I am pretty sure that is something that should be
+done for all the ranges in this example, but I don't have the actual
+fixture to test it and see. Function specifications are explained in
+more depth <<function-specifications,above>>.
