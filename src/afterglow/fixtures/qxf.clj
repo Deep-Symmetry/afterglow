@@ -104,7 +104,7 @@
             updated-labels (if label (assoc labels label label-count) labels)]
         (recur (rest remaining) (:max current) updated-labels (conj adjusted unique))))))
 
-(defn expand-capability
+(defn- expand-capability
   "Returns an Afterglow function specification corresponding to a
   QLC+ capability range."
   [cap prefix]
@@ -167,7 +167,7 @@
             :capabilities (mapv qxf-capability->map (zip-xml/xml-> ch :Capability))}
            (when color {:color color}))))
 
-(defn qxf-channnel-assigment->vector
+(defn- qxf-channnel-assigment->vector
   "Builds a vector containing the offset at which a channel exists in
   a mode and the channel name. Offsets are one-based, to parallel
   fixture manuals. In other words, the DMX address assigned to the
