@@ -18,8 +18,7 @@
   All effects are assigned a keyword when they are added, and adding a
   new effect with the same key as an existing effect will replace the
   former one."
-  {:author "James Elliott"
-   :doc/format :markdown}
+  {:author "James Elliott", :doc/format :markdown}
   (:require [afterglow.channels :as chan]
             [afterglow.controllers :as controllers]
             [afterglow.effects :as fx]
@@ -27,12 +26,11 @@
                                                function-assignment-resolver]]
             [afterglow.effects.color :refer [color-assignment-resolver]]
             [afterglow.effects.dimmer :refer [master master-set-level]]
-            [afterglow.effects.movement :refer [direction-assignment-resolver
-                                                aim-assignment-resolver]]
+            [afterglow.effects.movement :refer [aim-assignment-resolver
+                                                direction-assignment-resolver]]
             [afterglow.effects.params :refer [bind-keyword-param resolve-param]]
             [afterglow.fixtures :as fixtures]
             [afterglow.midi :as midi]
-            [ola-clojure.ola-service :as ola]
             [afterglow.rhythm :refer :all]
             [afterglow.show-context :refer [*show* with-show]]
             [afterglow.transform :as transform]
@@ -41,14 +39,15 @@
             [clojure.math.numeric-tower :as math]
             [clojure.stacktrace :refer [root-cause]]
             [com.climate.claypoole :as cp]
+            [ola-clojure.ola-service :as ola]
             [overtone.at-at :as at-at]
-            [overtone.midi]
-            [taoensso.timbre :as timbre :refer [error spy]]
+            overtone.midi
+            [taoensso.timbre :as timbre :refer [error]]
             [taoensso.timbre.profiling :refer [p profile pspy]])
-  (:import (afterglow.effects.dimmer Master)
-           (afterglow.effects Assigner Effect)
-           (afterglow.rhythm Metronome)
-           (com.google.protobuf ByteString)))
+  (:import afterglow.effects.dimmer.Master
+           afterglow.effects.Effect
+           afterglow.rhythm.Metronome
+           com.google.protobuf.ByteString))
 
 (defonce ^{:doc "How often should frames of DMX data be sent out; this
   should be a supported frame rate for your interface. The default

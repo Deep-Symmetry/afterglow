@@ -1,12 +1,9 @@
 (ns afterglow.controllers
   "Provides shared services for all controller implementations."
   {:author "James Elliott", :doc/format :markdown}
-  (:require [afterglow.effects.params :as params]
-            [afterglow.effects]
-            [overtone.at-at :as at-at]
+  (:require [overtone.at-at :as at-at]
             [overtone.midi :as midi]
-            [taoensso.timbre :as timbre])
-  (:import (afterglow.effects Effect)))
+            [taoensso.timbre :as timbre]))
 
 (defonce
   ^{:doc "Provides thread scheduling for all controller user interface updates."}
