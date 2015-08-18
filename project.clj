@@ -1,4 +1,4 @@
-(defproject afterglow "0.1.3"
+(defproject afterglow "0.1.4-SNAPSHOT"
   :description "A live-coding environment for light shows, built on the Open Lighting Architecture, using bits of Overtone."
   :url "https://github.com/brunchboy/afterglow"
   :license {:name "Eclipse Public License"
@@ -40,10 +40,7 @@
                  [buddy "0.6.1"]
                  [instaparse "1.4.1"]
                  [http-kit "2.1.19"]]
-
   :main afterglow.core
-
-  :target-path "target/%s"
   :uberjar-name "afterglow.jar"
   :manifest {"Name" ~#(str (clojure.string/replace (:group %) "." "/")
                             "/" (:name %) "/")
