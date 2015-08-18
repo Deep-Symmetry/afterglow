@@ -168,19 +168,16 @@
   [options-summary]
   (clojure.string/join
    \newline
-   ["Afterglow, a live-coding environment for light shows."
-    (str "Version " (version/tag))
-    ""
-    "Usage: afterglow [options] [init-file ...]"
+   [(str (version/title) " " (version/tag) ", a live-coding environment for light shows.")
+    (str "Usage: " (version/title) " [options] [init-file ...]")
     "  Any init-files specified as arguments will be loaded at startup,"
     "  in the order they are given, before creating any embedded servers."
     ""
-    "  If you translate a QLC+ fixture definition file, Afterglow will"
-    "  try to write its version in the same directory, but will not"
-    "  overwrite an existing file."
-    ""
     "Options:"
     options-summary
+    ""
+    "If you translate a QLC+ fixture definition file, Afterglow will try to write"
+    "its version in the same directory, but won't overwrite an existing file."
     ""
     "If you do not explicitly specify a log file, and Afterglow cannot write to"
     "the default log file path, logging will be silently suppressed."
