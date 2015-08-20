@@ -377,10 +377,9 @@
 (defonce ^{:doc "Cleans up any running shows when Java is shutting down."
            :private true}
   shutdown-hook
-  (do
-    (let [hook (Thread. (fn [] (stop-all!)))]
-      (.addShutdownHook (Runtime/getRuntime) hook)
-      hook)))
+  (let [hook (Thread. stop-all!)]
+    (.addShutdownHook (Runtime/getRuntime) hook)
+    hook))
 
 (defn sync-to-external-clock
   "Stops or sarts synchronizing the show metronome attached
@@ -431,7 +430,7 @@
                                (let [key (keyword key)
                                      entry (dissoc (get-in vars ["set-fn" key]) f)]
                                  (if (empty? entry)
-                                   (assoc vars "set-fn" (dissoc (get vars "set-fn") key))
+                                   (update-in vars ["set-fn"] dissoc key)
                                    (assoc-in vars ["set-fn" key] entry)))))
   nil)
 
@@ -871,8 +870,7 @@
                                ;; Control or note has been pressed
                                (if active
                                  (end-effect! (:key cue))
-                                 (do
-                                   (reset! our-id (add-effect-from-cue-grid! x y))))
+                                 (reset! our-id (add-effect-from-cue-grid! x y)))
                                ;; Control has been released
                                (when (and (some? @our-id) (or (:held cue) (not momentary)))
                                  (end-effect! (:key cue) :when-id @our-id)

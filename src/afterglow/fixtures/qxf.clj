@@ -108,11 +108,11 @@
   "Returns an Afterglow function specification corresponding to a
   QLC+ capability range."
   [cap prefix]
-  (str "\n" (apply str (repeat 30 " ")) (:min cap)
+  (str "\n" (clojure.string/join (repeat 30 " ")) (:min cap)
        (if (some? (:label cap))
          (str " {:type " (keyword (sanitize-name (str prefix (:label cap))))
-              "\n" (apply str (repeat (+ 32 (count (str (:min cap)))) " ")) ":label \"" (:label cap)
-              "\"\n" (apply str (repeat (+ 32 (count (str (:min cap)))) " ")) ":range :variable}")
+              "\n" (clojure.string/join (repeat (+ 32 (count (str (:min cap)))) " ")) ":label \"" (:label cap)
+              "\"\n" (clojure.string/join (repeat (+ 32 (count (str (:min cap)))) " ")) ":range :variable}")
          " nil")))
 
 (defn- define-channel
@@ -121,8 +121,8 @@
   [specs offset fine-offset]
   (or (define-single-function-channel specs offset fine-offset)
       (str "(chan/functions " (keyword (sanitize-name (:name specs))) " " offset
-           (apply str (for [c (check-capabilities (:capabilities specs))]
-                        (expand-capability c (str (:name specs) " ")))) ")")))
+           (clojure.string/join (for [c (check-capabilities (:capabilities specs))]
+                                  (expand-capability c (str (:name specs) " ")))) ")")))
 
 (defn- channel-tag
   "A Selmer custom tag that generates a channel definition at a

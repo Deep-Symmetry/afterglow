@@ -844,7 +844,7 @@
 
     ;; If the show has stopped without us noticing, enter stop mode
     (with-show (:show controller)
-      (when (not (or (show/running?) @(:stop-mode controller)))
+      (when-not (or (show/running?) @(:stop-mode controller))
         (enter-stop-mode controller)))
 
     ;; Reflect the shift button state
@@ -1645,7 +1645,6 @@
 (defonce ^{:doc "Deactivates any Push bindings when Java is shutting down."
            :private true}
   shutdown-hook
-  (do
-    (let [hook (Thread. (fn [] (deactivate-all)))]
-      (.addShutdownHook (Runtime/getRuntime) hook)
-      hook)))
+  (let [hook (Thread. deactivate-all)]
+    (.addShutdownHook (Runtime/getRuntime) hook)
+    hook))

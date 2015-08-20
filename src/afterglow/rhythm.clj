@@ -180,7 +180,7 @@ as fast, 3/4 oscillates 4 times every three markers..."
   "Makes sure a phase value is in the range [0.0,1.0)"
   [phase]
   (if (neg? phase)
-    (+ 1 (- phase (long phase)))
+    (inc (- phase (long phase)))
     (- phase (long phase))))
 
 (defrecord Metronome [start bpm bpb bpp]
