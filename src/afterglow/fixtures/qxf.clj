@@ -7,15 +7,15 @@
   capability translation. You can find the available `.qxf` files
   on [Github](https://github.com/mcallegari/qlcplus/tree/master/resources/fixtures)."
   {:doc/format :markdown}
-  (:require [clojure.java.io :as io]
+  (:require [afterglow.web.layout]  ; To set up the Selmer template path
+            [camel-snake-kebab.core :as csk]
+            [clojure.data.zip.xml :as zip-xml]
+            [clojure.java.io :as io]
             [clojure.xml :as xml]
             [clojure.zip :as zip]
-            [clojure.data.zip.xml :as zip-xml]
-            [camel-snake-kebab.core :as csk]
-            [afterglow.web.layout]  ; To set up the Selmer template path
-            [selmer.parser :as parser]
-            [selmer.filters :as filters]
             [selmer.filter-parser :refer [compile-filter-body]]
+            [selmer.filters :as filters]
+            [selmer.parser :as parser]
             [taoensso.timbre :as timbre]))
 
 (defn sanitize-name

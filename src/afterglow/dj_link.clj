@@ -5,10 +5,10 @@
   unless they change the protocol, it works really well, providing rock
   solid BPM, beat, and measure-phase tracking."
   (:require [afterglow.midi :refer [IClockSync sync-start sync-stop sync-status]]
-            [afterglow.rhythm :refer :all]
+            [afterglow.rhythm :as rhythm]
             [afterglow.util :refer [unsign]]
             [overtone.at-at :refer [now]]
-            [taoensso.timbre :refer [info warn spy]])
+            [taoensso.timbre :as timbre])
   (:import [java.net InetAddress DatagramPacket DatagramSocket]
            [java.util.regex Pattern]))
 
@@ -34,12 +34,12 @@
                      (update-in [:socket] #(when %
                                              (try (.close %)
                                                   (catch Exception e
-                                                    (warn e "Problem closing DJ-Link socket.")))
+                                                    (timbre/warn e "Problem closing DJ-Link socket.")))
                                              nil))
                      (update-in [:watcher] #(when %
                                               (try (future-cancel %)
                                                    (catch Exception e
-                                                     (warn e "Problem stopping DJ-Link processor.")))
+                                                     (timbre/warn e "Problem stopping DJ-Link processor.")))
                                               nil))))))
 
 (defn- receive
@@ -51,7 +51,7 @@
     (try (.receive socket packet)
          packet
          (catch Exception e
-           (warn e "Problem reading from DJ Link socket, shutting down.")
+           (timbre/warn e "Problem reading from DJ Link socket, shutting down.")
            (shut-down)))))
 
 (def max-packet-interval
@@ -92,8 +92,8 @@
         beat (aget data 92)]
     (doseq [listener (:synced-metronomes @state)]
       (when (= (:source listener) source)
-        (metro-bpm (:metronome listener) bpm)
-        (metro-beat-phase (:metronome listener) 0)
+        (rhythm/metro-bpm (:metronome listener) bpm)
+        (rhythm/metro-beat-phase (:metronome listener) 0)
         (dosync
          (alter (:sync-count listener) inc))
         ;; TODO: Had to give up for now on the following line because the mixer
@@ -109,7 +109,7 @@
         ;;
         ;;       If/when that mode is figured out and made an option, the following
         ;;       line will be invoked INSTEAD of the one above.
-        #_(metro-bar-phase (:metronome (/ (dec beat) 4)))))))
+        #_(rhythm/metro-bar-phase (:metronome (/ (dec beat) 4)))))))
 
 (defn start
   "Make sure the UDP server socket is open and the packet reception
@@ -132,7 +132,7 @@
                                         (update-known-sources packet data)
                                         (update-synced-metronomes packet data))))))))))
     (catch Exception e
-      (warn e "Failed while trying to set up DJ-Link reception.")
+      (timbre/warn e "Failed while trying to set up DJ-Link reception.")
       (shut-down))))
 
 (defn start-if-needed

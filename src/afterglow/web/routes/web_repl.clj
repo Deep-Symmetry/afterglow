@@ -5,7 +5,7 @@
             [clojure.stacktrace :refer [root-cause]]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
             [ring.util.response :refer [response]]
-            [taoensso.timbre :refer [info warn spy]]))
+            [taoensso.timbre :as timbre]))
 
 (defonce ^{:private true
            :doc "Stores thread-local bindings for each web REPL session."}

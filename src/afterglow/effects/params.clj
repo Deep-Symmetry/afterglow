@@ -7,13 +7,12 @@
   and MIDI mappings), and other, not-yet-imagined things."
   {:author "James Elliott"}
   (:require [afterglow.channels :as chan]
-            [afterglow.fixtures :refer [printable]]
             [afterglow.rhythm :refer [metro-snapshot]]
             [afterglow.show-context :refer [*show* with-show]]
             [afterglow.transform :as transform]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
-            [taoensso.timbre :refer [info error]])
+            [taoensso.timbre :as timbre :refer [error]])
   (:import [afterglow.rhythm Metronome]
            [javax.media.j3d Transform3D]
            [javax.vecmath Point3d Vector3d]))

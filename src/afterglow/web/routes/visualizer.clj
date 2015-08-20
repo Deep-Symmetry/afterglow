@@ -1,7 +1,7 @@
 (ns afterglow.web.routes.visualizer
-  (:require [afterglow.web.layout :as layout]
-            [afterglow.fixtures :as fixtures]
+  (:require [afterglow.fixtures :as fixtures]
             [afterglow.show :as show]
+            [afterglow.web.layout :as layout]
             [com.evocomputing.colors :as colors])
   (:import [javax.media.j3d Transform3D]
            [javax.vecmath Matrix3d Vector3d]))

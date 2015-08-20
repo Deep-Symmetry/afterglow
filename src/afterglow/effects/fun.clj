@@ -2,7 +2,7 @@
   "A collection of neat effects that are both useful in shows, and
   examples of how to create such things."
   {:author "James Elliott"}
-  (:require [afterglow.effects :as fx :refer [build-head-assigner build-head-assigners always-active end-immediately]]
+  (:require [afterglow.effects :as fx]
             [afterglow.effects.channel :refer [function-effect]]
             [afterglow.effects.color :refer [htp-merge find-rgb-heads color-effect]]
             [afterglow.effects.dimmer :refer [dimmer-effect]]
@@ -13,8 +13,8 @@
             [afterglow.transform :as transform]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
-            [taoensso.timbre :refer [info spy]]
-            [taoensso.timbre.profiling :refer [pspy]])
+            [taoensso.timbre.profiling :refer [pspy]]
+            [taoensso.timbre :as timbre])
   (:import (afterglow.effects Effect)
            (afterglow.rhythm Metronome)
            (javax.vecmath Point3d)))
@@ -75,7 +75,7 @@
                       (colors/create-color {:h (colors/hue base-color)
                                             :s (colors/saturation base-color)
                                             :l (* (colors/lightness base-color) intensity)}))))
-          assigners (build-head-assigners :color heads f)]
+          assigners (fx/build-head-assigners :color heads f)]
       (Effect. "Metronome"
                (fn [show snapshot]  ;; Continue running until the end of a measure
                  ;; Also need to set up the local snapshot based on our private metronome
@@ -159,9 +159,10 @@
                                 fade-time (max 10 (params/resolve-param fade-time show snapshot head))
                                 fraction (/ (- now creation-time) fade-time)
                                 faded (colors/darken color (* fraction (colors/lightness color)))]
-                            (build-head-assigner :color head
+                            (fx/build-head-assigner :color head
                                                  (fn [show snapshot target previous-assignment]
-                                                   (htp-merge (params/resolve-param previous-assignment show snapshot head)
+                                                   (htp-merge (params/resolve-param previous-assignment
+                                                                                    show snapshot head)
                                                               faded))))))))
               (fn [show snapshot]
                 ;; Arrange to shut down once all existing sparkles fade out.
@@ -197,7 +198,7 @@
                             (params/build-color-param :h hue-param :s saturation-param :l lightness-param)
                             fixtures :include-color-wheels? true)  ; :htp true tends to wash out right away
         function (function-effect "strobe level" :strobe level-param fixtures)]
-    (Effect. name always-active
+    (Effect. name fx/always-active
              (fn [show snapshot] (concat
                                   (fx/generate dimmers show snapshot)
                                   (fx/generate color show snapshot)
@@ -223,7 +224,7 @@
     (when-not saved-saturation (show/set-variable! :strobe-saturation 100))
     (when-not saved-hue (show/set-variable! :strobe-hue 277))
     
-    (Effect. "Strobe Adjust" always-active
+    (Effect. "Strobe Adjust" fx/always-active
             (fn [show snapshot] nil)
             (fn [show snapshot]
               (show/set-variable! :strobe-hue saved-hue)
@@ -365,7 +366,7 @@
                         :else (if (>= transition-progress (/ (measure target) max-distance))
                                 @current-color
                                 @previous-color)))))
-          assigners (build-head-assigners :color heads f)]
+          assigners (fx/build-head-assigners :color heads f)]
       (Effect. effect-name
                (fn [show snapshot]  ;; Continue running until the next color would appear
                  (or (nil? @ending) (= @current-index @ending)))

@@ -1,20 +1,20 @@
 (ns afterglow.web.routes.show-control
-  (:require [afterglow.web.layout :as layout]
-            [afterglow.midi :as amidi]
+  (:require [afterglow.controllers :as controllers]
             [afterglow.dj-link :as dj-link]
+            [afterglow.midi :as amidi]
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
             [afterglow.show-context :refer [with-show]]
-            [afterglow.controllers :as controllers]
+            [afterglow.web.layout :as layout]
             [clojure.data.json :refer [read-json write-str]]
             [com.evocomputing.colors :as colors]
             [org.httpkit.server :refer [with-channel on-receive on-close]]
             [overtone.at-at :refer [now after]]
-            [ring.util.response :refer [response]]
-            [ring.util.http-response :refer [ok]]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
+            [ring.util.http-response :refer [ok]]
+            [ring.util.response :refer [response]]
             [selmer.parser :as parser]
-            [taoensso.timbre :as timbre :refer [info warn error]]))
+            [taoensso.timbre :as timbre :refer [warn error]]))
 
 (defn- current-cue-color
   "Given a show, the set of keys identifying effects that are

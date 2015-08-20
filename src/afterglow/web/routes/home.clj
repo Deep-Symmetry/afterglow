@@ -1,14 +1,14 @@
 (ns afterglow.web.routes.home
-  (:require [afterglow.web.layout :as layout]
-            [afterglow.web.routes.show-control :as show-control]
-            [afterglow.web.routes.web-repl :as web-repl]
-            [afterglow.web.routes.visualizer :as visualizer]
-            [afterglow.show :as show]
+  (:require [afterglow.show :as show]
             [afterglow.version :as version]
+            [afterglow.web.layout :as layout]
+            [afterglow.web.routes.show-control :as show-control]
+            [afterglow.web.routes.visualizer :as visualizer]
+            [afterglow.web.routes.web-repl :as web-repl]
+            [clojure.java.io :as io]
             [compojure.core :refer [defroutes GET POST]]
-            [ring.util.http-response :refer [ok]]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
-            [clojure.java.io :as io]))
+            [ring.util.http-response :refer [ok]]))
 
 (defn home-page []
   (let [shows (map (fn [[show description]]

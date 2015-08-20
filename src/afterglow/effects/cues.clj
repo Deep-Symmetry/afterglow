@@ -1,10 +1,10 @@
 (ns afterglow.effects.cues
-  (:require [afterglow.controllers :as cues]
+  (:require [afterglow.controllers :as controllers]
             [afterglow.effects.channel :as chan]
             [afterglow.effects.params :as params]
             [afterglow.show :as show]
             [afterglow.show-context :refer [with-show]]
-            [taoensso.timbre :as timbre :refer [info]])
+            [taoensso.timbre :as timbre])
   (:import (afterglow.effects Effect)))
 
 (defn cue
@@ -238,7 +238,7 @@
   (let [running (filter identity (for [[x y overrides] cues]
                                    (with-show show
                                      (when-let [id (show/add-effect-from-cue-grid! x y :var-overrides overrides)]
-                                       [id (:key (cues/cue-at (:cue-grid show) x y))]))))]
+                                       [id (:key (controllers/cue-at (:cue-grid show) x y))]))))]
     (Effect. name
              (fn [show snapshot]  ; We are still running if any of the nested effects we launched are.
                (some (fn [[id k]]

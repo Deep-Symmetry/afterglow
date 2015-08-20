@@ -3,15 +3,15 @@
   fixtures and heads."
   {:author "James Elliott"}
   (:require [afterglow.channels :as channels]
-            [afterglow.effects :refer :all]
-            [afterglow.effects.channel :refer [apply-channel-value
-                                               function-percentage-to-dmx]]
+            [afterglow.effects :as fx]
+            [afterglow.effects.channel :as chan-fx]
             [afterglow.effects.params :as params]
             [afterglow.rhythm :as rhythm]
             [afterglow.show-context :refer [*show*]]
             [afterglow.util :as util]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
+            [taoensso.timbre :as timbre]
             [taoensso.timbre.profiling :refer [pspy]])
   (:import (afterglow.effects Assigner Effect)))
 
@@ -51,13 +51,13 @@
   assignment held the highest."
   [head param show snapshot]
   (let [resolved (params/resolve-unless-frame-dynamic param show snapshot head)]
-    (build-head-assigner :color head
-                         (fn [show snapshot target previous-assignment]
-                           (if (some? previous-assignment)
-                             (let [current (params/resolve-param resolved show snapshot head)
-                                   previous (params/resolve-param previous-assignment show snapshot head)]
-                               (htp-merge previous current))
-                             resolved)))))
+    (fx/build-head-assigner :color head
+                            (fn [show snapshot target previous-assignment]
+                              (if (some? previous-assignment)
+                                (let [current (params/resolve-param resolved show snapshot head)
+                                      previous (params/resolve-param previous-assignment show snapshot head)]
+                                  (htp-merge previous current))
+                                resolved)))))
 
 (defn build-htp-color-assigners
   "Returns a list of assigners which apply highest-takes-precedence
@@ -82,8 +82,8 @@
   (let [heads (find-rgb-heads fixtures include-color-wheels?)
         assigners (if htp?
                     (build-htp-color-assigners heads color *show*)
-                    (build-head-parameter-assigners :color heads color *show*))]
-    (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
+                    (fx/build-head-parameter-assigners :color heads color *show*))]
+    (Effect. name fx/always-active (fn [show snapshot] assigners) fx/end-immediately)))
 
 ;; Deprecated in favor of new composable dynamic parameter mechanism
 (defn hue-oscillator
@@ -103,8 +103,8 @@
                   (let [phase (osc snapshot)
                         new-hue (+ min (* range phase))]
                     (colors/create-color {:h new-hue :s saturation :l lightness}))))
-        assigners (build-head-assigners :color heads f)]
-    (Effect. "Hue Oscillator" always-active (fn [show snapshot] assigners) end-immediately)))
+        assigners (fx/build-head-assigners :color heads f)]
+    (Effect. "Hue Oscillator" fx/always-active (fn [show snapshot] assigners) fx/end-immediately)))
 
 (defn color-assignment-resolver
   "Resolves the assignment of a color to a fixture or a head,
@@ -119,11 +119,11 @@
         color-key (keyword (str "color-" (:id target)))]
     ;; Start with RGB mixing
     (doseq [c (filter #(= (:color %) :red) (:channels target))]
-      (apply-channel-value buffers c (colors/red resolved)))
+      (chan-fx/apply-channel-value buffers c (colors/red resolved)))
     (doseq [c (filter #(= (:color %) :green) (:channels target))]
-      (apply-channel-value buffers c (colors/green resolved)))
+      (chan-fx/apply-channel-value buffers c (colors/green resolved)))
     (doseq [c (filter #(= (:color %) :blue) (:channels target))]
-      (apply-channel-value buffers c (colors/blue resolved)))
+      (chan-fx/apply-channel-value buffers c (colors/blue resolved)))
     (swap! (:movement *show*) #(assoc-in % [:current color-key] resolved))
     ;; Expermental: Does this work well in bringing in the white channel?
     (when-let [whites (filter #(= (:color %) :white) (:channels target))]
@@ -132,14 +132,14 @@
             s-scale (* 2 (- 0.5 (math/abs (- 0.5 l))))
             level (* 255 l (- 1 (* s s-scale)))]
         (doseq [c whites]
-          (apply-channel-value buffers c level))))
+          (chan-fx/apply-channel-value buffers c level))))
     ;; Even more experimental: Support other arbitrary color channels
     (doseq [c (filter :hue (:channels target))]
       (let [as-if-red (colors/adjust-hue resolved (- (:hue c)))]
-        (apply-channel-value buffers c (colors/red as-if-red))))
+        (chan-fx/apply-channel-value buffers c (colors/red as-if-red))))
     ;; Finally, see if there is a color wheel color close enough to select
     (when (seq (:color-wheel-hue-map target))
       (let [found (util/find-closest-key (:color-wheel-hue-map target) (colors/hue resolved))
             [channel function-spec] (get (:color-wheel-hue-map target) found)]
         (when (< (math/abs (- (colors/hue resolved) found)) (:color-wheel-hue-tolerance @(:variables show) 60))
-          (apply-channel-value buffers channel (function-percentage-to-dmx 50 function-spec)))))))
+          (chan-fx/apply-channel-value buffers channel (chan-fx/function-percentage-to-dmx 50 function-spec)))))))

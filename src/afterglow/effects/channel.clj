@@ -3,8 +3,8 @@
   {:author "James Elliott"}
   (:require [afterglow.channels :as channels]
             [afterglow.controllers :as ct]
-            [afterglow.effects :refer [always-active end-immediately]]
             [afterglow.effects.params :as params]
+            [afterglow.effects :refer [always-active end-immediately]]
             [afterglow.rhythm :as rhythm]
             [afterglow.show-context :refer [*show*]]
             [afterglow.util :refer [ubyte]]

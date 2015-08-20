@@ -5,7 +5,7 @@
             [afterglow.effects.params :as params]
             [afterglow.rhythm :as rhythm]
             [afterglow.show-context :refer [*show*]]
-            [taoensso.timbre :as timbre :refer [error warn info debug]]
+            [taoensso.timbre :as timbre]
             [taoensso.timbre.profiling :as profiling :refer [pspy profile]])
   (:import [afterglow.rhythm MetronomeSnapshot]))
 

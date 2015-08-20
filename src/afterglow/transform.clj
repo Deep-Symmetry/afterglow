@@ -51,13 +51,11 @@
   patching it. Getting the orientation right is most important for
   moving heads, because Afterglow relies on having that information in
   order to figure out how to aim the light where you want it aimed."
-
   {:author "James Elliott"
    :doc/format :markdown}
   (:require [afterglow.channels :as chan]
-            [afterglow.show-context :refer :all]
             [clojure.math.numeric-tower :as math]
-            [taoensso.timbre :refer [debug]])
+            [taoensso.timbre :as timbre :refer [debug]])
   (:import [javax.media.j3d Transform3D]
            [javax.vecmath Point3d Vector3d]))
 

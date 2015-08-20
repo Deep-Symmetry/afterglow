@@ -1,10 +1,9 @@
 (ns afterglow.examples
   "Show some simple ways to use Afterglow, and hopefully inspire
   exploration." {:author "James Elliott"}
-  (:require [afterglow.core :as core]
-            [afterglow.transform :as tf]
+  (:require [afterglow.controllers.ableton-push :as push]
             [afterglow.controllers :as ct]
-            [afterglow.controllers.ableton-push :as push]
+            [afterglow.core :as core]
             [afterglow.effects.color :refer [color-effect]]
             [afterglow.effects.cues :as cues]
             [afterglow.effects.dimmer :refer [dimmer-effect master-set-level]]
@@ -17,7 +16,8 @@
             [afterglow.fixtures.chauvet :as chauvet]
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
-            [afterglow.show-context :refer :all]
+            [afterglow.show-context :refer [*show* with-show set-default-show!]]
+            [afterglow.transform :as tf]
             [com.evocomputing.colors :refer [color-name create-color hue adjust-hue]]
             [overtone.osc :as osc]
             [taoensso.timbre :as timbre]))

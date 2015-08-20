@@ -15,9 +15,9 @@
             [afterglow.version :as version]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
-            [overtone.midi :as midi]
             [overtone.at-at :as at-at]
-            [taoensso.timbre :as timbre :refer [info warn]])
+            [overtone.midi :as midi]
+            [taoensso.timbre :as timbre :refer [warn]])
   (:import [java.util Arrays]))
 
 (defonce
@@ -1521,7 +1521,7 @@
   what should be done."
   [controller message]
   (when (= (:device message) (:port-in controller))
-    ;(info message)
+    ;(timbre/info message)
     (when-not (overlay-handled? controller message)
       (when (= (:status message) :control-change)
         (control-change-received controller message))

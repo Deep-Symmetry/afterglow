@@ -2,22 +2,22 @@
   "This is the main class for running Afterglow as a self-contained JAR application.
   When you are learning and experimenting in your REPL, the main
   namespace you want to be using is afterglow.examples"
-  (:require [afterglow.init]
+  (:require [afterglow.fixtures.qxf :as qxf]
+            [afterglow.init]
             [afterglow.version :as version]
             [afterglow.web.handler :refer [app]]
             [afterglow.web.session :as session]
-            [afterglow.fixtures.qxf :as qxf]
-            [ola-clojure.ola-client :as ola-client]
-            [org.httpkit.server :as http-kit]
-            [environ.core :refer [env]]
-            [clojure.tools.cli :refer [parse-opts]]
-            [clojure.tools.nrepl.server :as nrepl]
             [cider.nrepl :refer [cider-nrepl-handler]]
             [clojure.java.browse :as browse]
+            [clojure.tools.cli :refer [parse-opts]]
+            [clojure.tools.nrepl.server :as nrepl]
+            [environ.core :refer [env]]
+            [ola-clojure.ola-client :as ola-client]
+            [org.httpkit.server :as http-kit]
             [overtone.osc :as osc]
             [selmer.parser :as parser]
-            [taoensso.timbre :as timbre]
-            [taoensso.timbre.appenders.3rd-party.rotor :as rotor])
+            [taoensso.timbre.appenders.3rd-party.rotor :as rotor]
+            [taoensso.timbre :as timbre])
   (:import [java.net InetAddress])
   (:gen-class))
 

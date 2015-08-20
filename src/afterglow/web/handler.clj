@@ -1,7 +1,7 @@
 (ns afterglow.web.handler
-  (:require [compojure.core :refer [defroutes routes wrap-routes]]
+  (:require [afterglow.web.middleware :as middleware]
             [afterglow.web.routes.home :refer [home-routes]]
-            [afterglow.web.middleware :as middleware]
+            [compojure.core :refer [defroutes routes wrap-routes]]
             [compojure.route :as route]))
 
 (defroutes base-routes

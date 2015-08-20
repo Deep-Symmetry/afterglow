@@ -1,12 +1,12 @@
 (ns afterglow.midi
   "Handles MIDI communication, including syncing a show metronome to MIDI clock pulses."
-  (:require [afterglow.rhythm :refer :all]
+  (:require [afterglow.rhythm :as rhythm]
             [amalloy.ring-buffer :refer [ring-buffer]]
             [overtone.at-at :refer [now]]
             [overtone.midi :as midi]
-            [taoensso.timbre :refer [info error]])
-  (:import [java.util.regex Pattern]
-           [java.util.concurrent LinkedBlockingDeque]))
+            [taoensso.timbre :as timbre])
+  (:import [java.util.concurrent LinkedBlockingDeque]
+           [java.util.regex Pattern]))
 
 (def ^:private max-clock-intervals
   "How many MIDI clock pulses should be kept around for averaging?"
@@ -152,11 +152,11 @@
               ;;       if they support timeouts? Don't want to use a million threads for this either...
               (handler msg)
               (catch InterruptedException e
-                (info "MIDI event handler thread interrupted, shutting down.")
+                (timbre/info "MIDI event handler thread interrupted, shutting down.")
                 (reset! running false)
                 (reset! midi-transfer-thread nil))
               (catch Throwable t
-                (error t "Problem runing global MIDI event handler")))))
+                (timbre/error t "Problem runing global MIDI event handler")))))
         
         ;; Then call any registered port listeners for the port on which
         ;; it arrived
@@ -171,22 +171,22 @@
               (:note-on :note-off) (note-message-handler msg)
               nil)
             (catch InterruptedException e
-              (info "MIDI event handler thread interrupted, shutting down.")
+              (timbre/info "MIDI event handler thread interrupted, shutting down.")
               (reset! running false)
               (reset! midi-transfer-thread nil))
             (catch Throwable t
-              (error t "Problem running MIDI event handler"))))
+              (timbre/error t "Problem running MIDI event handler"))))
 
         ;; Finally, keep track of any MIDI clock messages we have seen so the
         ;; user can be informed of them as potential sync sources.
         (try
           (watch-for-clock-sources msg)
           (catch InterruptedException e
-            (info "MIDI event handler thread interrupted, shutting down.")
+            (timbre/info "MIDI event handler thread interrupted, shutting down.")
             (reset! running false)
             (reset! midi-transfer-thread nil))
           (catch Throwable t
-            (error t "Problem looking for MIDI clock sources"))))
+            (timbre/error t "Problem looking for MIDI clock sources"))))
 
       ;; If we have not ben shut down, do it all again for the next message.
       (when @running (recur (.take midi-queue))))))
@@ -199,7 +199,7 @@
   (try
     (.add midi-queue msg)
     (catch Throwable t
-      (error t "Problem trasferring MIDI event to queue"))))
+      (timbre/error t "Problem trasferring MIDI event to queue"))))
 
 (defn- connect-midi-in
   "Open a MIDI input device and cause it to send its events to
@@ -311,7 +311,7 @@
   buffer."
   [buffer metronome]
   (let [timestamp (now)]
-    (metro-beat-phase metronome 0)      ; Regardless, mark the beat
+    (rhythm/metro-beat-phase metronome 0)      ; Regardless, mark the beat
     (if (and (some? (last @buffer))
              (< (- timestamp (last @buffer)) max-tempo-tap-interval))
       ;; We are considering this part of a series of taps.
@@ -321,7 +321,7 @@
           (let [passed (- timestamp (peek @buffer))
                 intervals (dec (count @buffer))
                 mean (/ passed intervals)]
-            (metro-bpm metronome (double (/ 60000 mean))))))
+            (rhythm/metro-bpm metronome (double (/ 60000 mean))))))
       ;; This tap was isolated, but may start a new series.
       (reset! buffer (conj (ring-buffer max-tempo-tap-interval) timestamp))))
   nil)
@@ -370,7 +370,7 @@
                        (let [passed (- timestamp (peek @buffer))
                              intervals (dec (count @buffer))
                              mean (/ passed intervals)]
-                         (metro-bpm metronome (double (/ 60000 (* mean 24)))))))
+                         (rhythm/metro-bpm metronome (double (/ 60000 (* mean 24)))))))
      (:start :stop) (ref-set buffer (ring-buffer max-clock-intervals))  ; Clock is being reset!
      :control-change (when (and (some? @traktor-info) (< (:note msg) 5))  ; Traktor beat phase update
                        (when (zero? (:note msg))  ; Switching the current master deck
@@ -379,7 +379,7 @@
                          (let [target-phase (/ (- (:velocity msg) 64) 127)]
                            ;; Only move when we are towards the middle of a beat, to make it more subtle
                            (when (< 0.2 target-phase 0.8) 
-                             (metro-beat-phase metronome target-phase)))
+                             (rhythm/metro-beat-phase metronome target-phase)))
                          (alter traktor-info assoc :last-sync (now))))
      nil)))
 

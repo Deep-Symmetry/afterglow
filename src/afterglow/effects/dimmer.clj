@@ -36,7 +36,7 @@
             [com.evocomputing.colors :refer [clamp-percent-float
                                              clamp-rgb-int]]
             [taoensso.timbre.profiling :refer [pspy]]
-            [taoensso.timbre :refer [info spy]])
+            [taoensso.timbre :as timbre])
   (:import (afterglow.effects Effect)))
 
 (defn- assign-level

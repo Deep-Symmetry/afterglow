@@ -31,7 +31,7 @@
             [afterglow.effects.params :refer [bind-keyword-param resolve-param]]
             [afterglow.fixtures :as fixtures]
             [afterglow.midi :as midi]
-            [afterglow.rhythm :refer :all]
+            [afterglow.rhythm :as rhythm]
             [afterglow.show-context :refer [*show* with-show]]
             [afterglow.transform :as transform]
             [afterglow.version :as version]
@@ -44,8 +44,8 @@
             overtone.midi
             [taoensso.timbre :as timbre :refer [error]]
             [taoensso.timbre.profiling :refer [p profile pspy]])
-  (:import afterglow.effects.dimmer.Master
-           afterglow.effects.Effect
+  (:import afterglow.effects.Effect
+           afterglow.effects.dimmer.Master
            afterglow.rhythm.Metronome
            com.google.protobuf.ByteString))
 
@@ -203,7 +203,7 @@
   the future is canceled by [[stop!]]."
  {:doc/format :markdown}
   [show buffers]
-  (loop [snapshot (metro-snapshot (:metronome show))
+  (loop [snapshot (rhythm/metro-snapshot (:metronome show))
          still-running (atom true)]
     (try
       (send-dmx show buffers snapshot)
@@ -215,7 +215,7 @@
       (let [ended (at-at/now)
             duration (- ended (:instant snapshot))
             sleep-time (math/round (max 1 (- (:refresh-interval show) duration)))
-            next-frame-snapshot (metro-snapshot (:metronome show) sleep-time)]
+            next-frame-snapshot (rhythm/metro-snapshot (:metronome show) sleep-time)]
         ;; TODO: Send anyone who registered interest an update about when the next frame is due
         (doseq [f @(:frame-fns show)]
           (try
@@ -315,9 +315,9 @@
   only ever one version registered)."
   {:doc/format :markdown}
   [& {:keys [universes base-metronome refresh-interval description]
-      :or {universes [1] base-metronome (metronome 120) refresh-interval default-refresh-interval}}]
+      :or {universes [1] base-metronome (rhythm/metronome 120) refresh-interval default-refresh-interval}}]
   {:pre [(sequential? universes) (pos? (count universes)) (every? integer? universes) (not-any? neg? universes)
-         (satisfies? IMetronome base-metronome) (number? refresh-interval) (pos? refresh-interval)]}
+         (satisfies? rhythm/IMetronome base-metronome) (number? refresh-interval) (pos? refresh-interval)]}
   (let [result {:id (swap! show-counter inc)
                 :metronome base-metronome
                 :sync (atom nil)
@@ -503,7 +503,7 @@
          (<= 0 min 100) (<= 0 max 100)
          (integer? channel) (<= 0 channel 15) (integer? control-number) (<= 0 control-number 127)]}
   (let [bound (bind-keyword-param master Master (:grand-master *show*))
-        master (resolve-param bound *show* (metro-snapshot (:metronome *show*)))
+        master (resolve-param bound *show* (rhythm/metro-snapshot (:metronome *show*)))
         calc-fn (if (< min max)
                   (let [range (- max min)]
                     (fn [midi-val] (float (+ min (/ (* midi-val range) 127)))))
@@ -521,7 +521,7 @@
   {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
          (integer? control-number) (<= 0 control-number 127)]}
   (let [bound (bind-keyword-param master Master (:grand-master *show*))
-        master (resolve-param bound *show* (metro-snapshot (:metronome *show*)))]
+        master (resolve-param bound *show* (rhythm/metro-snapshot (:metronome *show*)))]
     (midi/remove-control-mapping midi-device-name channel control-number (str "show:" (:id *show*)
                                                                               ":master" (.hashCode master)))))
 
@@ -533,7 +533,7 @@
   {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
          (integer? control-number) (<= 0 control-number 127) (ifn? mapped-fn)]}
   (let [bound (bind-keyword-param metronome Metronome (:metronome *show*))
-        metronome (resolve-param bound *show* metro-snapshot (:metronome *show*))]
+        metronome (resolve-param bound *show* (rhythm/metro-snapshot (:metronome *show*)))]
     (midi/add-control-mapping midi-device-name channel control-number
                               (str "show:" (:id *show*) ":metronome" (.hashCode metronome))
                               (fn [msg] (when (pos? (:velocity msg)) (mapped-fn metronome))))))
@@ -549,7 +549,7 @@
   {:doc/format :markdown}
   [midi-device-name channel control-number & {:keys [metronome] :or {metronome (:metronome *show*)}}]
   (add-midi-control-metronome-mapping midi-device-name channel control-number metronome
-                                      #(metro-start % 1)))
+                                      #(rhythm/metro-start % 1)))
 
 (defn remove-midi-control-metronome-mapping
   "Stop affecting a metronome when the specified MIDI
@@ -566,7 +566,7 @@
   {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
          (integer? control-number) (<= 0 control-number 127)]}
   (let [bound (bind-keyword-param metronome Metronome (:metronome *show*))
-        metronome (resolve-param bound *show* metro-snapshot (:metronome *show*))]
+        metronome (resolve-param bound *show* (rhythm/metro-snapshot (:metronome *show*)))]
     (midi/remove-control-mapping midi-device-name channel control-number
                                  (str "show:" (:id *show*) ":metronome" (.hashCode metronome)))))
 
@@ -582,7 +582,7 @@
   {:doc/format :markdown}
   [midi-device-name channel control-number & {:keys [metronome] :or {metronome (:metronome *show*)}}]
   (add-midi-control-metronome-mapping midi-device-name channel control-number metronome
-                                      #(metro-bar-start % (metro-bar %))))
+                                      #(rhythm/metro-bar-start % (rhythm/metro-bar %))))
 
 (defn add-midi-control-metronome-align-phrase-mapping
   "Adjust a metronome so the closest beat is considered the first in
@@ -596,7 +596,7 @@
   {:doc/format :markdown}
   [midi-device-name channel control-number & {:keys [metronome] :or {metronome (:metronome *show*)}}]
   (add-midi-control-metronome-mapping midi-device-name channel control-number metronome
-                                      #(metro-phrase-start % (metro-phrase %))))
+                                      #(rhythm/metro-phrase-start % (rhythm/metro-phrase %))))
 
 (defn- vec-remove
   "Remove the element at the specified index from the collection."
@@ -733,7 +733,7 @@
     (when (and effect (or (nil? when-id) (= (:id found) when-id)))
       ;; See if it should be forcibly or gently ended
       (if (or force ((:ending @(:active-effects *show*)) key)
-              (fx/end effect *show* (metro-snapshot (:metronome *show*))))
+              (fx/end effect *show* (rhythm/metro-snapshot (:metronome *show*))))
         (do  ; Actually ended
           (when (every? #(% found) [:cue :x :y])
             (controllers/activate-cue! (:cue-grid *show*) (:x found) (:y found) nil))
@@ -1060,7 +1060,7 @@
    {:pre [(some? *show*) (integer? iterations) (pos? iterations)]}
    (let [buffers (create-buffers *show*)]
      (profile :info :Frame (dotimes [i iterations]
-                             (let [snapshot (metro-snapshot (:metronome *show*))]
+                             (let [snapshot (rhythm/metro-snapshot (:metronome *show*))]
                                (send-dmx *show* buffers snapshot)))))))
 
 (defn register-grid-controller
