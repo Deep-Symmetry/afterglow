@@ -76,14 +76,14 @@
   {:doc/format :markdown}
   []
   {:channels [(chan/pan 1 2) (chan/tilt 3 4)
-              (chan/functions :color 5 0 "color-wheel-open"
+              (chan/functions :color 5 0 "Color Wheel Open"
                               (range 16 128 16) (chan/color-wheel-hue ["red" "blue" "green" "yellow"
                                                                        "magenta" "cyan" "orange"])
                               128 {:type :color-clockwise
                                    :label "Color Wheel Clockwise (fast->slow)"
                                    :var-label "CW (fast->slow)"
                                    :range :variable}
-                              190 "color-stop" 194 {:type :color-counterclockwise
+                              190 "Color Stop" 194 {:type :color-counterclockwise
                                                     :label "Color Wheel Counterclockwise (slow->fast)"
                                                     :var-label "CCW (fast->slow)"
                                                     :range :variable})
@@ -115,34 +115,34 @@
                                      :label "Clockwise Speed"
                                      :var-label "CW Speed"
                                      :range :variable}))
-              (chan/functions :shutter 9 0 "shutter-closed" 32 "shutter-open"
+              (chan/functions :shutter 9 0 "Shutter Closed" 32 "Shutter Open"
                               64 {:type :strobe
                                   :scale-fn (partial function-value-scaler 14 100)
                                   :label "Strobe (1.4Hz->10Hz)"
                                   :range :variable}
-                              96 "shutter-open-2" 128 :pulse-strobe 160 "shutter-open-3"
+                              96 "Shutter Open 2" 128 :pulse-strobe 160 "Shutter Open 3"
                               192 :random-strobe
-                              224 "shutter-open-4")
+                              224 "Shutter Open 4")
               (chan/dimmer 10)
               (chan/focus 11)
-              (chan/functions :prism 12 0 "prism-out" 6 "prism-in"
+              (chan/functions :prism 12 0 "Prism Out" 6 "Prism In"
                               128 {:type :prism-clockwise
                                    :label "Prism Clockwise (fast->slow)"
                                    :var-label "CW (fast->slow)"
                                    :range :variable}
-                              190 "prism-stop"
+                              190 "Prism Stop"
                               194 {:type :prism-counterclockwise
                                    :label "Prism Counterclockwsie (slow->fast)"
                                    :var-label "CCW (slow->fast)"
                                    :range :variable})
-              (chan/functions :pan-tilt-speed 13 0 "pan-tilt-speed-normal"
+              (chan/functions :pan-tilt-speed 13 0 "Pan/Tilt Speed Normal"
                               1 :pan-tilt-speed-slow
-                              226 "blackout-when-head-moving"
-                              236 "blackout-when-wheels-changing"
+                              226 "Blackout When Head Moving"
+                              236 "Blackout When Wheels Changing"
                               246 nil)
-              (chan/functions :control 14 0 "normal-color-change-mode"
-                              20 "split-colors-possible" 30 "split-colors-and-gobos"
-                              40 nil 80 "motor-reset" (range 100 255 20) "program")]
+              (chan/functions :control 14 0 "Normal Color Change Mode"
+                              20 "Split Colors Possible" 30 "Split Colors and Gobos"
+                              40 nil 80 "Motor Reset" (range 100 255 20) "Program")]
    :name "Blizzard Torrent F3"
    :pan-center 85.5 :pan-half-circle -85.5 :tilt-center 25 :tilt-half-circle -203})
 
@@ -230,7 +230,9 @@
 (defn- ws-head
   "Creates a head definition for one head of the Weather System"
   [index]
-  {:channels [(chan/color (+ 2 (* 3 index)) :red) (chan/color (+ 3 (* 3 index)) :green) (chan/color (+ 4 (* 3 index)) :blue)]
+  {:channels [(chan/color (+ 2 (* 3 index)) :red)
+              (chan/color (+ 3 (* 3 index)) :green)
+              (chan/color (+ 4 (* 3 index)) :blue)]
    :x (get ws-head-offsets index)})
 
 (defn puck-fab5
@@ -320,9 +322,9 @@
    (assoc (case mode
             :7-channel {:channels [(chan/dimmer 1) (chan/color 2 :red) (chan/color 3 :green) (chan/color 4 :blue)
                                    (chan/functions :control 5
-                                                   0 nil 8 "red" 16 "yellow" 24 "green" 32 "cyan" 40 "blue"
-                                                   48 "purple" 56 "white" (range 64 232 8) "program"
-                                                   232 "sound-active")
+                                                   0 nil 8 "Red" 16 "Yellow" 24 "Green" 32 "Cyan" 40 "Blue"
+                                                   48 "Purple" 56 "White" (range 64 232 8) "Program"
+                                                   232 "Sound Active")
                                    (chan/fine-channel :mic-sensitivity 6)
                                    (chan/functions :strobe 7 0 nil
                                                    11 {:type :strobe

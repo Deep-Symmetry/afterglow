@@ -9,9 +9,9 @@
   pretty effects for the price."
   []
   {:name "American DJ Hypnotic RGB Laser"
-   :channels [(chan/functions :control 1 0 nil 8 "beam-red" 38 "beam-red-green" 68 "beam-green"
-                              98 "beam-green-blue" 128 "beam-blue" 158 "beam-red-blue" 188 "beam-red-green-blue"
-                              218 "beam-all-random" 248 :sound-active)
+   :channels [(chan/functions :control 1 0 nil 8 "Beam Red" 38 "Beam Red Green" 68 "Beam Green"
+                              98 "Beam Green Blue" 128 "Beam Blue" 158 "Beam Red Blue" 188 "Beam Red Green Blue"
+                              218 "Beam All Random" 248 :sound-active)
               (chan/functions :control 2 0 nil
                               10 {:type :beams-ccw
                                   :var-label "CCW (fast->slow)"
