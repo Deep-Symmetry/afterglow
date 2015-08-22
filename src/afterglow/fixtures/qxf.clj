@@ -280,7 +280,7 @@
   "Converts a map read by [[convert-qxf]] into an Afterglow fixture
   definition."
   [qxf]
-  (parser/render-file "fixture-definition.clj" qxf))
+  (parser/render-file "fixture-definition.clj.template" qxf))
 
 (defn parse-qxf
   "Read a fixture definition file in the format (.qxf) used by
