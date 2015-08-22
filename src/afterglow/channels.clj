@@ -1,7 +1,8 @@
 (ns afterglow.channels
   "Functions for modeling DMX channels"
   {:author "James Elliott"}
-  (:require [com.evocomputing.colors :as colors]))
+  (:require [afterglow.fixtures.qxf :refer [sanitize-name]]
+            [com.evocomputing.colors :as colors]))
 
 (defn channel
   "Creates a minimal channel specification, containing just the
@@ -146,8 +147,8 @@
         (string? spec)
         {:start start
          :range :fixed
-         :type (keyword spec)
-         :label (clojure.string/capitalize (name spec))}
+         :type (keyword (sanitize-name spec))
+         :label spec}
 
         (nil? spec)
         {:start start
@@ -197,7 +198,7 @@
       (map #(expand-function-spec [%1 %2]) start spec)
       (map-indexed (fn [index start]
                      (cond (string? spec)
-                           (expand-function-spec [start (str spec "-" (inc index))])
+                           (expand-function-spec [start (str spec " " (inc index))])
 
                            (keyword? spec)
                            (expand-function-spec [start (keyword (str (name spec) "-" (inc index)))])
