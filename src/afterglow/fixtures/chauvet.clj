@@ -4,6 +4,33 @@
   (:require [afterglow.channels :as chan]
             [afterglow.effects.channel :refer [function-value-scaler]]))
 
+(defn led-techno-strobe-rgb
+  "[LED Techno Strobe RGB](http://www.chauvetlighting.com/led-techno-strobe-rgb.html)
+  color mixing strobe light.
+
+  This was created by Afterglow from the QLC+ Fixture Definintion
+  (.qxf) file, and revised by James Elliott.
+
+  The original fixture defintition was created by Davey D
+  using Q Light Controller Plus version 4.6.0.
+  QLC+ Fixture Type: Color Changer."
+  {:doc/format :markdown}
+  []
+  {:channels [(chan/functions :control 1
+                              0 {:type :rgb-control
+                                 :label "RGB control"
+                                 :range :fixed}
+                              (range 25 224 25) "program"
+                              225 :sound-active)
+              (chan/color 2 :red)
+              (chan/color 3 :green)
+              (chan/color 4 :blue)
+              (chan/fine-channel :speed 5
+                                 :function-name "Speed"
+                                 :var-label "fast to slow")
+              (chan/dimmer 6)]
+   :name "LED Techno Strobe RGB"})
+
 (defn slimpar-hex3-irc
   "[SlimPAR HEX 3 IRC](http://www.chauvetlighting.com/slimpar-hex3irc.html)
   six-color low-profile LED PAR.
@@ -17,7 +44,8 @@
   channels are mixed in when creating colors by passing a boolean
   value with `:mix-amber` and `:mix-uv`. The default for each is
   `true`."
-  {:doc/format :markdown}
+  {:doc/format :markdown
+   :author "James Elliott"}
   ([]
    (slimpar-hex3-irc :12-channel))
   ([mode & {:keys [mix-amber mix-uv] :or {mix-amber true mix-uv true}}]
