@@ -4,6 +4,23 @@
   (:require [afterglow.channels :as chan]
             [afterglow.effects.channel :refer [function-value-scaler]]))
 
+(defn led-techno-strobe
+  "[LED Techno Strobe](http://www.chauvetlighting.com/led-techno-strobe.html)
+  strobe light."
+  {:doc/format :markdown
+   :author "James Elliott"}
+  []
+  {:channels [(chan/functions :control 1
+                              0 {:type :intensity-control
+                                 :label "Intensity control"
+                                 :range :fixed}
+                              (range 30 209 30) "program"
+                              210 :sound-active)
+              (chan/functions :strobe 2 0 nil
+                              1 :strobe)  ; TODO: Measure speed, add scale-fn
+              (chan/dimmer 3)]  ; TODO: Manual implies this might be reversed? If so, what a pain.
+   :name "LED Techno Strobe"})
+
 (defn led-techno-strobe-rgb
   "[LED Techno Strobe RGB](http://www.chauvetlighting.com/led-techno-strobe-rgb.html)
   color mixing strobe light.
@@ -25,9 +42,8 @@
               (chan/color 2 :red)
               (chan/color 3 :green)
               (chan/color 4 :blue)
-              (chan/fine-channel :speed 5
-                                 :function-name "Speed"
-                                 :var-label "fast to slow")
+              (chan/functions :strobe 5 0 nil
+                              1 :strobe)  ; TODO: Measure speed, add scale-fn
               (chan/dimmer 6)]
    :name "LED Techno Strobe RGB"})
 
