@@ -4,6 +4,37 @@
   (:require [afterglow.channels :as chan]
             [afterglow.effects.channel :refer [function-value-scaler]]))
 
+(defn color-strip-mini
+  "[ColorStrip](http://www.chauvetlighting.com/colorstrip.html) LED fixture.
+  Also works with the ColorStrip Mini.
+
+  This was created by Afterglow from the QLC+ Fixture Definintion
+  (.qxf) file, and revised by James Elliott.
+
+  The original fixture defintition was created by JL Griffin
+  using Q Light Controller version 3.1.0.
+
+  QLC+ Fixture Type: Color Changer."
+  []
+  {:channels [(chan/functions :control 1
+                              0 "Blackout"
+                              10 "Red"
+                              20 "Green"
+                              30 "Blue"
+                              40 "Yellow"
+                              50 "Magenta"
+                              60 "Cyan"
+                              70 "White"
+                              (range 80 139 10) "Auto Change"
+                              (range 140 209 10) "Color Chase"
+                              210 "RGB Control"
+                              220 "Chase Fade"
+                              230 "Auto Run")
+              (chan/color 2 :red)
+              (chan/color 3 :green)
+              (chan/color 4 :blue)]
+   :name "ColorStrip"})
+
 (defn led-techno-strobe
   "[LED Techno Strobe](http://www.chauvetlighting.com/led-techno-strobe.html)
   strobe light."
@@ -11,10 +42,8 @@
    :author "James Elliott"}
   []
   {:channels [(chan/functions :control 1
-                              0 {:type :intensity-control
-                                 :label "Intensity control"
-                                 :range :fixed}
-                              (range 30 209 30) "program"
+                              0 "Intensity Control"
+                              (range 30 209 30) "Program"
                               210 :sound-active)
               (chan/functions :strobe 2 0 nil
                               1 :strobe)  ; TODO: Measure speed, add scale-fn
@@ -30,14 +59,13 @@
 
   The original fixture defintition was created by Davey D
   using Q Light Controller Plus version 4.6.0.
+
   QLC+ Fixture Type: Color Changer."
   {:doc/format :markdown}
   []
   {:channels [(chan/functions :control 1
-                              0 {:type :rgb-control
-                                 :label "RGB control"
-                                 :range :fixed}
-                              (range 25 224 25) "program"
+                              0 "RGB Control"
+                              (range 25 224 25) "Program"
                               225 :sound-active)
               (chan/color 2 :red)
               (chan/color 3 :green)
@@ -74,12 +102,12 @@
                                                         :scale-fn (partial function-value-scaler 0.87 25)
                                                         :label "Strobe (0.87Hz->25Hz)"})
                                     (chan/functions :color-macros 9 0 nil 16 :color-macros)
-                                    (chan/functions :control 10 0 nil (range 11 200 50) "program"
+                                    (chan/functions :control 10 0 nil (range 11 200 50) "Program"
                                                     201 :sound-active-6-color 226 :sound-active)
                                     (chan/functions :program-speed 11 0 :program-speed)
-                                    (chan/functions :dimmer-mode 12 0 "dimmer-mode-manual" 52 "dimmer-mode-off"
-                                                    102 "dimmer-mode-fast" 153 "dimmer-mode-medium"
-                                                    204 "dimmer-mode-slow")]}
+                                    (chan/functions :dimmer-mode 12 0 "Dimmer Mode Manual" 52 "Dimmer Mode Off"
+                                                    102 "Dimmer Mode Fast" 153 "Dimmer Mode Medium"
+                                                    204 "Dimmer Mode Slow")]}
             :8-channel {:channels [(chan/dimmer 1) (chan/color 2 :red) (chan/color 3 :green) (chan/color 4 :blue)
                                    (chan/color 5 :amber :hue (when mix-amber 45)) (chan/color 6 :white)
                                    (chan/color 7 :uv :label "UV" :hue (when mix-uv 270))
