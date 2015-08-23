@@ -62,14 +62,14 @@
                        :z (tf/inches -4.75)
                        :x-rotation (tf/degrees 90))
   (show/patch-fixture! :blade-1 (blizzard/blade-rgbw) universe 225
-                       :x (tf/inches 26.5) :y (tf/inches 48.5) :z (tf/inches -4.75)
-                       :y-rotation (tf/degrees -45))
+                       :x (tf/inches 16) :y (tf/inches 12) :z (tf/inches 0)
+                       :y-rotation (tf/degrees 0))
   (show/patch-fixture! :blade-2 (blizzard/blade-rgbw) universe 240
                        :x (tf/inches -26.5) :y (tf/inches 48.5) :z (tf/inches -4.75)
                        :y-rotation (tf/degrees 45))
-  (show/patch-fixture! :blade-3 (blizzard/blade-rgbw) universe 255
-                       :x (tf/inches 0) :y (tf/inches 38.75) :z (tf/inches 207.5)
-                       :y-rotation (tf/degrees 180))
+  (show/patch-fixture! :blade-3 (blizzard/blade-rgbw :15-channel :tilt-center 25 :tilt-half-circle -230)
+                       universe 255 :x (tf/inches 0) :y (tf/inches 12) :z (tf/inches 0)
+                       :y-rotation (tf/degrees 0))
   (show/patch-fixture! :blade-4 (blizzard/blade-rgbw) universe 270 :y (tf/inches 48.5) :z (tf/inches -4.75))
   (show/patch-fixture! :ws-1 (blizzard/weather-system) universe 161
                        :x (tf/inches 55) :y (tf/inches 71) :z (tf/inches 261) :y-rotation (tf/degrees 225))
@@ -705,6 +705,12 @@
                                         :min -20.0 :max 20.0 :start 0.0 :centered true :resolution 0.05}
                                        {:key "y" :name "Y"
                                         :min 0.0 :max 20.0 :start 0.0 :centered false :resolution 0.05}]))
+    (ct/set-cue! (cue-grid *show) 3 8
+                 (cues/cue :blade-speed (fn [_])))
+    (ct/set-cue! (:cue-grid *show*) 3 8
+                 (cues/function-cue :blade-speed :movement-speed (show/fixtures-named "blade")
+                                    :color :purple :effect-name "Slow Blades"))
+
     ;; Some compound cues
     (ct/set-cue! (:cue-grid *show*) 8 0
                  (cues/cue :star-swirl (fn [_] (cues/compound-cues-effect

@@ -183,11 +183,19 @@
   This fixture can be configured to use either 11 or 15 DMX channels.
   If you do not specify a mode when patching it, `:15-channel` is
   assumed; you can pass a value of `:11-channel` for `mode` if you are
-  using it that way."
+  using it that way.
+
+  The way these fixtures respond to pan and tilt values seems to have
+  changed recently. In order to be able to get consistent results with
+  a mixed group of fixtures, you can override the values of
+  `:pan-center`, `:pan-half-circle`, `:tilt-center` and
+  `:tilt-half-circle` which used to work by passing in new values
+  using optional keyword arguments following the `mode` value."
   {:doc/format :markdown}
   ([]
    (blade-rgbw :15-channel))
-  ([mode]
+  ([mode & {:keys [pan-center pan-half-circle tilt-center tilt-half-circle]
+            :or {pan-center 84 pan-half-circle 84 tilt-center 8 tilt-half-circle -214}}]
    (assoc (case mode
             :15-channel {:channels [(chan/pan 1 3) (chan/tilt 2 4)
                                     (chan/fine-channel :movement-speed 5
@@ -214,7 +222,8 @@
                                     (chan/dimmer 10) (chan/fine-channel :custom-color 11)]})
           :name "Blizzard Blade RGBW"
           :mode mode
-          :pan-center 84 :pan-half-circle 84 :tilt-center 8 :tilt-half-circle -214)))
+          :pan-center pan-center :pan-half-circle pan-half-circle
+          :tilt-center tilt-center :tilt-half-circle tilt-half-circle)))
 
 ;; TODO: Someday play with channels 13 and 14 more to see if there is anything worth modeling.
 ;;       Not urgent, though, the main point of Afterglow is custom effects using raw colors and
