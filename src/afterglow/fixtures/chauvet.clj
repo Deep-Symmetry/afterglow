@@ -158,6 +158,22 @@
                              (chan/dimmer 5)
                              (build-gobo-wheel 6)]})))))
 
+(defn kinta-x
+  "[Kinta X](http://www.chauvetlighting.com/kinta-x.html) derby effect."
+  {:doc/format :markdown
+   :author "James Elliott"}
+  []
+  {:channels [(chan/functions :control 1
+                              0 "LEDs off"
+                              15 "LEDs on"
+                              101 "Auto")
+              (chan/functions :rotation 2
+                              0 nil
+                              1 :counter-clockwise
+                              86 :clockwise
+                              171 :back-and-forth)]
+   :name "Kinta X"})
+
 (defn led-techno-strobe
   "[LED Techno Strobe](http://www.chauvetlighting.com/led-techno-strobe.html)
   strobe light."
