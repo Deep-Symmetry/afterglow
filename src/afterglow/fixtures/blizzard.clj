@@ -3,7 +3,8 @@
   Lighting](http://www.blizzardlighting.com)."
   {:doc/format :markdown}
   (:require [afterglow.channels :as chan]
-            [afterglow.effects.channel :refer [function-value-scaler]]))
+            [afterglow.effects.channel :refer [function-value-scaler]]
+            [afterglow.fixtures.qxf :refer [sanitize-name]]))
 
 (defn- build-gobo-entries
   "Create a series of function map entries describing the gobos
@@ -18,9 +19,7 @@
   [moving? shake? names]
   (map (fn [entry]
          (let [prefix (str "gobo-" (if moving? "moving-" "fixed-"))
-               type-key (keyword
-                         (str prefix (clojure.string/lower-case (clojure.string/replace entry #"[^a-zA-Z0-9]" "-"))
-                              (when shake? "-shake")))
+               type-key (keyword (sanitize-name (str prefix entry (when shake? " shake"))))
                label (str "Gobo" (when moving? "M") " " entry (when shake? " shake"))]
            (merge {:type type-key
                    :label label
