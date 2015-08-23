@@ -2,6 +2,7 @@
   "Models for fixtures provided by [Chauvet Lighting](http://www.chauvetlighting.com)."
   {:doc/format :markdown}
   (:require [afterglow.channels :as chan]
+            [afterglow.effects.channel :as chan-fx]
             [afterglow.fixtures.qxf :refer [sanitize-name]]))
 
 (defn color-strip-mini
@@ -79,7 +80,7 @@
                                          4 "Shutter Open"
                                          8 {:type :strobe
                                             :label "Strobe (0-20Hz)"
-                                            :scale-fn (partial function-value-scaler 0 200)
+                                            :scale-fn (partial chan-fx/function-value-scaler 0 200)
                                             :range :variable}
                                          216 "Shutter Open 2"))
          gobo-names ["Quotes" "Warp Spots" "4 Dots" "Sail Swirl" "Starburst" "Star Field" "Optical Tube"
@@ -214,7 +215,7 @@
                                     (chan/color 7 :uv :label "UV" :hue (when mix-uv 270))
                                     (chan/functions :strobe 8 0 nil
                                                     11 {:type :strobe
-                                                        :scale-fn (partial function-value-scaler 0.87 25)
+                                                        :scale-fn (partial chan-fx/function-value-scaler 0.87 25)
                                                         :label "Strobe (0.87Hz->25Hz)"})
                                     (chan/functions :color-macros 9 0 nil 16 :color-macros)
                                     (chan/functions :control 10 0 nil (range 11 200 50) "Program"
@@ -228,7 +229,7 @@
                                    (chan/color 7 :uv :label "UV" :hue (when mix-uv 270))
                                    (chan/functions :strobe 8 0 nil
                                                    11 {:type :strobe
-                                                       :scale-fn (partial function-value-scaler 0.87 25)
+                                                       :scale-fn (partial chan-fx/function-value-scaler 0.87 25)
                                                        :label "Strobe (0.87Hz->25Hz)"})]}
             :6-channel {:channels [(chan/color 1 :red) (chan/color 2 :green) (chan/color 3 :blue)
                                    (chan/color 4 :amber :hue (when mix-amber 45)) (chan/color 5 :white)

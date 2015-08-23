@@ -3,7 +3,7 @@
   Lighting](http://www.blizzardlighting.com)."
   {:doc/format :markdown}
   (:require [afterglow.channels :as chan]
-            [afterglow.effects.channel :refer [function-value-scaler]]
+            [afterglow.effects.channel :as chan-fx]
             [afterglow.fixtures.qxf :refer [sanitize-name]]))
 
 (defn- build-gobo-entries
@@ -116,7 +116,7 @@
                                      :range :variable}))
               (chan/functions :shutter 9 0 "Shutter Closed" 32 "Shutter Open"
                               64 {:type :strobe
-                                  :scale-fn (partial function-value-scaler 14 100)
+                                  :scale-fn (partial chan-fx/function-value-scaler 14 100)
                                   :label "Strobe (1.4Hz->10Hz)"
                                   :range :variable}
                               96 "Shutter Open 2" 128 :pulse-strobe 160 "Shutter Open 3"
@@ -197,7 +197,7 @@
                                     (chan/fine-channel :custom-color 10)
                                     (chan/functions :strobe 11 0 nil
                                                     1 {:type :strobe
-                                                       :scale-fn (partial function-value-scaler 18 100)
+                                                       :scale-fn (partial chan-fx/function-value-scaler 18 100)
                                                        :label "Strobe (1.8Hz->10Hz)"
                                                        :range :variable})
                                     (chan/dimmer 12)
@@ -257,7 +257,7 @@
                                    (chan/functions :strobe 2
                                                     0 nil
                                                     16 {:type :strobe
-                                                        :scale-fn (partial function-value-scaler 8 100)
+                                                        :scale-fn (partial chan-fx/function-value-scaler 8 100)
                                                         :label "Strobe (0.8Hz->10Hz)"
                                                         :range :variable})
                                    (chan/functions :control 3
@@ -274,7 +274,7 @@
                                     (chan/functions :strobe 2
                                                     0 nil
                                                     16 {:type :strobe
-                                                        :scale-fn (partial function-value-scaler 8 100)
+                                                        :scale-fn (partial chan-fx/function-value-scaler 8 100)
                                                         :label "Strobe (0.8Hz->10Hz)"
                                                         :range :variable})
                                     (chan/color 3 :red) (chan/color 4 :green) (chan/color 5 :blue)
@@ -327,14 +327,14 @@
                                    (chan/fine-channel :mic-sensitivity 6)
                                    (chan/functions :strobe 7 0 nil
                                                    11 {:type :strobe
-                                                       :scale-fn (partial function-value-scaler 6.6 100)
+                                                       :scale-fn (partial chan-fx/function-value-scaler 6.6 100)
                                                        :label "Strobe (0.66Hz->10Hz)"
                                                        :range :variable})]}
             :26-channel {:channels [(chan/dimmer 1)
                                     (chan/functions :strobe 26
                                                     0 nil
                                                     11 {:type :strobe
-                                                        :scale-fn (partial function-value-scaler 6.6 100)
+                                                        :scale-fn (partial chan-fx/function-value-scaler 6.6 100)
                                                         :label "Strobe (0.66Hz->10Hz)"
                                                         :range :variable})]
                          :heads (map ws-head (range 8))})
