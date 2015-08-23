@@ -705,8 +705,6 @@
                                         :min -20.0 :max 20.0 :start 0.0 :centered true :resolution 0.05}
                                        {:key "y" :name "Y"
                                         :min 0.0 :max 20.0 :start 0.0 :centered false :resolution 0.05}]))
-    (ct/set-cue! (cue-grid *show) 3 8
-                 (cues/cue :blade-speed (fn [_])))
     (ct/set-cue! (:cue-grid *show*) 3 8
                  (cues/function-cue :blade-speed :movement-speed (show/fixtures-named "blade")
                                     :color :purple :effect-name "Slow Blades"))
