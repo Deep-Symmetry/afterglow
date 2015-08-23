@@ -16,6 +16,7 @@
   using Q Light Controller version 3.1.0.
 
   QLC+ Fixture Type: Color Changer."
+  {:doc/format :markdown}
   []
   {:channels [(chan/functions :control 1
                               0 "Blackout"
@@ -39,6 +40,11 @@
 (defn intimidator-spot-led-150
   "[Intimidator Spot LED 150](http://www.chauvetlighting.com/intimidator-spot-led-150.html) moving yoke.
 
+  This fixture can be configured to use either 6 or 11 DMX channels.
+  If you do not specify a mode when patching it, `:11-channel` is
+  assumed; you can pass a value of `:6-channel` for `mode` if you are
+  using it that way.
+
   This was created by Afterglow from the QLC+ Fixture Definintion
   (.qxf) file, and heavily revised by James Elliott.
 
@@ -46,6 +52,7 @@
   using Q Light Controller Plus version 4.8.3 GIT.
 
   QLC+ Fixture Type: Moving Head."
+  {:doc/format :markdown}
   ([]
    (intimidator-spot-led-150 :11-channel))
   ([mode]
