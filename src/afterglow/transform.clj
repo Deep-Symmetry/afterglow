@@ -8,9 +8,13 @@
   audience: Standing facing your show, the X axis passes through it
   increasing from left to right, the Y axis passes through it
   increasing away from the floor, and the Z axis passes through it
-  increasing towards the audience. Pick an origin when setting up your
-  show; in our case it is easiest to use the center of gravity of the
-  main truss in our lighting rig, something else may be better for
+  increasing towards the audience. (There is a diagram on the [Show
+  Space](https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space)
+  documentation page.)
+
+  Pick an origin when setting up your show; in our case it is easiest
+  to use the spot on the floor directly under the center of gravity of
+  the main truss in our lighting rig. Something else may be better for
   you.
 
   When hanging your lights, measure how far the center of the light is
