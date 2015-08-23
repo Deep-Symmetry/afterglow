@@ -2,7 +2,7 @@
   "Models for fixtures provided by [Chauvet Lighting](http://www.chauvetlighting.com)."
   {:doc/format :markdown}
   (:require [afterglow.channels :as chan]
-            [afterglow.effects.channel :refer [function-value-scaler]]))
+            [afterglow.fixtures.qxf :refer [sanitize-name]]))
 
 (defn color-strip-mini
   "[ColorStrip](http://www.chauvetlighting.com/colorstrip.html) LED fixture.
@@ -34,6 +34,121 @@
               (chan/color 3 :green)
               (chan/color 4 :blue)]
    :name "ColorStrip"})
+
+(defn intimidator-spot-led-150
+  "[Intimidator Spot LED 150](http://www.chauvetlighting.com/intimidator-spot-led-150.html) moving yoke.
+
+  This was created by Afterglow from the QLC+ Fixture Definintion
+  (.qxf) file, and heavily revised by James Elliott.
+
+  The original fixture defintition was created by Tavon Markov
+  using Q Light Controller Plus version 4.8.3 GIT.
+
+  QLC+ Fixture Type: Moving Head."
+  ([]
+   (intimidator-spot-led-150 :11-channel))
+  ([mode]
+   (let [build-color-wheel (fn [channel]
+                             (chan/functions :color channel
+                                             0 "Color Wheel Open"
+                                             (range 6 47 6) (chan/color-wheel-hue ["yellow" "magenta" "green" "red"
+                                                                                   "cyan" "orange" "blue"])
+                                             48 "Color Wheel Light Green"
+                                             54 (chan/color-wheel-hue 45 :label "Color Wheel Amber")
+                                             64 "Color Wheel White + Yellow"
+                                             70 "Color Wheel Yellow + Magenta"
+                                             76 "Color Wheel Magenta + Green"
+                                             82 "Color Wheel Green + Red"
+                                             88 "Color Wheel Red + Cyan"
+                                             94 "Color Wheel Cyan + Orange"
+                                             100 "Color Wheel Orange + Blue"
+                                             106 "Color Wheel Blue + Light Green"
+                                             112 "Color Wheel Light Green + Amber"
+                                             118 "Color Wheel Amber + White"
+                                             128 {:type :color-clockwise
+                                                  :label "Color Wheel Clockwise (fast->slow)"
+                                                  :var-label "CW (fast->slow)"
+                                                  :range :variable}
+                                             192 {:type :color-counterclockwise
+                                                  :label "Color Wheel Counterclockwise (slow->fast)"
+                                                  :var-label "CCW (fast->slow)"
+                                                  :range :variable}))
+         build-shutter (fn [channel]
+                         (chan/functions :shutter channel
+                                         0 "Shutter Closed"
+                                         4 "Shutter Open"
+                                         8 {:type :strobe
+                                            :label "Strobe (0-20Hz)"
+                                            :scale-fn (partial function-value-scaler 0 200)
+                                            :range :variable}
+                                         216 "Shutter Open 2"))
+         gobo-names ["Quotes" "Warp Spots" "4 Dots" "Sail Swirl" "Starburst" "Star Field" "Optical Tube"
+                     "Sun Swirl" "Star Echo"]
+         build-gobo-entries (fn [shake? names]
+                              (map (fn [entry]
+                                     (let [label (str "Gobo " entry (when shake? " shake"))
+                                           type-key (keyword (sanitize-name label))]
+                                       (merge {:type type-key
+                                               :label label
+                                               :range (if shake? :variable :fixed)}
+                                              (when shake? {:var-label "Shake Speed"}))))
+                                   names))
+         build-gobo-wheel (fn [channel]
+                            (chan/functions :gobo channel
+                                            (range 0 63 6) (build-gobo-entries false (concat ["Open"] gobo-names))
+                                            (range 64 121 6) (build-gobo-entries true (reverse gobo-names))
+                                            122 "Gobo Open 2"
+                                            128 {:type :gobo-clockwise
+                                                 :label "Gobo Clockwise Speed"
+                                                 :var-label "CW Speed"
+                                                 :range :variable}
+                                            192 {:type :gobo-counterclockwise
+                                                 :label "Gobo Counterclockwise Speed"
+                                                 :var-label "CCW Speed"
+                                                 :range :variable}))]
+        (merge {:name "Intimidator Spot LED 150"
+                :mode mode}
+               (case mode
+                 :11-channel
+                 {:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
+                  :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
+                  :channels [(chan/pan 1 3)
+                             (chan/tilt 2 4)
+                             (chan/fine-channel :pan-tilt-speed 5
+                                                :function-name "Pan / Tilt Speed"
+                                                :var-label "P/T fast->slow")
+                             (build-color-wheel 6)
+                             (build-shutter 7)
+                             (chan/dimmer 8)
+                             (build-gobo-wheel 9)
+                             (chan/functions :control-functions 10
+                                             0 nil
+                                             8 "Blackout while moving Pan/Tilt"
+                                             28 "Blackout while moving Gobo Gheel"
+                                             48 "Disable blackout while Pan/Tilt / moving Gobo Wheel"
+                                             68 "Blackout while moving Color Wheel"
+                                             88 "Disable blackout while Pan/Tilt / moving Color Wheel"
+                                             108 "Disable blackout while moving Gobo/Color Wheel"
+                                             128 "Diable blackout while moving all options"
+                                             148 "Reset Pan"
+                                             168 "Reset Tilt"
+                                             188 "Reset Color Wheel"
+                                             208 "Reset Gobo Wheel"
+                                             228 "Reset All Channels"
+                                             248 nil)
+                             (chan/functions :movement-macros 11
+                                             0 nil
+                                             (range 8 135 16) "Program"
+                                             (range 136 255 16) "Sound Active")]}
+                 :6-channel
+                 {:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
+                  :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
+                  :channels [(chan/pan 1)
+                             (chan/tilt 2)
+                             (build-color-wheel 3)
+                             (build-shutter 4)
+                             (chan/dimmer 5)
+                             (build-gobo-wheel 6)]})))))
 
 (defn led-techno-strobe
   "[LED Techno Strobe](http://www.chauvetlighting.com/led-techno-strobe.html)
