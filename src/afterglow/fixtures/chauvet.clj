@@ -132,7 +132,7 @@
                              (chan/functions :control-functions 10
                                              0 nil
                                              8 "Blackout while moving Pan/Tilt"
-                                             28 "Blackout while moving Gobo Gheel"
+                                             28 "Blackout while moving Gobo Wheel"
                                              48 "Disable blackout while Pan/Tilt / moving Gobo Wheel"
                                              68 "Blackout while moving Color Wheel"
                                              88 "Disable blackout while Pan/Tilt / moving Color Wheel"
@@ -395,3 +395,109 @@
                                    (chan/color 6 :uv :label "UV" :hue (when mix-uv 270))]})
           :name "Chauvet SlimPAR Hex 3 IRC"
           :mode mode)))
+
+(defn q-spot-160
+  "Q Spot 160 moving yoke.
+
+  This fixture can be configured to use either 9 or 12 DMX channels.
+  If you do not specify a mode when patching it, `:12-channel` is
+  assumed; you can pass a value of `:9-channel` for `mode` if you are
+  using it that way."
+  {:doc/format :markdown}
+  ([]
+   (q-spot-160 :12-channel))
+  ([mode]
+   (let [build-color-wheel (fn [channel]
+                             (chan/functions :color channel
+                                             0 "Color Wheel Open"
+                                             (range 15 59 15) (chan/color-wheel-hue ["red" "yellow" "green"])
+                                             60 "Color Wheel pink"
+                                             (range 75 119 15) (chan/color-wheel-hue ["blue" "orange" "magenta"])
+                                             120 "Color Wheel Light Blue"
+                                             135 "Color Wheel Light Green"
+                                             150 {:type :color-clockwise
+                                                  :label "Color Wheel Clockwise (slow->fast)"
+                                                  :var-label "CW (slow->fast)"
+                                                  :range :variable}))
+         build-shutter (fn [channel]
+                         (chan/functions :shutter channel
+                                         0 "Shutter Closed"
+                                         32 "Shutter Open"
+                                         64 :strobe
+                                         96 "Shutter Open 2"
+                                         128 :pulse-strobe
+                                         160 "Shutter Open 3"
+                                         192 :random-strobe
+                                         224 "Shutter Open 4"))
+         gobo-names ["Splat" "Spot Sphere" "Fanned Squares" "Box" "Bar" "Blue Starburst" "Perforated Pink"]
+         build-gobo-entries (fn [shake? names]
+                              (map (fn [entry]
+                                     (let [label (str "Gobo " entry (when shake? " shake"))
+                                           type-key (keyword (sanitize-name label))]
+                                       (merge {:type type-key
+                                               :label label
+                                               :range (if shake? :variable :fixed)}
+                                              (when shake? {:var-label "Shake Speed"}))))
+                                   names))
+         build-gobo-wheel (fn [channel]
+                            (chan/functions :gobo channel
+                                            (range 0 79 10) (build-gobo-entries false (concat ["Open"] gobo-names))
+                                            (range 80 219 20) (build-gobo-entries true (reverse gobo-names))
+                                            220 {:type :gobo-scroll
+                                                 :label "Gobo Scroll"
+                                                 :var-label "Scroll Speed"
+                                                 :range :variable}))
+         build-gobo-rotation (fn [channel]
+                               (chan/functions :gobo-rotation channel
+                                               0 nil
+                                               3 {:type :gobo-rotation-clockwise
+                                                  :label "Gobo Rotation Clockwise (slow->fast)"
+                                                  :var-label "CW (slow->fast)"
+                                                  :range :variable}
+                              129 "gobo-rotation-stop"
+                              133 {:type :gobo-rotation-counterclockwise
+                                   :label "Gobo Rotation Counterlockwise (slow->fast)"
+                                   :var-label "CCW (slow->fast)"
+                                   :range :variable}))
+         build-control-channel (fn [channel]
+                                 (chan/functions :control channel
+                                             0 nil
+                                             20 "Blackout while moving Pan/Tilt"
+                                             40 "Disable Blackout while moving Pan/Tilt"
+                                             60 "Auto 1"
+                                             80 "Auto 2"
+                                             100 "Sound Active 1"
+                                             120 "Sound Active 2"
+                                             140 "Custom"
+                                             160 "Test"
+                                             180 nil
+                                             200 "Reset"
+                                             220 nil))]
+        (merge {:name "Q Spot 160"
+                :pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
+                :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
+                :mode mode}
+               (case mode
+                 :12-channel
+                 {:channels [(chan/pan 1 2)
+                             (chan/tilt 3 4)
+                             (chan/fine-channel :pan-tilt-speed 5
+                                                :function-name "Pan / Tilt Speed"
+                                                :var-label "P/T fast->slow")
+                             (build-color-wheel 6)
+                             (build-gobo-wheel 7)
+                             (build-gobo-rotation 8)
+                             (chan/functions :prism 9 0 "Prism Out" 128 "Prism In")
+                             (chan/dimmer 10)
+                             (build-shutter 11)
+                             (build-control-channel 12)]}
+                 :9-channel
+                 {:channels [(chan/pan 1)
+                             (chan/tilt 2)
+                             (build-color-wheel 3)
+                             (build-gobo-wheel 4)
+                             (build-gobo-rotation 5)
+                             (chan/functions :prism 6 0 "Prism Out" 128 "Prism In")
+                             (chan/dimmer 7)
+                             (build-shutter 8)
+                             (build-control-channel 9)]})))))
