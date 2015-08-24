@@ -10,7 +10,7 @@
                  [org.clojure/data.zip "0.1.1"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/tools.nrepl "0.2.10"]
-                 [org.clojure/tools.cli "0.3.2"]
+                 [org.clojure/tools.cli "0.3.3"]
                  [cider/cider-nrepl "0.9.1"]
                  [java3d/vecmath "1.3.1"]
                  [java3d/j3d-core "1.3.1"]
@@ -59,7 +59,7 @@
 
              :uberjar {:env {:production true}
                        :aot :all}}
-  :plugins [[codox "0.8.12"]
+  :plugins [[codox "0.8.13"]
             [lein-environ "1.0.0"]
             [lein-ancient "0.6.7"]]
 
