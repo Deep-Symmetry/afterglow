@@ -5,7 +5,7 @@
             [afterglow.effects.channel :as chan-fx]
             [afterglow.fixtures.qxf :refer [sanitize-name]]))
 
-(defn color-strip-mini
+(defn color-strip
   "[ColorStrip](http://www.chauvetlighting.com/colorstrip.html) LED fixture.
   Also works with the ColorStrip Mini.
 
