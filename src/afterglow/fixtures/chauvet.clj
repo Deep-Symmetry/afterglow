@@ -273,7 +273,7 @@
                             (chan/functions :strobe 3
                                             0 nil
                                             5 :strobe
-                                            255 "Sound Active strobe")
+                                            255 "Strobe Sound Active")
                             (chan/functions :control 4
                                             0 "Motor 1 Stop"
                                             5 :motor-1-clockwise
@@ -311,6 +311,44 @@
                                             145 "Beam Green Blue"
                                             181 "Beam Red Blue"
                                             217 "Beam Red Green Blue")]}))))
+
+(defn scorpion-storm-rgx
+  "[Scorpion Storm RGX](http://www.chauvetlighting.com/products/manuals/Scorpion_Storm_RGX_UM_Rev03_WO.pdf)
+  grid effect laser."
+  []
+  {:channels [(chan/functions :control 1
+                                       0 "DMX Mode"
+                                       20 "Auto Fast Red"
+                                       40 "Auto Slow Red"
+                                       60 "Auto Fast Green"
+                                       80 "Auto Slow Green"
+                                       100 "Auto Fast Red Green"
+                                       120 "Auto Slow Red Green"
+                                       140 :sound-active-red
+                                       160 :sound-active-green
+                                       180 :sound-active
+                                       200 "Random")
+                       (chan/functions :control 2
+                                       0 "Blackout"
+                                       5 "Beam Red"
+                                       29 "Beam Green"
+                                       57 "Beam Red Green"
+                                       85 "Strobe Green"
+                                       113 "Strobe Red"
+                                       141 "Beam Red, Strobe Green"
+                                       169 "Beam Green, Strobe Red"
+                                       198 "Strobe Red Green"
+                                       225 "Alternate Red/Green")
+                       (chan/functions :strobe 3
+                                       0 nil
+                                       5 :strobe
+                                       255 "Strobe Sound Active")
+                       (chan/functions :control 4
+                                       0 "Stop"
+                                       5 :beams-clockwise
+                                       128 "Stop 2"
+                                       134 :beams-counterclockwise)]
+   :name "Scorpion Storm RGX"})
 
 (defn slimpar-hex3-irc
   "[SlimPAR HEX 3 IRC](http://www.chauvetlighting.com/slimpar-hex3irc.html)
