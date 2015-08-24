@@ -59,6 +59,15 @@
               (chan/dimmer 8)]
    :name "Geyser RGB"})
 
+(defn hurricane-1800-flex
+  "[Hurricane 1800 Flex](http://www.chauvetlighting.com/hurricane-1800-flex.html) fogger."
+  {:doc/format :markdown}
+  []
+  {:channels [(chan/functions :fog 1
+                              0 nil
+                              6 "Fog")]
+   :name "Hurricane 1800 Flex"})
+
 (defn intimidator-spot-led-150
   "[Intimidator Spot LED 150](http://www.chauvetlighting.com/intimidator-spot-led-150.html) moving yoke.
 
