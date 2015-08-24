@@ -25,7 +25,7 @@
 
   The original fixture defintition was created by {{creator.author}}
   using {{creator.name}} version {{creator.version}}.
-  QLC+ Fixture Type: {{type}}"
+  QLC+ Fixture Type: {{type}}."
   (:require [afterglow.channels :as chan]
             [afterglow.effects.channel :as chan-fx]))
 
