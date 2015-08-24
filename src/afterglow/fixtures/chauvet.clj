@@ -37,6 +37,28 @@
               (chan/color 4 :blue)]
    :name "ColorStrip"})
 
+(defn geyser-rgb
+  "[Geyser RGB](http://www.chauvetlighting.com/geyser-rgb.html) illuminated effect fogger."
+  {:doc/format :markdown}
+  []
+  {:channels [(chan/functions :fog 1
+                              0 nil
+                              10 "Fog")
+              (chan/color 2 :red)
+              (chan/color 3 :green)
+              (chan/color 4 :blue)
+              (chan/functions :control 5
+                              0 nil
+                              10 :color-mixing)
+              (chan/functions :control 6
+                              0 nil
+                              10 :auto-speed)
+              (chan/functions :strobe 7
+                              0 nil
+                              10 :strobe)
+              (chan/dimmer 8)]
+   :name "Geyser RGB"})
+
 (defn intimidator-spot-led-150
   "[Intimidator Spot LED 150](http://www.chauvetlighting.com/intimidator-spot-led-150.html) moving yoke.
 
