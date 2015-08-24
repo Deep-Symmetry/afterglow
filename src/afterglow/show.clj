@@ -134,8 +134,8 @@
   effects, in the form of the fraction of the available refresh
   interval that was used calculating and sending the last several
   frames."
-  {:pre [(some? *show*)]}
   []
+  {:pre [(some? *show*)]}
   (/ (:recent-average @(:statistics *show*) 0) (:refresh-interval *show*)))
 
 (defn- response-handler
