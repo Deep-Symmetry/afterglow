@@ -214,6 +214,104 @@
               (chan/dimmer 6)]
    :name "LED Techno Strobe RGB"})
 
+(defn scorpion-storm-fx-rgb
+  "[Scorpion Storm FX RGB](http://www.chauvetlighting.com/scorpion-storm-fx-rgb.html)
+   grid effect laser.
+
+  This fixture can be patched to use either 7 or 2 DMX channels. If
+  you do not specify a mode when patching it, `:7-channel` is assumed;
+  you can pass a value of `:2-channel` for `mode` if you are using it
+  that way. Although there are two different modes in which you can
+  patch it, its behavior is controlled by the value you send in
+  channel 1: If that value is between `0` and `50`, the laser responds
+  to all 7 channels as described by `:7-channel` mode; if channel 1 is
+  set to `51` or higher, it looks only at the first two channels, as
+  described by `:2-channel` mode.
+
+  This was created by Afterglow from the QLC+ Fixture Definintion
+  (.qxf) file, and revised by James Elliott.
+
+  The original fixture defintition was created by Frédéric Combe
+  using Q Light Controller Plus version 5.0.0 GIT.
+
+  QLC+ Fixture Type: Laser."
+  ([]
+   (scorpion-storm-fx-rgb :7-channel))
+  ([mode]
+   (merge {:name "Scorpion Storm FX RGB"
+           :mode mode}
+          (case mode
+                :7-channel
+                {:channels [(chan/functions :control 1
+                                            0 "DMX Mode"
+                                            51 nil)
+                            (chan/functions :control 2
+                                            0 "Blackout"
+                                            5 "Beam Red"
+                                            16 "Beam Green"
+                                            26 "Beam Blue"
+                                            36 "Beam Red Green"
+                                            46 "Beam Blue Green"
+                                            56 "Beam Red Blue"
+                                            66 "Beam Red Green Blue"
+                                            76 "Beam Red, Strobe Green"
+                                            86 "Beam Green, Strobe Blue"
+                                            96 "Beam Blue, Strobe Red"
+                                            106 "Alternate Red/Green"
+                                            116 "Alternate Green/Blue"
+                                            126 "Alternate Red/Blue"
+                                            136 "Beam Red Green, Strobe Blue"
+                                            146 "Beam Green Blue, Strobe Red"
+                                            156 "Beam Red Blue, Strobe Green"
+                                            166 "Beam Blue, Strobe Red Green"
+                                            176 "Beam Red, Strobe Green Blue"
+                                            186 "Beam Green, Strobe Red Blue"
+                                            196 "Beam Blue, Alternate Red/Green"
+                                            206 "Beam Red, Alternate Green/Blue"
+                                            216 "Beam Green, Alternate Red/Blue"
+                                            226 "Alternate Red/Green/Blue")
+                            (chan/functions :strobe 3
+                                            0 nil
+                                            5 :strobe
+                                            255 "Sound Active strobe")
+                            (chan/functions :control 4
+                                            0 "Motor 1 Stop"
+                                            5 :motor-1-clockwise
+                                            128 "Motor 1 Stop 2"
+                                            134 :motor-1-counterclockwise)
+                            (chan/functions :control 5
+                                            0 nil
+                                            5 :stutter-motor-1-mode-1
+                                            57 :stutter-motor-1-mode-2
+                                            113 :stutter-motor-1-mode-3
+                                            169 :stutter-motor-1-mode-4)
+                            (chan/functions :control 6
+                                            0 "Motor 2 Stop"
+                                            5 :motor-2-clockwise
+                                            128 "Motor 2 Stop 2"
+                                            134 :motor-2-counterclockwise)
+                            (chan/functions :control 7
+                                            0 nil
+                                            5 :stutter-motor-2-mode-1
+                                            57 :stutter-motor-2-mode-2
+                                            113 :stutter-motor-2-mode-3
+                                            169 :stutter-motor-2-mode-4)]}
+                :2-channel
+                {:channels [(chan/functions :control 1
+                                            0 nil
+                                            51 "Auto fast"
+                                            101 "Auto slow"
+                                            151 :sound-active
+                                            201 "Random program")
+                            (chan/functions :control 2
+                                            0 "Beam Red"
+                                            37 "Beam Green"
+                                            73 "Beam Blue"
+                                            109 "Beam Red Green"
+                                            145 "Beam Green Blue"
+                                            181 "Beam Red Blue"
+                                            217 "Beam Red Green Blue")]}))))
+
 (defn slimpar-hex3-irc
   "[SlimPAR HEX 3 IRC](http://www.chauvetlighting.com/slimpar-hex3irc.html)
   six-color low-profile LED PAR.
