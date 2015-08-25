@@ -5,6 +5,21 @@
             [afterglow.effects.channel :as chan-fx]
             [afterglow.fixtures.qxf :refer [sanitize-name]]))
 
+(defn- build-gobo-entries
+  "Build a list of gobo wheel function entries. If `shake?` is `true`,
+  they are a variable range which sets the shake speed. The individual
+  gobo names are in `names`."
+  {:doc/format :markdown}
+  [shake? names]
+  (map (fn [entry]
+         (let [label (str "Gobo " entry (when shake? " shake"))
+               type-key (keyword (sanitize-name label))]
+           (merge {:type type-key
+                   :label label
+                   :range (if shake? :variable :fixed)}
+                  (when shake? {:var-label "Shake Speed"}))))
+       names))
+
 (defn color-strip
   "[ColorStrip](http://www.chauvetlighting.com/colorstrip.html) LED fixture.
   Also works with the ColorStrip Mini.
@@ -68,6 +83,138 @@
                               6 "Fog")]
    :name "Hurricane 1800 Flex"})
 
+(defn intimidator-scan-led-300
+  "[Intimidator Scan LED 300](http://www.chauvetlighting.com/intimidator-scan-led-300.html) compact scanner.
+
+  This fixture can be configured to use either 8 or 11 DMX channels.
+  If you do not specify a mode when patching it, `:11-channel` is
+  assumed; you can pass a value of `:8-channel` for `mode` if you are
+  using it that way.
+
+  This was created by Afterglow from the QLC+ Fixture Definintion
+  (.qxf) file, and heavily revised by James Elliott.
+
+  The original fixture defintition was created by Craig Cudmore
+  using Q Light Controller Plus version 4.7.0 GIT.
+
+  QLC+ Fixture Type: Scanner."
+  ([]
+   (intimidator-scan-led-300 :11-channel))
+  ([mode]
+   (let [build-color-wheel (fn [channel]
+                             (chan/functions :color channel
+                                             0 "Color Wheel Open"
+                                             7 (chan/color-wheel-hue "yellow")
+                                             14 "Color Wheel Pink"
+                                             21 (chan/color-wheel-hue "green")
+                                             28 "Color Wheel Peachblow"
+                                             35 "Color Wheel Light Blue"
+                                             42 "Color Wheel Kelly"
+                                             49 (chan/color-wheel-hue "red")
+                                             56 (chan/color-wheel-hue "blue")
+                                             64 "Color Wheel White + Yellow"
+                                             71 "Color Wheel Yellow + Pink"
+                                             78 "Color Wheel Pink + Green"
+                                             85 "Color Wheel Green + Peachblow"
+                                             92 "Color Wheel Peachblow + Blue"
+                                             99 "Color Wheel Blue + Kelly"
+                                             106 "Color Wheel Kelly + Red"
+                                             113 "Color Wheel Red + Blue"
+                                             120 "Color Wheel Blue + White"
+                                             128 {:type :color-clockwise
+                                                  :label "Color Wheel Clockwise (slow->fast)"
+                                                  :var-label "CW (slow->fast)"
+                                                  :range :variable}
+                                             192 {:type :color-counterclockwise
+                                                  :label "Color Wheel Counterclockwise (slow->fast)"
+                                                  :var-label "CCW (slow->fast)"
+                                                  :range :variable}))
+         build-shutter (fn [channel]
+                         (chan/functions :shutter channel
+                                         0 "Shutter Closed"
+                                         4 "Shutter Open"
+                                         8 {:type :strobe
+                                            :label "Strobe"
+                                            :range :variable}
+                                         216 "Shutter Open 2"))
+                  gobo-names ["Pink Dots" "Purple Bubbles" "45 Adapter" "Nested Rings" "Rose" "Triangles" "Galaxy"]
+         build-gobo-wheel (fn [channel]
+                            (chan/functions :gobo channel
+                                            (range 0 63 8) (build-gobo-entries false (concat ["Open"] gobo-names))
+                                            (range 64 119 8) (build-gobo-entries true (reverse gobo-names))
+                                            120 "Gobo Open 2"
+                                            128 {:type :gobo-clockwise
+                                                 :label "Gobo Clockwise Speed"
+                                                 :var-label "CW Speed"
+                                                 :range :variable}
+                                            192 {:type :gobo-counterclockwise
+                                                 :label "Gobo Counterclockwise Speed"
+                                                 :var-label "CCW Speed"
+                                                 :range :variable}))
+         build-gobo-rotation (fn [channel]
+                               (chan/functions :gobo-rotation channel
+                                               0 nil
+                                               16 {:type :gobo-rotation-counterclockwise
+                                                   :label "Gobo Rotation Counterlockwise (slow->fast)"
+                                                   :var-label "CCW (slow->fast)"
+                                                   :range :variable}
+                                               128 {:type :gobo-rotation-clockwise
+                                                    :label "Gobo Rotation Clockwise (slow->fast)"
+                                                    :var-label "CW (slow->fast)"
+                                                    :range :variable}
+                                               240 :gobo-bounce))]
+     (merge {:name "Intimidator Scan LED 300"
+             :pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
+             :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
+             :mode mode}
+            (case mode
+              :11-channel
+              {:channels [(chan/pan 1)
+                          (chan/tilt 2)
+                          (build-color-wheel 3)
+                          (build-shutter 4)
+                          (chan/dimmer 5)
+                          (build-gobo-wheel 6)
+                          (build-gobo-rotation 7)
+                          (chan/functions :prism 8
+                                          0 "Prism Out"
+                                          4 "Prism In")
+                          (chan/focus 9)
+                          (chan/functions :control 10
+                                          8 "Blackout while moving Pan/Tilt"
+                                          16 "Disable Blackout while moving Pan/Tilt"
+                                          24 "Blackout while moving Color Wheel"
+                                          32 "Disable Blackout while moving Color Wheel"
+                                          40 "Blackout while moving Gobo Wheel"
+                                          48 "Disable Blackout while moving Gobo Wheel"
+                                          56 "Fast Movement"
+                                          64 "Disable Fast Movement"
+                                          88 "Disable all Blackout while moving"
+                                          96 "Reset Pan/Tilt"
+                                          104 nil
+                                          112 "Reset Color Wheel"
+                                          120 "Reset Gobo Wheel"
+                                          128 nil
+                                          136 "Reset Prism"
+                                          144 "Reset Focus"
+                                          152 "Reset All"
+                                          160 nil)
+                          (chan/functions :control 11
+                                          0 nil
+                                          (range 8 135 16) "Program"
+                                          (range 136 255 16) :sound-active)]}
+              :8-channel
+              {:channels [(chan/pan 1)
+                          (chan/tilt 2)
+                          (build-color-wheel 3)
+                          (build-shutter 4)
+                          (build-gobo-wheel 5)
+                          (build-gobo-rotation 6)
+                          (chan/functions :prism 7
+                                          0 "Prism Out"
+                                          4 "Prism In")
+                          (chan/focus 8)]})))))
+
 (defn intimidator-spot-led-150
   "[Intimidator Spot LED 150](http://www.chauvetlighting.com/intimidator-spot-led-150.html) moving yoke.
 
@@ -123,15 +270,6 @@
                                          216 "Shutter Open 2"))
          gobo-names ["Quotes" "Warp Spots" "4 Dots" "Sail Swirl" "Starburst" "Star Field" "Optical Tube"
                      "Sun Swirl" "Star Echo"]
-         build-gobo-entries (fn [shake? names]
-                              (map (fn [entry]
-                                     (let [label (str "Gobo " entry (when shake? " shake"))
-                                           type-key (keyword (sanitize-name label))]
-                                       (merge {:type type-key
-                                               :label label
-                                               :range (if shake? :variable :fixed)}
-                                              (when shake? {:var-label "Shake Speed"}))))
-                                   names))
          build-gobo-wheel (fn [channel]
                             (chan/functions :gobo channel
                                             (range 0 63 6) (build-gobo-entries false (concat ["Open"] gobo-names))
@@ -381,52 +519,6 @@
                                        134 :beams-counterclockwise)]
    :name "Scorpion Storm RGX"})
 
-(defn slimpar-hex3-irc
-  "[SlimPAR HEX 3 IRC](http://www.chauvetlighting.com/slimpar-hex3irc.html)
-  six-color low-profile LED PAR.
-
-  This fixture can be configured to use either 6, 8 or 12 DMX
-  channels. If you do not specify a mode when patching it,
-  `:12-channel` is assumed; you can pass a value of `:6-channel` or
-  `:8-channel` for `mode` if you are using it that way.
-
-  When you pass a mode, you can also control whether the amber and UV
-  channels are mixed in when creating colors by passing a boolean
-  value with `:mix-amber` and `:mix-uv`. The default for each is
-  `true`."
-  {:doc/format :markdown
-   :author "James Elliott"}
-  ([]
-   (slimpar-hex3-irc :12-channel))
-  ([mode & {:keys [mix-amber mix-uv] :or {mix-amber true mix-uv true}}]
-   (assoc (case mode
-            :12-channel {:channels [(chan/dimmer 1) (chan/color 2 :red) (chan/color 3 :green) (chan/color 4 :blue)
-                                    (chan/color 5 :amber :hue (when mix-amber 45)) (chan/color 6 :white)
-                                    (chan/color 7 :uv :label "UV" :hue (when mix-uv 270))
-                                    (chan/functions :strobe 8 0 nil
-                                                    11 {:type :strobe
-                                                        :scale-fn (partial chan-fx/function-value-scaler 0.87 25)
-                                                        :label "Strobe (0.87Hz->25Hz)"})
-                                    (chan/functions :color-macros 9 0 nil 16 :color-macros)
-                                    (chan/functions :control 10 0 nil (range 11 200 50) "Program"
-                                                    201 :sound-active-6-color 226 :sound-active)
-                                    (chan/functions :program-speed 11 0 :program-speed)
-                                    (chan/functions :dimmer-mode 12 0 "Dimmer Mode Manual" 52 "Dimmer Mode Off"
-                                                    102 "Dimmer Mode Fast" 153 "Dimmer Mode Medium"
-                                                    204 "Dimmer Mode Slow")]}
-            :8-channel {:channels [(chan/dimmer 1) (chan/color 2 :red) (chan/color 3 :green) (chan/color 4 :blue)
-                                   (chan/color 5 :amber :hue (when mix-amber 45)) (chan/color 6 :white)
-                                   (chan/color 7 :uv :label "UV" :hue (when mix-uv 270))
-                                   (chan/functions :strobe 8 0 nil
-                                                   11 {:type :strobe
-                                                       :scale-fn (partial chan-fx/function-value-scaler 0.87 25)
-                                                       :label "Strobe (0.87Hz->25Hz)"})]}
-            :6-channel {:channels [(chan/color 1 :red) (chan/color 2 :green) (chan/color 3 :blue)
-                                   (chan/color 4 :amber :hue (when mix-amber 45)) (chan/color 5 :white)
-                                   (chan/color 6 :uv :label "UV" :hue (when mix-uv 270))]})
-          :name "Chauvet SlimPAR Hex 3 IRC"
-          :mode mode)))
-
 (defn q-spot-160
   "Q Spot 160 moving yoke.
 
@@ -461,15 +553,6 @@
                                          192 :random-strobe
                                          224 "Shutter Open 4"))
          gobo-names ["Splat" "Spot Sphere" "Fanned Squares" "Box" "Bar" "Blue Starburst" "Perforated Pink"]
-         build-gobo-entries (fn [shake? names]
-                              (map (fn [entry]
-                                     (let [label (str "Gobo " entry (when shake? " shake"))
-                                           type-key (keyword (sanitize-name label))]
-                                       (merge {:type type-key
-                                               :label label
-                                               :range (if shake? :variable :fixed)}
-                                              (when shake? {:var-label "Shake Speed"}))))
-                                   names))
          build-gobo-wheel (fn [channel]
                             (chan/functions :gobo channel
                                             (range 0 79 10) (build-gobo-entries false (concat ["Open"] gobo-names))
@@ -485,7 +568,7 @@
                                                   :label "Gobo Rotation Clockwise (slow->fast)"
                                                   :var-label "CW (slow->fast)"
                                                   :range :variable}
-                              129 "gobo-rotation-stop"
+                              129 "Gobo Rotation Stop"
                               133 {:type :gobo-rotation-counterclockwise
                                    :label "Gobo Rotation Counterlockwise (slow->fast)"
                                    :var-label "CCW (slow->fast)"
@@ -532,3 +615,50 @@
                              (chan/dimmer 7)
                              (build-shutter 8)
                              (build-control-channel 9)]})))))
+
+(defn slimpar-hex3-irc
+  "[SlimPAR HEX 3 IRC](http://www.chauvetlighting.com/slimpar-hex3irc.html)
+  six-color low-profile LED PAR.
+
+  This fixture can be configured to use either 6, 8 or 12 DMX
+  channels. If you do not specify a mode when patching it,
+  `:12-channel` is assumed; you can pass a value of `:6-channel` or
+  `:8-channel` for `mode` if you are using it that way.
+
+  When you pass a mode, you can also control whether the amber and UV
+  channels are mixed in when creating colors by passing a boolean
+  value with `:mix-amber` and `:mix-uv`. The default for each is
+  `true`."
+  {:doc/format :markdown
+   :author "James Elliott"}
+  ([]
+   (slimpar-hex3-irc :12-channel))
+  ([mode & {:keys [mix-amber mix-uv] :or {mix-amber true mix-uv true}}]
+   (assoc (case mode
+            :12-channel {:channels [(chan/dimmer 1) (chan/color 2 :red) (chan/color 3 :green) (chan/color 4 :blue)
+                                    (chan/color 5 :amber :hue (when mix-amber 45)) (chan/color 6 :white)
+                                    (chan/color 7 :uv :label "UV" :hue (when mix-uv 270))
+                                    (chan/functions :strobe 8 0 nil
+                                                    11 {:type :strobe
+                                                        :scale-fn (partial chan-fx/function-value-scaler 0.87 25)
+                                                        :label "Strobe (0.87Hz->25Hz)"})
+                                    (chan/functions :color-macros 9 0 nil 16 :color-macros)
+                                    (chan/functions :control 10 0 nil (range 11 200 50) "Program"
+                                                    201 :sound-active-6-color 226 :sound-active)
+                                    (chan/functions :program-speed 11 0 :program-speed)
+                                    (chan/functions :dimmer-mode 12 0 "Dimmer Mode Manual" 52 "Dimmer Mode Off"
+                                                    102 "Dimmer Mode Fast" 153 "Dimmer Mode Medium"
+                                                    204 "Dimmer Mode Slow")]}
+            :8-channel {:channels [(chan/dimmer 1) (chan/color 2 :red) (chan/color 3 :green) (chan/color 4 :blue)
+                                   (chan/color 5 :amber :hue (when mix-amber 45)) (chan/color 6 :white)
+                                   (chan/color 7 :uv :label "UV" :hue (when mix-uv 270))
+                                   (chan/functions :strobe 8 0 nil
+                                                   11 {:type :strobe
+                                                       :scale-fn (partial chan-fx/function-value-scaler 0.87 25)
+                                                       :label "Strobe (0.87Hz->25Hz)"})]}
+            :6-channel {:channels [(chan/color 1 :red) (chan/color 2 :green) (chan/color 3 :blue)
+                                   (chan/color 4 :amber :hue (when mix-amber 45)) (chan/color 5 :white)
+                                   (chan/color 6 :uv :label "UV" :hue (when mix-uv 270))]})
+          :name "Chauvet SlimPAR Hex 3 IRC"
+          :mode mode)))
+
