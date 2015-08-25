@@ -98,6 +98,7 @@
   using Q Light Controller Plus version 4.7.0 GIT.
 
   QLC+ Fixture Type: Scanner."
+  {:doc/format :markdown}
   ([]
    (intimidator-scan-led-300 :11-channel))
   ([mode]
@@ -404,6 +405,7 @@
   using Q Light Controller Plus version 5.0.0 GIT.
 
   QLC+ Fixture Type: Laser."
+  {:doc/format :markdown}
   ([]
    (scorpion-storm-fx-rgb :7-channel))
   ([mode]
@@ -484,6 +486,7 @@
 (defn scorpion-storm-rgx
   "[Scorpion Storm RGX](http://www.chauvetlighting.com/products/manuals/Scorpion_Storm_RGX_UM_Rev03_WO.pdf)
   grid effect laser."
+  {:doc/format :markdown}
   []
   {:channels [(chan/functions :control 1
                                        0 "DMX Mode"
