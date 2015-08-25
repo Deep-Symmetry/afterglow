@@ -2,6 +2,7 @@
   "Functions for modeling DMX channels"
   {:author "James Elliott"}
   (:require [afterglow.fixtures.qxf :refer [sanitize-name]]
+            [camel-snake-kebab.core :as csk]
             [com.evocomputing.colors :as colors]))
 
 (defn channel
@@ -142,7 +143,7 @@
         {:start start
          :range :variable
          :type spec
-         :label (clojure.string/capitalize (name spec))}
+         :label (clojure.string/replace (csk/->Camel_Snake_Case (name spec)) "_" " ")}
 
         (string? spec)
         {:start start
@@ -158,7 +159,7 @@
         
         (map? spec)
         (merge {:range :variable
-                :label (clojure.string/capitalize (name (:type spec)))}
+                :label (clojure.string/replace (csk/->Camel_Snake_Case (name (:type spec))) "_" " ")}
                spec
                {:start start})
 
@@ -232,7 +233,7 @@
   ```
   (functions :strobe 40
              0 nil
-             10 \"strobe-random\"
+             10 \"Strobe Random\"
              20 :strobe)
   ```
 
