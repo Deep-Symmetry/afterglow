@@ -37,7 +37,7 @@
                                                                       org.clojure/java.classpath]]
                  [metosin/ring-http-response "0.6.4"]
                  [prone "0.8.2"]
-                 [buddy "0.6.1"]
+                 [buddy "0.6.2"]
                  [instaparse "1.4.1"]
                  [http-kit "2.1.19"]]
   :main afterglow.core
