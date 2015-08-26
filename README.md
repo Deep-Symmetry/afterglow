@@ -606,7 +606,7 @@ encounter them!
 - [x] Review existing fixture definitions for consistency of function
   names, start a style guide in the docs for others creating fixture
   definitions.
-- [ ] Add configuration support for running OLA on a different machine.
+- [x] Add configuration support for running OLA on a different machine.
 - [ ] Make pass over all source, flesh out API doc and preconditions.
 - [ ] Sparkle effect, essentially a particle generator with
   configurable maximum brightness, fade time, distribution.
@@ -646,8 +646,9 @@ encounter them!
     into a single new effect:
     - [ ] This effect gets assigned a new priority.
     - [ ] The compound cue aggregates nested cue variables into one
-      big list, and passes them down to the nested effects, renaming
-      with numeric suffixes as needed to avoid name clashes.
+      big list, and passes them down to the nested effects. (Renaming
+      with numeric suffixes as needed to avoid name clashes? No, they
+      might be shared.)
   - [ ] Compound cues created from solely named cues can be saved and
     restored, so they can be built using the web (and rich controller)
     interface out of existing cues, and current parameter values for
