@@ -50,7 +50,7 @@
               (chan/color 2 :red)
               (chan/color 3 :green)
               (chan/color 4 :blue)]
-   :name "ColorStrip"})
+   :name "Chauvet ColorStrip"})
 
 (defn geyser-rgb
   "[Geyser RGB](http://www.chauvetlighting.com/geyser-rgb.html) illuminated effect fogger."
@@ -72,7 +72,7 @@
                               0 nil
                               10 :strobe)
               (chan/dimmer 8)]
-   :name "Geyser RGB"})
+   :name "Chauvet Geyser RGB"})
 
 (defn hurricane-1800-flex
   "[Hurricane 1800 Flex](http://www.chauvetlighting.com/hurricane-1800-flex.html) fogger."
@@ -81,7 +81,7 @@
   {:channels [(chan/functions :fog 1
                               0 nil
                               6 "Fog")]
-   :name "Hurricane 1800 Flex"})
+   :name "Chauvet Hurricane 1800 Flex"})
 
 (defn intimidator-scan-led-300
   "[Intimidator Scan LED 300](http://www.chauvetlighting.com/intimidator-scan-led-300.html) compact scanner.
@@ -164,7 +164,7 @@
                                                     :var-label "CW (slow->fast)"
                                                     :range :variable}
                                                240 :gobo-bounce))]
-     (merge {:name "Intimidator Scan LED 300"
+     (merge {:name "Chauvet Intimidator Scan LED 300"
              :pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
              :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
              :mode mode}
@@ -284,7 +284,7 @@
                                                  :label "Gobo Counterclockwise Speed"
                                                  :var-label "CCW Speed"
                                                  :range :variable}))]
-        (merge {:name "Intimidator Spot LED 150"
+        (merge {:name "Chauvet Intimidator Spot LED 150"
                 :mode mode}
                (case mode
                  :11-channel
@@ -342,7 +342,7 @@
                               1 :counter-clockwise
                               86 :clockwise
                               171 :back-and-forth)]
-   :name "Kinta X"})
+   :name "Chauvet Kinta X"})
 
 (defn led-techno-strobe
   "[LED Techno Strobe](http://www.chauvetlighting.com/led-techno-strobe.html)
@@ -357,7 +357,7 @@
               (chan/functions :strobe 2 0 nil
                               1 :strobe)  ; TODO: Measure speed, add scale-fn
               (chan/dimmer 3)]  ; TODO: Manual implies this might be reversed? If so, what a pain.
-   :name "LED Techno Strobe"})
+   :name "Chauvet LED Techno Strobe"})
 
 (defn led-techno-strobe-rgb
   "[LED Techno Strobe RGB](http://www.chauvetlighting.com/led-techno-strobe-rgb.html)
@@ -382,7 +382,7 @@
               (chan/functions :strobe 5 0 nil
                               1 :strobe)  ; TODO: Measure speed, add scale-fn
               (chan/dimmer 6)]
-   :name "LED Techno Strobe RGB"})
+   :name "Chauvet LED Techno Strobe RGB"})
 
 (defn scorpion-storm-fx-rgb
   "[Scorpion Storm FX RGB](http://www.chauvetlighting.com/scorpion-storm-fx-rgb.html)
@@ -409,7 +409,7 @@
   ([]
    (scorpion-storm-fx-rgb :7-channel))
   ([mode]
-   (merge {:name "Scorpion Storm FX RGB"
+   (merge {:name "Chauvet Scorpion Storm FX RGB"
            :mode mode}
           (case mode
                 :7-channel
@@ -520,7 +520,7 @@
                                        5 :beams-clockwise
                                        128 "Stop 2"
                                        134 :beams-counterclockwise)]
-   :name "Scorpion Storm RGX"})
+   :name "Chauvet Scorpion Storm RGX"})
 
 (defn q-spot-160
   "Q Spot 160 moving yoke.
@@ -590,7 +590,7 @@
                                              180 nil
                                              200 "Reset"
                                              220 nil))]
-        (merge {:name "Q Spot 160"
+        (merge {:name "Chauvet Q Spot 160"
                 :pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
                 :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
                 :mode mode}
