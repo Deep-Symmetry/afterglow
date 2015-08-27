@@ -102,119 +102,119 @@
   ([]
    (intimidator-scan-led-300 :11-channel))
   ([mode]
-   (let [build-color-wheel (fn [channel]
-                             (chan/functions :color channel
-                                             0 "Color Wheel Open"
-                                             7 (chan/color-wheel-hue "yellow")
-                                             14 "Color Wheel Pink"
-                                             21 (chan/color-wheel-hue "green")
-                                             28 "Color Wheel Peachblow"
-                                             35 "Color Wheel Light Blue"
-                                             42 "Color Wheel Kelly"
-                                             49 (chan/color-wheel-hue "red")
-                                             56 (chan/color-wheel-hue "blue")
-                                             64 "Color Wheel White + Yellow"
-                                             71 "Color Wheel Yellow + Pink"
-                                             78 "Color Wheel Pink + Green"
-                                             85 "Color Wheel Green + Peachblow"
-                                             92 "Color Wheel Peachblow + Blue"
-                                             99 "Color Wheel Blue + Kelly"
-                                             106 "Color Wheel Kelly + Red"
-                                             113 "Color Wheel Red + Blue"
-                                             120 "Color Wheel Blue + White"
-                                             128 {:type :color-clockwise
-                                                  :label "Color Wheel Clockwise (slow->fast)"
-                                                  :var-label "CW (slow->fast)"
-                                                  :range :variable}
-                                             192 {:type :color-counterclockwise
-                                                  :label "Color Wheel Counterclockwise (slow->fast)"
-                                                  :var-label "CCW (slow->fast)"
-                                                  :range :variable}))
-         build-shutter (fn [channel]
-                         (chan/functions :shutter channel
-                                         0 "Shutter Closed"
-                                         4 "Shutter Open"
-                                         8 {:type :strobe
-                                            :label "Strobe"
-                                            :range :variable}
-                                         216 "Shutter Open 2"))
-                  gobo-names ["Pink Dots" "Purple Bubbles" "45 Adapter" "Nested Rings" "Rose" "Triangles" "Galaxy"]
-         build-gobo-wheel (fn [channel]
-                            (chan/functions :gobo channel
-                                            (range 0 63 8) (build-gobo-entries false (concat ["Open"] gobo-names))
-                                            (range 64 119 8) (build-gobo-entries true (reverse gobo-names))
-                                            120 "Gobo Open 2"
-                                            128 {:type :gobo-clockwise
-                                                 :label "Gobo Clockwise Speed"
-                                                 :var-label "CW Speed"
-                                                 :range :variable}
-                                            192 {:type :gobo-counterclockwise
-                                                 :label "Gobo Counterclockwise Speed"
-                                                 :var-label "CCW Speed"
-                                                 :range :variable}))
-         build-gobo-rotation (fn [channel]
-                               (chan/functions :gobo-rotation channel
-                                               0 nil
-                                               16 {:type :gobo-rotation-counterclockwise
-                                                   :label "Gobo Rotation Counterlockwise (slow->fast)"
-                                                   :var-label "CCW (slow->fast)"
-                                                   :range :variable}
-                                               128 {:type :gobo-rotation-clockwise
-                                                    :label "Gobo Rotation Clockwise (slow->fast)"
-                                                    :var-label "CW (slow->fast)"
-                                                    :range :variable}
-                                               240 :gobo-bounce))]
-     (merge {:name "Chauvet Intimidator Scan LED 300"
-             :pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
-             :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
-             :mode mode}
-            (case mode
-              :11-channel
-              {:channels [(chan/pan 1)
-                          (chan/tilt 2)
-                          (build-color-wheel 3)
-                          (build-shutter 4)
-                          (chan/dimmer 5)
-                          (build-gobo-wheel 6)
-                          (build-gobo-rotation 7)
-                          (chan/functions :prism 8
-                                          0 "Prism Out"
-                                          4 "Prism In")
-                          (chan/focus 9)
-                          (chan/functions :control 10
-                                          8 "Blackout while moving Pan/Tilt"
-                                          16 "Disable Blackout while moving Pan/Tilt"
-                                          24 "Blackout while moving Color Wheel"
-                                          32 "Disable Blackout while moving Color Wheel"
-                                          40 "Blackout while moving Gobo Wheel"
-                                          48 "Disable Blackout while moving Gobo Wheel"
-                                          56 "Fast Movement"
-                                          64 "Disable Fast Movement"
-                                          88 "Disable all Blackout while moving"
-                                          96 "Reset Pan/Tilt"
-                                          104 nil
-                                          112 "Reset Color Wheel"
-                                          120 "Reset Gobo Wheel"
-                                          128 nil
-                                          136 "Reset Prism"
-                                          144 "Reset Focus"
-                                          152 "Reset All"
-                                          160 nil)
-                          (chan/functions :control 11
-                                          0 nil
-                                          (range 8 135 16) "Program"
-                                          (range 136 255 16) :sound-active)]}
-              :8-channel
-              {:channels [(chan/pan 1)
-                          (chan/tilt 2)
-                          (build-color-wheel 3)
-                          (build-shutter 4)
-                          (build-gobo-wheel 5)
-                          (build-gobo-rotation 6)
-                          (chan/functions :prism 7
-                                          0 "Prism Out"
-                                          4 "Prism In")
-                          (chan/focus 8)]})))))
+   (let [gobo-names ["Pink Dots" "Purple Bubbles" "45 Adapter" "Nested Rings" "Rose" "Triangles" "Galaxy"]]
+     (letfn [(build-color-wheel [channel]
+               (chan/functions :color channel
+                               0 "Color Wheel Open"
+                               7 (chan/color-wheel-hue "yellow")
+                               14 "Color Wheel Pink"
+                               21 (chan/color-wheel-hue "green")
+                               28 "Color Wheel Peachblow"
+                               35 "Color Wheel Light Blue"
+                               42 "Color Wheel Kelly"
+                               49 (chan/color-wheel-hue "red")
+                               56 (chan/color-wheel-hue "blue")
+                               64 "Color Wheel White + Yellow"
+                               71 "Color Wheel Yellow + Pink"
+                               78 "Color Wheel Pink + Green"
+                               85 "Color Wheel Green + Peachblow"
+                               92 "Color Wheel Peachblow + Blue"
+                               99 "Color Wheel Blue + Kelly"
+                               106 "Color Wheel Kelly + Red"
+                               113 "Color Wheel Red + Blue"
+                               120 "Color Wheel Blue + White"
+                               128 {:type :color-clockwise
+                                    :label "Color Wheel Clockwise (slow->fast)"
+                                    :var-label "CW (slow->fast)"
+                                    :range :variable}
+                               192 {:type :color-counterclockwise
+                                    :label "Color Wheel Counterclockwise (slow->fast)"
+                                    :var-label "CCW (slow->fast)"
+                                    :range :variable}))
+             (build-shutter [channel]
+               (chan/functions :shutter channel
+                               0 "Shutter Closed"
+                               4 "Shutter Open"
+                               8 {:type :strobe
+                                  :label "Strobe"
+                                  :range :variable}
+                               216 "Shutter Open 2"))
+             (build-gobo-wheel [channel]
+               (chan/functions :gobo channel
+                               (range 0 63 8) (build-gobo-entries false (concat ["Open"] gobo-names))
+                               (range 64 119 8) (build-gobo-entries true (reverse gobo-names))
+                               120 "Gobo Open 2"
+                               128 {:type :gobo-clockwise
+                                    :label "Gobo Clockwise Speed"
+                                    :var-label "CW Speed"
+                                    :range :variable}
+                               192 {:type :gobo-counterclockwise
+                                    :label "Gobo Counterclockwise Speed"
+                                    :var-label "CCW Speed"
+                                    :range :variable}))
+             (build-gobo-rotation [channel]
+               (chan/functions :gobo-rotation channel
+                               0 nil
+                               16 {:type :gobo-rotation-counterclockwise
+                                   :label "Gobo Rotation Counterlockwise (slow->fast)"
+                                   :var-label "CCW (slow->fast)"
+                                   :range :variable}
+                               128 {:type :gobo-rotation-clockwise
+                                    :label "Gobo Rotation Clockwise (slow->fast)"
+                                    :var-label "CW (slow->fast)"
+                                    :range :variable}
+                               240 :gobo-bounce))]
+       (merge {:name "Chauvet Intimidator Scan LED 300"
+               :pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
+               :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
+               :mode mode}
+              (case mode
+                :11-channel
+                {:channels [(chan/pan 1)
+                            (chan/tilt 2)
+                            (build-color-wheel 3)
+                            (build-shutter 4)
+                            (chan/dimmer 5)
+                            (build-gobo-wheel 6)
+                            (build-gobo-rotation 7)
+                            (chan/functions :prism 8
+                                            0 "Prism Out"
+                                            4 "Prism In")
+                            (chan/focus 9)
+                            (chan/functions :control 10
+                                            8 "Blackout while moving Pan/Tilt"
+                                            16 "Disable Blackout while moving Pan/Tilt"
+                                            24 "Blackout while moving Color Wheel"
+                                            32 "Disable Blackout while moving Color Wheel"
+                                            40 "Blackout while moving Gobo Wheel"
+                                            48 "Disable Blackout while moving Gobo Wheel"
+                                            56 "Fast Movement"
+                                            64 "Disable Fast Movement"
+                                            88 "Disable all Blackout while moving"
+                                            96 "Reset Pan/Tilt"
+                                            104 nil
+                                            112 "Reset Color Wheel"
+                                            120 "Reset Gobo Wheel"
+                                            128 nil
+                                            136 "Reset Prism"
+                                            144 "Reset Focus"
+                                            152 "Reset All"
+                                            160 nil)
+                            (chan/functions :control 11
+                                            0 nil
+                                            (range 8 135 16) "Program"
+                                            (range 136 255 16) :sound-active)]}
+                :8-channel
+                {:channels [(chan/pan 1)
+                            (chan/tilt 2)
+                            (build-color-wheel 3)
+                            (build-shutter 4)
+                            (build-gobo-wheel 5)
+                            (build-gobo-rotation 6)
+                            (chan/functions :prism 7
+                                            0 "Prism Out"
+                                            4 "Prism In")
+                            (chan/focus 8)]}))))))
 
 (defn intimidator-spot-led-150
   "[Intimidator Spot LED 150](http://www.chauvetlighting.com/intimidator-spot-led-150.html) moving yoke.
@@ -235,98 +235,98 @@
   ([]
    (intimidator-spot-led-150 :11-channel))
   ([mode]
-   (let [build-color-wheel (fn [channel]
-                             (chan/functions :color channel
-                                             0 "Color Wheel Open"
-                                             (range 6 47 6) (chan/color-wheel-hue ["yellow" "magenta" "green" "red"
-                                                                                   "cyan" "orange" "blue"])
-                                             48 "Color Wheel Light Green"
-                                             54 (chan/color-wheel-hue 45 :label "Color Wheel Amber")
-                                             64 "Color Wheel White + Yellow"
-                                             70 "Color Wheel Yellow + Magenta"
-                                             76 "Color Wheel Magenta + Green"
-                                             82 "Color Wheel Green + Red"
-                                             88 "Color Wheel Red + Cyan"
-                                             94 "Color Wheel Cyan + Orange"
-                                             100 "Color Wheel Orange + Blue"
-                                             106 "Color Wheel Blue + Light Green"
-                                             112 "Color Wheel Light Green + Amber"
-                                             118 "Color Wheel Amber + White"
-                                             128 {:type :color-clockwise
-                                                  :label "Color Wheel Clockwise (fast->slow)"
-                                                  :var-label "CW (fast->slow)"
-                                                  :range :variable}
-                                             192 {:type :color-counterclockwise
-                                                  :label "Color Wheel Counterclockwise (slow->fast)"
-                                                  :var-label "CCW (fast->slow)"
-                                                  :range :variable}))
-         build-shutter (fn [channel]
-                         (chan/functions :shutter channel
-                                         0 "Shutter Closed"
-                                         4 "Shutter Open"
-                                         8 {:type :strobe
-                                            :label "Strobe (0-20Hz)"
-                                            :scale-fn (partial chan-fx/function-value-scaler 0 200)
-                                            :range :variable}
-                                         216 "Shutter Open 2"))
-         gobo-names ["Quotes" "Warp Spots" "4 Dots" "Sail Swirl" "Starburst" "Star Field" "Optical Tube"
-                     "Sun Swirl" "Star Echo"]
-         build-gobo-wheel (fn [channel]
-                            (chan/functions :gobo channel
-                                            (range 0 63 6) (build-gobo-entries false (concat ["Open"] gobo-names))
-                                            (range 64 121 6) (build-gobo-entries true (reverse gobo-names))
-                                            122 "Gobo Open 2"
-                                            128 {:type :gobo-clockwise
-                                                 :label "Gobo Clockwise Speed"
-                                                 :var-label "CW Speed"
-                                                 :range :variable}
-                                            192 {:type :gobo-counterclockwise
-                                                 :label "Gobo Counterclockwise Speed"
-                                                 :var-label "CCW Speed"
-                                                 :range :variable}))]
-        (merge {:name "Chauvet Intimidator Spot LED 150"
-                :mode mode}
-               (case mode
-                 :11-channel
-                 {:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
-                  :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
-                  :channels [(chan/pan 1 3)
-                             (chan/tilt 2 4)
-                             (chan/fine-channel :pan-tilt-speed 5
-                                                :function-name "Pan / Tilt Speed"
-                                                :var-label "P/T fast->slow")
-                             (build-color-wheel 6)
-                             (build-shutter 7)
-                             (chan/dimmer 8)
-                             (build-gobo-wheel 9)
-                             (chan/functions :control-functions 10
-                                             0 nil
-                                             8 "Blackout while moving Pan/Tilt"
-                                             28 "Blackout while moving Gobo Wheel"
-                                             48 "Disable blackout while Pan/Tilt / moving Gobo Wheel"
-                                             68 "Blackout while moving Color Wheel"
-                                             88 "Disable blackout while Pan/Tilt / moving Color Wheel"
-                                             108 "Disable blackout while moving Gobo/Color Wheel"
-                                             128 "Diable blackout while moving all options"
-                                             148 "Reset Pan"
-                                             168 "Reset Tilt"
-                                             188 "Reset Color Wheel"
-                                             208 "Reset Gobo Wheel"
-                                             228 "Reset All Channels"
-                                             248 nil)
-                             (chan/functions :movement-macros 11
-                                             0 nil
-                                             (range 8 135 16) "Program"
-                                             (range 136 255 16) "Sound Active")]}
-                 :6-channel
-                 {:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
-                  :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
-                  :channels [(chan/pan 1)
-                             (chan/tilt 2)
-                             (build-color-wheel 3)
-                             (build-shutter 4)
-                             (chan/dimmer 5)
-                             (build-gobo-wheel 6)]})))))
+   (let [gobo-names ["Quotes" "Warp Spots" "4 Dots" "Sail Swirl" "Starburst" "Star Field" "Optical Tube"
+                     "Sun Swirl" "Star Echo"]]
+     (letfn [(build-color-wheel [channel]
+               (chan/functions :color channel
+                               0 "Color Wheel Open"
+                               (range 6 47 6) (chan/color-wheel-hue ["yellow" "magenta" "green" "red"
+                                                                     "cyan" "orange" "blue"])
+                               48 "Color Wheel Light Green"
+                               54 (chan/color-wheel-hue 45 :label "Color Wheel Amber")
+                               64 "Color Wheel White + Yellow"
+                               70 "Color Wheel Yellow + Magenta"
+                               76 "Color Wheel Magenta + Green"
+                               82 "Color Wheel Green + Red"
+                               88 "Color Wheel Red + Cyan"
+                               94 "Color Wheel Cyan + Orange"
+                               100 "Color Wheel Orange + Blue"
+                               106 "Color Wheel Blue + Light Green"
+                               112 "Color Wheel Light Green + Amber"
+                               118 "Color Wheel Amber + White"
+                               128 {:type :color-clockwise
+                                    :label "Color Wheel Clockwise (fast->slow)"
+                                    :var-label "CW (fast->slow)"
+                                    :range :variable}
+                               192 {:type :color-counterclockwise
+                                    :label "Color Wheel Counterclockwise (slow->fast)"
+                                    :var-label "CCW (fast->slow)"
+                                    :range :variable}))
+             (build-shutter [channel]
+               (chan/functions :shutter channel
+                               0 "Shutter Closed"
+                               4 "Shutter Open"
+                               8 {:type :strobe
+                                  :label "Strobe (0-20Hz)"
+                                  :scale-fn (partial chan-fx/function-value-scaler 0 200)
+                                  :range :variable}
+                               216 "Shutter Open 2"))
+             (build-gobo-wheel [channel]
+               (chan/functions :gobo channel
+                               (range 0 63 6) (build-gobo-entries false (concat ["Open"] gobo-names))
+                               (range 64 121 6) (build-gobo-entries true (reverse gobo-names))
+                               122 "Gobo Open 2"
+                               128 {:type :gobo-clockwise
+                                    :label "Gobo Clockwise Speed"
+                                    :var-label "CW Speed"
+                                    :range :variable}
+                               192 {:type :gobo-counterclockwise
+                                    :label "Gobo Counterclockwise Speed"
+                                    :var-label "CCW Speed"
+                                    :range :variable}))]
+       (merge {:name "Chauvet Intimidator Spot LED 150"
+               :mode mode}
+              (case mode
+                :11-channel
+                {:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
+                 :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
+                 :channels [(chan/pan 1 3)
+                            (chan/tilt 2 4)
+                            (chan/fine-channel :pan-tilt-speed 5
+                                               :function-name "Pan / Tilt Speed"
+                                               :var-label "P/T fast->slow")
+                            (build-color-wheel 6)
+                            (build-shutter 7)
+                            (chan/dimmer 8)
+                            (build-gobo-wheel 9)
+                            (chan/functions :control-functions 10
+                                            0 nil
+                                            8 "Blackout while moving Pan/Tilt"
+                                            28 "Blackout while moving Gobo Wheel"
+                                            48 "Disable blackout while Pan/Tilt / moving Gobo Wheel"
+                                            68 "Blackout while moving Color Wheel"
+                                            88 "Disable blackout while Pan/Tilt / moving Color Wheel"
+                                            108 "Disable blackout while moving Gobo/Color Wheel"
+                                            128 "Diable blackout while moving all options"
+                                            148 "Reset Pan"
+                                            168 "Reset Tilt"
+                                            188 "Reset Color Wheel"
+                                            208 "Reset Gobo Wheel"
+                                            228 "Reset All Channels"
+                                            248 nil)
+                            (chan/functions :movement-macros 11
+                                            0 nil
+                                            (range 8 135 16) "Program"
+                                            (range 136 255 16) "Sound Active")]}
+                :6-channel
+                {:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
+                 :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
+                 :channels [(chan/pan 1)
+                            (chan/tilt 2)
+                            (build-color-wheel 3)
+                            (build-shutter 4)
+                            (chan/dimmer 5)
+                            (build-gobo-wheel 6)]}))))))
 
 (defn kinta-x
   "[Kinta X](http://www.chauvetlighting.com/kinta-x.html) derby effect."
@@ -533,91 +533,91 @@
   ([]
    (q-spot-160 :12-channel))
   ([mode]
-   (let [build-color-wheel (fn [channel]
-                             (chan/functions :color channel
-                                             0 "Color Wheel Open"
-                                             (range 15 59 15) (chan/color-wheel-hue ["red" "yellow" "green"])
-                                             60 "Color Wheel pink"
-                                             (range 75 119 15) (chan/color-wheel-hue ["blue" "orange" "magenta"])
-                                             120 "Color Wheel Light Blue"
-                                             135 "Color Wheel Light Green"
-                                             150 {:type :color-clockwise
-                                                  :label "Color Wheel Clockwise (slow->fast)"
-                                                  :var-label "CW (slow->fast)"
-                                                  :range :variable}))
-         build-shutter (fn [channel]
-                         (chan/functions :shutter channel
-                                         0 "Shutter Closed"
-                                         32 "Shutter Open"
-                                         64 :strobe
-                                         96 "Shutter Open 2"
-                                         128 :pulse-strobe
-                                         160 "Shutter Open 3"
-                                         192 :random-strobe
-                                         224 "Shutter Open 4"))
-         gobo-names ["Splat" "Spot Sphere" "Fanned Squares" "Box" "Bar" "Blue Starburst" "Perforated Pink"]
-         build-gobo-wheel (fn [channel]
-                            (chan/functions :gobo channel
-                                            (range 0 79 10) (build-gobo-entries false (concat ["Open"] gobo-names))
-                                            (range 80 219 20) (build-gobo-entries true (reverse gobo-names))
-                                            220 {:type :gobo-scroll
-                                                 :label "Gobo Scroll"
-                                                 :var-label "Scroll Speed"
-                                                 :range :variable}))
-         build-gobo-rotation (fn [channel]
-                               (chan/functions :gobo-rotation channel
-                                               0 nil
-                                               3 {:type :gobo-rotation-clockwise
-                                                  :label "Gobo Rotation Clockwise (slow->fast)"
-                                                  :var-label "CW (slow->fast)"
-                                                  :range :variable}
-                              129 "Gobo Rotation Stop"
-                              133 {:type :gobo-rotation-counterclockwise
-                                   :label "Gobo Rotation Counterlockwise (slow->fast)"
-                                   :var-label "CCW (slow->fast)"
-                                   :range :variable}))
-         build-control-channel (fn [channel]
-                                 (chan/functions :control channel
-                                             0 nil
-                                             20 "Blackout while moving Pan/Tilt"
-                                             40 "Disable Blackout while moving Pan/Tilt"
-                                             60 "Auto 1"
-                                             80 "Auto 2"
-                                             100 "Sound Active 1"
-                                             120 "Sound Active 2"
-                                             140 "Custom"
-                                             160 "Test"
-                                             180 nil
-                                             200 "Reset"
-                                             220 nil))]
-        (merge {:name "Chauvet Q Spot 160"
-                :pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
-                :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
-                :mode mode}
-               (case mode
-                 :12-channel
-                 {:channels [(chan/pan 1 2)
-                             (chan/tilt 3 4)
-                             (chan/fine-channel :pan-tilt-speed 5
-                                                :function-name "Pan / Tilt Speed"
-                                                :var-label "P/T fast->slow")
-                             (build-color-wheel 6)
-                             (build-gobo-wheel 7)
-                             (build-gobo-rotation 8)
-                             (chan/functions :prism 9 0 "Prism Out" 128 "Prism In")
-                             (chan/dimmer 10)
-                             (build-shutter 11)
-                             (build-control-channel 12)]}
-                 :9-channel
-                 {:channels [(chan/pan 1)
-                             (chan/tilt 2)
-                             (build-color-wheel 3)
-                             (build-gobo-wheel 4)
-                             (build-gobo-rotation 5)
-                             (chan/functions :prism 6 0 "Prism Out" 128 "Prism In")
-                             (chan/dimmer 7)
-                             (build-shutter 8)
-                             (build-control-channel 9)]})))))
+   (let [gobo-names ["Splat" "Spot Sphere" "Fanned Squares" "Box" "Bar" "Blue Starburst" "Perforated Pink"]]
+     (letfn [(build-color-wheel [channel]
+               (chan/functions :color channel
+                               0 "Color Wheel Open"
+                               (range 15 59 15) (chan/color-wheel-hue ["red" "yellow" "green"])
+                               60 "Color Wheel pink"
+                               (range 75 119 15) (chan/color-wheel-hue ["blue" "orange" "magenta"])
+                               120 "Color Wheel Light Blue"
+                               135 "Color Wheel Light Green"
+                               150 {:type :color-clockwise
+                                    :label "Color Wheel Clockwise (slow->fast)"
+                                    :var-label "CW (slow->fast)"
+                                    :range :variable}))
+             (build-shutter [channel]
+               (chan/functions :shutter channel
+                               0 "Shutter Closed"
+                               32 "Shutter Open"
+                               64 :strobe
+                               96 "Shutter Open 2"
+                               128 :pulse-strobe
+                               160 "Shutter Open 3"
+                               192 :random-strobe
+                               224 "Shutter Open 4"))
+             (build-gobo-wheel [channel]
+               (chan/functions :gobo channel
+                               (range 0 79 10) (build-gobo-entries false (concat ["Open"] gobo-names))
+                               (range 80 219 20) (build-gobo-entries true (reverse gobo-names))
+                               220 {:type :gobo-scroll
+                                    :label "Gobo Scroll"
+                                    :var-label "Scroll Speed"
+                                    :range :variable}))
+             (build-gobo-rotation [channel]
+               (chan/functions :gobo-rotation channel
+                               0 nil
+                               3 {:type :gobo-rotation-clockwise
+                                  :label "Gobo Rotation Clockwise (slow->fast)"
+                                  :var-label "CW (slow->fast)"
+                                  :range :variable}
+                               129 "Gobo Rotation Stop"
+                               133 {:type :gobo-rotation-counterclockwise
+                                    :label "Gobo Rotation Counterlockwise (slow->fast)"
+                                    :var-label "CCW (slow->fast)"
+                                    :range :variable}))
+             (build-control-channel [channel]
+               (chan/functions :control channel
+                               0 nil
+                               20 "Blackout while moving Pan/Tilt"
+                               40 "Disable Blackout while moving Pan/Tilt"
+                               60 "Auto 1"
+                               80 "Auto 2"
+                               100 "Sound Active 1"
+                               120 "Sound Active 2"
+                               140 "Custom"
+                               160 "Test"
+                               180 nil
+                               200 "Reset"
+                               220 nil))]
+       (merge {:name "Chauvet Q Spot 160"
+               :pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
+               :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
+               :mode mode}
+              (case mode
+                :12-channel
+                {:channels [(chan/pan 1 2)
+                            (chan/tilt 3 4)
+                            (chan/fine-channel :pan-tilt-speed 5
+                                               :function-name "Pan / Tilt Speed"
+                                               :var-label "P/T fast->slow")
+                            (build-color-wheel 6)
+                            (build-gobo-wheel 7)
+                            (build-gobo-rotation 8)
+                            (chan/functions :prism 9 0 "Prism Out" 128 "Prism In")
+                            (chan/dimmer 10)
+                            (build-shutter 11)
+                            (build-control-channel 12)]}
+                :9-channel
+                {:channels [(chan/pan 1)
+                            (chan/tilt 2)
+                            (build-color-wheel 3)
+                            (build-gobo-wheel 4)
+                            (build-gobo-rotation 5)
+                            (chan/functions :prism 6 0 "Prism Out" 128 "Prism In")
+                            (chan/dimmer 7)
+                            (build-shutter 8)
+                            (build-control-channel 9)]}))))))
 
 (defn slimpar-hex3-irc
   "[SlimPAR HEX 3 IRC](http://www.chauvetlighting.com/slimpar-hex3irc.html)
