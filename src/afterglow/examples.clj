@@ -292,7 +292,7 @@
                                                                :short-name (name-torrent-gobo-cue prefix function))))))
                          ["gobo-moving-rings" "gobo-moving-color-swirl" "gobo-moving-stars"
                           "gobo-moving-optical-tube" "gobo-moving-magenta-bundt"
-                          "gobo-moving-blue-megahazard" "gobo-moving-turbine"])]))
+                          "gobo-moving-blue-mega-hazard" "gobo-moving-turbine"])]))
 
 (defn make-strobe-cue
   "Create a cue which strobes a set of fixtures as long as the cue pad
@@ -450,7 +450,13 @@
                                                             :effect-name "Snowball Dimmers"))
                            :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
                            :color :orange :end-keys [:dimmers]))
-
+    (ct/set-cue! (:cue-grid *show*) 7 2
+                 (cues/cue :torrent-1-dimmer (fn [var-map] (dimmer-effect
+                                                            (params/bind-keyword-param (:level var-map 255) Number 255)
+                                                            (show/fixtures-named "torrent-1")
+                                                            :effect-name "Torrent 1 Dimmer"))
+                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :color :orange :end-keys [:dimmers :torrent-dimmers]))
 
     ;; Dimmer oscillator cues: Sawtooth down each beat
     (ct/set-cue! (:cue-grid *show*) 0 3
