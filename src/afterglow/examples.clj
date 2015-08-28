@@ -362,7 +362,7 @@
                                         :type :integer}]))
     (ct/set-cue! (:cue-grid *show*) 3 1  ; Desaturate the rainbow as each beat progresses
                  (cues/cue :color (fn [_] (global-color-effect
-                                           (params/build-color-param :s sat-beat :l 50 :h hue-gradient
+                                           (params/build-color-param :s desat-beat :l 50 :h hue-gradient
                                                                      :adjust-hue hue-bar)))
                            :short-name "Rainbow Pulse"))
 
