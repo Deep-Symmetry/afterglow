@@ -321,14 +321,16 @@
 (defn make-cues
   "Create a bunch of example cues for experimentation."
   []
-  (let [hue-bar (params/build-oscillated-param ; Spread a rainbow across a bar of music
+  (let [hue-bar (params/build-oscillated-param  ; Spread a rainbow across a bar of music
                  (oscillators/sawtooth-bar) :max 360)
-        hue-gradient (params/build-spatial-param ; Spread a rainbow across the light grid
+        desat-beat (params/build-oscillated-param  ; Desaturate a color as a beat progresses
+                    (oscillators/sawtooth-beat :down? true) :max 100)
+        hue-gradient (params/build-spatial-param  ; Spread a rainbow across the light grid
                       (show/all-fixtures)
                       (fn [head] (- (:x head) (:min-x @(:dimensions *show*)))) :max 360)
-        hue-z-gradient (params/build-spatial-param ; Spread a rainbow across the light grid
-                      (show/all-fixtures)
-                      (fn [head] (- (:z head) (:min-z @(:dimensions *show*)))) :max 360)]
+        hue-z-gradient (params/build-spatial-param  ; Spread a rainbow across the light grid front to back
+                        (show/all-fixtures)
+                        (fn [head] (- (:z head) (:min-z @(:dimensions *show*)))) :max 360)]
     (global-color-cue "red" 0 0 :include-color-wheels? true)
     (global-color-cue "orange" 1 0 :include-color-wheels? true)
     (global-color-cue "yellow" 2 0 :include-color-wheels? true)
@@ -343,28 +345,33 @@
                                            (params/build-color-param :s :rainbow-saturation :l 50 :h hue-bar)))
                            :short-name "Rainbow Bar Fade"
                            :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
-                                         :type :integer}]))
+                                        :type :integer}]))
     (ct/set-cue! (:cue-grid *show*) 1 1
                  (cues/cue :color (fn [_] (global-color-effect
                                            (params/build-color-param :s :rainbow-saturation :l 50 :h hue-gradient)
                                            :include-color-wheels? true))
                            :short-name "Rainbow Grid"
                            :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
-                                         :type :integer}]))
+                                        :type :integer}]))
     (ct/set-cue! (:cue-grid *show*) 2 1
                  (cues/cue :color (fn [_] (global-color-effect
                                            (params/build-color-param :s :rainbow-saturation :l 50 :h hue-gradient
                                                                      :adjust-hue hue-bar)))
                            :short-name "Rainbow Grid+Bar"
                            :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
-                                         :type :integer}]))
+                                        :type :integer}]))
+    (ct/set-cue! (:cue-grid *show*) 3 1  ; Desaturate the rainbow as each beat progresses
+                 (cues/cue :color (fn [_] (global-color-effect
+                                           (params/build-color-param :s sat-beat :l 50 :h hue-gradient
+                                                                     :adjust-hue hue-bar)))
+                           :short-name "Rainbow Pulse"))
 
-    (ct/set-cue! (:cue-grid *show*) 4 1
+    (ct/set-cue! (:cue-grid *show*) 5 1
                  (cues/cue :color (fn [_] (global-color-effect
                                            (params/build-color-param :s 100 :l 50 :h hue-z-gradient)
                                            :include-color-wheels? true))
                            :short-name "Z Rainbow Grid"))
-    (ct/set-cue! (:cue-grid *show*) 5 1
+    (ct/set-cue! (:cue-grid *show*) 6 1
                  (cues/cue :color (fn [_] (global-color-effect
                                            (params/build-color-param :s 100 :l 50 :h hue-z-gradient
                                                                      :adjust-hue hue-bar)))
@@ -375,7 +382,7 @@
                                            (params/build-color-param :s 100 :l 50 :h hue-gradient
                                                                      :adjust-hue hue-bar)
                                            :lights (show/fixtures-named "blade")))
-                         :short-name "Rainbow Blades"))
+                           :short-name "Rainbow Blades"))
 
 
     ;; TODO: Write a macro to make it easier to bind cue variables.
@@ -383,10 +390,10 @@
                  (cues/cue :sparkle (fn [var-map] (fun/sparkle (show/all-fixtures)
                                                                :chance (:chance var-map 0.05)
                                                                :fade-time (:fade-time var-map 50)))
-                         :held true
-                         :priority 100
-                         :variables [{:key "chance" :min 0.0 :max 0.4 :start 0.05 :velocity true}
-                                     {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
+                           :held true
+                           :priority 100
+                           :variables [{:key "chance" :min 0.0 :max 0.4 :start 0.05 :velocity true}
+                                       {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
 
     (ct/set-cue! (:cue-grid *show*) 7 7
                  (cues/function-cue :strobe-all :strobe (show/all-fixtures) :effect-name "Raw Strobe"))
@@ -431,9 +438,9 @@
                            :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 5 2
                  (cues/cue :puck-dimmers (fn [var-map] (dimmer-effect
-                                                       (params/bind-keyword-param (:level var-map 255) Number 255)
-                                                       (show/fixtures-named "puck")
-                                                       :effect-name "Puck Dimmers"))
+                                                        (params/bind-keyword-param (:level var-map 255) Number 255)
+                                                        (show/fixtures-named "puck")
+                                                        :effect-name "Puck Dimmers"))
                            :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
                            :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 6 2
@@ -582,7 +589,7 @@
                                     (params/build-oscillated-param (oscillators/triangle-bar) :min 1)
                                     (show/all-fixtures) :effect-name "All Triangle Bar"))
                            :color :red :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
-                                                   :puck-dimmers :hex-dimmers :snowball-dimmers]))
+                                                  :puck-dimmers :hex-dimmers :snowball-dimmers]))
 
     ;; Strobe cues
     (make-strobe-cue "All" (show/all-fixtures) 0 6)
@@ -656,13 +663,13 @@
 
     ;; Some basic moving head chases
     (let [triangle-phrase (params/build-oscillated-param ; Move back and forth over a phrase
-                             (oscillators/triangle-phrase) :min -90 :max 90)
+                           (oscillators/triangle-phrase) :min -90 :max 90)
           staggered-triangle-bar (params/build-spatial-param ; Bounce over a bar, staggered across grid x
-                                   (show/all-fixtures)
-                                   (fn [head]
-                                     (params/build-oscillated-param
-                                      (oscillators/triangle-bar :phase (x-phase head *show*))
-                                      :min -90 :max 0)))
+                                  (show/all-fixtures)
+                                  (fn [head]
+                                    (params/build-oscillated-param
+                                     (oscillators/triangle-bar :phase (x-phase head *show*))
+                                     :min -90 :max 0)))
           can-can-dir (params/build-pan-tilt-param :pan triangle-phrase :tilt staggered-triangle-bar)]
       (ct/set-cue! (:cue-grid *show*) 0 9
                    (cues/cue :movement (fn [var-map]
@@ -670,9 +677,9 @@
     
     ;; A couple snowball cues
     (ct/set-cue! (:cue-grid *show*) 0 10 (cues/function-cue :sb-pos :beams-fixed (show/fixtures-named "snowball")
-                                                             :effect-name "Snowball Fixed"))
+                                                            :effect-name "Snowball Fixed"))
     (ct/set-cue! (:cue-grid *show*) 1 10 (cues/function-cue :sb-pos :beams-moving (show/fixtures-named "snowball")
-                                                             :effect-name "Snowball Moving"))
+                                                            :effect-name "Snowball Moving"))
 
     ;; The separate page of specific gobo cues for each Torrent
     (make-torrent-gobo-cues :t1 (show/fixtures-named "torrent-1") 15 8)
@@ -684,8 +691,8 @@
                                           (move/direction-effect
                                            "Pan/Tilt"
                                            (params/build-pan-tilt-param :pan (:pan var-map 0.0)
-                                                                         :tilt (:tilt var-map 0.0)
-                                                                         :degrees true)
+                                                                        :tilt (:tilt var-map 0.0)
+                                                                        :degrees true)
                                            (show/all-fixtures)))
                            :variables [{:key "pan" :name "Pan"
                                         :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}
