@@ -685,7 +685,7 @@ fixture or head. It always takes at least one argument, the channel
 `offset` (as described <<channel-offset,above>>). If the fixture uses
 two-byte values for more precise dimmer control, use the
 most-significant byte as the `offset` value, and pass the offset of
-least-significant byte using the optional keyword argument
+the least-significant byte using the optional keyword argument
 `:fine-offset`.
 
 Normal dimmers are dark at zero, and get brighter as the channel value
