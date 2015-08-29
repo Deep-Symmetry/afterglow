@@ -15,14 +15,31 @@
 (defn apply-channel-value
   "A function which sets the DMX buffer value(s) for a channel, supporting fine channels
   as well (in which there is a high and low byte), using any fractional part of the value
-  to determine the fine channel if one is present."
+  to determine the fine channel value if one is present.
+
+  Also supports inverted channels (as needed for some fixtures which
+  have inverted dimmers). Such channels are specified by containing an
+  `:inverted-from` key which specifies the DMX value at which
+  inversion occurs. If the entire DMX range is inverted, in other
+  words 0 represents the highest value and 255 the lowest,
+  `:inverted-from` will be present with the value `0`. For dimmers
+  which are still black at zero, but which leap to full brightness at
+  1 then dim as the value grows towards 255, `:inverted-from` will be
+  present with the value `1`. Non-inverted channels will lack the key
+  entirely."
+ {:doc/format :markdown}
   [buffers channel value]
   (when-let [levels (get buffers (:universe channel))]
-    (if-let [fine-index (:fine-index channel)]
-      (do
-        (aset levels (:index channel) (ubyte value))
-        (aset levels fine-index (ubyte (math/round (* 255 (- value (int value)))))))
-      (aset levels (:index channel) (ubyte (math/round value))))))
+    (let [adjusted-value (if-let [pivot (:inverted-from channel)]
+                           (if (< value pivot)
+                             value
+                             (- 255 (- value pivot)))
+                           value)]
+      (if-let [fine-index (:fine-index channel)]
+        (do
+          (aset levels (:index channel) (ubyte adjusted-value))
+          (aset levels fine-index (ubyte (math/round (* 255 (- adjusted-value (int adjusted-value)))))))
+        (aset levels (:index channel) (ubyte (math/round adjusted-value)))))))
 
 (defn build-channel-assigner
   "Returns an assigner which applies the specified assignment function to the supplied channel."

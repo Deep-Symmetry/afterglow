@@ -101,29 +101,6 @@
   (let [initial-level (atom (clamp-percent-float level))]
     (Master. initial-level parent)))
 
-(defn- build-dimmer-assigner
-  "Returns an assigner which translates a logical dimmer value to the
-  actual DMX value used by the fixture (since some have inverted
-  dimmers)."
-  [channel f]
-  (if-let [pivot (:inverted-from channel)]
-    ;; We do need to invert the dimmer for values larger than the pivot
-    (letfn [(inverter [show snapshot target previous-assignment]
-               (let [assignment (f show snapshot target previous-assignment)]
-                 (if (< assignment pivot)
-                   assignment
-                   (- 255 (- assignment pivot)))))]
-      (chan-fx/build-channel-assigner channel inverter))
-    ;; This is an ordinary non-inverted dimmer channel
-    (chan-fx/build-channel-assigner channel f)))
-
-(defn- build-dimmer-assigners
-  "Returns a list of assigners which translate the logical dimmer
-  value to the actual DMX value used by the fixture (since some have
-  inverted dimmers)."
-  [channels f]
-  (map #(build-dimmer-assigner % f) channels))
-
 (defn- build-parameterized-dimmer-effect
   "Returns an effect which assigns a dynamic value to all the supplied
   dimmers. If htp? is true, applies highest-takes-precedence (i.e.
@@ -140,7 +117,7 @@
                                   (or previous-assignment 0))))
             (fn [show snapshot target previous-assignment]
               (clamp-rgb-int (master-scale master (params/resolve-param level show snapshot)))))
-        assigners (build-dimmer-assigners channels f)]
+        assigners (chan-fx/build-raw-channel-assigners channels f)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
 (defn dimmer-effect
