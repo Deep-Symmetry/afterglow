@@ -91,6 +91,10 @@
   assumed; you can pass a value of `:8-channel` for `mode` if you are
   using it that way.
 
+  The standard orientation to hang this fixture is with the Chauvet
+  logo and LED upright and facing the audience, but tilted up and away
+  from them at a 45 degree angle.
+
   This was created by Afterglow from the QLC+ Fixture Definintion
   (.qxf) file, and heavily revised by James Elliott.
 
@@ -165,8 +169,8 @@
                                     :range :variable}
                                240 :gobo-bounce))]
        (merge {:name "Chauvet Intimidator Scan LED 300"
-               :pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
-               :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
+               :pan-center 128 :pan-half-circle -256
+               :tilt-center 0 :tilt-half-circle -1024
                :mode mode}
               (case mode
                 :11-channel
@@ -223,6 +227,9 @@
   If you do not specify a mode when patching it, `:11-channel` is
   assumed; you can pass a value of `:6-channel` for `mode` if you are
   using it that way.
+
+  The standard orientation for this fixture is hung with the Chauvet
+  label and LED indicator upside-down and facing towards the audience.
 
   This was created by Afterglow from the QLC+ Fixture Definintion
   (.qxf) file, and heavily revised by James Elliott.
@@ -285,12 +292,12 @@
                                     :var-label "CCW Speed"
                                     :range :variable}))]
        (merge {:name "Chauvet Intimidator Spot LED 150"
+               :pan-center 170 :pan-half-circle -85
+               :tilt-center 42 :tilt-half-circle 192
                :mode mode}
               (case mode
                 :11-channel
-                {:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
-                 :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
-                 :channels [(chan/pan 1 3)
+                {:channels [(chan/pan 1 3)
                             (chan/tilt 2 4)
                             (chan/fine-channel :pan-tilt-speed 5
                                                :function-name "Pan / Tilt Speed"
@@ -319,9 +326,7 @@
                                             (range 8 135 16) "Program"
                                             (range 136 255 16) "Sound Active")]}
                 :6-channel
-                {:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
-                 :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
-                 :channels [(chan/pan 1)
+                {:channels [(chan/pan 1)
                             (chan/tilt 2)
                             (build-color-wheel 3)
                             (build-shutter 4)
@@ -356,7 +361,7 @@
                               210 :sound-active)
               (chan/functions :strobe 2 0 nil
                               1 :strobe)  ; TODO: Measure speed, add scale-fn
-              (chan/dimmer 3)]  ; TODO: Manual implies this might be reversed? If so, what a pain.
+              (chan/dimmer 3 :inverted-from 1)]
    :name "Chauvet LED Techno Strobe"})
 
 (defn led-techno-strobe-rgb
@@ -381,7 +386,7 @@
               (chan/color 4 :blue)
               (chan/functions :strobe 5 0 nil
                               1 :strobe)  ; TODO: Measure speed, add scale-fn
-              (chan/dimmer 6)]
+              (chan/dimmer 6 :inverted-from 0)]
    :name "Chauvet LED Techno Strobe RGB"})
 
 (defn scorpion-storm-fx-rgb
@@ -528,7 +533,11 @@
   This fixture can be configured to use either 9 or 12 DMX channels.
   If you do not specify a mode when patching it, `:12-channel` is
   assumed; you can pass a value of `:9-channel` for `mode` if you are
-  using it that way."
+  using it that way.
+
+  The standard hanging orientation is with the Chauvet label and LED
+  panel upside-down and facing the house-right wall (the positive X
+  axis direction)."
   {:doc/format :markdown}
   ([]
    (q-spot-160 :12-channel))
@@ -591,8 +600,8 @@
                                200 "Reset"
                                220 nil))]
        (merge {:name "Chauvet Q Spot 160"
-               :pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
-               :tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values
+               :pan-center 85 :pan-half-circle 85
+               :tilt-center 218 :tilt-half-circle -180
                :mode mode}
               (case mode
                 :12-channel
