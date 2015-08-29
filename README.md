@@ -375,7 +375,7 @@ full, using these two lines:
 
 ```clojure
 (show/add-effect! :color blue-cue)
-(show/add-effect! :dimmers (global-dimmer-cue 255))
+(show/add-effect! :dimmers (global-dimmer-effect 255))
 ```
 
 So if you happened to have the same fixtures hooked up, assigned the
@@ -392,7 +392,7 @@ set up a Universe with ID 1.
 (with-show sample-show
   (show/start!)
   (show/add-effect! :color blue-cue)
-  (show/add-effect! :dimmers (global-dimmer-cue 255)))
+  (show/add-effect! :dimmers (global-dimmer-effect 255)))
 ```
 
 > However, the examples namespace assumes you are just using one,
@@ -412,7 +412,7 @@ set up a Universe with ID 1.
 We can make the lights a little dimmer...
 
 ```clojure
-(show/add-effect! :dimmers (global-dimmer-cue 200))
+(show/add-effect! :dimmers (global-dimmer-effect 200))
 ```
 
 > Adding a function with the same keyword as an existing function
@@ -465,8 +465,8 @@ Let’s get a little fancy and ramp the dimmers up on a sawtooth curve each beat
 
 ```clojure
 (show/add-effect! :dimmers
-                  (global-dimmer-cue (params/build-oscillated-param
-                                     (oscillators/sawtooth-beat))))
+                  (global-dimmer-effect (params/build-oscillated-param
+                                        (oscillators/sawtooth-beat))))
 ```
 
 Slow that down a little:
