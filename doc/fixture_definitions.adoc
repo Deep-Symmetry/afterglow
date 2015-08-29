@@ -671,10 +671,20 @@ http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-dimmer[aftergl
 returns a specification for a channel that controls the dimmer of a
 fixture or head. It always takes at least one argument, the channel
 `offset` (as described <<channel-offset,above>>). If the fixture uses
-two-byte values for more precise dimmer control, pass the offset of
-the channel that controls the most-significant byte as the `offset`
-argument, and pass the offset of the channel that controls the
-least-significant byte as the second argument, `fine-offset`.
+two-byte values for more precise dimmer control, use the
+most-significant byte as the `offset` value, and pass the offset of
+least-significant byte using the optional keyword argument
+`:fine-offset`.
+
+Normal dimmers are dark at zero, and get brighter as the channel value
+increases, to a maximum brightness at 255. However, some fixtures have
+inverted dimmers. If that is the case for the fixture you are
+defining, pass the DMX value at which the inversion takes place with
+`:inverted-from`. For example, fixtures which are brightest at zero
+and darken as the value approaches 255 would be specified as
+`:inverted-from 0`, while fixtures which are dark at zero, jump to
+maximum brightness at 1, then dim as the value grows towards 255 would
+be specified as `:inverted-from 1`.
 
 ==== Focus Channels
 
