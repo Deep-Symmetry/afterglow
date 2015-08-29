@@ -310,6 +310,7 @@
   the offset of the channel containing the most-significant byte in
   `offset`, and specify the offset of the channel containing the
   least-significant byte with `:fine-offset`."
+  {:doc/format :markdown}
   [offset & {:keys [inverted-from fine-offset]}]
   (merge (fine-channel :dimmer offset :fine-offset fine-offset :range-label "Intensity")
          (when inverted-from
