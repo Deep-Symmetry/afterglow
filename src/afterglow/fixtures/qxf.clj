@@ -44,7 +44,7 @@
   channel, emit a function which defines it at the specified offsets."
   [specs offset fine-offset]
   (when (and (= "Intensity" (:group specs)) (re-find #"(?i)dimmer" (:name specs)))
-    (str "(chan/dimmer " offset (when fine-offset (str " " fine-offset)) ")")))
+    (str "(chan/dimmer " offset (when fine-offset (str " :fine-offset " fine-offset)) ")")))
 
 (defn- define-named-channel
   "If the supplied channel specification map seems to be another type

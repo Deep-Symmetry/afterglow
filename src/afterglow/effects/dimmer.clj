@@ -1,6 +1,6 @@
 (ns afterglow.effects.dimmer
   "Effects pipeline functions for working with dimmer channels for
-  fixtures and heads. Dimmer cues are always tied to a _master_
+  fixtures and heads. Dimmer effects are always tied to a _master_
   chain, which can scale back the maximum allowable value for that
   dimmer channel, as a percentage. Unless otherwise specified, the
   dimmer cue will be attached to the show grand master, but you can
@@ -20,10 +20,10 @@
 
   Some fixtures have damping functions that slow down their dimmer
   response, so you may not get the kind of coordination you would like
-  from dimmer-oscillator cues. The recommended best practice is to use
-  the dimmer channels as a maximum brightness level to allow tweaking
-  the overall brightness of an effect, and using the lightness
-  attribute of a color cue to create time-varying brightness effects."
+  from oscillated dimmer cues. A potential workaround is to use the
+  dimmer channels as a maximum brightness level to allow tweaking the
+  overall brightness of an effect, and using the lightness attribute
+  of a color cue to create time-varying brightness effects."
   {:author "James Elliott"
    :doc/format :markdown}
   (:require [afterglow.channels :as channels]
@@ -101,6 +101,29 @@
   (let [initial-level (atom (clamp-percent-float level))]
     (Master. initial-level parent)))
 
+(defn- build-dimmer-assigner
+  "Returns an assigner which translates a logical dimmer value to the
+  actual DMX value used by the fixture (since some have inverted
+  dimmers)."
+  [channel f]
+  (if-let [pivot (:inverted-from channel)]
+    ;; We do need to invert the dimmer for values larger than the pivot
+    (letfn [(inverter [show snapshot target previous-assignment]
+               (let [assignment (f show snapshot target previous-assignment)]
+                 (if (< assignment pivot)
+                   assignment
+                   (- 255 (- assignment pivot)))))]
+      (chan-fx/build-channel-assigner channel inverter))
+    ;; This is an ordinary non-inverted dimmer channel
+    (chan-fx/build-channel-assigner channel f)))
+
+(defn- build-dimmer-assigners
+  "Returns a list of assigners which translate the logical dimmer
+  value to the actual DMX value used by the fixture (since some have
+  inverted dimmers)."
+  [channels f]
+  (map #(build-dimmer-assigner % f) channels))
+
 (defn- build-parameterized-dimmer-effect
   "Returns an effect which assigns a dynamic value to all the supplied
   dimmers. If htp? is true, applies highest-takes-precedence (i.e.
@@ -117,7 +140,7 @@
                                   (or previous-assignment 0))))
             (fn [show snapshot target previous-assignment]
               (clamp-rgb-int (master-scale master (params/resolve-param level show snapshot)))))
-        assigners (chan-fx/build-raw-channel-assigners channels f)]
+        assigners (build-dimmer-assigners channels f)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
 (defn dimmer-effect
@@ -142,29 +165,3 @@
       (build-parameterized-dimmer-effect (or effect-name (str "Dimmers=" label (when htp?) " (HTP)"))
                                          level *show* dimmers htp? master))))
 
-;; Deprecated now that you can pass an oscillated parameter to dimmer-effect
-(defn dimmer-oscillator
-  "*Deprecated* Returns an effect which drives the dimmer channels of
-  the supplied fixtures according to a supplied oscillator function
-  and the show metronome. If :htp? is true, use
-  highest-takes-precedence (i.e. compare to the previous assignment,
-  and let the higher value remain). Unless otherwise specified,
-  via :min and :max, ranges from 0 to 255. Returns a fractional value,
-  because that can be handled by channels with an associated fine
-  channel (commonly pan and tilt), and will be resolved in the process
-  of assigning the value to the DMX channels."
-  {:deprecated true}
-  [osc fixtures & {:keys [min max htp?] :or {min 0 max 255 htp? true}}]
-  {:pre [(valid-dmx-value? min) (valid-dmx-value? max) (< min max) (sequential? fixtures) (ifn? osc)]}
-  (let [range (long (- max min))
-        chans (channels/extract-channels fixtures #(= (:type %) :dimmer))
-        f (if htp?
-            (fn [show snapshot target previous-assignment]
-              (pspy :dimmer-oscillator-htp
-                    (let [phase (osc snapshot)
-                          new-level (+ min (* range phase))]
-                      (clojure.core/max new-level (or previous-assignment 0)))))
-            (fn [show snapshot target previous-assignment]
-              (pspy :dimmer-oscillator
-                    (+ min (* range (osc snapshot))))))]
-    (chan-fx/raw-channel-effect (str "Dimmer Oscillator " min "-" max (when htp? " (HTP)")) f chans)))

@@ -294,12 +294,26 @@
            :range range)))
 
 (defn dimmer
-  "A channel which controls a dimmer, with an optional second channel
-  for fine control."
-  ([offset]
-   (dimmer offset nil))
-  ([offset fine-offset]
-   (fine-channel :dimmer offset :fine-offset fine-offset :range-label "Intensity")))
+  "A channel which controls a dimmer.
+
+  Normal dimmers are dark at zero, and get brighter as the channel
+  value increases, to a maximum brightness at 255. However, some
+  fixtures have inverted dimmers. If that is the case, pass the DMX
+  value at which the inversion takes place with `:inverted-from`. For
+  example, fixtures which are brightest at zero and darken as the
+  value approaches 255 would be specified as `:inverted-from 0`, while
+  fixtures which are dark at zero, jump to maximum brightness at 1,
+  then dim as the value grows towards 255 would be specified as
+  `:inverted-from 1`.
+
+  If the fixture uses two-byte values for the dimmer level, pass
+  the offset of the channel containing the most-significant byte in
+  `offset`, and specify the offset of the channel containing the
+  least-significant byte with `:fine-offset`."
+  [offset & {:keys [inverted-from fine-offset]}]
+  (merge (fine-channel :dimmer offset :fine-offset fine-offset :range-label "Intensity")
+         (when inverted-from
+           {:inverted-from inverted-from})))
 
 (defn color
   "A channel which controls a color component. If `:hue` is supplied
