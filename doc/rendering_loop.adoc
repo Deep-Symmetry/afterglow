@@ -214,6 +214,23 @@ portion is converted to a least-significant byte and sent on the fine
 channel. If the channel does not have a fine channel attached to it,
 any fractional part of the assigned value is simply discarded.
 
+Channels can also be _inverted_, which means the DMX values are
+reversed from the value being assigned. This is needed to support some
+fixtures which have inverted dimmers, is established by the presence
+of an `:inverted-from` entry in the
+https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#inverted-channels[channel
+specification], and taken care of by
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.channel.html#var-apply-channel-value[apply-channel-value],
+which is invoked by the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.channel.html#var-channel-assignment-resolver[channel]
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-resolution-handlers[resolution
+handler], so channel assigners do not need to worry about this detail,
+and can always work in terms of non-inverted channel values. (This is
+important, for example, when implementing highest-takes-precedence
+rules for a dimmer channel. Bigger numbers will always mean brighter,
+even if at the last step before sending them to the fixture they are
+inverted because of the nature of the channel.)
+
 [[function-assigners]]
 === Function Assigners
 

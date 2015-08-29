@@ -421,6 +421,18 @@ channels.
  or cue. Because of that, the channel creation functions add a
  function map even when you are creating a single-function channel.
 
+|:inverted-from
+
+[[inverted-channels]]
+|If this key is present, the value established by the channel's
+https://github.com/brunchboy/afterglow/blob/master/doc/rendering_loop.adoc#channel-assigners[assigners]
+will be
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.channel.html#var-apply-channel-value[reversed]
+when it is sent to the fixture. This is necessary to support fixtures which have inverted dimmer channels,
+and can be configured when
+https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#dimmer-channels[creating]
+the dimmer channel specification.
+
 |===
 
 === Head Specifications
