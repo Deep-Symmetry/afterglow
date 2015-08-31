@@ -666,7 +666,16 @@ encounter them!
     different implementations?
   - [ ] Have effects pass a context map to children with show,
     snapshot, own stuff? For example, so the children can be aware of
-    build, duration, a shared palette, other things?
+    build, duration, a shared palette, other things? Or better, since
+    snapshot is already passed, just add a usually-nil section which
+    contains information about context, with at least information
+    about when overall effect started; current fade level of this
+    effect, fading in or out, when effect will end.
+  - [ ] Effects which can do their own blending implement an
+    additional interface. Otherwise the fade and cue list effects (if
+    they are different), handle it. To fade between direction effects,
+    convert them to pan/tilt numbers, scale between those, then
+    convert back to a direction.
 - [ ] Provide a mechanism for creating and controlling/monitoring
   effects via OSC messages. Probably essentially a special-purpose OSC
   REPL.
