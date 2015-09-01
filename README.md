@@ -670,9 +670,11 @@ encounter them!
     snapshot is already passed, just add a usually-nil section which
     contains information about context, with at least information
     about when overall effect started; current fade level of this
-    effect, fading in or out, when effect will end.
+    effect, fading in or out, when effect will end. Even better: This
+    can be assoc-ed on to the snapshot, without changing the
+    definition in rhythm.clj, since Clojure records are also maps!
   - [ ] Effects which can do their own blending implement an
-    additional interface. Otherwise the fade and cue list effects (if
+    additional interface. Otherwise the fade and chase effects (if
     they are different), handle it. To fade between direction effects,
     convert them to pan/tilt numbers, scale between those, then
     convert back to a direction.
