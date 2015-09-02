@@ -658,7 +658,8 @@ encounter them!
       sensible errors when constituent cues can no longer be found.
 - [ ] Compound effects:
   - [ ] Simplest compound effect just delegates to nested effects,
-    returning concatenated assigners.
+    returning concatenated assigners. But implement as a fade with
+    time zero?
   - [ ] Fade compound effect: fade in at start, out at end.
   - [ ] Cue list compound effect: Move through list of embedded
     effects, with optional fades. Loops, driven by metronome, or a
@@ -710,7 +711,7 @@ encounter them!
   https://pcm.peabody.jhu.edu/~gwright/stdmp/docs/writingmaxexternalsinjava.pdf
   https://docs.cycling74.com/max7/tutorials/jitterchapter51
   https://docs.cycling74.com/max7/vignettes/packages
-- [ ] Separate, or at least document clearly, how to use the low-level
+- [x] Separate, or at least document clearly, how to use the low-level
   OLA communication tools, for the benefit of people interested in
   their own implementations.
   

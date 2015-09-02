@@ -83,25 +83,30 @@
   element they affect, sorted in priority order under those keys."
   [show snapshot]
   (pspy :gather-assigners
-        (reduce (fn [altered-map assigner]
-                  (let [key-path [(:kind assigner) (:target-id assigner)]]
-                    (assoc-in altered-map key-path (conj (get-in altered-map key-path []) assigner))))
-                {}
-                (apply concat (cp/pmap @(:pool show) #(fx/generate % show snapshot)
-                                       (:effects @(:active-effects show)))))))
+        (loop [assigners (apply concat (cp/pmap @(:pool show) #(fx/generate % show snapshot)
+                                                (:effects @(:active-effects show))))
+               results {}]
+          (if (empty? assigners)
+            results
+            (let [assigner (first assigners)]
+              (recur (rest assigners)
+                     (update-in results [(:kind assigner) (:target-id assigner)] (fnil conj []) assigner)))))))
 
 (defn- run-assigners
   "Returns a tuple of the target to be assigned, the target ID of the
   assigner, and the final value for that target, after iterating over
-  an assigner list."
+  an assigner list that was gathered for a particular target ID."
   [show snapshot assigners]
   (pspy :run-assigners
-        (reduce (fn [result-so-far assigner]
-                  [(:target assigner) (:target-id assigner)
-                   (fx/assign assigner show snapshot (:target assigner)
-                              (get result-so-far 2))])
-                []
-                assigners)))
+        (when (seq assigners)
+          (let [target (:target (first assigners))
+                assignment (loop [assigners-left assigners
+                                  result nil]
+                             (if (empty? assigners-left)
+                               result
+                               (recur (rest assigners-left)
+                                      (fx/assign (first assigners-left) show snapshot target result))))]
+            [target (:target-id (first assigners)) assignment]))))
 
 (declare end-effect!)
 
