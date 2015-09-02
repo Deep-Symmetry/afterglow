@@ -128,9 +128,12 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
   constituent effects try to assign to the same target, the later ones
   will have a chance to override or blend with the earlier ones."
   [scene-name & effects]
-  (Effect. scene-name
-           (fn [show snapshot]
-             (reduce (fn [result current] (or (still-active? current show snapshot) result)) false effects))
-           (fn [show snapshot] (mapcat #(generate % show snapshot) effects))
-           (fn [show snapshot]
-             (reduce (fn [result current] (and (end current show snapshot) result)) true effects))))
+  (let [active (atom effects)]
+    (Effect. scene-name
+             (fn [show snapshot]
+               (swap! active (fn [fx] (filterv #(still-active? % show snapshot) fx)))
+               (seq @active))
+             (fn [show snapshot] (mapcat #(generate % show snapshot) @active))
+             (fn [show snapshot]
+               (swap! active (fn [fx] () (filterv #(not (end % show snapshot)) fx)))
+               (empty? @active)))))
