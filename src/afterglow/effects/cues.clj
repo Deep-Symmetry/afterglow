@@ -1,4 +1,13 @@
 (ns afterglow.effects.cues
+  "Cues provide a user interface for controlling effects, by
+  associating them with cells in a cue grid so they can be easily
+  triggered and monitored, either through a physical grid controller,
+  or the web show control interface. They also provide a way of
+  binding cue variables to effect parameters, which can enable
+  controller interfaces to adjust them, and of tying those variables
+  to velocity and pressure sensitivity on physical grid controllers
+  which have such capabilities."
+  {:author "James Elliott"}
   (:require [afterglow.controllers :as controllers]
             [afterglow.effects.channel :as chan]
             [afterglow.effects.params :as params]
