@@ -38,27 +38,26 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
       "Arrange to finish as soon as possible; return true if can end immediately."))))
 
 
-;; So...
+;; See https://github.com/brunchboy/afterglow/blob/master/doc/rendering_loop.adoc#assigners
 ;;
-;; We are going to have types of assigners: :channel, :head-color, :head-rotation. Each will be
-;; associated with some kind of target. Channel: :u<universe-id>-c<channel-number> Head-related
-;; ones: :h<head-id>. We will run through the list of effects in priority order; each will
-;; spit out some number of assigners, which are a tuple:
+;; Afterglow runs through the list of effects in priority order; each will spit out some
+;; number of assigners, which are a tuple:
 (defrecord Assigner [^clojure.lang.Keyword kind ^clojure.lang.Keyword target-id target ^clojure.lang.IFn f]
   IAssigner
   (assign [this show snapshot target previous-assignment]
     (f show snapshot target previous-assignment)))
 
-;; We will gather these into a map, whose keys are the assigner kind, and whose values, in turn,
-;; are maps of assigners of that kind. Each key in the inner map is a target for which values are
+;; We will gather these into a map, whose keys are the assigner kind, and whose values, in turn, are
+;; maps of assigners of that kind. Each key in the inner map is a target ID for which values are
 ;; to be assigned, and the values are the priority-ordered list of assigners to run on that target.
 ;; On each DMX frame we will run through these lists in parallel, and determine the final assignment
 ;; value which results for each target. Finally, once that is done, the resulting assignments will be
 ;; resolved to DMX values by calling these:
 
 #_(defprotocol IAssignmentResolver
-  "Translates an attribute assignment (color, attitude, channel value) for an element of a light show
-  to the actual DMX values that will implement it."
+  "Translates an attribute assignment (e.g. color, direction, channel
+  value) for an element of a light show to the actual DMX values that
+  will implement it."
   (resolve-assignment [this show buffers target snapshot assignment]
     "Translate the assignment to appropriate setting for target DMX channels."))
 
@@ -120,3 +119,18 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
   [kind heads param show]
   (let [snapshot (rhythm/metro-snapshot (:metronome show))]
     (map #(build-head-parameter-assigner kind % param show snapshot) heads)))
+
+(defn scene
+  "Scenes are a way to group a list of effects to run as a single
+  effect. All of their assigners are combined into a single list, in
+  the order in which the effects were added to the scene. Because of
+  the way Afterglow evaluates assigners, that means that if any
+  constituent effects try to assign to the same target, the later ones
+  will have a chance to override or blend with the earlier ones."
+  [scene-name & effects]
+  (Effect. scene-name
+           (fn [show snapshot]
+             (reduce (fn [result current] (or (still-active? current show snapshot) result)) false effects))
+           (fn [show snapshot] (mapcat #(generate % show snapshot) effects))
+           (fn [show snapshot]
+             (reduce (fn [result current] (and (end current show snapshot) result)) true effects))))
