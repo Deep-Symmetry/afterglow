@@ -352,6 +352,29 @@ examples of how Afterglow can be used to create new things, and we
 hope that people will contribute their own effects for inclusion in
 future releases.
 
+==== Scenes
+
+The simplest way to build a complex effect is to combine a group of
+effects into one which can be started and stopped as a unit. That is
+the purpose of the `scene` function in the `afterglow.effects`
+namespace. It takes a name for the scene to be created, followed by
+one or more effects to be grouped, and returns an effect which
+combines them all under that name:
+
+[source,clojure]
+----
+(show/add-effect! :color
+  (afterglow.effects/scene "Blue Sparks"
+    (afterglow.examples/global-color-effect :blue)
+    (fun/sparkle (show/all-fixtures) :chance 0.07 :fade-time 500)))
+----
+
+Assuming you are running the sample show and have the dimmers up,
+you'll see all the lights turn blue, and a random pattern of white
+<<effects#sparkle,sparkles>> twinkling across them. Ending the scene
+effect will end both underlying effects in a coordinated fashion (the
+blue color effect will linger as the last sparkles fade out).
+
 ==== Color Cycle Chases
 
 This family of related effects are an excellent illustration of why
