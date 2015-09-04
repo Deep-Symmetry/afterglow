@@ -11,3 +11,4 @@ pom.xml.asc
 .hgignore
 .hg/
 logs/*.log*
+research
