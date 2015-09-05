@@ -19,7 +19,7 @@
                  [overtone/midi-clj "0.5.0"]
                  [overtone/osc-clj "0.9.0"]
                  [amalloy/ring-buffer "1.2"]
-                 [com.climate/claypoole "1.0.0"]
+                 [com.climate/claypoole "1.1.0"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
                  [ola-clojure "0.1.0"]
                  [selmer "0.9.1"]

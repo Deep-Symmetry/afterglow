@@ -151,22 +151,19 @@
   the DMX buffers for its universes, and the metronome snapshot
   reflecting the current instant, for effects to reference."
   [show buffers snapshot]
-  (p :clear-buffers (doseq [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
+  (p :clear-buffers (cp/pdoseq @(:pool show) [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
   (p :clean-finished-effects (let [indexed (cp/pmap @(:pool show)
                                                     vector (range) (:effects @(:active-effects show)))]
-                               ;; TODO: This doseq + cp/upfor pair can be replaced with cp/pdoseq once
-                               ;;       Claypoole cuts a release which includes it.
-                               (doseq [_ (cp/upfor @(:pool show) [[index effect] indexed]
-                                                   (when-not (fx/still-active? effect show snapshot)
-                                                     (end-effect! (:key (get (:meta @(:active-effects show)) index))
-                                                                  :force true)))])))
+                               (cp/pdoseq @(:pool show) [[index effect] indexed]
+                                          (when-not (fx/still-active? effect show snapshot)
+                                            (end-effect! (:key (get (:meta @(:active-effects show)) index))
+                                                         :force true)))))
   (let [all-assigners (gather-assigners show snapshot)]
     (doseq [kind resolution-order]
-      ;; TODO: This next can also be simplified once cp/pdoseq is available
-      (doseq [_ (cp/upfor @(:pool show) [assigners (vals (get all-assigners kind))]
-                          (let [assignment (run-assigners show snapshot assigners)]
-                            (when (some? (:value assignment)) ; If assigner returned nil value, it wants to be skipped
-                              (p :resolve-value (fx/resolve-assignment assignment show snapshot buffers)))))])))
+      (cp/pdoseq @(:pool show) [assigners (vals (get all-assigners kind))]
+                 (let [assignment (run-assigners show snapshot assigners)]
+                   (when (some? (:value assignment)) ; If assigner returned nil value, it wants to be skipped
+                     (p :resolve-value (fx/resolve-assignment assignment show snapshot buffers)))))))
   (p :send-dmx-data (doseq [universe (keys buffers)]
                       (let [levels (get buffers universe)]
                         (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} response-handler))))
@@ -174,14 +171,14 @@
   (swap! (:statistics *show*) update-stats (:instant snapshot) (:refresh-interval show)))
 
 (defn add-frame-fn!
-  "Arranges for the supplied function to be called when Afterglow is
-  going to sleep prior to rendering the next frame of lighting
-  effects. The function will be given the metronome snapshot that will
-  be in effect when the next frame gets rendered, so that it can
-  preconfigure anything needed for the rendering process. This is
-  used, for example, to allow afterglow-max patchers to set show
-  variables for the next frame, since they cannot be queried directly
-  during the rendering process."
+  "Arranges for the supplied function to be called when the Afterglow
+  rendering loop is going to sleep prior to rendering the next frame
+  of lighting effects. The function will be given the metronome
+  snapshot that will be in effect when the next frame gets rendered,
+  so that it can preconfigure anything needed for the rendering
+  process. This is used, for example, to allow afterglow-max patchers
+  to set show variables for the next frame, since they cannot be
+  queried directly during the rendering process."
   [f]
   {:pre [(some? *show*) (fn? f)]}
   (swap! (:frame-fns *show*) conj f)
