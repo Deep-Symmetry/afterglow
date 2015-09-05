@@ -154,17 +154,19 @@
   (p :clear-buffers (doseq [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
   (p :clean-finished-effects (let [indexed (cp/pmap @(:pool show)
                                                     vector (range) (:effects @(:active-effects show)))]
-                               ;; TODO: If I really want this parallelized, the doseq matters more, no?
-                               (doseq [[index effect] indexed]
-                                 (when-not (fx/still-active? effect show snapshot)
-                                   (end-effect! (:key (get (:meta @(:active-effects show)) index)) :force true)))))
+                               ;; TODO: This doseq + cp/upfor pair can be replaced with cp/pdoseq once
+                               ;;       Claypoole cuts a release which includes it.
+                               (doseq [_ (cp/upfor @(:pool show) [[index effect] indexed]
+                                                   (when-not (fx/still-active? effect show snapshot)
+                                                     (end-effect! (:key (get (:meta @(:active-effects show)) index))
+                                                                  :force true)))])))
   (let [all-assigners (gather-assigners show snapshot)]
     (doseq [kind resolution-order]
-      (doseq [assigners (vals (get all-assigners kind))]
-        ;; TODO: This can be parallelized because the targets are different!
-        (let [assignment (run-assigners show snapshot assigners)]
-          (when (some? (:value assignment)) ; If the assigner returned a nil value, it wants to be skipped
-            (p :resolve-value (fx/resolve-assignment assignment show snapshot buffers)))))))
+      ;; TODO: This next can also be simplified once cp/pdoseq is available
+      (doseq [_ (cp/upfor @(:pool show) [assigners (vals (get all-assigners kind))]
+                          (let [assignment (run-assigners show snapshot assigners)]
+                            (when (some? (:value assignment)) ; If assigner returned nil value, it wants to be skipped
+                              (p :resolve-value (fx/resolve-assignment assignment show snapshot buffers)))))])))
   (p :send-dmx-data (doseq [universe (keys buffers)]
                       (let [levels (get buffers universe)]
                         (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} response-handler))))
