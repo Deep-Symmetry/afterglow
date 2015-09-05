@@ -144,3 +144,21 @@
             [channel function-spec] (get (:color-wheel-hue-map target) found)]
         (when (< (math/abs (- (colors/hue resolved) found)) (:color-wheel-hue-tolerance @(:variables show) 60))
           (chan-fx/apply-channel-value buffers channel (chan-fx/function-percentage-to-dmx 50 function-spec)))))))
+
+(def ^:private default-color
+  "The color to mix with when fading from a non-assignment."
+  (colors/create-color :black))
+
+;; Fades between two color assignments to a fixture or head.
+(defmethod fx/fade-between-assignments :color [from-assignment to-assignment fraction show snapshot]
+  (cond (<= fraction 0) from-assignment
+        (>= fraction 1) to-assignment
+        ;; We are blending, so we need to resolve any remaining dynamic parameters now, and make sure
+        ;; fraction really does only range between 0 and 1, then convert it to the percentage wanted by
+        ;; the colors library.
+        :else (let [target (:target from-assignment)
+                    from-resolved (params/resolve-param (:value from-assignment default-color) show snapshot target)
+                    to-resolved (params/resolve-param (:value to-assignment default-color) show snapshot target)
+                    weight (* 100 (colors/clamp-unit-float fraction))]
+                ;; Weight goes in the opposite direction you might expect, so the following order works:
+                (colors/mix to-resolved from-resolved weight))))

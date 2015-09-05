@@ -9,7 +9,7 @@
             [afterglow.show-context :refer [*show*]]
             [afterglow.util :refer [ubyte]]
             [clojure.math.numeric-tower :as math]
-            [com.evocomputing.colors :refer [clamp-percent-float clamp-rgb-int]])
+            [com.evocomputing.colors :refer [clamp-percent-float clamp-unit-float clamp-rgb-int]])
   (:import (afterglow.effects Assigner Effect)))
 
 (defn apply-channel-value
@@ -99,6 +99,18 @@
   ;; Resolve in case it is frame dynamic
   (let [resolved (clamp-rgb-int (params/resolve-param (:value assignment) show snapshot))]
     (apply-channel-value buffers (:target assignment) resolved)))
+
+;; Fades between two assignments to a channel; often you won't want to do this, so fade effects should
+;; probably default to excluding channel assigners unless the show developer has explicitly requested them.
+(defmethod fx/fade-between-assignments :channel [from-assignment to-assignment fraction show snapshot]
+  (cond (<= fraction 0) from-assignment
+        (>= fraction 1) to-assignment
+        ;; We are blending, so we need to resolve any remaining dynamic parameters now, and make sure
+        ;; fraction really does only range between 0 and 1.
+        :else (let [from-resolved (clamp-rgb-int (params/resolve-param (:value from-assignment 0) show snapshot))
+                    to-resolved (clamp-rgb-int (params/resolve-param (:value to-assignment 0) show snapshot))
+                    fraction (clamp-unit-float fraction)]
+                (+ (* fraction to-resolved) (* (- 1.0 fraction) from-resolved)))))
 
 (defn build-head-function-assigner
   "Returns a function assigner which applies the specified assignment

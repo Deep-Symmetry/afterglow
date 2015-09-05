@@ -15,33 +15,51 @@
   _PROTOCOLS_
   (do
     (defprotocol IAssigner
-  "Assign some attribute (color, attitude, channel value) to an element of a light show at a given
-  point in time. Any previous assignment to this element will be supplied as an argument, and may
-  be tweaked or ignored as needs dictate. The target will be a subtree of the show's fixtures,
-  currently either a head or channel."
+  "Assign some attribute (color, attitude, channel value) to an
+  element of a light show at a given point in time. Any previous
+  assignment to this element will be supplied as an argument, and may
+  be tweaked or ignored as needs dictate. The target will be a subtree
+  of the show's fixtures, currently either a head or channel."
   (assign [this show ^MetronomeSnapshot snapshot target previous-assignment]
-    "Calculate the value the show element should have at this moment in time. Return a value
-appropriate for the kind of assignment, e.g. color object, channel value."))    
+    "Calculate the value the show element should have at this moment
+  in time. Return a value appropriate for the kind of assignment, e.g.
+  color object, channel value."))
 
 ;; At each DMX frame generation, we will run through all the effects and ask them if they are still
 ;; active. If not, they will be removed from the list of active effects. For the remaining ones,
 ;; we obtain a list of assignments they want to make, and handle them as described above.
 (defprotocol IEffect
-    "Generates a list of assignments that should be in effect at a given moment in the show.
-  Can eventually end on its own, or be asked to end. When asked, may end immediately, or after
-  some final activity, such as a fade."
-    (still-active? [this show snapshot]
-      "Check whether this effect is finished, and can be cleaned up.")
-    (generate [this show snapshot]
-      "List the asignments needed to implement the desired effect at this moment in time.")
-    (end [this show snapshot]
-      "Arrange to finish as soon as possible; return true if can end immediately."))))
-
+    "The effect is the basic building block of an Afterglow light show.
+  It generates a list of assignments that should be in effect at a
+  given moment in the show. It can end on its own, or be asked to end.
+  When asked, it may end immediately, or after some final activity,
+  such as a fade."
+    (^{:doc/format :markdown} still-active? [this show snapshot]
+      "An inquiry about whether this effect is finished, and can be
+      cleaned up. A `false` return value will remove the effect from
+      the show.")
+    (^{:doc/format :markdown} generate [this show snapshot]
+      "List the asignments needed to implement the desired effect at
+      this moment in time. Must return a sequence of
+      `afterglow.effects.Assigner` objects which will be merged into
+      the current frame based on their kind, target, and the effect's
+      priority. If the effect currently has nothing to contribute, it
+      may return an empty sequence.")
+    (^{:doc/format :markdown} end [this show snapshot]
+      "The effect has been asked to end. It should arrange to finish
+      as soon as possible; return `true` if it can end immediately,
+      and it will be removed from the show. Otherwise it will be
+      allowed to continue running as it performs its graceful shutdown
+      until [[still-active?]] reuthrns `false`. If the user asks to
+      end the effect a second time during htis process, however, it
+      will simply be removed from the show at that time."))))
+(alter-meta! #'IEffect assoc :doc/format :markdown)
 
 ;; See https://github.com/brunchboy/afterglow/blob/master/doc/rendering_loop.adoc#assigners
 ;;
 ;; Afterglow runs through the list of effects in priority order; each will spit out some
-;; number of assigners, which are a tuple:
+;; number of assigners, which are a tuple identifying what is to be assigned, and a function
+;; that can do the assigning, when provided with the show and current metronome snapshot:
 (defrecord Assigner [^clojure.lang.Keyword kind ^clojure.lang.Keyword target-id target ^clojure.lang.IFn f]
   IAssigner
   (assign [this show snapshot target previous-assignment]
@@ -51,8 +69,7 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
 ;; maps of assigners of that kind. Each key in the inner map is a target ID for which values are
 ;; to be assigned, and the values are the priority-ordered list of assigners to run on that target.
 ;; On each DMX frame we will run through these lists in parallel, and determine the final assignment
-;; value which results for each target.
-
+;; value which results for each target:
 (defrecord Assignment [^clojure.lang.Keyword kind ^clojure.lang.Keyword target-id target value])
 
 ;; Finally, once that is done, the resulting assignments will be
@@ -66,6 +83,9 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
   (fn [assignment show snapshot buffers]
     (:kind assignment)))
 
+;; The effect is the basic building block of a light show. It has a name, which can appear in
+;; the user interface for interacting with the effect, and three functions which are called
+;; with the show and current metronome snapshot, as specified by the IEffect interface above.
 (defrecord Effect [^String name ^clojure.lang.IFn active-fn
                    ^clojure.lang.IFn gen-fn ^clojure.lang.IFn end-fn]
   IEffect
@@ -77,12 +97,17 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
     (end-fn show snapshot)))
 
 (defn always-active
-  "An effect still-active? predicate which simply always returns true."
+  "An implementation of [[still-active?]] which simply always returns
+  `true`, useful for effects which run until you ask them to end."
+  {:doc/format :markdown}
   [show snapshot]
   true)
 
 (defn end-immediately
-  "An effect end function which simply says the effect is now finished."
+  "An implementation of [[end]] which just reports that the effect
+  is now finished by returning `true`. Useful for effects which can
+  simply be removed as soon as they are asked to end."
+  {:doc/format :markdown}
   [show snapshot]
   true)
 
@@ -131,3 +156,41 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
              (fn [show snapshot]
                (swap! active (fn [fx] () (filterv #(not (end % show snapshot)) fx)))
                (empty? @active)))))
+
+(defmulti fade-between-assignments
+  "Calculates an intermediate value between two attribute assignments
+  of the same kind (e.g. color, direction, channel value) for an
+  element of a light show. The amount contributed by each assignment
+  is controlled by `fraction`, which can range from `0` (or less),
+  meaning that only `from-assignment` is considered, to `1` (or
+  greater), meaning that `to-assignment` is simply returned.
+  Intermediate values will ideally result in a blend between the two
+  assignments, with `0.5` representing an equal contribution from
+  each. Since the value of the assignments may still be dynamic
+  parameters, the show and snapshot might be needed to resolve them in
+  order to calculate the blended value. Some kinds of assignment may
+  not support blending, in which case the default implementation will
+  simply switch from `from-assignment` to `to-assignment` once
+  `fraction` reaches `0.5`."
+  (fn [from-assignment to-assignment fraction show snapshot]
+    (:kind from-assignment)))
+(alter-meta! #'fade-between-assignments assoc :doc/format :markdown)
+
+;; Provide a basic fallback implementation for assignment types which do not support blending.
+;; This will switch from the first to the second assignment once fraction crosses the halfway
+;; point.
+(defmethod fade-between-assignments :default [from-assignment to-assignment fraction _ _]
+  (if (< fraction 0.5)
+    from-assignment
+    to-assignment))
+
+(defn fade-assignment
+  "Fades a single assignment to or from nothing. If `fraction` is `0` (or less),
+  `nil` is returned; if it is `1` (or greater), `assignment` is
+  returned unchanged. Intermediate values will scale the value towards
+  its default state (such as black for a color, zero for a channel,
+  etc)."
+  {:doc/format :markdown}
+  [assignment fraction]
+  ;; TODO: Write; to blend, just copy the assignment with a nil :value, and call fade-between-assignments.
+  )
