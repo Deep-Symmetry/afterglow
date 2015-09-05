@@ -51,8 +51,15 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
 ;; maps of assigners of that kind. Each key in the inner map is a target ID for which values are
 ;; to be assigned, and the values are the priority-ordered list of assigners to run on that target.
 ;; On each DMX frame we will run through these lists in parallel, and determine the final assignment
-;; value which results for each target. Finally, once that is done, the resulting assignments will be
+;; value which results for each target.
+
+(defrecord Assignment [^clojure.lang.Keyword kind ^clojure.lang.Keyword target-id target value])
+
+;; Finally, once that is done, the resulting assignments will be
 ;; resolved to DMX values by calling these:
+
+#_(defmulti resolve-assignment
+  "Translates an attribute assignment")
 
 #_(defprotocol IAssignmentResolver
   "Translates an attribute assignment (e.g. color, direction, channel

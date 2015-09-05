@@ -44,7 +44,7 @@
             overtone.midi
             [taoensso.timbre :as timbre :refer [error]]
             [taoensso.timbre.profiling :refer [p profile pspy]])
-  (:import afterglow.effects.Effect
+  (:import [afterglow.effects Effect Assignment]
            afterglow.effects.dimmer.Master
            afterglow.rhythm.Metronome
            com.google.protobuf.ByteString))
@@ -93,20 +93,20 @@
                      (update-in results [(:kind assigner) (:target-id assigner)] (fnil conj []) assigner)))))))
 
 (defn- run-assigners
-  "Returns a tuple of the target to be assigned, the target ID of the
-  assigner, and the final value for that target, after iterating over
-  an assigner list that was gathered for a particular target ID."
+  "Returns the final assignment value that results from iterating over
+  an assigner list that was gathered for a particular target ID,
+  feeding each intermediate result to the next assigner in the chain."
   [show snapshot assigners]
   (pspy :run-assigners
         (when (seq assigners)
-          (let [target (:target (first assigners))
+          (let [{:keys [kind target-id target]} (first assigners)
                 assignment (loop [assigners-left assigners
                                   result nil]
                              (if (empty? assigners-left)
                                result
                                (recur (rest assigners-left)
                                       (fx/assign (first assigners-left) show snapshot target result))))]
-            [target (:target-id (first assigners)) assignment]))))
+            (Assignment. kind target-id target assignment)))))
 
 (declare end-effect!)
 
@@ -169,9 +169,10 @@
   (let [all-assigners (gather-assigners show snapshot)]
     (doseq [[kind handler] resolution-handlers]
       (doseq [assigners (vals (get all-assigners kind))]
-        (let [[target target-id value] (run-assigners show snapshot assigners)]
-          (when (some? value) ; If the assigner returned nil, it wants to be skipped
-            (p :resolve-value (handler show buffers snapshot target value target-id)))))))
+        (let [assignment (run-assigners show snapshot assigners)]
+          (when (some? (:value assignment)) ; If the assigner returned a nil value, it wants to be skipped
+            (p :resolve-value (handler show buffers snapshot (:target assignment) (:value assignment)
+                                       (:target-id assignment))))))))
   (p :send-dmx-data (doseq [universe (keys buffers)]
                       (let [levels (get buffers universe)]
                         (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} response-handler))))
