@@ -4,7 +4,7 @@
   (:require [afterglow.channels :as channels]
             [afterglow.controllers :as ct]
             [afterglow.effects.params :as params]
-            [afterglow.effects :refer [always-active end-immediately]]
+            [afterglow.effects :as fx :refer [always-active end-immediately]]
             [afterglow.rhythm :as rhythm]
             [afterglow.show-context :refer [*show*]]
             [afterglow.util :refer [ubyte]]
@@ -94,12 +94,11 @@
   (let [assigners (build-raw-channel-assigners channels f)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
-(defn channel-assignment-resolver
-  "Resolves the assignment of a level to a single DMX channel."
-  [show buffers snapshot target assignment _]
+;; Resolves the assignment of a level to a single DMX channel.
+(defmethod fx/resolve-assignment :channel [assignment show snapshot buffers]
   ;; Resolve in case it is frame dynamic
-  (let [resolved (clamp-rgb-int (params/resolve-param assignment show snapshot))]
-    (apply-channel-value buffers target resolved)))
+  (let [resolved (clamp-rgb-int (params/resolve-param (:value assignment) show snapshot))]
+    (apply-channel-value buffers (:target assignment) resolved)))
 
 (defn build-head-function-assigner
   "Returns a function assigner which applies the specified assignment
@@ -214,13 +213,12 @@
                                        percent))]
     (math/round (+ (:start function-spec) (* (/ percent 100) range)))))
 
-(defn function-assignment-resolver
-  "Resolves the assignment of a level to a named function on a head or
-  fixture."
-  [show buffers snapshot target assignment target-id]
+;; Resolves the assignment of a level to a named function on a head or fixture.
+(defmethod fx/resolve-assignment :function [assignment show snapshot buffers]
   ;; Resolve in case it is frame dynamic
-  (let [resolved (params/resolve-param assignment show snapshot target)
-        target-name (name target-id)
+  (let [target (:target assignment)
+        resolved (params/resolve-param (:value assignment) show snapshot target)
+        target-name (name (:target-id assignment))
         function-key (keyword (subs target-name (inc (.indexOf target-name "-"))))
         [channel function-spec] (function-key (:function-map target))]
     (apply-channel-value buffers channel (function-percentage-to-dmx resolved function-spec))))

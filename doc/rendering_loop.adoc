@@ -95,20 +95,39 @@ function, passing in the show and the metronome snapshot. In order to
 make the lights do things, each effect returns a list of
 <<rendering_loop#assigners,Assigners>> specifying the things it wants
 to happen. These are gathered in the order they were returned by each
-effect. Since the effects are run in priority order (lower priority
-first, with effects of the same priority running in the order in which
-they were added to the show), higher-priority and more recent effects’
-assigners will get the chance to modify or veto any assigners from
-earlier and lower-priority effects which are trying to control the
-same thing. If the effect doesn’t want to do anything this frame, it
-can simply return an empty assigner list.
+effect.
 
-. Once all the assigners have been collected, Each assigner’s
+. While being gathered, the assigners are separated into individual
+lists, divided first by the `kind` value of the assigner (`:channel`,
+`:function`, `:color`, `:direction`, or `:aim`), and within each kind,
+further divided into lists based on the target ID that the assigner
+wants to affect. Since the effects are run in priority order (lower
+priority first, with effects of the same priority running in the order
+in which they were added to the show), higher-priority and more recent
+effects’ assigners will come later in the gathered lists, and will get
+the chance to modify or veto any assigners from earlier and
+lower-priority effects which are trying to control the same thing. If
+the effect doesn’t want to do anything this frame, it can simply
+return an empty assigner list.
+
+. Once all the assigners have been collected into their kind/target
+lists, each list is evaluated. The assigner kinds are processed in
+the order established by
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-resolution-order[show/resolution-order]
+and starts with low-level, single channel `:channel` assigners, then
+moves up to more complex `:function`, `:color`, `:direction`, and
+`:aim` assigners. (This order was chosen because different kinds of
+assigners might end up affecting the same DMX channel; the higher
+levels of abstraction are allowed to win by running last.) Within each
+kind, however, the lists can be processed in parallel, since they will
+all affect separate targets.
++
+To process a list, each assigner’s
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-assign[assign]
 function is called, again passing in the show and the metronome
 snapshot, the target which is being assigned (a DMX channel in a show
 universe, or a fixture or fixture head, depending on the assigner
-type), as well as the assignment value the effect wanted to establish
+kind), as well as the assignment value the effect wanted to establish
 (a number, color, or head direction, again depending on the assigner
 type), and the previous assignment (if any) that an earlier assigner
 wanted to set for this target. The assigner can decide what to do with
@@ -116,13 +135,12 @@ the previous assignment: Ignore it, blend the current assignment with
 it somehow, or honor it, depending on the nature and configuration of
 the assigner. The `assign` function returns a single resolved value of
 the appropriate type for the assignment, and Afterglow records it,
-potentially to pass it to another assigner of the same type which
-wants to affect the same target. The assigner can also veto any
-previous assignment and say that nothing should happen by returning
-`nil`.
+potentially to pass it to the next assigner on the list. The assigner
+can also veto any previous assignment and say that nothing should
+happen by returning an assignment with `nil` for its value.
 +
 The input to `assign` might be a
-<<parameters#dynamic-parameters,Dynamic Parameter>>, and the return
+<<parameters#dynamic-parameters,Dynamic Parameter>>, and the resulting
 value may be as well, or the assigner may choose to resolve it into a
 non-dynamic value, in order to decide between or blend competing
 assignments.
@@ -132,16 +150,13 @@ value for every target which any effect wanted to influence for the
 current frame.
 
 . Afterglow uses these assignment results to establish actual DMX
-values for the frame. It splits them based on the kind of assignment
-they want to make, doing all of one type before moving on to the next
-type. The type ordering is established by
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-resolution-handlers[show/resolution-handlers]
-and starts with low-level, single channel `:channel` assigners, then
-moves up to more complex `:function`, `:color`, `:direction`, and
-`:aim` assigners. The resolution-handler functions finally resolve any
-remaining dynamic parameters, and then turn abstractions like color
-objects and aiming vectors into appropriate DMX channel values for the
-target that is being assigned.
+values for the frame, using the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-resolve-assignment[resolve-assignment]
+multimethod, whose implementations (which are specific for each of the
+possible assignment kinds) finally resolve any remaining dynamic
+parameters, and then turn abstractions like color objects and aiming
+vectors into appropriate DMX channel values for the target that is
+being assigned.
 
 . Finally, the resulting buffers of DMX values, with zeros in any
 channels which were not affected by assigners, are sent to their

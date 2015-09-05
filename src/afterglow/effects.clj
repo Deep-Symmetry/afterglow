@@ -56,28 +56,15 @@ appropriate for the kind of assignment, e.g. color object, channel value."))
 (defrecord Assignment [^clojure.lang.Keyword kind ^clojure.lang.Keyword target-id target value])
 
 ;; Finally, once that is done, the resulting assignments will be
-;; resolved to DMX values by calling these:
-
-#_(defmulti resolve-assignment
-  "Translates an attribute assignment")
-
-#_(defprotocol IAssignmentResolver
+;; resolved to DMX values by calling:
+(defmulti resolve-assignment
   "Translates an attribute assignment (e.g. color, direction, channel
   value) for an element of a light show to the actual DMX values that
-  will implement it."
-  (resolve-assignment [this show buffers target snapshot assignment]
-    "Translate the assignment to appropriate setting for target DMX channels."))
-
-;; The show will maintain a list of resolvers for the different kinds of assignments that can
-;; exist, and will run through that list in order, handling low-level channel assignments first,
-;; then more sophisticated conceptual assignments, since they should take priority over conflicting
-;; low-level assignments. Each list of assignments of a particular kind can be processed in parallel,
-;; however, since there will only be one resulting assignment for each target.
-;; The assignment resolvers will be functions:
-#_(defn AssignmentResolver [^clojure.lang.Keyword kind target snapshot assignment ^clojure.lang.IFn f]
-    IAssignmentResolver
-    (resolve-assignment [this show buffers target snapshot assignment]
-                        (f show buffers target snapshot assignment)))
+  will implement it. Since the value of the assignment may still be a
+  dynamic parameter, the show and snapshot might be needed to resolve
+  it."
+  (fn [assignment show snapshot buffers]
+    (:kind assignment)))
 
 (defrecord Effect [^String name ^clojure.lang.IFn active-fn
                    ^clojure.lang.IFn gen-fn ^clojure.lang.IFn end-fn]

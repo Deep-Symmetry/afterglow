@@ -106,16 +106,17 @@
         assigners (fx/build-head-assigners :color heads f)]
     (Effect. "Hue Oscillator" fx/always-active (fn [show snapshot] assigners) fx/end-immediately)))
 
-(defn color-assignment-resolver
-  "Resolves the assignment of a color to a fixture or a head,
-  performing color mixing with any color component channels found in
-  the target head. If color wheel heads were included in the cue, will
-  find the closest matching hue on the wheel, as long as it is within
-  tolerance. The default tolerance is 60 degrees around the hue wheel,
-  which is very lenient. If you want to tighten that up, you can set a
-  lower value in the show variable :color-wheel-hue-tolerance"
-  [show buffers snapshot target assignment _]
-  (let [resolved (params/resolve-param assignment show snapshot target) ; In case it is frame dynamic
+;; Resolves the assignment of a color to a fixture or a head,
+;; performing color mixing with any color component channels found in
+;; the target head. If color wheel heads were included in the cue, will
+;; find the closest matching hue on the wheel, as long as it is within
+;; tolerance. The default tolerance is 60 degrees around the hue wheel,
+;; which is very lenient. If you want to tighten that up, you can set a
+;; lower value in the show variable :color-wheel-hue-tolerance
+(defmethod fx/resolve-assignment :color [assignment show snapshot buffers]
+  ;; Resolve in case assignment is still frame dynamic
+  (let [target (:target assignment)
+        resolved (params/resolve-param (:value assignment) show snapshot target)
         color-key (keyword (str "color-" (:id target)))]
     ;; Start with RGB mixing
     (doseq [c (filter #(= (:color %) :red) (:channels target))]

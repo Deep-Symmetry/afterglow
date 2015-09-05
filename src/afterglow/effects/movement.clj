@@ -34,10 +34,11 @@
         assigners (fx/build-head-parameter-assigners :direction heads direction *show*)]
     (Effect. name fx/always-active (fn [show snapshot] assigners) fx/end-immediately)))
 
-(defn direction-assignment-resolver
-  "Resolves the assignment of a direction to a fixture or a head."
-  [show buffers snapshot target assignment _]
-  (let [direction (params/resolve-param assignment show snapshot target)  ; In case it is frame dynamic
+;; Resolves the assignment of a direction to a fixture or a head.
+(defmethod fx/resolve-assignment :direction [assignment show snapshot buffers]
+  ;; Resolve in case assignment is still frame dynamic
+  (let [target (:target assignment)
+        direction (params/resolve-param (:value assignment) show snapshot target)
         direction-key (keyword (str "pan-tilt-" (:id target)))
         former-values (direction-key (:previous @(:movement *show*)))
         [pan tilt] (calculate-position target direction former-values)]
@@ -62,11 +63,11 @@
         assigners (fx/build-head-parameter-assigners :aim heads target-point *show*)]
     (Effect. name fx/always-active (fn [show snapshot] assigners) fx/end-immediately)))
 
-(defn aim-assignment-resolver
-  "Resolves the assignment of an aiming point to a fixture or a
-  head."
-  [show buffers snapshot target assignment _]
-  (let [target-point (params/resolve-param assignment show snapshot target)  ; In case it is frame dynamic
+;; Resolves the assignment of an aiming point to a fixture or a head.
+(defmethod fx/resolve-assignment :aim [assignment show snapshot buffers]
+  ;; Resolve in case assignment is still frame dynamic
+  (let [target (:target assignment)
+        target-point (params/resolve-param (:value assignment) show snapshot target)
         direction-key (keyword (str "pan-tilt-" (:id target)))
         former-values (direction-key (:previous @(:movement *show*)))
         [pan tilt] (calculate-aim target target-point former-values)]

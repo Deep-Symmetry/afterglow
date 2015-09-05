@@ -22,12 +22,10 @@
   (:require [afterglow.channels :as chan]
             [afterglow.controllers :as controllers]
             [afterglow.effects :as fx]
-            [afterglow.effects.channel :refer [channel-assignment-resolver
-                                               function-assignment-resolver]]
-            [afterglow.effects.color :refer [color-assignment-resolver]]
+            [afterglow.effects.channel]
+            [afterglow.effects.color]
             [afterglow.effects.dimmer :refer [master master-set-level]]
-            [afterglow.effects.movement :refer [aim-assignment-resolver
-                                                direction-assignment-resolver]]
+            [afterglow.effects.movement]
             [afterglow.effects.params :refer [bind-keyword-param resolve-param]]
             [afterglow.fixtures :as fixtures]
             [afterglow.midi :as midi]
@@ -66,16 +64,10 @@
   []
   @ola-failure)
 
-(def resolution-handlers
-  "The order in which assigners should be evaluated, and the functions
-  which resolve them into DMX channel updates. A list of tuples which
-  identify the assigner type key, and the function to invoke for such
-  assigners."
-  [[:channel channel-assignment-resolver]
-   [:function function-assignment-resolver]
-   [:color color-assignment-resolver]
-   [:direction direction-assignment-resolver]
-   [:aim aim-assignment-resolver]])
+(def resolution-order
+  "The order in which assigners should be evaluated, by type key.
+  Lower-level assignments are resolved before more abstract ones."
+  [:channel :function :color :direction :aim])
 
 (defn- gather-assigners
   "Collect all of the assigners that are in effect at the current
@@ -167,12 +159,12 @@
                                  (when-not (fx/still-active? effect show snapshot)
                                    (end-effect! (:key (get (:meta @(:active-effects show)) index)) :force true)))))
   (let [all-assigners (gather-assigners show snapshot)]
-    (doseq [[kind handler] resolution-handlers]
+    (doseq [kind resolution-order]
       (doseq [assigners (vals (get all-assigners kind))]
+        ;; TODO: This can be parallelized because the targets are different!
         (let [assignment (run-assigners show snapshot assigners)]
           (when (some? (:value assignment)) ; If the assigner returned a nil value, it wants to be skipped
-            (p :resolve-value (handler show buffers snapshot (:target assignment) (:value assignment)
-                                       (:target-id assignment))))))))
+            (p :resolve-value (fx/resolve-assignment assignment show snapshot buffers)))))))
   (p :send-dmx-data (doseq [universe (keys buffers)]
                       (let [levels (get buffers universe)]
                         (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} response-handler))))
