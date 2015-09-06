@@ -3,7 +3,8 @@
             [afterglow.effects :refer :all]
             [afterglow.show :as show]
             [afterglow.rhythm :as rhythm]
-            [afterglow.util :as util]))
+            [afterglow.util :as util]
+            [com.evocomputing.colors :as colors]))
 
 (defonce test-show (atom nil))
 (defonce test-snapshot (atom nil))
@@ -62,3 +63,24 @@
       (is (= :channel (:kind (fade-assignment from nil 0.9 @test-show @test-snapshot))))
       (is (util/float= 0.4 (:value (fade-assignment nil to 0.02 @test-show @test-snapshot))))
       (is (= :channel(:kind (fade-assignment nil to 0.02 @test-show @test-snapshot)))))))
+
+(deftest test-fade-color
+  (testing "Fading a color assigner blends the colors"
+    (let [red (->Assignment :color :i42 {:some "target values"} (colors/create-color :red))
+          green (->Assignment :color :i42 {:some "target values"} (colors/create-color :green))
+          white (->Assignment :color :i42 {:some "target values"} (colors/create-color :white))]
+      (is (= red (fade-assignment red green 0 @test-show @test-snapshot)))
+      (is (= green (fade-assignment red green 1 @test-show @test-snapshot)))
+      (is (= red (fade-assignment red green -1 @test-show @test-snapshot)))
+      (is (= green (fade-assignment red green 10 @test-show @test-snapshot)))
+      (is (util/float= 60.0 (colors/hue (:value (fade-assignment red green 0.5 @test-show @test-snapshot)))))
+      (is (util/float= 25 (colors/lightness (:value (fade-assignment red green 0.5 @test-show @test-snapshot))) 0.2))
+      (is (= 63 (colors/green (:value (fade-assignment red green 0.25 @test-show @test-snapshot)))))
+      (is (= 63 (colors/red (:value (fade-assignment red green 0.75 @test-show @test-snapshot)))))
+      (is (util/float= 0.0 (colors/hue (:value (fade-assignment red white 0.5 @test-show @test-snapshot)))))
+      (is (util/float= 75.0 (colors/lightness (:value (fade-assignment red white 0.5 @test-show @test-snapshot))) 0.2))
+      (is (util/float= 0.0 (colors/hue (:value (fade-assignment red nil 0.9 @test-show @test-snapshot)))))
+      (is (util/float= 5.0 (colors/lightness (:value (fade-assignment red nil 0.9 @test-show @test-snapshot))) 0.2))
+      (is (util/float= 120 (colors/hue (:value (fade-assignment nil green 0.02 @test-show @test-snapshot)))))
+      (is (util/float= 1.0 (colors/lightness (:value (fade-assignment nil green 0.02 @test-show @test-snapshot)))
+                       0.2)))))

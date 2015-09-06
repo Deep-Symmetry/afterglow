@@ -157,8 +157,9 @@
         ;; fraction really does only range between 0 and 1, then convert it to the percentage wanted by
         ;; the colors library.
         :else (let [target (:target from-assignment)
-                    from-resolved (params/resolve-param (:value from-assignment default-color) show snapshot target)
-                    to-resolved (params/resolve-param (:value to-assignment default-color) show snapshot target)
+                    from-resolved (params/resolve-param (or (:value from-assignment) default-color)
+                                                        show snapshot target)
+                    to-resolved (params/resolve-param (or (:value to-assignment) default-color) show snapshot target)
                     weight (* 100 (colors/clamp-unit-float fraction))]
                 ;; Weight goes in the opposite direction you might expect, so the following order works:
-                (colors/mix to-resolved from-resolved weight))))
+                (merge from-assignment {:value (colors/mix to-resolved from-resolved weight)}))))
