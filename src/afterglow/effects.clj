@@ -192,7 +192,7 @@
     from-assignment
     to-assignment))
 
-(defn fade
+(defn fade-assignment
   "Calculates an intermediate value between two attribute assignments
   of the same kind (e.g. color, direction, channel value) for an
   element of a light show. The values of `from-assignment` and

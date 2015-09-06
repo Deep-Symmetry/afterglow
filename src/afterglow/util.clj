@@ -37,3 +37,58 @@
           a)))
     (when-let [found (first (subseq sm >= k))]
       (key found))))
+
+(def float-epsilon
+  "The tolerance value for comparing two floating point numbers. If
+  the difference between the values is smaller than this, after
+  scaling appropriately for very small or very large numbers, they
+  will be considered equal."
+  0.00001)
+
+(defn- scale
+  "Calculate a suitable scale factor for floating point comparison
+  tolerance."
+  [x y]
+  (if (or (zero? x) (zero? y))
+    1
+    (math/abs x)))
+
+(defn float=
+  "Compare two floating point numbers for equality, with a tolerance
+  specified by `epsilon`, which defaults to `float-epsilon` if not
+  provided."
+  {:doc/format :markdown}
+  ([x y] (float= x y float-epsilon))
+  ([x y epsilon] (<= (math/abs (- x y))
+                     (* (scale x y) epsilon))))
+
+(defn float<
+  "Checks whether `x` is less than `y` with an equality tolerance
+  specified by `epsilon`, which defaults to `float-epsilon` if not
+  provided."
+  {:doc/format :markdown}
+  ([x y] (float< x y float-epsilon))
+  ([x y epsilon] (< x
+                    (- y (* (scale x y) epsilon)))))
+
+(defn float>
+  "Checks whether `x` is greater than `y` with an equality tolerance
+  specified by `epsilon`, which defaults to `float-epsilon` if not
+  provided."
+  {:doc/format :markdown}
+  ([x y] (float< y x))
+  ([x y epsilon] (float< y x epsilon)))
+
+(defn float<=
+  "Checks whether `x` is less than or equal to `y` with an equality
+  tolerance specified by `epsilon`, which defaults to `float-epsilon`
+  if not provided." {:doc/format :markdown}
+  ([x y] (not (float> x y)))
+  ([x y epsilon] (not (float> x y epsilon))))
+
+(defn float>=
+  "Checks whether `x` is greater than or equal to `y` with an equality
+  tolerance specified by `epsilon`, which defaults to `float-epsilon`
+  if not provided." {:doc/format :markdown}
+  ([x y] (not (float< x y)))
+  ([x y epsilon] (not (float< x y epsilon))))

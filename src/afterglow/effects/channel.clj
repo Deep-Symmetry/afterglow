@@ -107,10 +107,10 @@
         (>= fraction 1) to-assignment
         ;; We are blending, so we need to resolve any remaining dynamic parameters now, and make sure
         ;; fraction really does only range between 0 and 1.
-        :else (let [from-resolved (clamp-rgb-int (params/resolve-param (:value from-assignment 0) show snapshot))
-                    to-resolved (clamp-rgb-int (params/resolve-param (:value to-assignment 0) show snapshot))
+        :else (let [from-resolved (clamp-rgb-int (params/resolve-param (or (:value from-assignment) 0) show snapshot))
+                    to-resolved (clamp-rgb-int (params/resolve-param (or (:value to-assignment) 0) show snapshot))
                     fraction (clamp-unit-float fraction)]
-                (+ (* fraction to-resolved) (* (- 1.0 fraction) from-resolved)))))
+                (merge from-assignment {:value (+ (* fraction to-resolved) (* (- 1.0 fraction) from-resolved))}))))
 
 (defn build-head-function-assigner
   "Returns a function assigner which applies the specified assignment
