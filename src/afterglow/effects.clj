@@ -160,7 +160,15 @@
 (defmulti fade-between-assignments
   "Calculates an intermediate value between two attribute assignments
   of the same kind (e.g. color, direction, channel value) for an
-  element of a light show. The amount contributed by each assignment
+  element of a light show. Most code will not call this directly, and
+  will instead use the higher-level [[fade]] function to help set it
+  up. This is the low-level mechanism which performs the fade
+  calculations by dispatching to an appropriate implementation based
+  on the `:kind` value of `from-assignment`, and it requires both
+  `from-assignment` and `to-assignment` to be non-`nil` instances of
+  `afterglow.effects.Assignment` of the same `:kind`.
+
+  The amount contributed by each assignment
   is controlled by `fraction`, which can range from `0` (or less),
   meaning that only `from-assignment` is considered, to `1` (or
   greater), meaning that `to-assignment` is simply returned.
@@ -184,13 +192,38 @@
     from-assignment
     to-assignment))
 
-(defn fade-assignment
-  "Fades a single assignment to or from nothing. If `fraction` is `0` (or less),
-  `nil` is returned; if it is `1` (or greater), `assignment` is
-  returned unchanged. Intermediate values will scale the value towards
-  its default state (such as black for a color, zero for a channel,
-  etc)."
+(defn fade
+  "Calculates an intermediate value between two attribute assignments
+  of the same kind (e.g. color, direction, channel value) for an
+  element of a light show. The values of `from-assignment` and
+  `to-assignment` may either be instances of
+  `afterglow.effects.Assignment` of the same `:kind`, or they may be
+  `nil`, to indicate that the attribute is being faded to or from
+  nothing. This function does the preparation and valiation needed in
+  order to delegate safely to [[fade-between-assignments]] by
+  promoting `nil` values to empty assignments of the appropriate
+  `:kind` affecting the same target.
+
+  The amount contributed by each assignment is controlled by
+  `fraction`, which can range from `0` (or less), meaning that only
+  `from-assignment` is considered, to `1` (or greater), meaning that
+  `to-assignment` is simply returned. Intermediate values will ideally
+  result in a blend between the two assignments, with `0.5`
+  representing an equal contribution from each. Since the value of the
+  assignments may still be dynamic parameters, the show and snapshot
+  might be needed to resolve them in order to calculate the blended
+  value. Some kinds of assignment may not support blending, in which
+  case the default implementation will simply switch from
+  `from-assignment` to `to-assignment` once `fraction` reaches `0.5`."
   {:doc/format :markdown}
-  [assignment fraction]
-  ;; TODO: Write; to blend, just copy the assignment with a nil :value, and call fade-between-assignments.
-  )
+  [from-assignment to-assignment fraction show snapshot]
+  {:pre [(or (nil? from-assignment) (instance? Assignment from-assignment))
+         (or (nil? to-assignment) (instance? Assignment to-assignment))
+         (or (nil? from-assignment) (nil? to-assignment)
+             (and (= (:kind from-assignment) (:kind to-assignment))
+                   (= (:target-id from-assignment) (:target-id to-assignment))))]}
+  (when (or from-assignment to-assignment) ; Return nil unless there is anything to fade
+    (let [from (or from-assignment (map->Assignment (merge to-assignment {:value nil})))
+          to (or to-assignment (map->Assignment (merge from-assignment {:value nil})))]
+      (fade-between-assignments from to fraction show snapshot))))
+
