@@ -152,21 +152,22 @@
   reflecting the current instant, for effects to reference."
   [show buffers snapshot]
   (p :clear-buffers (cp/pdoseq @(:pool show) [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
-  (p :clean-finished-effects (let [indexed (cp/pmap @(:pool show)
-                                                    vector (range) (:effects @(:active-effects show)))]
-                               (cp/pdoseq @(:pool show) [[index effect] indexed]
-                                          (when-not (fx/still-active? effect show snapshot)
-                                            (end-effect! (:key (get (:meta @(:active-effects show)) index))
-                                                         :force true)))))
+  (p :clean-finished-effects
+     (let [indexed (cp/pmap @(:pool show)
+                            vector (range) (:effects @(:active-effects show)))]
+       (cp/pdoseq @(:pool show) [[index effect] indexed]
+                  (when-not (fx/still-active? effect show snapshot)
+                    (end-effect! (:key (get (:meta @(:active-effects show)) index)) :force true)))))
   (let [all-assigners (gather-assigners show snapshot)]
     (doseq [kind resolution-order]
       (cp/pdoseq @(:pool show) [assigners (vals (get all-assigners kind))]
                  (let [assignment (run-assigners show snapshot assigners)]
                    (when (some? (:value assignment)) ; If assigner returned nil value, it wants to be skipped
                      (p :resolve-value (fx/resolve-assignment assignment show snapshot buffers)))))))
-  (p :send-dmx-data (doseq [universe (keys buffers)]
-                      (let [levels (get buffers universe)]
-                        (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} response-handler))))
+  (p :send-dmx-data
+     (cp/pdoseq @(:pool show) [universe (keys buffers)]
+                (let [levels (get buffers universe)]
+                  (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} response-handler))))
   (swap! (:movement *show*) #(dissoc (assoc % :previous (:current %)) :current))
   (swap! (:statistics *show*) update-stats (:instant snapshot) (:refresh-interval show)))
 
