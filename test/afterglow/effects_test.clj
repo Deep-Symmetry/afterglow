@@ -49,7 +49,9 @@
 (deftest test-fade-channel
   (testing "Fading a channel assigner scales the value"
     (let [from (->Assignment :channel :u1a3 {:some "target values"} 10)
-          to (->Assignment :channel :u1a3 {:some "target values"} 20)]
+          to (->Assignment :channel :u1a3 {:some "target values"} 20)
+          too-big (->Assignment :channel :u1a3 {:some "target values"} 420)
+          too-small (->Assignment :channel :u1a3 {:some "target values"} -20)]
       (is (= from (fade-assignment from to 0 @test-show @test-snapshot)))
       (is (= to (fade-assignment from to 1 @test-show @test-snapshot)))
       (is (= from (fade-assignment from to -1 @test-show @test-snapshot)))
@@ -57,12 +59,36 @@
       (is (util/float= 14.0 (:value (fade-assignment from to 0.4 @test-show @test-snapshot))))
       (is (util/float= 16.0 (:value (fade-assignment from to 0.6 @test-show @test-snapshot))))
       (is (util/float= 15.0 (:value (fade-assignment from to 0.5 @test-show @test-snapshot))))
+      (is (util/float= 132.5 (:value (fade-assignment from too-big 0.5 @test-show @test-snapshot))))
+      (is (util/float= 5.0 (:value (fade-assignment from too-small 0.5 @test-show @test-snapshot))))
       (is (util/float= 7.0 (:value (fade-assignment from nil 0.3 @test-show @test-snapshot))))
       (is (util/float= 14.0 (:value (fade-assignment nil to 0.7 @test-show @test-snapshot))))
       (is (util/float= 1.0 (:value (fade-assignment from nil 0.9 @test-show @test-snapshot))))
       (is (= :channel (:kind (fade-assignment from nil 0.9 @test-show @test-snapshot))))
       (is (util/float= 0.4 (:value (fade-assignment nil to 0.02 @test-show @test-snapshot))))
       (is (= :channel(:kind (fade-assignment nil to 0.02 @test-show @test-snapshot)))))))
+
+(deftest test-fade-function
+  (testing "Fading a function assigner scales the value"
+    (let [from (->Assignment :function :3-strobe {:some "target values"} 10)
+          to (->Assignment :function :3-strobe {:some "target values"} 20)
+          too-big (->Assignment :function :3-strobe {:some "target values"} 120)
+          too-small (->Assignment :function :3-strobe {:some "target values"} -20)]
+      (is (= from (fade-assignment from to 0 @test-show @test-snapshot)))
+      (is (= to (fade-assignment from to 1 @test-show @test-snapshot)))
+      (is (= from (fade-assignment from to -1 @test-show @test-snapshot)))
+      (is (= to (fade-assignment from to 10 @test-show @test-snapshot)))
+      (is (util/float= 14.0 (:value (fade-assignment from to 0.4 @test-show @test-snapshot))))
+      (is (util/float= 16.0 (:value (fade-assignment from to 0.6 @test-show @test-snapshot))))
+      (is (util/float= 15.0 (:value (fade-assignment from to 0.5 @test-show @test-snapshot))))
+      (is (util/float= 55.0 (:value (fade-assignment from too-big 0.5 @test-show @test-snapshot))))
+      (is (util/float= 5.0 (:value (fade-assignment from too-small 0.5 @test-show @test-snapshot))))
+      (is (util/float= 7.0 (:value (fade-assignment from nil 0.3 @test-show @test-snapshot))))
+      (is (util/float= 14.0 (:value (fade-assignment nil to 0.7 @test-show @test-snapshot))))
+      (is (util/float= 1.0 (:value (fade-assignment from nil 0.9 @test-show @test-snapshot))))
+      (is (= :function (:kind (fade-assignment from nil 0.9 @test-show @test-snapshot))))
+      (is (util/float= 0.4 (:value (fade-assignment nil to 0.02 @test-show @test-snapshot))))
+      (is (= :function(:kind (fade-assignment nil to 0.02 @test-show @test-snapshot)))))))
 
 (deftest test-fade-color
   (testing "Fading a color assigner blends the colors"

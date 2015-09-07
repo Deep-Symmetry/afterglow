@@ -100,8 +100,9 @@
   (let [resolved (clamp-rgb-int (params/resolve-param (:value assignment) show snapshot))]
     (apply-channel-value buffers (:target assignment) resolved)))
 
-;; Fades between two assignments to a channel; often you won't want to do this, so fade effects should
-;; probably default to excluding channel assigners unless the show developer has explicitly requested them.
+;; Fades between two assignments to a channel; often you won't want to do this, especially for
+;; multi-function channels, so fade effects should probably default to excluding channel assigners
+;; unless the show developer has explicitly requested them.
 (defmethod fx/fade-between-assignments :channel [from-assignment to-assignment fraction show snapshot]
   (cond (<= fraction 0) from-assignment
         (>= fraction 1) to-assignment
@@ -234,3 +235,17 @@
         function-key (keyword (subs target-name (inc (.indexOf target-name "-"))))
         [channel function-spec] (function-key (:function-map target))]
     (apply-channel-value buffers channel (function-percentage-to-dmx resolved function-spec))))
+
+;; Fades between two assignments to a function. This won't mean much if the function is fixed
+;; over its range, but that is harmless and so not worth suppressing, especially in case the
+;; fixture definition is incorrect, and different values actually do have different effects.
+(defmethod fx/fade-between-assignments :function [from-assignment to-assignment fraction show snapshot]
+  (cond (<= fraction 0) from-assignment
+        (>= fraction 1) to-assignment
+        ;; We are blending, so we need to resolve any remaining dynamic parameters now, and make sure
+        ;; fraction really does only range between 0 and 1.
+        :else (let [from-resolved (clamp-percent-float
+                                   (params/resolve-param (or (:value from-assignment) 0) show snapshot))
+                    to-resolved (clamp-percent-float (params/resolve-param (or (:value to-assignment) 0) show snapshot))
+                    fraction (clamp-unit-float fraction)]
+                (merge from-assignment {:value (+ (* fraction to-resolved) (* (- 1.0 fraction) from-resolved))}))))
