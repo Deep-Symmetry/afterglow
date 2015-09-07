@@ -236,15 +236,13 @@ of an `:inverted-from` entry in the
 https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#inverted-channels[channel
 specification], and taken care of by
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.channel.html#var-apply-channel-value[apply-channel-value],
-which is invoked by the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.channel.html#var-channel-assignment-resolver[channel]
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-resolution-handlers[resolution
-handler], so channel assigners do not need to worry about this detail,
-and can always work in terms of non-inverted channel values. (This is
-important, for example, when implementing highest-takes-precedence
-rules for a dimmer channel. Bigger numbers will always mean brighter,
-even if at the last step before sending them to the fixture they are
-inverted because of the nature of the channel.)
+which is invoked by the channel assignment resolver, so channel
+assigners do not need to worry about this detail, and can always work
+in terms of non-inverted channel values. (This is important, for
+example, when implementing highest-takes-precedence rules for a dimmer
+channel. Bigger numbers will always mean brighter, even if at the last
+step before sending them to the fixture they are inverted because of
+the nature of the channel.)
 
 [[function-assigners]]
 === Function Assigners
@@ -259,13 +257,12 @@ The assignment values they return are either a percentage value, a
 to a percentage value, or `nil`, meaning no assignment should take
 place.
 
-When the assignment is resolved,
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.channel.html#var-function-assignment-resolver[function-assignment-resolver]
-translates the percentage to an actual DMX value along the range
-defined in each fixture's function specification. For example, if the
-function was defined as existing on the range 20-29 for a particular
-fixture, and the assigned percentage was 50.0, then the assignment for
-that fixture would send a value of 25 to the function's channel.
+When the assignment is resolved, the percentage is translated to an
+actual DMX value along the range defined in each fixture's function
+specification. For example, if the function was defined as existing on
+the range 20-29 for a particular fixture, and the assigned percentage
+was 50.0, then the assignment for that fixture would send a value of
+25 to the function's channel.
 
 [[color-assigners]]
 === Color Assigners
