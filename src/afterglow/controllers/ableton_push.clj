@@ -1382,11 +1382,16 @@
                                        (show/end-effect! (:key cue) :when-id id)))
                                    :done)
                                  (handle-aftertouch [this controller message]
-                                   (doseq [v (:variables cue)]
-                                     (when (:velocity v)
-                                       (cues/set-cue-variable! cue v
-                                                               (controllers/value-for-velocity v (:velocity message))
-                                                               :controller controller :when-id id))))))))))))
+                                   (if (zero? (:velocity message))
+                                     (do (when holding
+                                           (with-show (:show controller)
+                                             (show/end-effect! (:key cue) :when-id id)))
+                                         :done)
+                                     (doseq [v (:variables cue)]
+                                       (when (:velocity v)
+                                         (cues/set-cue-variable! cue v
+                                                                 (controllers/value-for-velocity v (:velocity message))
+                                                                 :controller controller :when-id id)))))))))))))
 
 (defn- control-for-top-encoder-note
   "Return the control number on which rotation of the encoder whose
