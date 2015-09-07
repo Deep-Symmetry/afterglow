@@ -21,7 +21,7 @@
                  [amalloy/ring-buffer "1.2"]
                  [com.climate/claypoole "1.1.0"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
-                 [ola-clojure "0.1.0"]
+                 [ola-clojure "0.1.1"]
                  [selmer "0.9.1"]
                  [org.clojars.brunchboy/colors "1.0.3-SNAPSHOT"]
                  #_[com.evocomputing/colors "1.0.2"]

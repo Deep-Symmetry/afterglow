@@ -290,6 +290,7 @@
     ;; Set up embedded servers
     (.addShutdownHook (Runtime/getRuntime) (Thread. stop-servers))
     (reset! ola-client/olad-host (:olad-host options))
+    (when-not (#{"localhost" "127.0.0.1"} @ola-client/olad-host) (ola-client/use-buffered-channel))
     (reset! ola-client/olad-port (:olad-port options))
     (timbre/info "Will find OLA daemon on host" @ola-client/olad-host ", port" @ola-client/olad-port)
     (start-web-server (:web-port options) true)
