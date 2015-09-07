@@ -162,4 +162,4 @@
                     to-resolved (params/resolve-param (or (:value to-assignment) default-color) show snapshot target)
                     weight (* 100 (colors/clamp-unit-float fraction))]
                 ;; Weight goes in the opposite direction you might expect, so the following order works:
-                (merge from-assignment {:value (colors/mix to-resolved from-resolved weight)}))))
+                (merge from-assignment {:value (colors/mix-hsl to-resolved from-resolved weight)}))))
