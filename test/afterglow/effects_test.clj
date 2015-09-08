@@ -1,10 +1,14 @@
 (ns afterglow.effects-test
   (:require [clojure.test :refer :all]
             [afterglow.effects :refer :all]
+            [afterglow.fixtures.blizzard :as blizzard]
             [afterglow.show :as show]
+            [afterglow.show-context :refer [with-show]]
             [afterglow.rhythm :as rhythm]
+            [afterglow.transform :as tf]
             [afterglow.util :as util]
-            [com.evocomputing.colors :as colors]))
+            [com.evocomputing.colors :as colors])
+  (:import [javax.vecmath Point3d Vector3d]))
 
 (defonce test-show (atom nil))
 (defonce test-snapshot (atom nil))
@@ -14,7 +18,11 @@
   [f]
   (reset! test-show (show/show))
   (reset! test-snapshot (rhythm/metro-snapshot (:metronome @test-show)))
-  (f)
+  (with-show @test-show
+    (show/patch-fixture! :torrent-1 (blizzard/torrent-f3) 1 1
+                         :x (tf/inches 44) :y (tf/inches 51.75) :z (tf/inches -4.75)
+                         :y-rotation (tf/degrees 0))
+    (f))
   (reset! test-snapshot nil)
   (reset! test-show nil))
 
@@ -111,3 +119,55 @@
       (is (util/float= 120 (colors/hue (:value (fade-assignment nil green 0.02 @test-show @test-snapshot)))))
       (is (util/float= 1.0 (colors/lightness (:value (fade-assignment nil green 0.02 @test-show @test-snapshot)))
                        0.2)))))
+
+(deftest test-fade-direction
+  (testing "Fading a direction assigner moves between the directions"
+    (let [fixture (first (show/fixtures-named :torrent-1))
+          from (->Assignment :direction :i13 fixture (Vector3d. -1.0 1.0 0.0))
+          to (->Assignment :direction :i13 fixture (Vector3d. 1.0 1.0 0.0))]
+      (is (= from (fade-assignment from to 0 @test-show @test-snapshot)))
+      (is (= to (fade-assignment from to 1 @test-show @test-snapshot)))
+      (is (= from (fade-assignment from to -1 @test-show @test-snapshot)))
+      (is (= to (fade-assignment from to 10 @test-show @test-snapshot)))
+      (is (= (Vector3d. -0.196116135138184, 0.9805806756909201, 0.0)
+             (:value (fade-assignment from to 0.4 @test-show @test-snapshot))))
+      (is (= (Vector3d. 0.196116135138184, 0.9805806756909201, 0.0)
+             (:value (fade-assignment from to 0.6 @test-show @test-snapshot))))
+      (is (= (Vector3d. 0.0, 1.0, 0.0)
+             (:value (fade-assignment from to 0.5 @test-show @test-snapshot))))
+      (is (= (Vector3d. -0.679071744760261, 0.6739354942419622, -0.2909854207157071)
+             (:value (fade-assignment from nil 0.3 @test-show @test-snapshot))))
+      (is (= (Vector3d. 0.679071744760261, 0.6739354942419622, -0.29098542071570715)
+             (:value (fade-assignment nil to 0.7 @test-show @test-snapshot))))
+      (is (= (Vector3d. -0.10997491972977708, 0.09250690755105184, -0.9896201236261165)
+             (:value (fade-assignment from nil 0.9 @test-show @test-snapshot))))
+      (is (= :direction (:kind (fade-assignment from nil 0.9 @test-show @test-snapshot))))
+      (is (= (Vector3d. 0.020407013973550377, 0.002759527209833684, -0.9997879469118747)
+             (:value (fade-assignment nil to 0.02 @test-show @test-snapshot))))
+      (is (= :direction(:kind (fade-assignment nil to 0.02 @test-show @test-snapshot)))))))
+
+(deftest test-fade-aim
+  (testing "Fading an aim assigner moves between the aim points"
+    (let [fixture (first (show/fixtures-named :torrent-1))
+          from (->Assignment :aim :i13 fixture (Vector3d. -1.0 4.0 1.0))
+          to (->Assignment :aim :i13 fixture (Vector3d. 1.0 2.0 2.0))]
+      (is (= from (fade-assignment from to 0 @test-show @test-snapshot)))
+      (is (= to (fade-assignment from to 1 @test-show @test-snapshot)))
+      (is (= from (fade-assignment from to -1 @test-show @test-snapshot)))
+      (is (= to (fade-assignment from to 10 @test-show @test-snapshot)))
+      (is (= (Point3d. -0.19999999999999996, 3.2, 1.4)
+             (:value (fade-assignment from to 0.4 @test-show @test-snapshot))))
+      (is (= (Point3d. 0.19999999999999996, 2.8, 1.6)
+             (:value (fade-assignment from to 0.6 @test-show @test-snapshot))))
+      (is (= (Point3d. 0.0, 3.0, 1.5)
+             (:value (fade-assignment from to 0.5 @test-show @test-snapshot))))
+      (is (= (Point3d. -0.36471999999999993, 3.1890404558070613, 0.36385172396890036)
+             (:value (fade-assignment from nil 0.3 @test-show @test-snapshot))))
+      (is (= (Point3d. 1.03528, 1.7890404558070614, 1.0638517239689003)
+             (:value (fade-assignment nil to 0.7 @test-show @test-snapshot))))
+      (is (= (Point3d. 0.9058400000000001, 1.5671213674211841, -0.9084448280932987)
+             (:value (fade-assignment from nil 0.9 @test-show @test-snapshot))))
+      (is (= :aim (:kind (fade-assignment from nil 0.9 @test-show @test-snapshot))))
+      (is (= (Point3d. 1.1152480000000002, 1.310865488969734, -1.0580843683682586)
+             (:value (fade-assignment nil to 0.02 @test-show @test-snapshot))))
+      (is (= :aim(:kind (fade-assignment nil to 0.02 @test-show @test-snapshot)))))))

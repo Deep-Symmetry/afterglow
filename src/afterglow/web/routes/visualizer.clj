@@ -1,5 +1,6 @@
 (ns afterglow.web.routes.visualizer
-  (:require [afterglow.fixtures :as fixtures]
+  (:require [afterglow.effects.movement :as movement]
+            [afterglow.fixtures :as fixtures]
             [afterglow.show :as show]
             [afterglow.web.layout :as layout]
             [com.evocomputing.colors :as colors])
@@ -85,28 +86,11 @@
                      [(.-m01 rot) (.-m11 rot) (.-m21 rot)]
                      [(.-m02 rot) (.-m12 rot) (.-m22 rot)]]))))
 
-(defn current-rotation
-  "Given a head and pan and tilt values, calculate the current
-  orientation of the head."
-  [head pan tilt]
-  (let [rotation (Transform3D. (:rotation head))]
-    (when-let [pan-scale (:pan-half-circle head)]
-      (let [dmx-pan (/ (- pan (:pan-center head)) pan-scale)
-            adjust (Transform3D.)]
-        (.rotY adjust (* Math/PI dmx-pan))
-        (.mul rotation adjust)))
-    (when-let [tilt-scale (:tilt-half-circle head)]
-      (let [dmx-tilt (/ (- tilt (:tilt-center head) tilt-scale))
-            adjust (Transform3D.)]
-        (.rotX adjust (* Math/PI dmx-tilt))
-        (.mul rotation adjust)))
-    rotation))
-
 (defn visualizer-pan-tilt
   "Given a head and DMX pan and tilt values, calculate the pan
   and tilt angles to send the visualizer"
   [head pan tilt]
-  (let [rotation (current-rotation head pan tilt)
+  (let [rotation (movement/current-rotation head pan tilt)
         visualizer-perspective (Transform3D.)
         direction (Vector3d. 0 0 1)]
     ;; Add a rotation so we are seeing the rotation from the

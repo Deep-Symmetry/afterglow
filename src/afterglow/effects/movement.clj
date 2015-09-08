@@ -10,9 +10,11 @@
             [afterglow.show-context :refer [*show*]]
             [afterglow.transform :refer [calculate-position calculate-aim]]
             [clojure.math.numeric-tower :as math]
+            [com.evocomputing.colors :as colors]
             [taoensso.timbre.profiling :refer [pspy]]
             [taoensso.timbre :as timbre :refer [debug]])
   (:import [afterglow.effects Assigner Effect]
+           [javax.media.j3d Transform3D]
            [javax.vecmath Point3d Vector3d]))
 
 (defn find-moving-heads
@@ -49,6 +51,51 @@
       (chan-fx/apply-channel-value buffers c tilt))
     (swap! (:movement *show*) #(assoc-in % [:current direction-key] [pan tilt]))))
 
+(defn current-rotation
+  "Given a head and DMX pan and tilt values, calculate a
+  transformation that represents the current orientation of the head
+  as compared to the default orientation of facing directly towards
+  the positive Z axis."
+  [head pan tilt]
+  (let [rotation (Transform3D. (:rotation head))]
+    (when-let [pan-scale (:pan-half-circle head)]
+      (let [dmx-pan (/ (- pan (:pan-center head)) pan-scale)
+            adjust (Transform3D.)]
+        (.rotY adjust (* Math/PI dmx-pan))
+        (.mul rotation adjust)))
+    (when-let [tilt-scale (:tilt-half-circle head)]
+      (let [dmx-tilt (/ (- tilt (:tilt-center head) tilt-scale))
+            adjust (Transform3D.)]
+        (.rotX adjust (* Math/PI dmx-tilt))
+        (.mul rotation adjust)))
+    rotation))
+
+(defn default-direction
+  "Determine the default aiming vector for a head, in other words the
+  direction it aims when sent zero values for its DMX pan and tilt
+  channels."
+  [head]
+  (let [rotation (current-rotation head 0 0)
+        direction (Vector3d. 0 0 1)]
+    (.transform rotation direction)
+    direction))
+
+;; Fades between two direction assignments. A nil assignment is interpreted as the direction the head will face
+;; when it is sent zero values for its pan and tilt channels, so that a fade to or from nothing looks right.
+(defmethod fx/fade-between-assignments :direction [from-assignment to-assignment fraction show snapshot]
+  (cond (<= fraction 0) from-assignment
+        (>= fraction 1) to-assignment
+        ;; We are blending, so we need to resolve any remaining dynamic parameters now, and make sure
+        ;; fraction really does only range between 0 and 1.
+        :else (let [default (default-direction (:target from-assignment))
+                    from-resolved (Vector3d. (params/resolve-param (or (:value from-assignment) default) show snapshot))
+                    to-resolved (Vector3d.  (params/resolve-param (or (:value to-assignment) default) show snapshot))
+                    fraction (colors/clamp-unit-float fraction)]
+                (.scale to-resolved fraction)
+                (.scaleAdd from-resolved (- 1.0 fraction) to-resolved)
+                (.normalize from-resolved)
+                (merge from-assignment {:value from-resolved}))))
+
 (defn aim-effect
   "Returns an effect which assigns an aim parameter to all moving
   heads of the fixtures supplied when invoked. The direction is a
@@ -77,3 +124,22 @@
     (doseq [c (filter #(= (:type %) :tilt) (:channels target))]
       (chan-fx/apply-channel-value buffers c tilt))
     (swap! (:movement *show*) #(assoc-in % [:current direction-key] [pan tilt]))))
+
+;; Fades between two aim assignments. A nil assignment is interpreted as a point in the direction the head will
+;; aim when it is sent zero values for its pan and tilt channels, so that a fade to or from nothing looks right.
+(defmethod fx/fade-between-assignments :aim [from-assignment to-assignment fraction show snapshot]
+  (cond (<= fraction 0) from-assignment
+        (>= fraction 1) to-assignment
+        ;; We are blending, so we need to resolve any remaining dynamic parameters now, and make sure
+        ;; fraction really does only range between 0 and 1.
+        :else (let [target (:target from-assignment)
+                    dir (default-direction target)
+                    default (Point3d. (+ (:x target) (.x dir))
+                                      (+ (:y target) (.y dir))
+                                      (+ (:z target) (.z dir)))
+                    from-resolved (Point3d. (params/resolve-param (or (:value from-assignment) default) show snapshot))
+                    to-resolved (Point3d.  (params/resolve-param (or (:value to-assignment) default) show snapshot))
+                    fraction (colors/clamp-unit-float fraction)]
+                (.scale to-resolved fraction)
+                (.scaleAdd from-resolved (- 1.0 fraction) to-resolved)
+                (merge from-assignment {:value from-resolved}))))
