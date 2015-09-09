@@ -589,8 +589,8 @@ image:assets/PushMetronome.jpg[Metronome section]
 The most basic way of synchronizing the metronome is to tap the `Tap
 Tempo` button at each beat of the music. After a few taps, the
 metronome will be approximately synchronized to the music. You can
-also adjust the BPM by turning the BPM encoder, which is the leftmost
-encoder below the Metronome button.
+also adjust the BPM by turning the BPM encoder, which is the
+rightmost encoder below the Metronome button:
 
 image:assets/PushBPM.jpg[BPM encoder]
 
@@ -608,8 +608,8 @@ In order to make longer chases and effects line up properly with the
 music, you will also want to make sure the count is right, that the
 beat number shows `1` on the down beat, and that the bar numbers are
 right as well, so that the start of a phrase is reflected as bar
-number `1`. You can adjust those with the beat encoder, the rightmost
-encoder below the metronome button.
+number `1`. You can adjust those with the beat encoder, the leftmost
+encoder below the metronome button:
 
 image:assets/PushBeat.jpg[Beat encoder]
 
