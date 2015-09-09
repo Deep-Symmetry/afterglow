@@ -631,11 +631,19 @@
                    false)
                  (handle-aftertouch [this controller message]))))
 
+(defn- new-beat?
+  "Returns true if the metronome is reporting a different marker
+  position than the last time this function was called."
+  [controller marker]
+  (when (not= marker @(:last-marker controller))
+    (reset! (:last-marker controller) marker)))
+
 (defn- update-metronome-section
   "Updates the sections of the interface related to metronome
   control."
   [controller]
   (let [metronome (:metronome (:show controller))
+        marker (rhythm/metro-marker metronome)
         metronome-button (:metronome control-buttons)
         tap-tempo-button (:tap-tempo control-buttons)
         metronome-mode @(:metronome-mode controller)]
@@ -662,7 +670,7 @@
     (swap! (:next-text-buttons controller)
            assoc tap-tempo-button
            (button-state tap-tempo-button
-                         (if (< (rhythm/metro-beat-phase metronome) 0.15)
+                         (if (or (new-beat? controller marker) (< (rhythm/metro-beat-phase metronome) 0.15))
                            :bright :dim)))))
 
 (defn render-cue-grid
@@ -1609,6 +1617,7 @@ color (colors/create-color
          :last-grid-pads (make-array clojure.lang.IPersistentMap 64)
          :next-grid-pads (make-array clojure.lang.IPersistentMap 64)
          :metronome-mode (atom {})
+         :last-marker (atom nil)
          :shift-mode (atom false)
          :stop-mode (atom false)
          :midi-handler (atom nil)
