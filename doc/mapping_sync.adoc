@@ -604,6 +604,13 @@ metronome section is not showing, and it will appear while you have
 the encoder in your hand, so you can adjust the BPM quickly, and then
 get back to what you were doing.
 
+If you press the `Shift` button, the BPM encoder can be used to adjust
+the BPM by whole beats rather than tenths. While `Shift` is down, the
+&uparrow; will point to the left of the decimal point rather than to
+the right of it, and the BPM will change ten times as quickly as you
+turn it. You can switch back and forth in the middle of your
+adjustments by pressing and releasing the shift key at any time.
+
 In order to make longer chases and effects line up properly with the
 music, you will also want to make sure the count is right, that the
 beat number shows `1` on the down beat, and that the bar numbers are

@@ -477,7 +477,8 @@
   it is being externally synced."
   [controller]
   (if (= (:type (show/sync-status)) :manual)
-    (aset (get (:next-display controller) 2) 16 (:up-arrow special-symbols))
+    (let [arrow-pos (if @(:shift-mode controller) 14 16)]
+      (aset (get (:next-display controller) 2) arrow-pos (:up-arrow special-symbols)))
     (do
       (aset (get (:next-display controller) 2) 9 (:down-arrow special-symbols))
       (when-not (:showing @(:metronome-mode controller))
@@ -499,7 +500,8 @@
   [controller message]
   (with-show (:show controller)
     (when (= (:type (show/sync-status)) :manual)
-      (let [delta (/ (sign-velocity (:velocity message)) 10)
+      (let [scale (if @(:shift-mode controller) 1 10)
+            delta (/ (sign-velocity (:velocity message)) scale)
             bpm (rhythm/metro-bpm (:metronome (:show controller)))]
         (rhythm/metro-bpm (:metronome (:show controller)) (min controllers/maximum-bpm
                                                                (max controllers/minimum-bpm (+ bpm delta))))))))
