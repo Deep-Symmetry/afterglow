@@ -29,7 +29,7 @@ could do something like this:
 You can add lighten it up by changing to something like `:l 70` in the
 `build-color-param` call, darken it a bunch with `:l 20` or desaturate
 it a touch with `:s 80`... For more options and ideas, delve into the
-colors library http://deepsymmetry.org/colors/doc/[API documentation],
+colors library http://jolby.github.io/colors/[API documentation],
 and the various <<oscillators#oscillators,oscillators>> that Afterglow
 makes available to you.
 
