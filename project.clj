@@ -48,6 +48,8 @@
              "Package" ~#(str (:group %) "." (:name %))
              "Specification-Title" ~#(:name %)
              "Specification-Version" ~#(:version %)}
+  :deploy-repositories [["snapshots" :clojars
+                         "releases" :clojars]]
 
   ;; enable to start the nREPL server when the application launches
   ;; :env {:repl-port 16002}
@@ -57,7 +59,6 @@
                    :repl-options {:init-ns afterglow.examples
                                   :welcome (println "afterglow loaded.")}
                    :env {:dev true}}
-
              :uberjar {:env {:production true}
                        :aot :all}}
   :plugins [[codox "0.8.13"]
