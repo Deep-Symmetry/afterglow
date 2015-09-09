@@ -49,9 +49,9 @@
 
 (defonce ^{:doc "How often should frames of DMX data be sent out; this
   should be a supported frame rate for your interface. The default
-  here is 30 Hz, thirty frames per second."}
+  here is 40 Hz, forty frames per second."}
   default-refresh-interval
-  (/ 1000 30))
+  (/ 1000 40))
 
 (defonce ^:private ^{:doc "If the last attempt to send a message to
   the OLA server failed, this will contain a description of the problem."}
