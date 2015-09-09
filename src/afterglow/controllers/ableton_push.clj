@@ -1631,6 +1631,13 @@ color (colors/create-color
               (remove-move-listener [this f] (swap! (:move-listeners controller) disj f))))
     ;; Set controller in User mode
     (midi/midi-sysex (:port-out controller) [240 71 127 21 98 0 1 1 247])
+    ;; Put pads in aftertouch (poly) pressure mode
+    (midi/midi-sysex (:port-out controller) [240 71 127 21 92 0 1 0 247])
+    ;; Set pad sensitivity level to 1 to avoid stuck pads
+    (midi/midi-sysex (:port-out controller)
+                     [0xF0 0x47 0x7F 0x15 0x5D 0x00 0x20 0x00 0x00 0x0C 0x07 0x00 0x00 0x0D 0x0C 0x00
+                      0x00 0x00 0x01 0x04 0x0C 0x00 0x08 0x00 0x00 0x00 0x01 0x0D 0x04 0x0C 0x00 0x00
+                      0x00 0x00 0x00 0x0E 0x0A 0x06 0x00 0xF7])
     (clear-interface controller)
     (welcome-animation controller)
     (swap! active-bindings assoc (:id controller) controller)
