@@ -251,15 +251,17 @@
 
 (defn metronome-states
   "Gather details about the current state of the main show metronome."
-  [show]
+  [show last-states]
   (with-show show
-    (let [snap (rhythm/metro-snapshot (:metronome show))]
-      {:bpm (format "%.1f" (float (:bpm snap)))
-       :phrase (:phrase snap)
-       :bar (rhythm/snapshot-bar-within-phrase snap)
-       :beat (rhythm/snapshot-beat-within-bar snap)
-       :blink (< (rhythm/snapshot-beat-phase snap) 0.15)
-       :sync (dissoc (show/sync-status) :status :source)})))
+    (let [snap (rhythm/metro-snapshot (:metronome show))
+          position {:phrase (:phrase snap)
+                    :bar (rhythm/snapshot-bar-within-phrase snap)
+                    :beat (rhythm/snapshot-beat-within-bar snap)}]
+      (merge {:bpm (format "%.1f" (float (:bpm snap)))
+              :blink (or (not= position (select-keys last-states [:phrase :bar :beat]))
+                         (< (rhythm/snapshot-beat-phase snap) 0.2))
+              :sync (dissoc (show/sync-status) :status :source)}
+             position))))
 
 (defn metronome-changes
   "Return the list of changes that should be applied to the show
@@ -267,7 +269,7 @@
   [page-id]
   (let [last-info (get @clients page-id)
         last-states (:metronome last-info)
-        next-states (metronome-states (:show last-info))
+        next-states (metronome-states (:show last-info) last-states)
         changes (filter identity (for [[key val] next-states]
                                    (when (not= (key last-states) (key next-states))
                                      {:id (name key) :val val})))]
