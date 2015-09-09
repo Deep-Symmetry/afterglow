@@ -817,6 +817,8 @@ encounter them!
   - [x] Nice
     [breakdown](http://tai-studio.org/index.php/projects/sound-programming/accessing-abletons-push-device/)
     of button sections.
+  - [x] It looks like I can actually specify an RGB color for the buttons using another SysEx:
+    [PushPix](https://cycling74.com/wiki/index.php?title=Push_Programming_Oct13_03)
 - [x] Add a user interface using [Luminus](http://www.luminusweb.net/docs).
 - [x] Separate [ola-clojure](https://github.com/brunchboy/ola-clojure#ola-clojure) into its own project.
 

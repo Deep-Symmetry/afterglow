@@ -138,11 +138,31 @@
   (let [note (+ 36 x (* y 8))]  ;; Calculate note from grid coordinates
     (midi/midi-note-on (:port-out controller) note velocity)))
 
-(defn set-pad-color
-  "Set the color of one of the 64 touch pads to the closest
-  approximation available for a desired color."
+(defn set-pad-color-approximate
+  "*Deprecated in favor of new [[set-pad-color]] implementation.*
+
+  Set the color of one of the 64 touch pads to the closest
+  approximation available for a desired color. This was the first
+  implementation that was discovered, but there is now a much more
+  powerful way to specify an exact color using a SysEx message."
+  {:doc/format :markdown
+   :deprecated true}
   [controller x y color]
   (set-pad-velocity controller x y (velocity-for-color color)))
+
+(defn set-pad-color
+  "Set the color of one of the 64 touch pads to a specific RGB
+  color."
+  [controller x y color]
+  (let [pad (+ x (* y 8))
+        r (colors/red color)
+        g (colors/green color)
+        b (colors/blue color)]
+    (midi/midi-sysex (:port-out controller) [240 71 127 21 4 0 8 pad 0
+                                             (quot r 2r10000) (bit-and r 2r1111)
+                                             (quot g 2r10000) (bit-and g 2r1111)
+                                             (quot b 2r10000) (bit-and b 2r1111)
+                                             247])))
 
 (def monochrome-button-states
   "The control values and modes for a labeled button which does not
@@ -655,6 +675,7 @@
           active-keys (show/active-effect-keys (:show controller))
           [cue active] (show/find-cue-grid-active-effect (:show controller) (+ x origin-x) (+ y origin-y))
           ending (and active (:ending active))
+          l-boost (when cue (if (zero? (colors/saturation (:color cue))) 20.0 0.0))
           color (when cue
                   (colors/create-color
                    :h (colors/hue (:color cue))
@@ -663,13 +684,13 @@
                    ;; when ending, they blink between middle and low. If they are not active,
                    ;; they are at middle brightness unless there is another active effect with
                    ;; the same keyword, in which case they are dim.
-                   :l (if active
-                        (if ending
-                          (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 10 20)
-                          50)
-                        (if (active-keys (:key cue)) 10 20))))
-          velocity (if color (velocity-for-color color) 0)]
-      (aset (:next-grid-pads controller) (+ x (* y 8)) velocity))))
+                   :l (+ (if active
+                           (if ending
+                             (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 10 20)
+                             50)
+                           (if (active-keys (:key cue)) 10 25))
+                         l-boost)))]
+      (aset (:next-grid-pads controller) (+ x (* y 8)) (or color off-color)))))
 
 (defn- update-cue-grid
   "See if any of the cue grid button states have changed, and send any
@@ -678,10 +699,10 @@
   (doseq [x (range 8)
           y (range 8)]
     (let [index (+ x (* y 8))
-          velocity (aget (:next-grid-pads controller) index)]
-      (when-not (= velocity (aget (:last-grid-pads controller) index))
-        (set-pad-velocity controller x y velocity)
-        (aset (:last-grid-pads controller) index velocity)))))
+          color (aget (:next-grid-pads controller) index)]
+      (when-not (= color (aget (:last-grid-pads controller) index))
+        (set-pad-color controller x y color)
+        (aset (:last-grid-pads controller) index color)))))
 
 (defn- fit-cue-variable-name
   "Picks the best version of a cue variable name to fit in the specified
@@ -894,7 +915,7 @@
       (< @counter 8)
       (doseq [y (range 0 (inc @counter))]
         (let [color (colors/create-color
-                     :h 0 :s 0 :l (max 10 (- 50 (/ (* 50 (- @counter y)) 4))))]
+                     :h 0 :s 0 :l (max 10 (- 75 (/ (* 50 (- @counter y)) 6))))]
           (set-pad-color controller 3 y color)
           (set-pad-color controller 4 y color)))
 
@@ -902,7 +923,7 @@
       (doseq [x (range 0 (- @counter 7))
               y (range 0 8)]
         (let [color (colors/create-color
-                     :h 340 :s 100 :l (if (= x (- @counter 8)) 75 50))]
+                     :h 340 :s 100 :l (- 75 (* (- @counter 8 x) 20)))]
           (set-pad-color controller (- 3 x) y color)
           (set-pad-color controller (+ 4 x) y color)))
 
@@ -928,8 +949,10 @@
 
       (< @counter 26)
       (doseq [x (range 0 8)]
-        (let [color (colors/create-color
-                     :h (+ 60 (* 40 (- @counter 18))) :s 100 :l 50)]
+        (let [lightness-index (if (> x 3) (- 7 x) x)
+              lightness ([10 30 50 70] lightness-index)
+color (colors/create-color
+                     :h (+ 60 (* 40 (- @counter 18))) :s 100 :l lightness)]
           (set-pad-color controller x (- 25 @counter) color)))
       
       (= @counter 26)
@@ -970,7 +993,7 @@
                               (seq (str "version" (version/tag)))))
   (let [counter (atom 0)
         task (atom nil)]
-    (reset! task (at-at/every 45 #(welcome-frame controller counter task)
+    (reset! task (at-at/every 50 #(welcome-frame controller counter task)
                               controllers/pool))))
 
 (defn clear-interface
@@ -986,7 +1009,7 @@
     (doseq [y (range 8)]
       (set-pad-color controller x y off-color)))
   (Arrays/fill (:last-top-pads controller) 0)
-  (Arrays/fill (:last-grid-pads controller) 0)
+  (Arrays/fill (:last-grid-pads controller) off-color)
   (doseq [[_ button] control-buttons]
     (set-button-state controller button :off))
   (reset! (:last-text-buttons controller) {}))
@@ -1369,8 +1392,7 @@
                                                   :h (colors/hue (:color cue))
                                                   :s (colors/saturation (:color cue))
                                                   :l 75)]
-                                       (aset (:next-grid-pads controller) (+ pad-x (* pad-y 8))
-                                             (velocity-for-color color))))
+                                       (aset (:next-grid-pads controller) (+ pad-x (* pad-y 8)) color)))
                                    true)
                                  (handle-control-change [this controller message]
                                    false)
@@ -1561,12 +1583,12 @@
   value after `:display-name`.
 
   If you want the user interface to be refreshed at a different rate
-  than the default of thirty times per second, pass your desired
+  than the default of fifteen times per second, pass your desired
   number of milliseconds after `:refresh-interval`."
   {:doc/format :markdown}
   [show & {:keys [device-name refresh-interval display-name]
            :or {device-name "User Port"
-                refresh-interval show/default-refresh-interval
+                refresh-interval (/ 1000 15)
                 display-name "Ableton Push"}}]
   (let [controller
         {:id (swap! controller-counter inc)
@@ -1584,8 +1606,8 @@
          :next-text-buttons (atom {})
          :last-top-pads (int-array 8)
          :next-top-pads (int-array 8)
-         :last-grid-pads (int-array 64)
-         :next-grid-pads (int-array 64)
+         :last-grid-pads (make-array clojure.lang.IPersistentMap 64)
+         :next-grid-pads (make-array clojure.lang.IPersistentMap 64)
          :metronome-mode (atom {})
          :shift-mode (atom false)
          :stop-mode (atom false)
