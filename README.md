@@ -776,6 +776,7 @@ encounter them!
 - [ ] When it is time to optimize performance, study the
   [type hints](http://clojure.org/java_interop#Java%20Interop-Type%20Hints)
   interop information looks very informative and helpful.
+  - [ ] satisfies? seems to take twice as long as instance? so change the preconditions to use instance? where possible
   - [ ] Do a pass through all files with *warn-on-reflection* set to
     true, see what hinting can help. `(set! *warn-on-reflection*
     true)` at top of file.
