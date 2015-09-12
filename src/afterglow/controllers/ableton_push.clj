@@ -1600,60 +1600,64 @@ color (colors/create-color
            :or {device-name "User Port"
                 refresh-interval (/ 1000 15)
                 display-name "Ableton Push"}}]
-  (let [controller
-        {:id (swap! controller-counter inc)
-         :display-name display-name
-         :show show
-         :origin (atom [0 0])
-         :effect-offset (atom 0)
-         :refresh-interval refresh-interval
-         :port-in (midi/midi-find-device (amidi/open-inputs-if-needed!) device-name)
-         :port-out (midi/midi-find-device (amidi/open-outputs-if-needed!) device-name)
-         :task (atom nil)
-         :last-display (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
-         :next-display (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
-         :last-text-buttons (atom {})
-         :next-text-buttons (atom {})
-         :last-top-pads (int-array 8)
-         :next-top-pads (int-array 8)
-         :last-grid-pads (make-array clojure.lang.IPersistentMap 64)
-         :next-grid-pads (make-array clojure.lang.IPersistentMap 64)
-         :metronome-mode (atom {})
-         :last-marker (atom nil)
-         :shift-mode (atom false)
-         :stop-mode (atom false)
-         :midi-handler (atom nil)
-         :tap-tempo-handler (amidi/create-tempo-tap-handler (:metronome show))
-         :overlays (atom (sorted-map-by >))
-         :next-overlay (atom 0)
-         :move-listeners (atom #{})
-         :grid-controller-impl (atom nil)}]
-    (reset! (:midi-handler controller) (partial midi-received controller))
-    (reset! (:grid-controller-impl controller)
-            (reify controllers/IGridController
-              (display-name [this] (:display-name controller))
-              (physical-height [this] 8)
-              (physical-width [this] 8)
-              (current-bottom [this] (@(:origin controller) 1))
-              (current-bottom [this y] (move-origin controller (assoc @(:origin controller) 1 y)))
-              (current-left [this] (@(:origin controller) 0))
-              (current-left [this x] (move-origin controller (assoc @(:origin controller) 0 x)))
-              (add-move-listener [this f] (swap! (:move-listeners controller) conj f))
-              (remove-move-listener [this f] (swap! (:move-listeners controller) disj f))))
-    ;; Set controller in User mode
-    (midi/midi-sysex (:port-out controller) [240 71 127 21 98 0 1 1 247])
-    ;; Put pads in aftertouch (poly) pressure mode
-    (midi/midi-sysex (:port-out controller) [240 71 127 21 92 0 1 0 247])
-    ;; Set pad sensitivity level to 1 to avoid stuck pads
-    (midi/midi-sysex (:port-out controller)
-                     [0xF0 0x47 0x7F 0x15 0x5D 0x00 0x20 0x00 0x00 0x0C 0x07 0x00 0x00 0x0D 0x0C 0x00
-                      0x00 0x00 0x01 0x04 0x0C 0x00 0x08 0x00 0x00 0x00 0x01 0x0D 0x04 0x0C 0x00 0x00
-                      0x00 0x00 0x00 0x0E 0x0A 0x06 0x00 0xF7])
-    (clear-interface controller)
-    (welcome-animation controller)
-    (swap! active-bindings assoc (:id controller) controller)
-    (show/register-grid-controller @(:grid-controller-impl controller))
-    controller))
+  (let [port-in (midi/midi-find-device (amidi/open-inputs-if-needed!) device-name)
+        port-out (midi/midi-find-device (amidi/open-outputs-if-needed!) device-name)]
+    (if (every? some? [port-in port-out])
+      (let [controller
+            {:id (swap! controller-counter inc)
+             :display-name display-name
+             :show show
+             :origin (atom [0 0])
+             :effect-offset (atom 0)
+             :refresh-interval refresh-interval
+             :port-in port-in
+             :port-out port-out
+             :task (atom nil)
+             :last-display (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
+             :next-display (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
+             :last-text-buttons (atom {})
+             :next-text-buttons (atom {})
+             :last-top-pads (int-array 8)
+             :next-top-pads (int-array 8)
+             :last-grid-pads (make-array clojure.lang.IPersistentMap 64)
+             :next-grid-pads (make-array clojure.lang.IPersistentMap 64)
+             :metronome-mode (atom {})
+             :last-marker (atom nil)
+             :shift-mode (atom false)
+             :stop-mode (atom false)
+             :midi-handler (atom nil)
+             :tap-tempo-handler (amidi/create-tempo-tap-handler (:metronome show))
+             :overlays (atom (sorted-map-by >))
+             :next-overlay (atom 0)
+             :move-listeners (atom #{})
+             :grid-controller-impl (atom nil)}]
+        (reset! (:midi-handler controller) (partial midi-received controller))
+        (reset! (:grid-controller-impl controller)
+                (reify controllers/IGridController
+                  (display-name [this] (:display-name controller))
+                  (physical-height [this] 8)
+                  (physical-width [this] 8)
+                  (current-bottom [this] (@(:origin controller) 1))
+                  (current-bottom [this y] (move-origin controller (assoc @(:origin controller) 1 y)))
+                  (current-left [this] (@(:origin controller) 0))
+                  (current-left [this x] (move-origin controller (assoc @(:origin controller) 0 x)))
+                  (add-move-listener [this f] (swap! (:move-listeners controller) conj f))
+                  (remove-move-listener [this f] (swap! (:move-listeners controller) disj f))))
+        ;; Set controller in User mode
+        (midi/midi-sysex (:port-out controller) [240 71 127 21 98 0 1 1 247])
+        ;; Put pads in aftertouch (poly) pressure mode
+        (midi/midi-sysex (:port-out controller) [240 71 127 21 92 0 1 0 247])
+        ;; Set pad sensitivity level to 1 to avoid stuck pads
+        (midi/midi-sysex (:port-out controller)
+                         [0xF0 0x47 0x7F 0x15 0x5D 0x00 0x20 0x00 0x00 0x0C 0x07 0x00 0x00 0x0D 0x0C 0x00
+                          0x00 0x00 0x01 0x04 0x0C 0x00 0x08 0x00 0x00 0x00 0x01 0x0D 0x04 0x0C 0x00 0x00
+                          0x00 0x00 0x00 0x0E 0x0A 0x06 0x00 0xF7])
+        (clear-interface controller)
+        (welcome-animation controller)
+        (swap! active-bindings assoc (:id controller) controller)
+        (show/register-grid-controller @(:grid-controller-impl controller))
+        controller)
+      (timbre/error "Unable to find Ableton Push with MIDI device name:" device-name))))
 
 (defn deactivate
   "Deactivates a controller interface, killing its update thread
