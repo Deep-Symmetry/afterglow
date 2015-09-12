@@ -59,7 +59,14 @@
   If an offset is supplied, calculates a snapshot based on adding that
   many milliseconds to the current time.")
   (metro-marker [metro]
-    "Returns the current time as phrase.bar.beat"))
+    "Returns the current time as phrase.bar.beat")
+  (metro-add-bpm-watch [metro key f]
+    "Register a function to be called whenever the metronome's BPM
+  changes. The key and function arguments are the same as found in
+  clojure.core/add-watch, and in fact are passed on to it.")
+  (metro-remove-bpm-watch [metro key]
+    "Stop calling the function which was registered with the specified
+  key."))
 
     (defprotocol ISnapshot
   "A snapshot to support a series of beat and phase calculations with
@@ -356,7 +363,13 @@ as fast, 3/4 oscillates 4 times every three markers..."
 
   (metro-marker [metro]
     (let [snap (metro-snapshot metro)]
-      (str (:phrase snap) "." (snapshot-bar-within-phrase snap) "." (snapshot-beat-within-bar snap)))))
+      (str (:phrase snap) "." (snapshot-bar-within-phrase snap) "." (snapshot-beat-within-bar snap))))
+
+  (metro-add-bpm-watch [metro key f]
+    (add-watch bpm key f))
+
+  (metro-remove-bpm-watch [metro key]
+    (remove-watch bpm key)))
 
 (defn metronome
   "A metronome is a beat management tool. Tell it what BPM you want,
