@@ -108,7 +108,7 @@
         ;;       resyncing the bar start on each beat from the Pioneer equipment.
         ;;
         ;;       If/when that mode is figured out and made an option, the following
-        ;;       line will be invoked INSTEAD of the one above.
+        ;;       line will be invoked INSTEAD of the metro-beat-phase one above.
         #_(rhythm/metro-bar-phase (:metronome (/ (dec beat) 4)))))))
 
 (defn start
