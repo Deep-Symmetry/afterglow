@@ -25,7 +25,7 @@
                  [ola-clojure "0.1.1"]
                  [selmer "0.9.1"]
                  [com.evocomputing/colors "1.0.3"]
-                 [environ "1.0.0"]
+                 [environ "1.0.1"]
                  [camel-snake-kebab "0.3.2"]
                  [com.taoensso/timbre "4.1.1"]
                  [com.taoensso/tower "3.0.2"]
@@ -62,7 +62,7 @@
              :uberjar {:env {:production true}
                        :aot :all}}
   :plugins [[codox "0.8.13"]
-            [lein-environ "1.0.0"]
+            [lein-environ "1.0.1"]
             [lein-ancient "0.6.7"]]
 
   :codox {:src-dir-uri "http://github.com/brunchboy/afterglow/blob/master/"
