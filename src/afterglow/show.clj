@@ -595,6 +595,38 @@
   (add-midi-control-metronome-mapping midi-device-name channel control-number metronome
                                       #(rhythm/metro-phrase-start % (rhythm/metro-phrase %))))
 
+(defn find-effect-internal
+  "Looks up the specified effect keyword in list of active effects.
+  Returns a map of the effect metadata, with the effect itself under
+  the key `:effect`. If the effect is in the process of ending, the
+  keyword `:ending` will have a `true` value."
+  {:doc/format :markdown}
+  [key show]
+  {:pre [(some? show) (some? key)]}
+  (when-let [index (get (:indices @(:active-effects *show*)) (keyword key))]
+    (assoc (get (:meta @(:active-effects *show*)) index)
+           :effect (get (:effects @(:active-effects *show*)) index)
+           :ending ((:ending @(:active-effects *show*)) (keyword key)))))
+
+(defn find-effect
+  "Looks up the specified effect keyword in list of active effects
+  for [[*show*]]. Returns a map of the effect metadata, with the
+  effect itself under the key `:effect`. If the effect is in the
+  process of ending, the keyword `:ending` will have a `true` value."
+  {:doc/format :markdown}
+  [key]
+  (find-effect-internal key *show*))
+
+(defn- warn-ending-effect
+  "If an effect is about to be removed from the set of active effects,
+  make sure that its end function has been called, in case it needs to
+  do any cleanup beyond simply being garbage collected."
+  [key show]
+  (let [found (find-effect-internal key show)
+        effect (:effect found)]
+    (when (and found (not (:ending found)))
+      (fx/end effect show (rhythm/metro-snapshot (:metronome show))))))
+
 (defn- vec-remove
   "Remove the element at the specified index from the collection."
   [coll pos]
@@ -609,13 +641,13 @@
 (defn- remove-effect-internal
   "Helper function which removes the effect with the specified key
   from the priority list structure maintained for the show."
-  [fns key]
-  (if-let [index (get (:indices fns) key)]
-    {:effects (vec-remove (:effects fns) index)
-     :indices (remove-key (:indices fns) key index)
-     :meta (vec-remove (:meta fns) index)
-     :ending (disj (:ending fns) key)}
-    fns))
+  [active-effects key]
+  (if-let [index (get (:indices active-effects) key)]
+    {:effects (vec-remove (:effects active-effects) index)
+     :indices (remove-key (:indices active-effects) key index)
+     :meta (vec-remove (:meta active-effects) index)
+     :ending (disj (:ending active-effects) key)}
+    active-effects))
 
 (defn- find-insertion-index
   "Determines where in the priority list an effect with the specified
@@ -648,8 +680,8 @@
   "Helper function which adds an effect with a specified key and priority to the priority
   list structure maintained for the show, replacing any existing effect with the same key.
   Tracks the effect instance id, cue-grid source, and variable binding map as metadata."
-  [fns key f priority id from-cue x y var-map]
-  (let [base (remove-effect-internal fns key)
+  [active-effects key f priority id from-cue x y var-map]
+  (let [base (remove-effect-internal active-effects key)
         index (find-insertion-index (:meta base) priority)]
     {:effects (vec-insert (:effects base) index f)
      :indices (insert-key (:indices base) key index)
@@ -680,29 +712,13 @@
   `:var-map` is used to supply a map of variable bindings associated
   with the cue, also for use by interfaces which support them."
   {:doc/format :markdown}
-  [key f & {:keys [priority from-cue x y var-map] :or {priority 0}}]
-  {:pre [(some? *show*) (some? key) (instance? Effect f) (integer? priority)]}
-  (let [id (swap! (:next-id *show*) inc)]
-    (swap! (:active-effects *show*) #(add-effect-internal % (keyword key) f priority id from-cue x y var-map))
+  [key effect & {:keys [priority from-cue x y var-map] :or {priority 0}}]
+  {:pre [(some? *show*) (some? key) (instance? Effect effect) (integer? priority)]}
+  (let [key (keyword key)
+        id (swap! (:next-id *show*) inc)]
+    (warn-ending-effect key *show*)
+    (swap! (:active-effects *show*) #(add-effect-internal % key effect priority id from-cue x y var-map))
     id))
-
-(defn- vec-remove
-  "Remove the element at the specified index from the collection."
-  [coll pos]
-  (vec (concat (subvec coll 0 pos) (subvec coll (inc pos)))))
-
-(defn find-effect
-  "Looks up the specified effect keyword in list of active effects
-  for [[*show*]]. Returns a map of the effect metadata, with the
-  effect itself under the key `:effect`. If the effect is in the
-  process of ending, the keyword `:ending` will have a `true` value."
-  {:doc/format :markdown}
-  [key]
-  {:pre [(some? *show*) (some? key)]}
-  (when-let [index (get (:indices @(:active-effects *show*)) (keyword key))]
-    (assoc (get (:meta @(:active-effects *show*)) index)
-           :effect (get (:effects @(:active-effects *show*)) index)
-           :ending ((:ending @(:active-effects *show*)) (keyword key)))))
 
 (defn- clean-cue-temporary-variables
   "Removes any temporary variables which were introduced for an effect
@@ -723,17 +739,17 @@
   {:doc/format :markdown}
   [key & {:keys [force when-id]}]
   {:pre [(some? *show*) (some? key)]}
-  (let [found (find-effect key)
-        effect (:effect found)
-        key (keyword key)] 
+  (let [key (keyword key)
+        found (find-effect key)
+        effect (:effect found)]
     ;; Make sure the effect is actually running, and if the caller cares, is the right instance
     (when (and effect (or (nil? when-id) (= (:id found) when-id)))
       ;; See if it should be forcibly or gently ended
-      (if (or force ((:ending @(:active-effects *show*)) key)
-              (fx/end effect *show* (rhythm/metro-snapshot (:metronome *show*))))
-        (do  ; Actually ended
+      (if (or force (:ending found) (fx/end effect *show* (rhythm/metro-snapshot (:metronome *show*))))
+        (do  ; Actually ended (perhaps by force)
           (when (every? #(% found) [:cue :x :y])
             (controllers/activate-cue! (:cue-grid *show*) (:x found) (:y found) nil))
+          (when force (warn-ending-effect key *show*))
           (swap! (:active-effects *show*) #(remove-effect-internal % key))
           (clean-cue-temporary-variables (:variables found)))
         (do  ; Starting to end gracefully
