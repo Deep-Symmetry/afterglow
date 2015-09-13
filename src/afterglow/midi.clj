@@ -10,14 +10,24 @@
            [java.util.regex Pattern]))
 
 (def ^:private max-clock-intervals
-  "How many MIDI clock pulses should be kept around for averaging?"
+  "How many MIDI clock pulses and interval averages should be kept
+  around for BPM calculation?"
   30)
+
+(def ^:private min-clock-intervals
+  "How many MIDI clock pulses are needed in order to start attempting
+  BPM calculation?"
+  12)
+
+(def ^:private max-clock-lag
+  "How many ms is too long to wait between MIDI clock pulses?"
+  150)
 
 (def ^:private max-tempo-taps
   "How many tempo taps should be kept around for averaging?"
   4)
 
-(def ^:private max-tempo-tap-interval
+(def ^:private max-tempo-tap-lag
   "How long is too long for a tap to be considered part of
   establishing a tempo?"
   2000)
@@ -314,7 +324,7 @@
   (let [timestamp (now)]
     (rhythm/metro-beat-phase metronome 0)      ; Regardless, mark the beat
     (if (and (some? (last @buffer))
-             (< (- timestamp (last @buffer)) max-tempo-tap-interval))
+             (< (- timestamp (last @buffer)) max-tempo-tap-lag))
       ;; We are considering this part of a series of taps.
       (do
         (swap! buffer conj timestamp)
@@ -324,14 +334,14 @@
                 mean (/ passed intervals)]
             (rhythm/metro-bpm metronome (double (/ 60000 mean))))))
       ;; This tap was isolated, but may start a new series.
-      (reset! buffer (conj (ring-buffer max-tempo-tap-interval) timestamp))))
+      (reset! buffer (conj (ring-buffer max-tempo-taps) timestamp))))
   nil)
 
 (defn create-tempo-tap-handler
   "Returns a function which implements a simple tempo-tap algorithm on
   the supplied metronome."
   [metronome]
-  (let [buffer (atom (ring-buffer max-tempo-tap-interval))]
+  (let [buffer (atom (ring-buffer max-tempo-taps))]
     (fn [] (tap-handler buffer metronome))))
 
 (defonce
@@ -356,6 +366,41 @@
       mechanism ever offers that), and :status, which is a
       human-oriented summmary of the status."))))
 
+(defn interval-to-bpm
+  "Given an interval between MIDI clock pulses in milliseconds,
+  calculate the implied beats per minute value, to the nearest
+  hundredth of a beat."
+  [interval]
+  (/ (math/round (double (/ 6000000 (* interval 24)))) 100.0))
+
+(defn bpm-to-interval
+  "Given a BPM, calculate the interval between MIDI clock pulses in
+  milliseconds."
+  [bpm]
+  (/ 2500.0 bpm))
+
+(defn std-dev
+  "Calculate the standard deviation of a set of samples."
+  ([samples]
+   (let [n (count samples)
+         mean (/ (reduce + samples) n)]
+     (std-dev samples n mean)))
+  ([samples n mean]
+   (let [intermediate (map #(Math/pow (- %1 mean) 2) samples)]
+     (Math/sqrt (/ (reduce + intermediate) n))))) 
+
+(def abs-tolerance
+  "If we are going to adjust the BPM, the adjustment we are going to
+  make needs to represent at least this many milliseconds per MIDI
+  clock tick (to reduce jitter)."
+  0.005)
+
+(def dev-tolerance
+  "If we are going to adjust the BPM, the adjustment must be at least
+  this many times the standard deviation in observed clock pulse
+  timings, so we can avoid jitter due to unstable timing."
+  2.2)
+
 (defn- sync-handler
   "Called whenever a MIDI message is received for a synced metronome.
   If it is a clock pulse, update the ring buffer in which we are
@@ -372,11 +417,15 @@
                              intervals (dec (count @timestamps))
                              mean (/ passed intervals)]
                          (alter means conj mean)
-                         (when (= (count @means) max-clock-intervals)
-                           (let [mean-mean (/ (apply + @means) max-clock-intervals)
-                                 new-bpm (/ (math/round (double (/ 6000000 (* mean-mean 24)))) 100)]
-                             (when (>= (math/abs (- new-bpm (rhythm/metro-bpm metronome))) 0.1)
-                               (rhythm/metro-bpm metronome new-bpm)))))))
+                         (when (>= (count @means) min-clock-intervals)
+                           (let [num-means (count @means)
+                                 mean-mean (/ (apply + @means) num-means)
+                                 dev (std-dev @means num-means mean-mean)
+                                 implied (bpm-to-interval (rhythm/metro-bpm metronome))
+                                 adjustment (math/abs (- implied mean-mean))]
+                             (when (> adjustment (max abs-tolerance (* dev-tolerance dev)))
+                               (timbre/info "dev" dev "mean-mean" (float mean-mean) "adjustment" adjustment)
+                               (rhythm/metro-bpm metronome (interval-to-bpm mean-mean))))))))
      (:start :stop) (do (ref-set timestamps (ring-buffer max-clock-intervals)) ; Clock is being reset
                         (ref-set means (ring-buffer max-clock-intervals)))
      :control-change (when (and (some? @traktor-info) (< (:note msg) 5))  ; Traktor beat phase update
