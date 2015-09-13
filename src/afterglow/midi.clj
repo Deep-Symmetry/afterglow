@@ -2,6 +2,7 @@
   "Handles MIDI communication, including syncing a show metronome to MIDI clock pulses."
   (:require [afterglow.rhythm :as rhythm]
             [amalloy.ring-buffer :refer [ring-buffer]]
+            [clojure.math.numeric-tower :as math]
             [overtone.at-at :refer [now]]
             [overtone.midi :as midi]
             [taoensso.timbre :as timbre])
@@ -10,7 +11,7 @@
 
 (def ^:private max-clock-intervals
   "How many MIDI clock pulses should be kept around for averaging?"
-  12)
+  30)
 
 (def ^:private max-tempo-taps
   "How many tempo taps should be kept around for averaging?"
@@ -360,18 +361,24 @@
   If it is a clock pulse, update the ring buffer in which we are
   collecting timestamps, and if we have enough, calculate a BPM value
   and update the associated metronome."
-  [msg buffer metronome traktor-info]
+  [msg timestamps means metronome traktor-info]
   (dosync
    (ensure traktor-info)
    (case (:status msg)
      :timing-clock (let [timestamp (now)]  ; Ordinary clock pulse
-                     (alter buffer conj timestamp)
-                     (when (> (count @buffer) 2)
-                       (let [passed (- timestamp (peek @buffer))
-                             intervals (dec (count @buffer))
+                     (alter timestamps conj timestamp)
+                     (when (> (count @timestamps) 1)
+                       (let [passed (- timestamp (peek @timestamps))
+                             intervals (dec (count @timestamps))
                              mean (/ passed intervals)]
-                         (rhythm/metro-bpm metronome (double (/ 60000 (* mean 24)))))))
-     (:start :stop) (ref-set buffer (ring-buffer max-clock-intervals))  ; Clock is being reset!
+                         (alter means conj mean)
+                         (when (= (count @means) max-clock-intervals)
+                           (let [mean-mean (/ (apply + @means) max-clock-intervals)
+                                 new-bpm (/ (math/round (double (/ 6000000 (* mean-mean 24)))) 100)]
+                             (when (>= (math/abs (- new-bpm (rhythm/metro-bpm metronome))) 0.1)
+                               (rhythm/metro-bpm metronome new-bpm)))))))
+     (:start :stop) (do (ref-set timestamps (ring-buffer max-clock-intervals)) ; Clock is being reset
+                        (ref-set means (ring-buffer max-clock-intervals)))
      :control-change (when (and (some? @traktor-info) (< (:note msg) 5))  ; Traktor beat phase update
                        (when (zero? (:note msg))  ; Switching the current master deck
                          (alter traktor-info assoc :master (:velocity msg)))
@@ -402,18 +409,19 @@
 
 ;; A simple object which holds the values necessary to establish a link between an external
 ;; source of MIDI clock messages and the metronome driving the timing of a light show.
-(defrecord ClockSync [metronome midi-clock-source buffer traktor-info] 
+(defrecord ClockSync [metronome midi-clock-source timestamps means traktor-info] 
     IClockSync
     (sync-start [this]
-      (add-synced-metronome midi-clock-source metronome (fn [msg] (sync-handler msg buffer metronome traktor-info))))
+      (add-synced-metronome midi-clock-source metronome
+                            (fn [msg] (sync-handler msg timestamps means metronome traktor-info))))
     (sync-stop [this]
       (remove-synced-metronome midi-clock-source metronome))
     (sync-status [this]
       (dosync
-       (ensure buffer)
+       (ensure timestamps)
        (ensure traktor-info)
-       (let [n (count @buffer)
-             lag (when (pos? n) (- (now) (last @buffer)))
+       (let [n (count @timestamps)
+             lag (when (pos? n) (- (now) (last @timestamps)))
              current (and (= n max-clock-intervals)
                           (< lag 100))
              traktor-current (traktor-beat-phase-current @traktor-info)]
@@ -422,7 +430,7 @@
           :level (if traktor-current :beat :bpm)
           :source midi-clock-source
           :status (cond
-                    (empty? @buffer) "Inactive, no clock pulses have been received."
+                    (empty? @timestamps) "Inactive, no clock pulses have been received."
                     (not current) (str "Stalled? " (if (< n max-clock-intervals)
                                                      (str "Clock pulse buffer has " n " of "
                                                           max-clock-intervals " pulses in it.")
@@ -489,6 +497,7 @@
 
        1 (fn [^afterglow.rhythm.Metronome metronome]
            (let [sync-handler (ClockSync. metronome (first result) (ref (ring-buffer max-clock-intervals))
+                                          (ref (ring-buffer max-clock-intervals))
                                           (ref {:master (get-in @clock-sources [(first result) :master])}))]
              (sync-start sync-handler)
              sync-handler))
