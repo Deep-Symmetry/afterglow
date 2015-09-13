@@ -6,10 +6,14 @@
   on the caller's thread. If this turns out not to be true, it can be
   changed to use a core.async channel the way that ola-clojure does."
   (:require [afterglow.controllers :as controllers]
+            [afterglow.effects :as fx]
+            [afterglow.effects.params :as params]
             [afterglow.rhythm :as rhythm]
-            [overtone.at-at :as at-at :refere [now]]
+            [com.evocomputing.colors :as colors]
+            [overtone.at-at :as at-at :refer [now]]
             [taoensso.timbre :as timbre])
-  (:import [java.net InetAddress DatagramPacket DatagramSocket]))
+  (:import [java.net InetAddress DatagramPacket DatagramSocket]
+           [afterglow.effects Effect]))
 
 (defonce ^{:private true
            :doc "The socket used for sending UDP packets to Beyond."}
@@ -70,3 +74,37 @@
                             (when former-task (at-at/stop former-task))
                             (when show (at-at/every resync-interval #(resync-to-beat server) controllers/pool
                                                     :desc "Resync Beyond's beat grid")))))))
+
+(defn set-color-slider-to-normal
+  "Sets Beyond's Live Control color slider to allow the affected cue
+  to show its normal colors."
+  [server]
+  (send-command server "ColorSlider 0"))
+
+(defn set-color-slider-from-hue
+  "Sets Beyond's Live Control color slider to a value that causes the
+  affected cue to have the same hue as the supplied color value."
+  [server color]
+  (send-command server (str  "ColorSlider " (+ 25 (int (* 198.0 (/ (colors/hue color) 360.0)))))))
+
+(defn set-color-slider-to-white
+  "Sets Beyond's Live Control color slider to cause the affected cue
+  to be drawn in white."
+  [server]
+  (send-command server "ColorSlider 255"))
+
+(defn laser-color-effect
+  "An effect which does not create any actual assigners, but when it
+  is asked for them, sets the Beyond color slider to match the hue of
+  the color parameter passed in, and sets it back to normal when
+  ended."
+  [server color]
+  (Effect. "Laser Hue"
+           fx/always-active
+           (fn [show snapshot]
+             (let [resolved (params/resolve-param color show snapshot)]
+               (set-color-slider-from-hue server resolved))
+             nil)
+           (fn [show snapshot]
+             (set-color-slider-to-normal server)
+             true)))

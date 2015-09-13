@@ -1,9 +1,11 @@
 (ns afterglow.examples
   "Show some simple ways to use Afterglow, and hopefully inspire
   exploration." {:author "James Elliott"}
-  (:require [afterglow.controllers.ableton-push :as push]
+  (:require [afterglow.beyond :as beyond]
+            [afterglow.controllers.ableton-push :as push]
             [afterglow.controllers :as ct]
             [afterglow.core :as core]
+            [afterglow.effects :as fx]
             [afterglow.effects.color :refer [color-effect]]
             [afterglow.effects.cues :as cues]
             [afterglow.effects.dimmer :refer [dimmer-effect master-set-level]]
@@ -317,6 +319,19 @@
   [head show]
   (let [dimensions @(:dimensions *show*)]
     (/ (- (:x head) (:min-x dimensions)) (- (:max-x dimensions) (:min-x dimensions)))))
+
+(defn try-laser-cues
+  "Create some cues that integrate Pangolin Beyond."
+  [server]
+  (let [hue-bar (params/build-oscillated-param  ; Spread a rainbow across a bar of music
+                 (oscillators/sawtooth-bar) :max 360)
+        hue-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-bar)]
+    (ct/set-cue! (:cue-grid *show*) 0 1
+                 (cues/cue :color (fn [_] (fx/scene "Rainbow with laser" (global-color-effect hue-param)
+                                                    (beyond/laser-color-effect server hue-param)))
+                           :short-name "Rainbow Bar Fade"
+                           :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
+                                        :type :integer}]))))
 
 (defn make-cues
   "Create a bunch of example cues for experimentation."
