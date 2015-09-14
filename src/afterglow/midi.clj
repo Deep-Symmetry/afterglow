@@ -424,7 +424,6 @@
                                  implied (bpm-to-interval (rhythm/metro-bpm metronome))
                                  adjustment (math/abs (- implied mean-mean))]
                              (when (> adjustment (max abs-tolerance (* dev-tolerance dev)))
-                               (timbre/info "dev" dev "mean-mean" (float mean-mean) "adjustment" adjustment)
                                (rhythm/metro-bpm metronome (interval-to-bpm mean-mean))))))))
      (:start :stop) (do (ref-set timestamps (ring-buffer max-clock-intervals)) ; Clock is being reset
                         (ref-set means (ring-buffer max-clock-intervals)))
