@@ -58,6 +58,7 @@
                                   [ring/ring-devel "1.4.0"]]
                    :repl-options {:init-ns afterglow.examples
                                   :welcome (println "afterglow loaded.")}
+                   :jvm-opts ["-XX:-OmitStackTraceInFastThrow" "-Dapple.awt.UIElement=true"]
                    :env {:dev true}}
              :uberjar {:env {:production true}
                        :aot :all}}
