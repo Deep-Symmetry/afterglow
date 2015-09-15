@@ -69,6 +69,40 @@
   Lower-level assignments are resolved before more abstract ones."
   [:channel :function :color :direction :aim])
 
+(defonce ^:private ^{:doc "Keeps track of the resolution orders for
+  extensions which have been registered to the frame rendering loop.
+  Keys are the unique keyword identifying the extension, perhaps a
+  keyword created from its namespace, and values are a vector of the
+  keywords identifying the new assigner types contributed by the
+  extension. These must also be globally unique, and so should
+  probably have a prefix related to the extension name.
+
+  Even if an extension adds only one new assigner type, that must be
+  provided in a vector here in order for Afterglow to run the
+  assigners."}
+  extension-resolution-orders
+  (atom {}))
+
+(defn set-extension-resolution-order!
+  "A system wanting to extend the Afterglow rendering loop to support
+  new kinds of assigners must call this function to register its new
+  unique assigner types, and the order in which they should be run.
+
+  The first argument `extension-key` is a unique keyword identifying
+  the extension, for example a keyword created from its namespace
+  name. The second argument is a vector containing all the keywords
+  which identify the new assigner types which are implemented by the
+  extension. These must also be globally unique, and should probably
+  have a prefix related to the exension name.
+
+  Even if the extension adds only a single new assigner type, that
+  must be passed as a single-element vector in `order` so that
+  Afterglow knows to look for and run its assigners."
+  {:doc/format :markdown}
+  [extension-key order]
+  {:pre [(keyword? extension-key) (sequential? order) (every? keyword? order)]}
+  (swap! extension-resolution-orders assoc extension-key order))
+
 (defn- gather-assigners
   "Collect all of the assigners that are in effect at the current
   moment in the show, organized by type and the unique ID of the
@@ -145,7 +179,45 @@
                                (when (:cause result)
                                  {:cause (str (root-cause (:cause result)))})))))
 
-(defn- send-dmx
+(defn- clear-dmx-buffers
+  "Clear the DMX universe buffers in preparation for generating a new
+  frame."
+  [show buffers]
+  (cp/pdoseq @(:pool show) [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
+
+(defn- clear-extension-buffers
+  "Tell any registered extensions to clear their buffers in
+  preparation for generating a new frame."
+  [show]
+  (cp/pdoseq @(:pool show) [f @(:empty-buffer-fns show)] (f)))
+
+(defn- clean-finished-effects
+  "See if any effects now consider themselves finished, and remove
+  them from the active functions prior to generating the current
+  frame."
+  [show snapshot]
+  (let [active @(:active-effects show)
+           indexed (cp/pmap @(:pool show) vector (range) (:effects active))]
+       (cp/pdoseq @(:pool show) [[index effect] indexed]
+                  (when-not (fx/still-active? effect show snapshot)
+                    (let [fx-meta (get (:meta active) index)]
+                      (end-effect! (:key fx-meta) :force true :when-id (:id fx-meta)))))))
+
+(defn- send-dmx-buffers
+  "Once a frame has been calculated, send the DMX universe buffers to
+  the OLA daemon."
+  [show buffers]
+  (cp/pdoseq @(:pool show) [universe (keys buffers)]
+             (let [levels (get buffers universe)]
+               (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} response-handler))))
+
+(defn- send-extension-buffers
+  "Once a frame has been calculated, tell any registered extensions to
+  send out their updates."
+  [show]
+  (cp/pdoseq @(:pool show) [f @(:send-buffer-fns show)] (f)))
+
+(defn- send-frame
   "Calculate and send a single frame of DMX values for the universes
   and effects run by a show. Arguments are the show being rendered,
   the DMX buffers for its universes, and the metronome snapshot
@@ -158,25 +230,22 @@
   {:doc/format :markdown}
   [show buffers snapshot]
   (p :clear-buffers
-     (cp/pdoseq @(:pool show) [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0)))
-     (cp/pdoseq @(:pool show) [f @(:empty-buffer-fns show)] (f)))
+     (let [dmx-future (cp/future @(:pool show) (clear-dmx-buffers show buffers))
+           extensions-future (cp/future @(:pool show) (clear-extension-buffers show))]
+       @dmx-future @extensions-future))
   (p :clean-finished-effects
-     (let [indexed (cp/pmap @(:pool show)
-                            vector (range) (:effects @(:active-effects show)))]
-       (cp/pdoseq @(:pool show) [[index effect] indexed]
-                  (when-not (fx/still-active? effect show snapshot)
-                    (end-effect! (:key (get (:meta @(:active-effects show)) index)) :force true)))))
+     (clean-finished-effects show snapshot))
   (let [all-assigners (gather-assigners show snapshot)]
-    (doseq [kind resolution-order]
-      (cp/pdoseq @(:pool show) [assigners (vals (get all-assigners kind))]
-                 (let [assignment (run-assigners show snapshot assigners)]
-                   (when (some? (:value assignment)) ; If assigner returned nil value, it wants to be skipped
-                     (p :resolve-value (fx/resolve-assignment assignment show snapshot buffers)))))))
-  (p :send-dmx-data
-     (cp/pdoseq @(:pool show) [universe (keys buffers)]
-                (let [levels (get buffers universe)]
-                  (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} response-handler)))
-     (cp/pdoseq @(:pool show) [f @(:send-buffer-fns show)] (f)))
+    (doseq [kind (concat resolution-order (apply concat (vals @extension-resolution-orders)))]
+      (p kind
+         (cp/pdoseq @(:pool show) [assigners (vals (get all-assigners kind))]
+                    (let [assignment (run-assigners show snapshot assigners)]
+                      (when (some? (:value assignment)) ; If assigner returned nil value, it wants to be skipped
+                        (p :resolve-value (fx/resolve-assignment assignment show snapshot buffers))))))))
+  (p :send-frame-data
+     (let [dmx-future (cp/future @(:pool show) (send-dmx-buffers show buffers))
+           extensions-future (cp/future @(:pool show) (send-extension-buffers show))]
+       @dmx-future @extensions-future))
   (swap! (:movement *show*) #(dissoc (assoc % :previous (:current %)) :current))
   (swap! (:statistics *show*) update-stats (:instant snapshot) (:refresh-interval show)))
 
@@ -264,7 +333,7 @@
   (loop [snapshot (rhythm/metro-snapshot (:metronome show))
          still-running (atom true)]
     (try
-      (send-dmx show buffers snapshot)
+      (send-frame show buffers snapshot)
       (catch Throwable t
         (if (instance? java.lang.InterruptedException t)
           (reset! still-running false)  ; Just means the show was stopped
@@ -1126,16 +1195,24 @@
 
 (defn profile-show
   "Gather statistics about the performance of generating and sending a
-  frame of DMX data to the universes [[*show*]]."
+  frame of DMX data to the universes [[*show*]]. The show must be
+  stopped to run this function since it manipulates the thread pool
+  atom to run the kind of test requested.
+
+  Specify the number of iterations of the rendering loop that should
+  be profiled with the optional keyword argument `:iterations` (which
+  defaults to 100). Assumes you want to profile without the use of a
+  thread pool to look for worst-case performance unless you pass
+  `false` with the optional keyword argument `:serial?`."
   {:doc/format :markdown}
-  ([]
-   (profile-show 100))
-  ([iterations]
-   {:pre [(some? *show*) (integer? iterations) (pos? iterations)]}
-   (let [buffers (create-buffers *show*)]
-     (profile :info :Frame (dotimes [i iterations]
-                             (let [snapshot (rhythm/metro-snapshot (:metronome *show*))]
-                               (send-dmx *show* buffers snapshot)))))))
+  [& {:keys [iterations serial?] :or {iterations 100 serial? true}}]
+  {:pre [(some? *show*) (integer? iterations) (pos? iterations) (nil? @(:pool *show*))]}
+  (reset! (:pool *show*) (if serial? :serial :builtin))
+  (let [buffers (create-buffers *show*)]
+    (profile :info :Frame (dotimes [i iterations]
+                            (let [snapshot (rhythm/metro-snapshot (:metronome *show*))]
+                              (send-frame *show* buffers snapshot)))))
+  (reset! (:pool *show*) nil))
 
 (defn register-grid-controller
   "Add a cue grid controller to the list available for linking in the

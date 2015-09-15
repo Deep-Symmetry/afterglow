@@ -149,17 +149,23 @@
   "The color to mix with when fading from a non-assignment."
   (colors/create-color :black))
 
+(defn fade-colors
+  "Calculate a weighted HSL blend between two colors, which may be
+  dynamic parameters, and where nil is considered to be the default
+  color defined above."
+  [from to fraction show snapshot target]
+  ;; Resolve any remaining dynamic parameters now, and make sure fraction really
+  ;; does only range between 0 and 1, then convert it to the percentage wanted by
+  ;; the colors library.
+  (let [from-resolved (params/resolve-param (or from default-color) show snapshot target)
+        to-resolved (params/resolve-param (or to default-color) show snapshot target)
+        weight (* 100 (colors/clamp-unit-float fraction))]
+    ;; Weight goes in the opposite direction you might expect, so the following order works:
+    (colors/mix-hsl to-resolved from-resolved weight)))
+
 ;; Fades between two color assignments to a fixture or head.
 (defmethod fx/fade-between-assignments :color [from-assignment to-assignment fraction show snapshot]
   (cond (<= fraction 0) from-assignment
         (>= fraction 1) to-assignment
-        ;; We are blending, so we need to resolve any remaining dynamic parameters now, and make sure
-        ;; fraction really does only range between 0 and 1, then convert it to the percentage wanted by
-        ;; the colors library.
-        :else (let [target (:target from-assignment)
-                    from-resolved (params/resolve-param (or (:value from-assignment) default-color)
-                                                        show snapshot target)
-                    to-resolved (params/resolve-param (or (:value to-assignment) default-color) show snapshot target)
-                    weight (* 100 (colors/clamp-unit-float fraction))]
-                ;; Weight goes in the opposite direction you might expect, so the following order works:
-                (merge from-assignment {:value (colors/mix-hsl to-resolved from-resolved weight)}))))
+        :else (merge from-assignment {:value (fade-colors (:value from-assignment) (:value to-assignment) fraction
+                                                          show snapshot (:target from-assignment))})))
