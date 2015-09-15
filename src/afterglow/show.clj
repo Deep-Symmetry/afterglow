@@ -149,9 +149,17 @@
   "Calculate and send a single frame of DMX values for the universes
   and effects run by a show. Arguments are the show being rendered,
   the DMX buffers for its universes, and the metronome snapshot
-  reflecting the current instant, for effects to reference."
+  reflecting the current instant, for effects to reference.
+
+  If any extension functions have been registered (for custom assigner
+  types which do not result in DMX data, such as the
+  Pangolin [[beyond-server]] laser show integration), they are called
+  at the appropriate points."
+  {:doc/format :markdown}
   [show buffers snapshot]
-  (p :clear-buffers (cp/pdoseq @(:pool show) [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
+  (p :clear-buffers
+     (cp/pdoseq @(:pool show) [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0)))
+     (cp/pdoseq @(:pool show) [f @(:empty-buffer-fns show)] (f)))
   (p :clean-finished-effects
      (let [indexed (cp/pmap @(:pool show)
                             vector (range) (:effects @(:active-effects show)))]
@@ -167,7 +175,8 @@
   (p :send-dmx-data
      (cp/pdoseq @(:pool show) [universe (keys buffers)]
                 (let [levels (get buffers universe)]
-                  (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} response-handler))))
+                  (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} response-handler)))
+     (cp/pdoseq @(:pool show) [f @(:send-buffer-fns show)] (f)))
   (swap! (:movement *show*) #(dissoc (assoc % :previous (:current %)) :current))
   (swap! (:statistics *show*) update-stats (:instant snapshot) (:refresh-interval show)))
 
@@ -177,9 +186,11 @@
   of lighting effects. The function will be given the metronome
   snapshot that will be in effect when the next frame gets rendered,
   so that it can preconfigure anything needed for the rendering
-  process. This is used, for example, to allow afterglow-max patchers
-  to set show variables for the next frame, since they cannot be
-  queried directly during the rendering process."
+  process. This is used, for example, to
+  allow [afterglow-max](https://github.com/brunchboy/afterglow-max#afterglow-max)
+  patchers to set show variables for the next frame, since they cannot
+  be queried directly during the rendering process."
+  {:doc/format :markdown}
   [f]
   {:pre [(some? *show*) (fn? f)]}
   (swap! (:frame-fns *show*) conj f)
@@ -187,9 +198,58 @@
 
 (defn clear-frame-fn!
   "Ceases calling the supplied function from the rendering loop."
+  {:doc/format :markdown}
   [f]
   {:pre [(some? *show*) (fn? f)]}
   (swap! (:frame-fns *show*) disj f)
+  nil)
+
+(defn add-empty-buffer-fn!
+  "Arranges for the supplied function to be called when the Afterglow
+  rendering loop is clearing its DMX buffers in order to calculate a
+  frame of lighting effects. The function must take no arguments.
+
+  This is how custom assigner types which do not result in DMX data,
+  such as the Pangolin [[beyond-server]] laser show integration,
+  register their extension functions to participate in the rendering
+  loop."
+  {:doc/format :markdown}
+  [f]
+  {:pre [(some? *show*) (fn? f)]}
+  (swap! (:empty-buffer-fns *show*) conj f)
+  nil)
+
+(defn clear-empty-buffer-fn!
+  "Ceases calling the supplied function during the buffer clearing
+  phase of the rendering loop."
+  {:doc/format :markdown}
+  [f]
+  {:pre [(some? *show*) (fn? f)]}
+  (swap! (:empty-buffer-fns *show*) disj f)
+  nil)
+
+(defn add-send-buffer-fn!
+  "Arranges for the supplied function to be called when the Afterglow
+  rendering loop is sending the DMX data for a frame of lighting
+  effects. The function must take no arguments.
+
+  This is how custom assigner types which do not result in DMX data,
+  such as the Pangolin [[beyond-server]] laser show integration,
+  register their extension functions to participate in the rendering
+  loop."
+  {:doc/format :markdown}
+  [f]
+  {:pre [(some? *show*) (fn? f)]}
+  (swap! (:send-buffer-fns *show*) conj f)
+  nil)
+
+(defn clear-send-buffer-fn!
+  "Ceases calling the supplied function during the data sending phase
+  of the rendering loop."
+  {:doc/format :markdown}
+  [f]
+  {:pre [(some? *show*) (fn? f)]}
+  (swap! (:send-buffer-fns *show*) disj f)
   nil)
 
 (defn- rendering-loop
@@ -334,6 +394,8 @@
                 :dimensions (atom {})
                 :grid-controllers (atom #{})
                 :frame-fns (atom #{})
+                :empty-buffer-fns (atom #{})
+                :send-buffer-fns (atom #{})
                 :task (atom nil)
                 :pool (atom nil)
                 :cue-grid (controllers/cue-grid)}]
