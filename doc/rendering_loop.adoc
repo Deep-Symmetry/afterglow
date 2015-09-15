@@ -15,6 +15,11 @@ content seems rather difficult. Start experimenting in other places,
 and by the time you need this information, it will make much more
 sense!
 
+And once you are ready to really dive deep, you can learn how to
+<<rendering_loop#extensions,extend>> the rendering loop to incorporate
+completely new kinds of elements, such as integrating with Pangolin
+Beyond laser shows.
+
 == Frame Rendering Stages
 
 When an afterglow show is running, that is, from when
@@ -337,3 +342,67 @@ as the fixture allows.
 If multiple fixtures or heads are assigned the same aiming point, they
 will all be aimed at exactly the same spot, regardless of the location
 and orientation with which they were hung.
+
+== Extensions
+
+If you want Afterglow to control something that does not respond to
+DMX values, you might be able to do so by extending the rendering
+loop. There is an example of doing just this to control laser shows by
+communicating with Pangolin's Beyond software in the
+http://deepsymmetry.org/afterglow/doc/afterglow.beyond.html[afterglow.beyond]
+namespace.
+
+The first thing you need to do is identify the kinds of assigners that
+your new effect types will need. They will need their own unique
+`kind` keywords, and a structure for their `target-id` values which
+lets Afterglow keep track of which assigners are affecting the same
+value. The Beyond integration uses `:beyond-color` and `:beyond-cue`
+for `kind` values. `:beyond-color` is global, and thus uses a
+`target-id` that references the entire Beyond server instance. In
+contrast, more than one `:beyond-cue` can be active at once, so its
+`target-id` is composed of both the server ID and the cue number.
+
+Afterglow needs to be told how to handle your new kinds of assigners.
+First, you need to establish the order in which they should be run by
+calling
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-set-extension-resolution-order.21[show/set-extension-resolution-order!]
+with your unique extension key and the list of all your assigner types
+in the order in which they should be resolved. You need to do this
+even if you don't care about the order, or have only one new assigner
+type, in order to get them added to stage 6 of the frame rendering
+process, as described above. This is done towards the end of the
+Beyond extension source, if you would like to see a concrete example.
+
+Then you need to tell afterglow how to actually resolve one of your
+assigners. You do this in the same way Afterglow registers its own
+built-in assigners, by using `defmethod` to add a new implementation
+of the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-resolve-assignment[resolve-assignment]
+multimethod, for your new assigner keyword. Again, the end of the
+Beyond integration provides a concrete example.
+
+If you want to support smooth fades between different values being
+returned by your assigners, you will also want to `defmethod` an
+implementation of the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-fade-between-assignments[fade-between-assignments]
+multimethod. This is the last thing that the Beyond integration does.
+
+Chances are good that your extension will need to do some sort of
+setup at the start of a frame before your assigners can be resolved,
+and then will want to actually do something when the frame is rendered
+and being sent to the lights. To accomplish these tasks, you register
+functions with a show:
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-empty-buffer-fn.21[add-empty-buffer-fn!]
+tells the show to call the supplied function when a frame is about to
+be rendered, allowing you to set up any buffers your assigners will
+need, and
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-send-buffer-fn.21[add-send-buffer-fn!]
+tells the show to call the supplied function when it is time to
+actually send out the frame. The Beyond integration calls these in its
+http://deepsymmetry.org/afterglow/doc/afterglow.beyond.html#var-bind-to-show[bind-to-show]
+function.
+
+Having done all these things, it becomes possible to create cues which
+launch or end Beyond laser cues, and effects which change the color of
+the laser beam to match (or contrast with) colors being sent to the
+lights.
