@@ -44,35 +44,27 @@
         packet (DatagramPacket. (.getBytes payload) (.length payload) (:address server) (:port server))]
     (.send send-socket packet)))
 
-(defn set-color-slider-to-normal
-  "Sets Beyond's Live Control color slider to allow the affected cue
-  to show its normal colors."
+(defn restore-laser-color
+  "Sets Beyond's Live Control RGBA cue color override to allow the
+  affected cue to show its normal colors."
   [server]
-  (send-command server "ColorSlider 0"))
+  (send-command server "RGBA 255, 255, 255, 0"))
 
-(defn set-color-slider-from-hue
-  "Sets Beyond's Live Control color slider to a value that causes the
-  affected cue to have the same hue as the supplied color value."
-  [server color]
-  (send-command server (str  "ColorSlider " (+ 25 (int (* 198.0 (/ (colors/hue color) 360.0)))))))
-
-(defn set-color-slider-to-white
-  "Sets Beyond's Live Control color slider to cause the affected cue
-  to be drawn in white."
-  [server]
-  (send-command server "ColorSlider 255"))
+(defn set-laser-color
+  "Sets Beyond's Live Control RGBA cue color override to match the
+  supplied color value."
+  [server c]
+  (send-command server (str "RGBA " (clojure.string/join ", " [(colors/red c) (colors/green c) (colors/blue c) 255]))))
 
 (defn- send-buffer
   "Update the associated Beyond server with any differences between
   what has been generated during this frame of the Afterglow light
-  show and the previous one."
+  show and the previous one, if any."
   [server]
   (when (not= (:beyond-color @(:frame-buffer server)) (:beyond-color @(:last-frame server)))
     (if-let [new-color (:beyond-color @(:frame-buffer server))]
-      (if (> (colors/saturation new-color) 1.0)
-        (set-color-slider-from-hue server new-color)
-        (set-color-slider-to-white server))
-      (set-color-slider-to-normal server)))
+      (set-laser-color server new-color)
+      (restore-laser-color server)))
   ;; TODO: Add support for cues
   )
 
@@ -80,8 +72,7 @@
   "Creates a representation of the UDP PangoScript server running in
   Beyond at the specified address and port. The value returned can
   then be used with the other functions in this namespace to interact
-  with that laser show. If a server has already been created for this
-  combination of address and port, it is simply returned."
+  with that laser show."
   [address port]
   (let [server {:id (swap! server-counter inc)
                 :address (InetAddress/getByName address)
@@ -127,7 +118,7 @@
   result in DMX values being sent to the show universes.
 
   To undo a binding established by this function, simply call it again
-  to bind to another show, or to `nil` to unbind entirely."
+  to bind to another show, or with a `nil` show to unbind entirely."
   {:doc/format :markdown}
   ([server show]
    (bind-to-show server show 10000))
@@ -155,7 +146,7 @@
                                                     :desc "Resync Beyond's beat grid")))))))
 
 (defn laser-color-effect
-  "An effect which sets the Beyond color slider to match the hue of
+  "An effect which sets the Beyond RGBA cue color override to match
   the color parameter passed in, and sets it back to normal when
   ended."
   [server color]
@@ -172,11 +163,11 @@
 
 ;; Set up the resolution handler for the laser color assigner.
 (defmethod fx/resolve-assignment :beyond-color [assignment show snapshot _]
-  ;; Resolve in case assignment is still frame dynamic
-  (let [target (:target assignment)
+  (let [target (:target assignment)  ; Find the Beyond server associated with this assignment.
+        ;; Resolve the color in the assignment value in case it is still frame dynamic.
         resolved (params/resolve-param (:value assignment) show snapshot target)]
-    (dosync
-     (commute (:frame-buffer target) assoc :beyond-color resolved))))
+    ;; Store it in our frame buffer so it can be sent when the lights are being updated.
+    (dosync (commute (:frame-buffer target) assoc :beyond-color resolved))))
 
 ;; Add fade blending support for laser color assignments
 (defmethod fx/fade-between-assignments :beyond-color [from-assignment to-assignment fraction show snapshot]

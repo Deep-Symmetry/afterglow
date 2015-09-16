@@ -321,8 +321,11 @@
     (/ (- (:x head) (:min-x dimensions)) (- (:max-x dimensions) (:min-x dimensions)))))
 
 (defn try-laser-cues
-  "Create some cues that integrate Pangolin Beyond."
+  "Create some cues that integrate Pangolin Beyond. Assumes sample
+  show has been created, and takes the beyond server to work with as
+  an argument."
   [server]
+  (beyond/bind-to-show server *show*)
   (let [hue-bar (params/build-oscillated-param  ; Spread a rainbow across a bar of music
                  (oscillators/sawtooth-bar) :max 360)
         hue-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-bar)]
