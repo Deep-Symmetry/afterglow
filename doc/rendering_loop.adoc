@@ -387,6 +387,11 @@ implementation of the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-fade-between-assignments[fade-between-assignments]
 multimethod. This is the last thing that the Beyond integration does.
 
+TIP: If you do not provide an implementation of this multimethod
+tailored to your specific assigner `kind`, the default implementation
+is used: it simply selects whichever assigner is on the side of the
+fade which is currently above 50%.
+
 Chances are good that your extension will need to do some sort of
 setup at the start of a frame before your assigners can be resolved,
 and then will want to actually do something when the frame is rendered
