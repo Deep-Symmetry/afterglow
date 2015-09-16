@@ -670,7 +670,7 @@
                  (cues/function-cue :t1-gobo-moving :gobo-moving-clockwise (show/fixtures-named "torrent-1")
                                     :effect-name "T1 Moving Gobos Swap CW" :color (create-color :green)))
     (ct/set-cue! (:cue-grid *show*) 7 10
-                 (cues/function-cue :t2-gobo-fixed :gobo-moving-clockwise (show/fixtures-named "torrent-2")
+                 (cues/function-cue :t2-gobo-moving :gobo-moving-clockwise (show/fixtures-named "torrent-2")
                                     :effect-name "T2 Moving Gobos Swap CW" :color (create-color :green)))
     (ct/set-cue! (:cue-grid *show*) 6 9
                  (cues/function-cue :t1-gobo-rotation :gobo-rotation-clockwise (show/fixtures-named "torrent-1")
