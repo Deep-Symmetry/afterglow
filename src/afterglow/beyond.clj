@@ -65,8 +65,13 @@
     (if-let [new-color (:beyond-color @(:frame-buffer server))]
       (set-laser-color server new-color)
       (restore-laser-color server)))
-  ;; TODO: Add support for cues
-  )
+  ;; TODO: Can we consolodate these into a single message?
+  (let [previous-cues (:beyond-cue @(:last-frame server))
+        current-cues (:beyond-cue @(:frame-buffer server))]
+    (doseq [[page number] (clojure.set/difference previous-cues current-cues)]
+      (send-command server (str "StopCue " page ", " number)))
+    (doseq [[page number] (clojure.set/difference current-cues previous-cues)]
+      (send-command server (str "StartCue " page ", " number)))))
 
 (defn beyond-server
   "Creates a representation of the UDP PangoScript server running in
@@ -150,7 +155,8 @@
   the color parameter passed in, and sets it back to normal when
   ended."
   [server color]
-  (Effect. "Laser Hue"
+  (params/validate-param-type color :com.evocomputing.colors/color)
+  (Effect. "Laser Color"
            fx/always-active
            (fn [show snapshot]
              (let [resolved (params/resolve-unless-frame-dynamic color show snapshot)]
@@ -158,8 +164,26 @@
                             (fn [show snapshot target previous-assignment] resolved))]))
            fx/end-immediately))
 
+(defn cue-effect
+  "An effect which causes a laser cue to run as long as it is active.
+  The number of the grid page and the number of the cue within that
+  page are passed as arguments (and cannot be dynamic parameters)."
+  [server page number]
+  {:pre [(integer? page) (integer? number)]}
+  (let [assigners [(Assigner. :beyond-cue (keyword (str "s" (:id server) "-" page "-" number)) server
+                              (fn [show snapshot target previous-assignemt] [page number]))]]
+    (Effect. "Beyond Cue"
+             fx/always-active
+             (fn [show snapshot] assigners)
+             fx/end-immediately)))
+
 ;; Tell Afterglow about our assigners and the order in which they should be run.
-(show/set-extension-resolution-order! :afterglow.beyond [:beyond-color])
+(show/set-extension-resolution-order! :afterglow.beyond [:beyond-color :beyond-cue])
+
+;; Set up the resolution handler for the laser cue assigner.
+(defmethod fx/resolve-assignment :beyond-cue [assignment _ _ _]
+  (let [target (:target assignment)]  ; Find the Beyond server associated with this assignment
+    (dosync (alter (:frame-buffer target) update :beyond-cue (fnil conj #{}) (:value assignment)))))
 
 ;; Set up the resolution handler for the laser color assigner.
 (defmethod fx/resolve-assignment :beyond-color [assignment show snapshot _]
@@ -167,7 +191,7 @@
         ;; Resolve the color in the assignment value in case it is still frame dynamic.
         resolved (params/resolve-param (:value assignment) show snapshot target)]
     ;; Store it in our frame buffer so it can be sent when the lights are being updated.
-    (dosync (commute (:frame-buffer target) assoc :beyond-color resolved))))
+    (dosync (alter (:frame-buffer target) assoc :beyond-color resolved))))
 
 ;; Add fade blending support for laser color assignments
 (defmethod fx/fade-between-assignments :beyond-color [from-assignment to-assignment fraction show snapshot]

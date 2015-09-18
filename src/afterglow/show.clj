@@ -217,6 +217,11 @@
   [show]
   (cp/pdoseq @(:pool show) [f @(:send-buffer-fns show)] (f)))
 
+;; TODO: Since we are already using core.async elsewhere, it would be nice to
+;;       simplify and use its pipeline mechanism here instead of Claypoole, and
+;;       remove that dependency (and conceptual complexity) from the project.
+;;       The final lectures in the Tim Baldridge class show an example of how
+;;       to do that.
 (defn- send-frame
   "Calculate and send a single frame of DMX values for the universes
   and effects run by a show. Arguments are the show being rendered,

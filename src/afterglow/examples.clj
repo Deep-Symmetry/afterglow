@@ -334,7 +334,14 @@
                                                     (beyond/laser-color-effect server hue-param)))
                            :short-name "Rainbow Bar Fade"
                            :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
-                                        :type :integer}]))))
+                                        :type :integer}])))
+  (ct/set-cue! (:cue-grid *show*) 2 7
+               (cues/cue :beyond-cue-1-1 (fn [_] (beyond/cue-effect server 1 1))
+                         :short-name "Beyond 1 1"))
+  (ct/set-cue! (:cue-grid *show*) 3 7
+               (cues/cue :beyond-cue-1-2 (fn [_] (beyond/cue-effect server 1 2))
+                         :short-name "Beyond 1 2")))
+
 
 (defn make-cues
   "Create a bunch of example cues for experimentation."
