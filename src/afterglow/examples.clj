@@ -107,9 +107,8 @@
   "Return an effect that sets all the dimmers in the sample rig.
   Originally this had to be to a static value, but now that dynamic
   parameters exist, it can vary in response to a MIDI mapped show
-  variable, an oscillator, or (once geometry is implemented), the
-  location of the fixture. You can override the default name by
-  passing in a value with :effect-name"
+  variable, an oscillator, or the location of the fixture. You can
+  override the default name by passing in a value with :effect-name"
   [level & {:keys [effect-name]}]
   (dimmer-effect level (show/all-fixtures) :effect-name effect-name))
 
@@ -340,7 +339,10 @@
                          :short-name "Beyond 1 1"))
   (ct/set-cue! (:cue-grid *show*) 3 7
                (cues/cue :beyond-cue-1-2 (fn [_] (beyond/cue-effect server 1 2))
-                         :short-name "Beyond 1 2")))
+                         :short-name "Beyond 1 2"))
+  (afterglow.controllers/set-cue! (:cue-grid *show*) 6 7
+                                  (cues/function-cue :snowball-sound :sound-active (show/fixtures-named "snowball")
+                                                     :color :cyan)))
 
 
 (defn make-cues
