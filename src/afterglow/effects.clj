@@ -227,3 +227,21 @@
           to (or to-assignment (map->Assignment (merge from-assignment {:value nil})))]
       (fade-between-assignments from to fraction show snapshot))))
 
+(defn conditional-effect
+  "Make the output of an effect conditional on whether a parameter has
+  a non-zero value. Very useful when combined with [[variable-effect]]
+  which can set that value to turn parts of a scene on or off
+  independently."
+  {:doc/format :markdown}
+  [name condition effect]
+  {:pre [(some? *show*) (some? name) (satisfies? IEffect effect)]}
+  (params/validate-param-type condition Number)
+  (let [snapshot (rhythm/metro-snapshot (:metronome *show*))
+        condition (params/resolve-unless-frame-dynamic condition *show* snapshot)]
+    (Effect. name
+             always-active
+             (fn [show snapshot]
+               (let [v (params/resolve-param condition show snapshot)]
+                 (when-not (zero? v)
+                   (generate effect show snapshot))))
+             end-immediately)))
