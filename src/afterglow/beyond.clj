@@ -23,8 +23,7 @@
   send-socket (DatagramSocket.))
 
 (defonce ^{:doc "Used to give each server a unique ID, for registering
-  its metronome BPM watcher with a show, as well as looking up the
-  server from its assigner target IDs."
+  its metronome BPM watcher with a show."
            :private true}
   server-counter
   (atom 0))
@@ -57,7 +56,7 @@
   (send-command server (str "RGBA " (clojure.string/join ", " [(colors/red c) (colors/green c) (colors/blue c) 255]))))
 
 (defn- send-buffer
-  "Update the associated Beyond server with any differences between
+  "Update the associated Beyond server with the differences between
   what has been generated during this frame of the Afterglow light
   show and the previous one, if any."
   [server]
@@ -171,7 +170,7 @@
   [server page number]
   {:pre [(integer? page) (integer? number)]}
   (let [assigners [(Assigner. :beyond-cue (keyword (str "s" (:id server) "-" page "-" number)) server
-                              (fn [show snapshot target previous-assignemt] [page number]))]]
+                              (fn [show snapshot target previous-assignment] [page number]))]]
     (Effect. "Beyond Cue"
              fx/always-active
              (fn [show snapshot] assigners)
