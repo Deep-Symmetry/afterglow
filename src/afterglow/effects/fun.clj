@@ -9,7 +9,7 @@
             [afterglow.effects.params :as params]
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
-            [afterglow.show-context :refer [*show*]]
+            [afterglow.show-context :refer [*show* with-show]]
             [afterglow.transform :as transform]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
@@ -426,3 +426,72 @@
                                                   :ignore-y true :ignore-z true)]
     (color-cycle-chase fixtures measure :color-cycle color-cycle :color-index-function color-index-function
                        :transition-phase-function transition-phase-function :effect-name effect-name)))
+
+(defn- pick-new-value
+  "Helper function for random-beat-number-param to pick a new random
+  value with a minimum difference from the former value."
+  [old-value min range min-change]
+  (loop [new-value (+ min (rand range))]
+    (if (or (nil? old-value)
+            (>= (math/abs (- new-value old-value)) min-change))
+      new-value
+      (recur (+ min (rand range))))))
+
+(defn random-beat-number-param
+  "Returns a dynamic number parameter which gets a new random value on each beat."
+  {:doc/format :markdown}
+  [& {:keys [min max min-change] :or {min 0 max 255 min-change 0}}]
+  {:pre [(some? *show*)]}
+  (let [min (params/bind-keyword-param min Number 0)
+        max (params/bind-keyword-param max Number 255)
+        min-change (params/bind-keyword-param min-change Number 0)
+        last-beat (ref nil)
+        last-value (ref nil)]
+    (if-not (some (partial satisfies? params/IParam) [min max min-change])
+      ;; Optimize the simple case of all constant parameters
+      (let [range (- max min)
+            eval-fn (fn [_ snapshot]
+                      ;; TODO support min-change
+                      (dosync (when (not= @last-beat (:beat snapshot))
+                                (ref-set last-beat (:beat snapshot))
+                                (alter last-value pick-new-value min range min-change))
+                              @last-value))]
+        (when-not (pos? range)
+          (throw (IllegalArgumentException. "min must be less than max")))
+        (when-not (< min-change (/ range 3))
+          (throw (IllegalArgumentException. "min-change must be less 1/3 the range")))
+        (reify params/IParam
+          (evaluate [this show snapshot] (eval-fn show snapshot))
+          (frame-dynamic? [this] true)
+          (result-type [this] Number)
+          (resolve-non-frame-dynamic-elements [this show snapshot]  ; Nothing to resolve, return self
+            this)))
+      ;; Support the general case where we have an incoming variable parameter
+      (let [eval-fn (fn [show snapshot]
+                      (let [min (params/resolve-param min show snapshot)
+                            max (params/resolve-param max show snapshot)
+                            min-change (params/resolve-param min-change show snapshot)
+                            range (- max min)]
+                        ;; TODO support min-change
+                        (if (neg? range)
+                          (do
+                            (timbre/error "Random beat number parameters min > max, returning max.")
+                            max)
+                          (if (< min-change (/ range 3))
+                              (dosync (when (not= @last-beat (:beat snapshot))
+                                        (ref-set last-beat (:beat snapshot))
+                                        (alter last-value pick-new-value min range min-change))
+                                      @last-value)
+                              (do
+                                (timbre/error "Random beat number min-change > 1/3 range, returning max.")
+                                max)))))]
+        (reify params/IParam
+          (evaluate [this show snapshot] (eval-fn show snapshot))
+          (frame-dynamic? [this] true)
+          (result-type [this] Number)
+          (resolve-non-frame-dynamic-elements [this show snapshot]
+            (with-show show
+              (random-beat-number-param :min (params/resolve-unless-frame-dynamic min show snapshot)
+                                        :max (params/resolve-unless-frame-dynamic max show snapshot)
+                                        :min-change (params/resolve-unless-frame-dynamic
+                                                     min-change show snapshot)))))))))
