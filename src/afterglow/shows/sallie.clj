@@ -234,7 +234,7 @@
                                     :color :cyan))
 
     (ct/set-cue! (:cue-grid *show*) 7 7
-                 (cues/function-cue :hex-uv :uv (show/fixtures-named "snowball")
+                 (cues/function-cue :hex-uv :uv (show/fixtures-named "hex")
                                     :level 255
                                     :color :blue))
     
