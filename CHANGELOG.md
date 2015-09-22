@@ -2,8 +2,52 @@
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased][unreleased]
+### Added
+- Support for inverted dimmers (where lower DMX values are brighter).
+- Scenes, which allow multiple effects to be grouped into one.
+- New ability to fade between effects, with sensible semantics for
+  colors, aim, directions, and functions.
+- A new mechanism for extending the rendering loop to support effects
+  which do not result in DMX values to send to the show universes.
+- Support for (and examples of) integration with laser shows being run
+  by Pangolin Beyond software, using the extension mechanism.
+- Holding down the Shift key while turning the encoder allows the BPM
+  to be changed more rapidly (in whole beat increments, rather than
+  tenths) on the Ableton Push.
+- New conditional effects and variable-setting effects, using the
+  extension mechanism.
+- Fixture definitions for Chauvet LED Techno Strobe, LED Techno Strobe
+  RGB, ColorStrip, Spot LED 150, Kinta X, Scorpion Storm FX RGB,
+  Scorpion Storm RGX, Q-Spot 160, Intimidator Scan LED 300, Geyser RGB
+  fogger, and Hurricane 1800 Flex fogger.
+- Example effect which desaturates a rainbow over the course of a
+  beat.
+
 ### Changed
-- A lot. TODO: Flesh this out!
+- Improved readability and parallelism of core rendering loop.
+- The default frame rate was raised from 30Hz to 40Hz.
+- Ableton Push now uses SysEx message to specify the exact RGB color
+  desired, rather than choosing from the limited set available through
+  MIDI velocity.
+- Ableton Push now makes sure the pads are put in poly-pressure mode,
+  and sets the sensitivity level to reduce the chance of stuck pads.
+- The stability of MIDI clock sync was greatly improved, in order to
+  facilitate the Beyond integration.
+- The refresh rates of the Push and web interfaces were reduced to put
+  less load on the CPU.
+- The tempo button on the Push an web interface are now always flashed
+  at least once per beat, even if the reduced refresh rate causes the
+  normal "on" window to be missed.
+- Improved content and format of command-line usage help.
+
+### Fixed
+- The Ableton Push binding now ends effects when it receives an
+  afertouch value of 0, since it is not reliably sending a note-end
+  message, especially when multiple pads are being pressed at once.
+- Fail gracefully when trying to bind to an Ableton Push when none can
+  be found.
+- Some small errors in the documentation were corrected.
+  
 
 ## [0.1.3] - 2015-08-16
 ### Added
