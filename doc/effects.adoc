@@ -499,7 +499,7 @@ documentation] for details.
 
 == The Effect Lifecycle
 
-When an effect is added to a show via `(show/add-effect! :keyword
+When an effect is added to a show via `(show/add-effect! :effect-key
 effect)` it immediately replaces any other effect which had been
 previously added with the same keyword. The former effect does not get
 a chance to gracefully finish its effects, it is simply gone. The new
@@ -531,16 +531,24 @@ show snapshot])` function will be called, as described in the
 <<rendering_loop#the-rendering-loop,rendering loop>> section, to
 create the effect it represents at this point in time.
 
-At some point, the show operator may indicate a desire for the effect to
-end, by calling `(show/end-effect! :keyword force)`. If `force` is true,
-the effect will simply be removed from the list of active effects. If it
-is omitted or false, the effect is asked to end gracefully by calling
-its `(end [this show snapshot])` function. If the effect is ready to end
-right away, it can return `true`, and will be removed at that point.
-Otherwise, if it wants to take a little while to animate an ending
-effect, it should set an internal flag so it knows it is ending and
-return `false`, and at some point in the not-so-distant future, conclude
-its ending and return `false` from `still-active?`.
+At some point, the show operator may indicate a desire for the effect
+to end, by calling `(show/end-effect! :effect-key force)`. If `force`
+is `true`, the specified effect will simply be removed from the list
+of active effects. If `force` is omitted or `false`, the effect is
+asked to end gracefully by calling its `(end [this show snapshot])`
+function. If the effect is ready to end right away, it can return
+`true`, and will be removed at that point. Otherwise, if it wants to
+take a little while to animate an ending effect, it should set an
+internal flag so it knows it is ending and return `false`, and at some
+point in the not-so-distant future, conclude its ending and return
+`false` from `still-active?`.
+
+WARNING: As implied by the preceding paragraph, your effect cannot rely
+on its `end` function ever being called. If the effect is ended
+forcibly, if another effect is added under the same keyword, or if it
+is taking part in a fade, at some point it will simply be discarded.
+It must therefore not retain any resources that will not be reclaimed
+by simple garbage collection.
 
 If `end-effect!` is called a second time for an effect which was already
 asked to end, even if `force` is false, it will be removed forcibly at
