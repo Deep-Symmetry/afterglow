@@ -476,8 +476,8 @@ understand the interface. If not specified, white is used.
  adjusted while the cue runs. Functions with no variable effect will
  ignore `:level`, and will have no cue-specific variables created for
  them. The level is treated as a percentage, where 0 is mapped to the
- lowest legal DMX value that activates the function, and 100 is mapped
- to the highest.
+ lowest DMX value that activates the function, and 100 is mapped to
+ the highest.
 
 |`:htp`
 |`false`
