@@ -159,8 +159,11 @@
   automatically assigned a variable parameter which can be used to
   adjust the level while the cue runs, and which will be visible in
   the web interface and on controllers which support adjusting cue
-  parameters. Functions with no variable effect will ignore `:level`
-  and will not be assigned variables for adjustment.
+  parameters. Function levels are expressed as a percentage, which is
+  mapped onto the range of DMX values which are assigned to the
+  function in the fixture definition. Functions with no variable
+  effect will ignore `:level` and will not be assigned variables for
+  adjustment.
 
   If `:htp` is passed a true value, the created effect applies
   highest-takes-precedence (i.e. compares the value to the previous

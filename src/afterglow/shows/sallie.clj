@@ -226,17 +226,15 @@
 
     (ct/set-cue! (:cue-grid *show*) 5 7
                  (cues/cue :color-laser (fn [_] (var-fx/variable-effect @var-binder :also-color-laser 1))
-                           :color :red
-                           :short-name "Also color laser"))
+                           :color :red :short-name "Also color laser"))
 
     (ct/set-cue! (:cue-grid *show*) 6 7
                  (cues/function-cue :snowball-sound :sound-active (show/fixtures-named "snowball")
                                     :color :cyan))
 
     (ct/set-cue! (:cue-grid *show*) 7 7
-                 (cues/function-cue :hex-uv :uv (show/fixtures-named "hex")
-                                    :level 255
-                                    :color :blue))
+                 (cues/function-cue :hex-uv :uv (show/all-fixtures)
+                                    :level 100 :color :blue :short-name "All UV"))
     
     ;; Dimmer cues to turn on and set brightness of groups of lights
     (ct/set-cue! (:cue-grid *show*) 0 2
