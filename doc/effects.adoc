@@ -377,7 +377,7 @@ blue color effect will linger as the last sparkles fade out).
 
 ==== Conditional Effects
 
-The `conditional-effect` function in the `afterglow.effects` namespace
+The The http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-conditional-effect[conditional-effect] function in the `afterglow.effects` namespace
 wraps another effect, allowing it to run only when the value of some
 dynamic parameter (most likely a
 <<parameters#variable-parameters,variable parameter>> or
@@ -406,7 +406,7 @@ of a Variable Effect, described in the next section.
 
 ==== Variable Effects
 
-The `variable-effect` function in the
+The http://deepsymmetry.org/afterglow/doc/afterglow.effects.show-variable.html#var-create-for-show[variable-effect] function in the
 `afterglow.effects.show-variable` namespace creates an effect which
 does not set any DMX values. Instead, it makes use of the rendering
 loop extension mechanism to set a show variable while the effect is
