@@ -356,10 +356,11 @@ future releases.
 
 The simplest way to build a complex effect is to combine a group of
 effects into one which can be started and stopped as a unit. That is
-the purpose of the `scene` function in the `afterglow.effects`
-namespace. It takes a name for the scene to be created, followed by
-one or more effects to be grouped, and returns an effect which
-combines them all under that name:
+the purpose of the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-scene[scene]
+function in the `afterglow.effects` namespace. It takes a name for the
+scene to be created, followed by one or more effects to be grouped,
+and returns an effect which combines them all under that name:
 
 [source,clojure]
 ----
