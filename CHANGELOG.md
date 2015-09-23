@@ -35,7 +35,7 @@ All notable changes to this project will be documented in this file. This change
   facilitate the Beyond integration.
 - The refresh rates of the Push and web interfaces were reduced to put
   less load on the CPU.
-- The tempo button on the Push and web interfaces are now always
+- The tempo buttons on the Push and web interfaces are now always
   flashed at least once per beat, even if the reduced refresh rate
   causes the normal "on" window to be missed.
 - Improved content and format of command-line usage help.
