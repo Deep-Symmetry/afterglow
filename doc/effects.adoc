@@ -407,12 +407,13 @@ of a Variable Effect, described in the next section.
 
 ==== Variable Effects
 
-The http://deepsymmetry.org/afterglow/doc/afterglow.effects.show-variable.html#var-create-for-show[variable-effect] function in the
-`afterglow.effects.show-variable` namespace creates an effect which
-does not set any DMX values. Instead, it makes use of the rendering
-loop extension mechanism to set a show variable while the effect is
-active. This dovetails very nicely with Conditional Effects, described
-above.
+The
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.show-variable.html#var-create-for-show[variable-effect]
+function in the `afterglow.effects.show-variable` namespace creates an
+effect which does not set any DMX values. Instead, it makes use of the
+rendering loop <<rendering_loop#extensions,extension mechanism>> to
+set a show variable while the effect is active. This dovetails very
+nicely with Conditional Effects, described above.
 
 You can see an example of how to use variable effects in
 http://deepsymmetry.org/afterglow/doc/afterglow.shows.sallie.html#var-use-sallie-show[afterglow.shows.sallie/use-sallie-show],
