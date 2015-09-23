@@ -375,6 +375,75 @@ you'll see all the lights turn blue, and a random pattern of white
 effect will end both underlying effects in a coordinated fashion (the
 blue color effect will linger as the last sparkles fade out).
 
+==== Conditional Effects
+
+The `conditional-effect` function in the `afterglow.effects` namespace
+wraps another effect, allowing it to run only when the value of some
+dynamic parameter (most likely a
+<<parameters#variable-parameters,variable parameter>> or
+<<parameters#oscillated-parameters,oscillated parameter>>) is not
+zero.
+http://deepsymmetry.org/afterglow/doc/afterglow.shows.sallie.html#var-global-color-effect[afterglow.shows.sallie/global-color-effect]
+shows an example of using it within a scene to optionally have the
+color effect apply to a laser show running simultaneously with the
+light show, controlled by the show variable `:also-color-laser`. This
+variable gets set when the "Also color laser" cue is running, by means
+of a Variable Effect, described in the next section.
+
+[source,clojure]
+----
+(ns afterglow.shows.sallie
+;; ...
+  (:require [afterglow.effects :as fx]
+;; ...
+)
+;; ...
+(fx/scene (str "Color: " desc)
+          (color-effect (str "Color: " desc) c lights)
+          (fx/conditional-effect "Color Laser?" (params/build-variable-param :also-color-laser)
+                                 (beyond/laser-color-effect laser-show c))))
+----
+
+==== Variable Effects
+
+The `variable-effect` function in the
+`afterglow.effects.show-variable` namespace creates an effect which
+does not set any DMX values. Instead, it makes use of the rendering
+loop extension mechanism to set a show variable while the effect is
+active. This dovetails very nicely with Conditional Effects, described
+above.
+
+You can see an example of how to use variable effects in
+http://deepsymmetry.org/afterglow/doc/afterglow.shows.sallie.html#var-use-sallie-show[afterglow.shows.sallie/use-sallie-show],
+which creates a binding to the show variables using
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.show-variable.html#var-create-for-show[afterglow.effects.show-variable/create-for-show].
+Then
+http://deepsymmetry.org/afterglow/doc/afterglow.shows.sallie.html#var-make-cues[afterglow.shows.sallie/make-cues]
+uses that `var-binder` to create a `:color-laser` cue which sets the
+show variable `:also-color-laser` while it runs:
+
+[source,clojure]
+----
+(ns afterglow.shows.sallie
+;; ...
+  (:require [afterglow.effects.show-variable :as var-fx]
+;; ...
+)
+;; ...
+(reset! var-binder (var-fx/create-for-show *show*))
+;; ...
+(ct/set-cue! (:cue-grid *show*) 5 7
+               (cues/cue :color-laser
+                         (fn [_] (var-fx/variable-effect @var-binder :also-color-laser 1))
+                         :color :red :short-name "Also color laser"))
+----
+
+This variable setting causes the Conditional Effects in scenes created
+by `global-color-effect` (as described in the preceding section) to
+also send commands to the laser show.
+
+
+
 ==== Color Cycle Chases
 
 This family of related effects are an excellent illustration of why
