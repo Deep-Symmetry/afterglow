@@ -5,6 +5,7 @@
   (:require [afterglow.channels :as channels]
             [afterglow.effects :as fx]
             [afterglow.effects.channel :as chan-fx]
+            [afterglow.effects.oscillators :as osc]
             [afterglow.effects.params :as params]
             [afterglow.rhythm :as rhythm]
             [afterglow.show-context :refer [*show*]]
@@ -66,7 +67,6 @@
   (let [snapshot (rhythm/metro-snapshot (:metronome show))]
     (map #(build-htp-color-assigner % param show snapshot) heads)))
 
-;; TODO: Support other kinds of color mixing, blending...
 (defn color-effect
   "Returns an effect which assigns a color parameter to all heads of
   the fixtures supplied when invoked. If :include-color-wheels? is
@@ -85,26 +85,7 @@
                     (fx/build-head-parameter-assigners :color heads color *show*))]
     (Effect. name fx/always-active (fn [show snapshot] assigners) fx/end-immediately)))
 
-;; Deprecated in favor of new composable dynamic parameter mechanism
-(defn hue-oscillator
-  "*Deprecated* Returns an effect which sets the hue to all heads of
-  the fixtures supplied according to a supplied oscillator function
-  and the show metronome. Unless otherwise specified, via :min
-  and :max, the hue ranges from 0 to 359. Saturation defaults to 100
-  and lightness to 50, but these can be set via :saturation
-  and :lightness."
-  {:deprecated true}
-  [osc fixtures & {:keys [min max saturation lightness] :or {min 0 max 359 saturation 100 lightness 50}}]
-  {:pre [(<= 0 saturation 100) (<= 0 lightness 100) (< min max) (sequential? fixtures) (ifn? osc)]}
-  (let [range (long (- max min))
-        heads (find-rgb-heads fixtures)
-        f (fn [show snapshot target previous-assignment]
-            (pspy :hue-oscillator
-                  (let [phase (osc snapshot)
-                        new-hue (+ min (* range phase))]
-                    (colors/create-color {:h new-hue :s saturation :l lightness}))))
-        assigners (fx/build-head-assigners :color heads f)]
-    (Effect. "Hue Oscillator" fx/always-active (fn [show snapshot] assigners) fx/end-immediately)))
+;;; Multimethod implementations to support color effects
 
 ;; Resolves the assignment of a color to a fixture or a head,
 ;; performing color mixing with any color component channels found in
@@ -169,3 +150,54 @@
         (>= fraction 1) to-assignment
         :else (merge from-assignment {:value (fade-colors (:value from-assignment) (:value to-assignment) fraction
                                                           show snapshot (:target from-assignment))})))
+
+;;; Effects which transform other color effects
+
+(defn build-saturation-transformation
+  "Creates a color transformation for use with [[transform-color]]
+  which changes the saturation based on a variable parameter. If no
+  parameter is supplied, the default is to use an oscillated parameter
+  based on [[sawtooth-beat]] with `:down?` set to `true` so the color
+  is fully saturated at the start of the beat, and fully desaturated
+  by the end. A different pattern can be created by supplying a
+  different parameter with the `:param` optional keyword argument."
+  {:doc/format :markdown}
+  [& {:keys [param] :or {param (params/build-oscillated-param (osc/sawtooth-beat :down? true) :max 100)}}]
+  (fn [color show snapshot head]
+    (let [saturation (colors/clamp-percent-float (params/resolve-param param show snapshot head))]
+      (colors/create-color {:h (colors/hue color) :s saturation :l (colors/lightness color)}))))
+
+(defn transform-colors
+  "Creates an effect which modifies any effect that is currently
+  assigning a color to the supplied fixtures. Needs to be assigned a
+  higher priority than any effects it should transform, so that it
+  will run after them. The actual transformation is implemented by a
+  function which takes a color, show, snapshot, and head, and returns
+  a transformed color. This function is specified with the
+  `:transform-fn` optional keyword argument; if none is specified,
+  [[build-saturation-transformation]] is called with no arguments to
+  create one which causes the saturation of the color to range from
+  full at the start of each beat to none at the end.
+
+  If the optional keyword argument `:beyond-server` is passed with a
+  Beyond server (as returned by [[beyond-server]]), any color being
+  sent to that integrated laser show using [[laser-color-effect]] will
+  also be transformed."
+  {:doc/format :markdown}
+  [fixtures & {:keys [transform-fn beyond-server] :or {transform-fn (build-saturation-transformation)
+                                                       beyond-server nil}}]
+  (let [heads (find-rgb-heads fixtures)
+        f (fn [show snapshot target previous-assignment]  ;; Assigners for regular light colors; have heads
+            (pspy :transform-colors
+                  (when-let [resolved (params/resolve-param previous-assignment show snapshot target)]
+                    (transform-fn resolved show snapshot target))))
+        lf (when beyond-server
+             (fn [show snapshot target previous-assignment]  ;; Assigner for laser show colors; no head
+               (pspy :transform-colors
+                     (when-let [resolved (params/resolve-param previous-assignment show snapshot)]
+                       (transform-fn resolved show snapshot nil)))))
+        assigners (concat (fx/build-head-assigners :color heads f)
+                          (when beyond-server
+                            [(Assigner. :beyond-color (keyword (str "s" (:id beyond-server))) beyond-server lf)]))]
+    (Effect. "Transform Colors" fx/always-active (fn [show snapshot] assigners) fx/end-immediately)))
+

@@ -9,7 +9,7 @@
             [afterglow.controllers :as ct]
             [afterglow.core :as core]
             [afterglow.effects :as fx]
-            [afterglow.effects.color :refer [color-effect]]
+            [afterglow.effects.color :as color-fx]
             [afterglow.effects.cues :as cues]
             [afterglow.effects.dimmer :refer [dimmer-effect master-set-level]]
             [afterglow.effects.fun :as fun]
@@ -94,7 +94,7 @@
                        :else
                        [(create-color color) color])]
       (fx/scene (str "Color: " desc)
-                (color-effect (str "Color: " desc) c lights :include-color-wheels? include-color-wheels?)
+                (color-fx/color-effect (str "Color: " desc) c lights :include-color-wheels? include-color-wheels?)
                 (fx/conditional-effect "Color Laser?" (params/build-variable-param :also-color-laser)
                                        (beyond/laser-color-effect laser-show c))))
     (catch Exception e
@@ -204,6 +204,12 @@
                                            (params/build-color-param :s desat-beat :l 50 :h hue-gradient
                                                                      :adjust-hue hue-bar)))
                            :short-name "Rainbow Pulse"))
+
+    ;; A cue which causes any colors to be desaturated over the course of each beat.
+    (ct/set-cue! (:cue-grid *show*) 2 7
+                 (cues/cue :transform-colors (fn [_] (color-fx/transform-colors (show/all-fixtures)
+                                                                                :beyond-server laser-show))
+                           :priority 1000))
 
     (ct/set-cue! (:cue-grid *show*) 3 7
                  (cues/cue :color (fn [var-map]

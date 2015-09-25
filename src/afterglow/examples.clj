@@ -6,7 +6,7 @@
             [afterglow.controllers :as ct]
             [afterglow.core :as core]
             [afterglow.effects :as fx]
-            [afterglow.effects.color :refer [color-effect]]
+            [afterglow.effects.color :as color-fx]
             [afterglow.effects.cues :as cues]
             [afterglow.effects.dimmer :refer [dimmer-effect master-set-level]]
             [afterglow.effects.fun :as fun]
@@ -99,7 +99,7 @@
                        [color "variable"]
                        :else
                        [(create-color color) color])]
-      (color-effect (str "Color: " desc) c lights :include-color-wheels? include-color-wheels?))
+      (color-fx/color-effect (str "Color: " desc) c lights :include-color-wheels? include-color-wheels?))
     (catch Exception e
       (throw (Exception. (str "Can't figure out how to create color from " color) e)))))
 
@@ -421,6 +421,10 @@
                            :priority 100
                            :variables [{:key "chance" :min 0.0 :max 0.4 :start 0.05 :velocity true}
                                        {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
+
+    (ct/set-cue! (:cue-grid *show*) 2 7
+                 (cues/cue :transform-colors (fn [_] (color-fx/transform-colors (show/all-fixtures)))
+                           :priority 1000))
 
     (ct/set-cue! (:cue-grid *show*) 7 7
                  (cues/function-cue :strobe-all :strobe (show/all-fixtures) :effect-name "Raw Strobe"))
