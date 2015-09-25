@@ -154,7 +154,7 @@
 ;;; Effects which transform other color effects
 
 (defn build-saturation-transformation
-  "Creates a color transformation for use with [[transform-color]]
+  "Creates a color transformation for use with [[transform-colors]]
   which changes the saturation based on a variable parameter. If no
   parameter is supplied, the default is to use an oscillated parameter
   based on [[sawtooth-beat]] with `:down?` set to `true` so the color
