@@ -502,8 +502,8 @@ https://github.com/brunchboy/afterglow/wiki[wiki]!
 
 ## License
 
-image:assets/DS-logo-bw-200-padded-left.png[Deep Symmetry logo,216,123,role="right"]
 Copyright © 2015 http://deepsymmetry.org[Deep Symmetry, LLC]
+image:assets/DS-logo-bw-200-padded-left.png[Deep Symmetry logo,216,123,role="right",align="right",link="http://deepsymmetry.org"]
 
 Distributed under the
 http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
