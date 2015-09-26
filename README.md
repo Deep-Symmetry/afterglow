@@ -1,5 +1,7 @@
 # Afterglow
 
+[![Join the chat at https://gitter.im/brunchboy/afterglow](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/brunchboy/afterglow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 <image align="right" width="275"
 src="doc/assets/Afterglow-logo-padded-left.png"> An environment
 supporting [live coding](https://en.wikipedia.org/wiki/Live_coding)
