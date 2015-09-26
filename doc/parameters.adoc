@@ -268,7 +268,7 @@ dynamic parameters, such as show <<variable-parameters,variables>>
 the show variable was stored) or <<oscillated-parameters,oscillated
 parameters>>.
 
-## Aim Parameters
+== Aim Parameters
 
 Aim parameters are a way to tell a group of fixtures to aim at a
 particular point in space, or track something in unison or in a
@@ -318,7 +318,7 @@ dynamic parameters, such as show <<variable-parameters,variables>>
 the show variable was stored) or <<oscillated-parameters,oscillated
 parameters>>.
 
-## Pan Tilt Parameters
+== Pan Tilt Parameters
 
 A more traditional way of aiming fixtures (in contrast to
 <<parameters#direction-parameters,Direction Parameters>>) involves
@@ -371,7 +371,7 @@ dynamic parameters, such as show <<variable-parameters,variables>>
 the show variable was stored) or <<oscillated-parameters,oscillated
 parameters>>.
 
-## Spatial Parameters
+== Spatial Parameters
 
 Spatial parameters allow you to base an effect parameter on the physical
 arrangement or relationships between fixtures in your light show. The
@@ -423,7 +423,7 @@ excellent building blocks for <<color-parameters,color>>,
 parameters, as shown in the
 <<effects#spatial-effects,effect examples>>.
 
-## Digging Deeper
+== Digging Deeper
 
 For more details, see the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html[API
