@@ -36,8 +36,19 @@ makes available to you.
 Since working with colors is so fundamental to creating light shows,
 the mechanism for creating <<parameters#color-parameters,dynamic color
 parameters>> is very well developed, and worth getting familiar with.
+You can often avoid having to write your own function entirely by
+clever combinations of oscillated parameters for creating dynamic
+color parameters.
 
-## License
+### Modifying Colors
+
+You can also create a variety layered looks by building effects that
+work with each other, rather than having to build each combination
+separately. The discussion on <<effects#layering-effects,layering
+effects>> explains how to do this and points at a sample
+implementation that ships with Afterglow.
+
+#### License
 
 +++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
 Copyright © 2015 http://deepsymmetry.org[Deep Symmetry, LLC]
