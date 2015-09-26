@@ -502,7 +502,7 @@ https://github.com/brunchboy/afterglow/wiki[wiki]!
 
 ## License
 
-image:assets/DS-logo-bw-200-padded-left.png[Deep Symmetry logo,216,123,float="right",role="related right",link="http://deepsymmetry.org"]
++++<img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo">+++
 Copyright © 2015 http://deepsymmetry.org[Deep Symmetry, LLC]
 
 Distributed under the
