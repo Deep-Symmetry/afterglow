@@ -429,7 +429,7 @@ For more details, see the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html[API
 documentation].
 
-## License
+#### License
 
 +++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
 Copyright © 2015 http://deepsymmetry.org[Deep Symmetry, LLC]
