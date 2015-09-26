@@ -14,7 +14,7 @@ and pieces of the [Overtone](http://overtone.github.io) toolkit.
 Beyond building on pieces of Overtone, the entire Afterglow project
 was [inspired](https://vimeo.com/22798433) by it.
 
-[![License](https://img.shields.io/github/license/brunchboy/afterglow.svg)]
+[![License](https://img.shields.io/github/license/brunchboy/afterglow.svg)](#license)
 
 ### Documentation Overview
 
