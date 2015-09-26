@@ -42,11 +42,11 @@ color parameters.
 
 ### Modifying Colors
 
-You can also create a variety layered looks by building effects that
-work with each other, rather than having to build each combination
-separately. The discussion on <<effects#layering-effects,layering
-effects>> explains how to do this and points at a sample
-implementation that ships with Afterglow.
+You can also create a variety of layered looks by building effects
+that work with each other, rather than having to create a separate
+effect for each combination. The discussion on
+<<effects#layering-effects,layering effects>> explains how to do this
+and points at a sample implementation that ships with Afterglow.
 
 #### License
 
