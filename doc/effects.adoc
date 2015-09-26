@@ -848,7 +848,7 @@ assigned to the light (in `color`), and the current `show`, metronome
 can be used with an oscillated variable parameter as seen here to
 generate smoothly changing, rhythmically-driven values), and the light
 `head` this is being sent to (which can be used to
-perform <<#spatial-effects,spatial>> calculations as described
+perform <<effects.adoc#spatial-effects,spatial>> calculations as described
 above). Having all this information at hand makes it possible to write
 straightforward, concise transformation functions like this one.
 
