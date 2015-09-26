@@ -756,3 +756,116 @@ detail about how these effects work.
 TIP: Looking at the source code of the <<complex-effects,complex
 effects>> is a great way to learn about how to create effects, and to
 get ideas for ways to vary or build on them.
+
+=== Layering Effects
+
+Rather than building separate effects for every combination of ideas,
+you can get much more power by building effects that build on or
+modify each other, which you can then compose in different ways. The
+most straightforward way of doing this is by combining effects that
+work on different facets of the lights, such as when you choose a
+dimmer oscillator, to make them pulse in a particular way with the
+beat, along with a color effect, and perhaps an aim or direction
+chase. Varying these effects can give you quite a palette of looks.
+
+The Afterglow <<rendering_loop#the-rendering-loop,rendering loop>> is
+designed to let you be even more flexible than that, though: you can
+combine multiple effects which work on the same channels of the same
+fixtures, because of the way that later (and higher priority) effects
+can see what earlier effects have done, and modify the results.
+
+The
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.color.html#var-transform-colors[transform-colors]
+effect is an example of how easy and flexible this can be. (As always
+with the API documentation, you can click on the `viw source` button
+to see the actual implementation of the function.) This effect uses
+its own variable parameter to adjust the saturation of any color being
+sent to the fixtures it is assigned. (If there isn't currently a color
+being assigned to those fixtures, it does nothing.) Calling it with no
+arguments uses a default transformation and oscillated parameter which
+causes the saturation of the color to start each beat fully saturated,
+and to fade to gray by the end of the beat. This was inspired by the
+rainbow fade effect which was initially created while experimenting
+with
+https://github.com/brunchboy/afterglow-max#afterglow-max[afterglow-max],
+but this generalization can be combined with any other color effect.
+
+The `transform-colors` function itself does all the work of creating
+assigners that will watch for colors being sent to the fixtures it is
+supposed to affect, and whenever appropriate, transforming them. The
+transformation itself is separated into another function, which can be
+passed in as an argument to achieve a totally different kind of
+transformation. The default transformation if none is specified is
+created by calling
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.color.html#var-build-saturation-transformation[build-saturation-transformation]
+with no arguments. The source of this function shows how easy it is to
+write a transformation given the support provided by the Rendering
+Loop and `transform-colors`.
+
+[source,clojure]
+----
+(defn build-saturation-transformation
+  "Creates a color transformation for use with [[transform-colors]]
+  which changes the saturation based on a variable parameter. If no
+  parameter is supplied, the default is to use an oscillated parameter
+  based on [[sawtooth-beat]] with `:down?` set to `true` so the color
+  is fully saturated at the start of the beat, and fully desaturated
+  by the end. A different pattern can be created by supplying a
+  different parameter with the `:param` optional keyword argument."
+  {:doc/format :markdown}
+  [& {:keys [param] :or {param (params/build-oscillated-param (osc/sawtooth-beat :down? true)
+                                                              :max 100)}}]
+  (fn [color show snapshot head]
+    (let [saturation (colors/clamp-percent-float
+                      (params/resolve-param param show snapshot head))]
+      (colors/create-color {:h (colors/hue color) :s saturation :l (colors/lightness color)}))))
+----
+
+This particular function takes an optional variable
+parameter to control what the current saturation should be (if you
+don't provide one, it creates an
+<<parameters#oscillated-parameters,oscillated parameter>> which
+implements the desaturate-over-each-beat behavior described above:
+
+[source,clojure]
+----
+(params/build-oscillated-param (osc/sawtooth-beat :down? true) :max 100)
+----
+
+The downwards-direction sawtooth wave from 100 to 0 each beat causes
+the saturation pattern described; changing to a different wave form,
+or something which oscillates over a bar or phrase or fraction
+thereof, or with different `:min` and `:max` values would achieve a
+different effect.
+
+The function returned by `build-saturation-transformation` is called
+by `transform-colors` when Afterglow is calculating a frame of DMX
+data to send to the lights, whenver one of the lights that the
+`transform-colors` effect has been applied to is being sent a color
+value. The function is called with the color that has so far been
+assigned to the light (in `color`), and the current `show`, metronome
+`snapshot` representing the current instant in musical time (and which
+can be used with an oscillated variable parameter as seen here to
+generate smoothly changing, rhythmically-driven values), and the light
+`head` this is being sent to (which can be used to
+perform <<effects#spatial-effects,spatial>> calculations as described
+above). Having all this information at hand makes it possible to write
+straightforward, concise transformation functions like this one.
+
+And of course you can change things other than
+saturation; take a look at the source and try writing your own
+transformation functions which do different things. When you come up
+with exciting looks, please contribute them back to Afterglow!
+
+Remember that when you create a cue for an effect like
+`transform-color`, you want it to run _after_ the other effects that
+it is going to transform, so give it a high effect priority. Here is
+how the sample show configures it:
+
+[source,clojure]
+----
+(ct/set-cue! (:cue-grid *show*) 2 7
+             (cues/cue :transform-colors (fn [_] (color-fx/transform-colors
+                                                  (show/all-fixtures)))
+                       :priority 1000))
+----

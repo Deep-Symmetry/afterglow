@@ -162,7 +162,8 @@
   by the end. A different pattern can be created by supplying a
   different parameter with the `:param` optional keyword argument."
   {:doc/format :markdown}
-  [& {:keys [param] :or {param (params/build-oscillated-param (osc/sawtooth-beat :down? true) :max 100)}}]
+  [& {:keys [param] :or {param (params/build-oscillated-param (osc/sawtooth-beat :down? true)
+                                                              :max 100)}}]
   (fn [color show snapshot head]
     (let [saturation (colors/clamp-percent-float (params/resolve-param param show snapshot head))]
       (colors/create-color {:h (colors/hue color) :s saturation :l (colors/lightness color)}))))

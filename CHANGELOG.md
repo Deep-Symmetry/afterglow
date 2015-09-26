@@ -13,6 +13,11 @@ All notable changes to this project will be documented in this file. This change
   by Pangolin Beyond software, using the extension mechanism.
 - New conditional effects and variable-setting effects, using the
   extension mechanism.
+- A composable effect which can transform the colors being created by
+  other effects to build layered looks. The default transformation
+  causes the colors to range from fully saturated at the start of each
+  beat to pure gray by the end of the beat, but it is very easy to
+  swap in other transformations using oscillated parameters.
 - Holding down the Shift key while turning the encoder allows the BPM
   to be changed more rapidly (in whole beat increments, rather than
   tenths) on the Ableton Push.
