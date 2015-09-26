@@ -218,10 +218,15 @@ fixed color. But you can easily use frame-dynamic oscillated
 parameters and get lovely shifting rainbow cues, as shown in the
 <<effects#oscillator-effects,effect examples>>.
 
-== Direction Parameters
+== Movement
+
+There are three different kinds of parameters which tell fixtures how
+to move. They differ in the way that you express direction or aim.
+
+=== Direction Parameters
 
 Direction parameters are one way to tell a group of fixtures to point
-in a particular direction, or move in unison or in a coordinated
+in a particular _direction_, or move in unison or in a coordinated
 pattern. They are used with <<effects#direction-effects,Direction
 Effects>>. (<<parameters#pan-tilt-parameters,Pan Tilt Parameters>> are
 the other way to work with this kind of effect.) The basic way to
@@ -268,10 +273,10 @@ dynamic parameters, such as show <<variable-parameters,variables>>
 the show variable was stored) or <<oscillated-parameters,oscillated
 parameters>>.
 
-== Aim Parameters
+=== Aim Parameters
 
 Aim parameters are a way to tell a group of fixtures to aim at a
-particular point in space, or track something in unison or in a
+particular _point_ in space, or track something in unison or in a
 coordinated pattern. They are used with <<effects#aim-effects,Aim
 Effects>>. The basic way to create one is to call:
 
@@ -318,7 +323,7 @@ dynamic parameters, such as show <<variable-parameters,variables>>
 the show variable was stored) or <<oscillated-parameters,oscillated
 parameters>>.
 
-== Pan Tilt Parameters
+=== Pan Tilt Parameters
 
 A more traditional way of aiming fixtures (in contrast to
 <<parameters#direction-parameters,Direction Parameters>>) involves
@@ -423,13 +428,13 @@ excellent building blocks for <<color-parameters,color>>,
 parameters, as shown in the
 <<effects#spatial-effects,effect examples>>.
 
-== Digging Deeper
+=== Digging Deeper
 
 For more details, see the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html[API
 documentation].
 
-#### License
+==== License
 
 +++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
 Copyright © 2015 http://deepsymmetry.org[Deep Symmetry, LLC]
