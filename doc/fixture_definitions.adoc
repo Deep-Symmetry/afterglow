@@ -1296,7 +1296,7 @@ away. So try that, and gain some confidence, as you gradually explore
 the areas where it isn't quite doing what you want, and tackle those
 one at a time. And, as you do, remember that you can get help:
 
-## When Things Go Awry
+### When Things Go Awry
 
 Not all definitions have been tested with the translator, and there
 may be scenarios that it gets fundamentally wrong. If so, please raise
@@ -1312,7 +1312,7 @@ Not only will that hopefully get you going faster, but it might help
 others in the future, especially if it leads to improvements in the
 documentation or Afterglow itself.
 
-## License
+#### License
 
 +++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
 Copyright © 2015 http://deepsymmetry.org[Deep Symmetry, LLC]
