@@ -40,6 +40,40 @@ You can often avoid having to write your own function entirely by
 clever combinations of oscillated parameters for creating dynamic
 color parameters.
 
+### Thinking in Hue, Saturation, and Lightness
+
+If you are not accustomed to working with colors in the HSL space, it
+is definitely worth spending a little time becoming familiar with it,
+because it is a powerful way of expressing relationships between
+colors in ways that are visually sensible and pleasing. The
+http://en.wikipedia.org/wiki/HSL_and_HSV[Wikipedia article] is a nice
+reference, with diagrams. Please spend a little time reading it. This
+is the way that Afterglow works with colors when it is fading
+(blending) between them, and many of the sample cues and effects use
+HSL relationships to achieve pretty and interesting results.
+
+In a nutshell, a color in HSL is represented by three numbers:
+
+Hue::
+
+  Identifies a specific pure color, as an angle in degrees around the
+  color wheel. Red is at 0, green is at 120, and blue at 240; values
+  in between these are a linear mixture between the colors, and as the
+  value increases towards 360 it returns to red.
+
+Saturation::
+
+  Specifies how pure the color is. A saturation of 100 means it is
+  fully pure, while a saturation of 0 is completely achromatic (gray).
+
+Lightness::
+
+  Specifies how white the color is. A lightness value of 100 is pure
+  white, while 0 is pure black. At these extremes the saturation can't
+  affect the color, it is always achromatic anyway. A lightness of 50
+  lets the color "be itself" when fully saturated. Lightnesses above
+  fifty start to whiten it, while those below fifty blacken it.
+
 ### Modifying Colors
 
 You can also create a variety of layered looks by building effects
