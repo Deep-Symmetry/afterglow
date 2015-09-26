@@ -428,3 +428,17 @@ parameters, as shown in the
 For more details, see the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html[API
 documentation].
+
+## License
+
++++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
+Copyright © 2015 http://deepsymmetry.org[Deep Symmetry, LLC]
+
+Distributed under the
+http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
+1.0], the same as Clojure. By using this software in any fashion, you
+are agreeing to be bound by the terms of this license. You must not
+remove this notice, or any other, from this software. A copy of the
+license can be found in
+https://cdn.rawgit.com/brunchboy/afterglow/master/resources/public/epl-v10.html[resources/public/epl-v10.html]
+within this project.
