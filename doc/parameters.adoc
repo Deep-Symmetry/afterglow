@@ -36,7 +36,9 @@ function:
 TIP: In addition to manually setting values in show variables, you can
 use <<mapping_sync#mapping-a-control-to-a-variable,MIDI mappings>> to
 have them set by turning a knob or sliding a fader on a MIDI control
-surface.
+surface. <<cues.adoc#cues,Cues>> can also set variables, and can bind
+them to encoders or pressure sensitive pads on controllers like the
+<<mapping_sync#using-ableton-push,Ableton Push>>.
 
 You can then refer to that stored value whenever you are creating a
 dynamic parameter by simply using the keyword (in this example, `:key`),
