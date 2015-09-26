@@ -847,10 +847,19 @@ assigned to the light (in `color`), and the current `show`, metronome
 `snapshot` representing the current instant in musical time (and which
 can be used with an oscillated variable parameter as seen here to
 generate smoothly changing, rhythmically-driven values), and the light
-`head` this is being sent to (which can be used to
-perform <<effects.adoc#spatial-effects,spatial>> calculations as described
-above). Having all this information at hand makes it possible to write
-straightforward, concise transformation functions like this one.
+`head` this is being sent to (which can be used to perform
+<<effects.adoc#spatial-effects,spatial>> calculations as described
+above). The function returns a new color to replace the former
+assignment (or it could return `nil` to suppress coloring the light
+entirely).
+
+Having all this information at hand, and the flexible power of
+<<oscillators#oscillators,oscillators>> and
+<<parameters#dynamic-parameters,dynamic>>,
+<<parameters#oscillated-parameters,oscillated>>, and
+<<parameters#spatial-parameters,spatial>> variable parameters, makes
+it possible to write straightforward, concise transformation functions
+like this one.
 
 And of course you can change things other than
 saturation; take a look at the source and try writing your own
