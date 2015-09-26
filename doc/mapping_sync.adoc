@@ -684,7 +684,7 @@ NOTE: Future releases will also take advantage of more of the buttons
 on the controller, as well as the nice big touch strip to the left of
 the cue grid.
 
-## License
+==== License
 
 +++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
 Copyright © 2015 http://deepsymmetry.org[Deep Symmetry, LLC]
