@@ -1,19 +1,20 @@
 # Afterglow
 
-[![Join the chat at https://gitter.im/brunchboy/afterglow](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/brunchboy/afterglow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-<image align="right" width="275"
-src="doc/assets/Afterglow-logo-padded-left.png"> An environment
-supporting [live coding](https://en.wikipedia.org/wiki/Live_coding)
-for the creation of algorithmic light shows in
-[Clojure](http://clojure.org), leveraging the
-[Open Lighting Architecture](https://www.openlighting.org/ola/) with the help of
-[ola-clojure](https://github.com/brunchboy/ola-clojure#ola-clojure), and
-pieces of the [Overtone](http://overtone.github.io) toolkit.
+[![Join the chat at https://gitter.im/brunchboy/afterglow](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/brunchboy/afterglow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) <image align="right" width="275"
+src="doc/assets/Afterglow-logo-padded-left.png">
+<br/><br/>
+An environment supporting
+[live coding](https://en.wikipedia.org/wiki/Live_coding) for the
+creation of algorithmic light shows in [Clojure](http://clojure.org),
+leveraging the
+[Open Lighting Architecture](https://www.openlighting.org/ola/) with
+the help of
+[ola-clojure](https://github.com/brunchboy/ola-clojure#ola-clojure),
+and pieces of the [Overtone](http://overtone.github.io) toolkit.
 Beyond building on pieces of Overtone, the entire Afterglow project
 was [inspired](https://vimeo.com/22798433) by it.
 
-[![License](https://img.shields.io/github/license/brunchboy/afterglow.svg)](#license)
+[![License](https://img.shields.io/github/license/brunchboy/afterglow.svg)]
 
 ### Documentation Overview
 
@@ -24,8 +25,10 @@ deeper, and there is also
 [API documentation](http://deepsymmetry.org/afterglow/doc/index.html).
 Finally, the project
 [wiki](https://github.com/brunchboy/afterglow/wiki) offers a place for
-more-rapid discussion of ideas and sharing of code and discoveries
-among the entire user community.
+fluid discussion of ideas and sharing of code and discoveries among
+the entire user community, and the
+[gitter chat](https://gitter.im/brunchboy/afterglow) supports even
+faster and less formal discussion.
 
 ## Why Explore Afterglow?
 
