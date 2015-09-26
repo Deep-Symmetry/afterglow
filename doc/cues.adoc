@@ -595,12 +595,14 @@ immediately reflect the new cue and dimensions.
 You can remove a cue from the grid with
 http://deepsymmetry.org/afterglow/doc/afterglow.controllers.html#var-clear-cue.21[clear-cue].
 
+=== Digging Deeper
+
 The rest of the functions in the `afterglow.controllers` namespace are used by
 controller implementations and running shows to mediate their
 interactions with the cue grid; dig into them if you are writing code
 in those spaces.
 
-## License
+==== License
 
 +++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
 Copyright © 2015 http://deepsymmetry.org[Deep Symmetry, LLC]
