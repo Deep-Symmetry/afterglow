@@ -350,7 +350,9 @@ DMX values, you might be able to do so by extending the rendering
 loop. There is an example of doing just this to control laser shows by
 communicating with Pangolin's Beyond software in the
 http://deepsymmetry.org/afterglow/doc/afterglow.beyond.html[afterglow.beyond]
-namespace.
+namespace, and another example in
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.show-variable.html[afterglow.effects.show-variable],
+which creates effects that set show variables when they are run.
 
 === Introducing New Assigner Types
 
@@ -416,7 +418,13 @@ function.
 Having done all these things, it becomes possible to create cues which
 launch or end Beyond laser cues, and effects which change the color of
 the laser beam to match (or contrast with) colors being sent to the
-lights.
+lights, as well as effects which simply set show variables so that
+other effects can respond to the fact that they are running. Perhaps
+looking at these example implementations can help inspire your own
+extension in a completely new direction! (Links to the namespaces' API
+documentation are at the <<rendering_loop#extensions,top>> of this
+section, and as always, the API docs have `view source` buttons which
+take you right to the code that makes them work.)
 
 ==== License
 
