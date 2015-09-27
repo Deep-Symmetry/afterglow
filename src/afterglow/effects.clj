@@ -149,6 +149,7 @@
   the way Afterglow evaluates assigners, that means that if any
   constituent effects try to assign to the same target, the later ones
   will have a chance to override or blend with the earlier ones."
+  {:doc/format :markdown}
   [scene-name & effects]
   (let [active (atom effects)]
     (Effect. scene-name
@@ -159,6 +160,13 @@
              (fn [show snapshot]
                (swap! active (fn [fx] () (filterv #(not (end % show snapshot)) fx)))
                (empty? @active)))))
+
+(defn blank
+  "Create an effect which does nothing. This can be useful, for
+  example, when you want to use [[fade]] to fade into an effect from a
+  state where there was simply nothing happening."
+  []
+  (scene "Blank"))
 
 (defmulti fade-between-assignments
   "Calculates an intermediate value between two attribute assignments
@@ -281,6 +289,14 @@
                                     previous-assignment assigners)]
              (Assignment. kind target-id target assignment))))))
 
+(defn- with-default-assignment
+  "If the current assignment is empty, but there was a previous
+  assignment value, turn it into an actual assignment based on the
+  supplied template."
+  [assignment template previous-assignment]
+  (or assignment
+      (when previous-assignment (map->Assignment (assoc template :value previous-assignment)))))
+
 (defn fade
   "Create an effect which fades between two other effects as the value
   of a parameter changes from zero to one. When `phase` is `0` (or
@@ -318,10 +334,15 @@
                      (map (fn [k]
                             (let [from-assigners (get from-groups k)
                                   to-assigners (get to-groups k)
+                                  template (or (first from-assigners) (first to-assigners))
                                   f (fn [show snapshot target previous-assignment]
-                                      (let [from (run-assigners show snapshot from-assigners previous-assignment)
-                                            to (run-assigners show snapshot to-assigners previous-assignment)]
+                                      (let [from (with-default-assignment
+                                                   (run-assigners show snapshot from-assigners previous-assignment)
+                                                   template previous-assignment)
+                                            to (with-default-assignment
+                                                 (run-assigners show snapshot to-assigners previous-assignment)
+                                                 template previous-assignment)]
                                         (:value (fade-assignment from to v show snapshot))))]
-                              (map->Assigner (assoc (or (first from-assigners) (first to-assigners)) :f f))))
+                              (map->Assigner (assoc template :f f))))
                           keys)))))
              end-immediately)))
