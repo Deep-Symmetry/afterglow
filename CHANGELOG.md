@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file. This change
 ### Added
 - Support for inverted dimmers (where lower DMX values are brighter).
 - Scenes, which allow multiple effects to be grouped into one.
-- Fading between effects, including complex effects and scenes, which
-  do not necessarily affect all the same fixtures and channels.
-- New ability to fade between effects, with sensible semantics for
-  colors, aim, directions, and functions.
+- A framework for fading between effect elements, with sensible
+  semantics for colors, aim, directions, and functions, and defaults
+  when fading in or out of nothing.
+- Fading between entire effects, including complex effects and scenes,
+  which do not necessarily affect all the same fixtures and channels.
 - A new mechanism for extending the rendering loop to support effects
   which do not result in DMX values to send to the show universes.
 - Support for (and examples of) integration with laser shows being run
