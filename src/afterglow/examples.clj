@@ -426,6 +426,16 @@
                  (cues/cue :transform-colors (fn [_] (color-fx/transform-colors (show/all-fixtures)))
                            :priority 1000))
 
+    (ct/set-cue! (:cue-grid *show*) 4 7
+                 (cues/cue :color (fn [var-map]
+                                    (fx/fade "Color Fade"
+                                             (global-color-effect :red :include-color-wheels? true)
+                                             (global-color-effect :green :include-color-wheels? true)
+                                             (params/bind-keyword-param (:phase var-map 0) Number 0)))
+                           :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
+                           :color :yellow))
+
+
     (ct/set-cue! (:cue-grid *show*) 7 7
                  (cues/function-cue :strobe-all :strobe (show/all-fixtures) :effect-name "Raw Strobe"))
 
@@ -435,7 +445,7 @@
                  (cues/cue :dimmers (fn [var-map] (global-dimmer-effect
                                                    (params/bind-keyword-param (:level var-map 255) Number 255)
                                                    :effect-name "All Dimmers"))
-                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
                            :color :yellow :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
                                                      :puck-dimmers :hex-dimmers :snowball-dimmers]))
     (ct/set-cue! (:cue-grid *show*) 1 2

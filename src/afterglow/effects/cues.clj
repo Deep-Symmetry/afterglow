@@ -9,6 +9,7 @@
   which have such capabilities."
   {:author "James Elliott"}
   (:require [afterglow.controllers :as controllers]
+            [afterglow.effects :as fx]
             [afterglow.effects.channel :as chan]
             [afterglow.effects.params :as params]
             [afterglow.show :as show]
@@ -117,7 +118,7 @@
   {:doc/format :markdown}
   [show-key effect & {:keys [short-name color end-keys priority held variables]
                       :or {short-name (:name (effect {})) color :white priority 0}}]
-  {:pre [(some? show-key) (ifn? effect) (= (class (effect {})) Effect)]}
+  {:pre [(some? show-key) (ifn? effect) (satisfies? fx/IEffect (effect {}))]}
   {:name (name short-name)
    :key (keyword show-key)
    :effect effect

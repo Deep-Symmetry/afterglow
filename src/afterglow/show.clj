@@ -41,7 +41,7 @@
             [overtone.at-at :as at-at]
             overtone.midi
             [taoensso.timbre :as timbre :refer [error]]
-            [taoensso.timbre.profiling :refer [p profile pspy]])
+            [taoensso.timbre.profiling :refer [profile pspy]])
   (:import [afterglow.effects Effect Assignment]
            afterglow.effects.dimmer.Master
            afterglow.rhythm.Metronome
@@ -103,36 +103,25 @@
   {:pre [(keyword? extension-key) (sequential? order) (every? keyword? order)]}
   (swap! extension-resolution-orders assoc extension-key order))
 
+(defn- group-assigners
+  "Organize a sequence of assigners into a nested map whose first keys
+  are assigner's `:kind`, containing inner maps keyed on `:target-id`,
+  whose values are all of the assigners with that type and target, in
+  the same order in which they were found in the original sequence."
+  {:doc/format :markdown}
+  [assigners]
+  (reduce (fn [results assigner]
+            (update-in results [(:kind assigner) (:target-id assigner)] (fnil conj []) assigner))
+          {} assigners))
+
 (defn- gather-assigners
   "Collect all of the assigners that are in effect at the current
   moment in the show, organized by type and the unique ID of the
   element they affect, sorted in priority order under those keys."
   [show snapshot]
   (pspy :gather-assigners
-        (loop [assigners (apply concat (cp/pmap @(:pool show) #(fx/generate % show snapshot)
-                                                (:effects @(:active-effects show))))
-               results {}]
-          (if (empty? assigners)
-            results
-            (let [assigner (first assigners)]
-              (recur (rest assigners)
-                     (update-in results [(:kind assigner) (:target-id assigner)] (fnil conj []) assigner)))))))
-
-(defn- run-assigners
-  "Returns the final assignment value that results from iterating over
-  an assigner list that was gathered for a particular target ID,
-  feeding each intermediate result to the next assigner in the chain."
-  [show snapshot assigners]
-  (pspy :run-assigners
-        (when (seq assigners)
-          (let [{:keys [kind target-id target]} (first assigners)
-                assignment (loop [assigners-left assigners
-                                  result nil]
-                             (if (empty? assigners-left)
-                               result
-                               (recur (rest assigners-left)
-                                      (fx/assign (first assigners-left) show snapshot target result))))]
-            (Assignment. kind target-id target assignment)))))
+        (group-assigners (apply concat (cp/pmap @(:pool show) #(fx/generate % show snapshot)
+                                                (:effects @(:active-effects show)))))))
 
 (declare end-effect!)
 
@@ -234,23 +223,23 @@
   at the appropriate points."
   {:doc/format :markdown}
   [show buffers snapshot]
-  (p :clear-buffers
-     (let [dmx-future (cp/future @(:pool show) (clear-dmx-buffers show buffers))
+  (pspy :clear-buffers
+        (let [dmx-future (cp/future @(:pool show) (clear-dmx-buffers show buffers))
            extensions-future (cp/future @(:pool show) (clear-extension-buffers show))]
        @dmx-future @extensions-future))
-  (p :clean-finished-effects
-     (clean-finished-effects show snapshot))
+  (pspy :clean-finished-effects
+        (clean-finished-effects show snapshot))
   (let [all-assigners (gather-assigners show snapshot)]
     (doseq [kind (concat resolution-order (apply concat (vals @extension-resolution-orders)))]
-      (p kind
-         (cp/pdoseq @(:pool show) [assigners (vals (get all-assigners kind))]
-                    (let [assignment (run-assigners show snapshot assigners)]
-                      (when (some? (:value assignment)) ; If assigner returned nil value, it wants to be skipped
-                        (p :resolve-value (fx/resolve-assignment assignment show snapshot buffers))))))))
-  (p :send-frame-data
-     (let [dmx-future (cp/future @(:pool show) (send-dmx-buffers show buffers))
-           extensions-future (cp/future @(:pool show) (send-extension-buffers show))]
-       @dmx-future @extensions-future))
+      (pspy kind
+            (cp/pdoseq @(:pool show) [assigners (vals (get all-assigners kind))]
+                       (let [assignment (fx/run-assigners show snapshot assigners nil)]
+                         (when (some? (:value assignment)) ; If assigner returned nil value, it wants to be skipped
+                           (pspy :resolve-value (fx/resolve-assignment assignment show snapshot buffers))))))))
+  (pspy :send-frame-data
+        (let [dmx-future (cp/future @(:pool show) (send-dmx-buffers show buffers))
+              extensions-future (cp/future @(:pool show) (send-extension-buffers show))]
+          @dmx-future @extensions-future))
   (swap! (:movement *show*) #(dissoc (assoc % :previous (:current %)) :current))
   (swap! (:statistics *show*) update-stats (:instant snapshot) (:refresh-interval show)))
 

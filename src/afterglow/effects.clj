@@ -5,6 +5,7 @@
             [afterglow.effects.params :as params]
             [afterglow.rhythm :as rhythm]
             [afterglow.show-context :refer [*show*]]
+            [afterglow.util :as util]
             [taoensso.timbre :as timbre]
             [taoensso.timbre.profiling :as profiling :refer [pspy profile]])
   (:import [afterglow.rhythm MetronomeSnapshot]))
@@ -140,7 +141,9 @@
     (map #(build-head-parameter-assigner kind % param show snapshot) heads)))
 
 (defn scene
-  "Scenes are a way to group a list of effects to run as a single
+  "Create an effect which combines multiple effects into one.
+
+  Scenes are a way to group a list of effects to run as a single
   effect. All of their assigners are combined into a single list, in
   the order in which the effects were added to the scene. Because of
   the way Afterglow evaluates assigners, that means that if any
@@ -161,11 +164,12 @@
   "Calculates an intermediate value between two attribute assignments
   of the same kind (e.g. color, direction, channel value) for an
   element of a light show. Most code will not call this directly, and
-  will instead use the higher-level [[fade]] function to help set it
-  up. This is the low-level mechanism which performs the fade
-  calculations by dispatching to an appropriate implementation based
-  on the `:kind` value of `from-assignment`, and it requires both
-  `from-assignment` and `to-assignment` to be non-`nil` instances of
+  will instead use the higher-level [[fade-assignment]] function to
+  help set it up, or simply use a full-blown [[fade]] effect. This is
+  the low-level mechanism which performs the fade calculations by
+  dispatching to an appropriate implementation based on the `:kind`
+  value of `from-assignment`, and it requires both `from-assignment`
+  and `to-assignment` to be non-`nil` instances of
   `afterglow.effects.Assignment` of the same `:kind`.
 
   The amount contributed by each assignment
@@ -188,7 +192,7 @@
 ;; This will switch from the first to the second assignment once fraction crosses the halfway
 ;; point.
 (defmethod fade-between-assignments :default [from-assignment to-assignment fraction _ _]
-  (if (< fraction 0.5)
+  (if (util/float< fraction 0.5)
     from-assignment
     to-assignment))
 
@@ -228,20 +232,96 @@
       (fade-between-assignments from to fraction show snapshot))))
 
 (defn conditional-effect
-  "Make the output of an effect conditional on whether a parameter has
-  a non-zero value. Very useful when combined with [[variable-effect]]
-  which can set that value to turn parts of a scene on or off
-  independently."
+  "Create an effect which makes the output of another effect
+  conditional on whether a parameter has a non-zero value. Very useful
+  when combined with [[variable-effect]] which can set that value to
+  turn parts of a scene on or off independently. When `condition` has
+  the value `0`, this effect does nothing; when `condition` has any
+  other value, this effect behaves exactly like the effect passed in
+  as `effect`."
   {:doc/format :markdown}
-  [name condition effect]
-  {:pre [(some? *show*) (some? name) (satisfies? IEffect effect)]}
+  [effect-name condition effect]
+  {:pre [(some? *show*) (some? effect-name) (satisfies? IEffect effect)]}
   (params/validate-param-type condition Number)
   (let [snapshot (rhythm/metro-snapshot (:metronome *show*))
         condition (params/resolve-unless-frame-dynamic condition *show* snapshot)]
-    (Effect. name
+    ;; Could optimize for a non-dymanic condition, but that seems unlikely to be useful.
+    (Effect. effect-name
              always-active
              (fn [show snapshot]
                (let [v (params/resolve-param condition show snapshot)]
                  (when-not (zero? v)
                    (generate effect show snapshot))))
+             end-immediately)))
+
+(defn- group-assigners
+  "Organize a sequence of assigners into a map whose keys are a tuple
+  of the assigner's `:kind` and `:target-id` and, whose values are all
+  of the assigners with that type and target, in the same order in
+  which they were found in the original sequence."
+  {:doc/format :markdown}
+  [assigners]
+  (reduce (fn [results assigner]
+            (update results [(:kind assigner) (:target-id assigner)] (fnil conj []) assigner))
+          {} assigners))
+
+(defn run-assigners
+  "Returns the final assignment value that results from iterating over
+  an assigner list that was gathered for a particular kind and target
+  ID, feeding each intermediate result to the next assigner in the
+  chain."
+  ([show snapshot assigners]
+   (run-assigners show snapshot assigners nil))
+  ([show snapshot assigners previous-assignment]
+   (pspy :run-assigners
+         (when (seq assigners)
+           (let [{:keys [kind target-id target]} (first assigners)
+                 assignment (reduce (fn [result assigner]
+                                      (assign assigner show snapshot target result))
+                                    previous-assignment assigners)]
+             (Assignment. kind target-id target assignment))))))
+
+(defn fade
+  "Create an effect which fades between two other effects as the value
+  of a parameter changes from zero to one. When `phase` is `0` (or
+  less), this effect simply acts as if it were `from-effect`. When
+  `phase` is `1` (or greater), this effect acts like `to-effect`. For
+  values of `phase` between `0` and `1`, a proportional linear blend
+  between `from-effect` and `to-effect` is created, so that at `0.5`
+  each effect contributes the same amount.
+
+  Of course `phase` can be a dynamic parameter; interesting results
+  can be obtained with oscillated and variable parameters. And either
+  or both of the effects being faded between can be a scene, grouping
+  many other effects."
+  {:doc/format :markdown}
+  [effect-name from-effect to-effect phase]
+  {:pre [(some? *show*) (some? effect-name) (satisfies? IEffect from-effect) (satisfies? IEffect to-effect)]}
+  (params/validate-param-type phase Number)
+  (let [snapshot (rhythm/metro-snapshot (:metronome *show*))
+        phase (params/resolve-unless-frame-dynamic phase *show* snapshot)]
+    ;; Could optimize for a non-dymanic phase, but that seems unlikely to be useful.
+    (Effect. effect-name
+             always-active
+             (fn [show snapshot]
+               (let [v (params/resolve-param phase show snapshot)]
+                 (cond
+                   (util/float<= v 0.0) (generate from-effect show snapshot)
+                   (util/float>= v 1.0) (generate to-effect show snapshot)
+                   :else
+                   ;; For each assigner kind and target generated by either the from or to effect,
+                   ;; create a new assigner that will run through the list of assigners of that
+                   ;; kind/target for both sides, then fade between the resulting assignments.
+                   (let [from-groups (group-assigners (generate from-effect show snapshot))
+                         to-groups (group-assigners (generate to-effect show snapshot))
+                         keys (set (concat (keys from-groups) (keys to-groups)))]
+                     (map (fn [k]
+                            (let [from-assigners (get from-groups k)
+                                  to-assigners (get to-groups k)
+                                  f (fn [show snapshot target previous-assignment]
+                                      (let [from (run-assigners show snapshot from-assigners previous-assignment)
+                                            to (run-assigners show snapshot to-assigners previous-assignment)]
+                                        (:value (fade-assignment from to v show snapshot))))]
+                              (map->Assigner (assoc (or (first from-assigners) (first to-assigners)) :f f))))
+                          keys)))))
              end-immediately)))
