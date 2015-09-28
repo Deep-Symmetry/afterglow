@@ -427,11 +427,11 @@
                            :priority 1000))
 
     (ct/set-cue! (:cue-grid *show*) 4 7
-                 (cues/cue :color (fn [var-map]
-                                    (fx/fade "Color Fade"
-                                             (global-color-effect :red :include-color-wheels? true)
-                                             (global-color-effect :green :include-color-wheels? true)
-                                             (params/bind-keyword-param (:phase var-map 0) Number 0)))
+                 (cues/cue :color-fade (fn [var-map]
+                                         (fx/fade "Color Fade"
+                                                  (global-color-effect :red :include-color-wheels? true)
+                                                  (global-color-effect :green :include-color-wheels? true)
+                                                  (params/bind-keyword-param (:phase var-map 0) Number 0)))
                            :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
                            :color :yellow))
 

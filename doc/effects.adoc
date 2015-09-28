@@ -376,6 +376,72 @@ you'll see all the lights turn blue, and a random pattern of white
 effect will end both underlying effects in a coordinated fashion (the
 blue color effect will linger as the last sparkles fade out).
 
+==== Blank Effects
+
+A blank effect does nothing at all. Although this might not
+immediately seem useful, assigning a blank effect to one side or the
+other of a <<effects#Fades,fade>> (below) lets you fade an effect in
+or out, from or to nothing. In such cases the fade also takes care
+that as it fades towards the blank effect, whatever effects were being
+replaced by the fade are restored.
+
+To create a blank effect, simply call the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-blank[blank]
+function in the `afterglow.effects` namespace.
+
+==== Fades
+
+A fade effect lets you smoothly transition from one effect to another,
+blending a weighted combination of each. The
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-fade[fade]
+function in the `afterglow.effects` namespace supports this. It takes
+a name for the fade to be created, followed by `from-effect` and
+`to-effect`, the two effects to be faded between, and a `phase`
+parameter which controls how much of each effect is seen. It returns
+the blended effect.
+
+When the value of `phase` is `0` (or less), the fade acts as if it is
+simply `from-effect`. When `phase` is `1` (or more), the fade behaves
+identical to `to-effect`. When `phase` falls somewhere between `0` and
+`1`, a corresponding linear blend between `from-effect` and
+`to-effect` is created. At the value `0.5`, each effect contributes
+the same amount.
+
+Either or both of the effects being faded between can be a
+<<effects#Scenes,scene>>, which groups many other effects, or one can
+be a <<effects#Blank Effects,blank effect>>, which will simply fade
+the other effect in or out of existence (allowing any earlier or
+lower-priority effects to show through). When fading between two
+non-blank effects, if they include different groups of fixtures (or
+different aspects of the fixtures they include), the same notion of
+"seeing what is underneath" the fade applies, as the side which is
+controlling a particular fixture or feature is faded out.
+
+The `phase` parameter can (and usually will) be a dynamic parameter,
+probably a <<parameters#variable-parameters,variable parameter>> or
+<<parameters#oscillated-parameters,oscillated parameter>>, so the fade
+will take place over time, or under the control of an operator using a
+control surface.
+
+Here is an example of a very simple fade cue from the sample show:
+
+[source,clojure]
+----
+(ct/set-cue! (:cue-grid *show*) 4 7
+             (cues/cue :color-fade
+                       (fn [var-map]
+                           (fx/fade "Color Fade"
+                                    (global-color-effect :red :include-color-wheels? true)
+                                    (global-color-effect :green :include-color-wheels? true)
+                                    (params/bind-keyword-param (:phase var-map 0) Number 0)))
+                       :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]))
+----
+
+This fades all the lights from red to green as the cue's encoder is
+turned. Switching either color effect to `(blank)` would insted fade
+to or from whatever color the fixtures were otherwise displaying at
+the time.
+
 ==== Conditional Effects
 
 The http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-conditional-effect[conditional-effect] function in the `afterglow.effects` namespace

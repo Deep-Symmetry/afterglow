@@ -164,7 +164,9 @@
 (defn blank
   "Create an effect which does nothing. This can be useful, for
   example, when you want to use [[fade]] to fade into an effect from a
-  state where there was simply nothing happening."
+  state where there was simply nothing happening (or where earlier and
+  lower-priority effects can show through)."
+  {:doc/format :markdown}
   []
   (scene "Blank"))
 
@@ -309,7 +311,14 @@
   Of course `phase` can be a dynamic parameter; interesting results
   can be obtained with oscillated and variable parameters. And either
   or both of the effects being faded between can be a scene, grouping
-  many other effects."
+  many other effects.
+
+  One of the effects may also be [[blank]], which allows the other
+  effect to be faded into or out of existence. When fading to or from
+  a blank effect, the fade allows any previous or lower-priority
+  effects to pass through as it approaches the blank effect. The same
+  is true when fading between effects that do not include all the same
+  fixtures, or affect different aspects of fixtures."
   {:doc/format :markdown}
   [effect-name from-effect to-effect phase]
   {:pre [(some? *show*) (some? effect-name) (satisfies? IEffect from-effect) (satisfies? IEffect to-effect)]}
