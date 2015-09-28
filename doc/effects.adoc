@@ -380,7 +380,7 @@ blue color effect will linger as the last sparkles fade out).
 
 A blank effect does nothing at all. Although this might not
 immediately seem useful, assigning a blank effect to one side or the
-other of a <<effects#Fades,fade>> (below) lets you fade an effect in
+other of a <<effects#fades,fade>> (below) lets you fade an effect in
 or out, from or to nothing. In such cases the fade also takes care
 that as it fades towards the blank effect, whatever effects were being
 replaced by the fade are restored.
@@ -408,8 +408,8 @@ identical to `to-effect`. When `phase` falls somewhere between `0` and
 the same amount.
 
 Either or both of the effects being faded between can be a
-<<effects#Scenes,scene>>, which groups many other effects, or one can
-be a <<effects#Blank Effects,blank effect>>, which will simply fade
+<<effects#scenes,scene>>, which groups many other effects, or one can
+be a <<effects#blank-effects,blank effect>>, which will simply fade
 the other effect in or out of existence (allowing any earlier or
 lower-priority effects to show through). When fading between two
 non-blank effects, if they include different groups of fixtures (or
