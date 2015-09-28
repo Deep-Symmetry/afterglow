@@ -108,8 +108,11 @@
         (>= fraction 1) to-assignment
         ;; We are blending, so we need to resolve any remaining dynamic parameters now, and make sure
         ;; fraction really does only range between 0 and 1.
-        :else (let [from-resolved (clamp-rgb-int (params/resolve-param (or (:value from-assignment) 0) show snapshot))
-                    to-resolved (clamp-rgb-int (params/resolve-param (or (:value to-assignment) 0) show snapshot))
+        :else (let [target (:target from-assignment)
+                    from-resolved (clamp-rgb-int (params/resolve-param (or (:value from-assignment) 0)
+                                                                       show snapshot target))
+                    to-resolved (clamp-rgb-int (params/resolve-param (or (:value to-assignment) 0)
+                                                                     show snapshot target))
                     fraction (clamp-unit-float fraction)]
                 (merge from-assignment {:value (+ (* fraction to-resolved) (* (- 1.0 fraction) from-resolved))}))))
 
@@ -249,8 +252,9 @@
                                                                         to-assignment)
         ;; We are blending, so we need to resolve any remaining dynamic parameters now, and make sure
         ;; fraction really does only range between 0 and 1.
-        :else (let [from-resolved (clamp-percent-float
-                                   (params/resolve-param (:value from-assignment) show snapshot))
-                    to-resolved (clamp-percent-float (params/resolve-param (:value to-assignment) show snapshot))
+        :else (let [target (:target from-assignment)
+                    from-resolved (clamp-percent-float
+                                   (params/resolve-param (:value from-assignment) show snapshot target))
+                    to-resolved (clamp-percent-float (params/resolve-param (:value to-assignment) show snapshot target))
                     fraction (clamp-unit-float fraction)]
                 (merge from-assignment {:value (+ (* fraction to-resolved) (* (- 1.0 fraction) from-resolved))}))))

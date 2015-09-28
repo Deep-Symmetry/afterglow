@@ -87,9 +87,12 @@
         (>= fraction 1) to-assignment
         ;; We are blending, so we need to resolve any remaining dynamic parameters now, and make sure
         ;; fraction really does only range between 0 and 1.
-        :else (let [default (default-direction (:target from-assignment))
-                    from-resolved (Vector3d. (params/resolve-param (or (:value from-assignment) default) show snapshot))
-                    to-resolved (Vector3d.  (params/resolve-param (or (:value to-assignment) default) show snapshot))
+        :else (let [target (:target from-assignment)
+                    default (default-direction target)
+                    from-resolved (Vector3d. (params/resolve-param (or (:value from-assignment) default)
+                                                                   show snapshot target))
+                    to-resolved (Vector3d.  (params/resolve-param (or (:value to-assignment) default)
+                                                                  show snapshot target))
                     fraction (colors/clamp-unit-float fraction)]
                 (.scale to-resolved fraction)
                 (.scaleAdd from-resolved (- 1.0 fraction) to-resolved)
@@ -137,8 +140,10 @@
                     default (Point3d. (+ (:x target) (.x dir))
                                       (+ (:y target) (.y dir))
                                       (+ (:z target) (.z dir)))
-                    from-resolved (Point3d. (params/resolve-param (or (:value from-assignment) default) show snapshot))
-                    to-resolved (Point3d.  (params/resolve-param (or (:value to-assignment) default) show snapshot))
+                    from-resolved (Point3d. (params/resolve-param (or (:value from-assignment) default)
+                                                                  show snapshot target))
+                    to-resolved (Point3d.  (params/resolve-param (or (:value to-assignment) default)
+                                                                 show snapshot target))
                     fraction (colors/clamp-unit-float fraction)]
                 (.scale to-resolved fraction)
                 (.scaleAdd from-resolved (- 1.0 fraction) to-resolved)
