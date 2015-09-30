@@ -320,13 +320,13 @@
   is true when fading between effects that do not include all the same
   fixtures, or affect different aspects of fixtures."
   {:doc/format :markdown}
-  [effect-name from-effect to-effect phase]
-  {:pre [(some? *show*) (some? effect-name) (satisfies? IEffect from-effect) (satisfies? IEffect to-effect)]}
+  [fade-name from-effect to-effect phase]
+  {:pre [(some? *show*) (some? fade-name) (satisfies? IEffect from-effect) (satisfies? IEffect to-effect)]}
   (params/validate-param-type phase Number)
   (let [snapshot (rhythm/metro-snapshot (:metronome *show*))
         phase (params/resolve-unless-frame-dynamic phase *show* snapshot)]
     ;; Could optimize for a non-dymanic phase, but that seems unlikely to be useful.
-    (Effect. effect-name
+    (Effect. fade-name
              always-active
              (fn [show snapshot]
                (let [v (params/resolve-param phase show snapshot)]
