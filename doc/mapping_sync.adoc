@@ -297,6 +297,27 @@ network troubleshooting hat, and figure out why UDP broadcast packets
 to port 50001 from the mixer are not making it to the machine running
 Afterglow.
 
+== Sending MIDI Over a Network
+
+You can sync MIDI clock and respond to MIDI controller messages from
+hardware and software which is not directly attached to the machine
+running Afterglow. If you are on a Mac, this capability is built in,
+and can be configured using the
+https://help.apple.com/audiomidisetup/mac/10.10/index.html?localePath=en.lproj#/ams1012[Audio
+MIDI Setup] utility (in the `Utilities` subfolder of your
+`Applications` folder). For Windows, you can install the excellent,
+free, and fully compatible
+http://www.tobias-erichsen.de/software/rtpmidi.html[rtpMIDI] driver.
+Either of these approaches allow you to communicate with the network
+MIDI capabilities built in to iOS devices and applications.
+
+If you are interested in using Open Sound Control (OSC) control
+surfaces with Afterglow, you should also check out the free
+http://hexler.net/software/touchosc[TouchOSC] package (also available
+for http://hexler.net/software/touchosc-android[Android]. The TouchOSC
+site also has a nice
+http://hexler.net/docs/touchosc-setup-coremidi-network[illustrated
+walk-through] of setting up network MIDI communication.
 
 == Checking your Sync
 
