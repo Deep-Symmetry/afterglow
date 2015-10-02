@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file. This change
 ## [Unreleased][unreleased]
 
 ### Added
-- To be determined...
+- Chases, which support sequences of effects with a variety of timing,
+  fade, and looping options.
 
 ### Changed
 
