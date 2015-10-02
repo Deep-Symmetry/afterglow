@@ -163,9 +163,13 @@
                (empty? @active)))))
 
 (defonce ^{:private true
-           :doc "We can reuse a single blank effect, shared by
- everyone who needs it, since it does nothing and never changes."}
- blank-effect (scene "Blank"))
+           :doc "We can reuse a single blank effect, shared by everyone who
+  needs it, since it does nothing and never changes."}
+  blank-effect (Effect. "Blank"
+                        always-active
+                        (fn [show snapshot]
+                          [])
+                        end-immediately))
 
 (defn blank
   "Create an effect which does nothing. This can be useful, for
