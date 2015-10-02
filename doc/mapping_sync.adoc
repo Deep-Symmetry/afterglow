@@ -314,7 +314,7 @@ MIDI capabilities built in to iOS devices and applications.
 If you are interested in using Open Sound Control (OSC) control
 surfaces with Afterglow, you should also check out the free
 http://hexler.net/software/touchosc[TouchOSC] package (also available
-for http://hexler.net/software/touchosc-android[Android]. The TouchOSC
+for http://hexler.net/software/touchosc-android[Android]). The TouchOSC
 site also has a nice
 http://hexler.net/docs/touchosc-setup-coremidi-network[illustrated
 walk-through] of setting up network MIDI communication.
