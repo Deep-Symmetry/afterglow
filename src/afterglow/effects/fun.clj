@@ -351,13 +351,6 @@
                            color-cycle)
           f (fn [show snapshot target previous-assignment]
               (pspy :color-cycle-chase-effect
-                    ;; Is it time to grab the next color?
-                    (when (not= (color-index-function snapshot) @current-index)
-                      (reset! current-index (color-index-function snapshot))
-                      (reset! previous-color @current-color)
-                      (reset! current-color
-                              (params/resolve-param (nth (cycle color-cycle) (dec @current-index))
-                                                    show snapshot)))
                     ;; Determine whether this head is covered by the current state of the transition
                     (let [transition-progress (transition-phase-function snapshot)]
                       (cond
@@ -369,6 +362,13 @@
           assigners (fx/build-head-assigners :color heads f)]
       (Effect. effect-name
                (fn [show snapshot]  ;; Continue running until the next color would appear
+                 ;; Is it time to grab the next color?
+                 (when (not= (color-index-function snapshot) @current-index)
+                   (reset! current-index (color-index-function snapshot))
+                   (reset! previous-color @current-color)
+                   (reset! current-color
+                           (params/resolve-param (nth (cycle color-cycle) (dec @current-index))
+                                                 show snapshot)))
                  (or (nil? @ending) (= @current-index @ending)))
                (fn [show snapshot] assigners)
                (fn [snow snapshot]  ;; Arrange to shut down when the next color starts to appear
