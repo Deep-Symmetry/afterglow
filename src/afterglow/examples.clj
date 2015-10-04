@@ -445,17 +445,17 @@
                :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
                :color :cyan))
 
-(ct/set-cue!
- (:cue-grid *show*) 6 7
- (cues/cue :fade-test-2 (fn [var-map]
-                          (fx/fade "Fade Test 2"
-                                   (move/direction-effect "p/t" (params/build-pan-tilt-param :pan 0 :tilt 0)
-                                                          (show/fixtures-named "torrent"))
-                                   (move/direction-effect "p/t" (params/build-pan-tilt-param :pan 0 :tilt 0)
-                                                          (show/fixtures-named "blade"))
-                                   (params/bind-keyword-param (:phase var-map 0) Number 0)))
-           :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
-           :color :red))
+    (ct/set-cue!
+     (:cue-grid *show*) 6 7
+     (cues/cue :fade-test-2 (fn [var-map]
+                              (fx/fade "Fade Test 2"
+                                       (move/direction-effect "p/t" (params/build-pan-tilt-param :pan 0 :tilt 0)
+                                                              (show/fixtures-named "torrent"))
+                                       (move/direction-effect "p/t" (params/build-pan-tilt-param :pan 0 :tilt 0)
+                                                              (show/fixtures-named "blade"))
+                                       (params/bind-keyword-param (:phase var-map 0) Number 0)))
+               :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
+               :color :red))
 
     (ct/set-cue! (:cue-grid *show*) 7 7
                  (cues/function-cue :strobe-all :strobe (show/all-fixtures) :effect-name "Raw Strobe"))
