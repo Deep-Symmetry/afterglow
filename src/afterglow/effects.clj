@@ -395,16 +395,25 @@
              (fn [show snapshot]  ; Ask any remaining active effects to end, record and report results
                (every? false? (swap! active end-still-active [from-effect to-effect] show snapshot))))))
 
+(defn- bounce-if-needed
+  "If a chanse is operating in bounce mode, expand the vector of
+  effects (or their activity states) to include a reflection of the
+  middle values, so that looping over the expanded list would have the
+  same effect as bouncing back and forth in the original list."
+  [mode values]
+  (vec (if (= mode :bounce) (concat values (butlast (reverse (butlast values)))) values)))
+
 (defn- find-chase-element
   "Look up the effect within a chase corresponding to a given position.
   If the chase is looping, takes the index modulo the number of
   elements; otherwise, if it falls outside the range of elements,
-  returns a [[blank]] effect."
+  returns a [[blank]] effect. If an actual effect is found, but it is
+  no longer active, return a blank effect instead."
   {:doc/format :markdown}
-  [position effects looping?]
+  [position effects active looping?]
   (let [position (if looping? (mod position (count effects)) position)
         i (int (math/floor position))]
-    (get effects i (blank))))
+    (if (get active i false) (get effects i blank-effect) blank-effect)))
 
 (defn chase
   "Create an effect which moves through a list of other effects based
@@ -432,8 +441,10 @@
   the final effect is reached, the chase begins fading into the first
   effect again, and so on. Similarly, if `position` drops below `1`,
   the chase starts fading in to the final effect. In this mode the
-  chase continues until it is ended by the operator, or `position`
-  resolves to `nil`.
+  chase continues until all of its underlying effects have
+  ended (either on their own, or because they were asked to end by the
+  operator), or `position` resolves to `nil`, which kills it
+  instantly.
 
   Finally, passing `:bounce` with `:beyond` is similar to `:loop`,
   except that every other repetition of the list of effects is
@@ -455,19 +466,26 @@
   (params/validate-param-type position Number)
   ;; Could optimize for a non-frame-dynamic position, but that is unlikely to ever occur.
   (let [looping? (not= beyond :blank)
-        effects (vec (if (= beyond :bounce) (concat effects (butlast (reverse (butlast effects)))) effects))]
+        bounced-effects (bounce-if-needed beyond effects)
+        active (atom (vec (repeat (count effects) true)))]
     (Effect. chase-name
              (fn [show snapshot]
-               ;; Run as long as position does not resolve to nil, or fall outside a non-looped chase
+               ;; Run as long as position does not resolve to nil, or fall outside a non-looped chase,
+               ;; and the underlying effects are still running.
                (let [v (params/resolve-param position show snapshot)]
                  (and (some? v)
-                      (or looping? (<= 0 v (inc (count effects)))))))
+                      (or looping? (<= 0 v (inc (count bounced-effects))))
+                      (some true? (swap! active update-still-active effects show snapshot)))))
              (fn [show snapshot]
                (let [v (dec (params/resolve-param position show snapshot))
                      fraction (- v (math/floor v))
-                     first-effect (find-chase-element v effects looping?)]
+                     bounced-active (bounce-if-needed beyond @active)
+                     first-effect (find-chase-element v bounced-effects bounced-active looping?)]
                  (if (util/float= 0 fraction)
-                   (generate first-effect show snapshot) ;; We're positioned precisely at one effect; just generate it
-                   (let [next-effect (find-chase-element (inc v) effects looping?)] ;; Fade with next effect
+                   ;; We're positioned precisely at one effect; just generate it
+                   (generate first-effect show snapshot)
+                    ;; We are in between effects, so fade them together
+                   (let [next-effect (find-chase-element (inc v) bounced-effects bounced-active looping?)]
                      (generate-fade first-effect next-effect fraction show snapshot)))))
-             end-immediately)))
+             (fn [show snapshot]  ; Ask any remaining active effects to end, record and report results
+               (every? false? (swap! active end-still-active effects show snapshot))))))
