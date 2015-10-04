@@ -333,6 +333,25 @@
                               (map->Assigner (assoc template :f f))))
                           keys)))
 
+(defn- update-still-active
+  "For compound effects which track an ordered list of effects,
+  update the vector of which are still running by
+  calling [[still-active?]] for any which are not yet known to have
+  ended."
+  [active-vec effects show snapshot]
+  (vec (map (fn [previously-active effect]
+              (and previously-active (still-active? effect show snapshot)))
+            active-vec effects)))
+
+(defn- end-still-active
+  "For compound effects which track an ordered list of effects,
+  ask any which are marked as still running to end, and update
+  the active vector based on their response."
+  [active-vec effects show snapshot]
+  (vec (map (fn [previously-active effect]
+              (and previously-active (not (end effect show snapshot))))
+            active-vec effects)))
+
 (defn fade
   "Create an effect which fades between two other effects as the value
   of a parameter changes from zero to one. When `phase` is `0` (or
@@ -358,18 +377,25 @@
   {:pre [(some? *show*) (some? fade-name) (satisfies? IEffect from-effect) (satisfies? IEffect to-effect)]}
   (params/validate-param-type phase Number)
   (let [snapshot (rhythm/metro-snapshot (:metronome *show*))
-        phase (params/resolve-unless-frame-dynamic phase *show* snapshot)]
+        phase (params/resolve-unless-frame-dynamic phase *show* snapshot)
+        active (atom [true true])]
     ;; Could optimize for a non-dymanic phase, but that seems unlikely to be useful.
     (Effect. fade-name
-             always-active
+             (fn [show snapshot]  ; We are still active if either effect is
+               (swap! active update-still-active [from-effect to-effect] show snapshot)
+               (some true? @active))
              (fn [show snapshot]
-               (let [v (params/resolve-param phase show snapshot)]
+               (let [v (params/resolve-param phase show snapshot)
+                     from-active (if (@active 0) from-effect blank-effect)
+                     to-active (if (@active 1) to-effect blank-effect)]
                  (cond
-                   (util/float<= v 0.0) (generate from-effect show snapshot)
-                   (util/float>= v 1.0) (generate to-effect show snapshot)
+                   (util/float<= v 0.0) (generate from-active show snapshot)
+                   (util/float>= v 1.0) (generate to-active show snapshot)
                    :else
-                   (generate-fade from-effect to-effect v show snapshot))))
-             end-immediately)))
+                   (generate-fade from-active to-active v show snapshot))))
+             (fn [show snapshot]  ; Ask any remaining active effects to end, record and report results
+               (swap! active end-still-active [from-effect to-effect] show snapshot)
+               (every? false? @active)))))
 
 (defn- find-chase-element
   "Look up the effect within a chase corresponding to a given position.
