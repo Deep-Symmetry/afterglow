@@ -382,8 +382,7 @@
     ;; Could optimize for a non-dymanic phase, but that seems unlikely to be useful.
     (Effect. fade-name
              (fn [show snapshot]  ; We are still active if either effect is
-               (swap! active update-still-active [from-effect to-effect] show snapshot)
-               (some true? @active))
+               (some true? (swap! active update-still-active [from-effect to-effect] show snapshot)))
              (fn [show snapshot]
                (let [v (params/resolve-param phase show snapshot)
                      from-active (if (@active 0) from-effect blank-effect)
@@ -394,8 +393,7 @@
                    :else
                    (generate-fade from-active to-active v show snapshot))))
              (fn [show snapshot]  ; Ask any remaining active effects to end, record and report results
-               (swap! active end-still-active [from-effect to-effect] show snapshot)
-               (every? false? @active)))))
+               (every? false? (swap! active end-still-active [from-effect to-effect] show snapshot))))))
 
 (defn- find-chase-element
   "Look up the effect within a chase corresponding to a given position.
