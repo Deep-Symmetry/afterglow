@@ -426,36 +426,6 @@
                  (cues/cue :transform-colors (fn [_] (color-fx/transform-colors (show/all-fixtures)))
                            :priority 1000))
 
-    (ct/set-cue! (:cue-grid *show*) 4 7
-                 (cues/cue :color-fade (fn [var-map]
-                                         (fx/fade "Color Fade"
-                                                  (global-color-effect :red :include-color-wheels? true)
-                                                  (global-color-effect :green :include-color-wheels? true)
-                                                  (params/bind-keyword-param (:phase var-map 0) Number 0)))
-                           :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
-                           :color :yellow))
-
-    (ct/set-cue!
-     (:cue-grid *show*) 5 7
-     (cues/cue :fade-test (fn [var-map]
-                            (fx/fade "Fade Test"
-                                     (fx/blank)
-                                     (global-color-effect :blue :include-color-wheels? true)
-                                     (params/bind-keyword-param (:phase var-map 0) Number 0)))
-               :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
-               :color :cyan))
-
-    (ct/set-cue!
-     (:cue-grid *show*) 6 7
-     (cues/cue :fade-test-2 (fn [var-map]
-                              (fx/fade "Fade Test 2"
-                                       (move/direction-effect "p/t" (params/build-pan-tilt-param :pan 0 :tilt 0)
-                                                              (show/fixtures-named "torrent"))
-                                       (move/direction-effect "p/t" (params/build-pan-tilt-param :pan 0 :tilt 0)
-                                                              (show/fixtures-named "blade"))
-                                       (params/bind-keyword-param (:phase var-map 0) Number 0)))
-               :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
-               :color :red))
 
     (ct/set-cue! (:cue-grid *show*) 7 7
                  (cues/function-cue :strobe-all :strobe (show/all-fixtures) :effect-name "Raw Strobe"))
@@ -784,6 +754,53 @@
                  (cues/function-cue :blade-speed :movement-speed (show/fixtures-named "blade")
                                     :color :purple :effect-name "Slow Blades"))
 
+    ;; Some fades
+    (ct/set-cue! (:cue-grid *show*) 0 12
+                 (cues/cue :color-fade (fn [var-map]
+                                         (fx/fade "Color Fade"
+                                                  (global-color-effect :red :include-color-wheels? true)
+                                                  (global-color-effect :green :include-color-wheels? true)
+                                                  (params/bind-keyword-param (:phase var-map 0) Number 0)))
+                           :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
+                           :color :yellow))
+
+    (ct/set-cue!
+     (:cue-grid *show*) 1 12
+     (cues/cue :fade-test (fn [var-map]
+                            (fx/fade "Fade Test"
+                                     (fx/blank)
+                                     (global-color-effect :blue :include-color-wheels? true)
+                                     (params/bind-keyword-param (:phase var-map 0) Number 0)))
+               :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
+               :color :cyan))
+
+    (ct/set-cue!
+     (:cue-grid *show*) 2 12
+     (cues/cue :fade-test-2 (fn [var-map]
+                              (fx/fade "Fade Test 2"
+                                       (move/direction-effect "p/t" (params/build-pan-tilt-param :pan 0 :tilt 0)
+                                                              (show/fixtures-named "torrent"))
+                                       (move/direction-effect "p/t" (params/build-pan-tilt-param :pan 0 :tilt 0)
+                                                              (show/fixtures-named "blade"))
+                                       (params/bind-keyword-param (:phase var-map 0) Number 0)))
+               :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
+               :color :red))
+
+    ;; Some chases
+    (ct/set-cue!
+     (:cue-grid *show*) 0 13
+     (cues/cue :chase (fn [var-map]
+                        (fx/chase "Chase Test"
+                                  [(global-color-effect :red :include-color-wheels? true)
+                                   (global-color-effect :green :lights (show/fixtures-named "hex"))
+                                   (global-color-effect :blue :include-color-wheels? true)]
+                                  (params/bind-keyword-param (:position var-map 0) Number 0)
+                                  :beyond :bounce)
+                        )
+               :variables [{:key "position" :min -0.5 :max 10.5 :start 0.0 :name "Position"}]
+               :color :purple))
+
+
     ;; Some compound cues
     (ct/set-cue! (:cue-grid *show*) 8 0
                  (cues/cue :star-swirl (fn [_] (cues/compound-cues-effect
@@ -791,7 +808,7 @@
                                                                      [10 9]
                                                                      [6 15 {:level 60}]
                                                                      [6 8 {:level 25}]]))))
-    ;; Some example chases
+    ;; Some color cycle chases
     (ct/set-cue! (:cue-grid *show*) 8 1
                  (cues/cue :color (fn [_] (fun/iris-out-color-cycle-chase (show/all-fixtures)))))
     (ct/set-cue! (:cue-grid *show*) 9 1
