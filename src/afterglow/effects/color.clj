@@ -130,19 +130,26 @@
   "The color to mix with when fading from a non-assignment."
   (colors/create-color :black))
 
+(defn- blackened-color
+  "Determine the color to fade to when one side of a fade is nil;
+  return the fully darkened version of the other color in the fade, if
+  there is one, or a default black if both were nil."
+  [color]
+  (if color (colors/darken color 100.0) default-color))
+
 (defn fade-colors
   "Calculate a weighted HSL blend between two colors, which may be
-  dynamic parameters, and where nil is considered to be the default
-  color defined above."
+  dynamic parameters, and where nil is considered to be a fully
+  darkened version of the other side of the fade."
   [from to fraction show snapshot target]
   ;; Resolve any remaining dynamic parameters now, and make sure fraction really
   ;; does only range between 0 and 1, then convert it to the percentage wanted by
   ;; the colors library.
-  (let [from-resolved (params/resolve-param (or from default-color) show snapshot target)
-        to-resolved (params/resolve-param (or to default-color) show snapshot target)
+  (let [from (params/resolve-param from show snapshot target)
+        to (params/resolve-param to show snapshot target)
         weight (* 100 (colors/clamp-unit-float fraction))]
     ;; Weight goes in the opposite direction you might expect, so the following order works:
-    (colors/mix-hsl to-resolved from-resolved weight)))
+    (colors/mix-hsl (or to (blackened-color from)) (or from (blackened-color to)) weight)))
 
 ;; Fades between two color assignments to a fixture or head.
 (defmethod fx/fade-between-assignments :color [from-assignment to-assignment fraction show snapshot]
