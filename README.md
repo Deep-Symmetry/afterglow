@@ -778,6 +778,13 @@ encounter them!
   [color vision](http://handprint.com/LS/CVS/color.html)! Send him a
   note asking if he knows where I can find an algorithm for using
   arbitrary LEDs to make an HSL color!
+  - [ ] Consider an alternate HSI color implementation. It could yield more
+  pure/accurate results, but perhaps with less intuitive semantics,
+  and definitely lower peak output. Most likely a configurable option?
+  See the discussion and code on the
+  [SaikoLED blog](http://blog.saikoled.com/post/44677718712/how-to-convert-from-hsi-to-rgb-white).
+  And [related discussion](http://blog.saikoled.com/post/43693602826/why-every-led-light-should-be-using-hsi),
+  with links to color correction.
 - [ ] When it is time to optimize performance, study the
   [type hints](http://clojure.org/java_interop#Java%20Interop-Type%20Hints)
   interop information looks very informative and helpful.
