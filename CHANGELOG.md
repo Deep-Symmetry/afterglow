@@ -8,8 +8,18 @@ All notable changes to this project will be documented in this file. This change
   fade, and looping options.
 
 ### Changed
+- Fades now delegate their notion of ending to the underlying effects
+  which are being faded between, and pass end requests along to them.
 
 ### Fixed
+- Fading colors in and out from nothing, as represented by a `nil`
+  assignment value, was fading to a desaturated version of black,
+  which does not lead to the kind of results people generally expect
+  and want. In this situation, the color is now faded to or from a
+  darkened version of itself.
+- Calculation of white LED channel for colors with lightness less than
+  50 was wrong, leading to slight unintentional desaturation of
+  colors.
 
 ## [0.1.4] - 2015-09-27
 ### Added

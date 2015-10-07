@@ -111,8 +111,8 @@
     (when-let [whites (filter #(= (:color %) :white) (:channels target))]
       (let [l (/ (colors/lightness resolved) 100)
             s (/ (colors/saturation resolved) 100)
-            s-scale (* 2 (- 0.5 (math/abs (- 0.5 l))))
-            level (* 255 l (- 1 (* s s-scale)))]
+            s-scale (if (< l 0.5) 1.0 (- 1.0 (* 2.0 (- l 0.5))))
+            level (* 255.0 l (- 1.0 (* s s-scale)))]
         (doseq [c whites]
           (chan-fx/apply-channel-value buffers c level))))
     ;; Even more experimental: Support other arbitrary color channels
