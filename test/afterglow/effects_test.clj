@@ -74,7 +74,7 @@
       (is (util/float= 1.0 (:value (fade-assignment from nil 0.9 @test-show @test-snapshot))))
       (is (= :channel (:kind (fade-assignment from nil 0.9 @test-show @test-snapshot))))
       (is (util/float= 0.4 (:value (fade-assignment nil to 0.02 @test-show @test-snapshot))))
-      (is (= :channel(:kind (fade-assignment nil to 0.02 @test-show @test-snapshot)))))))
+      (is (= :channel (:kind (fade-assignment nil to 0.02 @test-show @test-snapshot)))))))
 
 (deftest test-fade-function
   (testing "Fading a function assigner scales the value only if active on both sides"
@@ -96,7 +96,7 @@
       (is (nil? (:value (fade-assignment from nil 0.9 @test-show @test-snapshot))))
       (is (= :function (:kind (fade-assignment from nil 0.9 @test-show @test-snapshot))))
       (is (nil? (:value (fade-assignment nil to 0.02 @test-show @test-snapshot))))
-      (is (= :function(:kind (fade-assignment nil to 0.02 @test-show @test-snapshot)))))))
+      (is (= :function (:kind (fade-assignment nil to 0.02 @test-show @test-snapshot)))))))
 
 (deftest test-fade-color
   (testing "Fading a color assigner blends the colors"
@@ -143,7 +143,7 @@
       (is (= :direction (:kind (fade-assignment from nil 0.9 @test-show @test-snapshot))))
       (is (= (Vector3d. 0.020407013973550377, 0.002759527209833684, -0.9997879469118747)
              (:value (fade-assignment nil to 0.02 @test-show @test-snapshot))))
-      (is (= :direction(:kind (fade-assignment nil to 0.02 @test-show @test-snapshot)))))))
+      (is (= :direction (:kind (fade-assignment nil to 0.02 @test-show @test-snapshot)))))))
 
 (deftest test-fade-aim
   (testing "Fading an aim assigner moves between the aim points"
@@ -169,4 +169,4 @@
       (is (= :aim (:kind (fade-assignment from nil 0.9 @test-show @test-snapshot))))
       (is (= (Point3d. 1.1152480000000002, 1.310865488969734, -1.0580843683682586)
              (:value (fade-assignment nil to 0.02 @test-show @test-snapshot))))
-      (is (= :aim(:kind (fade-assignment nil to 0.02 @test-show @test-snapshot)))))))
+      (is (= :aim (:kind (fade-assignment nil to 0.02 @test-show @test-snapshot)))))))
