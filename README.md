@@ -662,11 +662,11 @@ encounter them!
       for and prevent circular definitions, as well as reporting
       sensible errors when constituent cues can no longer be found.
 - [ ] Compound effects:
-  - [ ] Simplest compound effect just delegates to nested effects,
+  - [x] Simplest compound effect just delegates to nested effects,
     returning concatenated assigners. But implement as a fade with
     time zero?
-  - [ ] Fade compound effect: fade in at start, out at end.
-  - [ ] Cue list compound effect: Move through list of embedded
+  - [x] Fade compound effect: fade in at start, out at end.
+  - [x] Cue list compound effect: Move through list of embedded
     effects, with optional fades. Loops, driven by metronome, or a
     variable parameter (knob controls where in the list we are). Maybe
     different implementations?
@@ -770,6 +770,7 @@ encounter them!
   - [ ] See if someone can come up with a more bare bones but scalable preview, probably building a geometry of the light cones instead of ray marching through them.
 - [x] Use [claypoole](https://clojars.org/com.climate/claypoole) for
   parallelism.
+- [ ] Change to core.async for all parallelism, since we are already using it anyway.
 - [ ] Add OSC support (probably using
   [Overtone&rsquo;s implementation](https://github.com/rosejn/osc-clj))
   for controller support, and MIDI as well.
