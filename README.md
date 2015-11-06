@@ -218,7 +218,7 @@ in a file `my-show.clj` and then invoke Afterglow as `java -jar afterglow.jar my
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
             [afterglow.show-context :refer :all]
-            [com.evocomputing.colors :refer [color-create-color hue adjust-hue]]
+            [com.evocomputing.colors :refer [create-color hue adjust-hue]]
             [taoensso.timbre :as timbre]))
 
 (defonce ^{:doc "Holds my show if it has been created,
