@@ -394,12 +394,13 @@ set up a Universe with ID 1.
 > general way of working with one would look like:
 
 ```clojure
-(with-show sample-show
+(def another-show (some-function-that-creates-a-show))
+(with-show another-show
   (show/start!)
   (fiat-lux))
 ```
 
-> However, the examples namespace assumes you are just using one,
+> However, the `examples` namespace assumes you are just using one,
 > and has set it up as the default show, like this:
 
 ```clojure
@@ -411,7 +412,10 @@ set up a Universe with ID 1.
 > will likely want to do something similar in setting up your own
 > shows, since a single show is the most common scenario. See the
 > [afterglow.show-context](http://deepsymmetry.org/afterglow/doc/afterglow.show-context.html)
-> API documentation for more details.
+> API documentation for more details. The `show-context` namespace
+> also defines the dynamic variable `*show*` which you can use to
+> refer to the current default show when you need to mention it
+> explicitly, as you will see in some of the examples below.
 
 The actual content of `fiat-lux` is quite simple, creating
 three effects to achieve the goals mentioned above:
@@ -441,7 +445,7 @@ We can make the lights a little dimmer...
 But for dimmer channels, there is an even better way of doing that:
 
 ```clojure
-(master-set-level (:grand-master sample-show) 80)
+(master-set-level (:grand-master *show*) 80)
 ```
 
 All cues which set dimmer levels are tied to a dimmer master chain.
@@ -492,7 +496,7 @@ Let’s get a little fancy and ramp the dimmers up on a sawtooth curve each beat
 Slow that down a little:
 
 ```clojure
-(afterglow.rhythm/metro-bpm (:metronome sample-show) 70)
+(afterglow.rhythm/metro-bpm (:metronome *show*) 70)
 ```
 
 > If you have a web browser open on
