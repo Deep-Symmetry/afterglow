@@ -420,11 +420,13 @@ three effects to achieve the goals mentioned above:
 (defn fiat-lux
   "Start simple with a cool blue color from all the lights."
   []
-  (show/add-effect! :color (global-color-effect "slateblue" :include-color-wheels? true))
+  (show/add-effect! :color (global-color-effect "slateblue"
+                    :include-color-wheels? true))
   (show/add-effect! :dimmers (global-dimmer-effect 255))
   (show/add-effect! :torrent-shutter
                     (afterglow.effects.channel/function-effect
-                     "Torrents Open" :shutter-open 50 (show/fixtures-named "torrent"))))
+                    "Torrents Open" :shutter-open 50
+                    (show/fixtures-named "torrent"))))
 ```
 
 We can make the lights a little dimmer...
