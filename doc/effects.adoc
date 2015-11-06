@@ -180,7 +180,7 @@ the direction the lights should face, with respect to the show’s
 <<show_space#show-space,frame of reference>>. An easy way to create
 one is to call
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-direction-param[afterglow.effects.params/build-direction-param] or
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-pan-tilt-param[afterglow.effects.params/build-pan-tilt-param].
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-direction-param-from-pan-tilt[afterglow.effects.params/build-direction-param-from-pan-tilt].
 These can create static vectors for you, but can also create
 <<parameters#dynamic-parameters,Dynamic Parameters>> whose value
 depends on a <<metronomes#metronomes,Metronome>>, the physical

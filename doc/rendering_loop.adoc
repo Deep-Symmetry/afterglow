@@ -322,6 +322,9 @@ If multiple fixtures or heads are assigned the same direction vector,
 they will all be aimed in exactly the same direction, regardless of
 the location and orientation with which they were hung.
 
+NOTE: If there is an active Aim Assigner which affects the same
+target, it will run later, so its effects will be the ones that matter.
+
 [[aim-assigners]]
 === Aim Assigners
 

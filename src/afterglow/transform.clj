@@ -267,7 +267,7 @@
           solution-a
           solution-b)))))
 
-(defn calculate-position
+(defn direction-to-dmx
   "Given a fixture or head and vector representing a direction in the
   frame of reference of the light show, calculate the best pan and
   tilt values to send to that fixture or head in order to aim it in
@@ -292,7 +292,7 @@
     (let [[[pan _] [tilt _]] best]
       [pan tilt])))
 
-(defn calculate-aim
+(defn aim-to-dmx
   "Given a fixture or head and a point in the frame of reference of
   the light show, calculate the best pan and tilt values to send to
   that fixture or head in order to aim it at that point.
@@ -308,7 +308,7 @@
                              (- (.y target-point) (:y fixture))
                              (- (.z target-point) (:z fixture)))]
     (debug "Calculating aim as direction" direction)
-    (calculate-position fixture direction former-values)))
+    (direction-to-dmx fixture direction former-values)))
 
 (defn calculate-bounds
   "Given a list of fixtures, determine the corners of the smallest

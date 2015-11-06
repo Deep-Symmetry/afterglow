@@ -338,7 +338,7 @@ basic way to create one is to call:
 
 [source,clojure]
 ----
-(afterglow.effects.params/build-pan-tilt-param)
+(afterglow.effects.params/build-direction-param-from-pan-tilt)
 ----
 
 By itself this call would simply return a non-dynamic direction telling

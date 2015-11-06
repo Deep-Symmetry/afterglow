@@ -8,7 +8,7 @@
             [afterglow.effects :as fx]
             [afterglow.rhythm :as rhythm]
             [afterglow.show-context :refer [*show*]]
-            [afterglow.transform :refer [calculate-position calculate-aim]]
+            [afterglow.transform :as transform]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
             [taoensso.timbre.profiling :refer [pspy]]
@@ -43,7 +43,7 @@
         direction (params/resolve-param (:value assignment) show snapshot target)
         direction-key (keyword (str "pan-tilt-" (:id target)))
         former-values (direction-key (:previous @(:movement *show*)))
-        [pan tilt] (calculate-position target direction former-values)]
+        [pan tilt] (transform/direction-to-dmx target direction former-values)]
     (debug "Direction resolver pan:" pan "tilt:" tilt)
     (doseq [c (filter #(= (:type %) :pan) (:channels target))]
       (chan-fx/apply-channel-value buffers c pan))
@@ -120,7 +120,7 @@
         target-point (params/resolve-param (:value assignment) show snapshot target)
         direction-key (keyword (str "pan-tilt-" (:id target)))
         former-values (direction-key (:previous @(:movement *show*)))
-        [pan tilt] (calculate-aim target target-point former-values)]
+        [pan tilt] (transform/aim-to-dmx target target-point former-values)]
     (debug "Aim resolver pan:" pan "tilt:" tilt)
     (doseq [c (filter #(= (:type %) :pan) (:channels target))]
       (chan-fx/apply-channel-value buffers c pan))

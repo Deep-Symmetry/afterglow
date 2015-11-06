@@ -707,8 +707,8 @@
                                   (fn [head]
                                     (params/build-oscillated-param
                                      (oscillators/triangle-bar :phase (x-phase head *show*))
-                                     :min -90 :max 0)))
-          can-can-dir (params/build-pan-tilt-param :pan triangle-phrase :tilt staggered-triangle-bar)]
+                                     :min -50 :max 0)))
+          can-can-dir (params/build-direction-param-from-pan-tilt :pan triangle-phrase :tilt staggered-triangle-bar)]
       (ct/set-cue! (:cue-grid *show*) 0 9
                    (cues/cue :movement (fn [var-map]
                                          (move/direction-effect "Can Can" can-can-dir (show/all-fixtures))))))
@@ -728,9 +728,9 @@
                  (cues/cue :torrent-dir (fn [var-map]
                                           (move/direction-effect
                                            "Pan/Tilt"
-                                           (params/build-pan-tilt-param :pan (:pan var-map 0.0)
-                                                                        :tilt (:tilt var-map 0.0)
-                                                                        :degrees true)
+                                           (params/build-direction-param-from-pan-tilt :pan (:pan var-map 0.0)
+                                                                                       :tilt (:tilt var-map 0.0)
+                                                                                       :degrees true)
                                            (show/all-fixtures)))
                            :variables [{:key "pan" :name "Pan"
                                         :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}
@@ -778,10 +778,12 @@
      (:cue-grid *show*) 2 12
      (cues/cue :fade-test-2 (fn [var-map]
                               (fx/fade "Fade Test 2"
-                                       (move/direction-effect "p/t" (params/build-pan-tilt-param :pan 0 :tilt 0)
-                                                              (show/fixtures-named "torrent"))
-                                       (move/direction-effect "p/t" (params/build-pan-tilt-param :pan 0 :tilt 0)
-                                                              (show/fixtures-named "blade"))
+                                       (move/direction-effect
+                                        "p/t" (params/build-direction-param-from-pan-tilt :pan 0 :tilt 0)
+                                        (show/fixtures-named "torrent"))
+                                       (move/direction-effect
+                                        "p/t" (params/build-direction-param-from-pan-tilt :pan 0 :tilt 0)
+                                        (show/fixtures-named "blade"))
                                        (params/bind-keyword-param (:phase var-map 0) Number 0)))
                :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
                :color :red))

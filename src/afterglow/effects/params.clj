@@ -528,7 +528,7 @@
     (.transform rotation direction)
     direction))
 
-(defn build-pan-tilt-param
+(defn build-direction-param-from-pan-tilt
   "An alternate to [[build-direction-param]] for cases in which angles
   are more convenient than a vector. Returns a dynamic direction
   parameter specified in terms of pan and tilt angles away from facing
@@ -568,10 +568,12 @@
                                             radians))
             resolve-fn (fn [show snapshot head]
                          (with-show show
-                           (build-pan-tilt-param :pan (resolve-unless-frame-dynamic pan show snapshot head)
-                                                 :tilt (resolve-unless-frame-dynamic tilt show snapshot head)
-                                                 :radians radians
-                                                 :frame-dynamic dyn)))]
+                           (build-direction-param-from-pan-tilt :pan (resolve-unless-frame-dynamic pan show
+                                                                                                   snapshot head)
+                                                                :tilt (resolve-unless-frame-dynamic tilt show
+                                                                                                    snapshot head)
+                                                                :radians radians
+                                                                :frame-dynamic dyn)))]
         (reify
           IParam
           (evaluate [this show snapshot] (eval-fn show snapshot nil))
