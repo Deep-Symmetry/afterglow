@@ -374,30 +374,29 @@ you start the show sending control signals to lights:
 (show/start!)     ; Start sending its DMX frames.
 ```
 
-The `afterglow.examples` namespace has already assigned a nice cool
-blue color to all lights in the sample show and set their dimmers to
-full, using these two lines:
+The `afterglow.examples` namespace includes a helper function,
+`fiat-lux`, to assign a nice cool blue color to all lights in the
+sample show, set their dimmers to full, and open the shutters of the
+Torrent moving-head spots, which can be called like this:
 
 ```clojure
-(show/add-effect! :color blue-cue)
-(show/add-effect! :dimmers (global-dimmer-effect 255))
+(fiat-lux)
 ```
 
 So if you happened to have the same fixtures hooked up, assigned the
 same DMX addresses as I did when I wrote this, you would see a bunch
 of blue light. More realistically, you can navigate to the `olad`
-embedded [web server](http://localhost:9090/ola.html) and see the
+embedded [web server](http://localhost:9090/new/) and see the
 non-zero DMX values in the blue and dimmer channels, assuming you have
 set up a Universe with ID 1.
-    
+
 > In an environment where you are running multiple shows, the more
 > general way of working with one would look like:
 
 ```clojure
 (with-show sample-show
   (show/start!)
-  (show/add-effect! :color blue-cue)
-  (show/add-effect! :dimmers (global-dimmer-effect 255)))
+  (fiat-lux))
 ```
 
 > However, the examples namespace assumes you are just using one,
@@ -413,6 +412,20 @@ set up a Universe with ID 1.
 > shows, since a single show is the most common scenario. See the
 > [afterglow.show-context](http://deepsymmetry.org/afterglow/doc/afterglow.show-context.html)
 > API documentation for more details.
+
+The actual content of `fiat-lux` is quite simple, creating
+three effects to achieve the goals mentioned above:
+
+```clojure
+(defn fiat-lux
+  "Start simple with a cool blue color from all the lights."
+  []
+  (show/add-effect! :color (global-color-effect "slateblue" :include-color-wheels? true))
+  (show/add-effect! :dimmers (global-dimmer-effect 255))
+  (show/add-effect! :torrent-shutter
+                    (afterglow.effects.channel/function-effect
+                     "Torrents Open" :shutter-open 50 (show/fixtures-named "torrent"))))
+```
 
 We can make the lights a little dimmer...
 
