@@ -35,7 +35,7 @@ at which this activity is scheduled is determined by the
 `refresh-interval` value established when the show was
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-show[created].
 If not explicitly set as a parameter to `(show/show)`, an interval of
-33⅓ milliseconds is used, causing the lights to be updated thirty times
+25 milliseconds is used, causing the lights to be updated forty times
 each second. If your DMX interface is running at a different rate, you
 will want to configure your show to match it, so that you are getting
 the best results possible without wasting computation on frames that
