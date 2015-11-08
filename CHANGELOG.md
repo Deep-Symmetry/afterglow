@@ -25,6 +25,10 @@ All notable changes to this project will be documented in this file. This change
 - Calculation of white LED channel for colors with lightness less than
   50 was wrong, leading to slight unintentional desaturation of
   colors.
+- It was a little too hard to see the difference between the "ready"
+  and "active" states for some colors on the Ableton Push after
+  introducing full RGB button color support; they are once again more
+  visually distinct.
 - Parts of the introductory walk-through in `README.md` had become
   stale and needed to be updated.
 
