@@ -203,17 +203,19 @@
       (chan-fx/apply-channel-value buffers c tilt))
     (swap! (:movement *show*) #(assoc-in % [:current direction-key] [pan tilt]))))
 
-;; Fades between two pan/tilt assignments. A nil assignment is interpreted as the direction the head will
-;; aim when it is sent zero values for its pan and tilt channels, so that a fade to or from nothing looks right.
+;; Fades between two pan/tilt assignments. A nil assignment is interpreted facing directly out into the
+;; audience. It might be nice to get fancier and have nil mean the direction the head would aim when
+;; it is sent zero values for its pan and tilt channels, so that a fade to or from nothing looks right,
+;; but because of the way that pan and tilt values are chosen to optimize wide-range movements, the
+;; head might still spin around anyway when the fade starts, so that might not be worth the effort.
 (defmethod fx/fade-between-assignments :pan-tilt [from-assignment to-assignment fraction show snapshot]
   (cond (<= fraction 0) from-assignment
         (>= fraction 1) to-assignment
         ;; We are blending, so we need to resolve any remaining dynamic parameters now, and make sure
         ;; fraction really does only range between 0 and 1.
         :else (let [target (:target from-assignment)
-                    ;; TODO: Need to figure out how to implement nil assignments correctly.
-                    ;; Currently actually treat as just facing out Z axis.
-                    ;;dir (default-direction target)
+                    ;; Here's where we would calculate a default angle based on the head orientation and
+                    ;; DMX response, if we decide that is worth it.
                     default (Vector2d. 0.0 0.0)
                     from-resolved (Vector2d. (params/resolve-param (or (:value from-assignment) default)
                                                                    show snapshot target))

@@ -104,28 +104,28 @@ effect.
 
 . While being gathered, the assigners are separated into individual
 lists, divided first by the `kind` value of the assigner (`:channel`,
-`:function`, `:color`, `:direction`, or `:aim`), and within each kind,
-further divided into lists based on the target ID that the assigner
-wants to affect. Since the effects are run in priority order (lower
-priority first, with effects of the same priority running in the order
-in which they were added to the show), higher-priority and more recent
-effects’ assigners will come later in the gathered lists, and will get
-the chance to modify or veto any assigners from earlier and
-lower-priority effects which are trying to control the same thing. If
-the effect doesn’t want to do anything this frame, it can simply
-return an empty assigner list.
+`:function`, `:color`, `:pan-tilt`, `:direction`, or `:aim`), and
+within each kind, further divided into lists based on the target ID
+that the assigner wants to affect. Since the effects are run in
+priority order (lower priority first, with effects of the same
+priority running in the order in which they were added to the show),
+higher-priority and more recent effects’ assigners will come later in
+the gathered lists, and will get the chance to modify or veto any
+assigners from earlier and lower-priority effects which are trying to
+control the same thing. If the effect doesn’t want to do anything this
+frame, it can simply return an empty assigner list.
 
 . Once all the assigners have been collected into their kind/target
-lists, each list is evaluated. The assigner kinds are processed in
-the order established by
+lists, each list is evaluated. The assigner kinds are processed in the
+order established by
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-resolution-order[show/resolution-order]
 and starts with low-level, single channel `:channel` assigners, then
-moves up to more complex `:function`, `:color`, `:direction`, and
-`:aim` assigners. (This order was chosen because different kinds of
-assigners might end up affecting the same DMX channel; the higher
-levels of abstraction are allowed to win by running last.) Within each
-kind, however, the lists can be processed in parallel, since they will
-all affect separate targets.
+moves up to more complex `:function`, `:color`, `:pan-tilt`,
+`:direction`, and `:aim` assigners. (This order was chosen because
+different kinds of assigners might end up affecting the same DMX
+channel; the higher levels of abstraction are allowed to win by
+running last.) Within each kind, however, the lists can be processed
+in parallel, since they will all affect separate targets.
 +
 To process a list, each assigner’s
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-assign[assign]
@@ -299,6 +299,32 @@ to use it. By default, as long as the hue values are within 60&deg; of
 each other (which is very lenient), Afterglow will use it. You can
 adjust this tolerance by setting a different value in the show
 variable `:color-wheel-hue-tolerance`.
+
+[[pan-tilt-assigners]]
+=== Pan/Tilt Assigners
+
+Pan/Tilt assigners have a `kind` of `:pan-tilt`, and their
+`target-id` is a keyword of the form `:i68` which would represent an
+assignment to the fixture or head with ID 68. The assignment values
+they return are either a `javax.vecmath.Vector2d`, a
+<<parameters#direction-parameters,dynamic parameter>> which will
+resolve to a `Vector2d` object, or `nil`, meaning no assignment should
+take place.
+
+When the assignment is resolved, the vector indicates the pan and tilt
+angles away from the `z` axis of the <<show_space#show-space,frame of
+reference of the show>> to aim the fixture or head. Afterglow
+translates this vector to the appropriate values to send to the
+fixture's pan and tilt channels to aim it in the specified direction,
+if possible. Otherwise it gets as close as the fixture allows.
+
+If multiple fixtures or heads are assigned the same pan-tilt vector,
+they will all be aimed in exactly the same direction, regardless of
+the location and orientation with which they were hung.
+
+NOTE: If there is an active Direction or Aim Assigner which affects
+the same target, it will run later, so its effects will be the ones
+that matter.
 
 [[direction-assigners]]
 === Direction Assigners

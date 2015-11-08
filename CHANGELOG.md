@@ -6,6 +6,11 @@ All notable changes to this project will be documented in this file. This change
 ### Added
 - Chases, which support sequences of effects with a variety of timing,
   fade, and looping options.
+- Pan/Tilt effects, which work at a lower level than direction
+  effects, but since they are closer to the physical capabilities of
+  the lights, can be helpful in creating natural and intuitive
+  movements. They also help avoid issues with geometric singularities
+  when fading between different directions.
 
 ### Changed
 - Fades now delegate their notion of ending to the underlying effects

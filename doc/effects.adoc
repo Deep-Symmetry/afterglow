@@ -192,8 +192,23 @@ create fascinating motions.
 
 If a group of fixtures is assigned the same direction effect, they
 will all face the same direction. If they are assigned the same aim
-effect, they will all face slightly different directions in order to
-aim at the same point in space.
+effect (below), they will all face slightly different directions in
+order to aim at the same point in space.
+
+TIP: Because of the fact that the direction vector must be translated
+into pan and tilt angles before sending it to control the light, fades
+between directions might not always work the way you expect them to.
+This is especially true if the directions you are fading between are
+exact opposites of each other: In that case, the angle does not change
+at all during the fade until the midpoint, when it reaches the center
+of the light, and the light instantly flips around to face the
+opposite direction for the rest of the fade. You can also run into
+issues where one of the directions you are fading is close to a
+geometric singularity (when one of the angles gets near 90&deg;), at
+that point the other direction will suddenly dominate, and you can see
+unexpected jiggling or changes in direction. For such cases you may be
+better off using lower-level <<pan-tilt-effects,pan/tilt effects>>,
+which operate closer to the way the lights themselves do.
 
 === Aim Effects
 
@@ -229,6 +244,51 @@ If a group of fixtures is assigned the same direction effect, they
 will all face the same direction. If they are assigned the same aim
 effect, they will all face slightly different directions in order to
 aim at the same point in space.
+
+=== Pan/Tilt Effects
+
+These are essentially the same as <<direction-effects,direction
+effects>>, except they use a pan and tilt angle to tell the fixtures
+which way to face, so they are closer to the way the lights naturally
+work, will be more familiar to light show designers, and can behave
+more smoothly and predictably when fading into each other. To create
+an effect that will tell a fixture or head what direction it should be
+pointing via pan and tilt angles, pass the fixture or head to:
+
+[source,clojure]
+----
+(afterglow.effects.movement/pan-tilt-effect name pan-tilt fixtures)
+----
+
+The `name` parameter is intended to help identify the purpose of the
+effect, and shows up when examining the created effect.
+
+The `pan-tilt` parameter is where you specify the angles in which the
+lights should be aiming. It is a `javax.vector.Vector2d` whose `x`
+component contains the `pan` angle, and whose `y` component contains
+the `tilt` angle. These angles tell the fixture how far, in radians,
+it should rotate away from pointing straight out at the audience
+(along the `z` axis of the show’s <<show_space#show-space,frame of
+reference>>). An easy way to create the pan-tilt vector is to call
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-pan-tilt-param[afterglow.effects.params/build-pan-tilt-param].
+This function also allows you to work in degrees rather than radians,
+if that is more convenient. It can create static angle vectors for
+you, but can also create <<parameters#dynamic-parameters,Dynamic
+Parameters>> whose value depends on a
+<<metronomes#metronomes,Metronome>>, the physical location or
+orientation of the head, or a show variable, perhaps
+<<mapping_sync#mapping-a-control-to-a-variable,bound>> to a MIDI
+control surface.
+
+Because when you fade between pan-tilt effects, the angles always
+change smoothly, and correspond to the actual movements of the lights,
+they can be easier building blocks for natural-looking movement
+effects when you aren't trying to track particular points in space.
+
+If a group of fixtures is assigned the same pan-tilt or direction
+effect, they will all face the same direction. If they are assigned
+the same aim effect, they will all face slightly different directions
+in order to aim at the same point in space.
 
 === Function Effects
 

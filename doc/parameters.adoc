@@ -230,9 +230,10 @@ to move. They differ in the way that you express direction or aim.
 Direction parameters are one way to tell a group of fixtures to point
 in a particular _direction_, or move in unison or in a coordinated
 pattern. They are used with <<effects#direction-effects,Direction
-Effects>>. (<<parameters#pan-tilt-parameters,Pan Tilt Parameters>> are
-the other way to work with this kind of effect.) The basic way to
-create one is to call:
+Effects>>. (<<parameters#pan-tilt-parameters,Pan Tilt Parameters>> and
+<<effects#pan-tilt-effects,Pan/Tilt Effects>> are the other way to
+achieve that result.) The basic way to create a direction parameter is
+to call:
 
 [source,clojure]
 ----
@@ -332,19 +333,19 @@ A more traditional way of aiming fixtures (in contrast to
 setting pan and tilt angles. Afterglow supports this approach as well,
 although even in this case you use angles expressed in the standard
 show <<show_space#show-space,frame of reference>> regardless of how
-the individual fixtures are hung. Pan Tilt parameters are an alternate
-way to work with <<effects#direction-effects,Direction Effects>>. The
-basic way to create one is to call:
+the individual fixtures are hung. Pan Tilt parameters work with
+<<effects#pan-tilt-effects,Pan/Tilt Effects>>. The basic way to
+create one is to call:
 
 [source,clojure]
 ----
-(afterglow.effects.params/build-direction-param-from-pan-tilt)
+(afterglow.effects.params/build-pan-tilt-param)
 ----
 
-By itself this call would simply return a non-dynamic direction telling
-fixtures to point directly at the audience. However, you will use one or
-more of the following optional keyword parameters to get the dynamic
-angles you want:
+By itself this call would simply return a non-dynamic pan-tilt
+parameter telling fixtures to point directly at the audience. However,
+you will use one or more of the following optional keyword parameters
+to get the dynamic angles you want:
 
 [cols=",,",options="header",]
 |=======================================================================
@@ -355,28 +356,46 @@ around the Y axis
 |`:tilt` |`0` |How many degrees counter-clockwise should the light turn
 around the X axis
 
+|`:radians`|`false` |Supply a `true` value with `:radians` if you
+would rather work in radians than degrees for your `:pan` and `:tilt`
+values.
+
 |`:frame-dynamic` |`true` |Whether the parameter should be calculated at
 every frame, or just once
 |=======================================================================
 
 The rotations requested by `pan` and `tilt` jointly identify the
 direction the light should turn away from the audience. The result of
-the parameter is a direction vector in the light show’s
-<<show_space#show-space,frame of reference>> telling the lights which
-direction they should point. When this vector is supplied to a
-<<effects#direction-effects,Direction Effect>>, it causes the attached
-lights to make the specified movement, if they are capable.
+the parameter is a pair of pan and tilt angles away from the `z` axis
+of the light show’s <<show_space#show-space,frame of reference>>
+telling the lights which direction they should point. When this parameter
+is supplied to a <<effects#pan-tilt-effects,Pan/Tilt Effect>>, it
+causes the attached lights to make the specified movement, if they are
+capable.
 
 Note that although internally Afterglow works with angles expressed in
-radians, the values of `pan` and `tilt` are in degrees, and are
-converted to radians for the convenience of the user who is more
-likely accustomed to working with angles expressed in degrees.
+radians, the values of `pan` and `tilt` are assumed to be in degrees
+and will be converted to radians for the convenience of users who are
+more accustomed to working with angles expressed in degrees. If you
+would rather stick with radians, you can suppress this conversion by
+passing a `true` value with the `:radians` keyword.
 
 All of these parameters, except for `frame-dynamic`, can themselves be
 dynamic parameters, such as show <<variable-parameters,variables>>
 (with the convenience shorthand of just passing in the keyword by which
 the show variable was stored) or <<oscillated-parameters,oscillated
 parameters>>.
+
+NOTE: You can also create a direction parameter using pan and tilt
+angles if you want to work with <<effects#direction-effects,Direction
+Effects>> in those terms. This can be helpful, for example, when you
+want to fade between a specific direction that is easiest to express
+as a spatial vector, and one that is easiest to express in terms of
+angles. Use
+[build-direction-from-pan-tilt](http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-direction-param-from-pan-tilt)
+to create a normal direction parameter starting from the same pan/tilt
+parameters described above.
+
 
 == Spatial Parameters
 
