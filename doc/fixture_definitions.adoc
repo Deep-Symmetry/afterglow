@@ -69,8 +69,7 @@ fixtures you want to create.
 
 The namespace
 http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.chauvet.html[afterglow.fixtures.chauvet]
-is for fixtures made by Chauvet. The only one in there so far is for a
-six-color (RGB, amber, white, and ultraviolet) LED Par.
+is for fixtures made by Chauvet.
 
 == Structure of a Fixture Definition
 
