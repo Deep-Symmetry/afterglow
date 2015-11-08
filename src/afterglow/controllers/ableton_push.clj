@@ -698,7 +698,7 @@
                            (if ending
                              (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 10 20)
                              50)
-                           (if (active-keys (:key cue)) 10 25))
+                           (if (active-keys (:key cue)) 10 20))
                          l-boost)))]
       (aset (:next-grid-pads controller) (+ x (* y 8)) (or color off-color)))))
 
