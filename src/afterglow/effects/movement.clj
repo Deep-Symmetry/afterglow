@@ -24,11 +24,15 @@
   (filter #(pos? (count (filter #{:pan :tilt} (map :type (:channels %))))) (channels/expand-heads fixtures)))
 
 (defn direction-effect
-  "Returns an effect which assigns a direction parameter to all
-  moving heads of the fixtures supplied when invoked. The direction is
-  a vector in the frame of reference of the show, so standing in the
-  audience facing the show, x increases to the left, y away from the
-  ground, and z towards the audience."
+  "Returns an effect which assigns a direction parameter (most easily
+  created by [[build-direction-param]]) to all moving heads of the
+  fixtures supplied when invoked. The direction is a vector in the
+  frame of reference of the show, so standing in the audience facing
+  the show, `x` increases to the left, `y` away from the ground, and
+  `z` towards the audience. If an [[aim-effect]] is simultaneously
+  running on the same fixture, it will win and override whatever this
+  effect was trying to do, because it runs later."
+  {:doc/format :markdown}
   [name direction fixtures]
   {:pre [(some? name) (some? *show*) (sequential? fixtures)]}
   (params/validate-param-type direction Vector3d)
@@ -100,12 +104,16 @@
                 (merge from-assignment {:value from-resolved}))))
 
 (defn aim-effect
-  "Returns an effect which assigns an aim parameter to all moving
-  heads of the fixtures supplied when invoked. The direction is a
-  point in the frame of reference of the show, so standing in the
-  audience facing the show, x increases to the left, y away from the
-  ground, and z towards the audience, and the origin is the center of
-  the show."
+  "Returns an effect which assigns an aim parameter (most easily
+  created by [[build-aim-param]]) to all moving heads of the fixtures
+  supplied when invoked. The direction is a point in the frame of
+  reference of the show, so standing in the audience facing the show,
+  `x` increases to the left, `y` away from the ground, and `z` towards
+  the audience, and the origin is the center of the show. If
+  a [[direction-effect]] is simultaneously running on the same
+  fixture, this effect will win and override whatever the other effect
+  was trying to do, because this one runs later."
+  {:doc/format :markdown}
   [name target-point fixtures]
   {:pre [(some? name) (some? *show*) (sequential? fixtures)]}
   (params/validate-param-type target-point Point3d)

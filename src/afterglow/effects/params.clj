@@ -15,7 +15,7 @@
             [taoensso.timbre :as timbre :refer [error]])
   (:import [afterglow.rhythm Metronome]
            [javax.media.j3d Transform3D]
-           [javax.vecmath Point3d Vector3d]))
+           [javax.vecmath Point3d Vector3d Vector2d]))
 
 (defonce
   ^{:private true
