@@ -157,11 +157,12 @@
                       (fun/sparkle (show/all-fixtures) :color sparkle-color-param
                                    :chance :sparkle-chance :fade-time :sparkle-fade))))
 
-(defn ^:deprecated test-phases
+(defn test-phases
   "This is for testing the enhanced multi-beat and fractional-beat
   phase calculations I am implementing; it should probably more
   somewhere else, or just go away once there are example effects
   successfully using these."
+  {:deprecated "0.1.1"}
   ([]
    (test-phases 20))
   ([iterations]

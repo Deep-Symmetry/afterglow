@@ -146,7 +146,7 @@
   implementation that was discovered, but there is now a much more
   powerful way to specify an exact color using a SysEx message."
   {:doc/format :markdown
-   :deprecated true}
+   :deprecated "0.1.4"}
   [controller x y color]
   (set-pad-velocity controller x y (velocity-for-color color)))
 
