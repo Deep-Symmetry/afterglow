@@ -1129,7 +1129,7 @@
   address for each subsequent fixture; if not, the largest offset used by the
   fixture will be used to calculate a suitable offset."
   {:doc/format :markdown
-   :deprecated true}
+   :deprecated "0.1.2"}
   ([key fixture universe start-address count]
    (patch-fixture-group! key fixture universe start-address count (apply max (map :offset (:channels fixture)))))
   ([key fixture universe start-address count offset]
