@@ -15,7 +15,7 @@
             [taoensso.timbre :as timbre :refer [debug]])
   (:import [afterglow.effects Assigner Effect]
            [javax.media.j3d Transform3D]
-           [javax.vecmath Point3d Vector3d]))
+           [javax.vecmath Point3d Vector3d Vector2d]))
 
 (defn find-moving-heads
   "Returns all heads of the supplied fixtures which are capable of
@@ -31,7 +31,9 @@
   the show, `x` increases to the left, `y` away from the ground, and
   `z` towards the audience. If an [[aim-effect]] is simultaneously
   running on the same fixture, it will win and override whatever this
-  effect was trying to do, because it runs later."
+  effect was trying to do, because it runs later. However, if
+  a [[pan-tilt-effect]] is running, it will run before this one, so
+  this one will win."
   {:doc/format :markdown}
   [name direction fixtures]
   {:pre [(some? name) (some? *show*) (sequential? fixtures)]}
@@ -110,9 +112,10 @@
   reference of the show, so standing in the audience facing the show,
   `x` increases to the left, `y` away from the ground, and `z` towards
   the audience, and the origin is the center of the show. If
-  a [[direction-effect]] is simultaneously running on the same
-  fixture, this effect will win and override whatever the other effect
-  was trying to do, because this one runs later."
+  a [[pan-tilt-effect]] or [[direction-effect]] is simultaneously
+  running on the same fixture, this effect will win and override
+  whatever the other effect was trying to do, because this one runs
+  later."
   {:doc/format :markdown}
   [name target-point fixtures]
   {:pre [(some? name) (some? *show*) (sequential? fixtures)]}
@@ -152,6 +155,70 @@
                                                                   show snapshot target))
                     to-resolved (Point3d.  (params/resolve-param (or (:value to-assignment) default)
                                                                  show snapshot target))
+                    fraction (colors/clamp-unit-float fraction)]
+                (.scale to-resolved fraction)
+                (.scaleAdd from-resolved (- 1.0 fraction) to-resolved)
+                (merge from-assignment {:value from-resolved}))))
+
+(defn pan-tilt-effect
+  "Returns an effect which assigns a pan/tilt parameter (most easily
+  created by [[build-pan-tilt-param]]) to all moving heads of the
+  fixtures supplied when invoked. The pan and tilt values represent
+  angles in the frame of reference of the show, telling how far the
+  head should move away from facing directly along the `z`
+  axis. (see [show
+  space](https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space)
+  for a diagram of the axes).
+
+  If a [[direction-effect]] or [[aim-effect]] is simultaneously
+  running on the same fixture, they will win and override whatever
+  this effect was trying to do, because they run later.
+
+  If you simply want to set the pan or tilt channels of some fixtures
+  to specific values, without regard to the orientation at which the
+  fixture was hung with respect to show space, you want to use a lower
+  level [[function-effect]] with the `:pan` or `:tilt` keyword, rather
+  than this effect."
+  {:doc/format :markdown}
+  [name pan-tilt fixtures]
+  {:pre [(some? name) (some? *show*) (sequential? fixtures)]}
+  (params/validate-param-type pan-tilt Vector2d)
+  (let [heads (find-moving-heads fixtures)
+        assigners (fx/build-head-parameter-assigners :pan-tilt heads pan-tilt *show*)]
+    (Effect. name fx/always-active (fn [show snapshot] assigners) fx/end-immediately)))
+
+;; Resolves the assignment of pan/tilt angles to a fixture or a head.
+(defmethod fx/resolve-assignment :pan-tilt [assignment show snapshot buffers]
+  ;; Resolve in case assignment is still frame dynamic
+  (let [target (:target assignment)
+        pan-tilt (params/resolve-param (:value assignment) show snapshot target)
+        direction (params/vector-from-pan-tilt (.x pan-tilt) (.y pan-tilt))
+        direction-key (keyword (str "pan-tilt-" (:id target)))
+        former-values (direction-key (:previous @(:movement *show*)))
+        [pan tilt] (transform/direction-to-dmx target direction former-values)]
+    (debug "Pan/Tilt resolver pan:" pan "tilt:" tilt)
+    (doseq [c (filter #(= (:type %) :pan) (:channels target))]
+      (chan-fx/apply-channel-value buffers c pan))
+    (doseq [c (filter #(= (:type %) :tilt) (:channels target))]
+      (chan-fx/apply-channel-value buffers c tilt))
+    (swap! (:movement *show*) #(assoc-in % [:current direction-key] [pan tilt]))))
+
+;; Fades between two pan/tilt assignments. A nil assignment is interpreted as the direction the head will
+;; aim when it is sent zero values for its pan and tilt channels, so that a fade to or from nothing looks right.
+(defmethod fx/fade-between-assignments :pan-tilt [from-assignment to-assignment fraction show snapshot]
+  (cond (<= fraction 0) from-assignment
+        (>= fraction 1) to-assignment
+        ;; We are blending, so we need to resolve any remaining dynamic parameters now, and make sure
+        ;; fraction really does only range between 0 and 1.
+        :else (let [target (:target from-assignment)
+                    ;; TODO: Need to figure out how to implement nil assignments correctly.
+                    ;; Currently actually treat as just facing out Z axis.
+                    ;;dir (default-direction target)
+                    default (Vector2d. 0.0 0.0)
+                    from-resolved (Vector2d. (params/resolve-param (or (:value from-assignment) default)
+                                                                   show snapshot target))
+                    to-resolved (Vector2d.  (params/resolve-param (or (:value to-assignment) default)
+                                                                  show snapshot target))
                     fraction (colors/clamp-unit-float fraction)]
                 (.scale to-resolved fraction)
                 (.scaleAdd from-resolved (- 1.0 fraction) to-resolved)

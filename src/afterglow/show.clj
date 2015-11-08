@@ -67,7 +67,7 @@
 (def resolution-order
   "The order in which assigners should be evaluated, by type key.
   Multi-channel assignments are resolved before individual ones."
-  [:color :direction :aim :channel :function])
+  [:color :pan-tilt :direction :aim :channel :function])
 
 (defonce ^:private ^{:doc "Keeps track of the resolution orders for
   extensions which have been registered to the frame rendering loop.

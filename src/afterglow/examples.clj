@@ -707,11 +707,15 @@
                                   (fn [head]
                                     (params/build-oscillated-param
                                      (oscillators/triangle-bar :phase (x-phase head *show*))
-                                     :min -50 :max 0)))
-          can-can-dir (params/build-direction-param-from-pan-tilt :pan triangle-phrase :tilt staggered-triangle-bar)]
+                                     :min -90 :max 0)))
+          can-can-dir (params/build-direction-param-from-pan-tilt :pan triangle-phrase :tilt staggered-triangle-bar)
+          can-can-p-t (params/build-pan-tilt-param :pan triangle-phrase :tilt staggered-triangle-bar)]
       (ct/set-cue! (:cue-grid *show*) 0 9
                    (cues/cue :movement (fn [var-map]
-                                         (move/direction-effect "Can Can" can-can-dir (show/all-fixtures))))))
+                                         (move/direction-effect "Can Can" can-can-dir (show/all-fixtures)))))
+      (ct/set-cue! (:cue-grid *show*) 1 9
+                   (cues/cue :movement (fn [var-map]
+                                         (move/pan-tilt-effect "P/T Can Can" can-can-p-t (show/all-fixtures))))))
     
     ;; A couple snowball cues
     (ct/set-cue! (:cue-grid *show*) 0 10 (cues/function-cue :sb-pos :beams-fixed (show/fixtures-named "snowball")
@@ -787,6 +791,20 @@
                                        (params/bind-keyword-param (:phase var-map 0) Number 0)))
                :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
                :color :red))
+
+    (ct/set-cue!
+     (:cue-grid *show*) 3 12
+     (cues/cue :fade-test-3 (fn [var-map]
+                              (fx/fade "Fade Test P/T"
+                                       (move/pan-tilt-effect
+                                        "p/t" (params/build-pan-tilt-param :pan 0 :tilt 0)
+                                        (show/fixtures-named "torrent"))
+                                       (move/pan-tilt-effect
+                                        "p/t" (params/build-pan-tilt-param :pan 0 :tilt 0)
+                                        (show/fixtures-named "blade"))
+                                       (params/bind-keyword-param (:phase var-map 0) Number 0)))
+               :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
+               :color :orange))
 
     ;; Some chases
     (ct/set-cue!

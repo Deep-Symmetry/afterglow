@@ -459,10 +459,11 @@
           (resolve-non-frame-dynamic-elements-for-head [this show snapshot head] (resolve-fn show snapshot head)))))))
 
 (defn build-direction-param
-  "Returns a dynamic direction parameter. If no arguments are
-  supplied, returns a static direction facing directly out towards the
-  audience. Keywords `:x`, `:y`, and `:z` can be used to specify a
-  vector in the [frame of
+  "Returns a dynamic direction parameter for use
+  with [[direction-effect]]. If no arguments are supplied, returns a
+  static direction facing directly out towards the audience. Keywords
+  `:x`, `:y`, and `:z` can be used to specify a vector in the [frame
+  of
   reference](https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space)
   of the light show.
 
@@ -516,12 +517,13 @@
     angle
     (* (/ angle 180) Math/PI)))
 
-(defn- vector-from-pan-tilt
-  "Convert a pan and tilt value to an aiming vector."
-  [pan tilt radians]
-  (let [pan (make-radians pan radians)
-        tilt (make-radians tilt radians)
-        euler (Vector3d. tilt pan 0)
+(defn vector-from-pan-tilt
+  "Convert a pan and tilt value (angles in radians away from facing
+  directly out towards the audience) to the corresponding aiming
+  vector."
+  {:doc/format :markdown}
+  [pan tilt]
+  (let [euler (Vector3d. tilt pan 0)
         rotation (Transform3D.)
         direction (Vector3d. 0.0 0.0 1.0)]
     (.setEuler rotation euler)
@@ -529,12 +531,20 @@
     direction))
 
 (defn build-direction-param-from-pan-tilt
-  "An alternate to [[build-direction-param]] for cases in which angles
-  are more convenient than a vector. Returns a dynamic direction
-  parameter specified in terms of pan and tilt angles away from facing
-  directly out towards the audience. If no arguments are supplied,
-  returns a static direction facing directly out towards the audience.
-  Keywords `:pan` and `:tilt` can be used to specify angles to turn around the Y and X axes respectively
+  "An alternative to [[build-direction-param]] for cases in which
+  angles are more convenient than a vector, but when you still want to
+  use a [[direction-effect]], probably because you want to be able to
+  fade to or from another direction-effect. (In cases where you don't
+  need to do that, it is simpler to use a [[pan-tilt-effect]]
+  with [[build-pan-tilt-param]] and actually have the effect work with
+  pan and tilt angles, the way most lighting software does.)
+
+  Returns a dynamic direction parameter specified in terms of pan and
+  tilt angles away from facing directly out towards the audience. If
+  no arguments are supplied, returns a static direction facing
+  directly out towards the audience. Keywords `:pan` and `:tilt` can
+  be used to specify angles to turn around the Y and X axes
+  respectively
   (see [show
   space](https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space)
   for a diagram of these axes). For human friendliness, the angles are
@@ -555,7 +565,7 @@
         tilt (bind-keyword-param tilt Number 0)]
     (if-not (some (partial satisfies? IParam) [pan tilt])
       ;; Optimize the degenerate case of all constant parameters
-      (vector-from-pan-tilt pan tilt radians)
+      (vector-from-pan-tilt (make-radians pan radians) (make-radians tilt radians))
       ;; Handle the general case of some dynamic parameters
       (let [dyn (if (= :default frame-dynamic)
                   ;; Default means incoming args control how dynamic we should be
@@ -563,9 +573,8 @@
                   ;; We were given an explicit value for frame-dynamic
                   (boolean frame-dynamic))
             eval-fn (fn [show snapshot head]
-                      (vector-from-pan-tilt (resolve-param pan show snapshot head)
-                                            (resolve-param tilt show snapshot head)
-                                            radians))
+                      (vector-from-pan-tilt (make-radians (resolve-param pan show snapshot head) radians)
+                                            (make-radians (resolve-param tilt show snapshot head) radians)))
             resolve-fn (fn [show snapshot head]
                          (with-show show
                            (build-direction-param-from-pan-tilt :pan (resolve-unless-frame-dynamic pan show
@@ -584,12 +593,70 @@
           (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))
           (resolve-non-frame-dynamic-elements-for-head [this show snapshot head] (resolve-fn show snapshot head)))))))
 
+(defn build-pan-tilt-param
+  "Returns a dynamic pan/tilt parameter for use with [[pan-tilt-effect]],
+  specified in terms of pan and tilt angles away from facing directly
+  out towards the audience. If no arguments are supplied, returns a
+  static orientation facing directly out towards the audience.
+  Keywords `:pan` and `:tilt` can be used to specify angles to turn
+  around the Y and X axes respectively
+  (see [show
+  space](https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space)
+  for a diagram of these axes). For human friendliness, the angles are
+  assumed to be in degrees unless keyword `:radians` is supplied with
+  a true value.
+
+  The values passed for `:pan` and `:tilt` may be dynamic, or may be
+  keywords, which will be dynamically bound to variables
+  in [[*show*]].
+
+  If you do not specify an explicit value for `:frame-dynamic`, the
+  resulting pan/tilt parameter will be frame dynamic if it has any
+  incoming parameters which themselves are.
+
+  Note that if you want to be able to fade the effect you are creating
+  to or from a [[direction-effect]], you need to create a
+  direction-effect rather than a pan-tilt-effect, and you can instead
+  use [[build-direction-param-from-pan-tilt]] to set its direction."
+  {:doc/format :markdown}
+  [& {:keys [pan tilt radians frame-dynamic] :or {pan 0 tilt 0 frame-dynamic :default}}]
+  {:pre [(some? *show*)]}
+  (let [pan (bind-keyword-param pan Number 0)
+        tilt (bind-keyword-param tilt Number 0)]
+    (if-not (some (partial satisfies? IParam) [pan tilt])
+      ;; Optimize the degenerate case of all constant parameters
+      (Vector2d. (make-radians pan radians) (make-radians tilt radians))
+      ;; Handle the general case of some dynamic parameters
+      (let [dyn (if (= :default frame-dynamic)
+                  ;; Default means incoming args control how dynamic we should be
+                  (boolean (some frame-dynamic-param? [pan tilt]))
+                  ;; We were given an explicit value for frame-dynamic
+                  (boolean frame-dynamic))
+            eval-fn (fn [show snapshot head]
+                      (Vector2d. (make-radians (resolve-param pan show snapshot head) radians)
+                                 (make-radians (resolve-param tilt show snapshot head) radians)))
+            resolve-fn (fn [show snapshot head]
+                         (with-show show
+                           (build-pan-tilt-param :pan (resolve-unless-frame-dynamic pan show snapshot head)
+                                                 :tilt (resolve-unless-frame-dynamic tilt show snapshot head)
+                                                 :radians radians
+                                                 :frame-dynamic dyn)))]
+        (reify
+          IParam
+          (evaluate [this show snapshot] (eval-fn show snapshot nil))
+          (frame-dynamic? [this] dyn)
+          (result-type [this] Vector2d)
+          (resolve-non-frame-dynamic-elements [this show snapshot] (resolve-fn show snapshot nil))
+          IHeadParam
+          (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))
+          (resolve-non-frame-dynamic-elements-for-head [this show snapshot head] (resolve-fn show snapshot head)))))))
+
 (defn build-aim-param
-  "Returns a dynamic aiming parameter. If no arguments are supplied,
-  returns a static direction aiming towards a spot on the floor two
-  meters towards the audience from the center of the light show.
-  Keywords `:x`, `:y`, and `:z` can be used to specify a target point
-  in the [frame of
+  "Returns a dynamic aiming parameter for use with [[aim-effect]].
+  If no arguments are supplied, returns a static direction aiming
+  towards a spot on the floor two meters towards the audience from the
+  center of the light show. Keywords `:x`, `:y`, and `:z` can be used
+  to specify a target point in the [frame of
   reference](https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space)
   of the light show.
 
