@@ -735,6 +735,11 @@ encounter them!
   https://pcm.peabody.jhu.edu/~gwright/stdmp/docs/writingmaxexternalsinjava.pdf
   https://docs.cycling74.com/max7/tutorials/jitterchapter51
   https://docs.cycling74.com/max7/vignettes/packages
+- [x] Provide a way to import QLC+ fixture definitions to help people
+  get started.
+- [ ] Consider importing [Avolites](http://personalities.avolites.com)
+  personalities/fixture definitions (D4 files); they seem fairly
+  straightforward too.
 - [x] Separate, or at least document clearly, how to use the low-level
   OLA communication tools, for the benefit of people interested in
   their own implementations.
