@@ -30,7 +30,7 @@
                  [camel-snake-kebab "0.3.2"]
                  [com.taoensso/timbre "4.1.4"]
                  [com.taoensso/tower "3.0.2"]
-                 [markdown-clj "0.9.78"]
+                 [markdown-clj "0.9.80"]
                  [compojure "1.4.0" :exclusions [org.eclipse.jetty/jetty-server
                                                  clj-time]]
                  [ring/ring-defaults "0.1.5"]
