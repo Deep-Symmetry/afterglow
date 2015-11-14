@@ -119,7 +119,7 @@
   used."
   {:doc/format :markdown}
   [chan-type offset & {:keys [fine-offset function-type function-name var-label] :or {function-type chan-type}}]
-  {:pre (some? chan-type) (integer? offset) (<= 1 offset 512)}
+  {:pre [(some? chan-type) (integer? offset) (<= 1 offset 512)]}
   (let [chan-type (keyword chan-type)
         function-type (keyword function-type)
         function-name (or function-name (clojure.string/capitalize (name function-type)))
@@ -242,7 +242,7 @@
   for more details and examples."
   {:doc/format :markdown}
   [chan-type offset & functions]
-  {:pre (some? chan-type) (integer? offset) (<= 1 offset 512)}
+  {:pre [(some? chan-type) (integer? offset) (<= 1 offset 512)]}
   (let [chan-type (keyword chan-type)]
     (assoc (channel offset)
            :type chan-type
