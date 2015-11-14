@@ -1104,11 +1104,45 @@
 (defn patch-fixture!
   "Patch a fixture to a universe in [[*show*]] at a starting DMX
   channel address, at a particular point in space, with a particular
-  orientation. Coordinates and rotations are with respect to the [show
+  orientation.
+
+  `key` is a keyword identifying the fixture. If you need to remove
+  the fixture later, or re-patch it with different parameters, you can
+  do that by passing the same keyword to [[remove-fixture!]] or
+  `patch-fixture!`. If you have a set of fixtures that you want to be
+  able to easily group, give them keywords that start with the same
+  name, followed by a hyphen and uniqe numbers. That way, if you pass
+  the name portion (everthing before the final hyphen and number)
+  to [[fixtures-named]], you will get back a list of all those
+  fixtures.
+
+  `fixture` is a [Fixture Definition
+  map](https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#fixture-definitions)
+  which specifies all the capabilities of the fixture and how
+  Afterglow can control it.
+
+  `universe` identifies which DMX universe the fixture is attached to,
+  and must be one of the universe numbers that was passed in the
+  `universes` argument to [[show]] when creating the show.
+  `start-address` identifies the DMX address of the first channel the
+  fixture is listening to in that universe (it will be displayed on
+  the fixture's configuration panel or DIP switches), and is an
+  integer ranging from `1` to `512`, the legal DMX addresses in a
+  universe. The attempt to patch will fail if there are more channels
+  in the fixture definition than fit within the 512-channel address
+  space starting at that address, or if any of the addresses used by
+  the fixture have already been assigned to other patched fixtures.
+
+  Coordinates and rotations are optional, expressed along with the
+  keyword arguments `:x`, `:y`, `:z`, `:x-rotation`, `:y-rotation`,
+  and `:z-rotation`, which all default to zero if not specified. All
+  coordinates and rotations are interpreted with respect to the [show
   frame of
   reference](https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space),
-  and are in meters and radians. You can use [[transform/inches]]
-  and [[transform/degrees]] to convert for you if desired."
+  and are in meters and radians. You can
+  use [[transform/inches]], [[transform/feet]]
+  and [[transform/degrees]] to convert those units for you if
+  desired."
   {:doc/format :markdown}
   [key fixture universe start-address & {:keys [x y z x-rotation y-rotation z-rotation]
                                          :or {x 0.0 y 0.0 z 0.0 x-rotation 0.0 y-rotation 0.0 z-rotation 0.0}}]
