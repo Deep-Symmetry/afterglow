@@ -29,6 +29,9 @@ All notable changes to this project will be documented in this file. This change
   and "active" states for some colors on the Ableton Push after
   introducing full RGB button color support; they are once again more
   visually distinct.
+- Preconditions in channel-creation functions for fixture definitions
+  were mal-formed, and so were not actually validating the function
+  arguments.
 - Parts of the introductory walk-through in `README.md` had become
   stale and needed to be updated.
 - The API documentation for `patch-fixture!` was fleshed out.
