@@ -15,6 +15,10 @@ All notable changes to this project will be documented in this file. This change
 ### Changed
 - Fades now delegate their notion of ending to the underlying effects
   which are being faded between, and pass end requests along to them.
+- Stopped embedding `cider-nrepl` because it added too much bloat and
+  complexity for an unlikely use case. If you want to work with CIDER
+  for live-coding with Afterglow, launch it from a project, rather
+  than as an überjar.
 
 ### Fixed
 - Fading colors in and out from nothing, as represented by a `nil`

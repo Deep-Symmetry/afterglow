@@ -7,7 +7,6 @@
             [afterglow.version :as version]
             [afterglow.web.handler :refer [app]]
             [afterglow.web.session :as session]
-            [cider.nrepl :refer [cider-nrepl-handler]]
             [clojure.java.browse :as browse]
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.tools.nrepl.server :as nrepl]
@@ -241,8 +240,7 @@
   "Start a network REPL for debugging or remote control."
   [port]
   (try
-    (swap! nrepl-server #(do (when % (nrepl/stop-server %))
-                             (nrepl/start-server :port port :handler cider-nrepl-handler)))
+    (swap! nrepl-server #(do (when % (nrepl/stop-server %)) (nrepl/start-server :port port)))
     (timbre/info "nREPL server started on port" port)
     (catch Throwable t
       (timbre/error t "failed to start nREPL"))))
