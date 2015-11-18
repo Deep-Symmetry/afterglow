@@ -821,6 +821,8 @@ encounter them!
   jar with Afterglow and a custom show definition file and its
   supporting resources, so developers can easily deploy and share
   shows with non-Clojurists.
+- [ ] Consider adding support for metronome synchronization with
+  [EspGrid](https://github.com/d0kt0r0/EspGrid).
 - [ ] See if [thi-ng/color](https://github.com/thi-ng/color) is a
   better fit.
 - [x] Once I release the first version, answer this StackOverflow
