@@ -225,7 +225,7 @@
   [show buffers snapshot]
   (pspy :clear-buffers
         (let [dmx-future (cp/future @(:pool show) (clear-dmx-buffers show buffers))
-           extensions-future (cp/future @(:pool show) (clear-extension-buffers show))]
+              extensions-future (cp/future @(:pool show) (clear-extension-buffers show))]
        @dmx-future @extensions-future))
   (pspy :clean-finished-effects
         (clean-finished-effects show snapshot))
