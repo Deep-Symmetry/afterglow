@@ -159,8 +159,9 @@
           (when @running
             (try
               ;; TODO: This is not really safe because if the handler blocks it ties up all future
-              ;;       MIDI dispatch. Should do in a future with a timeout? A claypoole thread pool
-              ;;       if they support timeouts? Don't want to use a million threads for this either...
+              ;;       MIDI dispatch. Should do in a future with a timeout? Don't want to use a million
+              ;;       threads for this either, so a core.async channel approach is probably best.
+              ;;
               (handler msg)
               (catch InterruptedException e
                 (timbre/info "MIDI event handler thread interrupted, shutting down.")
@@ -570,12 +571,12 @@
                           (when (#{:note-on :note-off :control-change} (:status msg))
                             (deliver result msg)))]
      (try
-       (swap! global-handlers conj message-finder)
+       (add-global-handler! message-finder)
        (let [found (deref result timeout nil)]
          (when found
            (assoc (select-keys found [:command :channel :note :velocity])
                   :device (select-keys (:device found) [:name :description]))))
-       (finally (swap! global-handlers disj message-finder))))))
+       (finally (remove-global-handler! message-finder))))))
 
 ;; TODO apply to all matching input sources?
 (defn add-control-mapping
