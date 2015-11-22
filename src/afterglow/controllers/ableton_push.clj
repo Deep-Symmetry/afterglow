@@ -1560,7 +1560,7 @@ color (colors/create-color
   (when (= (:device message) (:port-in controller))
     ;(timbre/info message)
     (when-not (overlay-handled? controller message)
-      (when (= (:status message) :control-change)
+      (when (= (:command message) :control-change)
         (control-change-received controller message))
       (when (= (:command message) :note-on)
         (note-on-received controller message))

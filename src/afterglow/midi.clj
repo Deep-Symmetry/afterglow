@@ -113,7 +113,7 @@
   information. If so, makes a note of that fact so the clock source
   can be reported as offering this extra feature."
   [msg]
-  (when (= (:status msg) :control-change)
+  (when (= (:command msg) :control-change)
     (let [controller (:note msg)]
       (cond (and (zero? controller) (< (:velocity msg) 5))
             (swap! clock-sources assoc-in [(:device msg) :master] (:velocity msg))
@@ -176,12 +176,13 @@
         ;; Then call specific message handlers that match
         (when @running
           (try
-            (case (:status msg)
-              (:timing-clock :start :stop) (clock-message-handler msg)
-              :control-change (do (cc-message-handler msg)
-                                  (clock-message-handler msg)) ; In case it is a Traktor beat phase message
-              (:note-on :note-off) (note-message-handler msg)
-              nil)
+            (if (#{:timing-clock :start :stop} (:status msg))
+              (clock-message-handler msg)
+              (case (:command msg)
+                :control-change (do (cc-message-handler msg)
+                                    (clock-message-handler msg)) ; In case it is a Traktor beat phase message
+                (:note-on :note-off) (note-message-handler msg)
+                nil))
             (catch InterruptedException e
               (timbre/info "MIDI event handler thread interrupted, shutting down.")
               (reset! running false)
@@ -568,7 +569,7 @@
    (open-inputs-if-needed!)
    (let [result (promise)
          message-finder (fn [msg]
-                          (when (#{:note-on :note-off :control-change} (:status msg))
+                          (when (#{:note-on :note-off :control-change} (:command msg))
                             (deliver result msg)))]
      (try
        (add-global-handler! message-finder)
