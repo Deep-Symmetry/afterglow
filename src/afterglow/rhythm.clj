@@ -140,10 +140,10 @@
 
 (defn- enhanced-phase
   "Calculate a phase with respect to multiples or fractions of a
-marker interval (beat or bar), given the phase with respect to
-that marker, the number of that marker, and the desired ratio.
-A ratio of 1 returns the phase unchanged; 1/2 oscillates twice
-as fast, 3/4 oscillates 4 times every three markers..."
+  marker interval (beat, bar, or phrase), given the phase with respect
+  to that marker, the number of that marker, and the desired ratio. A
+  ratio of 1 returns the phase unchanged; 1/2 oscillates twice as
+  fast, 3/4 oscillates 4 times every three markers..."
   [marker phase desired-ratio]
   (let [r (rationalize desired-ratio)
           numerator (if (ratio? r) (numerator r) r)
