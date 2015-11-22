@@ -436,15 +436,21 @@
   implemented by simply passing in a variable parameter for `position`
   which smoothly grows from zero as time goes on.
 
-  Passing a value of `:loop` with `:beyond` causes the chase to treat
-  `effects` as if it was an infinite list of copies of itself, so once
-  the final effect is reached, the chase begins fading into the first
-  effect again, and so on. Similarly, if `position` drops below `1`,
-  the chase starts fading in to the final effect. In this mode the
-  chase continues until all of its underlying effects have
-  ended (either on their own, or because they were asked to end by the
-  operator), or `position` resolves to `nil`, which kills it
-  instantly.
+  Of course `position` needs to be a dynamic parameter for the chase
+  to progress over time; [[build-step-param]] is designed to
+  conveniently create parameters for controlling chases in time with
+  the show metronome. They can also be controlled by a dial on a
+  physical controller that is bound to a show variable.
+
+  Passing a value of `:loop` with the optional keyword argument
+  `:beyond` causes the chase to treat `effects` as if it was an
+  infinite list of copies of itself, so once the final effect is
+  reached, the chase begins fading into the first effect again, and so
+  on. Similarly, if `position` drops below `1`, the chase starts
+  fading in to the final effect. In this mode the chase continues
+  until all of its underlying effects have ended (either on their own,
+  or because they were asked to end by the operator), or `position`
+  resolves to `nil`, which kills it instantly.
 
   Finally, passing `:bounce` with `:beyond` is similar to `:loop`,
   except that every other repetition of the list of effects is
@@ -455,10 +461,9 @@
   a value of `:bounce` would give you 1 &rarr; 2 &rarr; 3 &rarr; 2
   &rarr; 1 &rarr; 2 &rarr; 3 &rarr; 2&hellip;.
 
-  Of course `position` needs to be a dynamic parameter for the chase
-  to progress over time; interesting results can be obtained with
-  oscillated and variable parameters. And any element of `effects` can
-  be a [[scene]], grouping many other effects."
+  Any element of `effects` can be a [[scene]], grouping many other
+  effects, or [[blank]], which will temporarily defer to whatever else
+  was happening before the chase was activated."
   {:doc/format :markdown}
   [chase-name effects position & {:keys [beyond] :or {beyond :blank}}]
   {:pre [(some? *show*) (some? chase-name) (sequential? effects) (every? (partial satisfies? IEffect) effects)
