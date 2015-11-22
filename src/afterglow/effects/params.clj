@@ -7,9 +7,10 @@
   and MIDI mappings), and other, not-yet-imagined things."
   {:author "James Elliott"}
   (:require [afterglow.channels :as chan]
-            [afterglow.rhythm :refer [metro-snapshot]]
+            [afterglow.rhythm :as rhythm :refer [metro-snapshot]]
             [afterglow.show-context :refer [*show* with-show]]
             [afterglow.transform :as transform]
+            [afterglow.util :as util]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
             [taoensso.timbre :as timbre :refer [error]])
@@ -300,6 +301,68 @@
               (build-oscillated-param osc :min (resolve-unless-frame-dynamic min show snapshot)
                                       :max (resolve-unless-frame-dynamic max show snapshot)
                                       :metronome metronome :frame-dynamic dyn))))))))
+
+(defn build-step-param
+  "Returns a number parameter that increases over time, ideal for
+  convenient control
+  of [chases](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#chases).
+
+  With no arguments, the parameter will evaluate to zero at the beat
+  closest when it was created, and will increase by one for each beat
+  that passes, with no fades (fractional states).
+
+  The optional keyword argument `:interval` can be supplied with the
+  value `:bar` or `:phrase` to change the timing so that it instead
+  relates to bars or phrases.
+
+  If fading between steps is desired, the optional keyword argument
+  `:fade-fraction` can be supplied with a non-zero value (up to but no
+  greater than `1`). This specifies what fraction of each interval is
+  involved in fading to or from the next value. A fade fraction of `0`
+  provides the default behavior of an instant jump between values with
+  no fading. A fade fraction of `1` means that each value continually
+  fades into the next, and is never steady. A fade fraction of `0.5`
+  would mean that the value is stable half the time, and fading for
+  the other half: during the middle of the interval, the value is
+  steady at its assigned value; once the final quarter of the interval
+  begins, the value starts fading up, reaching the halfway point as
+  the interval ends, and the fade continues through the first quarter
+  of the next interval, finally stabilizing for the next middle
+  section. Smaller fade fractions mean shorter periods of stability
+  and slower fades, while larger fractions yield longer periods of
+  steady values, and quicker fades.
+
+  If the timing should start at an instant other than when the step
+  parameter was created, a metronome snapshot containing the desired
+  start point can be passed with the optional keyword argument
+  `:starting`.
+
+  Step parameters are always frame-dynamic."
+  {:doc/format :markdown}
+  [& {:keys [interval fade-fraction starting]
+      :or {interval :beat fade-fraction 0 starting (metro-snapshot (:metronome *show*))}}]
+  {:pre [(#{:beat :bar :phrase} interval) (util/float<= 0 fade-fraction 1) (satisfies? rhythm/ISnapshot starting)]}
+  (let [phase-key (keyword (str (name interval) "-phase"))
+        origin (+ (interval starting) (math/round (phase-key starting)))
+        eval-fn (cond
+                  (util/float= fade-fraction 0) (fn [snapshot] (- (interval snapshot) origin))
+                  (util/float= fade-fraction 1) (fn [snapshot] (+ (- (interval snapshot) origin)
+                                                                  (phase-key snapshot)))
+                  :else (fn [snapshot]
+                          (let [base (- (interval snapshot) origin)
+                                phase (phase-key snapshot)
+                                fade-in (/ fade-fraction 2)
+                                fade-out (- 1 fade-in)]
+                            (cond
+                              (< phase fade-in) (- base (* 0.5 (/ (- fade-in phase) fade-in)))
+                              (> phase fade-out) (+ base (* 0.5 (/ (- phase fade-out) fade-in)))
+                              :else base))))]
+    ;; TODO: Add a sine-driven fade option?
+    (reify IParam
+      (evaluate [this show snapshot] (eval-fn snapshot))
+      (frame-dynamic? [this] true)
+      (result-type [this] Number)
+      (resolve-non-frame-dynamic-elements [this show snapshot] this))))
 
 (defn interpret-color
   "Accept a color as either
