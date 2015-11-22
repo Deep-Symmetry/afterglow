@@ -82,8 +82,7 @@
     "Determine the phase with respect to a multiple or fraction of beats.
     Calling this with a beat-ratio of 1 (the default if not provided)
     is equivalent to beat-phase, a beat-ratio of bpb is equivalent to
-    bar-phase (unless the bar start has been moved away from the beat
-    start), 1/2 oscillates twice as fast as 1, 3/4 oscillates 4 times
+    bar-phase, 1/2 oscillates twice as fast as 1, 3/4 oscillates 4 times
     every three beats... Phases range from [0-1).")
   (snapshot-bar-phase [snapshot] [snapshot bar-ratio]
     "Determine the phase with respect to a multiple or fraction of bars.
