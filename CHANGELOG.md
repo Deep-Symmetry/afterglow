@@ -21,6 +21,13 @@ All notable changes to this project will be documented in this file. This change
   than as an überjar.
 
 ### Fixed
+- Some MIDI controllers (perhaps those which sent messages on channels
+  other than 0?) were causing Overtone's
+  [midi-clj](https://github.com/overtone/midi-clj) library to create
+  message maps with `nil` values for the `:status` key when sending
+  control-change or note messages, which was preventing them from
+  being detected or processed correctly. Afterglow now always looks
+  for command-like messages via the `:command` key instead.
 - Fading colors in and out from nothing, as represented by a `nil`
   assignment value, was fading to a desaturated version of black,
   which does not lead to the kind of results people generally expect
