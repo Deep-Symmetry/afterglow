@@ -1,6 +1,7 @@
 (ns afterglow.effects-test
   (:require [clojure.test :refer :all]
             [afterglow.effects :refer :all]
+            [afterglow.effects.params :as params]
             [afterglow.fixtures.blizzard :as blizzard]
             [afterglow.show :as show]
             [afterglow.show-context :refer [with-show]]
@@ -8,7 +9,8 @@
             [afterglow.transform :as tf]
             [afterglow.util :as util]
             [com.evocomputing.colors :as colors])
-  (:import [javax.vecmath Point3d Vector3d]))
+  (:import [javax.vecmath Point3d Vector3d]
+           [afterglow.rhythm MetronomeSnapshot]))
 
 (defonce test-show (atom nil))
 (defonce test-snapshot (atom nil))
@@ -170,3 +172,217 @@
       (is (= (Point3d. 1.1152480000000002, 1.310865488969734, -1.0580843683682586)
              (:value (fade-assignment nil to 0.02 @test-show @test-snapshot))))
       (is (= :aim (:kind (fade-assignment nil to 0.02 @test-show @test-snapshot)))))))
+
+(defn build-test-snapshot
+  "Creates a metronome snapshot representing the specified number of
+  milliseconds after the supplied metrome was started."
+  [metro offset]
+  (let [snap (rhythm/metro-snapshot metro)
+        start (:start snap)
+        instant (+ start offset)
+        beat (rhythm/marker-number instant start (rhythm/metro-tick metro))
+        bar (rhythm/marker-number instant start (rhythm/metro-tock metro))
+        phrase (rhythm/marker-number instant start (rhythm/metro-ding metro))
+        beat-phase (rhythm/marker-phase instant start (rhythm/metro-tick metro))
+        bar-phase (rhythm/marker-phase instant start (rhythm/metro-tock metro))
+        phrase-phase (rhythm/marker-phase instant start (rhythm/metro-ding metro))]
+    (MetronomeSnapshot. start (:bpm snap) (:bpb snap) (:bpp snap)
+                        instant beat bar phrase beat-phase bar-phase phrase-phase)))
+
+(defn build-beat-snapshot
+  "Create a snapshot that represents the specified number of beats after
+  the creation of the supplied metronome."
+  [metro beats]
+  (build-test-snapshot metro (* beats (rhythm/metro-tick metro))))
+
+(defn build-bar-snapshot
+  "Create a snapshot that represents the specified number of bars after
+  the creation of the supplied metronome."
+  [metro bars]
+  (build-test-snapshot metro (* bars (rhythm/metro-tock metro))))
+
+(defn build-phrase-snapshot
+  "Create a snapshot that represents the specified number of phrases
+  after the creation of the supplied metronome."
+  [metro phrases]
+  (build-test-snapshot metro (* phrases (rhythm/metro-ding metro))))
+
+(deftest test-beat-step-param
+  (testing "Step parameters based on beats behave as expected."
+    (let [metro (:metronome @test-show)
+          basic-51 (params/build-step-param :starting (build-beat-snapshot metro 51))
+          smooth-99 (params/build-step-param :fade-fraction 1 :starting (build-beat-snapshot metro 99))
+          half-12 (params/build-step-param :fade-fraction 0.5 :starting (build-beat-snapshot metro 12))
+          fifth-12 (params/build-step-param :fade-fraction 0.2 :starting (build-beat-snapshot metro 12))]
+
+      ;; Basic step function starting with beat 51.
+      (is (= 1 (params/evaluate basic-51 @test-show (build-beat-snapshot metro 51))))
+      (is (= 2 (params/evaluate basic-51 @test-show (build-beat-snapshot metro 52))))
+      (is (= 0 (params/evaluate basic-51 @test-show (build-beat-snapshot metro 50))))
+      (is (= -1 (params/evaluate basic-51 @test-show (build-beat-snapshot metro 49))))
+      (is (= 1 (params/evaluate basic-51 @test-show (build-beat-snapshot metro 51.4))))
+      (is (= 1 (params/evaluate basic-51 @test-show (build-beat-snapshot metro 51.9))))
+      (is (= 100 (params/evaluate basic-51 @test-show (build-beat-snapshot metro 150))))
+
+      ;; Continuous fade starting with beat 98
+      (is (util/float= 0.5 (params/evaluate smooth-99 @test-show (build-beat-snapshot metro 99))))
+      (is (util/float= 1 (params/evaluate smooth-99 @test-show (build-beat-snapshot metro 99.5))))
+      (is (util/float= 1.5 (params/evaluate smooth-99 @test-show (build-beat-snapshot metro 100))))
+      (is (util/float= 2 (params/evaluate smooth-99 @test-show (build-beat-snapshot metro 100.5))))
+      (is (util/float= -0.5 (params/evaluate smooth-99 @test-show (build-beat-snapshot metro 98))))
+      (is (util/float= -1 (params/evaluate smooth-99 @test-show (build-beat-snapshot metro 97.5))))
+      (is (util/float= -1.5 (params/evaluate smooth-99 @test-show (build-beat-snapshot metro 97))))
+      (is (util/float= 0.9 (params/evaluate smooth-99 @test-show (build-beat-snapshot metro 99.4))))
+      (is (util/float= 1.4 (params/evaluate smooth-99 @test-show (build-beat-snapshot metro 99.9))))
+      (is (util/float= 100 (params/evaluate smooth-99 @test-show (build-beat-snapshot metro 198.5))))
+
+      ;; Fade for half of each beat starting with beat 12
+      (is (util/float= 0.5 (params/evaluate half-12 @test-show (build-beat-snapshot metro 12))))
+      (is (util/float= 1 (params/evaluate half-12 @test-show (build-beat-snapshot metro 12.5))))
+      (is (util/float= 1.5 (params/evaluate half-12 @test-show (build-beat-snapshot metro 13))))
+      (is (util/float= 2 (params/evaluate half-12 @test-show (build-beat-snapshot metro 13.5))))
+      (is (util/float= -0.5 (params/evaluate half-12 @test-show (build-beat-snapshot metro 11))))
+      (is (util/float= -1 (params/evaluate half-12 @test-show (build-beat-snapshot metro 10.5))))
+      (is (util/float= -1.5 (params/evaluate half-12 @test-show (build-beat-snapshot metro 10))))
+      (is (util/float= 1 (params/evaluate half-12 @test-show (build-beat-snapshot metro 12.4))))
+      (is (util/float= 1.3 (params/evaluate half-12 @test-show (build-beat-snapshot metro 12.9))))
+      (is (util/float= 1.98 (params/evaluate half-12 @test-show (build-beat-snapshot metro 13.24))))
+      (is (util/float= 2 (params/evaluate half-12 @test-show (build-beat-snapshot metro 13.25))))
+      (is (util/float= 101 (params/evaluate half-12 @test-show (build-beat-snapshot metro 112.4))))
+      (is (util/float= 102 (params/evaluate half-12 @test-show (build-beat-snapshot metro 113.75))))
+
+      ;; Fade for 1/5 of each beat starting with beat 12
+      (is (util/float= 0.5 (params/evaluate fifth-12 @test-show (build-beat-snapshot metro 12))))
+      (is (util/float= 1 (params/evaluate fifth-12 @test-show (build-beat-snapshot metro 12.5))))
+      (is (util/float= 1.5 (params/evaluate fifth-12 @test-show (build-beat-snapshot metro 13))))
+      (is (util/float= 2 (params/evaluate fifth-12 @test-show (build-beat-snapshot metro 13.5))))
+      (is (util/float= -0.5 (params/evaluate fifth-12 @test-show (build-beat-snapshot metro 11))))
+      (is (util/float= -1 (params/evaluate fifth-12 @test-show (build-beat-snapshot metro 10.5))))
+      (is (util/float= -1.5 (params/evaluate fifth-12 @test-show (build-beat-snapshot metro 10))))
+      (is (util/float= 1 (params/evaluate fifth-12 @test-show (build-beat-snapshot metro 12.4))))
+      (is (util/float= 1.25 (params/evaluate fifth-12 @test-show (build-beat-snapshot metro 12.95))))
+      (is (util/float= 1.95 (params/evaluate fifth-12 @test-show (build-beat-snapshot metro 13.09))))
+      (is (util/float= 2 (params/evaluate fifth-12 @test-show (build-beat-snapshot metro 13.1))))
+      (is (util/float= 101 (params/evaluate fifth-12 @test-show (build-beat-snapshot metro 112.2))))
+      (is (util/float= 102 (params/evaluate fifth-12 @test-show (build-beat-snapshot metro 113.9)))))))
+
+(deftest test-bar-step-param
+  (testing "Step parameters based on bars behave as expected."
+    (let [metro (:metronome @test-show)
+          basic-51 (params/build-step-param :interval :bar :starting (build-bar-snapshot metro 51))
+          smooth-99 (params/build-step-param :interval :bar :fade-fraction 1 :starting (build-bar-snapshot metro 99))
+          half-12 (params/build-step-param :interval :bar :fade-fraction 0.5 :starting (build-bar-snapshot metro 12))
+          fifth-12 (params/build-step-param :interval :bar :fade-fraction 0.2 :starting (build-bar-snapshot metro 12))]
+
+      ;; Basic step function starting with bar 51.
+      (is (= 1 (params/evaluate basic-51 @test-show (build-bar-snapshot metro 51))))
+      (is (= 2 (params/evaluate basic-51 @test-show (build-bar-snapshot metro 52))))
+      (is (= 0 (params/evaluate basic-51 @test-show (build-bar-snapshot metro 50))))
+      (is (= -1 (params/evaluate basic-51 @test-show (build-bar-snapshot metro 49))))
+      (is (= 1 (params/evaluate basic-51 @test-show (build-bar-snapshot metro 51.4))))
+      (is (= 1 (params/evaluate basic-51 @test-show (build-bar-snapshot metro 51.9))))
+      (is (= 100 (params/evaluate basic-51 @test-show (build-bar-snapshot metro 150))))
+
+      ;; Continuous fade starting with bar 98
+      (is (util/float= 0.5 (params/evaluate smooth-99 @test-show (build-bar-snapshot metro 99))))
+      (is (util/float= 1 (params/evaluate smooth-99 @test-show (build-bar-snapshot metro 99.5))))
+      (is (util/float= 1.5 (params/evaluate smooth-99 @test-show (build-bar-snapshot metro 100))))
+      (is (util/float= 2 (params/evaluate smooth-99 @test-show (build-bar-snapshot metro 100.5))))
+      (is (util/float= -0.5 (params/evaluate smooth-99 @test-show (build-bar-snapshot metro 98))))
+      (is (util/float= -1 (params/evaluate smooth-99 @test-show (build-bar-snapshot metro 97.5))))
+      (is (util/float= -1.5 (params/evaluate smooth-99 @test-show (build-bar-snapshot metro 97))))
+      (is (util/float= 0.9 (params/evaluate smooth-99 @test-show (build-bar-snapshot metro 99.4))))
+      (is (util/float= 1.4 (params/evaluate smooth-99 @test-show (build-bar-snapshot metro 99.9))))
+      (is (util/float= 100 (params/evaluate smooth-99 @test-show (build-bar-snapshot metro 198.5))))
+
+      ;; Fade for half of each bar starting with bar 12
+      (is (util/float= 0.5 (params/evaluate half-12 @test-show (build-bar-snapshot metro 12))))
+      (is (util/float= 1 (params/evaluate half-12 @test-show (build-bar-snapshot metro 12.5))))
+      (is (util/float= 1.5 (params/evaluate half-12 @test-show (build-bar-snapshot metro 13))))
+      (is (util/float= 2 (params/evaluate half-12 @test-show (build-bar-snapshot metro 13.5))))
+      (is (util/float= -0.5 (params/evaluate half-12 @test-show (build-bar-snapshot metro 11))))
+      (is (util/float= -1 (params/evaluate half-12 @test-show (build-bar-snapshot metro 10.5))))
+      (is (util/float= -1.5 (params/evaluate half-12 @test-show (build-bar-snapshot metro 10))))
+      (is (util/float= 1 (params/evaluate half-12 @test-show (build-bar-snapshot metro 12.4))))
+      (is (util/float= 1.3 (params/evaluate half-12 @test-show (build-bar-snapshot metro 12.9))))
+      (is (util/float= 1.98 (params/evaluate half-12 @test-show (build-bar-snapshot metro 13.24))))
+      (is (util/float= 2 (params/evaluate half-12 @test-show (build-bar-snapshot metro 13.25))))
+      (is (util/float= 101 (params/evaluate half-12 @test-show (build-bar-snapshot metro 112.4))))
+      (is (util/float= 102 (params/evaluate half-12 @test-show (build-bar-snapshot metro 113.75))))
+
+      ;; Fade for 1/5 of each bar starting with bar 12
+      (is (util/float= 0.5 (params/evaluate fifth-12 @test-show (build-bar-snapshot metro 12))))
+      (is (util/float= 1 (params/evaluate fifth-12 @test-show (build-bar-snapshot metro 12.5))))
+      (is (util/float= 1.5 (params/evaluate fifth-12 @test-show (build-bar-snapshot metro 13))))
+      (is (util/float= 2 (params/evaluate fifth-12 @test-show (build-bar-snapshot metro 13.5))))
+      (is (util/float= -0.5 (params/evaluate fifth-12 @test-show (build-bar-snapshot metro 11))))
+      (is (util/float= -1 (params/evaluate fifth-12 @test-show (build-bar-snapshot metro 10.5))))
+      (is (util/float= -1.5 (params/evaluate fifth-12 @test-show (build-bar-snapshot metro 10))))
+      (is (util/float= 1 (params/evaluate fifth-12 @test-show (build-bar-snapshot metro 12.4))))
+      (is (util/float= 1.25 (params/evaluate fifth-12 @test-show (build-bar-snapshot metro 12.95))))
+      (is (util/float= 1.95 (params/evaluate fifth-12 @test-show (build-bar-snapshot metro 13.09))))
+      (is (util/float= 2 (params/evaluate fifth-12 @test-show (build-bar-snapshot metro 13.1))))
+      (is (util/float= 101 (params/evaluate fifth-12 @test-show (build-bar-snapshot metro 112.2))))
+      (is (util/float= 102 (params/evaluate fifth-12 @test-show (build-bar-snapshot metro 113.9)))))))
+
+(deftest test-phrase-step-param
+  (testing "Step parameters based on phrases behave as expected."
+    (let [metro (:metronome @test-show)
+          basic-51 (params/build-step-param :interval :phrase :starting (build-phrase-snapshot metro 51))
+          smooth-99 (params/build-step-param :interval :phrase :fade-fraction 1
+                                             :starting (build-phrase-snapshot metro 99))
+          half-12 (params/build-step-param :interval :phrase :fade-fraction 0.5
+                                           :starting (build-phrase-snapshot metro 12))
+          fifth-12 (params/build-step-param :interval :phrase :fade-fraction 0.2
+                                            :starting (build-phrase-snapshot metro 12))]
+
+      ;; Basic step function starting with phrase 51.
+      (is (= 1 (params/evaluate basic-51 @test-show (build-phrase-snapshot metro 51))))
+      (is (= 2 (params/evaluate basic-51 @test-show (build-phrase-snapshot metro 52))))
+      (is (= 0 (params/evaluate basic-51 @test-show (build-phrase-snapshot metro 50))))
+      (is (= -1 (params/evaluate basic-51 @test-show (build-phrase-snapshot metro 49))))
+      (is (= 1 (params/evaluate basic-51 @test-show (build-phrase-snapshot metro 51.4))))
+      (is (= 1 (params/evaluate basic-51 @test-show (build-phrase-snapshot metro 51.9))))
+      (is (= 100 (params/evaluate basic-51 @test-show (build-phrase-snapshot metro 150))))
+
+      ;; Continuous fade starting with phrase 98
+      (is (util/float= 0.5 (params/evaluate smooth-99 @test-show (build-phrase-snapshot metro 99))))
+      (is (util/float= 1 (params/evaluate smooth-99 @test-show (build-phrase-snapshot metro 99.5))))
+      (is (util/float= 1.5 (params/evaluate smooth-99 @test-show (build-phrase-snapshot metro 100))))
+      (is (util/float= 2 (params/evaluate smooth-99 @test-show (build-phrase-snapshot metro 100.5))))
+      (is (util/float= -0.5 (params/evaluate smooth-99 @test-show (build-phrase-snapshot metro 98))))
+      (is (util/float= -1 (params/evaluate smooth-99 @test-show (build-phrase-snapshot metro 97.5))))
+      (is (util/float= -1.5 (params/evaluate smooth-99 @test-show (build-phrase-snapshot metro 97))))
+      (is (util/float= 0.9 (params/evaluate smooth-99 @test-show (build-phrase-snapshot metro 99.4))))
+      (is (util/float= 1.4 (params/evaluate smooth-99 @test-show (build-phrase-snapshot metro 99.9))))
+      (is (util/float= 100 (params/evaluate smooth-99 @test-show (build-phrase-snapshot metro 198.5))))
+
+      ;; Fade for half of each phrase starting with phrase 12
+      (is (util/float= 0.5 (params/evaluate half-12 @test-show (build-phrase-snapshot metro 12))))
+      (is (util/float= 1 (params/evaluate half-12 @test-show (build-phrase-snapshot metro 12.5))))
+      (is (util/float= 1.5 (params/evaluate half-12 @test-show (build-phrase-snapshot metro 13))))
+      (is (util/float= 2 (params/evaluate half-12 @test-show (build-phrase-snapshot metro 13.5))))
+      (is (util/float= -0.5 (params/evaluate half-12 @test-show (build-phrase-snapshot metro 11))))
+      (is (util/float= -1 (params/evaluate half-12 @test-show (build-phrase-snapshot metro 10.5))))
+      (is (util/float= -1.5 (params/evaluate half-12 @test-show (build-phrase-snapshot metro 10))))
+      (is (util/float= 1 (params/evaluate half-12 @test-show (build-phrase-snapshot metro 12.4))))
+      (is (util/float= 1.3 (params/evaluate half-12 @test-show (build-phrase-snapshot metro 12.9))))
+      (is (util/float= 1.98 (params/evaluate half-12 @test-show (build-phrase-snapshot metro 13.24))))
+      (is (util/float= 2 (params/evaluate half-12 @test-show (build-phrase-snapshot metro 13.25))))
+      (is (util/float= 101 (params/evaluate half-12 @test-show (build-phrase-snapshot metro 112.4))))
+      (is (util/float= 102 (params/evaluate half-12 @test-show (build-phrase-snapshot metro 113.75))))
+
+      ;; Fade for 1/5 of each phrase starting with phrase 12
+      (is (util/float= 0.5 (params/evaluate fifth-12 @test-show (build-phrase-snapshot metro 12))))
+      (is (util/float= 1 (params/evaluate fifth-12 @test-show (build-phrase-snapshot metro 12.5))))
+      (is (util/float= 1.5 (params/evaluate fifth-12 @test-show (build-phrase-snapshot metro 13))))
+      (is (util/float= 2 (params/evaluate fifth-12 @test-show (build-phrase-snapshot metro 13.5))))
+      (is (util/float= -0.5 (params/evaluate fifth-12 @test-show (build-phrase-snapshot metro 11))))
+      (is (util/float= -1 (params/evaluate fifth-12 @test-show (build-phrase-snapshot metro 10.5))))
+      (is (util/float= -1.5 (params/evaluate fifth-12 @test-show (build-phrase-snapshot metro 10))))
+      (is (util/float= 1 (params/evaluate fifth-12 @test-show (build-phrase-snapshot metro 12.4))))
+      (is (util/float= 1.25 (params/evaluate fifth-12 @test-show (build-phrase-snapshot metro 12.95))))
+      (is (util/float= 1.95 (params/evaluate fifth-12 @test-show (build-phrase-snapshot metro 13.09))))
+      (is (util/float= 2 (params/evaluate fifth-12 @test-show (build-phrase-snapshot metro 13.1))))
+      (is (util/float= 101 (params/evaluate fifth-12 @test-show (build-phrase-snapshot metro 112.2))))
+      (is (util/float= 102 (params/evaluate fifth-12 @test-show (build-phrase-snapshot metro 113.9)))))))

@@ -124,14 +124,14 @@
   "Convert 'b' beats to milliseconds at the given 'bpm'."
   [b bpm] (* (/ 60000 bpm) b))
 
-(defn- marker-number
+(defn marker-number
   "Helper function to calculate the beat, bar, or phrase number in
   effect at a given moment, given a starting point and beat, bar,
   or phrase interval."
   [instant start interval]
   (inc (long (/ (- instant start) interval))))
 
-(defn- marker-phase
+(defn marker-phase
   "Helper function to calculate the beat, bar, or phrase phase at a
   given moment, given a starting point and beat interval."
   [instant start interval]
