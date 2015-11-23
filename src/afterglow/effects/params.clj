@@ -307,7 +307,7 @@
   convenient control
   of [chases](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#chases).
 
-  With no arguments, the parameter will evaluate to zero at the beat
+  With no arguments, the parameter will evaluate to one at the beat
   closest when it was created, and will increase by one for each beat
   that passes, with no fades (fractional states).
 
@@ -343,10 +343,10 @@
       :or {interval :beat fade-fraction 0 starting (metro-snapshot (:metronome *show*))}}]
   {:pre [(#{:beat :bar :phrase} interval) (util/float<= 0 fade-fraction 1) (satisfies? rhythm/ISnapshot starting)]}
   (let [phase-key (keyword (str (name interval) "-phase"))
-        origin (+ (interval starting) (math/round (phase-key starting)))
+        origin (dec (+ (interval starting) (math/round (phase-key starting))))
         eval-fn (cond
                   (util/float= fade-fraction 0) (fn [snapshot] (- (interval snapshot) origin))
-                  (util/float= fade-fraction 1) (fn [snapshot] (+ (- (interval snapshot) origin)
+                  (util/float= fade-fraction 1) (fn [snapshot] (+ (- (interval snapshot) origin 0.5)
                                                                   (phase-key snapshot)))
                   :else (fn [snapshot]
                           (let [base (- (interval snapshot) origin)
