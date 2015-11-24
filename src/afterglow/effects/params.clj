@@ -340,7 +340,7 @@
   Step parameters are always frame-dynamic."
   {:doc/format :markdown}
   [& {:keys [interval fade-fraction starting]
-      :or {interval :beat fade-fraction 0 starting (metro-snapshot (:metronome *show*))}}]
+      :or {interval :beat fade-fraction 0 starting (when *show* (metro-snapshot (:metronome *show*)))}}]
   {:pre [(#{:beat :bar :phrase} interval) (util/float<= 0 fade-fraction 1) (satisfies? rhythm/ISnapshot starting)]}
   (let [phase-key (keyword (str (name interval) "-phase"))
         origin (dec (+ (interval starting) (math/round (phase-key starting))))
