@@ -345,6 +345,10 @@
                                   (cues/function-cue :snowball-sound :sound-active (show/fixtures-named "snowball")
                                                      :color :cyan)))
 
+(def step-param
+  "A step parameter for controlling example chase cuse. Redefine it to
+  experiment with other kinds of timing and fades."
+  (params/build-step-param :fade-fraction 0.3 :fade-curve :sine))
 
 (defn make-cues
   "Create a bunch of example cues for experimentation."
@@ -821,6 +825,16 @@
                :variables [{:key "position" :min -0.5 :max 10.5 :start 0.0 :name "Position"}]
                :color :purple))
 
+    (ct/set-cue!
+     (:cue-grid *show*) 1 13
+     (cues/cue :chase (fn [var-map]
+                        (fx/chase "Chase Test 2"
+                                  [(global-color-effect :red :lights (show/fixtures-named "hex"))
+                                   (global-color-effect :green :lights (show/fixtures-named "blade"))
+                                   (global-color-effect :blue :lights (show/fixtures-named "hex"))
+                                   (global-color-effect :white :lights (show/all-fixtures))]
+                                  step-param :beyond :loop))
+               :color :magenta))
 
     ;; Some compound cues
     (ct/set-cue! (:cue-grid *show*) 8 0
