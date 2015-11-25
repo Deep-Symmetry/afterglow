@@ -318,19 +318,23 @@
   If fading between steps is desired, the optional keyword argument
   `:fade-fraction` can be supplied with a non-zero value (up to but no
   greater than `1`). This specifies what fraction of each interval is
-  involved in fading to or from the next value. A fade fraction of `0`
-  provides the default behavior of an instant jump between values with
-  no fading. A fade fraction of `1` means that each value continually
-  fades into the next, and is never steady. A fade fraction of `0.5`
-  would mean that the value is stable half the time, and fading for
-  the other half: during the middle of the interval, the value is
-  steady at its assigned value; once the final quarter of the interval
-  begins, the value starts fading up, reaching the halfway point as
-  the interval ends, and the fade continues through the first quarter
-  of the next interval, finally stabilizing for the next middle
-  section. Smaller fade fractions mean shorter periods of stability
-  and slower fades, while larger fractions yield longer periods of
-  steady values, and quicker fades.
+  involved in fading to or from the next value. See the graphs in the
+  Step
+  Parameters [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/params.adoc#step-parameters)
+  for a visual illustration of how this parameter works.
+
+  A fade fraction of `0` provides the default behavior of an instant
+  jump between values with no fading. A fade fraction of `1` means
+  that each value continually fades into the next, and is never
+  steady. A fade fraction of `0.5` would mean that the value is stable
+  half the time, and fading for the other half: during the middle of
+  the interval, the value is steady at its assigned value; once the
+  final quarter of the interval begins, the value starts fading up,
+  reaching the halfway point as the interval ends, and the fade
+  continues through the first quarter of the next interval, finally
+  stabilizing for the next middle section. Smaller fade fractions mean
+  shorter periods of stability and slower fades, while larger
+  fractions yield longer periods of steady values, and quicker fades.
 
   If the timing should start at an instant other than when the step
   parameter was created, a metronome snapshot containing the desired
@@ -339,24 +343,47 @@
 
   Step parameters are always frame-dynamic."
   {:doc/format :markdown}
-  [& {:keys [interval fade-fraction starting]
-      :or {interval :beat fade-fraction 0 starting (when *show* (metro-snapshot (:metronome *show*)))}}]
-  {:pre [(#{:beat :bar :phrase} interval) (util/float<= 0 fade-fraction 1) (satisfies? rhythm/ISnapshot starting)]}
+  [& {:keys [interval fade-fraction fade-curve starting]
+      :or {interval :beat fade-fraction 0 fade-curve :linear
+           starting (when *show* (metro-snapshot (:metronome *show*)))}}]
+  {:pre [(#{:beat :bar :phrase} interval) (util/float<= 0 fade-fraction 1) (#{:linear :sine} fade-curve)
+         (satisfies? rhythm/ISnapshot starting)]}
   (let [phase-key (keyword (str (name interval) "-phase"))
         origin (dec (+ (interval starting) (math/round (phase-key starting))))
+        step-state (fn [snapshot]  ; Calculate values useful for fractional fade curves
+                     [(- (interval snapshot) origin)  ; Base step level to be faded
+                      (phase-key snapshot)  ; Current phase of the interval being faded
+                      (/ fade-fraction 2)  ; Phase at which we are done fading in
+                      (- 1 (/ fade-fraction 2))])  ; Phase at which we start fading out
         eval-fn (cond
-                  (util/float= fade-fraction 0) (fn [snapshot] (- (interval snapshot) origin))
-                  (util/float= fade-fraction 1) (fn [snapshot] (+ (- (interval snapshot) origin 0.5)
-                                                                  (phase-key snapshot)))
-                  :else (fn [snapshot]
-                          (let [base (- (interval snapshot) origin)
-                                phase (phase-key snapshot)
-                                fade-in (/ fade-fraction 2)
-                                fade-out (- 1 fade-in)]
-                            (cond
-                              (< phase fade-in) (- base (* 0.5 (/ (- fade-in phase) fade-in)))
-                              (> phase fade-out) (+ base (* 0.5 (/ (- phase fade-out) fade-in)))
-                              :else base))))]
+                  (util/float= fade-fraction 0)
+                  (fn [snapshot] (- (interval snapshot) origin))
+
+                  (and (util/float= fade-fraction 1) (= fade-curve :linear))
+                  (fn [snapshot] (+ (- (interval snapshot) origin 0.5) (phase-key snapshot)))
+
+                  :else
+                  (case fade-curve
+                    :linear (fn [snapshot]
+                              (let [[base phase fade-in fade-out] (step-state snapshot)]
+                                (cond
+                                  (< phase fade-in) (- base (* 0.5 (/ (- fade-in phase) fade-in)))
+                                  (> phase fade-out) (+ base (* 0.5 (/ (- phase fade-out) fade-in)))
+                                  :else base)))
+                    :sine (fn [snapshot]
+                            (let [[base phase fade-in fade-out] (step-state snapshot)]
+                              (cond
+                                (< phase fade-in)
+                                (let [fade-phase (/ phase fade-in)]
+                                  (+ base (/ (- (Math/cos (+ (* Math/PI (+ (/ fade-phase 2) 1.5)))) 1) 2)))
+
+                                (> phase fade-out)
+                                (let [fade-phase (/ (- phase fade-out) fade-in)]
+                                  (+ base (/ (+ (Math/cos (+ (* Math/PI (inc (/ fade-phase 2))))) 1) 2)))
+                                
+                                :else
+                                base))
+                            )))]
     ;; TODO: Add a sine-driven fade option?
     (reify IParam
       (evaluate [this show snapshot] (eval-fn snapshot))

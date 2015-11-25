@@ -97,7 +97,9 @@ the wave that controls its value, and the frequency at which it
 oscillates, related to beats, bars, or phrases of the underlying
 metronome. The resulting value can then be scaled to meet the needs of
 whatever is being generated (a dimmer level, color component, or light
-rotation). Oscillated parameters are created by calling:
+rotation). Oscillated parameters are created by calling
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-oscillated-param[afterglow.effects.params/build-oscillated-param].
+
 
 [source,clojure]
 ----
@@ -134,10 +136,120 @@ variable was created. The frame-dynamic setting of such variable
 bindings will be controlled by the frame-dynamic setting of the
 oscillated parameter being created.
 
+== Step Parameters
+
+Like oscillated parameters (above), step parameters vary over time, at
+a speed controlled by a <<metronomes#metronomes,Metronome>> (usually
+the main show metronome, synced to DJ equipment). But rather than
+moving back and forth, step parameters increase steadily over time,
+because they are designed to control the progression of a
+<<effects#chases,chase>>. Step parameters are created by calling
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-step-param[afterglow.effects.params/build-step-param].
+
+[source,clojure]
+----
+(afterglow.effects.params/build-step-param)
+----
+
+With no arguments, this creates a step parameter that starts out with
+the value `1` for the duration of the beat closest to when you created
+it, and the value will jump up by one as each subsequent beat occurs:
+
+image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/step-fade-0.png[Default Step Parameter]
+
+If a less-abrupt transition between stages in the chase is desired, a
+fade can be added between them by passing a value with the optional
+keyword argument `:fade-fraction`. When omitted, the default value is
+`0`, meaning no time is spent fading, which results in the kind of
+abrupt steps seen in the graph above. Passing a value of `0.2` would
+cause the parameter to spend 1/5 of its time fading: During the final
+0.1 of the beat, it would ramp up towards the midpoint of the next
+value, and then finish that ramp during the first 0.1 of the next
+beat, as shown in the following graph:
+
+[source,clojure]
+----
+(afterglow.effects.params/build-step-param :fade-fraction 0.2)
+----
+
+image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/step-fade-0-2.png[Step Parameter with fade fraction 0.2]
+
+The graph shows that most of each beat is spent with the step
+parameter steady at its expected value, but the first and last tenths
+are a linear fade from and to the next value. Changing the fade
+fraction to 0.5 causes half the time to be spent fading, and only half
+sitting at the beat's assigned value:
+
+[source,clojure]
+----
+(afterglow.effects.params/build-step-param :fade-fraction 0.5)
+----
+
+image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/step-fade-0-5.png[Step Parameter with fade fraction 0.5]
+
+That trend continues until the maximum possible fade-fraction value of
+`1` is used, which causes all of each beat to be spent fading, so the
+step parameter continuously fades through values, reaching the value
+assigned to a given beat at the midpoint of that beat:
+
+
+[source,clojure]
+----
+(afterglow.effects.params/build-step-param :fade-fraction 1)
+----
+
+image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/step-fade-1.png[Step Parameter with fade fraction 1]
+
+In addition to linear fades, you can smooth out the start and end of
+the fades by using a sine-shaped fade curve, by passing the optional
+keyword argument `:fade-curve` with the value `:sine`. Here is what
+that looks like with a continuous fade:
+
+[source,clojure]
+----
+(afterglow.effects.params/build-step-param :fade-curve :sine :fade-fraction 1)
+----
+
+image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/step-sine-fade-1.png[Step Parameter with sine curve and fade fraction 1]
+
+The smoothing effect of the sine curve option becomes even more
+evident when you configure the step parameter to fade for only part of
+the beat:
+
+[source,clojure]
+----
+(afterglow.effects.params/build-step-param :fade-curve :sine :fade-fraction 0.5)
+----
+
+image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/step-sine-fade-0-5.png[Step Parameter with sine curve and fade fraction 0.5]
+
+Of course, as the amount of time spent fading gets compressed, the
+smoothing is less obvious, although it is still there. Dropping back
+to fading over just the first and last tenth of the beat looks like
+this:
+
+[source,clojure]
+----
+(afterglow.effects.params/build-step-param :fade-curve :sine :fade-fraction 0.2)
+----
+
+image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/step-sine-fade-0-2.png[Step Parameter with sine curve and fade fraction 0.2]
+
+You can also have the step parameter increment for each bar or phrase,
+rather than each beat, by passing the optional keyword argument
+`:interval` with the value `:bar` or `:phrase`.
+
+And if you would like the beat numbers to be counted from a time that
+is different than when you created the step parameter, you can pass a
+metronome snapshot along with the keyword argument `:starting`, and
+beats will be counted so that the first beat is the one that occured
+closest to that snapshot.
+
 == Color Parameters
 
 Color parameters are an extremely flexible way of dynamically assigning
-color. The basic way to create one is to call:
+color. The basic way to create one is to call
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-color-param[afterglow.effects.params/build-color-param].
 
 [source,clojure]
 ----
@@ -233,7 +345,9 @@ pattern. They are used with <<effects#direction-effects,Direction
 Effects>>. (<<parameters#pan-tilt-parameters,Pan Tilt Parameters>> and
 <<effects#pan-tilt-effects,Pan/Tilt Effects>> are the other way to
 achieve that result.) The basic way to create a direction parameter is
-to call:
+to call
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-direction-param[afterglow.effects.params/build-direction-param].
+
 
 [source,clojure]
 ----
@@ -401,7 +515,8 @@ parameters described above.
 
 Spatial parameters allow you to base an effect parameter on the physical
 arrangement or relationships between fixtures in your light show. The
-way to create one is to call:
+way to create one is to call
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-spatial-param[afterglow.effects.params/build-spatial-param].
 
 [source,clojure]
 ----
