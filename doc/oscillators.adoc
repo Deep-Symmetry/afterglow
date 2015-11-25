@@ -114,6 +114,9 @@ no functional difference from staying within the current interval. In
 other words, passing in exactly 1.0 (or 2.0, etc.) is the same as
 passing in 0.0, and will have no effect on the oscillator.
 
+image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/sawtooth-beat-phase.png[Sawtooth
+Beat Oscillator with Phase 0.25]
+
 [source,clojure]
 ----
 (afterglow.effects.oscillators/sawtooth-bar)
