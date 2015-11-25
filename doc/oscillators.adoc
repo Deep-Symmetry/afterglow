@@ -276,6 +276,113 @@ illustrated with graphs, in the documentation for the Sawtooth Wave
 oscillator. You can jump to those sections using the links in the
 _Purpose_ section of the table.
 
+== Sine Oscillators
+
+Just like in musical synthesis, sine waves are the smoothest-feeling
+waves of all, and are good for creating gentle, subtle effects which
+ease in and out.
+
+[source,clojure]
+----
+(afterglow.effects.oscillators/sine-beat)
+----
+
+Returns an oscillator which generates a
+http://en.wikipedia.org/wiki/Sine_wave[sine wave] relative to the phase
+of the current beat. At the start of the beat, the value will be 0.0 and
+beginning to rise slowly, picking up speed as it goes, and slowing down
+again as it approaches the midpoint. At the midpoint, the value will
+reach 1.0 and begin falling slowly, again picking up speed, and at the
+end of the beat it will have returned to 0.0.
+
+image:assets/sine-beat.png[Default Sine Beat Oscillator]
+
+You can change the nature of the wave by using optional keyword
+parameters:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:beat-ratio` |`1` |Runs the oscillator at the specified
+<<ratios,multiple or fraction>> of a beat
+
+|`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
+beat by the specified amount
+|=======================================================================
+
+NOTE: The effects of these parameters are discussed in more depth, and
+illustrated with graphs, in the documentation for the Sawtooth Wave
+oscillator. You can jump to those sections using the links in the
+_Purpose_ section of the table.
+
+[source,clojure]
+----
+(afterglow.effects.oscillators/sine-bar)
+----
+
+Returns an oscillator which generates a
+http://en.wikipedia.org/wiki/Sine_wave[sine wave] relative to the phase
+of the current bar (measure, usually four beats). At the start of the
+bar, the value will be 0.0 and beginning to rise slowly, picking up
+speed as it goes, and slowing down again as it approaches the midpoint.
+At the midpoint, the value will reach 1.0 and begin falling slowly,
+again picking up speed, and at the end of the bar it will have returned
+to 0.0.
+
+image:assets/sine-bar.png[Default Sine Bar Oscillator]
+
+You can change the nature of the wave by using optional keyword
+parameters:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:bar-ratio` |`1` |Runs the oscillator at the specified
+<<ratios,multiple or fraction>> of a bar
+
+|`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
+bar by the specified amount
+|=======================================================================
+
+NOTE: The effects of these parameters are discussed in more depth, and
+illustrated with graphs, in the documentation for the Sawtooth Wave
+oscillator. You can jump to those sections using the links in the
+_Purpose_ section of the table.
+
+[source,clojure]
+----
+(afterglow.effects.oscillators/sine-phrase)
+----
+
+Returns an oscillator which generates a
+http://en.wikipedia.org/wiki/Sine_wave[sine wave] relative to the phase
+of the current phrase (usually eight bars). At the start of the phrase,
+the value will be 0.0 and beginning to rise slowly, picking up speed as
+it goes, and slowing down again as it approaches the midpoint. At the
+midpoint, the value will reach 1.0 and begin falling slowly, again
+picking up speed, and at the end of the phrase it will have returned to
+0.0.
+
+image:assets/sine-phrase.png[Default Sine Phrase Oscillator]
+
+You can change the nature of the wave by using optional keyword
+parameters:
+
+[cols=",,",options="header",]
+|=======================================================================
+|Parameter |Default |Purpose
+|`:phrase-ratio` |`1` |Runs the oscillator at the specified
+<<ratios,multiple or fraction>> of a phrase
+
+|`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
+phrase by the specified amount
+|=======================================================================
+
+NOTE: The effects of these parameters are discussed in more depth, and
+illustrated with graphs, in the documentation for the Sawtooth Wave
+oscillator. You can jump to those sections using the links in the
+_Purpose_ section of the table.
+
 == Square Oscillators
 
 Square waves are good for abrupt transitions, like strobes, or switching
@@ -415,114 +522,6 @@ phrase by the specified amount
 NOTE: The effects of these parameters are discussed in more depth, and
 illustrated with graphs, in earlier sections. You can jump to those
 sections using the links in the _Purpose_ section of the table.
-
-== Sine Oscillators
-
-
-Just like in musical synthesis, sine waves are the smoothest-feeling
-waves of all, and are good for creating gentle, subtle effects which
-ease in and out.
-
-[source,clojure]
-----
-(afterglow.effects.oscillators/sine-beat)
-----
-
-Returns an oscillator which generates a
-http://en.wikipedia.org/wiki/Sine_wave[sine wave] relative to the phase
-of the current beat. At the start of the beat, the value will be 0.0 and
-beginning to rise slowly, picking up speed as it goes, and slowing down
-again as it approaches the midpoint. At the midpoint, the value will
-reach 1.0 and begin falling slowly, again picking up speed, and at the
-end of the beat it will have returned to 0.0.
-
-image:assets/sine-beat.png[Default Sine Beat Oscillator]
-
-You can change the nature of the wave by using optional keyword
-parameters:
-
-[cols=",,",options="header",]
-|=======================================================================
-|Parameter |Default |Purpose
-|`:beat-ratio` |`1` |Runs the oscillator at the specified
-<<ratios,multiple or fraction>> of a beat
-
-|`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
-beat by the specified amount
-|=======================================================================
-
-NOTE: The effects of these parameters are discussed in more depth, and
-illustrated with graphs, in the documentation for the Sawtooth Wave
-oscillator. You can jump to those sections using the links in the
-_Purpose_ section of the table.
-
-[source,clojure]
-----
-(afterglow.effects.oscillators/sine-bar)
-----
-
-Returns an oscillator which generates a
-http://en.wikipedia.org/wiki/Sine_wave[sine wave] relative to the phase
-of the current bar (measure, usually four beats). At the start of the
-bar, the value will be 0.0 and beginning to rise slowly, picking up
-speed as it goes, and slowing down again as it approaches the midpoint.
-At the midpoint, the value will reach 1.0 and begin falling slowly,
-again picking up speed, and at the end of the bar it will have returned
-to 0.0.
-
-image:assets/sine-bar.png[Default Sine Bar Oscillator]
-
-You can change the nature of the wave by using optional keyword
-parameters:
-
-[cols=",,",options="header",]
-|=======================================================================
-|Parameter |Default |Purpose
-|`:bar-ratio` |`1` |Runs the oscillator at the specified
-<<ratios,multiple or fraction>> of a bar
-
-|`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
-bar by the specified amount
-|=======================================================================
-
-NOTE: The effects of these parameters are discussed in more depth, and
-illustrated with graphs, in the documentation for the Sawtooth Wave
-oscillator. You can jump to those sections using the links in the
-_Purpose_ section of the table.
-
-[source,clojure]
-----
-(afterglow.effects.oscillators/sine-phrase)
-----
-
-Returns an oscillator which generates a
-http://en.wikipedia.org/wiki/Sine_wave[sine wave] relative to the phase
-of the current phrase (usually eight bars). At the start of the phrase,
-the value will be 0.0 and beginning to rise slowly, picking up speed as
-it goes, and slowing down again as it approaches the midpoint. At the
-midpoint, the value will reach 1.0 and begin falling slowly, again
-picking up speed, and at the end of the phrase it will have returned to
-0.0.
-
-image:assets/sine-phrase.png[Default Sine Phrase Oscillator]
-
-You can change the nature of the wave by using optional keyword
-parameters:
-
-[cols=",,",options="header",]
-|=======================================================================
-|Parameter |Default |Purpose
-|`:phrase-ratio` |`1` |Runs the oscillator at the specified
-<<ratios,multiple or fraction>> of a phrase
-
-|`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
-phrase by the specified amount
-|=======================================================================
-
-NOTE: The effects of these parameters are discussed in more depth, and
-illustrated with graphs, in the documentation for the Sawtooth Wave
-oscillator. You can jump to those sections using the links in the
-_Purpose_ section of the table.
 
 ==== License
 
