@@ -51,8 +51,9 @@ the phase of the current beat. At the start of the beat, the value will
 be 0.0, and at the end of the beat, the value will have grown linearly
 to 1.0.
 
-image:assets/sawtooth-beat.png[Default
-Sawtooth Beat Oscillator,align="center"]
+[.text-center]
+image:assets/sawtooth-beat.png[Default Sawtooth Beat
+Oscillator]
 
 You can change the nature of the wave by using optional keyword
 parameters:
