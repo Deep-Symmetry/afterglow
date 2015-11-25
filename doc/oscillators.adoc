@@ -49,7 +49,12 @@ Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Sawtooth_wave[sawtooth wave] relative to
 the phase of the current beat. At the start of the beat, the value will
 be 0.0, and at the end of the beat, the value will have grown linearly
-to 1.0. You can change the nature of the wave by using optional keyword
+to 1.0.
+
+image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/sawtooth-beat.png[Default
+Sawtooth Beat Oscillator]
+
+You can change the nature of the wave by using optional keyword
 parameters:
 
 [cols=",,",options="header",]
@@ -64,6 +69,9 @@ fraction of a beat
 |`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 beat by the specified amount
 |=======================================================================
+
+image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/sawtooth-beat-down.png[Downward
+Sawtooth Beat Oscillator]
 
 === Ratios
 
