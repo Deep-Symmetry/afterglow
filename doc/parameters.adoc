@@ -235,6 +235,9 @@ this:
 
 image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/step-sine-fade-0-2.png[Step Parameter with sine curve and fade fraction 0.2]
 
+When the fade fraction is 0, it does not matter what the fade curve
+is, because no fading takes place.
+
 You can also have the step parameter increment for each bar or phrase,
 rather than each beat, by passing the optional keyword argument
 `:interval` with the value `:bar` or `:phrase`.

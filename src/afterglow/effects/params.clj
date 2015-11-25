@@ -336,6 +336,12 @@
   shorter periods of stability and slower fades, while larger
   fractions yield longer periods of steady values, and quicker fades.
 
+  A smoother look can be obtained by using a sine curve to smooth the
+  start and end of each fade, by passing the optional keyword argument
+  `:fade-curve` with the value `:sine`. (Again, see
+  the [graphs](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#step-parameters)
+  to get a visual feel for what this does.)
+
   If the timing should start at an instant other than when the step
   parameter was created, a metronome snapshot containing the desired
   start point can be passed with the optional keyword argument
