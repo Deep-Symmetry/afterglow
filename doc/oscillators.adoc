@@ -1,6 +1,8 @@
 = Oscillators
 James Elliott <james@deepsymmetry.org>
 :icons: font
+:toc:
+:toc-placement: preamble
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
@@ -522,7 +524,7 @@ illustrated with graphs, in the documentation for the Sawtooth Wave
 oscillator. You can jump to those sections using the links in the
 _Purpose_ section of the table.
 
-## License
+==== License
 
 +++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
 Copyright © 2015 http://deepsymmetry.org[Deep Symmetry, LLC]
