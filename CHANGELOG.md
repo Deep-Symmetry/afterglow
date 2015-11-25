@@ -1,9 +1,17 @@
 # Change Log
-All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
+
+All notable changes to this project will be documented in this file.
+This change log follows the conventions of
+[keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased][unreleased]
 
+Nothing so far.
+
+## [0.1.5] - 2015-01-25
+
 ### Added
+
 - Chases, which support sequences of effects with a variety of timing,
   fade, and looping options.
 - Step parameters, which provide flexible control of chases.
@@ -16,6 +24,7 @@ All notable changes to this project will be documented in this file. This change
   parameters that tune their behavior.
 
 ### Changed
+
 - Fades now delegate their notion of ending to the underlying effects
   which are being faded between, and pass end requests along to them.
 - Stopped embedding `cider-nrepl` because it added too much bloat and
@@ -24,6 +33,7 @@ All notable changes to this project will be documented in this file. This change
   than as an überjar.
 
 ### Fixed
+
 - Some MIDI controllers (perhaps those which sent messages on channels
   other than 0?) were causing Overtone's
   [midi-clj](https://github.com/overtone/midi-clj) library to create
@@ -172,7 +182,8 @@ All notable changes to this project will be documented in this file. This change
 - Initial Public Release
 
 
-[unreleased]: https://github.com/brunchboy/afterglow/compare/v0.1.4...HEAD
+[unreleased]: https://github.com/brunchboy/afterglow/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/brunchboy/afterglow/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/brunchboy/afterglow/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/brunchboy/afterglow/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/brunchboy/afterglow/compare/v0.1.1...v0.1.2
