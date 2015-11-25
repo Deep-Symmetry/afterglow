@@ -82,12 +82,23 @@ bar-oriented ones use `:bar-ratio`, and phrase oscillators use
 speed of the oscillator with respect to the interval it is oscillating
 over. For example a beat-oriented oscillator normally goes through its
 entire wave shape once per beat. If you supply a `:beat-ratio` of `2`,
-it will run half as fast, taking two beats to go through its waveform. A
-`:beat-ratio` of `1/3` speeds it up so that it only takes one-third of a
-beat to go through its oscillation, and will finish three complete
-cycles each beat. These can be combined, of course, so a `:bar-ratio` of
-`2/3` would complete three cycles of a bar-oriented oscillator every two
-bars.
+it will run half as fast, taking two beats to go through its waveform.
+
+image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/sawtooth-beat-ratio-2.png[Sawtooth
+Beat Oscillator with Beat Ratio 2]
+
+A `:beat-ratio` of `1/3` speeds it up so that it only takes one-third
+of a beat to go through its oscillation, and will finish three
+complete cycles each beat.
+
+image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/sawtooth-beat-ratio-1-3.png[Sawtooth
+Beat Oscillator with Beat Ratio 1/3]
+
+These can be combined, of course, so a `:beat-ratio` of `2/3` would
+complete three cycles every two bars.
+
+image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/sawtooth-beat-ratio-2-3.png[Sawtooth
+Beat Oscillator with Beat Ratio 2/3]
 
 === Phase Shifting
 
