@@ -63,8 +63,8 @@ parameters:
 |`:down?` |`false` |When `true` the wave starts at 1.0 and falls
 linearly to 0.0
 
-|`:beat-ratio` |`1` |Runs the oscillator at the specified multiple or
-fraction of a beat
+|`:beat-ratio` |`1` |Runs the oscillator at the specified
+ <<ratios,multiple or fraction>> of a beat
 
 |`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 beat by the specified amount
