@@ -168,8 +168,8 @@
   (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
     (let [reached (adjust-phase (rhythm/snapshot-bar-phase snapshot bar-ratio) phase)]
       (if (< reached width)
-        0.0
-        1.0))))
+        1.0
+        0.0))))
 
 (defn square-phrase
   "Returns an oscillator which generates a square wave relative to the phase
@@ -186,8 +186,8 @@
   (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
     (let [reached (adjust-phase (rhythm/snapshot-phrase-phase snapshot phrase-ratio) phase)]
       (if (< reached width)
-        0.0
-        1.0))))
+        1.0
+        0.0))))
 
 (defn sine-beat
   "Returns an oscillator which generates a sine wave relative to the phase
