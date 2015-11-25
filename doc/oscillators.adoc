@@ -51,8 +51,8 @@ the phase of the current beat. At the start of the beat, the value will
 be 0.0, and at the end of the beat, the value will have grown linearly
 to 1.0.
 
-image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/sawtooth-beat.png[Default
-Sawtooth Beat Oscillator]
+image:assets/sawtooth-beat.png[Default
+Sawtooth Beat Oscillator,align="center"]
 
 You can change the nature of the wave by using optional keyword
 parameters:
@@ -95,7 +95,7 @@ image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/sa
 Beat Oscillator with Beat Ratio 1/3]
 
 These can be combined, of course, so a `:beat-ratio` of `2/3` would
-complete three cycles every two bars.
+complete three cycles every two beats.
 
 image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/sawtooth-beat-ratio-2-3.png[Sawtooth
 Beat Oscillator with Beat Ratio 2/3]
