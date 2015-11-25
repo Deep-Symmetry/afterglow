@@ -320,7 +320,7 @@
   greater than `1`). This specifies what fraction of each interval is
   involved in fading to or from the next value. See the graphs in the
   Step
-  Parameters [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/params.adoc#step-parameters)
+  Parameters [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#step-parameters)
   for a visual illustration of how this parameter works.
 
   A fade fraction of `0` provides the default behavior of an instant
