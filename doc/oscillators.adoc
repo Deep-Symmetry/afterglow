@@ -126,8 +126,13 @@ Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Sawtooth_wave[sawtooth wave] relative to
 the phase of the current bar (measure, usually four beats). At the start
 of the bar, the value will be 0.0, and at the end of the bar, the value
-will have grown linearly to 1.0. You can change the nature of the wave
-by using optional keyword parameters:
+will have grown linearly to 1.0.
+
+image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/sawtooth-bar.png[Default Sawtooth
+Bar Oscillator]
+
+You can change the nature of the wave by using optional keyword
+parameters:
 
 [cols=",,",options="header",]
 |=======================================================================
@@ -151,8 +156,13 @@ Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Sawtooth_wave[sawtooth wave] relative to
 the phase of the current phrase (usually eight bars). At the start of
 the phrase, the value will be 0.0, and at the end of the phrase, the
-value will have grown linearly to 1.0. You can change the nature of the
-wave by using optional keyword parameters:
+value will have grown linearly to 1.0.
+
+image:https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/sawtooth-phrase.png[Default Sawtooth
+Phrase Oscillator]
+
+You can change the nature of the wave by using optional keyword
+parameters:
 
 [cols=",,",options="header",]
 |=======================================================================
