@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file. This change
   the lights, can be helpful in creating natural and intuitive
   movements. They also help avoid issues with geometric singularities
   when fading between different directions.
+- Graphs to visually illustrate the available oscillators and the
+  parameters that tune their behavior.
 
 ### Changed
 - Fades now delegate their notion of ending to the underlying effects
@@ -34,6 +36,10 @@ All notable changes to this project will be documented in this file. This change
   which does not lead to the kind of results people generally expect
   and want. In this situation, the color is now faded to or from a
   darkened version of itself.
+- The phases of the square-bar and square-phrase oscillators were
+  flipped from what they should be according to the documentation, and
+  compared with square-beat. This was discovered and corrected when
+  graphing them.
 - Calculation of white LED channel for colors with lightness less than
   50 was wrong, leading to slight unintentional desaturation of
   colors.

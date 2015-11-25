@@ -51,7 +51,6 @@ the phase of the current beat. At the start of the beat, the value will
 be 0.0, and at the end of the beat, the value will have grown linearly
 to 1.0.
 
-[.text-center]
 image:assets/sawtooth-beat.png[Default Sawtooth Beat
 Oscillator]
 
@@ -189,8 +188,12 @@ Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Triangle_wave[triangle wave] relative to
 the phase of the current beat. At the start of the beat, the value will
 be 0.0, at the midpoint, the value will have grown linearly to 1.0, and
-at the end of the beat it will have returned to 0.0. You can change the
-nature of the wave by using optional keyword parameters:
+at the end of the beat it will have returned to 0.0.
+
+image:assets/triangle-beat.png[Default Triangle Beat Oscillator]
+
+You can change the nature of the wave by using optional keyword
+parameters:
 
 [cols=",,",options="header",]
 |=======================================================================
@@ -202,6 +205,11 @@ nature of the wave by using optional keyword parameters:
 beat by the specified amount
 |=======================================================================
 
+NOTE: The effects of these parameters are discussed in more depth, and
+illustrated with graphs, in the documentation for the Sawtooth Wave
+oscillator. You can jump to those sections using the links in the
+_Purpose_ section of the table.
+
 [source,clojure]
 ----
 (afterglow.effects.oscillators/triangle-bar)
@@ -212,7 +220,11 @@ http://en.wikipedia.org/wiki/Triangle_wave[triangle wave] relative to
 the phase of the current bar (measure, usually four beats). At the start
 of the bar, the value will be 0.0, at the midpoint, the value will have
 grown linearly to 1.0, and at the end of the bar, it will have returned
-to 0.0. You can change the nature of the wave by using optional keyword
+to 0.0.
+
+image:assets/triangle-bar.png[Default Triangle Bar Oscillator]
+
+You can change the nature of the wave by using optional keyword
 parameters:
 
 [cols=",,",options="header",]
@@ -225,9 +237,14 @@ parameters:
 bar by the specified amount
 |=======================================================================
 
+NOTE: The effects of these parameters are discussed in more depth, and
+illustrated with graphs, in the documentation for the Sawtooth Wave
+oscillator. You can jump to those sections using the links in the
+_Purpose_ section of the table.
+
 [source,clojure]
 ----
-(afterglow.effects.oscillators/sawtooth-phrase)
+(afterglow.effects.oscillators/triangle-phrase)
 ----
 
 Returns an oscillator which generates a
@@ -235,8 +252,12 @@ http://en.wikipedia.org/wiki/Triangle_wave[triangle wave] relative to
 the phase of the current phrase (usually eight bars). At the start of
 the phrase, the value will be 0.0, at the midpoint, the value will have
 grown linearly to 1.0, and at the end of the phrase, it will have
-returned to 0.0. You can change the nature of the wave by using optional
-keyword parameters:
+returned to 0.0.
+
+image:assets/triangle-phrase.png[Default Triangle Phrase Oscillator]
+
+You can change the nature of the wave by using optional keyword
+parameters:
 
 [cols=",,",options="header",]
 |=======================================================================
@@ -247,6 +268,11 @@ keyword parameters:
 |`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 phrase by the specified amount
 |=======================================================================
+
+NOTE: The effects of these parameters are discussed in more depth, and
+illustrated with graphs, in the documentation for the Sawtooth Wave
+oscillator. You can jump to those sections using the links in the
+_Purpose_ section of the table.
 
 == Square Oscillators
 
@@ -262,8 +288,12 @@ Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Square_wave[square wave] relative to the
 phase of the current beat. At the start of the beat, the value will be
 1.0. At the midpoint, it will instantly drop to 0.0, where it will stay
-until the end of the beat. You can change the nature of the wave by
-using optional keyword parameters:
+until the end of the beat.
+
+image:assets/square-beat.png[Default Square Beat Oscillator]
+
+You can change the nature of the wave by using optional keyword
+parameters:
 
 [cols=",,",options="header",]
 |=======================================================================
@@ -278,6 +308,46 @@ using optional keyword parameters:
 beat by the specified amount
 |=======================================================================
 
+NOTE: The effects of the `:beat-ratio` and `:phase` parameters are
+discussed in more depth, and illustrated with graphs, in the
+documentation for the Sawtooth Wave oscillator. You can jump to those
+sections using the links in the _Purpose_ section of the table.
+
+=== Pulse Widths
+
+As shown in the above graph, the square oscillator normally spends
+half its time in the &ldquo;on&rdquo; state (at the value one), and
+half its time &ldquo;off&rdquo; (at zero). You can adjust that by
+passing a value between `0.0` and `1.0` with the optional keyword
+argument `:width`. This tells the oscillator what fraction of the time
+to be on. For example, with the value `0.8`, it is on 4/5 of the time:
+
+[source,clojure]
+----
+(afterglow.effects.oscillators/square-beat :width 0.8)
+----
+
+image:assets/square-beat-width-8.png[Square Beat Oscillator with Width
+0.8]
+
+Alternately, using a `:width` of `0.1` causes the oscillator to be on
+for only one tenth of each beat:
+
+[source,clojure]
+----
+(afterglow.effects.oscillators/square-beat :width 0.1)
+----
+
+image:assets/square-beat-width-1.png[Square Beat Oscillator with Width
+0.1]
+
+You can shift where within the beat the transitions take place using
+the `:phase` argument, as with all oscillators, in the manner
+described <<phase-shifting,above>>.
+
+NOTE: The `:width` value must be greater than `0` and less than `1`,
+or the oscillator would not oscillate at all.
+
 [source,clojure]
 ----
 (afterglow.effects.oscillators/square-bar)
@@ -287,14 +357,18 @@ Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Square_wave[square wave] relative to the
 phase of the current bar (measure, usually four beats). At the start of
 the bar, the value will be 1.0. At the midpoint, it will instantly drop
-to 0.0, where it will stay until the end of the bar. You can change the
-nature of the wave by using optional keyword parameters:
+to 0.0, where it will stay until the end of the bar.
+
+image:assets/square-bar.png[Default Square Bar Oscillator]
+
+You can change the nature of the wave by using optional keyword
+parameters:
 
 [cols=",,",options="header",]
 |=======================================================================
 |Parameter |Default |Purpose
 |`:width` |`0.5` |Determines the phase at which the value changes from
-1.0 to 0.0, and therefore the width of the 1.0 pulse
+1.0 to 0.0, and therefore the <<pulse-widths,width of the 1.0 pulse>>
 
 |`:bar-ratio` |`1` |Runs the oscillator at the specified
 <<ratios,multiple or fraction>> of a bar
@@ -302,6 +376,10 @@ nature of the wave by using optional keyword parameters:
 |`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 bar by the specified amount
 |=======================================================================
+
+NOTE: The effects of these parameters are discussed in more depth, and
+illustrated with graphs, in earlier sections. You can jump to those
+sections using the links in the _Purpose_ section of the table.
 
 [source,clojure]
 ----
@@ -312,14 +390,18 @@ Returns an oscillator which generates a
 http://en.wikipedia.org/wiki/Square_wave[square wave] relative to the
 phase of the current phrase (usually eight bars). At the start of the
 phrase, the value will be 1.0. At the midpoint, it will instantly drop
-to 0.0, where it will stay until the end of the phrase. You can change
-the nature of the wave by using optional keyword parameters:
+to 0.0, where it will stay until the end of the phrase.
+
+image:assets/square-phrase.png[Default Square Phrase Oscillator]
+
+You can change the nature of the wave by using optional keyword
+parameters:
 
 [cols=",,",options="header",]
 |=======================================================================
 |Parameter |Default |Purpose
 |`:width` |`0.5` |Determines the phase at which the value changes from
-1.0 to 0.0, and therefore the width of the 1.0 pulse
+1.0 to 0.0, and therefore the <<pulse-widths,width of the 1.0 pulse>>
 
 |`:phrase-ratio` |`1` |Runs the oscillator at the specified
 <<ratios,multiple or fraction>> of a phrase
@@ -327,6 +409,10 @@ the nature of the wave by using optional keyword parameters:
 |`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 phrase by the specified amount
 |=======================================================================
+
+NOTE: The effects of these parameters are discussed in more depth, and
+illustrated with graphs, in earlier sections. You can jump to those
+sections using the links in the _Purpose_ section of the table.
 
 == Sine Oscillators
 
@@ -346,8 +432,12 @@ of the current beat. At the start of the beat, the value will be 0.0 and
 beginning to rise slowly, picking up speed as it goes, and slowing down
 again as it approaches the midpoint. At the midpoint, the value will
 reach 1.0 and begin falling slowly, again picking up speed, and at the
-end of the beat it will have returned to 0.0. You can change the nature
-of the wave by using optional keyword parameters:
+end of the beat it will have returned to 0.0.
+
+image:assets/sine-beat.png[Default Sine Beat Oscillator]
+
+You can change the nature of the wave by using optional keyword
+parameters:
 
 [cols=",,",options="header",]
 |=======================================================================
@@ -358,6 +448,11 @@ of the wave by using optional keyword parameters:
 |`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 beat by the specified amount
 |=======================================================================
+
+NOTE: The effects of these parameters are discussed in more depth, and
+illustrated with graphs, in the documentation for the Sawtooth Wave
+oscillator. You can jump to those sections using the links in the
+_Purpose_ section of the table.
 
 [source,clojure]
 ----
@@ -371,7 +466,11 @@ bar, the value will be 0.0 and beginning to rise slowly, picking up
 speed as it goes, and slowing down again as it approaches the midpoint.
 At the midpoint, the value will reach 1.0 and begin falling slowly,
 again picking up speed, and at the end of the bar it will have returned
-to 0.0. You can change the nature of the wave by using optional keyword
+to 0.0.
+
+image:assets/sine-bar.png[Default Sine Bar Oscillator]
+
+You can change the nature of the wave by using optional keyword
 parameters:
 
 [cols=",,",options="header",]
@@ -383,6 +482,11 @@ parameters:
 |`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 bar by the specified amount
 |=======================================================================
+
+NOTE: The effects of these parameters are discussed in more depth, and
+illustrated with graphs, in the documentation for the Sawtooth Wave
+oscillator. You can jump to those sections using the links in the
+_Purpose_ section of the table.
 
 [source,clojure]
 ----
@@ -396,7 +500,11 @@ the value will be 0.0 and beginning to rise slowly, picking up speed as
 it goes, and slowing down again as it approaches the midpoint. At the
 midpoint, the value will reach 1.0 and begin falling slowly, again
 picking up speed, and at the end of the phrase it will have returned to
-0.0. You can change the nature of the wave by using optional keyword
+0.0.
+
+image:assets/sine-phrase.png[Default Sine Phrase Oscillator]
+
+You can change the nature of the wave by using optional keyword
 parameters:
 
 [cols=",,",options="header",]
@@ -408,6 +516,11 @@ parameters:
 |`:phase` |0.0 |<<phase-shifting,Offsets>> the oscillator from the
 phrase by the specified amount
 |=======================================================================
+
+NOTE: The effects of these parameters are discussed in more depth, and
+illustrated with graphs, in the documentation for the Sawtooth Wave
+oscillator. You can jump to those sections using the links in the
+_Purpose_ section of the table.
 
 ## License
 
