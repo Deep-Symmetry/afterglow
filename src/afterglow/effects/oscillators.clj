@@ -252,7 +252,8 @@
   (let [adjusted-phase (- phase 0.25)
         two-pi (* 2.0 Math/PI)]
     (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-      (+ 0.5 (* 0.5 (Math/sin (* two-pi (adjust-phase (rhythm/snapshot-bar-phase snapshot bar-ratio) adjusted-phase))))))))
+      (+ 0.5 (* 0.5 (Math/sin (* two-pi (adjust-phase (rhythm/snapshot-bar-phase snapshot bar-ratio)
+                                                      adjusted-phase))))))))
 
 (defn sine-phrase
   "Returns an oscillator which generates a sine wave relative to the
@@ -269,4 +270,5 @@
   (let [adjusted-phase (- phase 0.25)
         two-pi (* 2.0 Math/PI)]
     (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-      (+ 0.5 (* 0.5 (Math/sin (* two-pi (adjust-phase (rhythm/snapshot-phrase-phase snapshot phrase-ratio) adjusted-phase))))))))
+      (+ 0.5 (* 0.5 (Math/sin (* two-pi (adjust-phase (rhythm/snapshot-phrase-phase snapshot phrase-ratio)
+                                                      adjusted-phase))))))))
