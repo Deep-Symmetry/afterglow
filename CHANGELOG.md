@@ -6,7 +6,14 @@ This change log follows the conventions of
 
 ## [Unreleased][unreleased]
 
-Nothing so far.
+### Added
+
+- Links to graphs and expanded discussion in the oscillator API docs.
+
+### Fixed
+
+- Some of the oscillator API docs had incorrect details left over from
+  earlier versions of the code.
 
 ## [0.1.5] - 2015-01-25
 
