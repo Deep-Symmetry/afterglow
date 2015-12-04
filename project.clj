@@ -19,10 +19,11 @@
                  [overtone/at-at "1.2.0"]
                  [overtone/midi-clj "0.5.0"]
                  [overtone/osc-clj "0.9.0"]
-                 [amalloy/ring-buffer "1.2" :exclusions [org.clojure/tools.reader]]
+                 [amalloy/ring-buffer "1.2" :exclusions [org.clojure/tools.reader
+                                                         com.google.protobuf/protobuf-java]]
                  [com.climate/claypoole "1.1.0"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
-                 [ola-clojure "0.1.2"]
+                 [ola-clojure "0.1.3-SNAPSHOT"]
                  [selmer "0.9.5"]
                  [com.evocomputing/colors "1.0.3"]
                  [environ "1.0.1"]
