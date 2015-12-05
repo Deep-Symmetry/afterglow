@@ -9,6 +9,8 @@ This change log follows the conventions of
 ### Added
 
 - Links to graphs and expanded discussion in the oscillator API docs.
+- Dimmer effects can now work with dimmer function ranges on
+  multipurpose channels as well as full dedicated dimmer channels.
 
 ### Fixed
 

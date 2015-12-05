@@ -56,6 +56,15 @@
   (let [heads (channels/extract-heads-with-some-matching-channel fixtures dimmer-channel?)]
     (channels/extract-channels heads dimmer-channel?)))
 
+(defn- gather-partial-dimmer-function-heads
+  "Find all heads in the supplied fixture list which contain
+  multipurpose channels that are partially used for dimming,
+  rather than full dedicated dimmer channels."
+  [fixtures]
+  (filter #(when-let [dimmer (:dimmer (:function-map %))]
+             (not= :dimmer (:type (first dimmer))))
+          (channels/expand-heads fixtures)))
+
 (defonce
   ^{:private true
     :doc "Protect protocols against namespace reloads"}
@@ -103,22 +112,36 @@
 
 (defn- build-parameterized-dimmer-effect
   "Returns an effect which assigns a dynamic value to all the supplied
-  dimmers. If htp? is true, applies highest-takes-precedence (i.e.
-  compares the value to the previous assignment for the channel, and
-  lets the highest value remain). All dimmer cues are associated with
-  a master chain which can scale down the values to which they are set.
-  If none is supplied when creating the dimmer cue, the show's grand
-  master is used."
-  [name level show channels htp? master]
+  dimmers (which are broken into two lists: full dedicated dimmer
+  channels, and heads that have a dimmer function on a multipurpose
+  channel).
+
+  If `htp?` is true, applies highest-takes-precedence (i.e. compares
+  the value to the previous assignment for the channel, and lets the
+  highest value remain).
+
+  All dimmer cues are associated with a master chain which can scale
+  down the values to which they are set. If none is supplied when
+  creating the dimmer cue, the show's grand master is used."
+  {:doc/format :markdown}
+  [name level show full-channels function-heads htp? master]
   (params/validate-param-type master Master)
-  (let [f (if htp?
-            (fn [show snapshot target previous-assignment]
-              (clamp-rgb-int (max (master-scale master (params/resolve-param level show snapshot))
-                                  (or previous-assignment 0))))
-            (fn [show snapshot target previous-assignment]
-              (clamp-rgb-int (master-scale master (params/resolve-param level show snapshot)))))
-        assigners (chan-fx/build-raw-channel-assigners channels f)]
-    (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
+  (let [full-f (if htp?  ; Assignment function for dedicated dimmer channels
+                 (fn [show snapshot target previous-assignment]
+                   (clamp-rgb-int (max (master-scale master (params/resolve-param level show snapshot))
+                                       (or previous-assignment 0))))
+                 (fn [show snapshot target previous-assignment]
+                   (clamp-rgb-int (master-scale master (params/resolve-param level show snapshot)))))
+        full-assigners (chan-fx/build-raw-channel-assigners full-channels full-f)
+        func-f (if htp?  ; Assignment function for dimmer functions on multipurpose channels
+                 ;; We must scale dimmer level from 0-255 to 0-100, since function effects use percentages.
+                 (fn [show snapshot target previous-assignment]
+                   (max (/ (master-scale master (params/resolve-param level show snapshot)) 2.55)
+                        (or previous-assignment 0)))
+                 (fn [show snapshot target previous-assignment]
+                   (/ (master-scale master (params/resolve-param level show snapshot)) 2.55)))
+        func-assigners (chan-fx/build-head-function-assigners :dimmer function-heads func-f)]
+    (Effect. name always-active (fn [show snapshot] (concat full-assigners func-assigners)) end-immediately)))
 
 (defn dimmer-effect
   "Returns an effect which assigns a dynamic value to all the supplied
@@ -128,17 +151,25 @@
 
   All dimmer cues are associated with a [[master]] chain which can
   scale down the values to which they are set. If none is supplied
-  when creating the dimmer cue, the show's grand master is used."
+  when creating the dimmer cue, the show's grand master is used.
+
+  Dimmers are either a channel fully dedicated to dimming, identified
+  by the channel `:type` of `:dimmer`, or a dimmer function range
+  defined over only part of a multi-purpose channel, where the
+  function `:type` is `:dimmer`, and the channel `:type` must be
+  something else. A single head cannot have both types of dimmer,
+  since a function can only exist on one channel in a given head."
   {:doc/format :markdown}
   [level fixtures & {:keys [htp? master effect-name] :or {htp? true master (:grand-master *show*)}}]
   {:pre [(some? *show*)]}
   (let [level (params/bind-keyword-param level Number 255)
         master (params/bind-keyword-param master Master (:grand-master *show*))]
-    (let [dimmers (gather-dimmer-channels fixtures)
+    (let [full-channels (gather-dimmer-channels fixtures)
+          function-heads (gather-partial-dimmer-function-heads fixtures)
           snapshot (metro-snapshot (:metronome *show*))
           level (params/resolve-unless-frame-dynamic level *show* snapshot)
           master (params/resolve-param master *show* snapshot)  ; Can resolve now; value is inherently static.
           label (if (satisfies? params/IParam level) "<dynamic>" level)]
       (build-parameterized-dimmer-effect (or effect-name (str "Dimmers=" label (when htp?) " (HTP)"))
-                                         level *show* dimmers htp? master))))
+                                         level *show* full-channels function-heads htp? master))))
 
