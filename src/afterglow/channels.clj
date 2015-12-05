@@ -62,8 +62,7 @@
   including those used by any fixture heads."
   [fixtures]
   (mapcat #(vals (select-keys % [:address :fine-address]))
-          (mapcat :channels (afterglow.channels/expand-heads fixtures))))
-
+          (mapcat :channels (expand-heads fixtures))))
 
 (defn extract-heads-with-some-matching-channel
   "Given a fixture list, returns all heads (which may be top-level fixtures too)
