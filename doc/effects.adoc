@@ -328,7 +328,7 @@ adding the following effect:
 ----
 (show/add-effect! :gobo-fixed
   (afterglow.effects.channel/function-effect "Brownian motion?"
-    :gobo-fixed-atom-shake 100 (show/fixtures-named "torrent")))
+    :gobo-fixed-atom-shake 50 (show/fixtures-named "torrent")))
 ----
 
 Depending on how far away the projection is landing, it may be very
