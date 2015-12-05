@@ -936,7 +936,13 @@ yours.
 |Controls the overall brightness of the fixture or head, independent
  of any color intensity channels which might also affect it. This is
  also a fundamental channel type in Afterglow, and has a category of
- <<effects#dimmer-effects,Dimmer Effects>> to work with it.
+ <<effects#dimmer-effects,Dimmer Effects>> to work with it. Dimmer
+ effects can work with either fully dedicated dimmer channels (in
+ which case the channel itself has a `:type` of `:dimmer`, and the
+ entire DMX range is used for dimming), or multipurpose channels in
+ which a subset of the DMX range is assigned to a function of type
+ `:dimmer`, and the channel `:type` is something else (like
+ `:control`, as suggested below).
 
 |:red
 :green

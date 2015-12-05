@@ -73,13 +73,20 @@ an effect that will set the dimmer level of a fixture, use:
 (afterglow.effects.dimmer/dimmer-effect level fixtures)
 ----
 
-This effect finds all the dimmer channels associated with the specified
-fixtures (there may be multiple, if the fixture has more than one
-light-emitting head), and assigns them a level. 0 is off, 255 is maximum
-brightness. If `htp?` is true, uses highest-takes-precedence rules when
-replacing any earlier or lower-priority effects which attempted to set
-this particular dimmer in the current rendering cycle. In other words,
-if an earlier effect chose a higher value, let it win, otherwise use the
+This effect finds all the dimmer channels associated with the
+specified fixtures (there may be multiple, if the fixture has more
+than one light-emitting head), and assigns them a level. 0 is off, 255
+is maximum brightness. Dimmer effects can work with either fully
+dedicated dimmer channels (in which case the channel itself has a
+`:type` of `:dimmer`, and the entire DMX range is used for dimming),
+or multipurpose channels in which a subset of the DMX range is
+assigned to a function of type `:dimmer`, and the channel `:type` is
+something else.
+
+If `htp?` is true, uses highest-takes-precedence rules when replacing
+any earlier or lower-priority effects which attempted to set this
+particular dimmer in the current rendering cycle. In other words, if
+an earlier effect chose a higher value, let it win, otherwise use the
 value this effect wants.
 
 The
