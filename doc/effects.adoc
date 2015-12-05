@@ -298,9 +298,10 @@ especially when it does not make sense to activate or control some at
 the same time. Afterglow can be told about these in the
 <<fixture_definitions#fixture-definitions,fixture definition>>, and
 you can control them using function effects, by specifying the name of
-the function you want to activate, and a percentage by which you want
-it activated (representing the value within that function’s valid DMX
-range that you want Afterglow to send).
+the function you want to activate, and a _percentage_ (a value between
+`0` and `100`) by which you want it activated. (The percentage will be
+translated to the corresponding value within that function’s valid DMX
+range that Afterglow should send).
 
 For example, many fixtures have a strobe function, which causes them to
 flash off and on at a particular speed. The following line shows how to
