@@ -372,7 +372,7 @@
 (defn metronome
   "A metronome is a beat management tool. Tell it what BPM you want,
   and it will compute beat, bar, and phrase timestamps accordingly.
-  See the IMetronome interface for full details."
+  See the [[IMetronome]] interface for full details."
   [bpm & {:keys [bpb bpp] :or {bpb 4 bpp 8}}]
   (let [start (ref (now))
         bpm (ref bpm)
