@@ -157,25 +157,6 @@
                       (fun/sparkle (show/all-fixtures) :color sparkle-color-param
                                    :chance :sparkle-chance :fade-time :sparkle-fade))))
 
-(defn test-phases
-  "This is for testing the enhanced multi-beat and fractional-beat
-  phase calculations I am implementing; it should probably more
-  somewhere else, or just go away once there are example effects
-  successfully using these."
-  {:deprecated "0.1.1"}
-  ([]
-   (test-phases 20))
-  ([iterations]
-   (dotimes [n iterations]
-     (let [snap (rhythm/metro-snapshot (:metronome *show*))]
-       (println
-        (format "Beat %4d (phase %.3f) bar %4d (phase %.3f) 1:%.3f, 2:%.3f, 4:%.3f, 1/2:%.3f, 1/4:%.3f, 3/4:%.3f"
-                (:beat snap) (:beat-phase snap) (:bar snap) (:bar-phase snap)
-                (rhythm/snapshot-beat-phase snap 1) (rhythm/snapshot-beat-phase snap 2)
-                (rhythm/snapshot-beat-phase snap 4) (rhythm/snapshot-beat-phase snap 1/2)
-                (rhythm/snapshot-beat-phase snap 1/4) (rhythm/snapshot-beat-phase snap 3/4)))
-       (Thread/sleep 33)))))
-
 ;; Temporary for working on light aiming code
 
 (defn add-pan-tilt-controls
