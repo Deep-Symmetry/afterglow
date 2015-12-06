@@ -64,10 +64,8 @@
                    :env {:dev true}}
              :uberjar {:env {:production true}
                        :aot :all}}
-  :plugins [[codox "0.8.13"]
+  :plugins [[lein-codox "0.9.0"]
             [lein-environ "1.0.1"]]
 
-  :codox {:src-dir-uri "http://github.com/brunchboy/afterglow/blob/master/"
-          :src-linenum-anchor-prefix "L"
-          :output-dir "target/doc"}
+  :codox {:source-uri "http://github.com/brunchboy/afterglow/blob/master/{filepath}#L{line}"}
   :min-lein-version "2.0.0")
