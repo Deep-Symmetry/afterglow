@@ -16,6 +16,12 @@ This change log follows the conventions of
 
 - Some of the oscillator API docs had incorrect details left over from
   earlier versions of the code.
+- A variety of issues ranging from questionable style through misplaced
+  documentation, unused or inaccessible code, preconditions that would
+  not take effect, and actual problems, were identified by Kibit and
+  Eastwood (after discovering how to work around a crash in Eastwood
+  caused by the protocol definitions in `rhythm.clj`), were cleaned
+  up.
 
 ## [0.1.5] - 2015-01-25
 
