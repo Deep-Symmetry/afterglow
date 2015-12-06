@@ -65,8 +65,7 @@
              :uberjar {:env {:production true}
                        :aot :all}}
   :plugins [[codox "0.8.13"]
-            [lein-environ "1.0.1"]
-            [lein-ancient "0.6.7"]]
+            [lein-environ "1.0.1"]]
 
   :codox {:src-dir-uri "http://github.com/brunchboy/afterglow/blob/master/"
           :src-linenum-anchor-prefix "L"
