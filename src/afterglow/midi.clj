@@ -255,8 +255,7 @@
   []
   (if (and (mac?) (mmj-installed?))
     (fn [device]
-      (let [mmj-descriptions (set (map :description (filter #(mmj-device? %)
-                                                            (overtone.midi/midi-sources))))]
+      (let [mmj-descriptions (set (map :description (filter mmj-device? (overtone.midi/midi-sources))))]
         (or (mmj-device? device)
             ;; MMJ returns devices whose descriptions match the names of the
             ;; broken devices returned by the broken Java MIDI implementation.
