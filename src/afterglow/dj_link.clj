@@ -123,14 +123,15 @@
                (-> current
                    (assoc :socket socket)
                    (assoc :watcher
-                          (future (while true
+                          (future (loop []
                                     (let [packet (receive socket)
                                           data (.getData packet)]
                                       ;; Check packet length
                                       ;; TODO: Check header bytes, perhaps use Protobuf for this?
                                       (when (= 96 (.getLength packet))
                                         (update-known-sources packet data)
-                                        (update-synced-metronomes packet data))))))))))
+                                        (update-synced-metronomes packet data)))
+                                    (recur))))))))
     (catch Exception e
       (timbre/warn e "Failed while trying to set up DJ-Link reception.")
       (shut-down))))
