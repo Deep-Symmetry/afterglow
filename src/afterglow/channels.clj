@@ -18,11 +18,16 @@
   [offset]
   {:offset offset})
 
-(defn- assign-channel [universe start-address raw-channel]
+(defn- assign-channel
+  "Given a universe and DMX address at which a fixture is being
+  patched, and a raw channel description from the fixture definition,
+  calculate and assign the channel's actual DMX address and universe
+  that it will have in a show."
+  [universe start-address raw-channel]
   (cond-> raw-channel
-    true (assoc :address (+ (:offset raw-channel) (dec start-address))
-                :index (+ (dec (:offset raw-channel)) (dec start-address))
-                :universe universe)
+    (:offset raw-channel) (assoc :address (+ (:offset raw-channel) (dec start-address))
+                                 :index (+ (dec (:offset raw-channel)) (dec start-address))
+                                 :universe universe)
     (:fine-offset raw-channel) (assoc :fine-address (+ (:fine-offset raw-channel) (dec start-address))
                                       :fine-index (+ (dec (:fine-offset raw-channel)) (dec start-address)))))
 
