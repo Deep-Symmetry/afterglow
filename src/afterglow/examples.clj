@@ -449,21 +449,21 @@
                                                            (params/bind-keyword-param (:level var-map 255) Number 255)
                                                            (show/fixtures-named "torrent")
                                                            :effect-name "Torrent Dimmers"))
-                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
                            :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 2 2
                  (cues/cue :blade-dimmers (fn [var-map] (dimmer-effect
                                                          (params/bind-keyword-param (:level var-map 255) Number 255)
                                                          (show/fixtures-named "blade")
                                                          :effect-name "Blade Dimmers"))
-                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
                            :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 3 2
                  (cues/cue :ws-dimmers (fn [var-map] (dimmer-effect
                                                       (params/bind-keyword-param (:level var-map 255) Number 255)
                                                       (show/fixtures-named "ws")
                                                       :effect-name "Weather System Dimmers"))
-                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
                            :color :orange :end-keys [:dimmers]))
 
     (ct/set-cue! (:cue-grid *show*) 4 2
@@ -471,28 +471,28 @@
                                                        (params/bind-keyword-param (:level var-map 255) Number 255)
                                                        (show/fixtures-named "hex")
                                                        :effect-name "Hex Dimmers"))
-                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
                            :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 5 2
                  (cues/cue :puck-dimmers (fn [var-map] (dimmer-effect
                                                         (params/bind-keyword-param (:level var-map 255) Number 255)
                                                         (show/fixtures-named "puck")
                                                         :effect-name "Puck Dimmers"))
-                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
                            :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 6 2
                  (cues/cue :snowball-dimmers (fn [var-map] (dimmer-effect
                                                             (params/bind-keyword-param (:level var-map 255) Number 255)
                                                             (show/fixtures-named "snowball")
                                                             :effect-name "Snowball Dimmers"))
-                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
                            :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 7 2
                  (cues/cue :torrent-1-dimmer (fn [var-map] (dimmer-effect
                                                             (params/bind-keyword-param (:level var-map 255) Number 255)
                                                             (show/fixtures-named "torrent-1")
                                                             :effect-name "Torrent 1 Dimmer"))
-                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
                            :color :orange :end-keys [:dimmers :torrent-dimmers]))
 
     ;; Dimmer oscillator cues: Sawtooth down each beat

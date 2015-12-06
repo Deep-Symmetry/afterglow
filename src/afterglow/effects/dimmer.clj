@@ -170,6 +170,6 @@
           level (params/resolve-unless-frame-dynamic level *show* snapshot)
           master (params/resolve-param master *show* snapshot)  ; Can resolve now; value is inherently static.
           label (if (satisfies? params/IParam level) "<dynamic>" level)]
-      (build-parameterized-dimmer-effect (or effect-name (str "Dimmers=" label (when htp?) " (HTP)"))
+      (build-parameterized-dimmer-effect (or effect-name (str "Dimmers=" label (when htp? " (HTP)")))
                                          level *show* full-channels function-heads htp? master))))
 

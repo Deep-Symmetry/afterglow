@@ -242,10 +242,10 @@
   (let [last-info (get @clients page-id)
         last-states (:button-states last-info)
         next-states (button-states (:show last-info) left bottom width height)
-        changes (filter identity (for [[key _] next-states]
-                                   (when (not= (key last-states) (key next-states))
-                                     {:id (name key)
-                                      :disabled (not (key next-states))})))]
+        changes (filter identity (for [[k _] next-states]
+                                   (when (not= (k last-states) (k next-states))
+                                     {:id (name k)
+                                      :disabled (not (k next-states))})))]
     (swap! clients update-in [page-id] assoc :button-states next-states)
     (when (seq changes) {:button-changes changes})))
 
@@ -270,17 +270,17 @@
   (let [last-info (get @clients page-id)
         last-states (:metronome last-info)
         next-states (metronome-states (:show last-info) last-states)
-        changes (filter identity (for [[key val] next-states]
-                                   (when (not= (key last-states) (key next-states))
-                                     {:id (name key) :val val})))]
+        changes (filter identity (for [[k v] next-states]
+                                   (when (not= (k last-states) (k next-states))
+                                     {:id (name k) :val v})))]
     (swap! clients update-in [page-id] assoc :metronome next-states)
     (when (seq changes) {:metronome-changes changes})))
 
 (defn- name-for-sync-sorting
   "Sort entries in the sync selection menu first by name, then if that
   is not unique, by player number if there is one."
-  [val]
-  (str (:name val) (:player val)))
+  [v]
+  (str (:name v) (:player v)))
 
 (defn- build-sync-list
   "Builds a list of sync sources of a particular type for constructing
@@ -371,10 +371,11 @@
       (swap! clients dissoc k)))
   (get @clients page-id))
 
-(defn get-ui-updates [id]
+(defn get-ui-updates
   "Route which delivers any changes which need to be applied to a show
   web interface to reflect differences in the current show state
   compared to when it was last updated."
+  [id]
   (try
     (let [page-id(Integer/valueOf id)]
       (if-let [last-info (find-page-in-cache page-id)]

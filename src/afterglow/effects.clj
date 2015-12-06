@@ -159,7 +159,7 @@
                (seq @active))
              (fn [show snapshot] (mapcat #(generate % show snapshot) @active))
              (fn [show snapshot]
-               (swap! active (fn [fx] () (filterv #(not (end % show snapshot)) fx)))
+               (swap! active (fn [fx] (filterv #(not (end % show snapshot)) fx)))
                (empty? @active)))))
 
 (defonce ^{:private true

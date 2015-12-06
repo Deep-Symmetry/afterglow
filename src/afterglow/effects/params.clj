@@ -381,11 +381,11 @@
                               (cond
                                 (< phase fade-in)
                                 (let [fade-phase (/ phase fade-in)]
-                                  (+ base (/ (dec (Math/cos (+ (* Math/PI (+ (/ fade-phase 2) 1.5))))) 2)))
+                                  (+ base (/ (dec (Math/cos (* Math/PI (+ (/ fade-phase 2) 1.5)))) 2)))
 
                                 (> phase fade-out)
                                 (let [fade-phase (/ (- phase fade-out) fade-in)]
-                                  (+ base (/ (inc (Math/cos (+ (* Math/PI (inc (/ fade-phase 2)))))) 2)))
+                                  (+ base (/ (inc (Math/cos (* Math/PI (inc (/ fade-phase 2))))) 2)))
                                 
                                 :else
                                 base))
@@ -884,7 +884,7 @@
         min (or min 0)
         max (or max 255)
         target-range (math/abs (- min max))]
-    (doseq [v (vals results)] check-type v Number "spatial-param function result")
+    (doseq [v (vals results)] (check-type v Number "spatial-param function result"))
     (let [dyn (if (= :default frame-dynamic)
                 ;; Default means results of head function control how dynamic to be
                 (boolean (some frame-dynamic-param? (vals results)))

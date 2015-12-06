@@ -247,7 +247,7 @@
                  (cues/cue :dimmers (fn [var-map] (global-dimmer-effect
                                                    (params/bind-keyword-param (:level var-map 255) Number 255)
                                                    :effect-name "All Dimmers"))
-                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
                            :color :yellow :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
                                                      :puck-dimmers :hex-dimmers :snowball-dimmers]))
     (ct/set-cue! (:cue-grid *show*) 1 2
@@ -255,7 +255,7 @@
                                                       (params/bind-keyword-param (:level var-map 255) Number 255)
                                                       (show/fixtures-named "ws")
                                                       :effect-name "Weather System Dimmers"))
-                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
                            :color :orange :end-keys [:dimmers]))
 
     (ct/set-cue! (:cue-grid *show*) 2 2
@@ -263,14 +263,14 @@
                                                        (params/bind-keyword-param (:level var-map 255) Number 255)
                                                        (show/fixtures-named "hex")
                                                        :effect-name "Hex Dimmers"))
-                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
                            :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 3 2
                  (cues/cue :snowball-dimmers (fn [var-map] (dimmer-effect
                                                             (params/bind-keyword-param (:level var-map 255) Number 255)
                                                             (show/fixtures-named "snowball")
                                                             :effect-name "Snowball Dimmers"))
-                           :variables [(merge {:key "level" :min 0 :max 255 :start 255 :name "Level"})]
+                           :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
                            :color :orange :end-keys [:dimmers]))
 
     ;; Dimmer oscillator cues: Sawtooth down each beat

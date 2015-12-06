@@ -342,7 +342,7 @@
   least-significant byte with `:fine-offset`."
   {:doc/format :markdown}
   [offset color & {:keys [hue function-label fine-offset]}]
-  {:pre (some? color)}
+  {:pre [(some? color)]}
   (let [color (keyword color)]
     (-> (fine-channel :color offset :fine-offset fine-offset
                       :function-type color :function-label (or function-label (clojure.string/capitalize (name color))))
