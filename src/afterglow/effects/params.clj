@@ -381,11 +381,11 @@
                               (cond
                                 (< phase fade-in)
                                 (let [fade-phase (/ phase fade-in)]
-                                  (+ base (/ (- (Math/cos (+ (* Math/PI (+ (/ fade-phase 2) 1.5)))) 1) 2)))
+                                  (+ base (/ (dec (Math/cos (+ (* Math/PI (+ (/ fade-phase 2) 1.5))))) 2)))
 
                                 (> phase fade-out)
                                 (let [fade-phase (/ (- phase fade-out) fade-in)]
-                                  (+ base (/ (+ (Math/cos (+ (* Math/PI (inc (/ fade-phase 2))))) 1) 2)))
+                                  (+ base (/ (inc (Math/cos (+ (* Math/PI (inc (/ fade-phase 2)))))) 2)))
                                 
                                 :else
                                 base))
