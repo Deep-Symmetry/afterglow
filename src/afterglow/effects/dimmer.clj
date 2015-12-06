@@ -24,8 +24,7 @@
   dimmer channels as a maximum brightness level to allow tweaking the
   overall brightness of an effect, and using the lightness attribute
   of a color cue to create time-varying brightness effects."
-  {:author "James Elliott"
-   :doc/format :markdown}
+  {:author "James Elliott"}
   (:require [afterglow.channels :as channels]
             [afterglow.effects.channel :as chan-fx]
             [afterglow.effects.params :as params]
@@ -123,7 +122,6 @@
   All dimmer cues are associated with a master chain which can scale
   down the values to which they are set. If none is supplied when
   creating the dimmer cue, the show's grand master is used."
-  {:doc/format :markdown}
   [name level show full-channels function-heads htp? master]
   (params/validate-param-type master Master)
   (let [full-f (if htp?  ; Assignment function for dedicated dimmer channels
@@ -159,7 +157,6 @@
   function `:type` is `:dimmer`, and the channel `:type` must be
   something else. A single head cannot have both types of dimmer,
   since a function can only exist on one channel in a given head."
-  {:doc/format :markdown}
   [level fixtures & {:keys [htp? master effect-name] :or {htp? true master (:grand-master *show*)}}]
   {:pre [(some? *show*)]}
   (let [level (params/bind-keyword-param level Number 255)

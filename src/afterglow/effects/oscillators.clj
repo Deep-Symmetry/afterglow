@@ -19,7 +19,6 @@
   that amount. (See the
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#sawtooth-oscillators)
   for an expanded explanation illustrated with graphs.)"
-  {:doc/format :markdown}
   [& {:keys [down? beat-ratio phase] :or {down? false beat-ratio 1 phase 0.0}}]
   (cond (and (= beat-ratio 1) (= phase 0.0)) ; Simplest case; maybe no calculation
         (if down?
@@ -51,7 +50,6 @@
   from the underlying metronome phase by that amount. (See the
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#sawtooth-oscillators)
   for an expanded explanation illustrated with graphs.)"
-  {:doc/format :markdown}
   [& {:keys [down? bar-ratio phase] :or {down? false bar-ratio 1 phase 0.0}}]
   (cond (and (= bar-ratio 1) (= phase 0.0))  ; Simplest case, maybe no calculation
         (if down?
@@ -83,7 +81,6 @@
   oscillator from the underlying metronome phase by that amount. (See the
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#sawtooth-oscillators)
   for an expanded explanation illustrated with graphs.)"
-  {:doc/format :markdown}
   [& {:keys [down? phrase-ratio phase] :or {down? false phrase-ratio 1 phase 0.0}}]
   (cond (and (= phrase-ratio 1) (= phase 0.0))  ; Simplest case, maybe no calculation
         (if down?
@@ -114,7 +111,6 @@
   underlying metronome phase by that amount. (See the
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#triangle-oscillators)
   for an expanded explanation illustrated with graphs.)"
-  {:doc/format :markdown}
   [& {:keys [beat-ratio phase] :or {beat-ratio 1 phase 0.0}}]
   (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
     (let [reached (adjust-phase (rhythm/snapshot-beat-phase snapshot beat-ratio) phase)]
@@ -130,7 +126,6 @@
   underlying metronome phase by that amount. (See the
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#triangle-oscillators)
   for an expanded explanation illustrated with graphs.)"
-  {:doc/format :markdown}
   [& {:keys [bar-ratio phase] :or {bar-ratio 1 phase 0.0}}]
   (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
     (let [reached (adjust-phase (rhythm/snapshot-bar-phase snapshot bar-ratio) phase)]
@@ -146,7 +141,6 @@
   oscillator from the underlying metronome phase by that amount. (See the
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#triangle-oscillators)
   for an expanded explanation illustrated with graphs.)"
-  {:doc/format :markdown}
   [& {:keys [phrase-ratio phase] :or {phrase-ratio 1 phase 0.0}}]
   (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
     (let [reached (adjust-phase (rhythm/snapshot-phrase-phase snapshot phrase-ratio) phase)]
@@ -166,7 +160,6 @@
   that amount. (See the
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#square-oscillators)
   for an expanded explanation illustrated with graphs.)"
-  {:doc/format :markdown}
   [& {:keys [width beat-ratio phase] :or {width 0.5 beat-ratio 1 phase 0.0}}]
   (when-not (and (> width 0.0) (< width 1.0))
     (throw (IllegalArgumentException. "width must fall between 0.0 and 1.0")))
@@ -188,7 +181,6 @@
   that amount. (See the
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#square-oscillators)
   for an expanded explanation illustrated with graphs.)"
-  {:doc/format :markdown}
   [& {:keys [width bar-ratio phase] :or {width 0.5 bar-ratio 1 phase 0.0}}]
   (when-not (and (> width 0.0) (< width 1.0))
     (throw (IllegalArgumentException. "width must fall between 0.0 and 1.0")))
@@ -210,7 +202,6 @@
   metronome phase by that amount. (See the
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#square-oscillators)
   for an expanded explanation illustrated with graphs.)"
-  {:doc/format :markdown}
   [& {:keys [width phrase-ratio phase] :or {width 0.5 phrase-ratio 1 phase 0.0}}]
   (when-not (and (> width 0.0) (< width 1.0))
     (throw (IllegalArgumentException. "width must fall between 0.0 and 1.0")))
@@ -230,7 +221,6 @@
   (See the
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#sine-oscillators)
   for an expanded explanation illustrated with graphs.)"
-  {:doc/format :markdown}
   [& {:keys [beat-ratio phase] :or {beat-ratio 1 phase 0.0}}]
   (let [adjusted-phase (- phase 0.25)
         two-pi (* 2.0 Math/PI)]
@@ -247,7 +237,6 @@
   amount. (See the
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#sine-oscillators)
   for an expanded explanation illustrated with graphs.)"
-  {:doc/format :markdown}
   [& {:keys [bar-ratio phase] :or {bar-ratio 1 phase 0.0}}]
   (let [adjusted-phase (- phase 0.25)
         two-pi (* 2.0 Math/PI)]
@@ -265,7 +254,6 @@
   phase by that amount. (See the
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#sine-oscillators)
   for an expanded explanation illustrated with graphs.)"
-  {:doc/format :markdown}
   [& {:keys [phrase-ratio phase] :or {phrase-ratio 1 phase 0.0}}]
   (let [adjusted-phase (- phase 0.25)
         two-pi (* 2.0 Math/PI)]

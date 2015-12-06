@@ -1,6 +1,6 @@
 (ns afterglow.fixtures.chauvet
   "Models for fixtures provided by [Chauvet Lighting](http://www.chauvetlighting.com)."
-  {:doc/format :markdown}
+  {:author "James Elliott"}
   (:require [afterglow.channels :as chan]
             [afterglow.effects.channel :as chan-fx]
             [afterglow.fixtures.qxf :refer [sanitize-name]]))
@@ -9,7 +9,6 @@
   "Build a list of gobo wheel function entries. If `shake?` is `true`,
   they are a variable range which sets the shake speed. The individual
   gobo names are in `names`."
-  {:doc/format :markdown}
   [shake? names]
   (map (fn [entry]
          (let [label (str "Gobo " entry (when shake? " shake"))
@@ -31,7 +30,6 @@
   using Q Light Controller version 3.1.0.
 
   QLC+ Fixture Type: Color Changer."
-  {:doc/format :markdown}
   []
   {:channels [(chan/functions :control 1
                               0 "Blackout"
@@ -54,7 +52,6 @@
 
 (defn geyser-rgb
   "[Geyser RGB](http://www.chauvetlighting.com/geyser-rgb.html) illuminated effect fogger."
-  {:doc/format :markdown}
   []
   {:channels [(chan/functions :fog 1
                               0 nil
@@ -76,7 +73,6 @@
 
 (defn hurricane-1800-flex
   "[Hurricane 1800 Flex](http://www.chauvetlighting.com/hurricane-1800-flex.html) fogger."
-  {:doc/format :markdown}
   []
   {:channels [(chan/functions :fog 1
                               0 nil
@@ -102,7 +98,6 @@
   using Q Light Controller Plus version 4.7.0 GIT.
 
   QLC+ Fixture Type: Scanner."
-  {:doc/format :markdown}
   ([]
    (intimidator-scan-led-300 :11-channel))
   ([mode]
@@ -238,7 +233,6 @@
   using Q Light Controller Plus version 4.8.3 GIT.
 
   QLC+ Fixture Type: Moving Head."
-  {:doc/format :markdown}
   ([]
    (intimidator-spot-led-150 :11-channel))
   ([mode]
@@ -335,8 +329,6 @@
 
 (defn kinta-x
   "[Kinta X](http://www.chauvetlighting.com/kinta-x.html) derby effect."
-  {:doc/format :markdown
-   :author "James Elliott"}
   []
   {:channels [(chan/functions :control 1
                               0 "LEDs off"
@@ -352,8 +344,6 @@
 (defn led-techno-strobe
   "[LED Techno Strobe](http://www.chauvetlighting.com/led-techno-strobe.html)
   strobe light."
-  {:doc/format :markdown
-   :author "James Elliott"}
   []
   {:channels [(chan/functions :control 1
                               0 "Intensity Control"
@@ -375,7 +365,6 @@
   using Q Light Controller Plus version 4.6.0.
 
   QLC+ Fixture Type: Color Changer."
-  {:doc/format :markdown}
   []
   {:channels [(chan/functions :control 1
                               0 "RGB Control"
@@ -410,7 +399,6 @@
   using Q Light Controller Plus version 5.0.0 GIT.
 
   QLC+ Fixture Type: Laser."
-  {:doc/format :markdown}
   ([]
    (scorpion-storm-fx-rgb :7-channel))
   ([mode]
@@ -491,7 +479,6 @@
 (defn scorpion-storm-rgx
   "[Scorpion Storm RGX](http://www.chauvetlighting.com/products/manuals/Scorpion_Storm_RGX_UM_Rev03_WO.pdf)
   grid effect laser."
-  {:doc/format :markdown}
   []
   {:channels [(chan/functions :control 1
                                        0 "DMX Mode"
@@ -538,7 +525,6 @@
   The standard hanging orientation is with the Chauvet label and LED
   panel upside-down and facing the house-right wall (the positive X
   axis direction)."
-  {:doc/format :markdown}
   ([]
    (q-spot-160 :12-channel))
   ([mode]
@@ -641,8 +627,6 @@
   channels are mixed in when creating colors by passing a boolean
   value with `:mix-amber` and `:mix-uv`. The default for each is
   `true`."
-  {:doc/format :markdown
-   :author "James Elliott"}
   ([]
    (slimpar-hex3-irc :12-channel))
   ([mode & {:keys [mix-amber mix-uv] :or {mix-amber true mix-uv true}}]

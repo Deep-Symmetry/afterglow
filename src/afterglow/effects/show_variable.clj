@@ -2,7 +2,7 @@
   "Virtual effects which set a value in a show variable while they
   are running. Pair well with [[conditional-effect]] to modify the
   behavior of scenes based on the activation of other cues."
-  {:author "James Elliott", :doc/format :markdown}
+  {:author "James Elliott"}
   (:require [afterglow.controllers :as controllers]
             [afterglow.effects :as fx]
             [afterglow.effects.params :as params]
@@ -77,7 +77,6 @@
   match the parameter passed in, and restores its original value when
   ended. Often combined with [[conditional-effect]] to enable
   cross-effect relationships."
-  {:doc/format :markdown}
   [binding k v]
   (Effect. (str "Set " (name k))
            fx/always-active

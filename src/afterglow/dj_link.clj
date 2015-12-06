@@ -238,7 +238,6 @@
   matching anywhere in the source name. This method is intended for
   use with
   [[show/sync-to-external-clock]]."
-  {:doc/format :markdown}
   [dj-link-source]
   (fn [^afterglow.rhythm.Metronome metronome]
     (let [source (if (map? dj-link-source)

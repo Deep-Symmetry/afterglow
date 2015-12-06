@@ -18,7 +18,7 @@
   All effects are assigned a keyword when they are added, and adding a
   new effect with the same key as an existing effect will replace the
   former one."
-  {:author "James Elliott", :doc/format :markdown}
+  {:author "James Elliott"}
   (:require [afterglow.channels :as chan]
             [afterglow.controllers :as controllers]
             [afterglow.effects :as fx]
@@ -98,7 +98,6 @@
   Even if the extension adds only a single new assigner type, that
   must be passed as a single-element vector in `order` so that
   Afterglow knows to look for and run its assigners."
-  {:doc/format :markdown}
   [extension-key order]
   {:pre [(keyword? extension-key) (sequential? order) (every? keyword? order)]}
   (swap! extension-resolution-orders assoc extension-key order))
@@ -108,7 +107,6 @@
   are assigner's `:kind`, containing inner maps keyed on `:target-id`,
   whose values are all of the assigners with that type and target, in
   the same order in which they were found in the original sequence."
-  {:doc/format :markdown}
   [assigners]
   (reduce (fn [results assigner]
             (update-in results [(:kind assigner) (:target-id assigner)] (fnil conj []) assigner))
@@ -221,7 +219,6 @@
   types which do not result in DMX data, such as the
   Pangolin [[beyond-server]] laser show integration), they are called
   at the appropriate points."
-  {:doc/format :markdown}
   [show buffers snapshot]
   (pspy :clear-buffers
         (let [dmx-future (cp/future @(:pool show) (clear-dmx-buffers show buffers))
@@ -253,7 +250,6 @@
   allow [afterglow-max](https://github.com/brunchboy/afterglow-max#afterglow-max)
   patchers to set show variables for the next frame, since they cannot
   be queried directly during the rendering process."
-  {:doc/format :markdown}
   [f]
   {:pre [(some? *show*) (fn? f)]}
   (swap! (:frame-fns *show*) conj f)
@@ -261,7 +257,6 @@
 
 (defn clear-frame-fn!
   "Ceases calling the supplied function from the rendering loop."
-  {:doc/format :markdown}
   [f]
   {:pre [(some? *show*) (fn? f)]}
   (swap! (:frame-fns *show*) disj f)
@@ -276,7 +271,6 @@
   such as the Pangolin [[beyond-server]] laser show integration,
   register their extension functions to participate in the rendering
   loop."
-  {:doc/format :markdown}
   [f]
   {:pre [(some? *show*) (fn? f)]}
   (swap! (:empty-buffer-fns *show*) conj f)
@@ -285,7 +279,6 @@
 (defn clear-empty-buffer-fn!
   "Ceases calling the supplied function during the buffer clearing
   phase of the rendering loop."
-  {:doc/format :markdown}
   [f]
   {:pre [(some? *show*) (fn? f)]}
   (swap! (:empty-buffer-fns *show*) disj f)
@@ -300,7 +293,6 @@
   such as the Pangolin [[beyond-server]] laser show integration,
   register their extension functions to participate in the rendering
   loop."
-  {:doc/format :markdown}
   [f]
   {:pre [(some? *show*) (fn? f)]}
   (swap! (:send-buffer-fns *show*) conj f)
@@ -309,7 +301,6 @@
 (defn clear-send-buffer-fn!
   "Ceases calling the supplied function during the data sending phase
   of the rendering loop."
-  {:doc/format :markdown}
   [f]
   {:pre [(some? *show*) (fn? f)]}
   (swap! (:send-buffer-fns *show*) disj f)
@@ -322,7 +313,6 @@
   Loop](https://github.com/brunchboy/afterglow/blob/master/doc/rendering_loop.adoc#the-rendering-loop).
   This runs forever, and so is executed on a future by [[start!]] and
   the future is canceled by [[stop!]]."
- {:doc/format :markdown}
   [show buffers]
   (loop [snapshot (rhythm/metro-snapshot (:metronome show))
          still-running (atom true)]
@@ -354,7 +344,6 @@
 (defn stop!
   "Shuts down and removes the scheduled task which is sending DMX
   values for [[*show*]], and cleans up the show's thread pool."
-  {:doc/format :markdown}
   []
   {:pre [(some? *show*)]}
   (swap! (:task *show*) #(do (when % (future-cancel %)) nil))
@@ -379,7 +368,6 @@
   "Starts (or restarts) a scheduled task to calculate and send DMX
   values to the universes controlled by [[*show*]] at the
   appropriate refresh rate."
-  {:doc/format :markdown}
   []
   {:pre [(some? *show*)]}
   (stop!)
@@ -434,7 +422,6 @@
   link below the description to see the `sample-show` atom and `swap!`
   invocation within `set-default-show!` it uses to make sure there is
   only ever one version registered)."
-  {:doc/format :markdown}
   [& {:keys [universes base-metronome refresh-interval description]
       :or {universes [1] base-metronome (rhythm/metronome 120) refresh-interval default-refresh-interval}}]
   {:pre [(sequential? universes) (pos? (count universes)) (every? integer? universes) (not-any? neg? universes)
@@ -481,7 +468,6 @@
   and there are any active effects, so this is mostly useful when a
   show has been suspended and you want to darken the lights it left
   on."
-  {:doc/format :markdown}
   []
   {:pre [(some? *show*)]}
   (doseq [universe (:universes *show*)]
@@ -515,7 +501,6 @@
 
   Functions useful to pass to this include [[midi/sync-to-midi-clock]]
   and [[dj-link/sync-to-dj-link]]."
-  {:doc/format :markdown}
   ([]
    (sync-to-external-clock nil))
   ([sync-fn]
@@ -527,7 +512,6 @@
 (defn sync-status
   "Checks what kind of synchronization is in effect for [[*show*]],
   and reports on how it seems to be working."
-  {:doc/format :markdown}
   []
   {:pre [(some? *show*)]}
   (if-let [sync-in-effect @(:sync *show*)]
@@ -559,7 +543,6 @@
 
 (defn set-variable!
   "Set a value for a variable associated with [[*show*]]."
-  {:doc/format :markdown}
   [key newval]
   {:pre [(some? *show*) (some? key)]}
   (let [key (keyword key)]
@@ -572,7 +555,6 @@
 
 (defn get-variable
   "Get the value of a variable associated with [[*show*]]."
-  {:doc/format :markdown}
   [key]
   {:pre [(some? key)]}
   ((keyword key) @(:variables *show*)))
@@ -582,7 +564,7 @@
   MIDI controller-change messages from the specified device sent on
   the specified channel and controller number. If `:min` and/or `:max`
   are specified, the normal MIDI range from 0 to 127 will be mapped to
-  the supplied range instead." {:doc/format :markdown}
+  the supplied range instead."
   [midi-device-name channel control-number variable & {:keys [min max] :or {min 0 max 127}}]
   {:pre [(some? *show*) (some? midi-device-name) (number? min) (number? max) (not= min max)
          (integer? channel) (<= 0 channel 15) (integer? control-number) (<= 0 control-number 127) (some? variable)]}
@@ -602,7 +584,6 @@
 (defn remove-midi-control-to-var-mapping
   "Cease updating the specified variable in [[*show*]] when the
   specified MIDI controller-change messages are received."
-  {:doc/format :markdown}
   [midi-device-name channel control-number variable]
   {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
          (integer? control-number) (<= 0 control-number 127) (some? variable)]}
@@ -619,7 +600,6 @@
   supplied, the show's grand master is mapped. If the value supplied
   with `:master` is a keyword, it is resolved as a show variable
   containing a dimmer master."
-  {:doc/format :markdown}
   [midi-device-name channel control-number & {:keys [master min max] :or {master (:grand-master *show*) min 0 max 100}}]
   {:pre [(some? *show*) (some? midi-device-name) (number? min) (number? max) (not= min max)
          (<= 0 min 100) (<= 0 max 100)
@@ -638,7 +618,6 @@
 (defn remove-midi-control-to-master-mapping
   "Cease updating the specified [[dimmer/master]] when the specified
   MIDI controller-change messages are received."
-  {:doc/format :markdown}
   [midi-device-name channel control-number & {:keys [master] :or {master (:grand-master *show*)}}]
   {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
          (integer? control-number) (<= 0 control-number 127)]}
@@ -668,7 +647,6 @@
   [[rhythm/metronome]] object, or a keyword naming a show variable
   containing such an object. If not supplied, the main metronome
   attached to [[*show*]] is mapped."
-  {:doc/format :markdown}
   [midi-device-name channel control-number & {:keys [metronome] :or {metronome (:metronome *show*)}}]
   (add-midi-control-metronome-mapping midi-device-name channel control-number metronome
                                       #(rhythm/metro-start % 1)))
@@ -683,7 +661,6 @@
   [[rhythm/metronome]] object, or a keyword naming a show variable
   containing such an object. If not supplied, the main metronome
   attached to [[*show*]] is mapped."
-  {:doc/format :markdown}
   [midi-device-name channel control-number & {:keys [metronome] :or {metronome (:metronome *show*)}}]
   {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
          (integer? control-number) (<= 0 control-number 127)]}
@@ -701,7 +678,6 @@
   [[rhythm/metronome]] object, or a keyword naming a show variable containing
   such an object. If not supplied, the main metronome attached to [[*show*]]
   is unmapped."
-  {:doc/format :markdown}
   [midi-device-name channel control-number & {:keys [metronome] :or {metronome (:metronome *show*)}}]
   (add-midi-control-metronome-mapping midi-device-name channel control-number metronome
                                       #(rhythm/metro-bar-start % (rhythm/metro-bar %))))
@@ -715,7 +691,6 @@
   [[rhythm/metronome]] object, or a keyword naming a show variable
   containing such an object. If not supplied, the main metronome
   attached to [[*show*]] is mapped."
-  {:doc/format :markdown}
   [midi-device-name channel control-number & {:keys [metronome] :or {metronome (:metronome *show*)}}]
   (add-midi-control-metronome-mapping midi-device-name channel control-number metronome
                                       #(rhythm/metro-phrase-start % (rhythm/metro-phrase %))))
@@ -725,7 +700,6 @@
   for [[*show*]]. Returns a map of the effect metadata, with the
   effect itself under the key `:effect`. If the effect is in the
   process of ending, the keyword `:ending` will have a `true` value."
-  {:doc/format :markdown}
   [key]
   {:pre [(some? *show*) (some? key)]}
   (when-let [index (get (:indices @(:active-effects *show*)) (keyword key))]
@@ -817,7 +791,6 @@
   help provide feedback on control surfaces and in the web interface.
   `:var-map` is used to supply a map of variable bindings associated
   with the cue, also for use by interfaces which support them."
-  {:doc/format :markdown}
   [key effect & {:keys [priority from-cue x y var-map] :or {priority 0}}]
   {:pre [(some? *show*) (some? key) (instance? Effect effect) (integer? priority)]}
   (let [key (keyword key)
@@ -841,7 +814,6 @@
   currently-running effect matches the one supplied. If it was created
   from a cue grid, notify any controllers that might be tracking the
   cue state."
-  {:doc/format :markdown}
   [key & {:keys [force when-id]}]
   {:pre [(some? *show*) (some? key)]}
   (let [key (keyword key)
@@ -865,7 +837,6 @@
   "Remove all effects currently active in [[*show*]], leading to a
   blackout state in all controlled universes (if the show is running)
   until new effects are added."
-  {:doc/format :markdown}
   []
   {:pre [(some? *show*)]}
   (doseq [k (map :key (:meta @(:active-effects *show*)))]
@@ -910,7 +881,6 @@
   [afterglow-max](https://github.com/brunchboy/afterglow-max) to start
   cues with alternate values if its patchers have been configured to
   do so."
-  {:doc/format :markdown}
   [x y & {:keys [var-overrides]}]
   {:pre [(some? *show*)]}
   (when-let [cue (controllers/cue-at (:cue-grid *show*) x y)]
@@ -969,7 +939,6 @@
   `false` with `:momentary` and Afterglow will always end cues when it
   receives a control value of 0, even if cues are not marked as
   `:held`."
-  {:doc/format :markdown}
   [midi-device-name channel kind note x y & {:keys [feedback-on feedback-off momentary]
                                                        :or {feedback-on 127 feedback-off 0 momentary true}}]
   {:pre [(some? *show*) (#{:control :note} kind) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
@@ -1012,7 +981,6 @@
   receipt of the specified note or controller-change message. The
   desired cue is identified by passing in its `x` and `y` coordinates
   within the show cue grid."
- {:doc/format :markdown}
   [midi-device-name channel kind note x y]
   {:pre [(some? *show*) (#{:control :note} kind) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
          (integer? note) (<= 0 note 127) (integer? x) (<= 0 x) (integer? y) (<= 0 y)]}
@@ -1044,7 +1012,6 @@
   corresponding universe. The address maps have keys for every channel
   in use by the show in that universe, and the value is the key of the
   fixture using that address."
-  {:doc/format :markdown}
   []
   {:pre [(some? *show*)]}
   (into (sorted-map) (for [u (:universes *show*)]
@@ -1052,7 +1019,6 @@
 
 (defn remove-fixture!
   "Remove a fixture from thosed patched into [[*show*]]."
-  {:doc/format :markdown}
   [key]
   {:pre [(some? *show*) (some? key)]}
   (swap! (:fixtures *show*) #(dissoc % (keyword key)))
@@ -1143,7 +1109,6 @@
   use [[transform/inches]], [[transform/feet]]
   and [[transform/degrees]] to convert those units for you if
   desired."
-  {:doc/format :markdown}
   [key fixture universe start-address & {:keys [x y z x-rotation y-rotation z-rotation]
                                          :or {x 0.0 y 0.0 z 0.0 x-rotation 0.0 y-rotation 0.0 z-rotation 0.0}}]
   {:pre [(some? *show*) (some? fixture) (some? universe) (integer? start-address) (<= 1 start-address 512)]}
@@ -1162,8 +1127,7 @@
   to the key supplied. If an offset is supplied, it will be added to the starting
   address for each subsequent fixture; if not, the largest offset used by the
   fixture will be used to calculate a suitable offset."
-  {:doc/format :markdown
-   :deprecated "0.1.2"}
+  {:deprecated "0.1.2"}
   ([key fixture universe start-address count]
    (patch-fixture-group! key fixture universe start-address count (apply max (map :offset (:channels fixture)))))
   ([key fixture universe start-address count offset]
@@ -1175,7 +1139,6 @@
 
 (defn all-fixtures
   "Returns all fixtures patched into [[*show*]]."
-  {:doc/format :markdown}
   []
    {:pre [(some? *show*)]}
   (vals @(:fixtures *show*)))
@@ -1184,7 +1147,6 @@
   "Returns all fixtures patched into [[*show*]] whose key matches the
   specified name, with an optional number following it, as would be
   assigned to a fixture group by [[patch-fixtures!]]"
-  {:doc/format :markdown}
   [n]
   {:pre [(some? *show*) (some? n)]}
   (let [pattern (re-pattern (str (name n) "(-\\d+)?"))]
@@ -1211,7 +1173,6 @@
   defaults to 100). Assumes you want to profile without the use of a
   thread pool to look for worst-case performance unless you pass
   `false` with the optional keyword argument `:serial?`."
-  {:doc/format :markdown}
   [& {:keys [iterations serial?] :or {iterations 100 serial? true}}]
   {:pre [(some? *show*) (integer? iterations) (pos? iterations) (nil? @(:pool *show*))]}
   (reset! (:pool *show*) (if serial? :serial :builtin))
@@ -1225,7 +1186,6 @@
   "Add a cue grid controller to the list available for linking in the
   web interface. The argument must implement the [[IGridController]]
   protocol."
-  {:doc/format :markdown}
   [controller]
   {:pre [(some? *show*) (satisfies? controllers/IGridController controller)]}
   (swap! (:grid-controllers *show*) conj controller))
@@ -1233,7 +1193,6 @@
 (defn unregister-grid-controller
   "Remove a cue grid controller from the list available for linking in the
   web interface."
-    {:doc/format :markdown}
   [controller]
   {:pre [(some? *show*) (satisfies? controllers/IGridController controller)]}
   (swap! (:grid-controllers *show*) disj controller))

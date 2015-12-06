@@ -6,7 +6,7 @@
   can form a good starting point and save you a lot of tedious
   capability translation. You can find the available `.qxf` files
   on [Github](https://github.com/mcallegari/qlcplus/tree/master/resources/fixtures)."
-  {:doc/format :markdown}
+  {:author "James Elliott"}
   (:require [afterglow.web.layout]  ; To set up the Selmer template path
             [camel-snake-kebab.core :as csk]
             [clojure.data.zip.xml :as zip-xml]
@@ -286,7 +286,6 @@
   "Read a fixture definition file in the format (.qxf) used by
   [QLC+](http://www.qlcplus.org/), and create a map from which it can
   conveniently be translated into an Afterglow fixture definition."
-  {:doc/format :markdown}
   [source]
   (let [doc (xml/parse source)
         root (zip/xml-zip doc)]
@@ -309,7 +308,6 @@
   [QLC+](http://www.qlcplus.org/), and write a Clojure file based on
   it that can be used as the starting point of an Afterglow fixture
   definition. Returns an exit status and message for the user."
- {:doc/format :markdown}
   [path]
   (let [source (io/file path)
         qxf (parse-qxf source)

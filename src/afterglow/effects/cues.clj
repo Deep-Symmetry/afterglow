@@ -115,7 +115,6 @@
   * `:velocity-min` and `:velocity-max` specify the range into
      which MIDI velocity and aftertouch values will be mapped, if they are present.
      Otherwise the standard `:min` and `:max` values will be used."
-  {:doc/format :markdown}
   [show-key effect & {:keys [short-name color end-keys priority held variables]
                       :or {short-name (:name (effect {})) color :white priority 0}}]
   {:pre [(some? show-key) (ifn? effect) (satisfies? fx/IEffect (effect {}))]}
@@ -198,7 +197,6 @@
   that variable, allowing it to be controlled by strike and aftertouch
   pressure on control surfaces which support that feature, as described
   in [[cue]]."
-  {:doc/format :markdown}
   [show-key function fixtures & {:keys [level htp? effect-name short-name color end-keys priority held
                                         velocity velocity-min velocity-max]
                                  :or {color :white level 0 priority 0}}]
@@ -278,7 +276,6 @@
   If a controller is passed with the `:controller` optional keyword
   argument, the effect is looked up in the show associated with that
   controller. Otherwise, it is looked up in the default show."
-  {:doc/format :markdown}
   [cue var-spec & {:keys [controller when-id]}]
   (if controller
     (with-show (:show controller)

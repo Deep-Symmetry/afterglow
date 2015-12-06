@@ -34,7 +34,6 @@
   effect was trying to do, because it runs later. However, if
   a [[pan-tilt-effect]] is running, it will run before this one, so
   this one will win."
-  {:doc/format :markdown}
   [name direction fixtures]
   {:pre [(some? name) (some? *show*) (sequential? fixtures)]}
   (params/validate-param-type direction Vector3d)
@@ -116,7 +115,6 @@
   running on the same fixture, this effect will win and override
   whatever the other effect was trying to do, because this one runs
   later."
-  {:doc/format :markdown}
   [name target-point fixtures]
   {:pre [(some? name) (some? *show*) (sequential? fixtures)]}
   (params/validate-param-type target-point Point3d)
@@ -179,7 +177,6 @@
   fixture was hung with respect to show space, you want to use a lower
   level [[function-effect]] with the `:pan` or `:tilt` keyword, rather
   than this effect."
-  {:doc/format :markdown}
   [name pan-tilt fixtures]
   {:pre [(some? name) (some? *show*) (sequential? fixtures)]}
   (params/validate-param-type pan-tilt Vector2d)

@@ -55,8 +55,7 @@
   patching it. Getting the orientation right is most important for
   moving heads, because Afterglow relies on having that information in
   order to figure out how to aim the light where you want it aimed."
-  {:author "James Elliott"
-   :doc/format :markdown}
+  {:author "James Elliott"}
   (:require [afterglow.channels :as chan]
             [clojure.math.numeric-tower :as math]
             [taoensso.timbre :as timbre :refer [debug]])

@@ -36,18 +36,18 @@
   given moment in the show. It can end on its own, or be asked to end.
   When asked, it may end immediately, or after some final activity,
   such as a fade."
-    (^{:doc/format :markdown} still-active? [this show snapshot]
+    (still-active? [this show snapshot]
       "An inquiry about whether this effect is finished, and can be
       cleaned up. A `false` return value will remove the effect from
       the show.")
-    (^{:doc/format :markdown} generate [this show snapshot]
+    (generate [this show snapshot]
       "List the asignments needed to implement the desired effect at
       this moment in time. Must return a sequence of
       `afterglow.effects.Assigner` objects which will be merged into
       the current frame based on their kind, target, and the effect's
       priority. If the effect currently has nothing to contribute, it
       may return an empty sequence.")
-    (^{:doc/format :markdown} end [this show snapshot]
+    (end [this show snapshot]
       "The effect has been asked to end. It should arrange to finish
       as soon as possible; return `true` if it can end immediately,
       and it will be removed from the show. Otherwise it will be
@@ -55,7 +55,6 @@
       until [[still-active?]] reuthrns `false`. If the user asks to
       end the effect a second time during htis process, however, it
       will simply be removed from the show at that time."))))
-(alter-meta! #'IEffect assoc :doc/format :markdown)
 
 ;; See https://github.com/brunchboy/afterglow/blob/master/doc/rendering_loop.adoc#assigners
 ;;
@@ -101,7 +100,6 @@
 (defn always-active
   "An implementation of [[still-active?]] which simply always returns
   `true`, useful for effects which run until you ask them to end."
-  {:doc/format :markdown}
   [show snapshot]
   true)
 
@@ -109,7 +107,6 @@
   "An implementation of [[end]] which just reports that the effect
   is now finished by returning `true`. Useful for effects which can
   simply be removed as soon as they are asked to end."
-  {:doc/format :markdown}
   [show snapshot]
   true)
 
@@ -150,7 +147,6 @@
   the way Afterglow evaluates assigners, that means that if any
   constituent effects try to assign to the same target, the later ones
   will have a chance to override or blend with the earlier ones."
-  {:doc/format :markdown}
   [scene-name & effects]
   (let [active (atom effects)]
     (Effect. scene-name
@@ -176,7 +172,6 @@
   example, when you want to use [[fade]] to fade into an effect from a
   state where there was simply nothing happening (or where earlier and
   lower-priority effects can show through)."
-  {:doc/format :markdown}
   []
   blank-effect)
 
@@ -206,7 +201,6 @@
   `fraction` reaches `0.5`."
   (fn [from-assignment to-assignment fraction show snapshot]
     (:kind from-assignment)))
-(alter-meta! #'fade-between-assignments assoc :doc/format :markdown)
 
 ;; Provide a basic fallback implementation for assignment types which do not support blending.
 ;; This will switch from the first to the second assignment once fraction crosses the halfway
@@ -239,7 +233,6 @@
   value. Some kinds of assignment may not support blending, in which
   case the default implementation will simply switch from
   `from-assignment` to `to-assignment` once `fraction` reaches `0.5`."
-  {:doc/format :markdown}
   [from-assignment to-assignment fraction show snapshot]
   {:pre [(or (nil? from-assignment) (instance? Assignment from-assignment))
          (or (nil? to-assignment) (instance? Assignment to-assignment))
@@ -259,7 +252,6 @@
   the value `0`, this effect does nothing; when `condition` has any
   other value, this effect behaves exactly like the effect passed in
   as `effect`."
-  {:doc/format :markdown}
   [effect-name condition effect]
   {:pre [(some? *show*) (some? effect-name) (satisfies? IEffect effect)]}
   (params/validate-param-type condition Number)
@@ -279,7 +271,6 @@
   of the assigner's `:kind` and `:target-id` and, whose values are all
   of the assigners with that type and target, in the same order in
   which they were found in the original sequence."
-  {:doc/format :markdown}
   [assigners]
   (reduce (fn [results assigner]
             (update results [(:kind assigner) (:target-id assigner)] (fnil conj []) assigner))
@@ -372,7 +363,6 @@
   effects to pass through as it approaches the blank effect. The same
   is true when fading between effects that do not include all the same
   fixtures, or affect different aspects of fixtures."
-  {:doc/format :markdown}
   [fade-name from-effect to-effect phase]
   {:pre [(some? *show*) (some? fade-name) (satisfies? IEffect from-effect) (satisfies? IEffect to-effect)]}
   (params/validate-param-type phase Number)
@@ -409,7 +399,6 @@
   elements; otherwise, if it falls outside the range of elements,
   returns a [[blank]] effect. If an actual effect is found, but it is
   no longer active, return a blank effect instead."
-  {:doc/format :markdown}
   [position effects active looping?]
   (let [position (if looping? (mod position (count effects)) position)
         i (int (math/floor position))]
@@ -464,7 +453,6 @@
   Any element of `effects` can be a [[scene]], grouping many other
   effects, or [[blank]], which will temporarily defer to whatever else
   was happening before the chase was activated."
-  {:doc/format :markdown}
   [chase-name effects position & {:keys [beyond] :or {beyond :blank}}]
   {:pre [(some? *show*) (some? chase-name) (sequential? effects) (every? (partial satisfies? IEffect) effects)
          (#{:blank :loop :bounce} beyond)]}

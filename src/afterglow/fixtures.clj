@@ -69,7 +69,6 @@
   DMX-4](http://www.chauvetlighting.com/dmx-4.html), its channels can
   be patched as four of these, or four [[generic-switch]], or some
   combination."
-  {:doc/format :markdown}
   []
   {:channels [(chan/dimmer 1)]
    :name "Generic dimmer"})
@@ -82,7 +81,6 @@
   DMX-4](http://www.chauvetlighting.com/dmx-4.html), its channels can
   be patched as four of these, or four [[generic-dimmer]], or some
   combination."
-  {:doc/format :markdown}
   []
   {:channels [(chan/functions :switch 1 0 "off" 1 nil 255 "on")]
    :name "Generic switch"})

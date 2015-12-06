@@ -14,7 +14,6 @@
   to create even channels which do not have a `:fine-offset` because
   of the other helpful features it offers, such as setting up the
   channel function specification for you."
-  {:doc/format :markdown}
   [offset]
   {:offset offset})
 
@@ -121,7 +120,6 @@
   You can specify what this variable label should be with
   `:var-label`; if you do not, the generic label `Level` will be
   used."
-  {:doc/format :markdown}
   [chan-type offset & {:keys [fine-offset function-type function-name var-label] :or {function-type chan-type}}]
   {:pre [(some? chan-type) (integer? offset) (<= 1 offset 512)]}
   (let [chan-type (keyword chan-type)
@@ -244,7 +242,6 @@
   See the [online
   documentation](https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#function-channels)
   for more details and examples."
-  {:doc/format :markdown}
   [chan-type offset & functions]
   {:pre [(some? chan-type) (integer? offset) (<= 1 offset 512)]}
   (let [chan-type (keyword chan-type)]
@@ -269,7 +266,6 @@
   If hue is a sequence, then returns a sequence of the results of
   calling `color-wheel-hue` on each of the elements in that sequence,
   with the same optional arguments."
-  {:doc/format :markdown}
   [hue & {:keys [range label] :or {range :fixed}}]
   {:pre [(some? hue)]}
   (if (sequential? hue)
@@ -314,7 +310,6 @@
   the offset of the channel containing the most-significant byte in
   `offset`, and specify the offset of the channel containing the
   least-significant byte with `:fine-offset`."
-  {:doc/format :markdown}
   [offset & {:keys [inverted-from fine-offset]}]
   (merge (fine-channel :dimmer offset :fine-offset fine-offset :range-label "Intensity")
          (when inverted-from
@@ -340,7 +335,6 @@
   the offset of the channel containing the most-significant byte in
   `offset`, and specify the offset of the channel containing the
   least-significant byte with `:fine-offset`."
-  {:doc/format :markdown}
   [offset color & {:keys [hue function-label fine-offset]}]
   {:pre [(some? color)]}
   (let [color (keyword color)]

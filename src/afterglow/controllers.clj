@@ -1,6 +1,6 @@
 (ns afterglow.controllers
   "Provides shared services for all controller implementations."
-  {:author "James Elliott", :doc/format :markdown}
+  {:author "James Elliott"}
   (:require [overtone.at-at :as at-at]
             [overtone.midi :as midi]
             [taoensso.timbre :as timbre]))
@@ -150,7 +150,6 @@
   unique numeric ID assigned to the effect when it was started. The
   last two argumetnts can be used with [[end-effect!]] and its
   `:when-id` argument to avoid accidentally ending a different cue."
-  {:doc/format :markdown}
   [grid x y f]
   {:pre [(integer? x) (integer? y) (not (neg? x)) (not (neg? y)) (fn? f) (some? (:fn-feedback grid))]}
   (dosync
@@ -181,7 +180,6 @@
   want updates about the cue state letting them know it has started,
   its effect keyword, and the `id` of the effect that was created
   or ended."
-  {:doc/format :markdown}
   [grid x y id]
   (dosync
    (when-let [cue (cue-at grid x y)]
@@ -208,7 +206,6 @@
   "Calls any registered functions that want updates about the cue
   state to inform them it has begun to gracefully end, its effect
   keyword, and the `id` of the effect that is ending."
-  {:doc/format :markdown}
   [grid x y id]
   (when-let [cue (cue-at grid x y)]
     (doseq [[f _] (get @(:fn-feedback grid) [x y])]
@@ -231,7 +228,7 @@
   respond to MIDI velocity, and assign their initial values based on
   the velocity of the MIDI message. Returns a map suitable for use
   with the `:var-overrides` argument to
-  <<show/add-effect-from-cue-grid!>>." {:doc/format :markdown}
+  <<show/add-effect-from-cue-grid!>>."
   [cue velocity]
   (reduce (fn [result v] (if (:velocity v)
                            (assoc result (keyword (:key v)) (value-for-velocity v velocity))

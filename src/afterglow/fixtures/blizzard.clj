@@ -1,7 +1,7 @@
 (ns afterglow.fixtures.blizzard
   "Definitions for fixtures provided by [Blizzard
   Lighting](http://www.blizzardlighting.com)."
-  {:doc/format :markdown}
+  {:author "James Elliott"}
   (:require [afterglow.channels :as chan]
             [afterglow.effects.channel :as chan-fx]
             [afterglow.fixtures.qxf :refer [sanitize-name]]))
@@ -15,7 +15,6 @@
   the gobo at variable speeds, `false` if the gobo is being projected
   in a static position. `names` is the list of gobo names to expand
   into corresponding function map entries."
-  {:doc/format :markdown}
   [moving? shake? names]
   (map (fn [entry]
          (let [prefix (str "gobo-" (if moving? "moving-" "fixed-"))
@@ -72,7 +71,6 @@
     \"Torrents Open\" :shutter-open 50
     (show/fixtures-named \"torrent\")))
 ```" 
-  {:doc/format :markdown}
   []
   {:channels [(chan/pan 1 2) (chan/tilt 3 4)
               (chan/functions :color 5 0 "Color Wheel Open"
@@ -191,7 +189,6 @@
   `:pan-center`, `:pan-half-circle`, `:tilt-center` and
   `:tilt-half-circle` which used to work by passing in new values
   using optional keyword arguments following the `mode` value."
-  {:doc/format :markdown}
   ([]
    (blade-rgbw :15-channel))
   ([mode & {:keys [pan-center pan-half-circle tilt-center tilt-half-circle]
@@ -257,7 +254,6 @@
   When you pass a mode, you can also control whether the amber channel
   is mixed in when creating colors by passing a boolean value with
   `:mix-amber`. The default is `true`."
-  {:doc/format :markdown}
   ([]
    (puck-fab5 :12-channel))
   ([mode & {:keys [mix-amber] :or {mix-amber true}}]
@@ -323,7 +319,6 @@
   If you do not specify a mode when patching it, `:26-channel` is
   assumed; you can pass a value of `:7-channel` for `mode` if you are
   using it that way."
-  {:doc/format :markdown}
   ([]
    (weather-system :26-channel))
   ([mode]
@@ -353,7 +348,6 @@
 (defn snowball
   "[Snowball](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&layout=item&id=100&Itemid=96)
   multi-beam moonflower effect light."
-  {:doc/format :markdown}
   []
   {:name "Blizzard Snowball"
    :channels [(chan/dimmer 1) (chan/color 2 :red) (chan/color 3 :green) (chan/color 4 :blue) (chan/color 5 :white)

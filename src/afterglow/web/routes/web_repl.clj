@@ -78,7 +78,6 @@
   cases the thread local bindings will not be automatically cleaned
   up, and it is the responsibility of the hosting implementation to
   call [[discard-bindings]] when they are no longer needed."
-  {:doc/format :markdown}
   [txt session-key]
   (with-session session-key
     (let [form (binding [*read-eval* false] (read-string txt))]
@@ -109,7 +108,6 @@
   environment like
   [afterglow-max](https://github.com/brunchboy/afterglow-max#afterglow-max),
   which does not expire."
-  {:doc/format :markdown}
   [web-sessions [id _]]
   (or (not (string? id))
       (some? (web-sessions id))))
@@ -121,7 +119,6 @@
   environments like
   [afterglow-max](https://github.com/brunchboy/afterglow-max#afterglow-max)
   which do not expire."
-  {:doc/format :markdown}
   [web-sessions]
   (dosync
    (commute repl-sessions #(->> % (filter (partial still-needed? web-sessions)) (into {})))))

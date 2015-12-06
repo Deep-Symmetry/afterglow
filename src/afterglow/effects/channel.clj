@@ -27,7 +27,6 @@
   1 then dim as the value grows towards 255, `:inverted-from` will be
   present with the value `1`. Non-inverted channels will lack the key
   entirely."
- {:doc/format :markdown}
   [buffers channel value]
   (when-let [levels (get buffers (:universe channel))]
     (let [adjusted-value (if-let [pivot (:inverted-from channel)]
@@ -182,7 +181,6 @@
   which use the same channel, you are unlikely to get the results you
   want. Hopefully the fixture designers chose how to share channels
   wisely, avoiding this pitfall."
-  {:doc/format :markdown}
   [name function level fixtures & {:keys [htp?]}]
   {:pre [(some? *show*) (some? name) (some? function) (sequential? fixtures)]}
   (params/validate-param-type level Number)
@@ -205,7 +203,6 @@
   percentage along that range. Designed to be partially applied in a
   fixture definition, so [[function-percentage-to-dmx]] can pass the
   value being resolved as the last parameter."
-  {:doc/format :markdown}
   [range-min range-max value]
   {:pre [(< range-min range-max)]}
   (if (< value range-min)
@@ -220,7 +217,6 @@
   that range. If the function spec has a value scaler function
   attached to it (via the key `:scale-fn`), call that with the value
   to get the percentage before scaling it to the DMX range."
-  {:doc/format :markdown}
   [percent function-spec]
   (let [range (- (:end function-spec) (:start function-spec))
         scaler (:scale-fn function-spec)

@@ -2,8 +2,7 @@
   "Allows the Ableton Push to be used as a control surface for
   Afterglow. Its features are described in the [online
   documentation](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#using-ableton-push)."
-  {:author "James Elliott"
-   :doc/format :markdown}
+  {:author "James Elliott"}
   (:require [afterglow.controllers :as controllers]
             [afterglow.effects.cues :as cues]
             [afterglow.effects.dimmer :refer [master-get-level master-set-level]]
@@ -94,7 +93,6 @@
   pad, using the thoughtful hue palette provided by Ableton:
 
   ![Push pad palette](http://deepsymmetry.org/afterglow/research/PushColors.jpg)"
-  {:doc/format :markdown}
   [color]
   {:pre [(= (type color) :com.evocomputing.colors/color)]}
   ;; Each hue section starts with a lightened version
@@ -145,8 +143,7 @@
   approximation available for a desired color. This was the first
   implementation that was discovered, but there is now a much more
   powerful way to specify an exact color using a SysEx message."
-  {:doc/format :markdown
-   :deprecated "0.1.4"}
+  {:deprecated "0.1.4"}
   [controller x y color]
   (set-pad-velocity controller x y (velocity-for-color color)))
 
@@ -1595,7 +1592,6 @@ color (colors/create-color
   If you want the user interface to be refreshed at a different rate
   than the default of fifteen times per second, pass your desired
   number of milliseconds after `:refresh-interval`."
-  {:doc/format :markdown}
   [show & {:keys [device-name refresh-interval display-name]
            :or {device-name "User Port"
                 refresh-interval (/ 1000 15)

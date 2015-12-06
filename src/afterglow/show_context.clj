@@ -9,8 +9,7 @@
   However, in the extremely common case of defining and running only a
   single lighr show, you can also establish a default show,
   using [[set-default-show!]], and omit even the `with-show` wrappers."
-  {:author "James Elliott"
-   :doc/format :markdown})
+  {:author "James Elliott"})
 
 (defonce
   ^{:dynamic true
@@ -20,8 +19,7 @@
   locally using [[with-show]], or, if you are only creating and using a
   single light show, which is a very common situation, you can
   globally establish a default value by
-  calling [[set-default-show!]]."
-    :doc/format :markdown}
+  calling [[set-default-show!]]."}
   *show* nil)
 
 (defmacro with-show
@@ -31,7 +29,7 @@
   `(binding [*show* ~show]
      ~@body))
 
-(defn ^{:doc/format :markdown} set-default-show!
+(defn set-default-show!
   "Establish the specified show as the default, so that functions that
   have not been wrapped inside [[with-show]] contexts will act on it.
   This makes sense when you are only working with one light show and

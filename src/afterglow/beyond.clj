@@ -123,7 +123,6 @@
 
   To undo a binding established by this function, simply call it again
   to bind to another show, or with a `nil` show to unbind entirely."
-  {:doc/format :markdown}
   ([server show]
    (bind-to-show server show 10000))
   ([server show resync-interval]

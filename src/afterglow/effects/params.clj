@@ -81,7 +81,6 @@
   "Ensure that a parameter satisfies a predicate, or that it satisfies
   [[IParam]] and, when evaluated, returns a type that passes that predicate,
   throwing an exception otherwise."
-  {:doc/format :markdown}
   ([value type-expected]
    (let [arg value]
      `(check-type ~value ~type-expected ~(str arg))))
@@ -92,7 +91,6 @@
   "Ensure that a parameter, if not `nil`, satisfies a predicate, or that
   it satisfies [[IParam]] and, when evaluated, returns a type that passes
   that predicate, throwing an exception otherwise."
-  {:doc/format :markdown}
   ([value type-expected]
    (let [arg value]
      `(validate-optional-param-type ~value ~type-expected ~(str arg))))
@@ -102,7 +100,6 @@
 (defn head-param?
   "Checks whether the argument is an [[IParam]] which also
   satisfies [[IHeadParam]]."
-  {:doc/format :markdown}
   [arg]
   (and (satisfies? IParam arg) (satisfies? IHeadParam arg)))
 
@@ -112,7 +109,6 @@
   resulting value. Otherwise just returns the value that was passed
   in. If `head` is supplied, and the parameter can use it at
   resolution time, then pass it along."
-  {:doc/format :markdown}
   ([arg show snapshot]
    (resolve-param arg show snapshot nil))
   ([arg show snapshot head]
@@ -125,7 +121,6 @@
 (defn frame-dynamic-param?
   "Checks whether the argument is an [[IParam]] which is dynamic to
   the frame level."
-  {:doc/format :markdown}
   [arg]
   (and (satisfies? IParam arg) (frame-dynamic? arg)))
 
@@ -148,7 +143,7 @@
   is dynamic to the frame level, ask it to resolve any non
   frame-dynamic elements. Otherwise return it unchanged. If `head` is
   supplied, and the parameter can use it at resolution time, then pass
-  it along." {:doc/format :markdown}
+  it along."
   ([arg show snapshot]
    (resolve-unless-frame-dynamic arg show snapshot nil))
   ([arg show snapshot head]
@@ -181,7 +176,6 @@
   is supplied, it will be called with the value of the variable and
   its return value will be used as the value of the dynamic parameter.
   It must return a compatible type or its result will be discarded."
-  {:doc/format :markdown}
   [variable & {:keys [frame-dynamic type default adjust-fn] :or {frame-dynamic true type Number default 0}}]
   {:pre [(some? *show*)]}
   (validate-param-type default type)
@@ -228,7 +222,6 @@
   "Helper function that does the work of the [[bind-keyword-param]]
   macro, which passes it the name of the parameter being bound for
   nice error messages."
-  {:doc/format :markdown}
   [param type-expected default param-name]
   (when (some? param)
     (if (keyword? param)
@@ -246,7 +239,6 @@
   show variable is of an incompatible type for the parameter being
   bound. If the input parameter is not a keyword, simply validate its
   type."
-  {:doc/format :markdown}
   ([value type-expected default]
    (let [arg value]
      `(bind-keyword-param* ~value ~type-expected ~default ~(str arg))))
@@ -263,7 +255,6 @@
   `:metronome` to use, the
   main [metronome](https://github.com/brunchboy/afterglow/blob/master/doc/metronomes.adoc#metronomes)
   in [[*show*]] will be used."
-  {:doc/format :markdown}
   [osc & {:keys [min max metronome frame-dynamic] :or {min 0 max 255 frame-dynamic true}}]
   {:pre [(some? *show*) (ifn? osc)]}
   (let [min (bind-keyword-param min Number 0)
@@ -348,7 +339,6 @@
   `:starting`.
 
   Step parameters are always frame-dynamic."
-  {:doc/format :markdown}
   [& {:keys [interval fade-fraction fade-curve starting]
       :or {interval :beat fade-fraction 0 fade-curve :linear
            starting (when *show* (metro-snapshot (:metronome *show*)))}}]
@@ -403,7 +393,6 @@
   an [[IParam]] which will produce a color, a keyword, which will be
   bound to a show variable by the caller, or a string which is passed
   to the jolby/colors `create-color` function."
-  {:doc/format :markdown}
   [color]
   (cond (string? color)
         (colors/create-color color)
@@ -450,7 +439,6 @@
   If you do not specify an explicit value for `:frame-dynamic`, this
   color parameter will be frame dynamic if it has any incoming
   parameters which themselves are."
-  {:doc/format :markdown}
   [& {:keys [color r g b h s l adjust-hue adjust-saturation adjust-lightness frame-dynamic]
       :or {color default-color frame-dynamic :default}}]
   {:pre [(some? *show*)]}
@@ -570,7 +558,6 @@
   If you do not specify an explicit value for `:frame-dynamic`, this
   direction parameter will be frame dynamic if it has any incoming
   parameters which themselves are."
-  {:doc/format :markdown}
   [& {:keys [x y z frame-dynamic] :or {x 0 y 0 z 1 frame-dynamic :default}}]
   {:pre [(some? *show*)]}
   (let [x (bind-keyword-param x Number 0)
@@ -617,7 +604,6 @@
   "Convert a pan and tilt value (angles in radians away from facing
   directly out towards the audience) to the corresponding aiming
   vector."
-  {:doc/format :markdown}
   [pan tilt]
   (let [euler (Vector3d. tilt pan 0)
         rotation (Transform3D.)
@@ -654,7 +640,6 @@
   If you do not specify an explicit value for `:frame-dynamic`, the
   resulting direction parameter will be frame dynamic if it has any
   incoming parameters which themselves are."
-  {:doc/format :markdown}
   [& {:keys [pan tilt radians frame-dynamic] :or {pan 0 tilt 0 frame-dynamic :default}}]
   {:pre [(some? *show*)]}
   (let [pan (bind-keyword-param pan Number 0)
@@ -714,7 +699,6 @@
   to or from a [[direction-effect]], you need to create a
   direction-effect rather than a pan-tilt-effect, and you can instead
   use [[build-direction-param-from-pan-tilt]] to set its direction."
-  {:doc/format :markdown}
   [& {:keys [pan tilt radians frame-dynamic] :or {pan 0 tilt 0 frame-dynamic :default}}]
   {:pre [(some? *show*)]}
   (let [pan (bind-keyword-param pan Number 0)
@@ -763,7 +747,6 @@
   If you do not specify an explicit value for `:frame-dynamic`, this
   aim parameter will be frame dynamic if it has any incoming
   parameters which themselves are."
-  {:doc/format :markdown}
   [& {:keys [x y z frame-dynamic] :or {x 0 y 0 z 2 frame-dynamic :default}}]
   {:pre [(some? *show*)]}
   (let [x (bind-keyword-param x Number 0)
@@ -873,7 +856,6 @@
   If you do not specify an explicit value for `:frame-dynamic`, this
   spatial parameter will be frame dynamic if any values returned by
   `f` are dynamic parameters which themselves are frame dynamic."
-  {:doc/format :markdown}
   [fixtures-or-heads f & {:keys [min max frame-dynamic] :or {frame-dynamic :default}}]
   {:pre [(some? *show*) (sequential? fixtures-or-heads) (ifn? f)
          (or (nil? min) (number? min)) (or (nil? max) (number? max)) (< (or min 0) (or max 255))]}

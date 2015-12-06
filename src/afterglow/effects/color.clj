@@ -168,7 +168,6 @@
   is fully saturated at the start of the beat, and fully desaturated
   by the end. A different pattern can be created by supplying a
   different parameter with the `:param` optional keyword argument."
-  {:doc/format :markdown}
   [& {:keys [param] :or {param (params/build-oscillated-param (osc/sawtooth-beat :down? true)
                                                               :max 100)}}]
   (fn [color show snapshot head]
@@ -191,7 +190,6 @@
   Beyond server (as returned by [[beyond-server]]), any color being
   sent to that integrated laser show using [[laser-color-effect]] will
   also be transformed."
-  {:doc/format :markdown}
   [fixtures & {:keys [transform-fn beyond-server] :or {transform-fn (build-saturation-transformation)
                                                        beyond-server nil}}]
   (let [heads (find-rgb-heads fixtures)

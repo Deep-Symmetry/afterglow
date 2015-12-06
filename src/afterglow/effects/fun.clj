@@ -19,12 +19,12 @@
            (afterglow.rhythm Metronome)
            (javax.vecmath Point3d)))
 
-(def ^{:doc/format :markdown} default-down-beat-color
+(def default-down-beat-color
   "The default color for [[metronome-effect]] to flash on the down
   beats."
   (colors/lighten (colors/create-color :red) 20))
 
-(def ^{:doc/format :markdown} default-other-beat-color
+(def default-other-beat-color
   "The default color for [[metronome-effect]] to flash on beats that
   are not down beats."
   (colors/darken (colors/create-color :yellow) 30))
@@ -43,7 +43,6 @@
   driven effect, and can be synchronized to metronomes other than the
   default show metronome by passing them in with optional keyword
   argument `:metronome`."
-  {:doc/format :markdown}
   [fixtures & {:keys [down-beat-color other-beat-color metronome]
                :or {down-beat-color default-down-beat-color
                     other-beat-color default-other-beat-color
@@ -86,7 +85,7 @@
                (fn [snow snapshot]  ;; Arrange to shut down at the end of a measure
                  (reset! running false))))))
 
-(def ^{:doc/format :markdown} default-sparkle-color
+(def default-sparkle-color
   "The default color for the [[sparkle]] effect."
   (colors/create-color "white"))
 
@@ -122,7 +121,6 @@
   the optional keyword parameter `:color`. All parameters may be
   dynamic, including show variables with the standard shorthand of
   passing the variable name as a keyword."
-  {:doc/format :markdown}
   [fixtures & {:keys [color chance fade-time] :or {color default-sparkle-color chance 0.001 fade-time 500}}]
   {:pre [(some? *show*)]}
   (let [color (params/bind-keyword-param color :com.evocomputing.colors/color default-sparkle-color)
@@ -185,7 +183,6 @@
   middle value). The global strobe color can be adjusted via the show
   variables, either by aftertouch or by another effect with no assigners,
   like [[adjust-strobe]]."
-  {:doc/format :markdown}
   [name fixtures level lightness]
   {:pre [(some? *show*)]}
   (let [level-param (params/bind-keyword-param level Number 50)
@@ -216,7 +213,6 @@
   lights, but adjusts show variables used by the [[strobe]] effect. It
   is designed to be run as a parallel cue to offer the user controls
   for adjusting the hue and saturation of any active strobes."
-  {:doc/format :markdown}
   []
   {:pre [(some? *show*)]}
   (let [saved-hue (show/get-variable :strobe-hue)
@@ -231,7 +227,7 @@
               (show/set-variable! :strobe-saturation saved-saturation)
               true))))
 
-(def ^{:doc/format :markdown} default-color-cycle
+(def default-color-cycle
   "The default list of colors to cycle through for
   the [[color-cycle-chase]]."
   [(colors/create-color :red)
@@ -247,7 +243,6 @@
   "A transition phase function which causes the color cycle transition
   to occur during the down beat of each bar. See [[color-cycle-chase]]
   for how this is used."
-  {:doc/format :markdown}
   [snapshot]
   (if (rhythm/snapshot-down-beat? snapshot)
     (rhythm/snapshot-beat-phase snapshot)  ; Transition is occuring
@@ -329,7 +324,6 @@
 
   To give your running effect a meaningful name within user
   interfaces, pass a short and descriptive value with `:effect-name`."
-  {:doc/format :markdown}
   [fixtures measure & {:keys [color-cycle color-index-function transition-phase-function effect-name]
                        :or {color-cycle default-color-cycle
                             color-index-function rhythm/snapshot-bar-within-phrase
@@ -392,7 +386,6 @@
   `:transition-phase-function`. For details about how these are
   interpreted, see [[color-cycle-chase]] which is used to implement
   this chase."
-  {:doc/format :markdown}
   [fixtures & {:keys [center color-cycle color-index-function transition-phase-function effect-name]
                :or {color-cycle default-color-cycle
                     color-index-function rhythm/snapshot-bar-within-phrase
@@ -415,7 +408,6 @@
   `:transition-phase-function`. For details about how these are
   interpreted, see [[color-cycle-chase]] which is used to implement
   this chase."
-  {:doc/format :markdown}
   [fixtures & {:keys [color-cycle color-index-function transition-phase-function effect-name]
                :or {color-cycle default-color-cycle
                     color-index-function rhythm/snapshot-bar-within-phrase
@@ -439,7 +431,6 @@
 
 (defn random-beat-number-param
   "Returns a dynamic number parameter which gets a new random value on each beat."
-  {:doc/format :markdown}
   [& {:keys [min max min-change] :or {min 0 max 255 min-change 0}}]
   {:pre [(some? *show*)]}
   (let [min (params/bind-keyword-param min Number 0)

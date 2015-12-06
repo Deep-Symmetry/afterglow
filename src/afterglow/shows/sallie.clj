@@ -83,7 +83,7 @@
   If the show variable `:also-color-laser` has a value other than `0`,
   the color will be sent to Beyond to affect laser cues as well. Can
   include only a specific set of lights by passing them with
-  `:lights`" {:doc/format :markdown}
+  `:lights`"
   [color & {:keys [include-color-wheels? lights] :or {lights (show/all-fixtures)}}]
   (try
     (let [[c desc] (cond (= (type color) :com.evocomputing.colors/color)

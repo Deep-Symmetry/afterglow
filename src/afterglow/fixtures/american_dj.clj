@@ -1,6 +1,6 @@
 (ns afterglow.fixtures.american-dj
   "Definitions for fixtures provided by [American DJ](http://adj.com)."
-  {:doc/format :markdown}
+  {:author "James Elliott"}
   (:require [afterglow.channels :as chan]))
 
 (defn hypnotic-rgb
