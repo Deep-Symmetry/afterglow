@@ -163,6 +163,13 @@ especially when combined with
 how to effectively leverage these in combination with each other will
 enable you to create most of the basic lighting looks you need.
 
+Following code creates a effect with red color and assigns this effect to all fixtures:
+
+[source,clojure]
+----
+(show/add-effect! :color (afterglow.effects.color/color-effect "Plain red" (create-color "red") (show/all-fixtures)))
+----
+
 TIP: Remember that if aren’t seeing anything when you have assigned color
 effects to a fixture to make sure you also have a dimmer effect setting
 that fixture’s dimmer to some visible level.
