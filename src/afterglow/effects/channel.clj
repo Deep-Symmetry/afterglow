@@ -89,7 +89,7 @@
   current level for all the supplied channels, runs forever, and ends
   immediately when requested."
   [name f channels]
-  {:pre [(some? name) (ifn? f) (sequential? channels)]}
+  {:pre [(some? name) (fn? f) (sequential? channels)]}
   (let [assigners (build-raw-channel-assigners channels f)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
 
@@ -220,7 +220,7 @@
   [percent function-spec]
   (let [range (- (:end function-spec) (:start function-spec))
         scaler (:scale-fn function-spec)
-        percent (clamp-percent-float (if (ifn? scaler)
+        percent (clamp-percent-float (if (fn? scaler)
                                        (scaler percent)
                                        percent))]
     (math/round (+ (:start function-spec) (* (/ percent 100) range)))))

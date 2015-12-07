@@ -256,7 +256,7 @@
   main [metronome](https://github.com/brunchboy/afterglow/blob/master/doc/metronomes.adoc#metronomes)
   in [[*show*]] will be used."
   [osc & {:keys [min max metronome frame-dynamic] :or {min 0 max 255 frame-dynamic true}}]
-  {:pre [(some? *show*) (ifn? osc)]}
+  {:pre [(some? *show*) (fn? osc)]}
   (let [min (bind-keyword-param min Number 0)
         max (bind-keyword-param max Number 255)
         metronome (bind-keyword-param metronome Metronome (:metronome *show*))]
@@ -857,7 +857,7 @@
   spatial parameter will be frame dynamic if any values returned by
   `f` are dynamic parameters which themselves are frame dynamic."
   [fixtures-or-heads f & {:keys [min max frame-dynamic] :or {frame-dynamic :default}}]
-  {:pre [(some? *show*) (sequential? fixtures-or-heads) (ifn? f)
+  {:pre [(some? *show*) (sequential? fixtures-or-heads) (fn? f)
          (or (nil? min) (number? min)) (or (nil? max) (number? max)) (< (or min 0) (or max 255))]}
   (let [heads (chan/expand-heads fixtures-or-heads)
         results (zipmap (map :id heads)

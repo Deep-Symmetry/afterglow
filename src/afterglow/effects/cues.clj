@@ -117,7 +117,7 @@
      Otherwise the standard `:min` and `:max` values will be used."
   [show-key effect & {:keys [short-name color end-keys priority held variables]
                       :or {short-name (:name (effect {})) color :white priority 0}}]
-  {:pre [(some? show-key) (ifn? effect) (satisfies? fx/IEffect (effect {}))]}
+  {:pre [(some? show-key) (fn? effect) (satisfies? fx/IEffect (effect {}))]}
   {:name (name short-name)
    :key (keyword show-key)
    :effect effect
