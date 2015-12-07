@@ -539,6 +539,7 @@
   ([]
    (sync-to-midi-clock nil))
   ([name-filter]
+   (open-inputs-if-needed!)
    (let [result (filter-devices (current-clock-sources) name-filter)]
      (case (count result)
        0 (throw (IllegalArgumentException. (str "No MIDI clock sources " (describe-name-filter name-filter)
