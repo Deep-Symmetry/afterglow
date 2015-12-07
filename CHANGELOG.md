@@ -14,6 +14,8 @@ This change log follows the conventions of
 
 ### Fixed
 
+- Make sure MIDI inputs are connected when `sync-to-midi-clock` is
+  called, issue #10.
 - Some of the oscillator API docs had incorrect details left over from
   earlier versions of the code.
 - A variety of issues ranging from questionable style through misplaced
