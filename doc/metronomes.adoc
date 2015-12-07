@@ -36,7 +36,7 @@ map, for example:
 
 [source,clojure]
 ----
-(:metronome sample-show)
+(:metronome *show*)
 ----
 
 To create a separate metronome, you call:
@@ -62,7 +62,7 @@ can ask it for all the counts as a string by calling:
 
 [source,clojure]
 ----
-(afterglow.rhythm/metro-marker (:metronome sample-show))
+(afterglow.rhythm/metro-marker (:metronome *show*))
 ; -> "15.1.4"
 ----
 
@@ -85,7 +85,7 @@ rendered, and create a consistent look:
 
 [source,clojure]
 ----
-(afterglow.rhythm/metro-snapshot (:metronome sample-show))
+(afterglow.rhythm/metro-snapshot (:metronome *show*))
 ; -> #afterglow.rhythm.MetronomeSnapshot{:start 1431727332206, :bpm 120, :bpb 4, :bpp 8,
 ;    :instant 1431727683636, :beat 703, :bar 176, :phrase 22,
 ;    :beat-phase 0.8600000000000136, :bar-phase 0.7150000000000034,
@@ -100,7 +100,7 @@ this information:
 
 [source,clojure]
 ----
-(def snap (afterglow.rhythm/metro-snapshot (:metronome sample-show)))
+(def snap (afterglow.rhythm/metro-snapshot (:metronome *show*)))
 ; -> #'afterglow.examples/snap
 
 snap
@@ -139,7 +139,7 @@ Pro DJ Link sync:
 
 [source,clojure]
 ----
-(afterglow.rhythm/metro-start (:metronome sample-show) 1)
+(afterglow.rhythm/metro-start (:metronome *show*) 1)
 ; -> 1431727642086
 ----
 
@@ -181,8 +181,8 @@ metronome, you can do this:
 ----
 (require 'afterglow.effects.fun)
 (show/add-effect! :color
-  (afterglow.effects.fun/metronome-effect sample-show
-    (show/all-fixtures sample-show)))
+  (afterglow.effects.fun/metronome-effect *show*
+    (show/all-fixtures *show*)))
 ----
 
 If you want to watch a different metronome, the invocation looks like
@@ -193,7 +193,7 @@ this:
 (show/set-variable :my-metro (afterglow.rhythm/metronome 50))
 (require 'afterglow.effects.fun)
 (show/add-effect! :color
-  (afterglow.effects.fun/metronome-effect sample-show
+  (afterglow.effects.fun/metronome-effect *show*
     (show/all-fixtures) :metronome :my-metro))
 ----
 
