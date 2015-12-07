@@ -1078,6 +1078,16 @@ how the sample show configures it:
                        :priority 1000))
 ----
 
+Example of `transform-colors` from REPL:
+
+[source,clojure]
+----
+(show/add-effect! :color
+  (afterglow.effects/scene "Blue Sparks"
+    (global-color-effect :blue)
+    (color-fx/transform-colors (show/all-fixtures) :priority 1000)))
+----
+
 #### License
 
 +++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
