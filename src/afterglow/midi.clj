@@ -276,24 +276,28 @@
   Returns the opened inputs."
   []
   (swap! midi-transfer-thread start-handoff-thread)
-  (let [port-filter (create-midi-port-filter)
+  (let [old-inputs @midi-inputs
+        port-filter (create-midi-port-filter)
         result (swap! midi-inputs #(if (empty? %)
                                      (map connect-midi-in
                                           (filter port-filter (midi/midi-sources)))
                                      %))]
-    (doseq [_ result])  ;; Make it actually happen now
+    (when (empty? old-inputs)
+      (doseq [_ result]))  ;; Walk the mapped sequence to make the calls actually happen now
     result))
 
 (defn open-outputs-if-needed!
   "Make sure the MIDI output ports are open and ready to receive events.
   Returns the opened outputs."
   []
-  (let [port-filter (create-midi-port-filter)
+  (let [old-outputs @midi-outputs
+        port-filter (create-midi-port-filter)
         result (swap! midi-outputs #(if (empty? %)
                                       (map connect-midi-out
                                            (filter port-filter (midi/midi-sinks)))
                                       %))]
-    (doseq [_ result])  ;; Make it actually happen now
+    (when (empty? old-outputs)
+      (doseq [_ result])) ;; Walk the mapped sequence to make the calls actually happen now
     result))
 
 ;; Appears to be unsafe, we need to just keep them open
@@ -539,7 +543,9 @@
   ([]
    (sync-to-midi-clock nil))
   ([name-filter]
-   (open-inputs-if-needed!)
+   (let [old-inputs @midi-inputs]
+     (open-inputs-if-needed!)
+     (when (empty? old-inputs) (Thread/sleep 300)))  ; Give the clock watcher a chance to spot messages
    (let [result (filter-devices (current-clock-sources) name-filter)]
      (case (count result)
        0 (throw (IllegalArgumentException. (str "No MIDI clock sources " (describe-name-filter name-filter)
