@@ -132,7 +132,8 @@ One of the most common basic effects you will be using to create the
 looks you want is the color effect. To create an effect that will
 assign a color to a fixture (which will assign colors to all of the
 fixture’s heads), or a single head of a fixture, pass the fixture or
-head to:
+head to
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.color.html#var-color-effect[color-effect]:
 
 [source,clojure]
 ----
@@ -141,17 +142,17 @@ head to:
 
 The `name` parameter is intended to help identify the purpose of the
 effect, and shows up when examining the created effect. Put something
-descriptive in there, or use a function like
-`afterglow.examples/global-color-effect` which builds the effect for
-you, figuring out a reasonable name in many cases.
+descriptive in there, or use a helper function like
+http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-global-color-effect[afterglow.examples/global-color-effect]
+which builds the effect for you, figuring out a reasonable name in
+many cases.
 
 The `color` parameter is where you specify the color to assign to the
-lights. It can be a string, specifying the name of a color understood by
-the https://github.com/jolby/colors[jolby/colors] library, or an object
-returned by one of the factories in that library as described in
-<<color#working-with-color,Working with Color>>.
+lights. It should be a color object returned by one of the factories
+in the https://github.com/jolby/colors[jolby/colors] library, as
+described in <<color#working-with-color,Working with Color>>.
 
-In addition to passing in a literal number for the `color` parameter,
+In addition to passing in a color for the `color` parameter,
 you can pass a <<parameters#dynamic-parameters,Dynamic Parameter>>
 whose value depends on a <<metronomes#metronomes,Metronome>>, the
 physical location or orientation of the head, or a show variable,
@@ -163,16 +164,25 @@ especially when combined with
 how to effectively leverage these in combination with each other will
 enable you to create most of the basic lighting looks you need.
 
-Following code creates a effect with red color and assigns this effect to all fixtures:
+The following code creates a effect that assigns a pure red color to
+all fixtures with RGB channels, then adds it to the current show under
+the keyword `:color`:
 
 [source,clojure]
 ----
-(show/add-effect! :color (afterglow.effects.color/color-effect "Plain red" (create-color "red") (show/all-fixtures)))
+(show/add-effect! :color (afterglow.effects.color/color-effect
+                          "Plain red" (create-color "red") (show/all-fixtures)))
 ----
 
 TIP: Remember that if aren’t seeing anything when you have assigned color
 effects to a fixture to make sure you also have a dimmer effect setting
 that fixture’s dimmer to some visible level.
+
+You can also assign colors to lights that use color wheels instead of
+RGB mixing by passing a `true` value with the optional keyword
+argument `:include-color-wheels?` to `color-effect`. Afterglow will
+try to find a color wheel position which is close enough to the
+desired color, and if one can be found, tell the light to use it.
 
 === Direction Effects
 

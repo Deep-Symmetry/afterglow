@@ -69,10 +69,10 @@
 
 (defn color-effect
   "Returns an effect which assigns a color parameter to all heads of
-  the fixtures supplied when invoked. If :include-color-wheels? is
-  passed with a true value, then fixtures which use color wheels are
-  included, otherwise only color-mixing fixtures are included.
-  If :htp? is passed with a true value, highest-takes-precedence
+  the fixtures supplied when invoked. If `:include-color-wheels?` is
+  passed with a `true` value, then fixtures which use color wheels are
+  included, otherwise only color-mixing fixtures are included. If
+  `:htp?` is passed with a `true` value, highest-takes-precedence
   assignment is used with the red, green, and blue color values to
   blend this color with any previous color that might have been
   assigned to the affected fixtures."
