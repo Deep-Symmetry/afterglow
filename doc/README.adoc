@@ -131,7 +131,7 @@ namespace you are put into when you launch the Afterglow project using
 `lein repl` has some <<effects#effect-examples,example
 effects>> that can help get a feel for this concept. To get a full
 understanding of how to use (and create) effects, learn about
-the <<effects#lifecycle,Effect Lifecycle>>.
+the <<effects#the-effect-lifecycle,Effect Lifecycle>>.
 
 The effects need to know what lights they are supposed to control,
 what capabilities they have, and how they are connected (what
