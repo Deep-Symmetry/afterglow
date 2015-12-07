@@ -22,7 +22,7 @@ you can also dive right into it by jumping to the page you want:
 [horizontal]
  <<effects#effects,Effects>>::
 The building blocks of a dynamic light show, which have a
-<<effects#lifecycle,lifecyle>> worth understanding, and a few
+<<effects#the-effect-lifecycle,lifecyle>> worth understanding, and a few
 <<effects#effect-examples,examples>> to get you started.
 
 <<parameters#dynamic-parameters,Dynamic Parameters>>:: Provide inputs
