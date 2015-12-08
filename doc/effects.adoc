@@ -1095,7 +1095,8 @@ how the sample show configures it:
                        :priority 1000))
 ----
 
-Example of `transform-colors` from REPL:
+And here is a complete, concrete example of how you can try out
+`transform-colors` from the REPL:
 
 [source,clojure]
 ----
@@ -1104,6 +1105,9 @@ Example of `transform-colors` from REPL:
     (global-color-effect :blue)
     (color-fx/transform-colors (show/all-fixtures) :priority 1000)))
 ----
+
+> This assigns a blue color to all the lights, and pulses them to
+white once per beat.
 
 #### License
 
