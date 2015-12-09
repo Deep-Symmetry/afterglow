@@ -97,6 +97,11 @@
   ([value type-expected name]
    `(when (some? ~value) (check-type ~value ~type-expected ~name))))
 
+(defn param?
+  "Checks whether the argument is an [[IParam]]."
+  [arg]
+  (satisfies? IParam arg))
+
 (defn head-param?
   "Checks whether the argument is an [[IParam]] which also
   satisfies [[IHeadParam]]."
@@ -181,7 +186,7 @@
   (validate-param-type default type)
   (let [key (keyword variable)
         current (get @(:variables *show*) key)]
-    (if (and (some? current) (satisfies? IParam current))
+    (if (and (some? current) (param? current))
       ;; Found a parameter at the named variable, try to bind now.
       (do (validate-param-type current type key)
           current)  ; Binding succeeded; return underlying parameter
@@ -260,7 +265,7 @@
   (let [min (bind-keyword-param min Number 0)
         max (bind-keyword-param max Number 255)
         metronome (bind-keyword-param metronome Metronome (:metronome *show*))]
-    (if-not (some (partial satisfies? IParam) [min max metronome])
+    (if (not-any? param? [min max metronome])
       ;; Optimize the simple case of all constant parameters
       (let [range (- max min)
             dyn (boolean frame-dynamic)
@@ -452,7 +457,7 @@
         adjust-hue (bind-keyword-param adjust-hue Number 0)
         adjust-saturation (bind-keyword-param adjust-saturation Number 0)
         adjust-lightness (bind-keyword-param adjust-lightness Number 0)]
-    (if-not (some (partial satisfies? IParam) [c r g b h s l adjust-hue adjust-saturation adjust-lightness])
+    (if (not-any? param? [c r g b h s l adjust-hue adjust-saturation adjust-lightness])
       ;; Optimize the degenerate case of all constant parameters
       (let [result-color (atom c)]
         (if (seq (filter identity [r g b]))
@@ -563,7 +568,7 @@
   (let [x (bind-keyword-param x Number 0)
         y (bind-keyword-param y Number 0)
         z (bind-keyword-param z Number 1)]
-    (if-not (some (partial satisfies? IParam) [x y z])
+    (if (not-any? param? [x y z])
       ;; Optimize the degenerate case of all constant parameters
       (Vector3d. x y z)
       ;; Handle the general case of some dynamic parameters
@@ -644,7 +649,7 @@
   {:pre [(some? *show*)]}
   (let [pan (bind-keyword-param pan Number 0)
         tilt (bind-keyword-param tilt Number 0)]
-    (if-not (some (partial satisfies? IParam) [pan tilt])
+    (if (not-any? param? [pan tilt])
       ;; Optimize the degenerate case of all constant parameters
       (vector-from-pan-tilt (make-radians pan radians) (make-radians tilt radians))
       ;; Handle the general case of some dynamic parameters
@@ -703,7 +708,7 @@
   {:pre [(some? *show*)]}
   (let [pan (bind-keyword-param pan Number 0)
         tilt (bind-keyword-param tilt Number 0)]
-    (if-not (some (partial satisfies? IParam) [pan tilt])
+    (if (not-any? param? [pan tilt])
       ;; Optimize the degenerate case of all constant parameters
       (Vector2d. (make-radians pan radians) (make-radians tilt radians))
       ;; Handle the general case of some dynamic parameters
@@ -752,7 +757,7 @@
   (let [x (bind-keyword-param x Number 0)
         y (bind-keyword-param y Number 0)
         z (bind-keyword-param z Number 2)]
-    (if-not (some (partial satisfies? IParam) [x y z])
+    (if (not-any? param? [x y z])
       ;; Optimize the degenerate case of all constant parameters
       (Point3d. x y z)
       ;; Handle the general case of some dynamic parameters
@@ -799,7 +804,7 @@
   now, for fast lookup as each DMX frame is rendered. If scaling is
   requested, scale the results so they fall in the specified range."
   [results scaling start target-range]
-  (if-not (some (partial satisfies? IParam) (vals results))
+  (if (not-any? param? (vals results))
     ;; Optimize the case of all constant results
     (let [precalculated (if scaling
                           (let [smallest (apply min (vals results))
