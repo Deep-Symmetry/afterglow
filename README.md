@@ -489,7 +489,7 @@ Let’s get a little fancy and ramp the dimmers up on a sawtooth curve each beat
 
 ```clojure
 (show/add-effect! :dimmers
-                  (global-dimmer-effect (params/build-oscillated-param
+                  (global-dimmer-effect (oscillators/build-oscillated-param
                                         (oscillators/sawtooth-beat))))
 ```
 
@@ -530,7 +530,7 @@ sync to its beat phase information as well):
 How about a nice cycling rainbow color fade?
 
 ```clojure
-(def hue-param (params/build-oscillated-param (oscillators/sawtooth-bar) :max 360))
+(def hue-param (oscillators/build-oscillated-param (oscillators/sawtooth-bar) :max 360))
 (show/add-effect! :color (global-color-effect
   (params/build-color-param :s 100 :l 50 :h hue-param)))
 ```

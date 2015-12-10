@@ -14,8 +14,7 @@
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
             [taoensso.timbre :as timbre :refer [error]])
-  (:import [afterglow.rhythm Metronome]
-           [javax.media.j3d Transform3D]
+  (:import [javax.media.j3d Transform3D]
            [javax.vecmath Point3d Vector3d Vector2d]))
 
 (defonce
@@ -129,19 +128,6 @@
   [arg]
   (and (satisfies? IParam arg) (frame-dynamic? arg)))
 
-(defn- resolve-oscillator
-  "Handles the calculation of an oscillator based on dynamic parameter
-  values for at least one of min and max."
-  [show params-snapshot min max osc osc-snapshot]
-  (let [min (resolve-param min show params-snapshot)
-        max (resolve-param max show params-snapshot)
-        range (- max min)]
-    (if (neg? range)
-      (do
-        (error "Oscillator dynamic parameters min > max, returning max.")
-        max)
-      (+ min (* range (osc osc-snapshot))))))
-
 (defn resolve-unless-frame-dynamic
   "If the first argument is an [[IParam]] which is not dynamic all the
   way to the frame level, return the result of resolving it now. If it
@@ -250,53 +236,6 @@
   ([value type-expected default param-name]
    `(bind-keyword-param* ~value ~type-expected ~default ~param-name)))
 
-(defn build-oscillated-param
-  "Returns a number parameter that is driven by
-  an [oscillator](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#oscillators).
-  By default will be frame-dynamic, since it oscillates, but if you
-  pass a `false` value for `:frame-dynamic`, the value will be fixed
-  once it is assigned to an effect, acting like a random number
-  generator with the oscillator's range. If you don't specify a
-  `:metronome` to use, the
-  main [metronome](https://github.com/brunchboy/afterglow/blob/master/doc/metronomes.adoc#metronomes)
-  in [[*show*]] will be used."
-  [osc & {:keys [min max metronome frame-dynamic] :or {min 0 max 255 frame-dynamic true}}]
-  {:pre [(some? *show*) (fn? osc)]}
-  (let [min (bind-keyword-param min Number 0)
-        max (bind-keyword-param max Number 255)
-        metronome (bind-keyword-param metronome Metronome (:metronome *show*))]
-    (if (not-any? param? [min max metronome])
-      ;; Optimize the simple case of all constant parameters
-      (let [range (- max min)
-            dyn (boolean frame-dynamic)
-            eval-fn (if (some? metronome)
-                      (fn [_ _] (+ min (* range (osc (metro-snapshot metronome)))))
-                      (fn [_ snapshot] (+ min (* range (osc snapshot)))))]
-        (when-not (pos? range)
-          (throw (IllegalArgumentException. "min must be less than max")))
-        (reify IParam
-          (evaluate [this show snapshot] (eval-fn show snapshot))
-          (frame-dynamic? [this] dyn)
-          (result-type [this] Number)
-          (resolve-non-frame-dynamic-elements [this show snapshot]  ; Nothing to resolve, return self
-            this)))
-      ;; Support the general case where we have an incoming variable parameter
-      (let [dyn (boolean frame-dynamic)
-            eval-fn (if (some? metronome)
-                      (fn [show snapshot]
-                        (resolve-oscillator show snapshot min max osc
-                                                      (metro-snapshot (resolve-param metronome show snapshot))))
-                      (fn [show snapshot]
-                        (resolve-oscillator show snapshot min max osc snapshot)))]
-        (reify IParam
-          (evaluate [this show snapshot] (eval-fn show snapshot))
-          (frame-dynamic? [this] dyn)
-          (result-type [this] Number)
-          (resolve-non-frame-dynamic-elements [this show snapshot]
-            (with-show show
-              (build-oscillated-param osc :min (resolve-unless-frame-dynamic min show snapshot)
-                                      :max (resolve-unless-frame-dynamic max show snapshot)
-                                      :metronome metronome :frame-dynamic dyn))))))))
 
 (defn build-step-param
   "Returns a number parameter that increases over time, ideal for
@@ -908,5 +847,18 @@
           (eval-fn show snapshot head))
         (resolve-non-frame-dynamic-elements-for-head [this show snapshot head]
           (resolve-fn show snapshot head))))))
+
+(defn build-oscillated-param
+  "This function was moved
+  to [[afterglow.effects.oscillators/build-oscillated-param]] in
+  verson 0.1.6 in order to resolve circular dependency issues
+  introduced when Oscillators gained the ability to accept dynamic
+  parameters. This stub was left behind for backwards compatibility,
+  but will be removed in the next version, so please update your code
+  to find it in its new location." {:deprecated "0.1.6"}
+  [osc & {:keys [min max metronome frame-dynamic] :or {min 0 max 255 frame-dynamic true}}]
+  (require '[afterglow.effects.oscillators])
+  ((resolve 'afterglow.effects.oscillators/build-oscillated-param) osc :min min :max max
+   :metronome metronome :frame-dynamic frame-dynamic))
 
 ;; TODO: some kind of random parameter?

@@ -19,7 +19,7 @@ could do something like this:
 ----
 (use 'com.evocomputing.colors)
 (def yellow (create-color "yellow"))
-(def hue-param (params/build-oscillated-param
+(def hue-param (oscillators/build-oscillated-param
   (oscillators/sine-beat) :min (hue (adjust-hue yellow -5))
                           :max (hue (adjust-hue yellow 5))))
 (show/add-effect! :color (global-color-effect
