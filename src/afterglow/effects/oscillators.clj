@@ -158,56 +158,41 @@
   creates a sawtooth wave that ramps upward from `0` to `1` over the
   course of each beat.
 
+  Passing `true` with `:down?` creates an inverse sawtooth wave (one
+  that ramps downward from `1` to `0` over the course of the interval).
+
   Passing the value `:bar` or `:phrase` with the optional keyword
   argument `:interval` makes the wave cycle over a bar or phrase
   instead.
-
-  Passing `true` with `:down?` creates an inverse sawtooth wave (one
-  that ramps downward from `1` to `0` over the course of the interval).
 
   Supplying a value with `:interval-ratio` will run the oscillator at
   the specified fraction or multiple of the chosen interval (beat,
   bar, or phrase), and supplying a `:phase` will offset the oscillator
   from the underlying metronome phase by that amount. (See the
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#sawtooth-oscillators)
-  for an expanded explanation illustrated with graphs.)"
-  [& {:keys [interval down? interval-ratio phase] :or {interval :beat down? false interval-ratio 1 phase 0.0}}]
-  (let [interval (params/bind-keyword-param interval clojure.lang.Keyword :beat)
-        down? (params/bind-keyword-param down? Boolean false)
-        interval-ratio (params/bind-keyword-param interval-ratio Number 1)
-        phase (params/bind-keyword-param phase Number 0)]
-    (if (not-any? params/param? [interval down? interval-ratio phase])  ; Can optimize case with no dynamic parameters
-      (fixed-sawtooth interval down? interval-ratio phase)
-      (reify IOscillator
-        (evaluate [this show snapshot head]
-          (let [interval (params/resolve-param interval show snapshot head)
-                down? (params/resolve-param down? show snapshot head)
-                interval-ratio (params/resolve-param interval-ratio show snapshot head)
-                phase (params/resolve-param phase show snapshot head)
-                base-phase-fn (build-base-phase-fn interval interval-ratio)
-                adjusted-phase-fn (build-adjusted-phase-fn base-phase-fn phase)
-                upward-sawtooth (adjusted-phase-fn snapshot)]
-            (if down?
-              (- 1.0 upward-sawtooth)  ; Convert to a downward sawtooth wave
-              upward-sawtooth)))
-        (resolve-non-frame-dynamic-elements [this show snapshot head]
-          (if (not-any? params/frame-dynamic-param? [interval down? interval-ratio phase])
-            ;; Can now resolve and optimize
-            (let [interval (params/resolve-param interval show snapshot head)
-                  down? (params/resolve-param down? show snapshot head)
-                  interval-ratio (params/resolve-param interval-ratio show snapshot head)
-                  phase (params/resolve-param phase show snapshot head)]            
-              (fixed-sawtooth interval down? interval-ratio phase))
-            ;; Can't optimize, there is at least one frame-dynamic parameter, so return self
-            this))))))
+  for an expanded explanation illustrated with graphs.)
+
+  Other than `:down`, which establishes the basic waveform, all
+  arguments can be [dynamic
+  parameters](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters)."
+  [& {:keys [down? interval interval-ratio phase] :or {down? false interval :beat interval-ratio 1 phase 0.0}}]
+  (let [shape-fn (if down?
+                   (fn [phase] (- 1.0 phase))
+                   (fn [phase] phase))]
+    (build-oscillator shape-fn :interval interval :interval-ratio interval-ratio :phase phase)))
 
 (defn sawtooth-beat
-  "Returns an oscillator which generates a sawtooth wave relative to the phase
-  of the current bar. Passing `true` with `:down?` creates an inverse sawtooth
-  wave (ramps downward rather than upward), supplying a value with
-  `:bar-ratio` will run the oscillator at the specified fraction or
-  multiple of a bar, and supplying a `:phase` will offset the oscillator
-  from the underlying metronome phase by that amount. (See the
+  "In version 0.1.6 this was replaced with the [[sawtooth]] function,
+  and this stub was left for backwards compatibility, but is
+  deprecated and will be removed in a future release.
+
+  Returns an oscillator which generates a sawtooth wave relative to the
+  phase of the current bar. Passing `true` with `:down?` creates an
+  inverse sawtooth wave (ramps downward rather than upward), supplying
+  a value with `:bar-ratio` will run the oscillator at the specified
+  fraction or multiple of a bar, and supplying a `:phase` will offset
+  the oscillator from the underlying metronome phase by that
+  amount. (See the
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#sawtooth-oscillators)
   for an expanded explanation illustrated with graphs.)"
   {:deprecated "0.1.6"}
@@ -215,7 +200,11 @@
   (sawtooth :down? down? :interval-ratio beat-ratio :phase phase))
 
 (defn sawtooth-bar
-  "Returns an oscillator which generates a sawtooth wave relative to the phase
+  "In version 0.1.6 this was replaced with the [[sawtooth]] function,
+  and this stub was left for backwards compatibility, but is
+  deprecated and will be removed in a future release.
+
+  Returns an oscillator which generates a sawtooth wave relative to the phase
   of the current bar. Passing `true` with `:down?` creates an inverse sawtooth
   wave (ramps downward rather than upward), supplying a value with
   `:bar-ratio` will run the oscillator at the specified fraction or
@@ -228,7 +217,11 @@
   (sawtooth :interval :bar :down? down? :interval-ratio bar-ratio :phase phase))
 
 (defn sawtooth-phrase
-  "Returns an oscillator which generates a sawtooth wave relative to the phase
+  "In version 0.1.6 this was replaced with the [[sawtooth]] function,
+  and this stub was left for backwards compatibility, but is
+  deprecated and will be removed in a future release.
+
+  Returns an oscillator which generates a sawtooth wave relative to the phase
   of the current phrase. Passing `true` with `:down?` creates an inverse sawtooth wave
   (ramps downward rather than upward), supplying a value with
   `:phrase-ratio` will run the oscillator at the specified fraction or
