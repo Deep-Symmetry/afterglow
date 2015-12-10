@@ -110,8 +110,7 @@
   for an expanded explanation illustrated with graphs.)"
   [shape-fn & {:keys [interval interval-ratio phase] :or {interval :beat interval-ratio 1 phase 0.0}}]
   {:pre [(fn? shape-fn)]}
-  (let [interval (params/bind-keyword-param interval clojure.lang.Keyword :beat)
-        interval-ratio (params/bind-keyword-param interval-ratio Number 1)
+  (let [interval-ratio (params/bind-keyword-param interval-ratio Number 1)
         phase (params/bind-keyword-param phase Number 0)]
     (if (not-any? params/param? [interval interval-ratio phase])  ; Can optimize case with no dynamic parameters
       (fixed-oscillator shape-fn interval interval-ratio phase)
