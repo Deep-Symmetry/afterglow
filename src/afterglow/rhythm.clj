@@ -53,10 +53,10 @@
     "Get the current bars per phrase, or change it to new-bpp")
   (metro-bpm [metro] [metro new-bpm]
     "Get the current bpm or change the bpm to new-bpm.")
-  (metro-snapshot [metro] [metro offset]
+  (metro-snapshot [metro] [metro instant]
     "Take a snapshot of the current beat, bar, phrase, and phase state.
-  If an offset is supplied, calculates a snapshot based on adding that
-  many milliseconds to the current time.")
+  If an instant is supplied, calculates a snapshot for the corresponding
+  time rather than the current time.")
   (metro-marker [metro]
     "Returns the current time as phrase.bar.beat")
   (metro-add-bpm-watch [metro key f]
@@ -343,15 +343,14 @@
        (ref-set bpp new-bpp))))
 
   (metro-snapshot [metro]
-    (metro-snapshot metro 0))
-  (metro-snapshot [metro offset]
+    (metro-snapshot metro (now)))
+  (metro-snapshot [metro instant]
     (dosync
      (ensure start)
      (ensure bpm)
      (ensure bpb)
      (ensure bpp)
-     (let [instant (+ (now) offset)
-           beat (marker-number instant @start (metro-tick metro))
+     (let [beat (marker-number instant @start (metro-tick metro))
            bar (marker-number instant @start (metro-tock metro))
            phrase (marker-number instant @start (metro-ding metro))
            beat-phase (marker-phase instant @start (metro-tick metro))
