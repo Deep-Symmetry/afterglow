@@ -326,8 +326,7 @@
       (let [ended (at-at/now)
             duration (- ended (:instant snapshot))
             sleep-time (math/round (max 1 (- (:refresh-interval show) duration)))
-            next-frame-snapshot (rhythm/metro-snapshot (:metronome show) sleep-time)]
-        ;; TODO: Send anyone who registered interest an update about when the next frame is due
+            next-frame-snapshot (rhythm/metro-snapshot (:metronome show) (+ ended sleep-time))]
         (doseq [f @(:frame-fns show)]
           (try
             (f next-frame-snapshot)
