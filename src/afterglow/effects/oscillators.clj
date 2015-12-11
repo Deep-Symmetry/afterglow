@@ -14,20 +14,36 @@
   _PROTOCOLS_
   (do
     (defprotocol IOscillator
-  "A waveform generator for building effects that vary at frequencies
-  related to a show metronome."
+  "A waveform generator for building effects that vary at
+  frequencies related to a show metronome."
   (evaluate [this show snapshot head]
     "Determine the value of this oscillator at a given moment of the
     show. In addition to the metronome snapshot, the show and (if
     applicable) fixture head must be passed in case any oscillator
     configuration arguments rely
-    on [variable](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#variable-parameters)
+    on [dynamic](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters)
     or [spatial](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#spatial-parameters)
     parameters.")
   (resolve-non-frame-dynamic-elements [this show snapshot head]
-    "Called when an effect is created using this oscillator. Returns a
+   "Called when an effect is created using this oscillator. Returns a
     version of itself where any non frame-dynamic input parameters
-    have been resolved."))))
+    have been resolved."))
+    (defprotocol IVariableShape
+  "Shape functions which can change over time (depending on the value
+  of dynamic parameters) use this protocol rather than being a simple
+  function, so they can get the context needed for evaluating their
+  dynamic parameters."
+  (value-for-phase [this phase show snapshot head]
+    "Calculate the value of the oscillator's waveform at the specified
+    phase, with support for resolving dynamic parameters that it may
+    depend on. [phase] ranges from `0` to `1`, and so must the return
+    value from this function.")
+  (simplify-unless-frame-dynamic [this show snapshot head]
+    "If none of the dynamic parameters used by the shape function are
+    dynamic to the level of individual frames, return a simple shape
+    function based on their current values which can replace this
+    variable shape function but run faster. Otherwise returns
+    itself."))))
 
 (defn- adjust-phase
   "Helper function to offset a phase by a given amount. Phases range from [0.0-1.0)."
@@ -65,7 +81,7 @@
 
 (defn- fixed-oscillator
   "Build an optimized version of an oscillator which can be used when
-  none of its configuration parameters are dynamic variables."
+  none of its configuration parameters are dynamic parameters."
   [shape-fn interval interval-ratio phase]
   (let [base-phase-fn (build-base-phase-fn interval interval-ratio)
         adjusted-phase-fn (build-adjusted-phase-fn base-phase-fn phase)]
@@ -75,17 +91,74 @@
       (resolve-non-frame-dynamic-elements [this _ _ _]  ; Already resolved
         this))))
 
+(defn- simple-oscillator
+  "Build an oscillator which has at least one dynamic parameter, but
+  whose shape function does not use any."
+  [shape-fn interval interval-ratio phase]
+  (reify IOscillator
+    (evaluate [this show snapshot head]
+      (let [interval (params/resolve-param interval show snapshot head)
+            interval-ratio (params/resolve-param interval-ratio show snapshot head)
+            phase (params/resolve-param phase show snapshot head)
+            base-phase-fn (build-base-phase-fn interval interval-ratio)
+            adjusted-phase-fn (build-adjusted-phase-fn base-phase-fn phase)]
+        (shape-fn (adjusted-phase-fn snapshot))))
+    (resolve-non-frame-dynamic-elements [this show snapshot head]
+      (if (not-any? params/frame-dynamic-param? [interval interval-ratio phase])
+        ;; Can now resolve and optimize
+        (let [interval (params/resolve-param interval show snapshot head)
+              interval-ratio (params/resolve-param interval-ratio show snapshot head)
+              phase (params/resolve-param phase show snapshot head)]
+          (fixed-oscillator shape-fn interval interval-ratio phase))
+        ;; Can't optimize, there is at least one frame-dynamic parameter, so return self
+        this))))
+
+(defn- variable-oscillator
+  "Build an oscillator whose shape function relies on dynamic
+  parameters."
+  [shape-fn interval interval-ratio phase]
+  (reify IOscillator
+    (evaluate [this show snapshot head]
+      (let [interval (params/resolve-param interval show snapshot head)
+            interval-ratio (params/resolve-param interval-ratio show snapshot head)
+            phase (params/resolve-param phase show snapshot head)
+            base-phase-fn (build-base-phase-fn interval interval-ratio)
+            adjusted-phase-fn (build-adjusted-phase-fn base-phase-fn phase)]
+        (value-for-phase shape-fn (adjusted-phase-fn snapshot) show snapshot head)))
+    (resolve-non-frame-dynamic-elements [this show snapshot head]
+      (let [shape-fn (simplify-unless-frame-dynamic shape-fn show snapshot head)]
+        (if (fn? shape-fn)  ; The function simplified and no longer depends on dynamic parameters; we can optimize
+          (if (not-any? params/frame-dynamic-param? [interval interval-ratio phase])
+            ;; No parameters are frame-dynamic, can resolve and optimize all the way to a fixed oscillator
+            (let [interval (params/resolve-param interval show snapshot head)
+                  interval-ratio (params/resolve-param interval-ratio show snapshot head)
+                  phase (params/resolve-param phase show snapshot head)]
+              (fixed-oscillator shape-fn interval interval-ratio phase))
+            ;; Can't fully optimize, there is at least one frame-dynamic parameter, so return a simple oscillator
+            (simple-oscillator shape-fn interval interval-ratio phase))
+          ;; Can't optimize at all, shape-fn is frame-dynamic, so return self
+          this)))))
+
 (defn build-oscillator
   "Returns an oscillator which generates a waveform relative to the
   phase of the current beat, bar, or phrase. The shape of the wave is
-  determined by the first argument, `shape-fn`, which is a function
-  that takes a single argument, the curent phase of the oscillator,
-  which ranges from `0` to `1`, and returns what the value fo the
-  oscillator should be at that phase in its waveform. The value
-  returned by `shape-fn` must also range from `0` to `1`. All of the
-  standard oscillators provided by Afterglow are built in this way.
-  For example, an upwards-sloping sawtooth wave would be created by
-  passing a `shape-fn` that simply returns its argument:
+  determined by the first argument, `shape-fn`.
+
+  In the simplest case, `shape-fn` is a function that takes a single
+  argument, the curent phase of the oscillator, which ranges from `0`
+  to `1`, and returns what the value fo the oscillator should be at
+  that phase in its waveform. The value returned by `shape-fn` must
+  also range from `0` to `1`.
+
+  If the shape of the oscillator needs to be able to change over time
+  depending on the value of a [dynamic
+  parameter](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters),
+  then `shape-fn` will instead implement [[IVariableShape]] in order
+  to be able to resolve those parameters.
+
+  All of the standard oscillators provided by Afterglow are built in
+  this way. For example, an upwards-sloping sawtooth wave would be
+  created by passing a `shape-fn` that simply returns its argument:
 
   ```
   (build-oscillator (fn [phase] phase))
@@ -109,47 +182,23 @@
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#sawtooth-oscillators)
   for an expanded explanation illustrated with graphs.)"
   [shape-fn & {:keys [interval interval-ratio phase] :or {interval :beat interval-ratio 1 phase 0.0}}]
-  {:pre [(fn? shape-fn)]}
+  {:pre [(or (fn? shape-fn) (satisfies? IVariableShape shape-fn))]}
+  (params/validate-param-type interval clojure.lang.Keyword)
   (let [interval-ratio (params/bind-keyword-param interval-ratio Number 1)
         phase (params/bind-keyword-param phase Number 0)]
-    (if (not-any? params/param? [interval interval-ratio phase])  ; Can optimize case with no dynamic parameters
-      (fixed-oscillator shape-fn interval interval-ratio phase)
-      (reify IOscillator
-        (evaluate [this show snapshot head]
-          (let [interval (params/resolve-param interval show snapshot head)
-                interval-ratio (params/resolve-param interval-ratio show snapshot head)
-                phase (params/resolve-param phase show snapshot head)
-                base-phase-fn (build-base-phase-fn interval interval-ratio)
-                adjusted-phase-fn (build-adjusted-phase-fn base-phase-fn phase)]
-            (shape-fn (adjusted-phase-fn snapshot))))
-        (resolve-non-frame-dynamic-elements [this show snapshot head]
-          (if (not-any? params/frame-dynamic-param? [interval interval-ratio phase])
-            ;; Can now resolve and optimize
-            (let [interval (params/resolve-param interval show snapshot head)
-                  interval-ratio (params/resolve-param interval-ratio show snapshot head)
-                  phase (params/resolve-param phase show snapshot head)]
-              (fixed-oscillator shape-fn interval interval-ratio phase))
-            ;; Can't optimize, there is at least one frame-dynamic parameter, so return self
-            this))))))
+    (if (and (not-any? params/param? [interval interval-ratio phase]))
+      (fixed-oscillator shape-fn interval interval-ratio phase)  ; Optimized case with no dynamic parameters
+      ;; We have a variable parameter or variable shape function; need to do a bit more work
+      (if (fn? shape-fn)
+        (simple-oscillator shape-fn interval interval-ratio phase)
+        (variable-oscillator shape-fn interval interval-ratio phase)))))
 
-(defn- fixed-sawtooth
-  "Build an optimized version of the sawtooth oscillator which can be
-  used when none of its configuration parameters are dynamic
-  variables."
-  [interval down? interval-ratio phase]
-  (let [base-phase-fn (build-base-phase-fn interval interval-ratio)
-        adjusted-phase-fn (build-adjusted-phase-fn base-phase-fn phase)]
-    (if down?
-      (reify IOscillator  ; Downward sawtooth wave
-        (evaluate [this _ snapshot _]
-          (- 1.0 (adjusted-phase-fn snapshot)))
-        (resolve-non-frame-dynamic-elements [this _ _ _]  ; Already resolved
-          this))
-      (reify IOscillator  ; Upward sawtooth wave
-        (evaluate [this _ snapshot _]
-          (adjusted-phase-fn snapshot))
-         (resolve-non-frame-dynamic-elements [this _ _ _]  ; Already resolved
-           this)))))
+(defn- build-fixed-sawtooth-shape-fn
+  "Returns the shape function for a sawtooth wave in a fixed direction."
+  [down?]
+  (if down?
+    (fn [phase] (- 1.0 phase))
+    (fn [phase] phase)))
 
 (defn sawtooth
   "Returns an oscillator which generates a sawtooth wave relative to
@@ -171,13 +220,21 @@
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#sawtooth-oscillators)
   for an expanded explanation illustrated with graphs.)
 
-  Other than `:down`, which establishes the basic waveform, all
-  arguments can be [dynamic
+  The arguments can be [dynamic
   parameters](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters)."
   [& {:keys [down? interval interval-ratio phase] :or {down? false interval :beat interval-ratio 1 phase 0.0}}]
-  (let [shape-fn (if down?
-                   (fn [phase] (- 1.0 phase))
-                   (fn [phase] phase))]
+  (let [down? (params/bind-keyword-param down? Boolean false)
+        shape-fn (if (params/param? down?)
+                   (reify IVariableShape  ; The shape function changes based on the dynamic value of down?
+                     (value-for-phase [this phase show snapshot head]
+                       (let [down? (params/resolve-param down? show snapshot head)]
+                         (if down? (- 1.0 phase) phase)))
+                     (simplify-unless-frame-dynamic [this show snapshot head]
+                       (if (params/frame-dynamic-param? down?)
+                         this  ; Can't simplify, we depend on a frame-dynamic parameter
+                         (let [down? (params/resolve-param [down? show snapshot head])]  ; Can simplify
+                           (build-fixed-sawtooth-shape-fn down?)))))
+                   (build-fixed-sawtooth-shape-fn down?))]
     (build-oscillator shape-fn :interval interval :interval-ratio interval-ratio :phase phase)))
 
 (defn sawtooth-beat
@@ -232,8 +289,38 @@
   [& {:keys [down? phrase-ratio phase] :or {down? false phrase-ratio 1 phase 0.0}}]
   (sawtooth :interval :phrase :down? down? :interval-ratio phrase-ratio :phase phase))
 
-(defn triangle-beat
+(defn triangle
   "Returns an oscillator which generates a triangle wave relative to
+  the phase of the current beat, bar, or phrase. With no arguments, it
+  creates a triangle wave that ramps upward from `0` to `1` over the
+  first half of each beat, then back down to `0` through the end of
+  the beat.
+
+  Passing the value `:bar` or `:phrase` with the optional keyword
+  argument `:interval` makes the wave cycle over a bar or phrase
+  instead.
+
+  Supplying a value with `:interval-ratio` will run the oscillator at
+  the specified fraction or multiple of the chosen interval (beat,
+  bar, or phrase), and supplying a `:phase` will offset the oscillator
+  from the underlying metronome phase by that amount. (See the
+  [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#triangle-oscillators)
+  for an expanded explanation illustrated with graphs.)
+  
+  All the arguments can be [dynamic
+  parameters](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters)."
+  [& {:keys [interval interval-ratio phase] :or {interval :beat interval-ratio 1 phase 0.0}}]
+  (build-oscillator (fn [phase]
+                      (if (< phase 0.5)
+                        (* phase 2.0)
+                        (- 2.0 (* phase 2.0))))))
+
+(defn triangle-beat
+  "In version 0.1.6 this was replaced with the [[triangle]] function,
+  and this stub was left for backwards compatibility, but is
+  deprecated and will be removed in a future release.
+
+  Returns an oscillator which generates a triangle wave relative to
   the phase of the current beat. Supplying a value with `:beat-ratio`
   will run the oscillator at the specified fraction or multiple of a
   beat, and supplying a `:phase` will offset the oscillator from the
@@ -241,14 +328,14 @@
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#triangle-oscillators)
   for an expanded explanation illustrated with graphs.)"
   [& {:keys [beat-ratio phase] :or {beat-ratio 1 phase 0.0}}]
-  (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-    (let [reached (adjust-phase (rhythm/snapshot-beat-phase snapshot beat-ratio) phase)]
-      (if (< reached 0.5)
-        (* reached 2.0)
-        (- 2.0 (* reached 2.0))))))
+  (triangle :interval-ratio beat-ratio :phase phase))
 
 (defn triangle-bar
-  "Returns an oscillator which generates a triangle wave relative to
+  "In version 0.1.6 this was replaced with the [[triangle]] function,
+  and this stub was left for backwards compatibility, but is
+  deprecated and will be removed in a future release.
+
+  Returns an oscillator which generates a triangle wave relative to
   the phase of the current bar. Supplying a value with `:bar-ratio`
   will run the oscillator at the specified fraction or multiple of a
   bar, and supplying a `:phase` will offset the oscillator from the
@@ -256,14 +343,14 @@
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#triangle-oscillators)
   for an expanded explanation illustrated with graphs.)"
   [& {:keys [bar-ratio phase] :or {bar-ratio 1 phase 0.0}}]
-  (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-    (let [reached (adjust-phase (rhythm/snapshot-bar-phase snapshot bar-ratio) phase)]
-            (if (< reached 0.5)
-        (* reached 2.0)
-        (- 2.0 (* reached 2.0))))))
+  (triangle :interval :bar :interval-ratio bar-ratio :phase phase))
 
 (defn triangle-phrase
-  "Returns an oscillator which generates a triangle wave relative to
+  "In version 0.1.6 this was replaced with the [[triangle]] function,
+  and this stub was left for backwards compatibility, but is
+  deprecated and will be removed in a future release.
+
+  Returns an oscillator which generates a triangle wave relative to
   the phase of the current phrase. Supplying a value with
   `:phrase-ratio` will run the oscillator at the specified fraction or
   multiple of a phrase, and supplying a `:phase` will offset the
@@ -271,14 +358,35 @@
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#triangle-oscillators)
   for an expanded explanation illustrated with graphs.)"
   [& {:keys [phrase-ratio phase] :or {phrase-ratio 1 phase 0.0}}]
+  (triangle :interval :phrase :interval-ratio phrase-ratio :phase phase))
+
+(defn square
+  "Returns an oscillator which generates a square wave relative to the
+  phase of the current beat. Specifying a value with `:width` adjusts
+  how much of the time the wave is _on_ (high); the default is `0.5`,
+  lower values cause it to turn off sooner, larger values later. In
+  any case the width must be greater than `0.0` and less than `1.0`.
+  Supplying a value with `:beat-ratio` will run the oscillator at the
+  specified fraction or multiple of a beat, and supplying a `:phase`
+  will offset the oscillator from the underlying metronome phase by
+  that amount. (See the
+  [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#square-oscillators)
+  for an expanded explanation illustrated with graphs.)"
+  [& {:keys [width beat-ratio phase] :or {width 0.5 beat-ratio 1 phase 0.0}}]
+  (when-not (and (> width 0.0) (< width 1.0))
+    (throw (IllegalArgumentException. "width must fall between 0.0 and 1.0")))
   (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-    (let [reached (adjust-phase (rhythm/snapshot-phrase-phase snapshot phrase-ratio) phase)]
-      (if (< reached 0.5)
-        (* reached 2.0)
-        (- 2.0 (* reached 2.0))))))
+    (let [reached (adjust-phase (rhythm/snapshot-beat-phase snapshot beat-ratio) phase)]
+      (if (< reached width)
+        1.0
+        0.0))))
 
 (defn square-beat
-  "Returns an oscillator which generates a square wave relative to the
+  "In version 0.1.6 this was replaced with the [[square]] function,
+  and this stub was left for backwards compatibility, but is
+  deprecated and will be removed in a future release.
+
+  Returns an oscillator which generates a square wave relative to the
   phase of the current beat. Specifying a value with `:width` adjusts
   how much of the time the wave is _on_ (high); the default is `0.5`,
   lower values cause it to turn off sooner, larger values later. In
