@@ -314,7 +314,7 @@
   (build-oscillator (fn [phase]
                       (if (< phase 0.5)
                         (* phase 2.0)
-                        (- 2.0 (* phase 2.0))))))
+                        (- 2.0 (* phase 2.0)))) :interval interval :interval-ratio interval-ratio :phase phase))
 
 (defn triangle-beat
   "In version 0.1.6 this was replaced with the [[triangle]] function,
@@ -500,7 +500,8 @@
   (let [two-pi (* 2.0 Math/PI)]
     (build-oscillator (fn [phase]
                         (let [adjusted-phase (- phase 0.25)]
-                          (+ 0.5 (Math/sin (* two-pi adjusted-phase))))))))
+                          (+ 0.5 (Math/sin (* two-pi adjusted-phase)))))
+                      :interval interval :interval-ratio interval-ratio :phase phase)))
 
 (defn sine-beat
   "In version 0.1.6 this was replaced with the [[sine]] function,
