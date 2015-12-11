@@ -168,8 +168,8 @@
   source for [[sine]], [[square]], and [[triangle]].
 
   With no additional arguments, the waveform is defined by calling
-  `shape-fn` with an argument that ramps upward from `0` to `1` over
-  the course of each beat.
+  `shape-fn` with a phase argument that ramps upward from `0` to `1`
+  over the course of each beat.
 
   Passing the value `:bar` or `:phrase` with the optional keyword
   argument `:interval` makes the wave cycle over a bar or phrase
@@ -180,7 +180,10 @@
   bar, or phrase), and supplying a `:phase` will offset the oscillator
   from the underlying metronome phase by that amount. (See the
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#sawtooth-oscillators)
-  for an expanded explanation illustrated with graphs.)"
+  for an expanded explanation illustrated with graphs.)
+
+  The arguments after `shape-fn` can be [dynamic
+  parameters](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters)."
   [shape-fn & {:keys [interval interval-ratio phase] :or {interval :beat interval-ratio 1 phase 0.0}}]
   {:pre [(or (fn? shape-fn) (satisfies? IVariableShape shape-fn))]}
   (params/validate-param-type interval clojure.lang.Keyword)
