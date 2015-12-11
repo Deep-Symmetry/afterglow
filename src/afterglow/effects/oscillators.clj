@@ -503,7 +503,7 @@
   (let [two-pi (* 2.0 Math/PI)]
     (build-oscillator (fn [phase]
                         (let [adjusted-phase (- phase 0.25)]
-                          (+ 0.5 (Math/sin (* two-pi adjusted-phase)))))
+                          (+ 0.5 (* 0.5 (Math/sin (* two-pi adjusted-phase))))))
                       :interval interval :interval-ratio interval-ratio :phase phase)))
 
 (defn sine-beat
