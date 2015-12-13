@@ -155,15 +155,15 @@ http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html[afterglow.effe
 namespace provides functions for creating cues. Unsurprisingly, the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-cue[cue]
 function creates a cue. At its most basic, you pass in two parameters,
-`show-key` which is the keyword that will be used to add the
-cue's effect to the show when the cue is triggered, ending any
-other effect running under that same keyword, and `effect`, which is a
-function that will be called when the cue is triggered, and whose
+`show-key` which is the keyword that will be used to add the cue's
+effect to the show when the cue is triggered, ending any other effect
+running under that same keyword, and `effect-fn`, which is a function
+that will be called when the cue is triggered, and whose
 responsibility is to create and return the effect that the cue should
 add to the show. This is done so that a fresh instance of the effect
 is used each time the cue is triggered, in case the effect is complex
-and maintains its own state. The effect creation function will be
-passed a map containing any <<cues#cue-variables,cue-specific variable bindings>>.
+and maintains its own state. `effect-fn` will be passed a map
+containing any <<cues#cue-variables,cue-specific variable bindings>>.
 
 NOTE: For the very common case of wanting to create a cue to activate
 a fixture-specific _function_ (capability), and perhaps adjust the
@@ -192,7 +192,7 @@ that you might want to create yourself.
 |Sets the text to be displayed for the cue in the web cue grid, and in
 the text display of the controller (if it has one) when the cue is
 running. If you don't supply a short name, the name of the
-effect created by the `effect` function is used, but that may be too
+effect created by the `effect-fn` function is used, but that may be too
 long or not informative enough.
 
 |`:color`
@@ -257,7 +257,7 @@ and will not whiten the cue color while it is held down.
 can be used by the cue's effect. Each variable specification is a map,
 whose content is described in the following table. These
 specifications are used to create any necessary new variables, and a
-map describing any cue-local variables is passed to the `effect`
+map describing any cue-local variables is passed to the `effect-fn`
 function when the cue is triggered, so they can be used as needed when
 creating the cue's effect.
 
@@ -280,7 +280,7 @@ creating the cue's effect.
  or a string, meaning that a new variable should be introduced for the
  cue. The actual name of this new variable will be assigned when the
  cue is activated. In order for the effect to be able to access the
- correct variable, a map is passed to the `effect` function that
+ correct variable, a map is passed to the `effect-fn` function that
  creates the cue's effect. Within this map, the keys are keywords
  created from the strings passed as `:key` values in the cue's
  variable specification maps, and the corresponding values are the

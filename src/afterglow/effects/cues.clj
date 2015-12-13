@@ -20,7 +20,7 @@
 (defn cue
   "Creates a cue for managing in a cue grid. `show-key` will be used
   as the effect keyword when the cue is triggered to add it to a show,
-  ending any existing effect that was using that key. `effect` is a
+  ending any existing effect that was using that key. `effect-fn` is a
   function that will be called to obtain the effect to be started and
   monitored when this cue is triggered. It will be passed a map
   allowing lookup of any temporary variables introduced by the
@@ -64,12 +64,11 @@
     adjustment in the user interface while the cue is running). If it is
     a string rather than a keyword, it identifies a temporary variable
     which need exist only for the duration of the cue. The actual name
-    will be assigned when the cue is activated. In order for the effect
-    function to be able to access the correct variable, it is passed a
-    map whose keys are keywords made from the string `:key` values
-    supplied in the `:variables` list, and whose values are the actual
-    keyword of the corresponding temporary show variable created for the
-    cue.
+    will be assigned when the cue is activated. In order for `effect-fn`
+    to be able to access the correct variable, it is passed a map
+    whose keys are keywords made from the string `:key` values supplied
+    in the `:variables` list, and whose values are the actual keyword
+    of the corresponding temporary show variable created for the cue.
 
   * `:name`, if present, gives the name by which the variable should be
     displayed in the user interface for adjusting it. If not specified,
@@ -115,12 +114,12 @@
   * `:velocity-min` and `:velocity-max` specify the range into
      which MIDI velocity and aftertouch values will be mapped, if they are present.
      Otherwise the standard `:min` and `:max` values will be used."
-  [show-key effect & {:keys [short-name color end-keys priority held variables]
-                      :or {short-name (:name (effect {})) color :white priority 0}}]
-  {:pre [(some? show-key) (fn? effect) (satisfies? fx/IEffect (effect {}))]}
+  [show-key effect-fn & {:keys [short-name color end-keys priority held variables]
+                         :or {short-name (:name (effect-fn {})) color :white priority 0}}]
+  {:pre [(some? show-key) (fn? effect-fn) (satisfies? fx/IEffect (effect-fn {}))]}
   {:name (name short-name)
    :key (keyword show-key)
-   :effect effect
+   :effect effect-fn
    :priority priority
    :held held
    :color (params/interpret-color (if (keyword? color) (name color) color))
