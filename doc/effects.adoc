@@ -869,7 +869,7 @@ through all colors over one bar of the show metronome:
 [source,clojure]
 ----
 (def hue-param (oscillators/build-oscillated-param
-                 (oscillators/sawtooth-bar) :max 360))
+                 (oscillators/sawtooth :interval :bar) :max 360))
 (show/add-effect! :color (global-color-effect
    (params/build-color-param :s 100 :l 50 :h hue-param)))
 ----
@@ -900,7 +900,7 @@ next:
 [source,clojure]
 ----
 (show/set-variable! :hue-param
-  (oscillators/build-oscillated-param (oscillators/sawtooth-bar)
+  (oscillators/build-oscillated-param (oscillators/sawtooth :interval :bar)
     :metronome :timer :max 360))
 ----
 
@@ -957,7 +957,7 @@ combine them? Oh, but we can!
 [source,clojure]
 ----
 (def adjust-param
-  (oscillators/build-oscillated-param (oscillators/sawtooth-bar) :max 360))
+  (oscillators/build-oscillated-param (oscillators/sawtooth :interval :bar) :max 360))
 (show/add-effect! :color (global-color-effect
   (params/build-color-param :s 100 :l 50 :h hue-gradient
                             :adjust-hue adjust-param)))
@@ -1024,12 +1024,12 @@ Loop and `transform-colors`.
   "Creates a color transformation for use with [[transform-colors]]
   which changes the saturation based on a variable parameter. If no
   parameter is supplied, the default is to use an oscillated parameter
-  based on [[sawtooth-beat]] with `:down?` set to `true` so the color
+  based on [[sawtooth]] with `:down?` set to `true` so the color
   is fully saturated at the start of the beat, and fully desaturated
   by the end. A different pattern can be created by supplying a
   different parameter with the `:param` optional keyword argument."
   {:doc/format :markdown}
-  [& {:keys [param] :or {param (oscillators/build-oscillated-param (osc/sawtooth-beat :down? true)
+  [& {:keys [param] :or {param (oscillators/build-oscillated-param (osc/sawtooth :down? true)
                                                                    :max 100)}}]
   (fn [color show snapshot head]
     (let [saturation (colors/clamp-percent-float
@@ -1045,7 +1045,7 @@ implements the desaturate-over-each-beat behavior described above:
 
 [source,clojure]
 ----
-(oscillators/build-oscillated-param (oscillators/sawtooth-beat :down? true) :max 100)
+(oscillators/build-oscillated-param (oscillators/sawtooth :down? true) :max 100)
 ----
 
 The downwards-direction sawtooth wave from 100 to 0 each beat causes
