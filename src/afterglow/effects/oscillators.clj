@@ -13,37 +13,37 @@
     :doc "Protect protocols against namespace reloads"}
   _PROTOCOLS_
   (do
-    (defprotocol IOscillator
+(defprotocol IOscillator
   "A waveform generator for building effects that vary at
   frequencies related to a show metronome."
   (evaluate [this show snapshot head]
-    "Determine the value of this oscillator at a given moment of the
-    show. In addition to the metronome snapshot, the show and (if
-    applicable) fixture head must be passed in case any oscillator
-    configuration arguments rely
-    on [dynamic](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters)
-    or [spatial](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#spatial-parameters)
-    parameters.")
+  "Determine the value of this oscillator at a given moment of the
+  show. In addition to the metronome snapshot, the show and (if
+  applicable) fixture head must be passed in case any oscillator
+  configuration arguments rely
+  on [dynamic](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters)
+  or [spatial](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#spatial-parameters)
+  parameters.")
   (resolve-non-frame-dynamic-elements [this show snapshot head]
-   "Called when an effect is created using this oscillator. Returns a
-    version of itself where any non frame-dynamic input parameters
-    have been resolved."))
-    (defprotocol IVariableShape
+  "Called when an effect is created using this oscillator. Returns a
+  version of itself where any non frame-dynamic input parameters have
+  been resolved."))
+(defprotocol IVariableShape
   "Shape functions which can change over time (depending on the value
   of dynamic parameters) use this protocol rather than being a simple
   function, so they can get the context needed for evaluating their
   dynamic parameters."
   (value-for-phase [this phase show snapshot head]
-    "Calculate the value of the oscillator's waveform at the specified
-    phase, with support for resolving dynamic parameters that it may
-    depend on. [phase] ranges from `0` to `1`, and so must the return
-    value from this function.")
+  "Calculate the value of the oscillator's waveform at the specified
+  phase, with support for resolving dynamic parameters that it may
+  depend on. [phase] ranges from `0` to `1`, and so must the return
+  value from this function.")
   (simplify-unless-frame-dynamic [this show snapshot head]
-    "If none of the dynamic parameters used by the shape function are
-    dynamic to the level of individual frames, return a simple shape
-    function based on their current values which can replace this
-    variable shape function but run faster. Otherwise returns
-    itself."))))
+  "If none of the dynamic parameters used by the shape function are
+  dynamic to the level of individual frames, return a simple shape
+  function based on their current values which can replace this
+  variable shape function but run faster. Otherwise returns
+  itself."))))
 
 (defn- adjust-phase
   "Helper function to offset a phase by a given amount. Phases range from [0.0-1.0)."

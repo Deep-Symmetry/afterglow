@@ -22,37 +22,37 @@
     :doc "Protect protocols against namespace reloads"}
   _PROTOCOLS_
   (do
-    (defprotocol IParam
+(defprotocol IParam
   "A dynamic parameter which gets evaluated during the run of a light show,
   with access to the show and its metronome snapshot."
   (evaluate [this show snapshot]
-    "Determine the value of this parameter at a given moment of the show.")
+  "Determine the value of this parameter at a given moment of the show.")
   (frame-dynamic? [this]
-    "If true, this parameter varies at every frame of the show, and
-    must be invoked by effect assigners for each frame of DMX data
-    generated. If false, the value can be determined at the time an
-    effect is created, and passed as a primitive to the assigners.")
+  "If true, this parameter varies at every frame of the show, and must
+  be invoked by effect assigners for each frame of DMX data generated.
+  If false, the value can be determined at the time an effect is
+  created, and passed as a primitive to the assigners.")
   (result-type [this]
-    "The type of value that will be returned when this parameter is resolved.")
+  "The type of value that will be returned when this parameter is resolved.")
   (resolve-non-frame-dynamic-elements [this show snapshot]
-    "Called when an effect is created using this parameter. If it is
-    not frame-dynamic, returns its final resolution; otherwise,
-    returns a version of itself where any non frame-dynamic input
-    parameters have been resolved."))
+  "Called when an effect is created using this parameter. If it is not
+  frame-dynamic, returns its final resolution; otherwise, returns a
+  version of itself where any non frame-dynamic input parameters have
+  been resolved."))
 
-    (defprotocol IHeadParam
+(defprotocol IHeadParam
   "An extension to IParam for parameters that are specific to a given
   head (because they depend on things like its orientation or
   location)."
   (evaluate-for-head [this show snapshot head]
-    "Determine the value of this numeric parameter at a given moment
-    of the show, as applied to the specific fixture head.")
-    (resolve-non-frame-dynamic-elements-for-head [this show snapshot head]
-    "Called when an effect is created using this parameter and there
-    is head information available. If the parameter is not
-    frame-dynamic, returns its final resolution; otherwise, returns a
-    version of itself where any non frame-dynamic input parameters
-    have been resolved."))))
+  "Determine the value of this numeric parameter at a given moment
+  of the show, as applied to the specific fixture head.")
+  (resolve-non-frame-dynamic-elements-for-head [this show snapshot head]
+  "Called when an effect is created using this parameter and there is
+  head information available. If the parameter is not frame-dynamic,
+  returns its final resolution; otherwise, returns a version of itself
+  where any non frame-dynamic input parameters have been
+  resolved."))))
 
 
 (defn check-type

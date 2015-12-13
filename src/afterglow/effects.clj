@@ -16,45 +16,45 @@
     :doc "Protect protocols against namespace reloads"}
   _PROTOCOLS_
   (do
-    (defprotocol IAssigner
+(defprotocol IAssigner
   "Assign some attribute (color, attitude, channel value) to an
   element of a light show at a given point in time. Any previous
   assignment to this element will be supplied as an argument, and may
   be tweaked or ignored as needs dictate. The target will be a subtree
   of the show's fixtures, currently either a head or channel."
   (assign [this show ^MetronomeSnapshot snapshot target previous-assignment]
-    "Calculate the value the show element should have at this moment
-  in time. Return a value appropriate for the kind of assignment, e.g.
+  "Calculate the value the show element should have at this moment in
+  time. Return a value appropriate for the kind of assignment, e.g.
   color object, channel value."))
 
 ;; At each DMX frame generation, we will run through all the effects and ask them if they are still
 ;; active. If not, they will be removed from the list of active effects. For the remaining ones,
 ;; we obtain a list of assignments they want to make, and handle them as described above.
 (defprotocol IEffect
-    "The effect is the basic building block of an Afterglow light show.
+  "The effect is the basic building block of an Afterglow light show.
   It generates a list of assignments that should be in effect at a
   given moment in the show. It can end on its own, or be asked to end.
   When asked, it may end immediately, or after some final activity,
   such as a fade."
-    (still-active? [this show snapshot]
-      "An inquiry about whether this effect is finished, and can be
-      cleaned up. A `false` return value will remove the effect from
-      the show.")
-    (generate [this show snapshot]
-      "List the asignments needed to implement the desired effect at
-      this moment in time. Must return a sequence of
-      `afterglow.effects.Assigner` objects which will be merged into
-      the current frame based on their kind, target, and the effect's
-      priority. If the effect currently has nothing to contribute, it
-      may return an empty sequence.")
-    (end [this show snapshot]
-      "The effect has been asked to end. It should arrange to finish
-      as soon as possible; return `true` if it can end immediately,
-      and it will be removed from the show. Otherwise it will be
-      allowed to continue running as it performs its graceful shutdown
-      until [[still-active?]] reuthrns `false`. If the user asks to
-      end the effect a second time during htis process, however, it
-      will simply be removed from the show at that time."))))
+  (still-active? [this show snapshot]
+  "An inquiry about whether this effect is finished, and can be
+  cleaned up. A `false` return value will remove the effect from the
+  show.")
+  (generate [this show snapshot]
+  "List the asignments needed to implement the desired effect at this
+  moment in time. Must return a sequence of
+  `afterglow.effects.Assigner` objects which will be merged into the
+  current frame based on their kind, target, and the effect's
+  priority. If the effect currently has nothing to contribute, it may
+  return an empty sequence.")
+  (end [this show snapshot]
+  "The effect has been asked to end. It should arrange to finish as
+  soon as possible; return `true` if it can end immediately, and it
+  will be removed from the show. Otherwise it will be allowed to
+  continue running as it performs its graceful shutdown
+  until [[still-active?]] reuthrns `false`. If the user asks to end
+  the effect a second time during htis process, however, it will
+  simply be removed from the show at that time."))))
 
 ;; See https://github.com/brunchboy/afterglow/blob/master/doc/rendering_loop.adoc#assigners
 ;;

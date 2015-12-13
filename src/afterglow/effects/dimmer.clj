@@ -69,23 +69,23 @@
     :doc "Protect protocols against namespace reloads"}
   _PROTOCOLS_
   (do
-    (defprotocol IDimmerMaster
+(defprotocol IDimmerMaster
   "A chainable limiter of dimmer cues."
   (master-set-level [master new-level]
-    "Set the level of this master, as a percentage from 0 to 100. Any
-    value less than 100 will cause the dimmer cues attached to this
-    master to have their levels scaled back by that amount. If there
-    are any parent masters attached to this one, they may further
-    scale back the value in turn.")
+  "Set the level of this master, as a percentage from 0 to 100. Any
+  value less than 100 will cause the dimmer cues attached to this
+  master to have their levels scaled back by that amount. If there are
+  any parent masters attached to this one, they may further scale back
+  the value in turn.")
   (master-get-level [master]
-    "Get the level of this master, as a percentage from 0 to 100. Any
-    value less than 100 will cause the dimmer cues attached to this
-    master to have their levels scaled back by that amount. If there
-    are any parent masters attached to this one, they may further
-    scale back the value in turn.")
+  "Get the level of this master, as a percentage from 0 to 100. Any
+  value less than 100 will cause the dimmer cues attached to this
+  master to have their levels scaled back by that amount. If there are
+  any parent masters attached to this one, they may further scale back
+  the value in turn.")
   (master-scale [master value]
-    "Scale down the value being sent to a dimmer according to this
-    master level, and any parent masters associated with it."))))
+  "Scale down the value being sent to a dimmer according to this
+  master level, and any parent masters associated with it."))))
 
 (defrecord Master [level parent]
   IDimmerMaster

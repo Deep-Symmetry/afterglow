@@ -24,42 +24,42 @@
     :doc "Protect protocols against namespace reloads"}
   _PROTOCOLS_
   (do
-    (defprotocol IOverlay
+(defprotocol IOverlay
   "An activity which takes over part of the user interface
   while it is active."
   (captured-controls [this]
-    "The MIDI control-change events that will be consumed by this
+  "The MIDI control-change events that will be consumed by this
   overlay while it is active, a set of integers.")
   (captured-notes [this]
-    "The MIDI note events that will be consumed by this overlay while
+  "The MIDI note events that will be consumed by this overlay while
   it is active, a set of integers.")
   (adjust-interface [this controller]
-    "Set values for the next frame of the controller interface; return
-  a falsey value if the overlay is finished and should be removed.")
+  "Set values for the next frame of the controller interface; return a
+  falsey value if the overlay is finished and should be removed.")
   (handle-control-change [this controller message]
-    "Called when a MIDI control-change event matching the
+  "Called when a MIDI control-change event matching the
   captured-controls lists has been received. Return a truthy value if
   the overlay has consumed the event, so it should not be processed
-  further. If the special value :done is returned, it further
+  further. If the special value `:done` is returned, it further
   indicates the overlay is finished and should be removed.")
   (handle-note-on [this controller message]
-    "Called when a MIDI note-on event matching the captured-notes
-  lists has been received. Return a truthy value if the overlay has
-  consumed the event, so it should not be processed further. If the
-  special value :done is returned, it further indicates the overlay is
+  "Called when a MIDI note-on event matching the captured-notes lists
+  has been received. Return a truthy value if the overlay has consumed
+  the event, so it should not be processed further. If the special
+  value `:done` is returned, it further indicates the overlay is
   finished and should be removed.")
   (handle-note-off [this controller message]
-    "Called when a MIDI note-off event matching the captured-notes
-  lists has been received. Return a truthy value if the overlay has
-  consumed the event, so it should not be processed further. If the
-  special value :done is returned, it further indicates the overlay is
+  "Called when a MIDI note-off event matching the captured-notes lists
+  has been received. Return a truthy value if the overlay has consumed
+  the event, so it should not be processed further. If the special
+  value `:done` is returned, it further indicates the overlay is
   finished and should be removed.")
   (handle-aftertouch [this controller message]
-    "Called when a MIDI aftertouch event matching the captured-notes
+  "Called when a MIDI aftertouch event matching the captured-notes
   lists has been received. Return a truthy value if the overlay has
   consumed the event, so it should not be processed further. If the
-  special value :done is returned, it further indicates the overlay is
-  finished and should be removed."))))
+  special value `:done` is returned, it further indicates the overlay
+  is finished and should be removed."))))
 
 (defn add-overlay
   "Add a temporary overlay to the interface."

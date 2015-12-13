@@ -354,22 +354,22 @@
     :doc "Protect protocols against namespace reloads"}
   _PROTOCOLS_
   (do
-    (defprotocol IClockSync
+(defprotocol IClockSync
   "A simple protocol for our clock sync object, allowing it to be
   started and stopped, and the status checked."
-      (sync-start [this] "Start synchronizing your metronome.")
-      (sync-stop [this] "Stop synchronizing your metronome.")
-      (sync-status [this] "Report on how well synchronization is
-      working. Returns a map with keys :type (a keyword that uniquely
-      identifies the kind of sync in effect, currently chosen
-      from :manual, :midi, and :dj-link), :current (true if sync
-      appears to be working at the present time), :level (a keyword
-      that indicates how strong of a sync is being performed; :bpm
-      means basic BPM following, :beat adds tracking of beat
-      locations, :bar adds tracking of bar starts (down beats),
-      and :phrase would add tracking of phrase starts, if any sync
-      mechanism ever offers that), and :status, which is a
-      human-oriented summmary of the status."))))
+  (sync-start [this] "Start synchronizing your metronome.")
+  (sync-stop [this] "Stop synchronizing your metronome.")
+  (sync-status [this]
+  "Report on how well synchronization is working. Returns a map with
+  keys `:type` (a keyword that uniquely identifies the kind of sync in
+  effect, currently chosen from `:manual`, `:midi`, and `:dj-link`),
+  `:current` (true if sync appears to be working at the present time),
+  `:level` (a keyword that indicates how strong of a sync is being
+  performed; `:bpm` means basic BPM following, `:beat` adds tracking
+  of beat locations, `:bar` adds tracking of bar starts (down beats),
+  and `:phrase` would add tracking of phrase starts, if any sync
+  mechanism ever offers that), and `:status`, which is a human-oriented
+  summmary of the status."))))
 
 (defn interval-to-bpm
   "Given an interval between MIDI clock pulses in milliseconds,
