@@ -98,12 +98,12 @@ oscillates, related to beats, bars, or phrases of the underlying
 metronome. The resulting value can then be scaled to meet the needs of
 whatever is being generated (a dimmer level, color component, or light
 rotation). Oscillated parameters are created by calling
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-oscillated-param[afterglow.effects.params/build-oscillated-param].
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.oscillators.html#var-build-oscillated-param[afterglow.effects.oscillators/build-oscillated-param].
 
 
 [source,clojure]
 ----
-(afterglow.effects.params/build-oscillated-param oscillator)
+(afterglow.effects.oscillators/build-oscillated-param oscillator)
 ----
 
 The `oscillator` parameter is an

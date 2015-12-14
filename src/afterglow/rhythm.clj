@@ -10,105 +10,118 @@
     :doc "Protect protocols against namespace reloads."}
   _PROTOCOLS_
   (do
-    (defprotocol IMetronome
+(defprotocol IMetronome
   "A time-keeping tool for music-related systems."
   (metro-start [metro] [metro start-beat]
-    "Returns the start time of the metronome. Also restarts the
-  metronome at start-beat if given.")
+  "Returns the start time of the metronome. Also restarts the
+  metronome at `start-beat` if given.")
   (metro-bar-start [metro start-bar]
-    "Restarts the metronome at start-bar, keeping the beat phase
+  "Restarts the metronome at `start-bar`, keeping the beat phase
   unchanged in case it is being synced to an external source.")
   (metro-phrase-start [metro start-phrase]
-    "Restarts the metronome at start-phrase, keeping the beat phase
+  "Restarts the metronome at `start-phrase`, keeping the beat phase
   unchanged in case it is being synced to an external source.")
   (metro-adjust [metro ms]
-    "Adds a number of milliseconds to the start time of the metronome.")
+  "Adds a number of milliseconds to the start time of the metronome.")
   (metro-tick [metro]
-    "Returns the duration of one beat in milleseconds.")
+  "Returns the duration of one beat in milleseconds.")
   (metro-tock [metro]
-    "Returns the duration of one bar in milliseconds.")
+  "Returns the duration of one bar in milliseconds.")
   (metro-ding [metro]
-    "Returns the duration of one phrase in milliseconds.")
+  "Returns the duration of one phrase in milliseconds.")
   (metro-beat [metro] [metro beat]
-    "Returns the next beat number or the timestamp (in milliseconds) of the
-  given beat.")
+  "Returns the next beat number or the timestamp (in milliseconds) of the
+  given `beat`.")
   (metro-beat-phase [metro] [metro phase]
-    "Returns the distance traveled into the current beat [0.0, 1.0), or
-  adjusts the phase to match the one supplied.")
+  "Returns the distance traveled into the current beat as a phase
+  number ranging from [0.0, 1.0), or adjusts the phase to match the
+  one supplied.")
   (metro-bar [metro] [metro bar]
-    "Returns the next bar number or the timestamp (in milliseconds) of the
-  given bar")
+  "Returns the next bar number or the timestamp (in milliseconds) of
+  the given `bar`.")
   (metro-bar-phase [metro] [metro phase]
-    "Returns the distance traveled into the current bar [0.0, 1.0), or
-       adjusts the phase to match the one supplied.")
+  "Returns the distance traveled into the current bar as a phase
+  number ranging from [0.0, 1.0), or adjusts the phase to match the
+  one supplied.")
   (metro-phrase [metro] [metro phrase]
-    "Returns the next phrase number or the timestamp (in milliseconds)
-  of the given phrase")
+  "Returns the next phrase number or the timestamp (in milliseconds)
+  of the given `phrase`.")
   (metro-phrase-phase [metro] [metro phase]
-    "Returns the distance traveled into the current phrase [0.0, 1.0),
-  or adjusts the phase to match the one supplied.")
+  "Returns the distance traveled into the current phrase as a phase
+  number ranging from [0.0, 1.0), or adjusts the phase to match the
+  one supplied.")
   (metro-bpb [metro] [metro new-bpb]
-    "Get the current beats per bar or change it to new-bpb")
+  "Get the current beats per bar or change it to `new-bpb`")
   (metro-bpp [metro] [metro new-bpp]
-    "Get the current bars per phrase, or change it to new-bpp")
+  "Get the current bars per phrase, or change it to `new-bpp`")
   (metro-bpm [metro] [metro new-bpm]
-    "Get the current bpm or change the bpm to new-bpm.")
-  (metro-snapshot [metro] [metro offset]
-    "Take a snapshot of the current beat, bar, phrase, and phase state.
-  If an offset is supplied, calculates a snapshot based on adding that
-  many milliseconds to the current time.")
+  "Get the current bpm or change the bpm to `new-bpm`.")
+  (metro-snapshot [metro] [metro instant]
+  "Take a snapshot of the current beat, bar, phrase, and phase state.
+  If `instant` is supplied, calculates a snapshot for the
+  corresponding time rather than the current time.")
   (metro-marker [metro]
-    "Returns the current time as phrase.bar.beat")
+  "Returns the current time as `\"phrase.bar.beat\"`")
   (metro-add-bpm-watch [metro key f]
-    "Register a function to be called whenever the metronome's BPM
-  changes. The key and function arguments are the same as found in
-  clojure.core/add-watch, and in fact are passed on to it.")
+  "Register a function to be called whenever the metronome's BPM
+  changes. The `key` and `function` arguments are the same as found in
+  [clojure.core/add-watch](http://clojuredocs.org/clojure.core/add-watch),
+  and in fact are passed on to it.")
   (metro-remove-bpm-watch [metro key]
-    "Stop calling the function which was registered with the specified
-  key."))
+  "Stop calling the function which was registered with the specified
+  `key`."))
 
-    (defprotocol ISnapshot
+(defprotocol ISnapshot
   "A snapshot to support a series of beat and phase calculations with
   respect to a given instant in time. Used by Afterglow so that all
-  phase computations run when updating a frame of DMX data have a
-  consistent sense of when they are being run, to avoid, for example,
-  half the lights acting as if they are at the very end of a beat
-  while the rest are at the beginning of the next beat, due to a fluke
-  in timing as their evaluation occurs over time. Snapshots also
+  phase computations performed when updating a frame of DMX data have
+  a consistent sense of when they are being run, to avoid, for
+  example, half the lights acting as if they are at the very end of a
+  beat while the rest are at the beginning of the next beat, due to a
+  fluke in timing as their evaluation occurs over time. Snapshots also
   extend the notions of beat phase to enable oscillators with
   frequencies that are fractions or multiples of a beat."
   (snapshot-beat-phase [snapshot] [snapshot beat-ratio]
-    "Determine the phase with respect to a multiple or fraction of beats.
-    Calling this with a beat-ratio of 1 (the default if not provided)
-    is equivalent to beat-phase, a beat-ratio of bpb is equivalent to
-    bar-phase, 1/2 oscillates twice as fast as 1, 3/4 oscillates 4 times
-    every three beats... Phases range from [0-1).")
+  "Determine the metronome's phase at the time of the snapshot with
+  respect to a multiple or fraction of beats. Calling this with a
+  `beat-ratio` of 1 (the default if not provided) is equivalent
+  to [[metro-beat-phase]], calling with a `beat-ratio` equal
+  to [[metro-bpb]] is equivalent to [[metro-bar-phase]], 1/2
+  oscillates twice as fast as 1, 3/4 oscillates 4 times every three
+  beats... Phases range from [0-1).")
   (snapshot-bar-phase [snapshot] [snapshot bar-ratio]
-    "Determine the phase with respect to a multiple or fraction of bars.
-    Calling this with a beat-ratio of 1 (the default if not provided) is
-    equivalent to bar-phase, 1/2 oscillates twice as fast as 1, 3/4
-    oscillates 4 times every three bars... Phases range from [0-1).")
+  "Determine the metronome's phase at the time of the snapshot with
+  respect to a multiple or fraction of bars. Calling this with a
+  `bar-ratio` of 1 (the default if not provided) is equivalent
+  to [[metro-bar-phase]], calling with a `bar-ratio` equal
+  to [[metro-bpp]] is equivalent to [[metro-phrase-phase]], 1/2
+  oscillates twice as fast as 1, 3/4 oscillates 4 times every three
+  bars... Phases range from [0-1).")
   (snapshot-beat-within-bar [snapshot]
-    "Returns the beat number relative to the start of the bar: The down
-    beat is 1, and the range goes up to the beats-per-bar of the metronome.")
+  "Returns the beat number within the snapshot relative to the start
+  of the bar: The down beat is 1, and the range goes up to the value
+  returned by [[metro-bpb]] for the metronome.")
   (snapshot-beat-within-phrase [snapshot]
-    "Returns the beat number relative to the start of the phrase: The
-    first beat is 1, and the range goes up to the beats-per-bar times
-    bars-per-phrase of the metronome.")
+  "Returns the beat number within the snapshot relative to the start
+  of the phrase: The first beat is 1, and the range goes up to the
+  values returned by
+  [[metro-bpb]] times [[metro-bpp]] for the metronome.")
   (snapshot-down-beat? [snapshot]
-    "True if the current beat is the first beat in the current bar.")
+  "True if the current beat at the time of the snapshot was the first
+  beat in its bar.")
   (snapshot-phrase-phase [snapshot] [snapshot phrase-ratio]
-    "Determine the phase with respect to a multiple or fraction of
-    phrases. Calling this with a phrase-ratio of 1 (the default if
-    not provided) is equivalent to phrase-phase, 1/2 oscillates twice
-    as fast as 1, 3/4 oscillates 4 times every three bars... Phases
-    range from [0-1).")
+  "Determine the metronome's phase at the time of the snapshot with
+  respect to a multiple or fraction of phrases. Calling this with a
+  `phrase-ratio` of 1 (the default if not provided) is equivalent
+  to [[metro-phrase-phase]], 1/2 oscillates twice as fast as 1, 3/4
+  oscillates 4 times every three bars... Phases range from [0-1).")
   (snapshot-bar-within-phrase [snapshot]
-    "Returns the bar number relative to the start of the phrase:
-    Ranges from 1 to the bars-per-phrase of the metronome.")
+  "Returns the bar number within the snapshot relative to the start of
+  the phrase: Ranges from 1 to the value returned by [[metro-bpp]] for
+  the metronome.")
   (snapshot-phrase-start? [snapshot]
-    "True if the current beat is the first beat in the current
-    phrase."))))
+  "True if the current beat at the time of the snapshot wass the first
+  beat in its phrase."))))
 
 ;; Rhythm
 
@@ -120,29 +133,31 @@
 ;; units (ms) based on the current BPM and signature settings.
 
 (defn beat-ms
-  "Convert 'b' beats to milliseconds at the given 'bpm'."
+  "Convert `b` beats to milliseconds at the given `bpm`."
   [b bpm] (* (/ 60000 bpm) b))
 
 (defn marker-number
   "Helper function to calculate the beat, bar, or phrase number in
-  effect at a given moment, given a starting point and beat, bar,
-  or phrase interval."
+  effect at a given `instant` (in milliseconds), given a starting
+  point (`start`, also in milliseconds), and the `interval` (also in
+  milliseconds) between beats, bars, or phrases."
   [instant start interval]
   (inc (long (/ (- instant start) interval))))
 
 (defn marker-phase
   "Helper function to calculate the beat, bar, or phrase phase at a
-  given moment, given a starting point and beat interval."
+  given `instant` (in millseconds), given a `start` time (also in
+  milliseconds) and `interval` (in milliseconds)."
   [instant start interval]
   (let [marker-ratio (/ (- instant start) interval)]
     (- (double marker-ratio) (long marker-ratio))))
 
 (defn- enhanced-phase
   "Calculate a phase with respect to multiples or fractions of a
-  marker interval (beat, bar, or phrase), given the phase with respect
-  to that marker, the number of that marker, and the desired ratio. A
-  ratio of 1 returns the phase unchanged; 1/2 oscillates twice as
-  fast, 3/4 oscillates 4 times every three markers..."
+  marker (beat, bar, or phrase), given the `phase` with respect to
+  that marker, the number of that `marker`, and the desired ratio. A
+  `desired-ratio` of 1 returns the phase unchanged; 1/2 oscillates
+  twice as fast, 3/4 oscillates 4 times every three markers..."
   [marker phase desired-ratio]
   (let [r (rationalize desired-ratio)
           numerator (if (ratio? r) (numerator r) r)
@@ -343,15 +358,14 @@
        (ref-set bpp new-bpp))))
 
   (metro-snapshot [metro]
-    (metro-snapshot metro 0))
-  (metro-snapshot [metro offset]
+    (metro-snapshot metro (now)))
+  (metro-snapshot [metro instant]
     (dosync
      (ensure start)
      (ensure bpm)
      (ensure bpb)
      (ensure bpp)
-     (let [instant (+ (now) offset)
-           beat (marker-number instant @start (metro-tick metro))
+     (let [beat (marker-number instant @start (metro-tick metro))
            bar (marker-number instant @start (metro-tock metro))
            phrase (marker-number instant @start (metro-ding metro))
            beat-phase (marker-phase instant @start (metro-tick metro))
@@ -379,4 +393,3 @@
         bpb (ref bpb)
         bpp (ref bpp)]
     (Metronome. start bpm bpb bpp)))
-

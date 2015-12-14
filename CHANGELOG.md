@@ -11,14 +11,25 @@ This change log follows the conventions of
 - Links to graphs and expanded discussion in the oscillator API docs.
 - Dimmer effects can now work with dimmer function ranges on
   multipurpose channels as well as full dedicated dimmer channels.
+- Some more examples of how to get started working with Afterglow.
+
+### Changed
+
+- Oscillators have been completely redesigned in order to be more
+  flexible and easy to create and work with, and to support dynamic
+  parameters so their configuration can vary over time or location.
+  The old oscillator and oscillated parameter functions have been
+  deprecated, and are now stubs wich delegate to the new
+  implementation. They will be removed in an upcoming release.
+- The former IHeadParam interface has been eliminated, folding its
+  semantics into the IParam interface, and simplifying the
+  implementation of dynamic parameters.
 
 ### Fixed
 
 - Make sure MIDI inputs are connected when `sync-to-midi-clock` is
   called,
   [issue #10](https://github.com/brunchboy/afterglow/issues/10).
-- Some of the oscillator API docs had incorrect details left over from
-  earlier versions of the code.
 - A variety of issues ranging from questionable style through misplaced
   documentation, unused or inaccessible code, preconditions that would
   not take effect, and actual problems, were identified by Kibit and

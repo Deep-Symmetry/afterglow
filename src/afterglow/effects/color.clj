@@ -69,10 +69,10 @@
 
 (defn color-effect
   "Returns an effect which assigns a color parameter to all heads of
-  the fixtures supplied when invoked. If :include-color-wheels? is
-  passed with a true value, then fixtures which use color wheels are
-  included, otherwise only color-mixing fixtures are included.
-  If :htp? is passed with a true value, highest-takes-precedence
+  the fixtures supplied when invoked. If `:include-color-wheels?` is
+  passed with a `true` value, then fixtures which use color wheels are
+  included, otherwise only color-mixing fixtures are included. If
+  `:htp?` is passed with a `true` value, highest-takes-precedence
   assignment is used with the red, green, and blue color values to
   blend this color with any previous color that might have been
   assigned to the affected fixtures."
@@ -168,8 +168,7 @@
   is fully saturated at the start of the beat, and fully desaturated
   by the end. A different pattern can be created by supplying a
   different parameter with the `:param` optional keyword argument."
-  [& {:keys [param] :or {param (params/build-oscillated-param (osc/sawtooth-beat :down? true)
-                                                              :max 100)}}]
+  [& {:keys [param] :or {param (osc/build-oscillated-param (osc/sawtooth-beat :down? true) :max 100)}}]
   (fn [color show snapshot head]
     (let [saturation (colors/clamp-percent-float (params/resolve-param param show snapshot head))]
       (colors/create-color {:h (colors/hue color) :s saturation :l (colors/lightness color)}))))

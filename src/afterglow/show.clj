@@ -326,8 +326,7 @@
       (let [ended (at-at/now)
             duration (- ended (:instant snapshot))
             sleep-time (math/round (max 1 (- (:refresh-interval show) duration)))
-            next-frame-snapshot (rhythm/metro-snapshot (:metronome show) sleep-time)]
-        ;; TODO: Send anyone who registered interest an update about when the next frame is due
+            next-frame-snapshot (rhythm/metro-snapshot (:metronome show) (+ ended sleep-time))]
         (doseq [f @(:frame-fns show)]
           (try
             (f next-frame-snapshot)
@@ -632,7 +631,7 @@
   specified device, channel, and controller number."
   [midi-device-name channel control-number metronome mapped-fn]
   {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
-         (integer? control-number) (<= 0 control-number 127) (ifn? mapped-fn)]}
+         (integer? control-number) (<= 0 control-number 127) (fn? mapped-fn)]}
   (let [bound (bind-keyword-param metronome Metronome (:metronome *show*))
         metronome (resolve-param bound *show* (rhythm/metro-snapshot (:metronome *show*)))]
     (midi/add-control-mapping midi-device-name channel control-number

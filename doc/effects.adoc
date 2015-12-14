@@ -132,7 +132,8 @@ One of the most common basic effects you will be using to create the
 looks you want is the color effect. To create an effect that will
 assign a color to a fixture (which will assign colors to all of the
 fixture’s heads), or a single head of a fixture, pass the fixture or
-head to:
+head to
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.color.html#var-color-effect[color-effect]:
 
 [source,clojure]
 ----
@@ -141,17 +142,17 @@ head to:
 
 The `name` parameter is intended to help identify the purpose of the
 effect, and shows up when examining the created effect. Put something
-descriptive in there, or use a function like
-`afterglow.examples/global-color-effect` which builds the effect for
-you, figuring out a reasonable name in many cases.
+descriptive in there, or use a helper function like
+http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-global-color-effect[afterglow.examples/global-color-effect]
+which builds the effect for you, figuring out a reasonable name in
+many cases.
 
 The `color` parameter is where you specify the color to assign to the
-lights. It can be a string, specifying the name of a color understood by
-the https://github.com/jolby/colors[jolby/colors] library, or an object
-returned by one of the factories in that library as described in
-<<color#working-with-color,Working with Color>>.
+lights. It should be a color object returned by one of the factories
+in the https://github.com/jolby/colors[jolby/colors] library, as
+described in <<color#working-with-color,Working with Color>>.
 
-In addition to passing in a literal number for the `color` parameter,
+In addition to passing in a color for the `color` parameter,
 you can pass a <<parameters#dynamic-parameters,Dynamic Parameter>>
 whose value depends on a <<metronomes#metronomes,Metronome>>, the
 physical location or orientation of the head, or a show variable,
@@ -163,9 +164,25 @@ especially when combined with
 how to effectively leverage these in combination with each other will
 enable you to create most of the basic lighting looks you need.
 
+The following code creates a effect that assigns a pure red color to
+all fixtures with RGB channels, then adds it to the current show under
+the keyword `:color`:
+
+[source,clojure]
+----
+(show/add-effect! :color (afterglow.effects.color/color-effect
+                          "Plain red" (create-color "red") (show/all-fixtures)))
+----
+
 TIP: Remember that if aren’t seeing anything when you have assigned color
 effects to a fixture to make sure you also have a dimmer effect setting
 that fixture’s dimmer to some visible level.
+
+You can also assign colors to lights that use color wheels instead of
+RGB mixing by passing a `true` value with the optional keyword
+argument `:include-color-wheels?` to `color-effect`. Afterglow will
+try to find a color wheel position which is close enough to the
+desired color, and if one can be found, tell the light to use it.
 
 === Direction Effects
 
@@ -851,8 +868,8 @@ through all colors over one bar of the show metronome:
 
 [source,clojure]
 ----
-(def hue-param (params/build-oscillated-param
-                 (oscillators/sawtooth-bar) :max 360))
+(def hue-param (oscillators/build-oscillated-param
+                 (oscillators/sawtooth :interval :bar) :max 360))
 (show/add-effect! :color (global-color-effect
    (params/build-color-param :s 100 :l 50 :h hue-param)))
 ----
@@ -883,7 +900,7 @@ next:
 [source,clojure]
 ----
 (show/set-variable! :hue-param
-  (params/build-oscillated-param (oscillators/sawtooth-bar)
+  (oscillators/build-oscillated-param (oscillators/sawtooth :interval :bar)
     :metronome :timer :max 360))
 ----
 
@@ -940,7 +957,7 @@ combine them? Oh, but we can!
 [source,clojure]
 ----
 (def adjust-param
-  (params/build-oscillated-param (oscillators/sawtooth-bar) :max 360))
+  (oscillators/build-oscillated-param (oscillators/sawtooth :interval :bar) :max 360))
 (show/add-effect! :color (global-color-effect
   (params/build-color-param :s 100 :l 50 :h hue-gradient
                             :adjust-hue adjust-param)))
@@ -1007,13 +1024,13 @@ Loop and `transform-colors`.
   "Creates a color transformation for use with [[transform-colors]]
   which changes the saturation based on a variable parameter. If no
   parameter is supplied, the default is to use an oscillated parameter
-  based on [[sawtooth-beat]] with `:down?` set to `true` so the color
+  based on [[sawtooth]] with `:down?` set to `true` so the color
   is fully saturated at the start of the beat, and fully desaturated
   by the end. A different pattern can be created by supplying a
   different parameter with the `:param` optional keyword argument."
   {:doc/format :markdown}
-  [& {:keys [param] :or {param (params/build-oscillated-param (osc/sawtooth-beat :down? true)
-                                                              :max 100)}}]
+  [& {:keys [param] :or {param (oscillators/build-oscillated-param (osc/sawtooth :down? true)
+                                                                   :max 100)}}]
   (fn [color show snapshot head]
     (let [saturation (colors/clamp-percent-float
                       (params/resolve-param param show snapshot head))]
@@ -1028,7 +1045,7 @@ implements the desaturate-over-each-beat behavior described above:
 
 [source,clojure]
 ----
-(params/build-oscillated-param (osc/sawtooth-beat :down? true) :max 100)
+(oscillators/build-oscillated-param (oscillators/sawtooth :down? true) :max 100)
 ----
 
 The downwards-direction sawtooth wave from 100 to 0 each beat causes
@@ -1078,7 +1095,8 @@ how the sample show configures it:
                        :priority 1000))
 ----
 
-Example of `transform-colors` from REPL:
+And here is a complete, concrete example of how you can try out
+`transform-colors` from the REPL:
 
 [source,clojure]
 ----
@@ -1087,6 +1105,9 @@ Example of `transform-colors` from REPL:
     (global-color-effect :blue)
     (color-fx/transform-colors (show/all-fixtures) :priority 1000)))
 ----
+
+> This assigns a blue color to all the lights, and pulses them to
+white once per beat.
 
 #### License
 
