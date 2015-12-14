@@ -263,16 +263,21 @@ function bpmSlideStart( eventObject ) {
     bpmSliderBeingDragged = true;
 }
 
-function bpmSlide( eventObject ) {
-    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + this.id),
-                        { "value": this.value,
+function sendBpmUpdate( control_id, value ) {
+    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + control_id),
+                        { "value": value,
                           "__anti-forgery-token": csrf_token } ).fail(function() {
-        console.log("Problem specifying updated BPM value.");
-    });
+                              console.log("Problem specifying updated BPM value.");
+                          });
+}
+
+function bpmSlide( eventObject ) {
+    sendBpmUpdate(this.id, this.value);
 }
 
 function bpmSlideStop( eventObject ) {
     bpmSliderBeingDragged = false;
+    sendBpmUpdate(this.id, this.value);
 }
 
 function decorateMetronomeAdjusters( selector, onMouseDown ) {
