@@ -94,7 +94,7 @@
   (try
     (let [[c desc] (cond (= (type color) :com.evocomputing.colors/color)
                        [color (color-name color)]
-                       (and (satisfies? params/IParam color)
+                       (and (params/param? color)
                             (= (params/result-type color) :com.evocomputing.colors/color))
                        [color "variable"]
                        :else

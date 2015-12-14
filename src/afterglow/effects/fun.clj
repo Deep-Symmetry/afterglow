@@ -438,7 +438,7 @@
         min-change (params/bind-keyword-param min-change Number 0)
         last-beat (ref nil)
         last-value (ref nil)]
-    (if-not (some (partial satisfies? params/IParam) [min max min-change])
+    (if-not (some params/param? [min max min-change])
       ;; Optimize the simple case of all constant parameters
       (let [range (- max min)
             eval-fn (fn [_ snapshot]
@@ -452,11 +452,10 @@
         (when-not (< min-change (/ range 3))
           (throw (IllegalArgumentException. "min-change must be less 1/3 the range")))
         (reify params/IParam
-          (evaluate [this show snapshot] (eval-fn show snapshot))
+          (evaluate [this show snapshot _] (eval-fn show snapshot))
           (frame-dynamic? [this] true)
           (result-type [this] Number)
-          (resolve-non-frame-dynamic-elements [this show snapshot]  ; Nothing to resolve, return self
-            this)))
+          (resolve-non-frame-dynamic-elements [this _ _ _] this)))  ; Nothing to resolve, return self
       ;; Support the general case where we have an incoming variable parameter
       (let [eval-fn (fn [show snapshot]
                       (let [min (params/resolve-param min show snapshot)
@@ -477,12 +476,12 @@
                                 (timbre/error "Random beat number min-change > 1/3 range, returning max.")
                                 max)))))]
         (reify params/IParam
-          (evaluate [this show snapshot] (eval-fn show snapshot))
+          (evaluate [this show snapshot _] (eval-fn show snapshot))
           (frame-dynamic? [this] true)
           (result-type [this] Number)
-          (resolve-non-frame-dynamic-elements [this show snapshot]
+          (resolve-non-frame-dynamic-elements [this show snapshot head]
             (with-show show
-              (random-beat-number-param :min (params/resolve-unless-frame-dynamic min show snapshot)
-                                        :max (params/resolve-unless-frame-dynamic max show snapshot)
+              (random-beat-number-param :min (params/resolve-unless-frame-dynamic min show snapshot head)
+                                        :max (params/resolve-unless-frame-dynamic max show snapshot head)
                                         :min-change (params/resolve-unless-frame-dynamic
-                                                     min-change show snapshot)))))))))
+                                                     min-change show snapshot head)))))))))

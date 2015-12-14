@@ -23,36 +23,32 @@
   _PROTOCOLS_
   (do
 (defprotocol IParam
-  "A dynamic parameter which gets evaluated during the run of a light show,
-  with access to the show and its metronome snapshot."
-  (evaluate [this show snapshot]
-  "Determine the value of this parameter at a given moment of the show.")
+  "A dynamic parameter which gets evaluated during the run of a light
+  show, with access to the show and its metronome snapshot."
+  (evaluate [this show snapshot head]
+  "Determine the value of this parameter at a given moment (identified
+  by `snapshot`) of the `show`. If the parameter is being evaluated
+  for a specific fixture head, that will be passed in `head`. If no
+  fixure context is available, `head` will be `nil`.")
   (frame-dynamic? [this]
-  "If true, this parameter varies at every frame of the show, and must
-  be invoked by effect assigners for each frame of DMX data generated.
-  If false, the value can be determined at the time an effect is
-  created, and passed as a primitive to the assigners.")
+  "If `true`, this parameter varies at every frame of the show, and
+  must be invoked by effect assigners for each frame of DMX data
+  generated. If `false`, the value can be determined at the time an
+  effect is created, and passed as a constant to the assigners.")
   (result-type [this]
-  "The type of value that will be returned when this parameter is resolved.")
-  (resolve-non-frame-dynamic-elements [this show snapshot]
-  "Called when an effect is created using this parameter. If it is not
-  frame-dynamic, returns its final resolution; otherwise, returns a
-  version of itself where any non frame-dynamic input parameters have
-  been resolved."))
+  "The type of value that will be returned when this parameter is
+  resolved.")
+  (resolve-non-frame-dynamic-elements [this show snapshot head]
+  "Called when an effect is created using this parameter. If the
+  parameter is not frame-dynamic, this function should return the
+  parameter's final resolution to a constant of the type returned by
+  `result-type`; otherwise, it should return a version of the
+  parameter where any of its own non frame-dynamic input parameters
+  have been resolved.
 
-(defprotocol IHeadParam
-  "An extension to IParam for parameters that are specific to a given
-  head (because they depend on things like its orientation or
-  location)."
-  (evaluate-for-head [this show snapshot head]
-  "Determine the value of this numeric parameter at a given moment
-  of the show, as applied to the specific fixture head.")
-  (resolve-non-frame-dynamic-elements-for-head [this show snapshot head]
-  "Called when an effect is created using this parameter and there is
-  head information available. If the parameter is not frame-dynamic,
-  returns its final resolution; otherwise, returns a version of itself
-  where any non frame-dynamic input parameters have been
-  resolved."))))
+  If the parameter is being evaluated for a specific fixture head,
+  that will be passed in `head`. If no fixure context is available,
+  `head` will be `nil`."))))
 
 
 (defn check-type
@@ -101,25 +97,16 @@
   [arg]
   (satisfies? IParam arg))
 
-(defn head-param?
-  "Checks whether the argument is an [[IParam]] which also
-  satisfies [[IHeadParam]]."
-  [arg]
-  (and (satisfies? IParam arg) (satisfies? IHeadParam arg)))
-
 (defn resolve-param
   "Takes an argument which may be a raw value, or may be
   an [[IParam]]. If it is the latter, evaluates it and returns the
   resulting value. Otherwise just returns the value that was passed
-  in. If `head` is supplied, and the parameter can use it at
-  resolution time, then pass it along."
+  in."
   ([arg show snapshot]
    (resolve-param arg show snapshot nil))
   ([arg show snapshot head]
    (if (satisfies? IParam arg)
-     (if (and (some? head) (satisfies? IHeadParam arg))
-       (evaluate-for-head arg show snapshot head)
-       (evaluate arg show snapshot))
+     (evaluate arg show snapshot head)
      arg)))
 
 (defn frame-dynamic-param?
@@ -142,9 +129,7 @@
    (if (satisfies? IParam arg)
      (if-not (frame-dynamic? arg)
        (resolve-param arg show snapshot head)
-       (if (satisfies? IHeadParam arg)
-         (resolve-non-frame-dynamic-elements-for-head arg show snapshot head)
-         (resolve-non-frame-dynamic-elements arg show snapshot)))
+       (resolve-non-frame-dynamic-elements arg show snapshot head))
      arg)))
 
 (defn build-variable-param
@@ -203,10 +188,13 @@
                                                    " is not of type " type ". Using default " default))
                                        default)))))]
         (reify IParam
-          (evaluate [this show snapshot] (eval-fn show))
-          (frame-dynamic? [this] frame-dynamic)
-          (result-type [this] type)
-          (resolve-non-frame-dynamic-elements [this show snapshot]  ; Nothing to resolve, return self
+          (evaluate [this show _ _]
+            (eval-fn show))
+          (frame-dynamic? [this]
+            frame-dynamic)
+          (result-type [this]
+            type)
+          (resolve-non-frame-dynamic-elements [this _ _ _]  ; Nothing to resolve, return self
             this))))))
 
 (defn bind-keyword-param*
@@ -322,14 +310,17 @@
                                   (+ base (/ (inc (Math/cos (* Math/PI (inc (/ fade-phase 2))))) 2)))
                                 
                                 :else
-                                base))
-                            )))]
+                                base)))))]
     ;; TODO: Add a sine-driven fade option?
     (reify IParam
-      (evaluate [this show snapshot] (eval-fn snapshot))
-      (frame-dynamic? [this] true)
-      (result-type [this] Number)
-      (resolve-non-frame-dynamic-elements [this show snapshot] this))))
+      (evaluate [this _ snapshot _]
+        (eval-fn snapshot))
+      (frame-dynamic? [this]
+        true)
+      (result-type [this]
+        Number)
+      (resolve-non-frame-dynamic-elements [this _ _ _]  ; Nothing to resolve, always frame-dynamic
+        this))))
 
 (defn interpret-color
   "Accept a color as either
@@ -478,13 +469,14 @@
                                               :frame-dynamic dyn)))]
         (reify
           IParam
-          (evaluate [this show snapshot] (eval-fn show snapshot nil))
-          (frame-dynamic? [this] dyn)
-          (result-type [this] :com.evocomputing.colors/color)
-          (resolve-non-frame-dynamic-elements [this show snapshot] (resolve-fn show snapshot nil))
-          IHeadParam
-          (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))
-          (resolve-non-frame-dynamic-elements-for-head [this show snapshot head] (resolve-fn show snapshot head)))))))
+          (evaluate [this show snapshot head]
+            (eval-fn show snapshot head))
+          (frame-dynamic? [this]
+            dyn)
+          (result-type [this]
+            :com.evocomputing.colors/color)
+          (resolve-non-frame-dynamic-elements [this show snapshot head]
+            (resolve-fn show snapshot head)))))))
 
 (defn build-direction-param
   "Returns a dynamic direction parameter for use
@@ -528,13 +520,14 @@
                                                   :frame-dynamic dyn)))]
         (reify
           IParam
-          (evaluate [this show snapshot] (eval-fn show snapshot nil))
-          (frame-dynamic? [this] dyn)
-          (result-type [this] Vector3d)
-          (resolve-non-frame-dynamic-elements [this show snapshot] (resolve-fn show snapshot nil))
-          IHeadParam
-          (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))
-          (resolve-non-frame-dynamic-elements-for-head [this show snapshot head] (resolve-fn show snapshot head)))))))
+          (evaluate [this show snapshot head]
+            (eval-fn show snapshot head))
+          (frame-dynamic? [this]
+            dyn)
+          (result-type [this]
+            Vector3d)
+          (resolve-non-frame-dynamic-elements [this show snapshot head]
+            (resolve-fn show snapshot head)))))))
 
 (defn- make-radians
   "If an angle was not already radians, convert it from degrees to
@@ -602,21 +595,21 @@
                                             (make-radians (resolve-param tilt show snapshot head) radians)))
             resolve-fn (fn [show snapshot head]
                          (with-show show
-                           (build-direction-param-from-pan-tilt :pan (resolve-unless-frame-dynamic pan show
-                                                                                                   snapshot head)
-                                                                :tilt (resolve-unless-frame-dynamic tilt show
-                                                                                                    snapshot head)
-                                                                :radians radians
-                                                                :frame-dynamic dyn)))]
+                           (build-direction-param-from-pan-tilt
+                            :pan (resolve-unless-frame-dynamic pan show snapshot head)
+                            :tilt (resolve-unless-frame-dynamic tilt show snapshot head)
+                            :radians radians
+                            :frame-dynamic dyn)))]
         (reify
           IParam
-          (evaluate [this show snapshot] (eval-fn show snapshot nil))
-          (frame-dynamic? [this] dyn)
-          (result-type [this] Vector3d)
-          (resolve-non-frame-dynamic-elements [this show snapshot] (resolve-fn show snapshot nil))
-          IHeadParam
-          (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))
-          (resolve-non-frame-dynamic-elements-for-head [this show snapshot head] (resolve-fn show snapshot head)))))))
+          (evaluate [this show snapshot head]
+            (eval-fn show snapshot head))
+          (frame-dynamic? [this]
+            dyn)
+          (result-type [this]
+            Vector3d)
+          (resolve-non-frame-dynamic-elements [this show snapshot head]
+            (resolve-fn show snapshot head)))))))
 
 (defn build-pan-tilt-param
   "Returns a dynamic pan/tilt parameter for use with [[pan-tilt-effect]],
@@ -667,13 +660,14 @@
                                                  :frame-dynamic dyn)))]
         (reify
           IParam
-          (evaluate [this show snapshot] (eval-fn show snapshot nil))
-          (frame-dynamic? [this] dyn)
-          (result-type [this] Vector2d)
-          (resolve-non-frame-dynamic-elements [this show snapshot] (resolve-fn show snapshot nil))
-          IHeadParam
-          (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))
-          (resolve-non-frame-dynamic-elements-for-head [this show snapshot head] (resolve-fn show snapshot head)))))))
+          (evaluate [this show snapshot head]
+            (eval-fn show snapshot head))
+          (frame-dynamic? [this]
+            dyn)
+          (result-type [this]
+            Vector2d)
+          (resolve-non-frame-dynamic-elements [this show snapshot head]
+            (resolve-fn show snapshot head)))))))
 
 (defn build-aim-param
   "Returns a dynamic aiming parameter for use with [[aim-effect]].
@@ -717,13 +711,13 @@
                                             :frame-dynamic dyn)))]
         (reify
           IParam
-          (evaluate [this show snapshot] (eval-fn show snapshot nil))
-          (frame-dynamic? [this] dyn)
-          (result-type [this] Point3d)
-          (resolve-non-frame-dynamic-elements [this show snapshot] (resolve-fn show snapshot nil))
-          IHeadParam
-          (evaluate-for-head [this show snapshot head] (eval-fn show snapshot head))
-          (resolve-non-frame-dynamic-elements-for-head [this show snapshot head]
+          (evaluate [this show snapshot head]
+            (eval-fn show snapshot head))
+          (frame-dynamic? [this]
+            dyn)
+          (result-type [this]
+            Point3d)
+          (resolve-non-frame-dynamic-elements [this show snapshot head]
             (resolve-fn show snapshot head)))))))
 
 (defn- scale-spatial-result
@@ -754,7 +748,7 @@
                                                             v smallest value-range start target-range)))
                                     {} results))
                           results)]
-      (fn [show snapshot head] (get precalculated (:id head))))
+      (fn [show snapshot head] (get precalculated (:id head) start))) ; Return min value if no head match
 
     ;; Handle the general case of some dynamic results
     (fn [show snapshot head]
@@ -765,9 +759,9 @@
               smallest (apply min (vals resolved))
               largest (apply max (vals resolved))
               value-range (- largest smallest)]
-          (scale-spatial-result (get resolved (:id head)) smallest value-range start target-range))
+          (scale-spatial-result (get resolved (:id head) smallest) smallest value-range start target-range))
         ;; Not scaling, only need to resolve the parameter for the specific head requested
-        (resolve-param (get results (:id head)) show snapshot head)))))
+        (resolve-param (get results (:id head) start) show snapshot head)))))
 
 (defn build-spatial-param
   "Returns a dynamic number parameter related to the physical
@@ -826,26 +820,23 @@
                                resolved-eval-fn (build-spatial-eval-fn resolved scaling min target-range)]
                            (reify
                              IParam
-                             (evaluate [this show snapshot] min) ; Needs head to do anything
-                             (frame-dynamic? [this] dyn)
-                             (result-type [this] Number)
-                             (resolve-non-frame-dynamic-elements [this show snapshot]
-                               this) ; Already resolved
-                             IHeadParam
-                             (evaluate-for-head [this show snapshot head] (resolved-eval-fn show snapshot head))
-                             (resolve-non-frame-dynamic-elements-for-head [this show snapshot head]
+                             (evaluate [this show snapshot head]
+                               (resolved-eval-fn show snapshot head))
+                             (frame-dynamic? [this]
+                               dyn)
+                             (result-type [this]
+                               Number)
+                             (resolve-non-frame-dynamic-elements [this _ _ _]
                                this)))))] ; Already resolved
       (reify
         IParam
-        (evaluate [this show snapshot] min) ; Needs head to do anything
-        (frame-dynamic? [this] dyn)
-        (result-type [this] Number)
-        (resolve-non-frame-dynamic-elements [this show snapshot]
-          this) ; Spatial parameters can't be evaluated or resolved with no head.
-        IHeadParam
-        (evaluate-for-head [this show snapshot head]
+        (evaluate [this show snapshot head]
           (eval-fn show snapshot head))
-        (resolve-non-frame-dynamic-elements-for-head [this show snapshot head]
+        (frame-dynamic? [this]
+          dyn)
+        (result-type [this]
+          Number)
+        (resolve-non-frame-dynamic-elements [this show snapshot head]
           (resolve-fn show snapshot head))))))
 
 (defn build-oscillated-param

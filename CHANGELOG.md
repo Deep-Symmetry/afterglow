@@ -21,6 +21,9 @@ This change log follows the conventions of
   The old oscillator and oscillated parameter functions have been
   deprecated, and are now stubs wich delegate to the new
   implementation. They will be removed in an upcoming release.
+- The former IHeadParam interface has been eliminated, folding its
+  semantics into the IParam interface, and simplifying the
+  implementation of dynamic parameters.
 
 ### Fixed
 

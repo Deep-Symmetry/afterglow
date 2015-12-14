@@ -606,19 +606,13 @@
           (throw (IllegalArgumentException. "min must be less than max")))
         (reify
           params/IParam
-          (params/evaluate [this show snapshot]
-            (eval-fn show snapshot nil))
+          (params/evaluate [this show snapshot head]
+            (eval-fn show snapshot head))
           (params/frame-dynamic? [this]
             dyn)
           (params/result-type [this]
             Number)
-          (params/resolve-non-frame-dynamic-elements [this show snapshot]
-            (resolve-fn show snapshot nil))
-
-          params/IHeadParam
-          (params/evaluate-for-head [this show snapshot head]
-            (eval-fn show snapshot head))
-          (params/resolve-non-frame-dynamic-elements-for-head [this show snapshot head]
+          (params/resolve-non-frame-dynamic-elements [this show snapshot head]
             (resolve-fn show snapshot head))))
       ;; Support the general case where we have an incoming variable parameter
       (let [dyn (boolean frame-dynamic)
@@ -639,17 +633,11 @@
                                                    :frame-dynamic dyn)))]
         (reify
           params/IParam
-          (params/evaluate [this show snapshot]
-            (eval-fn show snapshot nil))
+          (params/evaluate [this show snapshot head]
+            (eval-fn show snapshot head))
           (params/frame-dynamic? [this]
             dyn)
           (params/result-type [this]
             Number)
-          (params/resolve-non-frame-dynamic-elements [this show snapshot]
-            (resolve-fn show snapshot nil))
-
-          params/IHeadParam
-          (params/evaluate-for-head [this show snapshot head]
-            (eval-fn show snapshot head))
-          (params/resolve-non-frame-dynamic-elements-for-head [this show snapshot head]
+          (params/resolve-non-frame-dynamic-elements [this show snapshot head]
             (resolve-fn show snapshot head)))))))
