@@ -190,12 +190,12 @@ even fixtures. You need to use this code inside cue or use `end-effect!`.
 
 [source,clojure]
 ----
-(afterglow.effects/scene "Different colors"
-  (show/add-effect! :color-odd-fixtures (afterglow.effects.color/color-effect
-    "Plain red" (create-color "red") (show/fixtures-named "odd")))
-  (show/add-effect! :color-even-fixtures (afterglow.effects.color/color-effect
-    "Plain Blue" (create-color "blue") (show/fixtures-named "even")))
-  )
+(show/add-effect! :color (afterglow.effects/scene "Different colors"
+  (afterglow.effects.color/color-effect
+    "Plain red" (create-color "red") (show/fixtures-named "odd"))
+  (afterglow.effects.color/color-effect
+    "Plain Blue" (create-color "blue") (show/fixtures-named "even"))
+  ))
 ----
 
 To achieve the same effect inside a cue:
