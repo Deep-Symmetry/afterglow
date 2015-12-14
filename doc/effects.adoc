@@ -198,6 +198,20 @@ even fixtures. You need to use this code inside cue or use `end-effect!`.
   )
 ----
 
+To achieve the same effect inside a cue:
+
+[source,clojure]
+----
+(ct/set-cue! (:cue-grid *show*) 0 17
+  (cues/cue :color  (fn [_] (afterglow.effects/scene
+    "Blue and red 2"
+      (afterglow.effects.color/color-effect
+        "Plain red" (create-color "red") (show/fixtures-named "odd"))
+      (afterglow.effects.color/color-effect
+        "Plain Blue" (create-color "blue") (show/fixtures-named "even"))
+  ))))
+----
+
 === Direction Effects
 
 Moving-head fixtures can create particularly exciting and dynamic shows.
