@@ -184,6 +184,34 @@ argument `:include-color-wheels?` to `color-effect`. Afterglow will
 try to find a color wheel position which is close enough to the
 desired color, and if one can be found, tell the light to use it.
 
+You can assign different color effects to different set of fixtures.
+Following example will assign red color on odd fixtures and blue color on
+even fixtures. You need to use this code inside cue or use `end-effect!`.
+
+[source,clojure]
+----
+(show/add-effect! :color (afterglow.effects/scene "Different colors"
+  (afterglow.effects.color/color-effect
+    "Plain red" (create-color "red") (show/fixtures-named "odd"))
+  (afterglow.effects.color/color-effect
+    "Plain Blue" (create-color "blue") (show/fixtures-named "even"))
+  ))
+----
+
+To achieve the same effect inside a cue:
+
+[source,clojure]
+----
+(ct/set-cue! (:cue-grid *show*) 0 17
+  (cues/cue :color  (fn [_] (afterglow.effects/scene
+    "Blue and red 2"
+      (afterglow.effects.color/color-effect
+        "Plain red" (create-color "red") (show/fixtures-named "odd"))
+      (afterglow.effects.color/color-effect
+        "Plain Blue" (create-color "blue") (show/fixtures-named "even"))
+  ))))
+----
+
 === Direction Effects
 
 Moving-head fixtures can create particularly exciting and dynamic shows.
