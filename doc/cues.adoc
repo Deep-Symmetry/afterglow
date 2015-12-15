@@ -388,6 +388,26 @@ creating the cue's effect.
 
 |===
 
+==== A Cue Example
+
+As a simple illustration, here is how to wrap the blue and red scene
+from the <<effects#multiple-colors,Multiple Colors example>> into a
+cue, and add it to the show grid, so it can be started and stopped
+from a grid controller or the web interface:
+
+[source,clojure]
+----
+(ct/set-cue! (:cue-grid *show*) 0 17
+  (cues/cue :color  (fn [_]
+                      (afterglow.effects/scene
+                        "Blue and red 2"
+                        (afterglow.effects.color/color-effect
+                          "Plain red" (create-color "red") (show/fixtures-named "odd"))
+                        (afterglow.effects.color/color-effect
+                          "Plain Blue" (create-color "blue") (show/fixtures-named "even"))))))
+----
+
+
 [[creating-function-cues]]
 == Creating Function Cues
 

@@ -184,9 +184,14 @@ argument `:include-color-wheels?` to `color-effect`. Afterglow will
 try to find a color wheel position which is close enough to the
 desired color, and if one can be found, tell the light to use it.
 
-You can assign different color effects to different set of fixtures.
-Following example will assign red color on odd fixtures and blue color on
-even fixtures. You need to use this code inside cue or use `end-effect!`.
+==== Multiple Colors
+
+You can assign different color effects to different set of fixtures
+even just using simple single-color effects, by combining them into a
+<<effects#scenes,scene>>, which is explained more fully below, but worth
+mentioning now. Here is an example of how to assign a red color to odd
+fixtures and blue to even fixtures (assuming you have named the
+fixtures even-_number_ and odd-_number_):
 
 [source,clojure]
 ----
@@ -194,23 +199,21 @@ even fixtures. You need to use this code inside cue or use `end-effect!`.
   (afterglow.effects.color/color-effect
     "Plain red" (create-color "red") (show/fixtures-named "odd"))
   (afterglow.effects.color/color-effect
-    "Plain Blue" (create-color "blue") (show/fixtures-named "even"))
-  ))
+    "Plain Blue" (create-color "blue") (show/fixtures-named "even"))))
 ----
 
-To achieve the same effect inside a cue:
+The Cues documentation <<cues#a-cue-example,extends this example>> to
+show how to wrap this scene into a cue, for easy control by a light
+show operator.
 
-[source,clojure]
-----
-(ct/set-cue! (:cue-grid *show*) 0 17
-  (cues/cue :color  (fn [_] (afterglow.effects/scene
-    "Blue and red 2"
-      (afterglow.effects.color/color-effect
-        "Plain red" (create-color "red") (show/fixtures-named "odd"))
-      (afterglow.effects.color/color-effect
-        "Plain Blue" (create-color "blue") (show/fixtures-named "even"))
-  ))))
-----
+TIP: There are many other ways to achieve multi-colored effects,
+ranging from <<effects#spatial-effects,Spatial Effects>> up to writing
+your own custom <<effects#complex-effects,Complex Effects>>. You can
+also group fixtures any way you want, independently of how you name
+them, by storing sets of them in variables and passing those sets, or
+combinations of those sets created using Clojure's rich
+http://clojure.github.io/clojure/clojure.set-api.html[set-manipulation
+API], to the effect-creation functions.
 
 === Direction Effects
 
