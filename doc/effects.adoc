@@ -186,7 +186,7 @@ desired color, and if one can be found, tell the light to use it.
 
 ==== Multiple Colors
 
-You can assign different color effects to different set of fixtures
+You can assign different color effects to different sets of fixtures
 even just using simple single-color effects, by combining them into a
 <<effects#scenes,scene>>, which is explained more fully below, but worth
 mentioning now. Here is an example of how to assign a red color to odd
