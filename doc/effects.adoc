@@ -676,9 +676,9 @@ show variable `:also-color-laser` while it runs:
 (reset! var-binder (var-fx/create-for-show *show*))
 ;; ...
 (ct/set-cue! (:cue-grid *show*) 5 7
-               (cues/cue :color-laser
-                         (fn [_] (var-fx/variable-effect @var-binder :also-color-laser 1))
-                         :color :red :short-name "Also color laser"))
+             (cues/cue :color-laser
+                       (fn [_] (var-fx/variable-effect @var-binder :also-color-laser 1))
+                       :color :red :short-name "Also color laser"))
 ----
 
 This variable setting causes the Conditional Effects in scenes created
