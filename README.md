@@ -273,7 +273,7 @@ adjust and optimize it yourself.
 > The example code above configures Afterglow to log to a set of
 > rotating log files in a `logs/` subdirectory of your project. If you
 > want to see any logging information, which can be quite useful when
-> debugging issues, you will need to create that directory, otherwise
+> troubleshooting, you will need to create that directory, otherwise
 > the logging mechanism will silently do nothing. They will stay out
 > of your way until you are interested in them, and take up a limited
 > amount of space, but whenever you do want to watch what Afterglow is
