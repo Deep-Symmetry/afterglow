@@ -254,6 +254,7 @@ in a file `my-show.clj` and then invoke Afterglow as `java -jar afterglow.jar my
   ;; all the expanded, patched fixtures in it.
   '*show*)
 
+(core/init-logging)  ; Log at :info level to rotating files in logs/ subdirectory.
 (use-my-show)  ; Set up my show as the default show, using the function above.
 
 ;; TODO: Add your custom effects, then assign them to cues with sensible colors
@@ -268,6 +269,16 @@ namespace work. The `:require` section at the top of `my-show.clj` is
 set up to make it easy to cut and paste from these examples, although
 it is not complete, and you will eventually need to learn how to
 adjust and optimize it yourself.
+
+> The example code above configures Afterglow to log to a set of
+> rotating log files in a `logs/` subdirectory of your project. If you
+> want to see any logging information, which can be quite useful when
+> debugging issues, you will need to create that directory, otherwise
+> the logging mechanism will silently do nothing. They will stay out
+> of your way until you are interested in them, and take up a limited
+> amount of space, but whenever you do want to watch what Afterglow is
+> doing, you can look at them, or `tail -f logs/afterglow.log` to
+> watch it live.
 
 As your show gets more complex, you may want to split this into
 multiple files, which you can either load by listing them all on the
