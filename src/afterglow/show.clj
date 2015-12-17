@@ -561,21 +561,30 @@
 (defn add-midi-control-to-var-mapping
   "Cause the specified variable in [[*show*]] to be updated by any
   MIDI controller-change messages from the specified device sent on
-  the specified channel and controller number. If `:min` and/or `:max`
-  are specified, the normal MIDI range from 0 to 127 will be mapped to
-  the supplied range instead."
-  [midi-device-name channel control-number variable & {:keys [min max] :or {min 0 max 127}}]
-  {:pre [(some? *show*) (some? midi-device-name) (number? min) (number? max) (not= min max)
-         (integer? channel) (<= 0 channel 15) (integer? control-number) (<= 0 control-number 127) (some? variable)]}
+  the specified channel and controller number.
+
+  If `:min` and/or `:max` are specified, the normal MIDI range from 0
+  to 127 will be scaled to the supplied range instead.
+
+  If `:transform-fn is specified, it will be called with the midi
+  value (after scaling, if any was specified), and its return value
+  will be stored in the variable."
+  [midi-device-name channel control-number variable & {:keys [min max transform-fn] :or {min 0 max 127}}]
+  {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
+         (integer? control-number) (<= 0 control-number 127) (some? variable)
+         (number? min) (number? max) (not= min max) (or (nil? transform-fn) (fn? transform-fn))]}
   (let [show *show*  ; Bind so we can pass it to update function running on another thread
-        calc-fn (cond (and (zero? min) (= max 127))
+        scale-fn (cond (and (zero? min) (= max 127))
                       (fn [midi-val] midi-val)
                       (< min max)
                       (let [range (- max min)]
                         (fn [midi-val] (float (+ min (/ (* midi-val range) 127)))))
                       :else
                       (let [range (- min max)]
-                        (fn [midi-val] (float (+ max (/ (* midi-val range) 127))))))]
+                        (fn [midi-val] (float (+ max (/ (* midi-val range) 127))))))
+        calc-fn (if (nil? transform-fn)
+                  scale-fn
+                  (fn [midi-val] (transform-fn (scale-fn midi-val))))]
     (midi/add-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":var" (keyword variable))
                               (fn [msg] (with-show show
                                           (set-variable! variable (calc-fn (:velocity msg))))))))

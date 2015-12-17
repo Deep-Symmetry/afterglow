@@ -86,6 +86,33 @@ Then I can create a global color effect based on that variable:
   (params/build-color-param :s 100 :l 50 :h :knob-1)))
 ----
 
+It is also possible to perform arbitrary transformation of the MIDI
+value before storing it into the show variable, by passing
+`add-midi-control-to-var-mapping` a transformation function using the
+optional keyword argument `:transform-fn`. The function you supply
+will called with the MIDI value (already scaled, if you passed a value
+with `:min` or `:max`), and whatever it returns will be stored in the
+variable. Your function can contain whatever logic it needs, and does
+not even need to return a number. As a simple example, suppose you
+want to set up a `:beat-ratio` variable for configuring oscillators,
+and you want it to have the value 1, 2, 4, or 8, depending on how far
+a fader is raised. Since those are all powers of two, you could
+implement the varible binding like this:
+
+[source,clojure]
+----
+(show/add-midi-control-to-var-mapping
+  "SLIDER" 0 1 :beat-ratio :max 3
+  :transform-fn (fn [v] (Math/pow 2 (Math/round v))))
+----
+
+NOTE: This intercepts any MIDI control-change messages for the device
+whose name contains "SLIDER", on channel 0, controller number 1. It
+scales the incoming control value to the range 0 through 3, then calls
+a custom function which rounds the scaled value to the nearest
+integer, and raises 2 to that power. The result gets stored into the
+show variable `:beat-ratio`.
+
 == Finding Mapping Details
 
 In the all-too likely event you don’t have all your MIDI port names and
