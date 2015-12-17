@@ -582,9 +582,7 @@
                       :else
                       (let [range (- min max)]
                         (fn [midi-val] (float (+ max (/ (* midi-val range) 127))))))
-        calc-fn (if (nil? transform-fn)
-                  scale-fn
-                  (fn [midi-val] (transform-fn (scale-fn midi-val))))]
+        calc-fn (apply comp (filter identity [transform-fn scale-fn]))]
     (midi/add-control-mapping midi-device-name channel control-number (str "show:" (:id show) ":var" (keyword variable))
                               (fn [msg] (with-show show
                                           (set-variable! variable (calc-fn (:velocity msg))))))))
