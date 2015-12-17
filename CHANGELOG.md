@@ -11,6 +11,9 @@ This change log follows the conventions of
 - Links to graphs and expanded discussion in the oscillator API docs.
 - Dimmer effects can now work with dimmer function ranges on
   multipurpose channels as well as full dedicated dimmer channels.
+- When mapping a MIDI control to a show variable, you can now supply a
+  custom function to transform the incoming value into whatever you
+  need it to be.
 - Some more examples of how to get started working with Afterglow.
 
 ### Changed
@@ -27,6 +30,8 @@ This change log follows the conventions of
 
 ### Fixed
 
+- Clicking on the BPM slider in the web interface now updates the BPM
+  (previously you had to actually drag it).
 - Make sure MIDI inputs are connected when `sync-to-midi-clock` is
   called,
   [issue #10](https://github.com/brunchboy/afterglow/issues/10).
