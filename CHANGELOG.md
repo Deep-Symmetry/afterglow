@@ -8,12 +8,17 @@ This change log follows the conventions of
 
 ### Added
 
+- Code cues, making it easy to trigger arbitrary activity from a cue
+  grid, [issue 34](https://github.com/brunchboy/afterglow/issues/34).
 - Links to graphs and expanded discussion in the oscillator API docs.
 - Dimmer effects can now work with dimmer function ranges on
   multipurpose channels as well as full dedicated dimmer channels.
 - When mapping a MIDI control to a show variable, you can now supply a
   custom function to transform the incoming value into whatever you
-  need it to be.
+  need it to be,
+  [issue 32](https://github.com/brunchboy/afterglow/issues/32).
+- A variation of the sparkle effect which uses dimmer channels,
+  [issue 35](https://github.com/brunchboy/afterglow/issues/35).
 - Some more examples of how to get started working with Afterglow.
 
 ### Changed
@@ -24,17 +29,23 @@ This change log follows the conventions of
   The old oscillator and oscillated parameter functions have been
   deprecated, and are now stubs wich delegate to the new
   implementation. They will be removed in an upcoming release.
+  ([Issue 9](https://github.com/brunchboy/afterglow/issues/9)).
 - The former IHeadParam interface has been eliminated, folding its
   semantics into the IParam interface, and simplifying the
-  implementation of dynamic parameters.
+  implementation of dynamic parameters,
+  [issue 20](https://github.com/brunchboy/afterglow/issues/20).
 
 ### Fixed
 
 - Clicking on the BPM slider in the web interface now updates the BPM
-  (previously you had to actually drag it).
+  (previously you had to actually drag it),
+  [issue 18](https://github.com/brunchboy/afterglow/issues/18).
 - Make sure MIDI inputs are connected when `sync-to-midi-clock` is
   called,
   [issue #10](https://github.com/brunchboy/afterglow/issues/10).
+- Clarified that syncing to Traktor beat phase still requires Traktor
+  to be configured to send MIDI clock,
+  [issue 37](https://github.com/brunchboy/afterglow/issues/37).
 - A variety of issues ranging from questionable style through misplaced
   documentation, unused or inaccessible code, preconditions that would
   not take effect, and actual problems, were identified by Kibit and
@@ -74,7 +85,8 @@ This change log follows the conventions of
   message maps with `nil` values for the `:status` key when sending
   control-change or note messages, which was preventing them from
   being detected or processed correctly. Afterglow now always looks
-  for command-like messages via the `:command` key instead.
+  for command-like messages via the `:command` key instead,
+  [issue 8](https://github.com/brunchboy/afterglow/issues/8).
 - Fading colors in and out from nothing, as represented by a `nil`
   assignment value, was fading to a desaturated version of black,
   which does not lead to the kind of results people generally expect
