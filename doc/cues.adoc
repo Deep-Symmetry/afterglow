@@ -585,6 +585,46 @@ and will not whiten the cue color while it is held down.
 
 |===
 
+[[creating-code-cues]]
+== Creating Code Cues
+
+It can be convenient to use a cue grid to trigger arbitrary actions
+which have nothing directly to do with lighting effects. For example,
+if your grid controller doesn't have a dedicated button for resetting
+the show metronome, you might want to use one of the cue grid cells
+for that purpose. The
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-code-cue[code-cue]
+function makes this easy. It creates a cue that does nothing other
+than call the function you supply, one time, when the cue is launched.
+Your function must take two arguments, because it will be called with
+the show and metronome snapshot when the cue starts. The function must
+also return right away, since it's run as part of the effect rendering
+pipeline. If you need to do something that could take a while, you
+will need to do that on a different thread.
+
+Your function is passed as the first argument to `code-cue`, and you
+must also supply a string as the second argument; this will be used to
+label the cue when it is assigned to a cue grid with text
+capabilities, to identify its purpose.
+
+As with other cues, you can also provide an optional keyword argument
+`:color` along with a color specification, to request that the cue
+grid use that color for the cell holding this cue.
+
+The cue will be configured to end when you let go of the cue pad,
+because it doesn't do anything after calling your function once when
+it is first launched.
+
+As a concrete example, here is how to create a code cue that restarts
+the show metronome when it is launched:
+
+```clojure
+(ct/set-cue! (:cue-grid *show*) 0 0
+             (cues/code-cue (fn [show snapshot]
+                              (rhythm/metro-start (:metronome show) 1))
+                            "Reset"))
+```
+
 [[controlling-cues]]
 == Controlling Cues
 

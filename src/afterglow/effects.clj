@@ -175,6 +175,33 @@
   []
   blank-effect)
 
+(defn code
+  "An effect which simply calls a function, then ends immediately,
+  to allow arbitrary code to be easily run from the cue grid, for
+  example to reset the metronome if the controller mapping doesn't
+  have a dedicated button for that.
+
+  `f` must be a function which takes two arguments. It will be called
+  with the show and metronome snapshot a single time, when the effect
+  is first launched. It must return immediately, because this is
+  taking place on the effect rendering pipeline, so any lengthy
+  operations must be performed on another thread.
+
+  The effect stays running until asked to end, so that grid
+  controllers can give visual feedback that it was started, but it
+  doesn't do anyting more after calling the function once when it
+  starts."
+  [f]
+  {:pre [(fn? f)]}
+  (let [ran (atom false)]
+    (Effect. "Code"
+             (fn [show snapshot]
+               (swap! ran (fn [current]
+                            (or current (do (f show snapshot) true)))))
+             (fn [show snapshot]
+               [])  ; No assigners to return
+             end-immediately)))
+
 (defmulti fade-between-assignments
   "Calculates an intermediate value between two attribute assignments
   of the same kind (e.g. color, direction, channel value) for an

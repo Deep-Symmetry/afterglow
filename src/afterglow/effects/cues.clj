@@ -263,6 +263,33 @@
                    (show/end-effect! k :when-id id)))))))
 
 
+(defn code-cue
+  "Creates a cue that runs an arbitrary chunk of Clojure code instead
+  of starting an effect, for example to reset the metronome if the
+  controller mapping doesn't have a dedicated button for doing that.
+
+  The `code` argument must be a function that takes two arguments. It
+  will be called with the show and metronome snapshot when the cue is
+  started, and should return immediately, because this takes place on
+  the effect rendering pipeline, so any lengthy operations must be
+  performed on another thread. The effect won't do anything else after
+  calling `code` once, but the cue is configured to keep it
+  \"running\" until you let go of that grid controller pad, so you can
+  see visual feedback that it ran.
+
+  The `label` argument is a string which is used to identify the cue
+  in the cue grid.
+
+  The optional keyword argument `:color` requests that the web
+  interface and control surfaces draw the cue using the specified
+  color rather than the default white to help the user identify it.
+  This is only a request, as not all control surfaces support all (or
+  any) colors. The color is passed to [[interpret-color]], so it can
+  be specified in a variety of ways."
+  [code label & {:keys [color] :or {color :white}}]
+  {:pre [(fn? code) (string? label)]}
+  (cue ::code-cue (fn [_] (fx/code code)) :short-name label :color color :held true))
+
 (defn find-cue-variable-keyword
   "Finds the keyword by which a cue variable is accessed; it may be
   directly bound to a show variable, or may be a temporary variable
