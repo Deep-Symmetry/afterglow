@@ -3,9 +3,9 @@
   examples of how to create such things."
   {:author "James Elliott"}
   (:require [afterglow.effects :as fx]
-            [afterglow.effects.channel :refer [function-effect]]
-            [afterglow.effects.color :refer [htp-merge find-rgb-heads color-effect]]
-            [afterglow.effects.dimmer :refer [dimmer-effect]]
+            [afterglow.effects.channel :as chan-fx]
+            [afterglow.effects.color :as color-fx]
+            [afterglow.effects.dimmer :as dimmer-fx]
             [afterglow.effects.params :as params]
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
@@ -16,6 +16,7 @@
             [taoensso.timbre.profiling :refer [pspy]]
             [taoensso.timbre :as timbre])
   (:import (afterglow.effects Effect)
+           (afterglow.effects.dimmer Master)
            (afterglow.rhythm Metronome)
            (javax.vecmath Point3d)))
 
@@ -56,7 +57,7 @@
     (params/validate-param-type down-beat-color :com.evocomputing.colors/color)
     (params/validate-param-type other-beat-color :com.evocomputing.colors/color)
     (params/validate-param-type metronome Metronome)
-    (let [heads (find-rgb-heads fixtures)
+    (let [heads (color-fx/find-rgb-heads fixtures)
           running (atom true)
           ;; Need to use the show metronome as a snapshot to resolve our metronome parameter first
           metronome (params/resolve-param metronome *show* (rhythm/metro-snapshot (:metronome *show*)))
@@ -96,10 +97,10 @@
   (pspy :remove-finished-sparkles
         (let [now (:instant snapshot)]
           (reduce
-           (fn [result [head creation-time]]
-             (let [fade-time (params/resolve-param fade-time show snapshot head)]
+           (fn [result [where creation-time]]
+             (let [fade-time (params/resolve-param fade-time show snapshot)]
                (if (< (- now creation-time) fade-time)
-                 (assoc result head creation-time)
+                 (assoc result where creation-time)
                  result)))
            {}
            sparkles))))
@@ -126,13 +127,11 @@
   (let [color (params/bind-keyword-param color :com.evocomputing.colors/color default-sparkle-color)
         chance (params/bind-keyword-param chance Number 0.001)
         fade-time (params/bind-keyword-param fade-time Number 500)]
-    (params/validate-param-type color :com.evocomputing.colors/color)
-    (params/validate-param-type chance Number)
-    (params/validate-param-type fade-time Number)
-    (let [heads (find-rgb-heads fixtures)
+    (let [heads (color-fx/find-rgb-heads fixtures)
           running (atom true)
-          sparkles (atom {})  ; Currently a map from head ID to creation timestamp for active sparkles
+          sparkles (atom {})  ; A map from head to creation timestamp for active sparkles
           snapshot (rhythm/metro-snapshot (:metronome *show*))
+          ;; TODO: These should be per-head in case they are spatial.
           color (params/resolve-unless-frame-dynamic color *show* snapshot)
           chance (params/resolve-unless-frame-dynamic chance *show* snapshot)
           fade-time (params/resolve-unless-frame-dynamic fade-time *show* snapshot)]
@@ -150,8 +149,7 @@
                             (when (< (rand) chance)
                               (swap! sparkles assoc head (:instant snapshot))))))
                       ;; Build assigners for all active sparkles.
-                      (let [fade-time (params/resolve-unless-frame-dynamic fade-time show snapshot)
-                            now (:instant snapshot)]
+                      (let [now (:instant snapshot)]
                         (for [[head creation-time] @sparkles]
                           (let [color (params/resolve-param color show snapshot head)
                                 fade-time (max 10 (params/resolve-param fade-time show snapshot head))
@@ -159,9 +157,90 @@
                                 faded (colors/darken color (* fraction (colors/lightness color)))]
                             (fx/build-head-assigner :color head
                                                  (fn [show snapshot target previous-assignment]
-                                                   (htp-merge (params/resolve-param previous-assignment
-                                                                                    show snapshot head)
-                                                              faded))))))))
+                                                   (color-fx/htp-merge (params/resolve-param previous-assignment
+                                                                                             show snapshot head)
+                                                                       faded))))))))
+              (fn [show snapshot]
+                ;; Arrange to shut down once all existing sparkles fade out.
+                (reset! running false))))))
+
+(defn dimmer-sparkle
+  "A variation of the [[sparkle]] effect which uses dimmer channels,
+  instead of RGB color mixing, for fixtures that lack such capability.
+  Note that some fixtures may have dimmers that do not respond quickly
+  enough for this to work well; you will have to try it and see.
+
+  As each frame of DMX values generated, each participating fixture
+  head has a chance of being assigned a sparkle (this chance is
+  controlled by the optional keyword parameter `:chance`). Once a
+  sparkle has been created, it will fade out over the number of
+  milliseconds specified by the optional keyword parameter
+  `:fade-time`.
+
+  As with other [dimmer
+  effects](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#dimmer-effects),
+  the maximum level to which the dimmer can be set is limited by a
+  dimmer master chain. You can pass one in explicitly with `:master`.
+  If you do not, the show's grand master is used.
+
+  By default this effect ignores fixtures that can perform RGB color
+  mixing, because you are better off using the regular [[sparkle]]
+  effect with them. But if for some reason you want it to affect their
+  dimmers as well, you can pass a `true` value with
+  `:include-rgb-fixtures?`."
+  [fixtures & {:keys [chance fade-time master include-rgb-fixtures?]
+               :or {chance 0.001 fade-time 500 master (:grand-master *show*) include-rgb-fixtures? false}}]
+  {:pre [(some? *show*)]}
+  (let [chance (params/bind-keyword-param chance Number 0.001)
+        fade-time (params/bind-keyword-param fade-time Number 500)
+        master (params/bind-keyword-param master Master (:grand-master *show*))
+        fixtures (if include-rgb-fixtures? fixtures (filter (complement color-fx/has-rgb-heads?) fixtures))]
+    (let [full-channels (dimmer-fx/gather-dimmer-channels fixtures)
+          function-heads (dimmer-fx/gather-partial-dimmer-function-heads fixtures)
+          running (atom true)
+          full-sparkles (atom {})  ; Map from channel to creation time for active sparkles on full-dimmer channels
+          func-sparkles (atom {})  ; Map from head to creation time for active sparkles on partial-dimmer channels
+          snapshot (rhythm/metro-snapshot (:metronome *show*))
+          chance (params/resolve-unless-frame-dynamic chance *show* snapshot)
+          fade-time (params/resolve-unless-frame-dynamic fade-time *show* snapshot)
+          master (params/resolve-unless-frame-dynamic master *show* snapshot)]
+      (Effect. "Dimmer Sparkle"
+              (fn [show snapshot]
+                ;; Continue running until all existing sparkles fade
+                (swap! full-sparkles remove-finished-sparkles show snapshot fade-time)
+                (swap! func-sparkles remove-finished-sparkles show snapshot fade-time)
+                (or @running (seq @full-sparkles) (seq @func-sparkles)))
+              (fn [show snapshot]
+                (pspy :sparkle
+                      ;; See if we create any new sparkles (unless we've been asked to end).
+                      (when @running
+                        (let [chance  (params/resolve-param chance show snapshot)]
+                          (doseq [chan full-channels]
+                            (when (< (rand) chance)
+                              (swap! full-sparkles assoc chan (:instant snapshot))))
+                          (doseq [head function-heads]
+                            (when (< (rand) chance)
+                              (swap! func-sparkles assoc head (:instant snapshot))))))
+                      ;; Build assigners for all active sparkles.
+                      (let [now (:instant snapshot)
+                            fade-time (max 10 (params/resolve-param fade-time show snapshot))]
+                        (concat
+                         (for [[chan creation-time] @full-sparkles]
+                           (let [fraction (/ (- now creation-time) fade-time)
+                                 faded (- 255 (* fraction 255))]  ; Fade from maximum dimmer level
+                             (chan-fx/build-channel-assigner
+                              chan
+                              (fn [show snapshot target previous-assignment]
+                                (colors/clamp-rgb-int (max (dimmer-fx/master-scale master faded)
+                                                           (or previous-assignment 0)))))))
+                         (for [[head creation-time] @func-sparkles]
+                           (let [fraction (/ (- now creation-time) fade-time)
+                                 faded (- 100 (* fraction 100))]  ; Functions use percentages rather than DMX values
+                             (chan-fx/build-head-function-assigner
+                              head
+                              (fn [show snapshot target previous-assignment]
+                                (colors/clamp-percent-float (max (dimmer-fx/master-scale master faded)
+                                                                 (or previous-assignment 0)))))))))))
               (fn [show snapshot]
                 ;; Arrange to shut down once all existing sparkles fade out.
                 (reset! running false))))))
@@ -190,11 +269,11 @@
         hue-param (params/bind-keyword-param :strobe-hue Number 277)
         saturation-param (params/bind-keyword-param :strobe-saturation Number 100)
         dimmer-param (params/bind-keyword-param :strobe-dimmers Number 255)
-        dimmers (dimmer-effect dimmer-param fixtures)
-        color (color-effect "strobe color"
-                            (params/build-color-param :h hue-param :s saturation-param :l lightness-param)
-                            fixtures :include-color-wheels? true)  ; :htp true tends to wash out right away
-        function (function-effect "strobe level" :strobe level-param fixtures)]
+        dimmers (dimmer-fx/dimmer-effect dimmer-param fixtures)
+        color (color-fx/color-effect "strobe color"
+                                     (params/build-color-param :h hue-param :s saturation-param :l lightness-param)
+                                     fixtures :include-color-wheels? true)  ; :htp true tends to wash out right away
+        function (chan-fx/function-effect "strobe level" :strobe level-param fixtures)]
     (Effect. name fx/always-active
              (fn [show snapshot] (concat
                                   (fx/generate dimmers show snapshot)
@@ -339,7 +418,7 @@
                          color-cycle default-color-cycle)]
     (doseq [arg color-cycle]
       (params/validate-param-type arg :com.evocomputing.colors/color))
-    (let [heads (find-rgb-heads fixtures)
+    (let [heads (color-fx/find-rgb-heads fixtures)
           ending (atom nil)
           color-cycle (map #(params/resolve-unless-frame-dynamic % *show* (rhythm/metro-snapshot (:metronome *show*)))
                            color-cycle)

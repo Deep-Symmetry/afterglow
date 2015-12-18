@@ -765,7 +765,7 @@ the heads which make them up.
 ==== Sparkle
 
 Creates a random sparkling effect like a particle generator over the
-supplied fixture heads. See the
+supplied RGB fixture heads. See the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-sparkle[API
 documentation] for details.
 
@@ -774,6 +774,30 @@ documentation] for details.
 (show/add-effect! :sparkle
   (afterglow.effects.fun/sparkle (show/all-fixtures)))
 ----
+
+You can also create a
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-dimmer-sparkle[similar
+effect] with fixtures that have only dimmer channels, rather than RGB
+capabilities.
+
+[source,clojure]
+----
+(show/add-effect! :sparkle
+  (afterglow.effects.fun/dimmer-sparkle (show/all-fixtures)))
+----
+
+And if you want to run a sparkle effect on both kinds of fixtures at
+the same time, you can combine these two effects with a
+<<effects.adoc#scenes,Scene>>.
+
+[source,clojure]
+----
+(show/add-effect! :sparkle
+  (afterglow.effects/scene "Sparkle all"
+    (afterglow.effects.fun/sparkle (show/all-fixtures))
+    (afterglow.effects.fun/dimmer-sparkle (show/all-fixtures))))
+----
+
 
 ==== Strobe
 

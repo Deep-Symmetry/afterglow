@@ -48,14 +48,14 @@
   [c]
   (= (:type c) :dimmer))
 
-(defn- gather-dimmer-channels
+(defn gather-dimmer-channels
   "Finds all channels in the supplied fixture list which are dimmers,
   even if they are inside heads."
   [fixtures]
   (let [heads (channels/extract-heads-with-some-matching-channel fixtures dimmer-channel?)]
     (channels/extract-channels heads dimmer-channel?)))
 
-(defn- gather-partial-dimmer-function-heads
+(defn gather-partial-dimmer-function-heads
   "Find all heads in the supplied fixture list which contain
   multipurpose channels that are partially used for dimming,
   rather than full dedicated dimmer channels."
