@@ -42,7 +42,7 @@ This change log follows the conventions of
   [issue 18](https://github.com/brunchboy/afterglow/issues/18).
 - Make sure MIDI inputs are connected when `sync-to-midi-clock` is
   called,
-  [issue #10](https://github.com/brunchboy/afterglow/issues/10).
+  [issue 10](https://github.com/brunchboy/afterglow/issues/10).
 - Clarified that syncing to Traktor beat phase still requires Traktor
   to be configured to send MIDI clock,
   [issue 37](https://github.com/brunchboy/afterglow/issues/37).
