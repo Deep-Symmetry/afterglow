@@ -263,12 +263,22 @@ process described in the Traktor Knowledge Base article linked above,
 and it will send additional MIDI messages that Afterglow will
 recognize and use to remain synchronized to the Traktor beat grid.
 
-WARNING: In order to avoid extra MIDI clock pulses being sent, which
-will cause the BPM calculations to be wildly incorrect, make sure not
-to create more than one Generic MIDI device on the Traktor Virtual
-Output port. If you created one following the directions in the above
-section, be sure to delete it, and leave only the Afterglow Traktor
-controller mapping.
+[WARNING]
+====================================================================
+In order to avoid extra MIDI clock pulses being sent, which will cause
+the BPM calculations to be wildly incorrect, make sure not to create
+more than one Generic MIDI device on the Traktor Virtual Output port.
+If you created one following the directions in the Syncing to MIDI
+Clock section above, be sure to delete it, and leave only the
+Afterglow Traktor controller mapping.
+
+You must still follow the instructions in the Traktor
+http://www.native-instruments.com/en/support/knowledge-base/show/750/how-to-send-a-midi-clock-sync-signal-in-traktor/[Knowledge
+Base article], starting with step 3.2, to ensure that the `Clock,
+Afterglow` device is configured to send MIDI messages to the
+appropriate MIDI output port, and step 4, which configures Traktor to
+send MIDI clock.
+====================================================================
 
 The way the Afterglow mapping works is that it sends out Control
 Change messages for all currently playing decks containing the current
