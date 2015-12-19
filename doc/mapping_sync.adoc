@@ -244,24 +244,49 @@ sync source:
 == Syncing to Traktor Beat Phase
 
 If you are using Traktor as your source of MIDI clock synchronization,
-although you cannot quite attain the kind of smoothly precise BPM lock
-as you can with <<mapping_sync#syncing-to-pro-dj-link,Pro DJ Link>>,
-you can configure Traktor to send its beat phase information in a way
-that Afterglow can detect and analyze, giving you the same kind of
-beat grid synchronization.
+even though you cannot quite attain the kind of smoothly precise BPM
+lock as you can with <<mapping_sync#syncing-to-pro-dj-link,Pro DJ
+Link>>, you can configure Traktor to send its beat phase information
+in a way that Afterglow can detect and analyze, giving you the same
+kind of beat grid synchronization.
 
 In order to do that, download and unzip the Afterglow Traktor
 Controller Mapping,
 https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/Afterglow.tsi.zip[Afterglow.tsi],
-and import it into Traktor. It will create a Device named `Clock,
+and import it into Traktor.
+
+WARNING: Be sure to use the following steps to import the mapping,
+which will add it to any other mappings or settings you have already
+set up in Traktor. If you instead use the obvious and tempting
+`Import` button at the bottom of the Preferences window, you will
+replace--rather than add to--your settings.
+
+1. Open the Traktor Preferences.
+
+2. Choose the `Controller Manager` section from the menu down the right.
+
+3. Click the `Add...` button in the `Device Setup` section at the top:
++
+image::assets/TraktorAddMapping.png[Traktor Add Device Mapping]
+
+4. Choose `Import TSI` in the menu which pops up, and `Import
+Other...` at the bottom of the menu which that opens:
++
+image::assets/TraktorImport.png[Traktor Import Other TSI]
+
+5. Navigate to the folder containing the `Afterglow.tsi` file you
+downloaded, and open it.
+
+Following this procedure will create a Device named `Clock,
 Afterglow` within the Traktor Controller Manager:
 
 image::assets/TraktorMapping.png[Afterglow Traktor Device Mapping]
 
-Use that rather than the Generic MIDI device you would create in the
-process described in the Traktor Knowledge Base article linked above,
-and it will send additional MIDI messages that Afterglow will
-recognize and use to remain synchronized to the Traktor beat grid.
+Select and use that rather than the Generic MIDI device you would
+create in the process described in the Traktor Knowledge Base article
+linked above, and in addition to sending basic MIDI clock mesages,
+Traktor will send special MIDI messages that Afterglow will recognize
+and use to remain synchronized to the Traktor beat grid.
 
 [WARNING]
 ====================================================================
@@ -281,15 +306,16 @@ send MIDI clock.
 ====================================================================
 
 The way the Afterglow mapping works is that it sends out Control
-Change messages for all currently playing decks containing the current
-beat phase on that deck. (Deck A is sent as controller `1`, B as
-controller `2`, C as controller `3`, and D as controller `4`). In
-order for Afterglow to know which deck to pay attention to if more
-than one is playing at the same time, whenever a different deck
-becomes the Tempo Master, a message identifying the deck is sent out
-as a Control Change message on controller `0`. (The same number to
-deck correspondence is used.) When no deck is Tempo Master, a Control
-Change with value `0` is sent on controller `0`.
+Change messages for all currently playing decks. These messages
+communicate the current beat phase on that deck. (Deck A is sent as
+controller `1`, B as controller `2`, C as controller `3`, and D as
+controller `4`). In order for Afterglow to know which deck to pay
+attention to if more than one is playing at the same time, whenever a
+different deck becomes the Tempo Master, a message identifying the new
+Master deck is sent out as a Control Change message on controller `0`.
+(The same number to deck correspondence is used.) When no deck is
+Tempo Master, a Control Change with value `0` is sent on controller
+`0`.
 
 Whenever Afterglow detects a coordinated stream of messages on
 controllers `0` through `4` which are consistent with beat-phase
