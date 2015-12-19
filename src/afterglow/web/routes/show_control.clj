@@ -185,6 +185,10 @@
 (defn show-page
   "Renders the web interface for interacting with the specified show."
   [show-id]
+  (try
+    (amidi/open-inputs-if-needed!) ; Make sure we are watching for clock messages, for the sync UI
+    (catch Throwable t
+      (error t "Problem opening MIDI inputs")))
   (let [[show description] (get @show/shows (Integer/valueOf show-id))
         grid (cue-view show 0 0 8 8 nil)
         page-id (:counter (swap! clients update-in [:counter] inc))]
@@ -301,8 +305,8 @@
 (defn build-sync-select
   "Creates the list needed by the template which renders the HTML
   interface allowing the user to link to one of the currently
-  available controllers, with the current selection, if any, properly
-  identified."
+  available sources of metronome synchronization, with the current
+  selection, if any, properly identified."
   [page-id]
   (let [page-info (get @clients page-id)
         known-midi (:known (:midi-sync page-info))
@@ -338,7 +342,7 @@
       {:sync-menu-changes next-menu})))
 
 (defn load-update
-  "If the show is running and we haven't send a load update in the
+  "If the show is running and we haven't sent a load update in the
   last half second, send one."
   [page-id]
   (let [last-info (get @clients page-id)]
