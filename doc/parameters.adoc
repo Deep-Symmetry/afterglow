@@ -40,20 +40,27 @@ surface. <<cues.adoc#cues,Cues>> can also set variables, and can bind
 them to encoders or pressure sensitive pads on controllers like the
 <<mapping_sync#using-ableton-push,Ableton Push>>.
 
-You can then refer to that stored value whenever you are creating a
-dynamic parameter by simply using the keyword (in this example, `:key`),
-and the current value stored in the show variable will be used. This is
-a convenience mechanism, you can also explicitly build a reference to a
-show variable like this:
+You can then refer to that stored value whenever you are building a
+dynamic parameter (for example when you are passing in the `:hue`
+parameter for a <<parameters.adoc#color-parameters,Color Parameter>>
+as described below), by simply using the keyword (in this example,
+`:key`), and the current value stored in the show variable will be
+used.
+
+This keyword shorthand is just a convenience mechanism provided by
+functions like
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-color-param[build-color-param].
+You can also explicitly build a reference to a show variable like
+this:
 
 [source,clojure]
 ----
 (afterglow.effects.params/build-variable-param :key)
 ----
 
-The reason you might want to use the explicit creation function is that
-you can control details about the binding by passing in optional keyword
-parameters:
+The most common reason you might want to use the explicit creation
+function is that you can control details about the binding by passing
+in optional keyword parameters:
 
 [cols=",,",options="header",]
 |=======================================================================
@@ -63,7 +70,7 @@ parameters:
 |`:default` |`0` |The value to assign the parameter if the variable is
 missing or has the wrong type
 
-|`:assign-fn` |none |If supplied, is called with the value of the show
+|`:transform-fn` |none |If supplied, is called with the value of the show
 variable, and its return value is used as the value of the parameter
 
 |`:frame-dynamic` |`true` |Whether the variable value should be looked
@@ -74,16 +81,34 @@ As an example of using these parameters, consider:
 
 [source,clojure]
 ----
-(afterglow.effects.params/build-variable-param :key
-  :type Number :default 0 :adjust-fn #(* % 2))
+(afterglow.effects.params/build-variable-param
+  :key :type Number :default 0 :transform-fn #(* % 2))
 ----
 
 This would cause the dynamic parameter to have a numeric value which is
-twice the value found in the show variable.
+twice the value found in the show variable named `:key`.
 
 When you use the keyword shorthand to bind to a show variable in
 building another dynamic parameter, the type and default are assumed
 from the context in which you are using the variable.
+
+TIP: Another time when you will need to use this explicit way of
+building a dynamic parameter from a show variable is if the parameter
+holds keywords. In that case, clearly Afterglow can't assume that a
+keyword is shorthand for a show variable. The `:interval` parameter
+for Afterglow's built in oscillator-building functions, like
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.oscillators.html#var-sine[afterglow.effects.oscillators/sine],
+is an example of such a parameter: It expects the value `:beat`,
+`:bar`, or `:phrase`. So to have an oscillator look up and use the
+value in the show variable `:my-interval` to control the interval over
+which it oscillates, you would write something like this:
+
+[source,clojure]
+----
+(afterglow.effects.oscillators/sine
+  :interval (afterglow.effects.params/build-variable-param
+              :my-interval :type clojure.lang.Keyword :default :beat))
+----
 
 == Oscillated Parameters
 

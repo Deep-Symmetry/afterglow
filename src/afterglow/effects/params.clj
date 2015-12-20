@@ -148,11 +148,11 @@
   If the named show variable already holds a dyamic parameter at the
   time this variable parameter is created, the binding is
   short-circuited to return that existing parameter rather than
-  creating a new one, so the type must be compatible. If `:adjust-fn`
+  creating a new one, so the type must be compatible. If `:transform-fn`
   is supplied, it will be called with the value of the variable and
   its return value will be used as the value of the dynamic parameter.
   It must return a compatible type or its result will be discarded."
-  [variable & {:keys [frame-dynamic type default adjust-fn] :or {frame-dynamic true type Number default 0}}]
+  [variable & {:keys [frame-dynamic type default transform-fn] :or {frame-dynamic true type Number default 0}}]
   {:pre [(some? *show*)]}
   (validate-param-type default type)
   (let [key (keyword variable)
@@ -162,7 +162,7 @@
       (do (validate-param-type current type key)
           current)  ; Binding succeeded; return underlying parameter
       ;; Did not find parameter, defer binding via variable
-      (let [eval-fn (fn [show] (if (nil? adjust-fn)
+      (let [eval-fn (fn [show] (if (nil? transform-fn)
                                  (let [candidate (get @(:variables show) key default)]
                                    (try
                                      (validate-param-type candidate type)
@@ -174,14 +174,14 @@
                                  (let [candidate (get @(:variables show) key default)]
                                    (try
                                      (validate-param-type candidate type)
-                                     (let [adjusted (adjust-fn candidate)]
+                                     (let [transformed (transform-fn candidate)]
                                        (try
-                                         (validate-param-type adjusted type)
-                                         adjusted
+                                         (validate-param-type transformed type)
+                                         transformed
                                          (catch Throwable t
-                                           (error (str "Unable to use adjust-fn result for variable " variable
-                                                       ", value " adjusted " is not of type " type
-                                                       ". Using unadjusted value " candidate))
+                                           (error (str "Unable to use transform-fn result for variable " variable
+                                                       ", value " transformed " is not of type " type
+                                                       ". Using untransformed value " candidate))
                                            candidate)))
                                      (catch Throwable t
                                        (error (str "Unable to use value of variable " key ", value " candidate
