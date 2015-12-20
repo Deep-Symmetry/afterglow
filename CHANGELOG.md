@@ -25,19 +25,20 @@ This change log follows the conventions of
 
 - Oscillators have been completely redesigned in order to be more
   flexible and easy to create and work with, and to support dynamic
-  parameters so their configuration can vary over time or location.
-  The old oscillator and oscillated parameter functions have been
-  deprecated, and are now stubs wich delegate to the new
-  implementation. They will be removed in an upcoming release.
-  ([Issue 9](https://github.com/brunchboy/afterglow/issues/9)).
+  parameters so their configuration can vary over time or location,
+  [issue 9](https://github.com/brunchboy/afterglow/issues/9). The old
+  oscillator and oscillated parameter functions have been deprecated,
+  and are now stubs wich delegate to the new implementation. They will
+  be removed in an upcoming release.
 - The former IHeadParam interface has been eliminated, folding its
   semantics into the IParam interface, and simplifying the
   implementation of dynamic parameters,
   [issue 20](https://github.com/brunchboy/afterglow/issues/20).
 - The `:adjust-fn` parameter to `build-variable-param` has been
   renamed `:transform-fn` to be consistent with the equivalent
-  mechanism added for MIDI control mappings in #32. The documentation
-  has been improved a bit as well.
+  mechanism added for MIDI control mappings in
+  [issue 32](https://github.com/brunchboy/afterglow/issues/32). The
+  documentation has been improved a bit as well.
 
 ### Fixed
 
