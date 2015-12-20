@@ -42,7 +42,7 @@
   (if (env :dev)
     (-> handler
         wrap-error-page
-        wrap-exceptions)
+        (wrap-exceptions {:app-namespaces ["afterglow"]}))
     handler))
 
 (defn wrap-csrf [handler]
