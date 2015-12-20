@@ -34,6 +34,10 @@ This change log follows the conventions of
   semantics into the IParam interface, and simplifying the
   implementation of dynamic parameters,
   [issue 20](https://github.com/brunchboy/afterglow/issues/20).
+- The `:adjust-fn` parameter to `build-variable-param` has been
+  renamed `:transform-fn` to be consistent with the equivalent
+  mechanism added for MIDI control mappings in #32. The documentation
+  has been improved a bit as well.
 
 ### Fixed
 
