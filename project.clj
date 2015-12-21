@@ -39,8 +39,8 @@
                                                                       org.clojure/tools.reader
                                                                       org.clojure/java.classpath]]
                  [metosin/ring-http-response "0.6.5"]
-                 [prone "0.8.2"]
                  [buddy "0.8.2"]
+                 [prone "0.8.3"]
                  [instaparse "1.4.1"]
                  [http-kit "2.1.19"]]
   :main afterglow.core
