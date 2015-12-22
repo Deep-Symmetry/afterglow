@@ -835,6 +835,10 @@ encounter them!
   shows with non-Clojurists.
 - [ ] Consider adding support for metronome synchronization with
   [EspGrid](https://github.com/d0kt0r0/EspGrid).
+- [ ] Investigate whether
+  [Vamp](https://code.soundsoftware.ac.uk/projects/vamp) (and jVamp)
+  would be worthwhile for audio analysis. But adding native components
+  is likely to be a hassle.
 - [ ] See if [thi-ng/color](https://github.com/thi-ng/color) is a
   better fit.
 - [x] Once I release the first version, answer this StackOverflow
