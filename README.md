@@ -879,6 +879,13 @@ encounter them!
     of button sections.
   - [x] It looks like I can actually specify an RGB color for the buttons using another SysEx:
     [PushPix](https://cycling74.com/wiki/index.php?title=Push_Programming_Oct13_03)
+- [ ] Support Push version 2 if possible. The display will be most
+  difficult since it seems not to use MIDI, but there is a
+  [library](http://sigabort.co/p2d) which can address it; I have
+  reached out to the authors to see if they can help. I don't yet know
+  if there is a SysEx for setting RGB pad colors available, or if we
+  will need to go back to using MIDI notes; if the latter, the colors
+  are all wrong and need to be rediscovered.
 - [x] Add a user interface using [Luminus](http://www.luminusweb.net/docs).
 - [x] Separate [ola-clojure](https://github.com/brunchboy/ola-clojure#ola-clojure) into its own project.
 

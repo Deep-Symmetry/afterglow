@@ -466,6 +466,15 @@ for, and often with deeper control, since you can press multiple cue
 trigger pads at the same time, and they respond to variations in
 pressure.
 
+NOTE: Currently only the original Push hardware is supported. Brief
+experiments with a Push 2 which was loaned for the purpose show that
+the color display does not use MIDI, so it is going to be challenging
+to support, the grid pads use a different color scheme, and no
+mehanism for specifying a RGB pad color has yet been discovered. Any
+pointers to documentation or open-source implementations of these
+features on Push 2 would be greatly appreciated, and might make
+support possible!
+
 Assuming you had an Ableton Push connected to the machine running
 Afterglow when it was started up, you can activate the Push mapping
 and attach it to the current default show like this:
