@@ -649,13 +649,17 @@ encounter them!
   - [x] Get basic effect working until spatial features are available.
   - [ ] Work both with arbitrary head list, and with spatially mapped origin/density.
   - [ ] Work as single intensity, or spatially mapped hue/saturation patterns.
-  - [x] Implement a grand master dimmer in the show which imposes a
+- [x] Implement a grand master dimmer in the show which imposes a
     ceiling on all dimmer cues.
   - [x] Also allow custom sub-master dimmer variables, chained off
     each other and ultimately the grand master, assigned to cues. Each
     step can scale the output.
   - [x] All dimmer cues are assigned a master chain, defaulting to the
     grand master if none supplied.
+- [ ] Consider implementing virtual dimmer effects to allow fixtures
+  which lack actual dimmer channels to simulate them and participate
+  in the dimmer master chain, as proposed
+  [here](https://github.com/brunchboy/afterglow/issues/43).
 - [x] Get geometry engine and head-movement cues working.
 - [ ] Named cues: Define cues with a unique name so they can have
   parameters saved for them, to be reloaded on future runs, once we
