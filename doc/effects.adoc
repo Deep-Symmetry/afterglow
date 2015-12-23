@@ -56,7 +56,7 @@ Finally, Afterglow includes some examples of how to build up
 themselves, and also serve as templates and inspiration for whole new
 kinds of effects you create on your own.
 
-== Effect Types
+== Basic Effect Types
 
 Effects in afterglow are divided by the aspect of a light that they
 control. Not all fixtures have features which allow them to
@@ -460,13 +460,13 @@ types which Afterglow does not yet have a more sophisticated
 understanding, and then perhaps you will end up creating a whole new
 category of effects as your experimentation progresses.
 
-=== Compound Effects
+== Compound Effects
 
 The most straightforward way to create interesting shows is to combine
 multiple simple effects in different ways. Compound effects are tools
 which enable that.
 
-==== Scenes
+=== Scenes
 
 The simplest way to build a compound effect is to combine a group of
 effects into one which can be started and stopped as a unit. That is
@@ -490,7 +490,7 @@ you'll see all the lights turn blue, and a random pattern of white
 effect will end both underlying effects in a coordinated fashion (the
 blue color effect will linger as the last sparkles fade out).
 
-==== Blank Effects
+=== Blank Effects
 
 A blank effect does nothing at all. Although this might not
 immediately seem useful, assigning a blank effect to one side or the
@@ -503,7 +503,7 @@ To create a blank effect, simply call the
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-blank[blank]
 function in the `afterglow.effects` namespace.
 
-==== Fades
+=== Fades
 
 A fade effect lets you smoothly transition from one effect to another,
 blending a weighted combination of each. The
@@ -557,7 +557,7 @@ turned. Switching either color effect to `(blank)` would insted fade
 to or from whatever color the fixtures were otherwise displaying at
 the time.
 
-==== Chases
+=== Chases
 
 Chase effects allow you to sequence a series of effects one after
 another, with optional <<effects#fades,fades>> between them. They are
