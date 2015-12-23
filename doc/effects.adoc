@@ -13,14 +13,21 @@ moment in time.
 
 == Overview
 
+This section starts out by describing the basic effect types which act
+as building blocks for an Afterglow light show, then goes on to
+introduce the <<scenes,scenes>> and <<chases,chases>> that you can use
+to group and sequence these building blocks into a show that evolves
+over time, driven by the show's metronome.
+
 When creating an effect, you assign one or more
 <<fixture_definitions#fixture-definitions,Fixtures>> to it, and it
 will generate control values for only those fixtures. The fixture
-channels affected by the effect depend on the kind of effect it is,
-and are grouped into several primary categories. The simplest kinds of
-effects apply to a single channel per fixture, or perhaps per head, if
-the fixture has multiple independent light-emitting heads. A very
-common single-channel effect is the <<dimmer-effects,dimmer effect>>.
+channels that will be manipulated by the effect depend on the kind of
+effect it is, and are grouped into several primary categories. The
+simplest kinds of effects apply to a single channel per fixture, or
+perhaps per head, if the fixture has multiple independent
+light-emitting heads. A very common single-channel effect is the
+<<dimmer-effects,dimmer effect>>.
 
 Many effects assign <<color-effects,colors>> to lights, which often
 involves multiple channels. RGB fixtures will use three channels, one
@@ -51,10 +58,21 @@ fixtures, or completely unique to a single fixture, through
 level of individual DMX channel values with
 <<channel-effects,channel effects>>.
 
-Finally, Afterglow includes some examples of how to build up
-<<complex-effects,special-purpose effects>>, which can be fun in
-themselves, and also serve as templates and inspiration for whole new
-kinds of effects you create on your own.
+As mentioned above, there are a number of ways to combine these
+effects. If you have a group of effects that you want to start and
+stop at the same time, you can group them into a <<scenes,scene>>. To
+smoothly transition from one effect to another you can use a
+<<fades,fade>>, and either side of the fade can be a scene. Or you can
+fade to or from a <<blank-effects,blank effect>>, or sequence a whole
+list of effects or scenes using a <<chases,chase>>.
+
+<<conditional-effects,Conditional effects>> and
+<<variable-effects,variable effects>> are designed to make it easy for
+effects to influence and interact with each other by responding to and
+setting show variables. Finally, Afterglow includes some examples of
+how to build up <<complex-effects,special-purpose effects>>, which can
+be fun in themselves, and also serve as templates and inspiration for
+whole new kinds of effects you create on your own.
 
 == Basic Effect Types
 
@@ -616,7 +634,7 @@ them in the order 1 &rarr; 2 &rarr; 3 &rarr; 1 &rarr; 2 &rarr; 3
 &rarr; 1&hellip; while a value of `:bounce` would give you 1 &rarr; 2
 &rarr; 3 &rarr; 2 &rarr; 1 &rarr; 2 &rarr; 3 &rarr; 2&hellip;.
 
-==== Conditional Effects
+=== Conditional Effects
 
 The
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-conditional-effect[conditional-effect]
@@ -646,7 +664,7 @@ running, by means of a Variable Effect, described in the next section.
                                  (beyond/laser-color-effect laser-show c))))
 ----
 
-==== Variable Effects
+=== Variable Effects
 
 The
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.show-variable.html#var-create-for-show[variable-effect]
