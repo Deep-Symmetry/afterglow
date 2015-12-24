@@ -592,6 +592,30 @@ excellent building blocks for <<color-parameters,color>>,
 parameters, as shown in the
 <<effects#spatial-effects,effect examples>>.
 
+== Debugging a Dynamic Parameter
+
+You can get value of a parameter with a following function:
+
+[source,clojure]
+----
+(show/get-variable :key)
+----
+
+Another way could be to use a http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-variable-set-fn.21[specific function], that runs
+every time a parameter changes. Following example prints new values of the
+parameter.
+
+[source,clojure]
+----
+(show/set-variable! :key 0)
+(defn println-on-change
+  "Prints a variable every time it changes"
+  [key value]
+  (println key))
+(show/add-variable-set-fn! :key println-on-change)
+(show/set-variable! :key 10)
+----
+
 === Digging Deeper
 
 For more details, see the
