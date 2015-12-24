@@ -592,29 +592,88 @@ excellent building blocks for <<color-parameters,color>>,
 parameters, as shown in the
 <<effects#spatial-effects,effect examples>>.
 
-== Debugging a Dynamic Parameter
+== Debugging Dynamic Parameters
 
-You can get value of a parameter with a following function:
+Since dynamic parameters are such a source of flexibility, they can
+get complex quickly, especially when you are driving them from
+external systems via MIDI events. Here are a few tips on how you can
+check whether the parameter is doing what you expect, and how it is
+feeding into the effects you are creating with it.
+
+=== Checking Variable Parameters
+
+If you are using a show variable to hold values as the basis of your
+dynamic parameter, perhaps by
+https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#mapping-a-control-to-a-variable[mapping]
+incoming MIDI events to it, can check the current value of the
+variable at any time like this:
 
 [source,clojure]
 ----
 (show/get-variable :key)
 ----
 
-Another way could be to use a http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-variable-set-fn.21[specific function], that runs
-every time a parameter changes. Following example prints new values of the
-parameter.
+If you want to be informed more proactively whenever the show variable
+value changes, you can register a
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-variable-set-fn.21[watch
+function] to be called whenever the variable changes. The following example
+prints the new values of the variable named `:key` each time it is changed.
 
 [source,clojure]
 ----
 (show/set-variable! :key 0)
+; nothing special happens
+
 (defn println-on-change
   "Prints a variable every time it changes"
   [key value]
-  (println key))
+  (println key "set to" value))
+  
 (show/add-variable-set-fn! :key println-on-change)
 (show/set-variable! :key 10)
+; prints ":key set to 10"
 ----
+
+=== Evaluating Other Parameters
+
+For all the other kinds of dynamic parameters, there isn't a place
+where their value is stored; instead, it is calculated for a
+particular point in time (and perhaps space). But you can ask the
+parameter to evaluate itself by giving it the proper, context, in the
+same way Afterglow itself does, using the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-evaluate[evaluate]
+function in the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-IParam[IParam]
+protocol. All dynamic parameters implement this protocol. To call
+`evaluate`, you pass in the dynamic parameter, the show in which it is
+running, and a metronome snapshot to identify the instant in time you
+want to ask about. If you are testing a spatial parameter, you will
+also want pass in the fixture head that you are asking about.
+Otherwise, you can leave that last parameter `nil`.
+
+The
+https://github.com/brunchboy/graphterglow#graphterglow[graphterglow]
+project includes a bunch of examples of doing this, and graphing the
+results. It is how the graphs of oscillators and step parameters in
+this documentation were created. Its
+https://github.com/brunchboy/graphterglow/blob/master/src/graphterglow/core.clj#L21-L31[build-test-snapshot
+and build-beat snapshot] functions show how to create a snapshot for a
+certain number of millseconds or beats since the start of the
+metronome. Using them to evaluate a parameter looks like this:
+
+[source,clojure]
+----
+(afterglow.effects.params/evaluate
+  my-param *show* (build-beat-snapshot (:metronome *show*) 5) nil)
+----
+
+That would determine the value of the dynamic parameter `my-param` at
+five beats past the start of the show.
+
+If you are working on a tricky oscillated or step parameter, or any
+other sort of numeric dynamic parameter, getting it set up for
+graphing within graphterglow might help you get a visual insight for
+how it is behaving.
 
 === Digging Deeper
 
