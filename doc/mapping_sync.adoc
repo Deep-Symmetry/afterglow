@@ -382,6 +382,14 @@ site also has a nice
 http://hexler.net/docs/touchosc-setup-coremidi-network[illustrated
 walk-through] of setting up network MIDI communication.
 
+== Connecting to MIDI Ports on the Same Machine
+
+To achive MIDI routing on a single machine, you need to set up a
+virtual MIDI bus. On the Mac you can use Core MIDI's built-in IAC bus,
+and on Windows you could use the MIDI Yoke utility. You can find
+https://www.ableton.com/en/help/article/using-virtual-MIDI-buses-live/[a
+good tutorial] about the needed steps on the Ableton Live website.
+
 == Checking your Sync
 
 An easy way to see how well your show is syncing the beat is to use the
@@ -776,13 +784,6 @@ why it is ignoring your adjustments.
 NOTE: Future releases will also take advantage of more of the buttons
 on the controller, as well as the nice big touch strip to the left of
 the cue grid.
-
-== Connecting to MIDI outputs on the same machine
-
-To achive MIDI routing on the same machine, you need to set up virtual
-MIDI bus. On Mac you need to use IAC bus and on Windows you could use
-MIDI Yoke utility. You can find https://www.ableton.com/en/help/article/using-virtual-MIDI-buses-live/[a good tutorial] about needed steps on
-Ableton live website.
 
 ==== License
 
