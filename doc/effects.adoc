@@ -109,7 +109,7 @@ value this effect wants.
 
 The
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.dimmer.html#var-dimmer-effect[API
-documentation] also identifies two optional keyword arguments you can
+documentation] also identifies some optional keyword arguments you can
 pass. If `:htp?` passed with a `false`, value this effect will simply
 overwrite any previous assignments it finds for the dimmers it is
 controlling. Omitting `:htp?` is the same as passing it with a `true`
@@ -143,6 +143,66 @@ cues.
 TIP: If you have color effects running for a light and you aren’t seeing
 anything, make sure you have a dimmer effect setting the dimmer to some
 visible level.
+
+==== Virtual Dimmers
+
+Although most RGB color-mixing fixtures have a dimmer channel which is
+separate from the color component intensity channels, we have
+encountered a few that lack this feature: they have only a red,
+green, and blue channel, with no overall dimmer. In order to
+accommodate fixtures like this, and enable them to participate in
+dimmer effects for more flexible show control, Afterglow now can
+provide _virtual dimmers_ for them. To use this feature, pass the
+optional argument `:add-virtual-dimmers?` with a `true` value to
+`dimmer-effect`.
+
+NOTE: As explained below, when using virtual dimmers you must also
+turn off highest-takes-precedence dimmer mixing by passing `false`
+with the `:htp?` optional keyword argument, and add your dimmer effect
+to the show with a higher priority than any color effects running on
+the fixtures that lack real dimmers, so it can run after them and
+manipulate their results.
+
+Since virtual dimmers do not have an actual separate dimmer channel to
+work with, they are actually <<color-effects,color effects>> which
+work by modifying the result of whatever other color effect you have
+established for the dimmer-lacking fixtures. When you tell
+`dimmer-effect` that `add-virtual-dimmers?` is `true`, it will scan
+the list of fixtures whose dimmers it is supposed to control, and in
+addition to creating ordinary dimmer effects for fixures with dimmers,
+it will create special color effects for any fixtures that can mix RGB
+colors but lack dimmers. These color effects will act as virtual
+dimmers: they will look at the color value that has been established
+for the fixture, and darken it as needed in order to reflect the
+dimmer level of the dimmer effect that created them (scaled by the
+dimmer master chain, just like regular dimmer effects). This dimmed
+version of the color will replace the one that came from the other
+effects, and the visible result will be the same as if the fixtures
+had dimmer channels.
+
+In order for the virtual dimmer effect to be able to modify the other
+color effects, it needs to run after them. So you need to be sure when
+you are adding virtual dimmer effects to the show to assign them a
+higher priority value than the color effects they will be working
+with.
+
+Because the virtual dimmer color adjustment is a destructive
+operation, and the color channels have no direct access to the dimmer
+level information once it is complete, virtual dimmers cannot be
+combined with each other in a &ldquo;highest takes precedence&rdquo;
+style. So when you need to use virtual dimmers, you must set `:htp?`
+mode to `false` in `dimmer-effect`, or the function will throw an
+exception.
+
+You should also not try to run more than one dimmer effect with
+virtual dimmers on the same fixtures at the same time, because each
+one will darken them, giving you different results than actual dimmers
+do.
+
+Even with these restrictions, virtual dimmers can address most of the
+limitations of fixtures that lack actual dimmer channels, and allow
+them to participate as nearly first-class citizens of Afterglow's
+dimmer effects.
 
 === Color Effects
 
