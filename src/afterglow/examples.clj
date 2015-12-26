@@ -109,8 +109,10 @@
   parameters exist, it can vary in response to a MIDI mapped show
   variable, an oscillator, or the location of the fixture. You can
   override the default name by passing in a value with :effect-name"
-  [level & {:keys [effect-name]}]
-  (dimmer-effect level (show/all-fixtures) :effect-name effect-name))
+  [level & {:keys [effect-name add-virtual-dimmers?]}]
+  (let [htp? (not add-virtual-dimmers?)]
+    (dimmer-effect level (show/all-fixtures) :effect-name effect-name :htp? htp?
+                   :add-virtual-dimmers? add-virtual-dimmers?)))
 
 (defn fiat-lux
   "Start simple with a cool blue color from all the lights."

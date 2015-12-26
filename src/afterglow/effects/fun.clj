@@ -2,7 +2,8 @@
   "A collection of neat effects that are both useful in shows, and
   examples of how to create such things."
   {:author "James Elliott"}
-  (:require [afterglow.effects :as fx]
+  (:require [afterglow.channels :as channels]
+            [afterglow.effects :as fx]
             [afterglow.effects.channel :as chan-fx]
             [afterglow.effects.color :as color-fx]
             [afterglow.effects.dimmer :as dimmer-fx]
@@ -57,7 +58,7 @@
     (params/validate-param-type down-beat-color :com.evocomputing.colors/color)
     (params/validate-param-type other-beat-color :com.evocomputing.colors/color)
     (params/validate-param-type metronome Metronome)
-    (let [heads (color-fx/find-rgb-heads fixtures)
+    (let [heads (channels/find-rgb-heads fixtures)
           running (atom true)
           ;; Need to use the show metronome as a snapshot to resolve our metronome parameter first
           metronome (params/resolve-param metronome *show* (rhythm/metro-snapshot (:metronome *show*)))
@@ -127,7 +128,7 @@
   (let [color (params/bind-keyword-param color :com.evocomputing.colors/color default-sparkle-color)
         chance (params/bind-keyword-param chance Number 0.001)
         fade-time (params/bind-keyword-param fade-time Number 500)]
-    (let [heads (color-fx/find-rgb-heads fixtures)
+    (let [heads (channels/find-rgb-heads fixtures)
           running (atom true)
           sparkles (atom {})  ; A map from head to creation timestamp for active sparkles
           snapshot (rhythm/metro-snapshot (:metronome *show*))
@@ -194,7 +195,7 @@
   (let [chance (params/bind-keyword-param chance Number 0.001)
         fade-time (params/bind-keyword-param fade-time Number 500)
         master (params/bind-keyword-param master Master (:grand-master *show*))
-        fixtures (if include-rgb-fixtures? fixtures (filter (complement color-fx/has-rgb-heads?) fixtures))]
+        fixtures (if include-rgb-fixtures? fixtures (filter (complement channels/has-rgb-heads?) fixtures))]
     (let [full-channels (dimmer-fx/gather-dimmer-channels fixtures)
           function-heads (dimmer-fx/gather-partial-dimmer-function-heads fixtures)
           running (atom true)
@@ -418,7 +419,7 @@
                          color-cycle default-color-cycle)]
     (doseq [arg color-cycle]
       (params/validate-param-type arg :com.evocomputing.colors/color))
-    (let [heads (color-fx/find-rgb-heads fixtures)
+    (let [heads (channels/find-rgb-heads fixtures)
           ending (atom nil)
           color-cycle (map #(params/resolve-unless-frame-dynamic % *show* (rhythm/metro-snapshot (:metronome *show*)))
                            color-cycle)

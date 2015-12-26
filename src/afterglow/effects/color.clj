@@ -16,6 +16,35 @@
             [taoensso.timbre.profiling :refer [pspy]])
   (:import (afterglow.effects Assigner Effect)))
 
+(defn find-rgb-heads
+  "In version 0.1.6 this was moved to the `afterglow.channels` namespace,
+  and this stub was left for backwards compatibility, but is deprecated
+  and will be removed in a future release.
+
+  Returns all heads of the supplied fixtures which are capable of mixing
+  RGB color, in other words they have at least a red, green, and blue
+  color channel. If the second argument is present and `true`, also
+  returns heads with color wheels."
+  {:deprecated "0.1.6"}
+  ([fixtures]
+   (find-rgb-heads fixtures false))
+  ([fixtures include-color-wheels?]
+   (channels/find-rgb-heads fixtures include-color-wheels?)))
+
+(defn has-rgb-heads?
+  "In version 0.1.6 this was moved to the `afterglow.channels` namespace,
+  and this stub was left for backwards compatibility, but is deprecated
+  and will be removed in a future release.
+
+  Given a fixture, returns a truthy value if it has any heads capable
+  of mixing RGB color. If the second argument is present and `true`,
+  having a head with a color wheel is good enough."
+  {:deprecated "0.1.6"}
+  ([fixture]
+   (has-rgb-heads? fixture false))
+  ([fixture include-color-wheels?]
+   (channels/has-rgb-heads? fixture include-color-wheels?)))
+
 (defn htp-merge
   "Helper function for assigners that want to use
   highest-takes-priority blending for RGB colors. Returns a color
@@ -28,27 +57,6 @@
           blue (max (colors/blue previous) (colors/blue current))]
       (colors/create-color :r red :g green :b blue))
     current))
-
-(defn find-rgb-heads
-  "Returns all heads of the supplied fixtures which are capable of
-  mixing RGB color, in other words they have at least a red, green,
-  and blue color channel. If the second argument is present and
-  `true`, also returns heads with color wheels."
-  ([fixtures]
-   (find-rgb-heads fixtures false))
-  ([fixtures include-color-wheels?]
-   (filter #(or (= 3 (count (filter #{:red :green :blue} (map :color (:channels %)))))
-                (and include-color-wheels? (seq (:color-wheel-hue-map %))))
-           (channels/expand-heads fixtures))))
-
-(defn has-rgb-heads?
-  "Given a fixture, returns a truthy value if it has any heads capable
-  of mixing RGB color. If the second argument is present and `true`,
-  having a head with a color wheel is good enough."
-  ([fixture]
-   (has-rgb-heads? fixture false))
-  ([fixture include-color-wheels?]
-   (seq (find-rgb-heads [fixture] include-color-wheels?))))
 
 (defn build-htp-color-assigner
   "Returns an assigner that applies highest-takes-precedence color
@@ -88,7 +96,7 @@
   [name color fixtures & {:keys [include-color-wheels? htp?]}]
   {:pre [(some? *show*) (some? name) (sequential? fixtures)]}
   (params/validate-param-type color :com.evocomputing.colors/color)
-  (let [heads (find-rgb-heads fixtures include-color-wheels?)
+  (let [heads (channels/find-rgb-heads fixtures include-color-wheels?)
         assigners (if htp?
                     (build-htp-color-assigners heads color *show*)
                     (fx/build-head-parameter-assigners :color heads color *show*))]
@@ -200,7 +208,7 @@
   also be transformed."
   [fixtures & {:keys [transform-fn beyond-server] :or {transform-fn (build-saturation-transformation)
                                                        beyond-server nil}}]
-  (let [heads (find-rgb-heads fixtures)
+  (let [heads (channels/find-rgb-heads fixtures)
         f (fn [show snapshot target previous-assignment]  ;; Assigners for regular light colors; have heads
             (pspy :transform-colors
                   (when-let [resolved (params/resolve-param previous-assignment show snapshot target)]

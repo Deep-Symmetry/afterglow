@@ -74,6 +74,27 @@
   [fixtures pred]
   (filter #(some pred (:channels %)) (expand-heads fixtures)))
 
+(defn find-rgb-heads
+  "Returns all heads of the supplied fixtures which are capable of
+  mixing RGB color, in other words they have at least a red, green,
+  and blue color channel. If the second argument is present and
+  `true`, also returns heads with color wheels."
+  ([fixtures]
+   (find-rgb-heads fixtures false))
+  ([fixtures include-color-wheels?]
+   (filter #(or (= 3 (count (filter #{:red :green :blue} (map :color (:channels %)))))
+                (and include-color-wheels? (seq (:color-wheel-hue-map %))))
+           (expand-heads fixtures))))
+
+(defn has-rgb-heads?
+  "Given a fixture, returns a truthy value if it has any heads capable
+  of mixing RGB color. If the second argument is present and `true`,
+  having a head with a color wheel is good enough."
+  ([fixture]
+   (has-rgb-heads? fixture false))
+  ([fixture include-color-wheels?]
+   (seq (find-rgb-heads [fixture] include-color-wheels?))))
+
 (defn build-function
   "Returns a function spefication that encompasses a range of possible
   DMX values for a channel. If start and end are not specified, the

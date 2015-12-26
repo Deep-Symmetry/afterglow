@@ -28,12 +28,12 @@
   (:require [afterglow.channels :as channels]
             [afterglow.effects.channel :as chan-fx]
             [afterglow.effects.params :as params]
-            [afterglow.effects :refer [always-active end-immediately]]
+            [afterglow.effects :as fx :refer [always-active end-immediately]]
             [afterglow.rhythm :refer [metro-snapshot]]
             [afterglow.show-context :refer [*show*]]
             [afterglow.util :refer [valid-dmx-value?]]
-            [com.evocomputing.colors :refer [clamp-percent-float
-                                             clamp-rgb-int]]
+            [com.evocomputing.colors :as colors :refer [clamp-percent-float
+                                                        clamp-rgb-int]]
             [taoensso.timbre.profiling :refer [pspy]]
             [taoensso.timbre :as timbre])
   (:import (afterglow.effects Effect)))
@@ -63,6 +63,16 @@
   (filter #(when-let [dimmer (:dimmer (:function-map %))]
              (not= :dimmer (:type (first dimmer))))
           (channels/expand-heads fixtures)))
+
+(defn gather-no-dimmer-rgb-heads
+  "Finds all the RGB heads from the supplied fixture list which have
+  no dimmer capability at either the head or fixture level. These
+  heads are suitable for creating virtual dimmer effects when
+  desired."
+  [fixtures]
+  (let [no-dimmers (filter #(not (:dimmer (into #{} (mapcat keys (map :function-map (channels/expand-heads [%]))))))
+                           fixtures)]
+    (channels/find-rgb-heads no-dimmers)))
 
 (defonce
   ^{:private true
@@ -111,9 +121,10 @@
 
 (defn- build-parameterized-dimmer-effect
   "Returns an effect which assigns a dynamic value to all the supplied
-  dimmers (which are broken into two lists: full dedicated dimmer
-  channels, and heads that have a dimmer function on a multipurpose
-  channel).
+  dimmers (which are broken into three lists: full dedicated dimmer
+  channels, heads that have a dimmer function on a multipurpose
+  channel, and RGB heads with no dimmer at all that should be assigned
+  a virtual dimmer effect).
 
   If `htp?` is true, applies highest-takes-precedence (i.e. compares
   the value to the previous assignment for the channel, and lets the
@@ -122,12 +133,12 @@
   All dimmer cues are associated with a master chain which can scale
   down the values to which they are set. If none is supplied when
   creating the dimmer cue, the show's grand master is used."
-  [name level show full-channels function-heads htp? master]
+  [name level show full-channels function-heads virtual-heads htp? master]
   (params/validate-param-type master Master)
   (let [full-f (if htp?  ; Assignment function for dedicated dimmer channels
                  (fn [show snapshot target previous-assignment]
                    (clamp-rgb-int (max (master-scale master (params/resolve-param level show snapshot))
-                                       (or previous-assignment 0))))
+                                       (or (params/resolve-param previous-assignment show snapshot) 0))))
                  (fn [show snapshot target previous-assignment]
                    (clamp-rgb-int (master-scale master (params/resolve-param level show snapshot)))))
         full-assigners (chan-fx/build-raw-channel-assigners full-channels full-f)
@@ -135,11 +146,22 @@
                  ;; We must scale dimmer level from 0-255 to 0-100, since function effects use percentages.
                  (fn [show snapshot target previous-assignment]
                    (max (/ (master-scale master (params/resolve-param level show snapshot)) 2.55)
-                        (or previous-assignment 0)))
+                        (or (params/resolve-param previous-assignment show snapshot) 0)))
                  (fn [show snapshot target previous-assignment]
                    (/ (master-scale master (params/resolve-param level show snapshot)) 2.55)))
-        func-assigners (chan-fx/build-head-function-assigners :dimmer function-heads func-f)]
-    (Effect. name always-active (fn [show snapshot] (concat full-assigners func-assigners)) end-immediately)))
+        func-assigners (chan-fx/build-head-function-assigners :dimmer function-heads func-f)
+        virtual-f (fn [show snapshot target previous-assignment]
+                    (when previous-assignment
+                      (let [resolved (params/resolve-param previous-assignment show snapshot target)
+                            fraction (/ (master-scale master (params/resolve-param level show snapshot)) 255)]
+                        (colors/create-color :h (colors/hue resolved)
+                                             :s (colors/saturation resolved)
+                                             :l (clamp-percent-float (* (colors/lightness resolved) fraction))
+                                             :a (colors/alpha resolved)))))
+        virtual-assigners (fx/build-head-assigners :color virtual-heads virtual-f)]
+    (Effect. name always-active
+             (fn [show snapshot] (concat full-assigners func-assigners virtual-assigners))
+             end-immediately)))
 
 (defn dimmer-effect
   "Returns an effect which assigns a dynamic value to all the supplied
@@ -156,17 +178,32 @@
   defined over only part of a multi-purpose channel, where the
   function `:type` is `:dimmer`, and the channel `:type` must be
   something else. A single head cannot have both types of dimmer,
-  since a function can only exist on one channel in a given head."
-  [level fixtures & {:keys [htp? master effect-name] :or {htp? true master (:grand-master *show*)}}]
-  {:pre [(some? *show*)]}
+  since a function can only exist on one channel in a given head.
+
+  If you have any fixtures that are capable of RGB color mixing, but
+  lack dedicated dimmer channels, you can have this effect simulate a
+  dimmer channel for those fixtures by passing a `true` value with
+  `add-virtual-dimmers?`. The virtual dimmer works by modifying any
+  color effect that has already run for those fixtures, to reduce the
+  brightness of the color being assigned. To do that, this dimmer
+  effect needs to run at a higher effect priority than any color
+  effect you want it to modify, so be sure to add it to your show with
+  an appropriate priority value. Virtual dimmers are incompatible with
+  hightest-takes-precedence dimming, because there is no actual
+  previous dimmer value for them to work with, so you cannot use both
+  `htp?` and `add-virtual-dimmers` at the same time."
+  [level fixtures & {:keys [htp? master effect-name add-virtual-dimmers?]
+                     :or {htp? true master (:grand-master *show*)}}]
+  {:pre [(some? *show*) (not (and htp? add-virtual-dimmers?))]}
   (let [level (params/bind-keyword-param level Number 255)
         master (params/bind-keyword-param master Master (:grand-master *show*))]
     (let [full-channels (gather-dimmer-channels fixtures)
           function-heads (gather-partial-dimmer-function-heads fixtures)
+          virtual-heads (when add-virtual-dimmers? (gather-no-dimmer-rgb-heads fixtures))
           snapshot (metro-snapshot (:metronome *show*))
           level (params/resolve-unless-frame-dynamic level *show* snapshot)
           master (params/resolve-param master *show* snapshot)  ; Can resolve now; value is inherently static.
           label (if (params/param? level) "<dynamic>" level)]
       (build-parameterized-dimmer-effect (or effect-name (str "Dimmers=" label (when htp? " (HTP)")))
-                                         level *show* full-channels function-heads htp? master))))
+                                         level *show* full-channels function-heads virtual-heads htp? master))))
 
