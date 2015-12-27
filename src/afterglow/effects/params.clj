@@ -14,7 +14,8 @@
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
             [taoensso.timbre :as timbre :refer [error]])
-  (:import [javax.media.j3d Transform3D]
+  (:import [afterglow.rhythm MetronomeSnapshot]
+           [javax.media.j3d Transform3D]
            [javax.vecmath Point3d Vector3d Vector2d]))
 
 (defonce
@@ -225,65 +226,31 @@
    `(bind-keyword-param* ~value ~type-expected ~default ~param-name)))
 
 
-(defn build-step-param
-  "Returns a number parameter that increases over time, ideal for
-  convenient control
-  of [chases](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#chases).
+(defn- ensure-valid-interval
+  "Make sure the desired interval is one of the valid keywords,
+  `:beat`, `:bar`, or `:phrase`. If not, log a warning and return
+  `:beat` as the value to use instead."
+  [interval]
+  (or (#{:beat :bar :phrase} interval)
+      (do (timbre/warn "Unrecognized interval keyword" interval "using :beat instead") :beat)))
 
-  With no arguments, the parameter will evaluate to one at the beat
-  closest when it was created, and will increase by one for each beat
-  that passes, with no fades (fractional states).
+(defn- ensure-valid-fade-curve
+  "Make sure the desired fade curve is one of the valid keywords,
+  `:linear` or `:sine`. If not, log a warning and return `:linear` as
+  the value to use instead."
+  [curve]
+  (or (#{:linear :sine} curve)
+      (do (timbre/warn "Unrecognized fade curve keyword" curve "using :linear instead") :linear)))
 
-  The optional keyword argument `:interval` can be supplied with the
-  value `:bar` or `:phrase` to change the timing so that it instead
-  relates to bars or phrases. Supplying a value with `:interval-ratio`
-  will run the step parameter at the specified fraction or multiple of
-  the chosen interval (beat, bar, or phrase), as illustrated in
-  the [Ratios](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#ratios)
-  section of the Oscillator documentation.
-
-  If fading between steps is desired, the optional keyword argument
-  `:fade-fraction` can be supplied with a non-zero value (up to but no
-  greater than `1`). This specifies what fraction of each interval is
-  involved in fading to or from the next value.
-
-  > See the graphs in the Step Parameters
-  > [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#step-parameters)
-  > for a visual illustration of how these parameters work.
-
-  A fade fraction of `0` provides the default behavior of an instant
-  jump between values with no fading. A fade fraction of `1` means
-  that each value continually fades into the next, and is never
-  steady. A fade fraction of `0.5` would mean that the value is stable
-  half the time, and fading for the other half: during the middle of
-  the interval, the value is steady at its assigned value; once the
-  final quarter of the interval begins, the value starts fading up,
-  reaching the halfway point as the interval ends, and the fade
-  continues through the first quarter of the next interval, finally
-  stabilizing for the next middle section. Smaller fade fractions mean
-  shorter periods of stability and slower fades, while larger
-  fractions yield longer periods of steady values, and quicker fades.
-
-  A smoother look can be obtained by using a sine curve to smooth the
-  start and end of each fade, by passing the optional keyword argument
-  `:fade-curve` with the value `:sine`. (Again, see
-  the [graphs](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#step-parameters)
-  to get a visual feel for what this does.)
-
-  If the timing should start at an instant other than when the step
-  parameter was created, a metronome snapshot containing the desired
-  start point can be passed with the optional keyword argument
-  `:starting`.
-
-  Step parameters are always frame-dynamic."
-  [& {:keys [interval interval-ratio fade-fraction fade-curve starting]
-      :or {interval :beat interval-ratio 1 fade-fraction 0 fade-curve :linear
-           starting (when *show* (metro-snapshot (:metronome *show*)))}}]
-  {:pre [(#{:beat :bar :phrase} interval) (number? interval-ratio) (number? fade-fraction)
-         (<= 0 fade-fraction 1) (#{:linear :sine} fade-curve)
-         (satisfies? rhythm/ISnapshot starting)]}
-  ;; TODO: Consider allowing arguments to be variable parameters?
-  (let [phase-key (keyword (str (name interval) "-phase"))
+(defn- fixed-step-param
+  "Build an optimized version of a step parameter which can be used
+  when none of its configuration parameters are dynamic parameters.
+  See [[build-step-param]] for details about the parameters."
+  [interval interval-ratio fade-fraction fade-curve starting]
+  (let [interval (ensure-valid-interval interval)
+        fade-fraction (colors/clamp-unit-float fade-fraction)
+        fade-curve (ensure-valid-fade-curve fade-curve)
+        phase-key (keyword (str (name interval) "-phase"))
         origin (dec (+ (interval starting) (math/round (phase-key starting))))
         step-fn (if (= interval-ratio 1) ; Calculate base step level to be faded
                     (fn [_ marker] marker) ; Simple, no beat ratio
@@ -338,6 +305,95 @@
         Number)
       (resolve-non-frame-dynamic-elements [this _ _ _]  ; Nothing to resolve, always frame-dynamic
         this))))
+
+(defn build-step-param
+  "Returns a number parameter that increases over time, ideal for
+  convenient control
+  of [chases](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#chases).
+
+  With no arguments, the parameter will evaluate to one at the beat
+  closest when it was created, and will increase by one for each beat
+  that passes, with no fades (fractional states).
+
+  The optional keyword argument `:interval` can be supplied with the
+  value `:bar` or `:phrase` to change the timing so that it instead
+  relates to bars or phrases. Supplying a value with `:interval-ratio`
+  will run the step parameter at the specified fraction or multiple of
+  the chosen interval (beat, bar, or phrase), as illustrated in
+  the [Ratios](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#ratios)
+  section of the Oscillator documentation.
+
+  If fading between steps is desired, the optional keyword argument
+  `:fade-fraction` can be supplied with a non-zero value (up to but no
+  greater than `1`). This specifies what fraction of each interval is
+  involved in fading to or from the next value.
+
+  > See the graphs in the Step Parameters
+  > [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#step-parameters)
+  > for a visual illustration of how these parameters work.
+
+  A fade fraction of `0` provides the default behavior of an instant
+  jump between values with no fading. A fade fraction of `1` means
+  that each value continually fades into the next, and is never
+  steady. A fade fraction of `0.5` would mean that the value is stable
+  half the time, and fading for the other half: during the middle of
+  the interval, the value is steady at its assigned value; once the
+  final quarter of the interval begins, the value starts fading up,
+  reaching the halfway point as the interval ends, and the fade
+  continues through the first quarter of the next interval, finally
+  stabilizing for the next middle section. Smaller fade fractions mean
+  shorter periods of stability and slower fades, while larger
+  fractions yield longer periods of steady values, and quicker fades.
+
+  A smoother look can be obtained by using a sine curve to smooth the
+  start and end of each fade, by passing the optional keyword argument
+  `:fade-curve` with the value `:sine`. (Again, see
+  the [graphs](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#step-parameters)
+  to get a visual feel for what this does.)
+
+  If the timing should start at an instant other than when the step
+  parameter was created, a metronome snapshot containing the desired
+  start point can be passed with the optional keyword argument
+  `:starting`.
+
+  All incoming parameters may
+  be [dynamic](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters).
+  Step parameters are always frame-dynamic."
+  [& {:keys [interval interval-ratio fade-fraction fade-curve starting]
+      :or {interval :beat interval-ratio 1 fade-fraction 0 fade-curve :linear
+           starting (when *show* (metro-snapshot (:metronome *show*)))}}]
+  {:pre [(some? *show*)]}
+  (validate-param-type interval clojure.lang.Keyword)
+  (validate-param-type fade-curve clojure.lang.Keyword)
+  (let [interval-ratio (bind-keyword-param interval-ratio Number 1)
+        fade-fraction (bind-keyword-param fade-fraction Number 0)
+        starting (bind-keyword-param starting MetronomeSnapshot (when *show* (metro-snapshot (:metronome *show*))))]
+    (if (not-any? param? [interval interval-ratio fade-fraction fade-curve starting])
+      (fixed-step-param interval interval-ratio fade-fraction fade-curve starting)  ; No dynamic params, can optimize
+      (reify IParam  ; Must build dynamic version
+        (evaluate [this show snapshot head]
+          ;; Build and delegate to a one-time-use fixed step parameter based on the current values of our parameters
+          (let [interval (resolve-param interval show snapshot head)
+                interval-ratio (resolve-param interval-ratio show snapshot head)
+                fade-fraction (resolve-param fade-fraction show snapshot head)
+                fade-curve (resolve-param fade-curve show snapshot head)
+                starting (resolve-param starting show snapshot head)
+                current-version (fixed-step-param interval interval-ratio fade-fraction fade-curve starting)]
+            (evaluate current-version show snapshot head)))
+        (frame-dynamic? [this]
+          true)
+        (result-type [this]
+          Number)
+        (resolve-non-frame-dynamic-elements [this show snapshot head]
+          (if (not-any? frame-dynamic? [interval interval-ratio fade-fraction fade-curve starting])
+            ;; None of our arguments are frame-dynamic, so we can now optimize to a fixed step parameter
+            (let [interval (resolve-param interval show snapshot head)
+                  interval-ratio (resolve-param interval-ratio show snapshot head)
+                  fade-fraction (resolve-param fade-fraction show snapshot head)
+                  fade-curve (resolve-param fade-curve show snapshot head)
+                  starting (resolve-param starting show snapshot head)]
+              (fixed-step-param interval interval-ratio fade-fraction fade-curve starting))
+            this))))))  ; We have frame dynamic inputs, so we need to stay fully dynamic
 
 (defn interpret-color
   "Accept a color as either

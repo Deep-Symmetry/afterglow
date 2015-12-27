@@ -293,6 +293,11 @@ pass a metronome snapshot along with the keyword argument `:starting`,
 and beats will be counted so that the first beat is the one that
 occured closest to that snapshot.
 
+For maximum flexibility, any of the parameters to `build-step-param`
+can themselves be dynamic parameters from the show. If none of them
+are, a more efficient version of the step parameter is built,
+precalculating as much as possible.
+
 == Color Parameters
 
 Color parameters are an extremely flexible way of dynamically assigning

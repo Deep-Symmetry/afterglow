@@ -81,7 +81,8 @@
 
 (defn- fixed-oscillator
   "Build an optimized version of an oscillator which can be used when
-  none of its configuration parameters are dynamic parameters."
+  none of its configuration parameters are dynamic parameters.
+  See [[build-oscillator]] for details about the parameters."
   [shape-fn interval interval-ratio phase]
   (let [base-phase-fn (build-base-phase-fn interval interval-ratio)
         adjusted-phase-fn (build-adjusted-phase-fn base-phase-fn phase)]
@@ -93,7 +94,8 @@
 
 (defn- simple-oscillator
   "Build an oscillator which has at least one dynamic parameter, but
-  whose shape function does not use any."
+  whose shape function does not use any. See [[build-oscillator]] for
+  details about the parameters."
   [shape-fn interval interval-ratio phase]
   (reify IOscillator
     (evaluate [this show snapshot head]
@@ -115,6 +117,7 @@
 
 (defn- variable-oscillator
   "Build an oscillator whose shape function relies on dynamic
+  parameters. See [[build-oscillator]] for details about the
   parameters."
   [shape-fn interval interval-ratio phase]
   (reify IOscillator

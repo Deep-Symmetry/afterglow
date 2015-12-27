@@ -56,7 +56,9 @@ to 1.0.
 image:assets/sawtooth-beat.png[Default Sawtooth Oscillator]
 
 You can change the nature of the wave by using optional keyword
-parameters:
+parameters, and the values you use with them can be be
+https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters[dynamic
+parameters]:
 
 [cols=",,",options="header",]
 |=======================================================================
@@ -166,7 +168,9 @@ at the end of the beat it will have returned to 0.0.
 image:assets/triangle-beat.png[Default Triangle Oscillator]
 
 You can change the nature of the wave by using optional keyword
-parameters:
+parameters, and the values you use with them can be be
+https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters[dynamic
+parameters]:
 
 [cols=",,",options="header",]
 |=======================================================================
@@ -230,7 +234,9 @@ end of the beat it will have returned to 0.0.
 image:assets/sine-beat.png[Default Sine Oscillator]
 
 You can change the nature of the wave by using optional keyword
-parameters:
+parameters, and the values you use with them can be be
+https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters[dynamic
+parameters]:
 
 [cols=",,",options="header",]
 |=======================================================================
@@ -291,7 +297,9 @@ until the end of the beat.
 image:assets/square-beat.png[Square Beat Oscillator]
 
 You can change the nature of the wave by using optional keyword
-parameters:
+parameters, and the values you use with them can be be
+https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters[dynamic
+parameters]:
 
 [cols=",,",options="header",]
 |=======================================================================
@@ -367,6 +375,54 @@ And to have it oscillate over each phrase:
 (afterglow.effects.oscillators/square :interval :phrase)
 ----
 image:assets/square-phrase.png[Square Phrase Oscillator]
+
+== Custom Oscillators
+
+You can build your own oscillator with any shape waveform that you
+like by defining a _shape function_ for it, and let Afterglow do all
+the hard work of hosting it within the oscillator framework by passing
+that shape function to
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.oscillators.html#var-build-oscillator[afterglow.effects.oscillators/build-oscillator].
+All of the oscillators you have seen so far use this approach, and you
+can see how simple they actually are by looking at the source of one,
+for example
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.oscillators.html#var-triangle[triangle],
+which defines a the triangle wave oscillator. (Click on the `view
+source` button at the bottom of the linked documentation.)
+
+As you will see, most of the function consists of its documentation,
+and its argument declaration, and those simply get passed on to
+`build-oscillator`, which supports the `:interval`, `:interval-ratio`,
+and `:phase` arguments you've seen in all the oscillator functions.
+The core of `triangle` is setting up its shape function to create the
+triangle wave which makes it a triangle oscillator.
+
+=== Shape Functions
+
+The shape function is the first argument to `build-oscillator`, and it
+is simply a function which is given the current phase of the
+oscillator, ranging from 0.0 to 1.0, and must return the value of the
+oscillator's wave form when it is at that phase of oscillation. In the
+case of a triangle wave, it needs to ramp up from 0 to 1 during the
+first half of the oscillation (as the phase grows from 0 to 0.5), then
+back down to 0 during the second half. Here is how `triangle`
+implements that:
+
+[source,clojure]
+----
+(fn [phase]
+  (if (< phase 0.5)
+    (* phase 2.0)
+    (- 2.0 (* phase 2.0))))
+----
+
+The arguments to `triangle` are then passed along to
+`build-oscillator` after the phase function, and the result is the
+triangle oscillator behavior you can use in your shows.
+
+Hopefully examining this example, as well as the source of the other
+oscillators, can inspire you to create your own interesting oscillator
+shapes.
 
 ==== License
 

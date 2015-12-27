@@ -18,6 +18,8 @@ This change log follows the conventions of
   to participate as if they did, by modifying the color effects being
   sent to them.
 - Step parameters can now have interval ratios, like oscillators.
+- When building step parameters, you can now use dynamic parameters as
+  inputs.
 - When mapping a MIDI control to a show variable, you can now supply a
   custom function to transform the incoming value into whatever you
   need it to be,
