@@ -236,15 +236,20 @@
 
   The optional keyword argument `:interval` can be supplied with the
   value `:bar` or `:phrase` to change the timing so that it instead
-  relates to bars or phrases.
+  relates to bars or phrases. Supplying a value with `:interval-ratio`
+  will run the step parameter at the specified fraction or multiple of
+  the chosen interval (beat, bar, or phrase), as illustrated in
+  the [Ratios](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#ratios)
+  section of the Oscillator documentation.
 
   If fading between steps is desired, the optional keyword argument
   `:fade-fraction` can be supplied with a non-zero value (up to but no
   greater than `1`). This specifies what fraction of each interval is
-  involved in fading to or from the next value. See the graphs in the
-  Step
-  Parameters [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#step-parameters)
-  for a visual illustration of how this parameter works.
+  involved in fading to or from the next value.
+
+  > See the graphs in the Step Parameters
+  > [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#step-parameters)
+  > for a visual illustration of how these parameters work.
 
   A fade fraction of `0` provides the default behavior of an instant
   jump between values with no fading. A fade fraction of `1` means
@@ -271,50 +276,62 @@
   `:starting`.
 
   Step parameters are always frame-dynamic."
-  [& {:keys [interval fade-fraction fade-curve starting]
-      :or {interval :beat fade-fraction 0 fade-curve :linear
+  [& {:keys [interval interval-ratio fade-fraction fade-curve starting]
+      :or {interval :beat interval-ratio 1 fade-fraction 0 fade-curve :linear
            starting (when *show* (metro-snapshot (:metronome *show*)))}}]
-  {:pre [(#{:beat :bar :phrase} interval) (util/float<= 0 fade-fraction 1) (#{:linear :sine} fade-curve)
+  {:pre [(#{:beat :bar :phrase} interval) (number? interval-ratio) (number? fade-fraction)
+         (<= 0 fade-fraction 1) (#{:linear :sine} fade-curve)
          (satisfies? rhythm/ISnapshot starting)]}
+  ;; TODO: Consider allowing arguments to be variable parameters?
   (let [phase-key (keyword (str (name interval) "-phase"))
         origin (dec (+ (interval starting) (math/round (phase-key starting))))
-        step-state (fn [snapshot]  ; Calculate values useful for fractional fade curves
-                     [(- (interval snapshot) origin)  ; Base step level to be faded
-                      (phase-key snapshot)  ; Current phase of the interval being faded
-                      (/ fade-fraction 2)  ; Phase at which we are done fading in
-                      (- 1 (/ fade-fraction 2))])  ; Phase at which we start fading out
+        step-fn (if (= interval-ratio 1) ; Calculate base step level to be faded
+                    (fn [_ marker] marker) ; Simple, no beat ratio
+                    (fn [snapshot marker]
+                      (let [phase (phase-key snapshot)
+                            phased-marker (if (util/float= phase 0.0) marker (+ marker phase))]
+                        (inc (Math/floor (/ (dec phased-marker) interval-ratio))))))
+        phase-fn (if (= interval-ratio 1) ; Calculate phase of current step being faded
+                   (fn [snapshot _] (phase-key snapshot)) ; Simple, no beat ratio
+                   (fn [snapshot marker] (rhythm/enhanced-phase marker (phase-key snapshot) interval-ratio)))
+        fade-in (/ fade-fraction 2) ; Phase at which we are done fading in
+        fade-out (- 1 (/ fade-fraction 2)) ; Phase at which we start fading out
         eval-fn (cond
                   (util/float= fade-fraction 0)
-                  (fn [snapshot] (- (interval snapshot) origin))
+                  step-fn ; No fading required, use the basic step function
 
                   (and (util/float= fade-fraction 1) (= fade-curve :linear))
-                  (fn [snapshot] (+ (- (interval snapshot) origin 0.5) (phase-key snapshot)))
+                  (fn [snapshot marker] ; Fade linearly through entire step
+                    (let [step (step-fn snapshot marker)]
+                      (+ (- step 0.5) (phase-fn snapshot marker))))
 
                   :else
                   (case fade-curve
-                    :linear (fn [snapshot]
-                              (let [[base phase fade-in fade-out] (step-state snapshot)]
+                    :linear (fn [snapshot marker]
+                              (let [step (step-fn snapshot marker)
+                                    phase (phase-fn snapshot marker)]
                                 (cond
-                                  (< phase fade-in) (- base (* 0.5 (/ (- fade-in phase) fade-in)))
-                                  (> phase fade-out) (+ base (* 0.5 (/ (- phase fade-out) fade-in)))
-                                  :else base)))
-                    :sine (fn [snapshot]
-                            (let [[base phase fade-in fade-out] (step-state snapshot)]
+                                  (< phase fade-in) (- step (* 0.5 (/ (- fade-in phase) fade-in)))
+                                  (> phase fade-out) (+ step (* 0.5 (/ (- phase fade-out) fade-in)))
+                                  :else step)))
+                    :sine (fn [snapshot marker]
+                            (let [step (step-fn snapshot marker)
+                                  phase (phase-fn snapshot marker)]
                               (cond
                                 (< phase fade-in)
                                 (let [fade-phase (/ phase fade-in)]
-                                  (+ base (/ (dec (Math/cos (* Math/PI (+ (/ fade-phase 2) 1.5)))) 2)))
+                                  (+ step (/ (dec (Math/cos (* Math/PI (+ (/ fade-phase 2) 1.5)))) 2)))
 
                                 (> phase fade-out)
                                 (let [fade-phase (/ (- phase fade-out) fade-in)]
-                                  (+ base (/ (inc (Math/cos (* Math/PI (inc (/ fade-phase 2))))) 2)))
+                                  (+ step (/ (inc (Math/cos (* Math/PI (inc (/ fade-phase 2))))) 2)))
                                 
                                 :else
-                                base)))))]
-    ;; TODO: Add a sine-driven fade option?
+                                step)))))]
     (reify IParam
       (evaluate [this _ snapshot _]
-        (eval-fn snapshot))
+        (let [marker (- (interval snapshot) origin)]
+          (eval-fn snapshot marker)))
       (frame-dynamic? [this]
         true)
       (result-type [this]

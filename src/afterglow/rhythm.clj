@@ -152,7 +152,7 @@
   (let [marker-ratio (/ (- instant start) interval)]
     (- (double marker-ratio) (long marker-ratio))))
 
-(defn- enhanced-phase
+(defn enhanced-phase
   "Calculate a phase with respect to multiples or fractions of a
   marker (beat, bar, or phrase), given the `phase` with respect to
   that marker, the number of that `marker`, and the desired ratio. A

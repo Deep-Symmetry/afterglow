@@ -13,6 +13,11 @@ This change log follows the conventions of
 - Links to graphs and expanded discussion in the oscillator API docs.
 - Dimmer effects can now work with dimmer function ranges on
   multipurpose channels as well as full dedicated dimmer channels.
+- Dimmer effects can now also create virtual dimmers for RGB-mixing
+  fixtures that don't have any actual dimmer channels, allowing them
+  to participate as if they did, by modifying the color effects being
+  sent to them.
+- Step parameters can now have interval ratios, like oscillators.
 - When mapping a MIDI control to a show variable, you can now supply a
   custom function to transform the incoming value into whatever you
   need it to be,
@@ -20,6 +25,7 @@ This change log follows the conventions of
 - A variation of the sparkle effect which uses dimmer channels,
   [issue 35](https://github.com/brunchboy/afterglow/issues/35).
 - Some more examples of how to get started working with Afterglow.
+- A variety of other documentation improvements.
 
 ### Changed
 
