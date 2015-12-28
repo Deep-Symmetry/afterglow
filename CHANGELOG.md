@@ -53,6 +53,10 @@ This change log follows the conventions of
 - Clicking on the BPM slider in the web interface now updates the BPM
   (previously you had to actually drag it),
   [issue 18](https://github.com/brunchboy/afterglow/issues/18).
+- Launching `:held` cues from generic MIDI controllers, the Ableton
+  Push, and the web interface, would not succeed if the previous
+  effect created by the cue was still in the process of ending,
+  [issue 33](https://github.com/brunchboy/afterglow/issues/33).
 - Make sure MIDI inputs are connected when `sync-to-midi-clock` is
   called,
   [issue 10](https://github.com/brunchboy/afterglow/issues/10).
