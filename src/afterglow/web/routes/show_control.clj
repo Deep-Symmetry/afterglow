@@ -409,7 +409,7 @@
         shift (get-in req [:params :shift])]
     (if cue
       (with-show (:show page-info)
-        (if active
+        (if (and active (not (:held cue)))
           (do (show/end-effect! (:key cue))
               {:ended kind})
           (let [id (show/add-effect-from-cue-grid! x y)]

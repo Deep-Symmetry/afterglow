@@ -961,7 +961,7 @@
                            (when cue
                              (if (and (pos? (:velocity msg)) (not= (:command msg) :note-off))
                                ;; Control or note has been pressed
-                               (if active
+                               (if (and active (not (:held cue)))
                                  (end-effect! (:key cue))
                                  (reset! our-id (add-effect-from-cue-grid! x y)))
                                ;; Control has been released

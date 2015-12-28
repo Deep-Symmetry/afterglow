@@ -1384,7 +1384,7 @@ color (colors/create-color
         [cue active] (show/find-cue-grid-active-effect (:show controller) cue-x cue-y)]
           (when cue
             (with-show (:show controller)
-              (if active
+              (if (and active (not (:held cue)))
                 (show/end-effect! (:key cue))
                 (let [vars (controllers/starting-vars-for-velocity cue velocity)
                       id (show/add-effect-from-cue-grid! cue-x cue-y :var-overrides vars)
