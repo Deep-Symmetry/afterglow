@@ -936,17 +936,24 @@
   with `:feedback-on` and `:feedback-off`, and this behavior can be
   suppressed entirely by passing `false` with `:feedback-on`.
 
+  If the controller is pressure-sensitive and you would like to have
+  the velocity information passed on to any cue variables which are
+  configured to respond to it, pass `true` with `use-velocity?`. Doing
+  this also enables responsiveness to aftertouch messages, which can
+  adjust the cue variable for as long as you are holding down the key
+  or pad, if your controller sends them (and `kind` is `:note`).
+
   Afterglow assumes the control is momentary, meaning it sends a note
   off (or control value of 0) as soon as it is released, and a second
   press will be used to end the cue unless the cue uses the `:held`
   modifier to indicate it should be ended when the button is released.
   If your controller does not have momentary buttons and already
   requires a second press to turn off the note or control value, pass
-  `false` with `:momentary` and Afterglow will always end cues when it
-  receives a control value of 0, even if cues are not marked as
+  `false` with `:momentary?` and Afterglow will always end cues when
+  it receives a control value of 0, even if cues are not marked as
   `:held`."
-  [midi-device-name channel kind note x y & {:keys [feedback-on feedback-off momentary]
-                                                       :or {feedback-on 127 feedback-off 0 momentary true}}]
+  [midi-device-name channel kind note x y & {:keys [feedback-on feedback-off use-velocity? momentary?]
+                                             :or {feedback-on 127 feedback-off 0 momentary? true}}]
   {:pre [(some? *show*) (#{:control :note} kind) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
          (integer? note) (<= 0 note 127) (integer? x) (<= 0 x) (integer? y) (<= 0 y)
          (or (not feedback-on) (and (integer? feedback-on) (<= 0 feedback-on 127)))
@@ -957,15 +964,17 @@
         midi-handler (fn [msg]
                        (with-show show
                          ;; See if the cue exists and is running
-                         (let [[cue active] (find-cue-grid-active-effect show x y)]
+                         (let [[cue active] (find-cue-grid-active-effect show x y)
+                               velocity (:velocity msg)]
                            (when cue
-                             (if (and (pos? (:velocity msg)) (not= (:command msg) :note-off))
+                             (if (and (pos? velocity) (not= (:command msg) :note-off))
                                ;; Control or note has been pressed
                                (if (and active (not (:held cue)))
                                  (end-effect! (:key cue))
-                                 (reset! our-id (add-effect-from-cue-grid! x y)))
+                                 (let [vars (when use-velocity? (controllers/starting-vars-for-velocity cue velocity))]
+                                   (reset! our-id (add-effect-from-cue-grid! x y :var-overrides vars))))
                                ;; Control has been released
-                               (when (and (some? @our-id) (or (:held cue) (not momentary)))
+                               (when (and (some? @our-id) (or (:held cue) (not momentary?)))
                                  (end-effect! (:key cue) :when-id @our-id)
                                  (reset! our-id nil)))))))]
     (when feedback-device  ; Set up to give feedback as cue activation changes
@@ -977,9 +986,9 @@
                       :note (overtone.midi/midi-note-on feedback-device note feedback-on channel)))))
     ;; TODO: Add aftertouch support
     (case kind
-      :control (midi/add-control-mapping midi-device-name channel note (str "show:" (:id show) ":cue-control" x "," y)
+      :control (midi/add-control-mapping midi-device-name channel note (str "show:" (:id show) ":cue-control-" x "-" y)
                                          midi-handler)
-      :note (midi/add-note-mapping midi-device-name channel note (str "show:" (:id show) ":cue-note" x "," y)
+      :note (midi/add-note-mapping midi-device-name channel note (str "show:" (:id show) ":cue-note-" x "-" y)
                                    midi-handler))))
 
 (defn remove-midi-control-to-cue-mapping
@@ -999,8 +1008,8 @@
                        :note (overtone.midi/midi-note-on feedback-device note (second feedback) channel))))))
   (case kind
     :control (midi/remove-control-mapping midi-device-name channel note
-                                          (str "show:" (:id *show*) ":cue-control" x "," y))
-    :note (midi/remove-note-mapping midi-device-name channel note (str "show:" (:id *show*) ":cue-note" x "," y))))
+                                          (str "show:" (:id *show*) ":cue-control-" x "-" y))
+    :note (midi/remove-note-mapping midi-device-name channel note (str "show:" (:id *show*) ":cue-note-" x "-" y))))
 
 (defn- address-map-internal
   "Helper function which returns a sorted map whose keys are all
