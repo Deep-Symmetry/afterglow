@@ -24,6 +24,11 @@ This change log follows the conventions of
   custom function to transform the incoming value into whatever you
   need it to be,
   [issue 32](https://github.com/brunchboy/afterglow/issues/32).
+- When mapping a midi control to launch a cue, if your controller
+  supports velocity (and perhaps also aftertouch, or polyphonic key
+  pressure), you can have those values affect cue variables which have
+  been defined as velocity sensitive, in the same way that Ableton
+  Push pads do.
 - A variation of the sparkle effect which uses dimmer channels,
   [issue 35](https://github.com/brunchboy/afterglow/issues/35).
 - Some more examples of how to get started working with Afterglow.
@@ -38,6 +43,14 @@ This change log follows the conventions of
   oscillator and oscillated parameter functions have been deprecated,
   and are now stubs wich delegate to the new implementation. They will
   be removed in an upcoming release.
+- The functions `add-midi-control-to-cue-mapping` and
+  `remove-midi-control-to-cue-mapping` have been moved from the
+  `afterglow.show` namespace to `afterglow.effects.cues`, to solve a
+  circular dependency conflict which arose in implementing velocity
+  and aftertouch support. There are stubs in the old location which
+  delegate to the new ones, but they are less efficient than calling
+  them in the new location directly, and are deprecated. The stubs
+  will be removed in an upcoming release.
 - The former IHeadParam interface has been eliminated, folding its
   semantics into the IParam interface, and simplifying the
   implementation of dynamic parameters,

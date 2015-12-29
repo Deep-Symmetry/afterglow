@@ -108,7 +108,7 @@ Cues can also be triggered from simpler MIDI controllers (which
 don't register as grid controllers) by explicitly mapping notes
 or control changes sent by the controller to cues within the grid
 using
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-cue-mapping[afterglow.show/add-midi-control-to-cue-mapping].
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[afterglow.effects.cues/add-midi-control-to-cue-mapping].
 Regardless of the mechanism by which a cue is triggered, the web
 interface, a registered grid controller, or an explicitly mapped MIDI
 note or control change, feedback will be sent to all interfaces so the
@@ -126,7 +126,7 @@ controller number `43`, I can simply evaluate:
 
 [source,clojure]
 ----
-(show/add-midi-control-to-cue-mapping "nano" 0 :control 43 0 7)
+(cues/add-midi-control-to-cue-mapping "nano" 0 :control 43 0 7)
 ----
 
 Now I can press the top-left pad on the Push, click the top left cell
@@ -238,7 +238,7 @@ down, if the controller supports that capability. All current
 controller implementations, including the web interface, the
 <<mapping_sync#using-ableton-push,Ableton Push mapping>>, and mappings
 to generic MIDI controllers created using
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-cue-mapping[afterglow.show/add-midi-control-to-cue-mapping],
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[afterglow.effects.cues/add-midi-control-to-cue-mapping]
 do honor this setting. The web interface and controllers like the
 Push, which can vary the color of cue grid cells, will provide
 feedback that a cue will last only as long as it is held by displaying
@@ -545,7 +545,7 @@ down, if the controller supports that capability. All current
 controller implementations, including the web interface, the
 <<mapping_sync#using-ableton-push,Ableton Push mapping>>, and mappings
 to generic MIDI controllers created using
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-cue-mapping[afterglow.show/add-midi-control-to-cue-mapping],
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[afterglow.effects.cues/add-midi-control-to-cue-mapping]
 do honor this setting. The web interface and controllers like the
 Push, which can vary the color of cue grid cells, will provide
 feedback that a cue will last only as long as it is held by displaying

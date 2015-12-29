@@ -38,11 +38,11 @@ when you press and release the interface element you want to assign
 the cue. Afterglow can help with that too, as described
 <<finding-mapping-details,below>>. Once you have the cue created and
 the control identified, you can create the mapping using
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-cue-mapping[afterglow.show/add-midi-control-to-cue-mapping], like:
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[afterglow.effects.cues/add-midi-control-to-cue-mapping], like:
 
 [source,clojure]
 ----
-(show/add-midi-control-to-cue-mapping "nano" 0 :control 46 0 6)
+(cues/add-midi-control-to-cue-mapping "nano" 0 :control 46 0 6)
 ----
 
 This would cause Afterglow to start or stop the cue at grid position

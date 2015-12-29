@@ -919,7 +919,8 @@
   introduced when Oscillators gained the ability to accept dynamic
   parameters. This stub was left behind for backwards compatibility,
   but will be removed in the next version, so please update your code
-  to find it in its new location." {:deprecated "0.1.6"}
+  to find it in its new location."
+  {:deprecated "0.1.6"}
   [osc & {:keys [min max metronome frame-dynamic] :or {min 0 max 255 frame-dynamic true}}]
   (require '[afterglow.effects.oscillators])
   ((resolve 'afterglow.effects.oscillators/build-oscillated-param) osc :min min :max max
