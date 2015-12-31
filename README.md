@@ -696,7 +696,7 @@ encounter them!
     - [ ] When creating a compound cue this way, will need to check
       for and prevent circular definitions, as well as reporting
       sensible errors when constituent cues can no longer be found.
-- [ ] Compound effects:
+- [x] Compound effects:
   - [x] Simplest compound effect just delegates to nested effects,
     returning concatenated assigners. But implement as a fade with
     time zero?
@@ -705,7 +705,7 @@ encounter them!
     effects, with optional fades. Loops, driven by metronome, or a
     variable parameter (knob controls where in the list we are). Maybe
     different implementations?
-  - [ ] Have effects pass a context map to children with show,
+  - [x] Have effects pass a context map to children with show,
     snapshot, own stuff? For example, so the children can be aware of
     build, duration, a shared palette, other things? Or better, since
     snapshot is already passed, just add a usually-nil section which
@@ -714,11 +714,14 @@ encounter them!
     effect, fading in or out, when effect will end. Even better: This
     can be assoc-ed on to the snapshot, without changing the
     definition in rhythm.clj, since Clojure records are also maps!
-  - [ ] Effects which can do their own blending implement an
+    _This seems to be unnecessary given how fades and chases ended up
+    being actually implemented._
+  - [x] Effects which can do their own blending implement an
     additional interface. Otherwise the fade and chase effects (if
     they are different), handle it. To fade between direction effects,
     convert them to pan/tilt numbers, scale between those, then
-    convert back to a direction.
+    convert back to a direction. _This was implemented as a
+    multimethod for each of the effect assigner types._
 - [ ] Provide a mechanism for creating and controlling/monitoring
   effects via OSC messages. Probably essentially a special-purpose OSC
   REPL.
@@ -759,7 +762,21 @@ encounter them!
 - [x] Separate, or at least document clearly, how to use the low-level
   OLA communication tools, for the benefit of people interested in
   their own implementations.
-  
+- [ ] Support Push version 2 if possible. The display will be most
+  difficult since it seems not to use MIDI, but there is a
+  [library](http://sigabort.co/p2d) which can address it; I have
+  reached out to the authors to see if they can help. I don't yet know
+  if there is a SysEx for setting RGB pad colors available, or if we
+  will need to go back to using MIDI notes; if the latter, the colors
+  are all wrong and need to be rediscovered.
+- [ ] Support the Novation Launchpad series. The Pro has pressure
+  sensitivity, so start there. They also provide excellent programmer
+  documentation, so it will even be straightforward. For example,
+  [Launchpad Pro Programmers Reference Guide](http://global.novationmusic.com/sites/default/files/novation/downloads/10598/launchpad-pro-programmers-reference-guide_0.pdf),
+  found on their
+  [Downloads Page](http://global.novationmusic.com/support/product-downloads?product=Launchpad+Pro).
+  Having someone loan me one would speed this up!
+
 ### Ideas
 
 - [x] Model moving head location and position, so they can be panned and aimed in a coordinated way.
@@ -808,6 +825,17 @@ encounter them!
   - [ ] Fix the transform of lights into the WebGL shader space;
     currently inconsistent.
   - [ ] See if someone can come up with a more bare bones but scalable preview, probably building a geometry of the light cones instead of ray marching through them.
+- [ ] Add a Focus effect type, which is resolved after direction and aim
+  effects are; this will allow, for example, fixtures to be annotated
+  with functions that map from focal distance to DMX value (the
+  Torrents would have two such functions, one for each gobo wheel),
+  and those functions could be used by an auto-focus effect which
+  would be given geometry information about the planes in the room
+  (floor, ceiling, walls, screens), could figure out the distance to
+  the nearest one the fixture is pointing at, and automatically
+  generate a focus channel value to focus at that distance. A fade
+  could be used with an oscillator to bounce back and forth between
+  focus on each gobo wheel.
 - [x] Use [claypoole](https://clojars.org/com.climate/claypoole) for
   parallelism.
 - [ ] Change to core.async for all parallelism, since we are already using it anyway.
@@ -854,29 +882,6 @@ encounter them!
     and reach out to some of the artists themselves. (Sadly too late
     to post a comment on the thread, but I should try contacting the
     artists!)
-- [ ] Support Push version 2 if possible. The display will be most
-  difficult since it seems not to use MIDI, but there is a
-  [library](http://sigabort.co/p2d) which can address it; I have
-  reached out to the authors to see if they can help. I don't yet know
-  if there is a SysEx for setting RGB pad colors available, or if we
-  will need to go back to using MIDI notes; if the latter, the colors
-  are all wrong and need to be rediscovered.
-- Support the Novation Launchpad series. The Pro has pressure
-  sensitivity, so start there. They also provide excellent programmer
-  documentation, so it will even be straightforward. For example,
-  [Launchpad Pro Programmers Reference Guide](http://global.novationmusic.com/sites/default/files/novation/downloads/10598/launchpad-pro-programmers-reference-guide_0.pdf).
-  Having someone loan me one would speed this up!
-- Add a Focus effect type, which is resolved after direction and aim
-  effects are; this will allow, for example, fixtures to be annotated
-  with functions that map from focal distance to DMX value (the
-  Torrents would have two such functions, one for each gobo wheel),
-  and those functions could be used by an auto-focus effect which
-  would be given geometry information about the planes in the room
-  (floor, ceiling, walls, screens), could figure out the distance to
-  the nearest one the fixture is pointing at, and automatically
-  generate a focus channel value to focus at that distance. A fade
-  could be used with an oscillator to bounce back and forth between
-  focus on each gobo wheel.
 
 ### References
 
