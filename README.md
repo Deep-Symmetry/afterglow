@@ -271,14 +271,16 @@ it is not complete, and you will eventually need to learn how to
 adjust and optimize it yourself.
 
 > The example code above configures Afterglow to log to a set of
-> rotating log files in a `logs/` subdirectory of your project. If you
-> want to see any logging information, which can be quite useful when
-> troubleshooting, you will need to create that directory, otherwise
-> the logging mechanism will silently do nothing. They will stay out
-> of your way until you are interested in them, and take up a limited
-> amount of space, but whenever you do want to watch what Afterglow is
-> doing, you can look at them, or `tail -f logs/afterglow.log` to
-> watch it live.
+> rotating log files in a `logs/` subdirectory of your project.
+> Afterglow will attempt to create that directory if it does not
+> exist. If you want to see any logging information, which can be
+> quite useful when troubleshooting, you will need to ensure that the
+> path to the logs directory is writeable (or that the logs directory
+> exists and is writable), otherwise the logging mechanism will
+> silently do nothing. The logs will stay out of your way until you
+> are interested in them, and take up a limited amount of space, but
+> whenever you do want to watch what Afterglow is doing, you can look
+> at them, or `tail -f logs/afterglow.log` to watch it live.
 
 As your show gets more complex, you may want to split this into
 multiple files, which you can either load by listing them all on the
