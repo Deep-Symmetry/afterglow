@@ -854,6 +854,29 @@ encounter them!
     and reach out to some of the artists themselves. (Sadly too late
     to post a comment on the thread, but I should try contacting the
     artists!)
+- [ ] Support Push version 2 if possible. The display will be most
+  difficult since it seems not to use MIDI, but there is a
+  [library](http://sigabort.co/p2d) which can address it; I have
+  reached out to the authors to see if they can help. I don't yet know
+  if there is a SysEx for setting RGB pad colors available, or if we
+  will need to go back to using MIDI notes; if the latter, the colors
+  are all wrong and need to be rediscovered.
+- Support the Novation Launchpad series. The Pro has pressure
+  sensitivity, so start there. They also provide excellent programmer
+  documentation, so it will even be straightforward. For example,
+  [Launchpad Pro Programmers Reference Guide](http://global.novationmusic.com/sites/default/files/novation/downloads/10598/launchpad-pro-programmers-reference-guide_0.pdf).
+  Having someone loan me one would speed this up!
+- Add a Focus effect type, which is resolved after direction and aim
+  effects are; this will allow, for example, fixtures to be annotated
+  with functions that map from focal distance to DMX value (the
+  Torrents would have two such functions, one for each gobo wheel),
+  and those functions could be used by an auto-focus effect which
+  would be given geometry information about the planes in the room
+  (floor, ceiling, walls, screens), could figure out the distance to
+  the nearest one the fixture is pointing at, and automatically
+  generate a focus channel value to focus at that distance. A fade
+  could be used with an oscillator to bounce back and forth between
+  focus on each gobo wheel.
 
 ### References
 
@@ -879,13 +902,6 @@ encounter them!
     of button sections.
   - [x] It looks like I can actually specify an RGB color for the buttons using another SysEx:
     [PushPix](https://cycling74.com/wiki/index.php?title=Push_Programming_Oct13_03)
-- [ ] Support Push version 2 if possible. The display will be most
-  difficult since it seems not to use MIDI, but there is a
-  [library](http://sigabort.co/p2d) which can address it; I have
-  reached out to the authors to see if they can help. I don't yet know
-  if there is a SysEx for setting RGB pad colors available, or if we
-  will need to go back to using MIDI notes; if the latter, the colors
-  are all wrong and need to be rediscovered.
 - [x] Add a user interface using [Luminus](http://www.luminusweb.net/docs).
 - [x] Separate [ola-clojure](https://github.com/brunchboy/ola-clojure#ola-clojure) into its own project.
 
