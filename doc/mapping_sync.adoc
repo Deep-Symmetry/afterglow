@@ -788,7 +788,7 @@ the cue grid.
 ==== License
 
 +++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
-Copyright © 2015 http://deepsymmetry.org[Deep Symmetry, LLC]
+Copyright © 2015-2016 http://deepsymmetry.org[Deep Symmetry, LLC]
 
 Distributed under the
 http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
