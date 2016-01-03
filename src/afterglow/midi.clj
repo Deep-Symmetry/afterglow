@@ -159,6 +159,13 @@
   midi-transfer-thread
   (atom nil))
 
+(defn- handle-environment-changed
+  "Called when we had an event posted to the MIDI event queue telling
+  us that the environment has changed, i.e. a device has been added or
+  removed. Update our notion of the environment state accordingly."
+  []
+  (timbre/info "MIDI Environment changed!"))
+
 (defn- delegated-message-handler
   "Takes incoming MIDI events from the incoming queue on a thread with
   access to all Afterglow classes. Fields incoming MIDI messages,
@@ -168,55 +175,58 @@
   (let [running (atom true)]
     (loop [msg (.take midi-queue)]
       (when msg
-        ;; First call the global message handlers
-        (doseq [handler @global-handlers]
-          (when @running
+        (if (= msg :environment-changed)
+          (handle-environment-changed)  ; Not an actual MIDI message, handle specially
+          (do  ; Process a normal MIDI message
+            ;; First call the global message handlers
+            (doseq [handler @global-handlers]
+              (when @running
+                (try
+                  ;; TODO: This is not really safe because if the handler blocks it ties up all future
+                  ;;       MIDI dispatch. Should do in a future with a timeout? Don't want to use a million
+                  ;;       threads for this either, so a core.async channel approach is probably best.
+                  ;;
+                  (handler msg)
+                  (catch InterruptedException e
+                    (timbre/info "MIDI event handler thread interrupted, shutting down.")
+                    (reset! running false)
+                    (reset! midi-transfer-thread nil))
+                  (catch Throwable t
+                    (timbre/error t "Problem runing global MIDI event handler")))))
+            
+            ;; Then call any registered port listeners for the port on which
+            ;; it arrived
+
+            ;; Then call specific message handlers that match
+            (when @running
+              (try
+                (if (#{:timing-clock :start :stop} (:status msg))
+                  (clock-message-handler msg)
+                  (case (:command msg)
+                    :control-change (do (cc-message-handler msg)
+                                        (clock-message-handler msg)) ; In case it is a Traktor beat phase message
+                    (:note-on :note-off) (note-message-handler msg)
+                    :poly-pressure (aftertouch-message-handler msg)
+                    nil))
+                (catch InterruptedException e
+                  (timbre/info "MIDI event handler thread interrupted, shutting down.")
+                  (reset! running false)
+                  (reset! midi-transfer-thread nil))
+                (catch Throwable t
+                  (timbre/error t "Problem running MIDI event handler"))))
+
+            ;; Finally, keep track of any MIDI clock messages we have seen so the
+            ;; user can be informed of them as potential sync sources.
             (try
-              ;; TODO: This is not really safe because if the handler blocks it ties up all future
-              ;;       MIDI dispatch. Should do in a future with a timeout? Don't want to use a million
-              ;;       threads for this either, so a core.async channel approach is probably best.
-              ;;
-              (handler msg)
+              (watch-for-clock-sources msg)
               (catch InterruptedException e
                 (timbre/info "MIDI event handler thread interrupted, shutting down.")
                 (reset! running false)
                 (reset! midi-transfer-thread nil))
               (catch Throwable t
-                (timbre/error t "Problem runing global MIDI event handler")))))
-        
-        ;; Then call any registered port listeners for the port on which
-        ;; it arrived
+                (timbre/error t "Problem looking for MIDI clock sources"))))))
 
-        ;; Then call specific message handlers that match
-        (when @running
-          (try
-            (if (#{:timing-clock :start :stop} (:status msg))
-              (clock-message-handler msg)
-              (case (:command msg)
-                :control-change (do (cc-message-handler msg)
-                                    (clock-message-handler msg)) ; In case it is a Traktor beat phase message
-                (:note-on :note-off) (note-message-handler msg)
-                :poly-pressure (aftertouch-message-handler msg)
-                nil))
-            (catch InterruptedException e
-              (timbre/info "MIDI event handler thread interrupted, shutting down.")
-              (reset! running false)
-              (reset! midi-transfer-thread nil))
-            (catch Throwable t
-              (timbre/error t "Problem running MIDI event handler"))))
-
-        ;; Finally, keep track of any MIDI clock messages we have seen so the
-        ;; user can be informed of them as potential sync sources.
-        (try
-          (watch-for-clock-sources msg)
-          (catch InterruptedException e
-            (timbre/info "MIDI event handler thread interrupted, shutting down.")
-            (reset! running false)
-            (reset! midi-transfer-thread nil))
-          (catch Throwable t
-            (timbre/error t "Problem looking for MIDI clock sources"))))
-
-      ;; If we have not ben shut down, do it all again for the next message.
+      ;; If we have not been shut down, do it all again for the next message.
       (when @running (recur (.take midi-queue))))))
 
 (defn- incoming-message-handler
@@ -257,33 +267,71 @@
   (re-find #"humatic" (str (:device device))))
 
 (defn mmj-installed?
-  "Return true if the Humatic mmj Midi extension is present."
+  "Return true if the Humatic mmj MIDI extension is present."
   []
   (some mmj-device? (overtone.midi/midi-devices)))
 
+(defn cm4j-device?
+  "Checks whether a MIDI device was returned by the CoreMIDI4J MIDI
+  extension."
+  [device]
+  (re-find #"uk\.co\.xfactorylibrarians\.coremidi4j" (str (:device device))))
+
+(defn cm4j-installed?
+  "Return true if the CoreMIDI4J MIDI extension is present."
+  []
+  (some cm4j-device? (overtone.midi/midi-devices)))
+
 (defn create-midi-port-filter
   "Return a filter which selects midi inputs and outputs we actually
-  want to use. If this is a Mac, and the Humatic MIDI extension has
-  been installed, create a filter which will accept only its versions
-  of ports which it offers in parallel with the standard
-  implementation. Otherwise, return a filter which accepts all ports."
+  want to use. If this is a Mac, and the CoreMIDI4J MIDI extension is
+  present, create a filter which will accept only its devices.
+  Otherwise, if the Humatic MIDI extension has been installed, create
+  a filter which will accept only its versions of ports which it
+  offers in parallel with the standard implementation. Otherwise,
+  return a filter which accepts all ports."
   []
-  (if (and (mac?) (mmj-installed?))
+  (cond
+    (and (mac?) (cm4j-installed?))
+    cm4j-device?
+
+    (and (mac?) (mmj-installed?))
     (fn [device]
       (let [mmj-descriptions (set (map :description (filter mmj-device? (overtone.midi/midi-sources))))]
         (or (mmj-device? device)
             ;; MMJ returns devices whose descriptions match the names of the
             ;; broken devices returned by the broken Java MIDI implementation.
             (not (mmj-descriptions (:name device))))))
+
+    :else
     identity))
 
+(defn- environment-changed
+  "Called when the MIDI environment has changed, as long
+  as [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J) is
+  installed. Processes any devices which have appeared or
+  disappeared."
+  []
+  (try
+    (.add midi-queue :environment-changed)
+    (catch Throwable t
+      (timbre/error t "Problem adding MIDI environment change to queue"))))
+
 (defn- start-handoff-thread
-  "Creates the thread used to deliver MIDI events when needed."
+  "Creates the thread used to deliver MIDI events when needed. Also
+  checks whether [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J)
+  is installed, and if so, registers our notification handler to let
+  us know when the MIDI environment changes."
   [old-thread]
   (or old-thread
-      (doto (Thread. delegated-message-handler "MIDI event handoff")
-        (.setDaemon true)
-        (.start))))
+      (do
+        (when (clojure.reflect/resolve-class (.getContextClassLoader (Thread/currentThread))
+                                             'uk.co.xfactorylibrarians.coremidi4j.CoreMidiNotification)
+          (require '[afterglow.coremidi4j])
+          ((resolve 'afterglow.coremidi4j/add-environment-change-handler) environment-changed))
+        (doto (Thread. delegated-message-handler "MIDI event handoff")
+          (.setDaemon true)
+          (.start)))))
 
 ;; TODO: This and open-outputs will have to change once hot-plugging works.
 (defn open-inputs-if-needed!

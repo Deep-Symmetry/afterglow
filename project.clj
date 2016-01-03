@@ -56,7 +56,8 @@
   ;; enable to start the nREPL server when the application launches
   ;; :env {:repl-port 16002}
 
-  :profiles {:dev {:dependencies [[ring-mock "0.1.5"]
+  :profiles {:provided {:dependencies [[uk.co.xfactorylibrarians/coremidi4j "0.2.1"]]}
+             :dev {:dependencies [[ring-mock "0.1.5"]
                                   [ring/ring-devel "1.4.0"]]
                    :repl-options {:init-ns afterglow.examples
                                   :welcome (println "afterglow loaded.")}
@@ -64,6 +65,7 @@
                    :env {:dev true}}
              :uberjar {:env {:production true}
                        :aot :all}}
+  :repositories [["project" {:url "file:repo" :username "" :password ""}]]
   :plugins [[lein-codox "0.9.0"]
             [lein-environ "1.0.1"]]
 
