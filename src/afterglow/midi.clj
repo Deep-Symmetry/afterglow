@@ -33,31 +33,108 @@
   2000)
 
 (defonce ^{:private true
-           :doc "All known MIDI input ports."}
-  midi-inputs (atom []))
+           :doc "All currently available MIDI input ports, as a map
+  whose keys are the implementing `javax.sound.midi.MidiDevice` and
+  whose values are the corresponding `:midi-device` map returned by
+  `overtone.midi`."}
+  midi-inputs (atom {}))
 
 (defonce ^{:private true
-           :doc "All known MIDI output ports."}
-  midi-outputs (atom []))
+           :doc "All currently available MIDI output ports, as a map
+  whose keys are the implementing `javax.sound.midi.MidiDevice` and
+  whose values are the corresponding `:midi-device` map returned by
+  `overtone.midi`."}
+  midi-outputs (atom {}))
 
 (defonce ^{:private true
-           :doc "The metronomes which are being synced to MIDI clock pulses."}
-  synced-metronomes (atom {}))
+          :doc "Functions to be called when a new device appears in
+          the MIDI environment. They will be passed a single argument,
+          the `:midi-device` map from `overtone.midi` representing the
+          new device."}
+  new-device-handlers (atom #{}))
+
+(defn add-new-device-handler!
+  "Add a function to be called whenever a new device appears in the
+  MIDI environment. It will be passed a single argument, the
+  `:midi-device` map from `overtone.midi` representing the new device.
+  It must return quickly so as not to stall the delay of other MIDI
+  events; lengthy operations must be performed on another thread."
+  [f]
+  {:pre [(fn? f)]}
+  (swap! new-device-handlers conj f))
+
+(defn remove-new-device-handler!
+  "Stop calling the specified function to be called whenever a new
+  device appears in the MIDI environment."
+  [f]
+  {:pre [(fn? f)]}
+  (swap! new-device-handlers disj f))
+
+(defonce ^{:private true
+          :doc "Functions to be called when a device disappears from
+  the MIDI environment. Keys are the `javax.sound.midi.MidiDevice`
+  whose departure is of interest, and values are a set of functions to
+  be called if and when that device ceases to exist. They will be
+  called with no arguments."}
+  disconnected-device-handlers (atom {}))
+
+(defn add-disconnected-device-handler!
+  "Add a function to be called whenever the specified device
+  disappears from the MIDI environment. The `device` argument is a
+  `:midi-device` map from `overtone.midi` representing device whose
+  removal is of interest. The function must return quickly so as not
+  to stall the delay of other MIDI events; lengthy operations must be
+  performed on another thread."
+  [device f]
+  {:pre [(= (type device) :midi-device) (fn? f)]}
+  (swap! disconnected-device-handlers #(update-in % [(:device device)] clojure.set/union #{f})))
+
+(defn remove-disconnected-device-handler!
+  "No longer call the specified function if specified device
+  disappears from the MIDI environment. The `device` argument is a
+  `:midi-device` map from `overtone.midi` representing device whose
+  removal is no longer of interest."
+  [device f]
+  {:pre [(= (type device) :midi-device) (fn? f)]}
+  (swap! disconnected-device-handlers #(update-in % [(:device device) disj f])))
+
+(defonce ^{:private true
+           :doc "The metronomes which are being synced to MIDI clock
+  pulses. A map whose keys are the `javax.sound.midi.MidiDevice` on
+  which clock pulses are being received, and whose values are in turn
+  maps whose keys are the metronomes being synced to pulses from that
+  device, and whose values are the sync function to call when each
+  pulse is received."} synced-metronomes (atom {}))
 
 (defonce ^{:private true
            :doc "Functions to be called when MIDI Controller Change
-  messages arrive from particular input ports."}
+  messages arrive from particular input ports. A set of nested maps
+  whose keys are the `javax.sound.midi.MidiDevice` on which the
+  message should be watched for, the channel to watch, the controller
+  number to watch for, and a unique keyword to identify this
+  particular mapping for removal later. The values are the function to
+  be called with each matching message."}
   control-mappings (atom {}))
 
 (defonce ^{:private true
-           :doc "Functions to be called when MIDI Note
-  messages arrive from particular input ports."}
+           :doc "Functions to be called when MIDI Note messages arrive
+  from particular input ports. A set of nested maps whose keys are the
+  `javax.sound.midi.MidiDevice` on which the message should be watched
+  for, the channel to watch, the note number to watch for, and a
+  unique keyword to identify this particular mapping for removal
+  later. The values are the function to be called with each matching
+  message."}
   note-mappings (atom {}))
 
 (defonce ^{:private true
            :doc "Functions to be called when MIDI Aftertouch
   (polyphonic key pressure) messages arrive from particular input
-  ports."}
+  ports. A set of nested maps whose keys are the
+  `javax.sound.midi.MidiDevice` on which the message should be watched
+  for, the channel to watch, the note number to watch for, and a
+  unique keyword to identify this particular mapping for removal
+  later. The values are the function to be called with each matching
+  message."}
   aftertouch-mappings (atom {}))
 
 (defonce ^{:private true
@@ -69,39 +146,27 @@
   "Add a function to be called whenever any MIDI message is received.
   The function will be called with the message, and must return
   quickly, so as to not block delivery to other recipients."
-  [handler]
-  (swap! global-handlers conj handler))
+  [f]
+  {:pre [(fn? f)]}
+  (swap! global-handlers conj f))
 
 (defn remove-global-handler!
   "Remove a function that was being called whenever any MIDI message is
   received."
-  [handler]
-  (swap! global-handlers disj handler))
+  [f]
+  (swap! global-handlers disj f))
+
+(defonce ^{:private true
+           :doc "Functions to be called when a particular device has
+           disappeared from the MIDI environment."}
+  disconnect-handlers (atom #{}))
 
 (defn- clock-message-handler
   "Invoked whenever any midi input device being managed receives a
   clock message. Checks whether there are any metronomes being synced
-  to that device, and if so, passes along the event. Also makes note
-  of the sender as a potential source of MIDI synchronization."
+  to that device, and if so, passes along the event."
   [msg]
-  (doseq [handler (vals (get @synced-metronomes (:device msg)))]
-    (handler msg)))
-
-(defn- note-message-handler
-  "Invoked whenever any midi input device being managed receives a
-  note message. Checks whether there are any handlers (such as for
-  launching cues or mapping show variables) attached to it, and if so,
-  calls them."
-  [msg]
-  (doseq [handler (vals (get-in @note-mappings [(:name (:device msg)) (:channel msg) (:note msg)]))]
-    (handler msg)))
-
-(defn- aftertouch-message-handler
-  "Invoked whenever any midi input device being managed receives an
-  aftertouch (polyphonic key pressure) message. Checks whether there
-  are any handlers attached to it, and if so, calls them."
-  [msg]
-  (doseq [handler (vals (get-in @aftertouch-mappings [(:name (:device msg)) (:channel msg) (:note msg)]))]
+  (doseq [handler (vals (get @synced-metronomes (:device (:device msg))))]
     (handler msg)))
 
 (defn- cc-message-handler
@@ -110,7 +175,24 @@
   as for launching cues or mapping show variables) attached to it, and
   if so, calls them."
   [msg]
-  (doseq [handler (vals (get-in @control-mappings [(:name (:device msg)) (:channel msg) (:note msg)]))]
+  (doseq [handler (vals (get-in @control-mappings [(:device (:device msg)) (:channel msg) (:note msg)]))]
+    (handler msg)))
+
+(defn- note-message-handler
+  "Invoked whenever any midi input device being managed receives a
+  note message. Checks whether there are any handlers (such as for
+  launching cues or mapping show variables) attached to it, and if so,
+  calls them."
+  [msg]
+  (doseq [handler (vals (get-in @note-mappings [(:device (:device msg)) (:channel msg) (:note msg)]))]
+    (handler msg)))
+
+(defn- aftertouch-message-handler
+  "Invoked whenever any midi input device being managed receives an
+  aftertouch (polyphonic key pressure) message. Checks whether there
+  are any handlers attached to it, and if so, calls them."
+  [msg]
+  (doseq [handler (vals (get-in @aftertouch-mappings [(:device (:device msg)) (:channel msg) (:note msg)]))]
     (handler msg)))
 
 (defonce
@@ -118,7 +200,17 @@
     :doc "Keeps track of devices sending MIDI clock pulses so they can
   be offered as synchronization sources. Also notes when they seem to
   be sending the additional beat phase information provided by the
-  Afterglow Traktor controller mapping."}
+  Afterglow Traktor controller mapping. Holds a set of nested maps
+  whose top-level keys are the `javax.sound.midi.MidiDevice` on which
+  clock pulses have been detected, and whose second-level keys can
+  include `:timing-clock`, which will store the timestamp of the
+  most-recently received clock pulse from that device, `:master`,
+  which will store the number of the Traktor deck which was most
+  recently identified as the Tempo Master if we are getting messages
+  which seem like they could come from the Traktor Afterglow mapping,
+  and `:traktor-beat-phase` which will contain the timestamp of the
+  most recent value we have received which seems to correct to Traktor
+  beat phase information coming from the Traktor Afterglow mapping."}
   clock-sources (atom {}))
 
 (defn- check-for-traktor-beat-phase
@@ -126,22 +218,23 @@
   from the Afterglow Traktor controller mapping, providing beat grid
   information. If so, makes a note of that fact so the clock source
   can be reported as offering this extra feature."
-  [msg]
+  [msg device]
   (when (= (:command msg) :control-change)
     (let [controller (:note msg)]
       (cond (and (zero? controller) (< (:velocity msg) 5))
-            (swap! clock-sources assoc-in [(:device msg) :master] (:velocity msg))
+            (swap! clock-sources assoc-in [device :master] (:velocity msg))
 
-            (= controller (get-in @clock-sources [(:device msg) :master]))
-            (swap! clock-sources assoc-in [(:device msg) :traktor-beat-phase] (now))))))
+            (= controller (get-in @clock-sources [device :master]))
+            (swap! clock-sources assoc-in [device :traktor-beat-phase] (now))))))
 
 (defn- watch-for-clock-sources
   "Examines an incoming MIDI message to see if its source is a
   potential source for MIDI clock synchronization."
   [msg]
-  (when (= (:status msg) :timing-clock)
-    (swap! clock-sources assoc-in [(:device msg) :timing-clock] (now)))
-  (check-for-traktor-beat-phase msg))
+  (let [device (:device (:device msg))]
+    (when (= (:status msg) :timing-clock)
+      (swap! clock-sources assoc-in [device :timing-clock] (now)))
+    (check-for-traktor-beat-phase msg device)))
 
 (defonce ^:private ^{:doc "The queue used to hand MIDI events from the
   extension thread to our world, since there seem to be classloader
@@ -159,12 +252,22 @@
   midi-transfer-thread
   (atom nil))
 
+(declare open-inputs-if-needed!)
+(declare open-outputs-if-needed!)
+
 (defn- handle-environment-changed
   "Called when we had an event posted to the MIDI event queue telling
   us that the environment has changed, i.e. a device has been added or
   removed. Update our notion of the environment state accordingly."
   []
-  (timbre/info "MIDI Environment changed!"))
+  (timbre/info "MIDI Environment changed!")
+  ;; TODO: look for any inputs or outputs that have disappeared,
+  ;;       and notify any watchers. Remove them from listener lists,
+  ;;       metronome sync lists, etc.
+  ;;
+  ;;       Also close them, if that now seems safe?
+  (open-inputs-if-needed!)
+  (open-outputs-if-needed!))
 
 (defn- delegated-message-handler
   "Takes incoming MIDI events from the incoming queue on a thread with
@@ -244,7 +347,7 @@
   our event distribution handler."
   [device]
   (let [opened (midi/midi-in device)]
-    (taoensso.timbre/info "Opened MIDI input:" device)
+    (taoensso.timbre/info "Opened MIDI input:" opened)
     (midi/midi-handle-events opened incoming-message-handler)
     opened))
 
@@ -252,7 +355,7 @@
   "Open a MIDI output device."
   [device]
   (let [opened (midi/midi-out device)]
-    (taoensso.timbre/info "Opened MIDI output:" device)
+    (taoensso.timbre/info "Opened MIDI output:" opened)
     opened))
 
 (defn mac?
@@ -329,56 +432,44 @@
                                              'uk.co.xfactorylibrarians.coremidi4j.CoreMidiNotification)
           (require '[afterglow.coremidi4j])
           ((resolve 'afterglow.coremidi4j/add-environment-change-handler) environment-changed))
+        ;; TODO: Start polling-based environment-change notification system otherwise!
         (doto (Thread. delegated-message-handler "MIDI event handoff")
           (.setDaemon true)
           (.start)))))
 
-;; TODO: This and open-outputs will have to change once hot-plugging works.
 (defn open-inputs-if-needed!
   "Make sure the MIDI input ports are open and ready to distribute events.
-  Returns the opened inputs."
+  Returns the `:midi-device` maps returned by `overtone.midi`
+  representing the opened inputs."
   []
   (swap! midi-transfer-thread start-handoff-thread)
-  (let [old-inputs @midi-inputs
-        port-filter (create-midi-port-filter)
-        result (swap! midi-inputs #(if (empty? %)
-                                     (map connect-midi-in
-                                          (filter port-filter (midi/midi-sources)))
-                                     %))]
-    (when (empty? old-inputs)
-      (doseq [_ result]))  ;; Walk the mapped sequence to make the calls actually happen now
-    result))
+  (doseq [input (filter (create-midi-port-filter) (midi/midi-sources))]
+    (when-not (get @midi-inputs (:device input))
+      (let [connected (connect-midi-in input)]
+        (swap! midi-inputs assoc (:device connected) connected)
+        (doseq [handler @new-device-handlers]
+          (handler connected)))))
+  (vals @midi-inputs))
 
 (defn open-outputs-if-needed!
   "Make sure the MIDI output ports are open and ready to receive events.
-  Returns the opened outputs."
+  Returns the `:midi-device` maps returned by `overtone.midi`
+  representing the opened outputs."
   []
-  (let [old-outputs @midi-outputs
-        port-filter (create-midi-port-filter)
-        result (swap! midi-outputs #(if (empty? %)
-                                      (map connect-midi-out
-                                           (filter port-filter (midi/midi-sinks)))
-                                      %))]
-    (when (empty? old-outputs)
-      (doseq [_ result])) ;; Walk the mapped sequence to make the calls actually happen now
-    result))
+  (swap! midi-transfer-thread start-handoff-thread)
+  (doseq [output (filter (create-midi-port-filter) (midi/midi-sinks))]
+    (when-not (get @midi-outputs (:device output))
+      (let [connected (connect-midi-out output)]
+        (swap! midi-outputs assoc (:device connected) connected)
+        (doseq [handler @new-device-handlers]
+          (handler connected)))))
+  (vals @midi-outputs))
 
 ;; Appears to be unsafe, we need to just keep them open
 #_(defn- close-midi-device
   "Closes a MIDI device."
   [device]
   (.close (:device device)))
-
-;; Appears to be unsafe, we need to just keep them open
-#_(defn close-inputs
-  "Close all the MIDI input ports. They will be reopened when a
-  function which needs them is called."
-  []
-  (swap! midi-inputs #(if (seq %)
-                        (do
-                          (doseq [_ (map close-midi-device %)])
-                          [])
-                        %)))
 
 (defn- tap-handler
   "Called when a tap tempo event has occurred for a tap tempo handler
@@ -507,12 +598,12 @@
      nil)))
 
 (defn- add-synced-metronome
-  [midi-clock-source metronome sync-fn]
-  (swap! synced-metronomes #(assoc-in % [midi-clock-source metronome] sync-fn)))
+  [midi-clock-source metronome f]
+  (swap! synced-metronomes #(assoc-in % [(:device midi-clock-source) metronome] f)))
 
 (defn- remove-synced-metronome
   [midi-clock-source metronome]
-  (swap! synced-metronomes #(update-in % [midi-clock-source] dissoc metronome)))
+  (swap! synced-metronomes #(update-in % [(:device midi-clock-source)] dissoc metronome)))
 
 (defn- traktor-beat-phase-current
   "Checks whether our clock is being synced to ordinary MIDI clock, or
@@ -580,8 +671,11 @@
   "Returns the set of MIDI input ports which are currently delivering
   MIDI clock messages."
   []
+  (when (empty? @midi-inputs)
+    (open-inputs-if-needed!)
+    (Thread/sleep 300)) ; Give the clock watcher a chance to spot messages
   (set (for [[k v] @clock-sources]
-         (when (< (- (now) (:timing-clock v)) 300) k))))
+         (when (< (- (now) (:timing-clock v)) 300) (get @midi-inputs k)))))
 
 (defn current-traktor-beat-phase-sources
   "Returns the set of MIDI input ports which are currently delivering
@@ -589,7 +683,7 @@
   Traktor controller mapping."
   []
   (set (for [[k v] @clock-sources]
-         (when (< (- (now) (:traktor-beat-phase v 0)) 300) k))))
+         (when (< (- (now) (:traktor-beat-phase v 0)) 300) (get @midi-inputs k)))))
 
 (defn sync-to-midi-clock
   "Returns a sync function that will cause the beats-per-minute
@@ -606,9 +700,6 @@
   ([]
    (sync-to-midi-clock nil))
   ([name-filter]
-   (let [old-inputs @midi-inputs]
-     (open-inputs-if-needed!)
-     (when (empty? old-inputs) (Thread/sleep 300)))  ; Give the clock watcher a chance to spot messages
    (let [result (filter-devices (current-clock-sources) name-filter)]
      (case (count result)
        0 (throw (IllegalArgumentException. (str "No MIDI clock sources " (describe-name-filter name-filter)
@@ -617,7 +708,7 @@
        1 (fn [^afterglow.rhythm.Metronome metronome]
            (let [sync-handler (ClockSync. metronome (first result) (ref (ring-buffer max-clock-intervals))
                                           (ref (ring-buffer max-clock-intervals))
-                                          (ref {:master (get-in @clock-sources [(first result) :master])}))]
+                                          (ref {:master (get-in @clock-sources [(:device (first result)) :master])}))]
              (sync-start sync-handler)
              sync-handler))
 
@@ -648,7 +739,7 @@
                   :device (select-keys (:device found) [:name :description]))))
        (finally (remove-global-handler! message-finder))))))
 
-;; TODO apply to all matching input sources?
+;; TODO apply to all matching input sources? Along with remove, and note & aftertouch messages?
 (defn add-control-mapping
   "Register a handler to be called whenever a MIDI controller change
   message is received from the specified device, on the specified
@@ -657,25 +748,25 @@
   matches will be passed to the handler as its single argument. The
   first MIDI input source whose name or description matches the string
   or regex pattern supplied for name-filter will be chosen."
-  [name-filter channel control-number key handler]
+  [name-filter channel control-number k f]
+  {:pre [(fn? f)]}
   (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
-    (swap! control-mappings #(assoc-in % [(:name (first result))
-                                          (int channel) (int control-number) (keyword key)] handler))))
+    (swap! control-mappings #(assoc-in % [(:device (first result))
+                                          (int channel) (int control-number) (keyword k)] f))))
 
-;; TODO apply to all matching input sources?
 (defn remove-control-mapping
   "Unregister a handler previously registered with
   [[add-control-mapping]], identified by the unique key. The first MIDI
   input source whose name or description matches the string or regex
   pattern supplied for name-filter will be chosen."
-  [name-filter channel control-number key]
+  [name-filter channel control-number k]
   (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
-    (swap! control-mappings #(update-in % [(:name (first result))
-                                           (int channel) (int control-number)] dissoc (keyword key)))))
+    (swap! control-mappings #(update-in % [(:device (first result))
+                                           (int channel) (int control-number)] dissoc (keyword k)))))
 
 (defn add-note-mapping
   "Register a handler to be called whenever a MIDI note message is
@@ -685,24 +776,25 @@
   be passed to the handler as its single argument. The first MIDI
   input source whose name or description matches the string or regex
   pattern supplied for name-filter will be chosen."
-  [name-filter channel note key handler]
+  [name-filter channel note k f]
+  {:pre [(fn? f)]}
   (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
-    (swap! note-mappings #(assoc-in % [(:name (first result))
-                                       (int channel) (int note) (keyword key)] handler))))
+    (swap! note-mappings #(assoc-in % [(:device (first result))
+                                       (int channel) (int note) (keyword k)] f))))
 
 (defn remove-note-mapping
   "Unregister a handler previously registered with [[add-note-mapping]],
   identified by the unique key. The first MIDI input source whose name
   or description matches the string or regex pattern supplied for
   name-filter will be chosen."
-  [name-filter channel note key]
+  [name-filter channel note k]
   (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
-    (swap! note-mappings #(update-in % [(:name (first result))
-                                        (int channel) (int note)] dissoc (keyword key)))))
+    (swap! note-mappings #(update-in % [(:device (first result))
+                                        (int channel) (int note)] dissoc (keyword k)))))
 
 (defn add-aftertouch-mapping
   "Register a handler to be called whenever a MIDI
@@ -713,24 +805,25 @@
   as its single argument. The first MIDI input source whose name or
   description matches the string or regex pattern supplied for
   name-filter will be chosen."
-  [name-filter channel note key handler]
+  [name-filter channel note k f]
+  {:pre [(fn? f)]}
   (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
-    (swap! aftertouch-mappings #(assoc-in % [(:name (first result))
-                                             (int channel) (int note) (keyword key)] handler))))
+    (swap! aftertouch-mappings #(assoc-in % [(:device (first result))
+                                             (int channel) (int note) (keyword k)] f))))
 
 (defn remove-aftertouch-mapping
   "Unregister a handler previously registered with [[add-aftertouch-mapping]],
   identified by the unique key. The first MIDI input source whose name
   or description matches the string or regex pattern supplied for
   name-filter will be chosen."
-  [name-filter channel note key]
+  [name-filter channel note k]
   (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
-    (swap! aftertouch-mappings #(update-in % [(:name (first result))
-                                              (int channel) (int note)] dissoc (keyword key)))))
+    (swap! aftertouch-mappings #(update-in % [(:device (first result))
+                                              (int channel) (int note)] dissoc (keyword k)))))
 
 (defn find-midi-out
   "Find a MIDI output whose name matches the specified string or regex
