@@ -156,10 +156,6 @@
   [f]
   (swap! global-handlers disj f))
 
-(defonce ^{:private true
-           :doc "Functions to be called when a particular device has
-           disappeared from the MIDI environment."}
-  disconnect-handlers (atom #{}))
 
 (defn- clock-message-handler
   "Invoked whenever any midi input device being managed receives a
@@ -252,8 +248,156 @@
   midi-transfer-thread
   (atom nil))
 
-(declare open-inputs-if-needed!)
-(declare open-outputs-if-needed!)
+(defn mac?
+  "Return true if we seem to be running on a Mac."
+  []
+  (re-find #"Mac" (System/getProperty "os.name")))
+
+(defn mmj-device?
+  "Checks whether a MIDI device was returned by the Humatic mmj
+  MIDI extension."
+  [device]
+  (re-find #"humatic" (str (:device device))))
+
+(defn mmj-installed?
+  "Return true if the Humatic mmj MIDI extension is present."
+  []
+  (some mmj-device? (overtone.midi/midi-devices)))
+
+(defn cm4j-device?
+  "Checks whether a MIDI device was returned by the CoreMIDI4J MIDI
+  extension."
+  [device]
+  (re-find #"uk\.co\.xfactorylibrarians\.coremidi4j" (str (:device device))))
+
+(defn cm4j-installed?
+  "Return true if the CoreMIDI4J MIDI extension is present."
+  []
+  (some cm4j-device? (overtone.midi/midi-devices)))
+
+(defn create-midi-port-filter
+  "Return a filter which selects midi inputs and outputs we actually
+  want to use. If this is a Mac, and the CoreMIDI4J MIDI extension is
+  present, create a filter which will accept only its devices.
+  Otherwise, if the Humatic MIDI extension has been installed, create
+  a filter which will accept only its versions of ports which it
+  offers in parallel with the standard implementation. Otherwise,
+  return a filter which accepts all ports."
+  []
+  (cond
+    (and (mac?) (cm4j-installed?))
+    cm4j-device?  ;; Only use devices provided by CoreMIDI4J if it is installed.
+
+    (and (mac?) (mmj-installed?))
+    (fn [device]
+      (let [mmj-descriptions (set (map :description (filter mmj-device? (overtone.midi/midi-sources))))]
+        (or (mmj-device? device)
+            ;; MMJ returns devices whose descriptions match the names of the
+            ;; broken devices returned by the broken Java MIDI implementation.
+            ;; But it does not wrap all devices, e.g. the Traktor Virtual Output,
+            ;; so we need to only screen out devices which are supported.
+            ;; MMJ support is only left in place to support Java 6 environments,
+            ;; in particular Max/MSP, where CoreMIDI4J is not available.
+            (not (mmj-descriptions (:name device))))))
+
+    :else
+    identity))
+
+(defn- incoming-message-handler
+  "Attached to all midi input devices we manage. Puts the message on a
+  queue so it can be processed by one of our own threads, which have
+  access to all the classes that Afterglow needs."
+  [msg]
+  (try
+    (.add midi-queue msg)
+    (catch Throwable t
+      (timbre/error t "Problem trasferring MIDI event to queue"))))
+
+(defn- connect-midi-in
+  "Open a MIDI input device, add it to the map of known inputs, and
+  cause it to send its events to our event distribution handler."
+  [device]
+  (let [opened (midi/midi-in device)]
+    (timbre/info "Opened MIDI input:" opened)
+    (swap! midi-inputs assoc (:device opened) opened)
+    (midi/midi-handle-events opened incoming-message-handler)
+    opened))
+
+(defn- connect-midi-out
+  "Open a MIDI output device and add it to the map of known outputs."
+  [device]
+  (let [opened (midi/midi-out device)]
+    (timbre/info "Opened MIDI output:" opened)
+    (swap! midi-outputs assoc (:device opened) opened)
+    opened))
+
+(defn- environment-changed
+  "Called when the MIDI environment has changed, as long
+  as [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J) is
+  installed. Processes any devices which have appeared or
+  disappeared."
+  []
+  (try
+    (.add midi-queue :environment-changed)
+    (catch Throwable t
+      (timbre/error t "Problem adding MIDI environment change to queue"))))
+
+(declare start-handoff-thread)
+
+(defn open-inputs-if-needed!
+  "Make sure the MIDI input ports are open and ready to distribute events.
+  Returns the `:midi-device` maps returned by `overtone.midi`
+  representing the opened inputs."
+  []
+  (swap! midi-transfer-thread start-handoff-thread)
+  (doseq [input (filter (create-midi-port-filter) (midi/midi-sources))]
+    (when-not (get @midi-inputs (:device input))
+      (let [connected (connect-midi-in input)]
+        (doseq [handler @new-device-handlers]
+          (handler connected)))))
+  (vals @midi-inputs))
+
+(defn open-outputs-if-needed!
+  "Make sure the MIDI output ports are open and ready to receive events.
+  Returns the `:midi-device` maps returned by `overtone.midi`
+  representing the opened outputs."
+  []
+  (swap! midi-transfer-thread start-handoff-thread)
+  (doseq [output (filter (create-midi-port-filter) (midi/midi-sinks))]
+    (when-not (get @midi-outputs (:device output))
+      (let [connected (connect-midi-out output)]
+        (doseq [handler @new-device-handlers]
+          (handler connected)))))
+  (vals @midi-outputs))
+
+(defn- lost-midi-in
+  "Called when a device in our list of inputs no longer exists in the
+  MIDI environment. Removes it from all lists of mappings, synced
+  metronomes, handlers, etc. and closes it."
+  [vanished]
+  {:pre [(= (type vanished) :midi-device)]}
+  (let [device (:device vanished)]
+    (swap! midi-inputs dissoc device)
+    (swap! synced-metronomes dissoc device)
+    (swap! control-mappings dissoc device)
+    (swap! note-mappings dissoc device)
+    (swap! aftertouch-mappings dissoc device)
+    (swap! clock-sources dissoc device)
+    (swap! disconnected-device-handlers dissoc device)
+    (.close device))
+  (timbre/info "Lost contact with MIDI input: " vanished))
+
+(defn- lost-midi-out
+  "Called when a device in our list of outputs no longer exists in the
+  MIDI environment. Removes it from all lists of outputs, and closes
+  it."
+  [vanished]
+  {:pre [(= (type vanished) :midi-device)]}
+  (let [device (:device vanished)]
+    (swap! midi-outputs dissoc device)
+    (swap! disconnected-device-handlers dissoc device)
+    (.close device))
+  (timbre/info "Lost contact with MIDI output: " vanished))
 
 (defn- handle-environment-changed
   "Called when we had an event posted to the MIDI event queue telling
@@ -261,11 +405,21 @@
   removed. Update our notion of the environment state accordingly."
   []
   (timbre/info "MIDI Environment changed!")
-  ;; TODO: look for any inputs or outputs that have disappeared,
-  ;;       and notify any watchers. Remove them from listener lists,
-  ;;       metronome sync lists, etc.
-  ;;
-  ;;       Also close them, if that now seems safe?
+
+  ;; Clean up devices which are no longer present, notifying registered listeners of their departure.
+  (let [f (create-midi-port-filter)]
+    (doseq [device (clojure.set/difference (set (keys @midi-inputs))
+                                           (set (map :device (filter f (midi/midi-sources)))))]
+      (doseq [handler (get @disconnected-device-handlers device)]
+        (handler))
+      (lost-midi-in (get @midi-inputs device)))
+    (doseq [device (clojure.set/difference (set (keys @midi-outputs))
+                                           (set (map :device (filter f (midi/midi-sinks)))))]
+      (doseq [handler (get @disconnected-device-handlers device)]
+        (handler))
+      (lost-midi-out (get @midi-outputs device))))
+
+  ;; Open and configure any newly available devices.
   (open-inputs-if-needed!)
   (open-outputs-if-needed!))
 
@@ -332,94 +486,6 @@
       ;; If we have not been shut down, do it all again for the next message.
       (when @running (recur (.take midi-queue))))))
 
-(defn- incoming-message-handler
-  "Attached to all midi input devices we manage. Puts the message on a
-  queue so it can be processed by one of our own threads, which have
-  access to all the classes that Afterglow needs."
-  [msg]
-  (try
-    (.add midi-queue msg)
-    (catch Throwable t
-      (timbre/error t "Problem trasferring MIDI event to queue"))))
-
-(defn- connect-midi-in
-  "Open a MIDI input device and cause it to send its events to
-  our event distribution handler."
-  [device]
-  (let [opened (midi/midi-in device)]
-    (taoensso.timbre/info "Opened MIDI input:" opened)
-    (midi/midi-handle-events opened incoming-message-handler)
-    opened))
-
-(defn- connect-midi-out
-  "Open a MIDI output device."
-  [device]
-  (let [opened (midi/midi-out device)]
-    (taoensso.timbre/info "Opened MIDI output:" opened)
-    opened))
-
-(defn mac?
-  "Return true if we seem to be running on a Mac."
-  []
-  (re-find #"Mac" (System/getProperty "os.name")))
-
-(defn mmj-device?
-  "Checks whether a MIDI device was returned by the Humatic mmj
-  MIDI extension."
-  [device]
-  (re-find #"humatic" (str (:device device))))
-
-(defn mmj-installed?
-  "Return true if the Humatic mmj MIDI extension is present."
-  []
-  (some mmj-device? (overtone.midi/midi-devices)))
-
-(defn cm4j-device?
-  "Checks whether a MIDI device was returned by the CoreMIDI4J MIDI
-  extension."
-  [device]
-  (re-find #"uk\.co\.xfactorylibrarians\.coremidi4j" (str (:device device))))
-
-(defn cm4j-installed?
-  "Return true if the CoreMIDI4J MIDI extension is present."
-  []
-  (some cm4j-device? (overtone.midi/midi-devices)))
-
-(defn create-midi-port-filter
-  "Return a filter which selects midi inputs and outputs we actually
-  want to use. If this is a Mac, and the CoreMIDI4J MIDI extension is
-  present, create a filter which will accept only its devices.
-  Otherwise, if the Humatic MIDI extension has been installed, create
-  a filter which will accept only its versions of ports which it
-  offers in parallel with the standard implementation. Otherwise,
-  return a filter which accepts all ports."
-  []
-  (cond
-    (and (mac?) (cm4j-installed?))
-    cm4j-device?
-
-    (and (mac?) (mmj-installed?))
-    (fn [device]
-      (let [mmj-descriptions (set (map :description (filter mmj-device? (overtone.midi/midi-sources))))]
-        (or (mmj-device? device)
-            ;; MMJ returns devices whose descriptions match the names of the
-            ;; broken devices returned by the broken Java MIDI implementation.
-            (not (mmj-descriptions (:name device))))))
-
-    :else
-    identity))
-
-(defn- environment-changed
-  "Called when the MIDI environment has changed, as long
-  as [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J) is
-  installed. Processes any devices which have appeared or
-  disappeared."
-  []
-  (try
-    (.add midi-queue :environment-changed)
-    (catch Throwable t
-      (timbre/error t "Problem adding MIDI environment change to queue"))))
-
 (defn- start-handoff-thread
   "Creates the thread used to deliver MIDI events when needed. Also
   checks whether [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J)
@@ -436,40 +502,6 @@
         (doto (Thread. delegated-message-handler "MIDI event handoff")
           (.setDaemon true)
           (.start)))))
-
-(defn open-inputs-if-needed!
-  "Make sure the MIDI input ports are open and ready to distribute events.
-  Returns the `:midi-device` maps returned by `overtone.midi`
-  representing the opened inputs."
-  []
-  (swap! midi-transfer-thread start-handoff-thread)
-  (doseq [input (filter (create-midi-port-filter) (midi/midi-sources))]
-    (when-not (get @midi-inputs (:device input))
-      (let [connected (connect-midi-in input)]
-        (swap! midi-inputs assoc (:device connected) connected)
-        (doseq [handler @new-device-handlers]
-          (handler connected)))))
-  (vals @midi-inputs))
-
-(defn open-outputs-if-needed!
-  "Make sure the MIDI output ports are open and ready to receive events.
-  Returns the `:midi-device` maps returned by `overtone.midi`
-  representing the opened outputs."
-  []
-  (swap! midi-transfer-thread start-handoff-thread)
-  (doseq [output (filter (create-midi-port-filter) (midi/midi-sinks))]
-    (when-not (get @midi-outputs (:device output))
-      (let [connected (connect-midi-out output)]
-        (swap! midi-outputs assoc (:device connected) connected)
-        (doseq [handler @new-device-handlers]
-          (handler connected)))))
-  (vals @midi-outputs))
-
-;; Appears to be unsafe, we need to just keep them open
-#_(defn- close-midi-device
-  "Closes a MIDI device."
-  [device]
-  (.close (:device device)))
 
 (defn- tap-handler
   "Called when a tap tempo event has occurred for a tap tempo handler
@@ -599,10 +631,12 @@
 
 (defn- add-synced-metronome
   [midi-clock-source metronome f]
+  {:pre [(= (type midi-clock-source) :midi-device) (satisfies? rhythm/IMetronome metronome) (fn? f)]}
   (swap! synced-metronomes #(assoc-in % [(:device midi-clock-source) metronome] f)))
 
 (defn- remove-synced-metronome
   [midi-clock-source metronome]
+  {:pre [(= (type midi-clock-source) :midi-device)]}
   (swap! synced-metronomes #(update-in % [(:device midi-clock-source)] dissoc metronome)))
 
 (defn- traktor-beat-phase-current

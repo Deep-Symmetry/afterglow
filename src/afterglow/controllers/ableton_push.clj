@@ -1564,6 +1564,49 @@ color (colors/create-color
       (when (= (:command message) :note-off)
         (note-off-received controller message)))))
 
+(defn deactivate
+  "Deactivates a controller interface, killing its update thread and
+  removing its MIDI listeners. If `:disconnected` is passed with a
+  `true` value, it means that the controller has already been removed
+  from the MIDI environment, so no effort will be made to clear its
+  display or take it out of User mode."
+  [controller & {:keys [disconnected] :or {disconnected false}}]
+  (swap! (:task controller) (fn [task]
+                              (when task (at-at/kill task))
+                              nil))
+  (show/unregister-grid-controller @(:grid-controller-impl controller))
+  (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :deactivated))
+  (reset! (:move-listeners controller) #{})
+  (amidi/remove-global-handler! @(:midi-handler controller))
+
+  (when-not disconnected
+    (Thread/sleep 35) ; Give the UI update thread time to shut down
+    (clear-interface controller)
+    ;; Leave the User button bright, in case the user has Live
+    ;; running and wants to be able to see how to return to it.
+    (set-button-state controller (:user-mode control-buttons) :bright))
+
+  ;; Cancel any UI overlays which were in effect
+  (reset! (:overlays controller) (sorted-map-by >))
+
+  ;; And finally, note that we are no longer active.
+  (swap! active-bindings dissoc (:id controller)))
+
+(defn deactivate-all
+  "Deactivates all controller bindings which are currently active.
+  This will be regustered as a shutdown hook to be called when the
+  Java environment is shutting down, to clean up gracefully."
+  []
+  (doseq [[_ controller] @active-bindings]
+    (deactivate controller)))
+
+(defonce ^{:doc "Deactivates any Push bindings when Java is shutting down."
+           :private true}
+  shutdown-hook
+  (let [hook (Thread. deactivate-all)]
+    (.addShutdownHook (Runtime/getRuntime) hook)
+    hook))
+
 (defn bind-to-show
   "Establish a connection to the Ableton Push, for managing the given
   show.
@@ -1656,44 +1699,7 @@ color (colors/create-color
         (welcome-animation controller)
         (swap! active-bindings assoc (:id controller) controller)
         (show/register-grid-controller @(:grid-controller-impl controller))
+        (amidi/add-disconnected-device-handler! port-in #(deactivate controller :disconnected true))
         controller)
       (timbre/error "Unable to find Ableton Push with MIDI device name:" device-name))))
 
-(defn deactivate
-  "Deactivates a controller interface, killing its update thread
-  and removing its MIDI listeners."
-  [controller]
-  (swap! (:task controller) (fn [task]
-                              (when task (at-at/kill task))
-                              nil))
-  (show/unregister-grid-controller @(:grid-controller-impl controller))
-  (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :deactivated))
-  (reset! (:move-listeners controller) #{})
-  (amidi/remove-global-handler! @(:midi-handler controller))
-  
-  (Thread/sleep 35) ; Give the UI update thread time to shut down
-  (clear-interface controller)
-  ;; Leave the User button bright, in case the user has Live
-  ;; running and wants to be able to see how to return to it.
-  (set-button-state controller (:user-mode control-buttons) :bright)
-
-  ;; Cancel any UI overlays which were in effect
-  (reset! (:overlays controller) (sorted-map-by >))
-
-  ;; And finally, note that we are no longer active.
-  (swap! active-bindings dissoc (:id controller)))
-
-(defn deactivate-all
-  "Deactivates all controller bindings which are currently active.
-  This will be regustered as a shutdown hook to be called when the
-  Java environment is shutting down, to clean up gracefully."
-  []
-  (doseq [[_ controller] @active-bindings]
-    (deactivate controller)))
-
-(defonce ^{:doc "Deactivates any Push bindings when Java is shutting down."
-           :private true}
-  shutdown-hook
-  (let [hook (Thread. deactivate-all)]
-    (.addShutdownHook (Runtime/getRuntime) hook)
-    hook))
