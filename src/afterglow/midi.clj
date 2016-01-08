@@ -342,14 +342,14 @@
     (catch Throwable t
       (timbre/error t "Problem adding MIDI environment change to queue"))))
 
-(declare start-handoff-thread)
+(declare ensure-threads-running)
 
 (defn open-inputs-if-needed!
   "Make sure the MIDI input ports are open and ready to distribute events.
   Returns the `:midi-device` maps returned by `overtone.midi`
   representing the opened inputs."
   []
-  (swap! midi-transfer-thread start-handoff-thread)
+  (ensure-threads-running)
   (doseq [input (filter (create-midi-port-filter) (midi/midi-sources))]
     (when-not (get @midi-inputs (:device input))
       (let [connected (connect-midi-in input)]
@@ -362,7 +362,7 @@
   Returns the `:midi-device` maps returned by `overtone.midi`
   representing the opened outputs."
   []
-  (swap! midi-transfer-thread start-handoff-thread)
+  (ensure-threads-running)
   (doseq [output (filter (create-midi-port-filter) (midi/midi-sinks))]
     (when-not (get @midi-outputs (:device output))
       (let [connected (connect-midi-out output)]
@@ -399,13 +399,16 @@
     (.close device))
   (timbre/info "Lost contact with MIDI output: " vanished))
 
-(defn- handle-environment-changed
-  "Called when we had an event posted to the MIDI event queue telling
-  us that the environment has changed, i.e. a device has been added or
-  removed. Update our notion of the environment state accordingly."
-  []
-  (timbre/info "MIDI Environment changed!")
+(defn scan-midi-environment
+  "Called either periodically to check for changes, or, if CoreMidi4J
+  is installed, proactively in response to a reported change in the
+  MIDI environment. Updates our notion of what MIDI devices are
+  available, and notifies registered listeners of any changes.
 
+  Also sets up the thread used to process incoming MIDI events if that
+  is not already running, and arranges for this function to be called
+  as needed to keep up with future changes in the MIDI environment."
+  []
   ;; Clean up devices which are no longer present, notifying registered listeners of their departure.
   (let [f (create-midi-port-filter)]
     (doseq [device (clojure.set/difference (set (keys @midi-inputs))
@@ -422,6 +425,14 @@
   ;; Open and configure any newly available devices.
   (open-inputs-if-needed!)
   (open-outputs-if-needed!))
+
+(defn- handle-environment-changed
+  "Called when we had an event posted to the MIDI event queue telling
+  us that the environment has changed, i.e. a device has been added or
+  removed. Update our notion of the environment state accordingly."
+  []
+  (timbre/info "MIDI Environment changed!")
+  (scan-midi-environment))
 
 (defn- delegated-message-handler
   "Takes incoming MIDI events from the incoming queue on a thread with
@@ -449,7 +460,7 @@
                     (reset! running false)
                     (reset! midi-transfer-thread nil))
                   (catch Throwable t
-                    (timbre/error t "Problem runing global MIDI event handler")))))
+                    (timbre/error t "Problem running global MIDI event handler.")))))
             
             ;; Then call any registered port listeners for the port on which
             ;; it arrived
@@ -487,21 +498,74 @@
       (when @running (recur (.take midi-queue))))))
 
 (defn- start-handoff-thread
-  "Creates the thread used to deliver MIDI events when needed. Also
-  checks whether [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J)
-  is installed, and if so, registers our notification handler to let
-  us know when the MIDI environment changes."
+  "Creates the thread used to deliver MIDI events when needed."
   [old-thread]
   (or old-thread
-      (do
-        (when (clojure.reflect/resolve-class (.getContextClassLoader (Thread/currentThread))
-                                             'uk.co.xfactorylibrarians.coremidi4j.CoreMidiNotification)
-          (require '[afterglow.coremidi4j])
-          ((resolve 'afterglow.coremidi4j/add-environment-change-handler) environment-changed))
-        ;; TODO: Start polling-based environment-change notification system otherwise!
-        (doto (Thread. delegated-message-handler "MIDI event handoff")
+      (doto (Thread. delegated-message-handler "MIDI event handoff")
+        (.setDaemon true)
+        (.start))))
+
+(defonce ^{:doc "How often should we scan for changes in the MIDI
+  environment (devices that have been disconnected, or new devices
+  which have connected). This is used only
+  when [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J) is not
+  installed, sine CoreMIDI4J gives us proactive notification of
+  changes to the MIDI environment. The value is in milliseconds, so
+  the default means to check every two seconds. Changes to this value
+  will take effect after the next scan completes."}
+  scan-interval (atom  2000))
+
+(defonce ^:private ^{:doc "The thread, if any, which periodically
+  checks for changes in the MIDI environment when CoreMIDI4J is not
+  installed to let us know about them proactively. If CoreMIDI4J is in
+  use, this will be set to `:environment-changed` rather than an
+  actual thread, since none need be created."}
+  scan-thread (atom nil))
+
+(defn- periodic-scan-handler
+  "Rescans the MIDI environment at intervals defined
+  by [[scan-interval]]. Used when CoreMIDI4J is not installed to
+  arrange for such scans to happen when the environment actually has
+  changed."
+  []
+  (let [running (atom true)]
+    (loop []
+      (try
+        (Thread/sleep @scan-interval)
+        (scan-midi-environment)
+        (catch InterruptedException e
+          (timbre/info "MIDI periodic MIDI environment scan thread interrupted, shutting down.")
+          (reset! running false)
+          (reset! scan-thread nil))
+        (catch Throwable t
+          (timbre/error t "Problem running periodic MIDI scan thread.")))
+      ;; If we have not been shut down, do it all again.
+      (when @running (recur)))))
+
+(defn- start-scan-thread
+  "If there is no existing value in `old-thread`, Checks
+  whether [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J) is
+  installed, and if so, registers our notification handler to let us
+  know when the MIDI environment changes, and returns the value
+  `:environment-changed`. Otherwise creates, starts, and returns a
+  thread to periodically scan for such changes."
+  [old-thread]
+  (or old-thread
+      (if (clojure.reflect/resolve-class (.getContextClassLoader (Thread/currentThread))
+                                         'uk.co.xfactorylibrarians.coremidi4j.CoreMidiNotification)
+        (do (require '[afterglow.coremidi4j])  ; Can use proactive change notification
+            ((resolve 'afterglow.coremidi4j/add-environment-change-handler) environment-changed)
+            :environment-changed)
+        (doto (Thread. periodic-scan-handler "MIDI environment change scanner")  ; Need to poll
           (.setDaemon true)
           (.start)))))
+
+(defn- ensure-threads-running
+  "Starts the threads needed by the afterglow MIDI implementation, if
+  they are not already running."
+  []
+  (swap! midi-transfer-thread start-handoff-thread)
+  (swap! scan-thread start-scan-thread))
 
 (defn- tap-handler
   "Called when a tap tempo event has occurred for a tap tempo handler
