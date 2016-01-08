@@ -96,7 +96,7 @@
   removal is no longer of interest."
   [device f]
   {:pre [(= (type device) :midi-device) (fn? f)]}
-  (swap! disconnected-device-handlers #(update-in % [(:device device) disj f])))
+  (swap! disconnected-device-handlers #(update-in % [(:device device)] disj f)))
 
 (defonce ^{:private true
            :doc "The metronomes which are being synced to MIDI clock
