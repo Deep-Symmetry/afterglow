@@ -169,7 +169,7 @@
 
 (def color-button-colors
   "The control values and modes for a labeled button which changes
-  color. These are added to the monocrome states (except for off)
+  color. These are added to the monochrome states (except for off)
   to obtain the color and brightness/behavior."
   {:red 0 :amber 6 :yellow 12 :green 18})
 
