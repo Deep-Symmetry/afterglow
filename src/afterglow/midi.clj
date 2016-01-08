@@ -761,8 +761,8 @@
     (let [pattern (if (= (class name-filter) Pattern)
                     name-filter
                     (Pattern/compile (Pattern/quote (str name-filter)) Pattern/CASE_INSENSITIVE))]
-      (filter #(or (re-find pattern (or (:name %1) ""))
-                   (re-find pattern (or (:description %1) "")))
+      (filter #(or (re-find pattern (:name %1))
+                   (re-find pattern (:description %1)))
               devices))))
 
 (defn current-clock-sources
