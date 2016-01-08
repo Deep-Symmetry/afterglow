@@ -750,7 +750,7 @@
     ""
     (str "matching " (with-out-str (clojure.pprint/write-out name-filter)) " ")))
 
-(defn- filter-devices
+(defn filter-devices
   "Return only those devices whose name and/or description match the
   specified pattern. name-filter can either be a Pattern, or a string
   which will be turned into a pattern which matches in a
@@ -761,8 +761,8 @@
     (let [pattern (if (= (class name-filter) Pattern)
                     name-filter
                     (Pattern/compile (Pattern/quote (str name-filter)) Pattern/CASE_INSENSITIVE))]
-      (filter #(or (re-find pattern (:name %1))
-                   (re-find pattern (:description %1)))
+      (filter #(or (re-find pattern (or (:name %1) ""))
+                   (re-find pattern (or (:description %1) "")))
               devices))))
 
 (defn current-clock-sources
