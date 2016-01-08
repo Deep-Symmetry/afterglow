@@ -837,7 +837,7 @@
                   :device (select-keys (:device found) [:name :description]))))
        (finally (remove-global-handler! message-finder))))))
 
-;; TODO apply to all matching input sources? Along with remove, and note & aftertouch messages?
+;; TODO: apply to all matching input sources? Along with remove, and note & aftertouch messages?
 (defn add-control-mapping
   "Register a handler to be called whenever a MIDI controller change
   message is received from the specified device, on the specified
