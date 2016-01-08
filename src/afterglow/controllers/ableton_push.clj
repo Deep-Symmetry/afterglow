@@ -1745,17 +1745,18 @@ color (colors/create-color
               (reset! controller nil)
               (reset! idle true))
             (connection-handler [device]
-              (when (and @idle (nil? @controller) (seq (amidi/filter-devices [device] device-name)))
-                (let [port-in (first (amidi/filter-devices (amidi/open-inputs-if-needed!) device-name))
-                      port-out (first (amidi/filter-devices (amidi/open-outputs-if-needed!) device-name))]
-                  (when (every? some? [port-in port-out])  ; We found our Push! Bind to it in the background.
-                    (timbre/info "Auto-binding to" device)
-                    (reset! idle false)
-                    (future
-                      (reset! controller (bind-to-show show :device-name device-name
-                                                       :refresh-interval refresh-interval
-                                                       :display-name display-name))
-                      (amidi/add-disconnected-device-handler! (:port-in @controller) disconnection-handler))))))
+              (when (compare-and-set! idle true false)
+                (if (and (nil? @controller) (seq (amidi/filter-devices [device] device-name)))
+                    (let [port-in (first (amidi/filter-devices (amidi/open-inputs-if-needed!) device-name))
+                          port-out (first (amidi/filter-devices (amidi/open-outputs-if-needed!) device-name))]
+                      (when (every? some? [port-in port-out])  ; We found our Push! Bind to it in the background.
+                        (timbre/info "Auto-binding to" device)
+                        (future
+                          (reset! controller (bind-to-show show :device-name device-name
+                                                           :refresh-interval refresh-interval
+                                                           :display-name display-name))
+                          (amidi/add-disconnected-device-handler! (:port-in @controller) disconnection-handler))))
+                    (reset! idle true))))
             (cancel-handler []
               (amidi/remove-new-device-handler! connection-handler)
               (when-let [device (:port-in @controller)]
