@@ -59,7 +59,9 @@
     
     :middleware [] ; (fns [data]) -> ?data, applied left->right
     
-    :timestamp-opts timbre/default-timestamp-opts ; {:pattern _ :locale _ :timezone _}
+    :timestamp-opts {:pattern "yyyy-MMM-dd HH:mm:ss"
+                     :locale :jvm-default
+                     :timezone (java.util.TimeZone/getDefault)}
     
     :output-fn timbre/default-output-fn ; (fn [data]) -> string
     })
