@@ -1571,6 +1571,7 @@ color (colors/create-color
   from the MIDI environment, so no effort will be made to clear its
   display or take it out of User mode."
   [controller & {:keys [disconnected] :or {disconnected false}}]
+  {:pre [(= (type controller) :ableton-push)]}
   (swap! (:task controller) (fn [task]
                               (when task (at-at/kill task))
                               nil))
@@ -1643,37 +1644,40 @@ color (colors/create-color
            :or {device-name "User Port"
                 refresh-interval (/ 1000 15)
                 display-name "Ableton Push"}}]
+  {:pre [(some? show)]}
   (let [port-in (midi/midi-find-device (amidi/open-inputs-if-needed!) device-name)
         port-out (midi/midi-find-device (amidi/open-outputs-if-needed!) device-name)]
     (if (every? some? [port-in port-out])
       (let [controller
-            {:id (swap! controller-counter inc)
-             :display-name display-name
-             :show show
-             :origin (atom [0 0])
-             :effect-offset (atom 0)
-             :refresh-interval refresh-interval
-             :port-in port-in
-             :port-out port-out
-             :task (atom nil)
-             :last-display (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
-             :next-display (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
-             :last-text-buttons (atom {})
-             :next-text-buttons (atom {})
-             :last-top-pads (int-array 8)
-             :next-top-pads (int-array 8)
-             :last-grid-pads (make-array clojure.lang.IPersistentMap 64)
-             :next-grid-pads (make-array clojure.lang.IPersistentMap 64)
-             :metronome-mode (atom {})
-             :last-marker (atom nil)
-             :shift-mode (atom false)
-             :stop-mode (atom false)
-             :midi-handler (atom nil)
-             :tap-tempo-handler (amidi/create-tempo-tap-handler (:metronome show))
-             :overlays (atom (sorted-map-by >))
-             :next-overlay (atom 0)
-             :move-listeners (atom #{})
-             :grid-controller-impl (atom nil)}]
+            (with-meta
+              {:id (swap! controller-counter inc)
+               :display-name display-name
+               :show show
+               :origin (atom [0 0])
+               :effect-offset (atom 0)
+               :refresh-interval refresh-interval
+               :port-in port-in
+               :port-out port-out
+               :task (atom nil)
+               :last-display (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
+               :next-display (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
+               :last-text-buttons (atom {})
+               :next-text-buttons (atom {})
+               :last-top-pads (int-array 8)
+               :next-top-pads (int-array 8)
+               :last-grid-pads (make-array clojure.lang.IPersistentMap 64)
+               :next-grid-pads (make-array clojure.lang.IPersistentMap 64)
+               :metronome-mode (atom {})
+               :last-marker (atom nil)
+               :shift-mode (atom false)
+               :stop-mode (atom false)
+               :midi-handler (atom nil)
+               :tap-tempo-handler (amidi/create-tempo-tap-handler (:metronome show))
+               :overlays (atom (sorted-map-by >))
+               :next-overlay (atom 0)
+               :move-listeners (atom #{})
+               :grid-controller-impl (atom nil)}
+              {:type :ableton-push})]
         (reset! (:midi-handler controller) (partial midi-received controller))
         (reset! (:grid-controller-impl controller)
                 (reify controllers/IGridController
@@ -1703,3 +1707,78 @@ color (colors/create-color
         controller)
       (timbre/error "Unable to find Ableton Push with MIDI device name:" device-name))))
 
+(defn auto-bind
+  "Watches for an Ableton Push controller to be connected, and as soon
+  as it is, binds it to the specified show using [[bind-to-show]]. If
+  that controller ever gets disconnected, it will be re-bound once it
+  reappears. Returns a watcher structure which can be passed
+  to [[cancel-auto-bind]] if you would like to stop it watching for
+  reconnections. The underlying controller mapping, once bound, can be
+  accessed through the watcher's `:controller` key.
+
+  If you have more than one Ableton Push that might beconnected, or
+  have renamed how it appears in your list of MIDI devices, you need
+  to supply a value after `:device-name` which identifies the ports to
+  be used to communicate with the Push you want this function to use.
+  The values returned by [[afterglow.midi/open-inputs-if-needed!]]
+  and [[afterglow.midi/open-outputs-if-needed!]] will be searched, and
+  the first port whose name or description contains the supplied
+  string will be used.
+
+  Once bound, the controller will be identified in the user
+  interface (for the purposes of linking it to the web cue grid) as
+  \"Ableton Push\". If you would like to use a different name (for
+  example, if you are lucky enough to have more than one Push), you
+  can pass in a custom value after `:display-name`.
+
+  If you want the user interface to be refreshed at a different rate
+  than the default of fifteen times per second, pass your desired
+  number of milliseconds after `:refresh-interval`."
+  [show & {:keys [device-name refresh-interval display-name]
+           :or {device-name "User Port"
+                refresh-interval (/ 1000 15)
+                display-name "Ableton Push"}}]
+  {:pre [(some? show)]}
+  (let [idle (atom true)
+        controller (atom nil)]
+    (letfn [(disconnection-handler []
+              (reset! controller nil)
+              (reset! idle true))
+            (connection-handler [device]
+              (when (and @idle (nil? @controller) (seq (amidi/filter-devices [device] device-name)))
+                (let [port-in (first (amidi/filter-devices (amidi/open-inputs-if-needed!) device-name))
+                      port-out (first (amidi/filter-devices (amidi/open-outputs-if-needed!) device-name))]
+                  (when (every? some? [port-in port-out])  ; We found our Push! Bind to it in the background.
+                    (timbre/info "Auto-binding to" device)
+                    (reset! idle false)
+                    (future
+                      (reset! controller (bind-to-show show :device-name device-name
+                                                       :refresh-interval refresh-interval
+                                                       :display-name display-name))
+                      (amidi/add-disconnected-device-handler! (:port-in @controller) disconnection-handler))))))
+            (cancel-handler []
+              (amidi/remove-new-device-handler! connection-handler)
+              (when-let [device (:port-in @controller)]
+                        (amidi/remove-disconnected-device-handler! device disconnection-handler)))]
+
+      ;; See if our Push seems to already be connected, and if so, bind to it right away.
+      (when-let [found (first (amidi/filter-devices (amidi/open-inputs-if-needed!) device-name))]
+        (connection-handler found))
+
+      ;; Set up to bind when connected in future.
+      (amidi/add-new-device-handler! connection-handler)
+
+      ;; Return a watcher object which can provide access to the bound controller, and be canceled later.
+      (with-meta
+        {:controller controller
+         :device-name device-name
+         :cancel cancel-handler}
+        {:type :push-watcher}))))
+
+(defn cancel-auto-bind
+  "Shuts down a Push watcher returned by [[auto-bind]] so it will no
+  longer cause the specified Ableton Push device to be bound to a show
+  whenever it is connected."
+  [watcher]
+  {:pre [(= (type watcher) :push-watcher)]}
+  ((:cancel watcher)))

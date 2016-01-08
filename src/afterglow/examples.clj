@@ -888,4 +888,4 @@
   show. But also sets up the cues, if you haven't yet."
   []
   (make-cues)
-  (push/bind-to-show *show*))
+  (push/auto-bind *show*))
