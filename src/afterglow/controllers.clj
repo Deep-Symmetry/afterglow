@@ -209,9 +209,9 @@
        (set-cue! grid x y (if (some? id)
                             (assoc cue :active-id id)
                             (dissoc cue :active-id)))
-       (doseq [[[_ channel note kind] feedback] (get @(:midi-feedback grid) [x y])
-               [on-feedback off-feedback device] feedback]
-         (let [velocity (if (some? id) on-feedback off-feedback)]
+       (doseq [[[_ channel note kind] feedback] (get @(:midi-feedback grid) [x y])]
+         (let [[on-feedback off-feedback device] feedback
+               velocity (if (some? id) on-feedback off-feedback)]
            (if (= :control kind)
              (midi/midi-control device note velocity channel)
              (if (some? id)
