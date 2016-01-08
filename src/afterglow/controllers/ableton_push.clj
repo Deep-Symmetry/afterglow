@@ -1569,29 +1569,39 @@ color (colors/create-color
   removing its MIDI listeners. If `:disconnected` is passed with a
   `true` value, it means that the controller has already been removed
   from the MIDI environment, so no effort will be made to clear its
-  display or take it out of User mode."
+  display or take it out of User mode.
+
+  You can also pass a watcher object created by [[auto-bind]] as
+  `controller`; this will both deactivate the controller being managed
+  by the watcher, if it is currently connected, and cancel the
+  watcher itself. In such cases, `:disconnected` is meaningless."
   [controller & {:keys [disconnected] :or {disconnected false}}]
-  {:pre [(= (type controller) :ableton-push)]}
-  (swap! (:task controller) (fn [task]
-                              (when task (at-at/kill task))
-                              nil))
-  (show/unregister-grid-controller @(:grid-controller-impl controller))
-  (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :deactivated))
-  (reset! (:move-listeners controller) #{})
-  (amidi/remove-global-handler! @(:midi-handler controller))
+  {:pre [(#{:ableton-push :push-watcher} (type controller))]}
+  (if (= (type controller) :push-watcher)
+    (do ((:cancel controller))  ; Shut down the watcher
+        (when-let [watched-controller @(:controller controller)]
+          (deactivate watched-controller)))  ; And deactivate the controller it was watching for
+    (do ;; We were passed an actual controller, not a watcher, so deactivate it.
+      (swap! (:task controller) (fn [task]
+                                  (when task (at-at/kill task))
+                                  nil))
+      (show/unregister-grid-controller @(:grid-controller-impl controller))
+      (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :deactivated))
+      (reset! (:move-listeners controller) #{})
+      (amidi/remove-global-handler! @(:midi-handler controller))
 
-  (when-not disconnected
-    (Thread/sleep 35) ; Give the UI update thread time to shut down
-    (clear-interface controller)
-    ;; Leave the User button bright, in case the user has Live
-    ;; running and wants to be able to see how to return to it.
-    (set-button-state controller (:user-mode control-buttons) :bright))
+      (when-not disconnected
+        (Thread/sleep 35) ; Give the UI update thread time to shut down
+        (clear-interface controller)
+        ;; Leave the User button bright, in case the user has Live
+        ;; running and wants to be able to see how to return to it.
+        (set-button-state controller (:user-mode control-buttons) :bright))
 
-  ;; Cancel any UI overlays which were in effect
-  (reset! (:overlays controller) (sorted-map-by >))
+      ;; Cancel any UI overlays which were in effect
+      (reset! (:overlays controller) (sorted-map-by >))
 
-  ;; And finally, note that we are no longer active.
-  (swap! active-bindings dissoc (:id controller)))
+      ;; And finally, note that we are no longer active.
+      (swap! active-bindings dissoc (:id controller)))))
 
 (defn deactivate-all
   "Deactivates all controller bindings which are currently active.
@@ -1776,10 +1786,3 @@ color (colors/create-color
          :cancel cancel-handler}
         {:type :push-watcher}))))
 
-(defn cancel-auto-bind
-  "Shuts down a Push watcher returned by [[auto-bind]] so it will no
-  longer cause the specified Ableton Push device to be bound to a show
-  whenever it is connected."
-  [watcher]
-  {:pre [(= (type watcher) :push-watcher)]}
-  ((:cancel watcher)))
