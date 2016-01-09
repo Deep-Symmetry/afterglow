@@ -108,11 +108,11 @@ If any of this sounds interesting to you, here is how to get started:
 3. Add this project as a dependency:
    [![Clojars Project](https://img.shields.io/clojars/v/afterglow.svg)](http://clojars.org/afterglow)
 
-> :wrench: If you want to use an Ableton Push controller, and are
-> using a Mac, you will need to work around some bugs in Java MIDI
-> support on the Mac. The
+> :wrench: If are using a Mac, you will need to work around some bugs
+> in Java MIDI support on the Mac. The
 > [Wiki](https://github.com/brunchboy/afterglow/wiki/Questions#midi-from-java-on-the-mac)
-> explains how to do that.
+> explains how to do that; in a nutshell, install
+> [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J/releases).
 
 If you want to run Afterglow as a standalone executable, you can
 download the executable &uuml;berjar from the
