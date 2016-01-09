@@ -237,8 +237,8 @@
         (let [dmx-future (cp/future @(:pool show) (send-dmx-buffers show buffers))
               extensions-future (cp/future @(:pool show) (send-extension-buffers show))]
           @dmx-future @extensions-future))
-  (swap! (:movement *show*) #(dissoc (assoc % :previous (:current %)) :current))
-  (swap! (:statistics *show*) update-stats (:instant snapshot) (:refresh-interval show)))
+  (swap! (:movement show) #(dissoc (assoc % :previous (:current %)) :current))
+  (swap! (:statistics show) update-stats (:instant snapshot) (:refresh-interval show)))
 
 (defn add-frame-fn!
   "Arranges for the supplied function to be called when the Afterglow
