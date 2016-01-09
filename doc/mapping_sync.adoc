@@ -49,11 +49,25 @@ This would cause Afterglow to start or stop the cue at grid position
 (0, 6) when a pad on the device named "nano" is pressed and sends a
 MIDI control change message on control number 46.
 
-If the controller has LEDs associated with the controls, and you can
-configure it so that its LEDs are in external control mode, Afterglow
-will even give you feedback about when the cue is running, by lighting
-up the pad or button when the cue starts (whether or not you started
-it using this controller), and darkening it when the cue ends.
+TIP: If the controller has LEDs associated with the controls, and you
+can configure it so that its LEDs are in external control mode,
+Afterglow will even give you feedback about when the cue is running,
+by lighting up the pad or button when the cue starts (whether or not
+you started it using this controller), and darkening it when the cue
+ends. If you are unable to configure your controller in this way, or
+there is some other reason why you want to avoid having Afterglow send
+it MIDI messages about the cue status, pass the additional arguments
+`:feedback-on false` to `add-midi-control-to-cue-mapping`. See the
+function
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[documentation]
+for full details.
+
+If you want to be able to later remove this cue mapping, be sure to
+save the value returned by `add-midi-control-to-cue-mapping` in a
+variable, because you will need to pass it to
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-remove-midi-control-to-cue-mapping[remove-midi-control-to-cue-mapping].
+Or you can simply disconnect the controller from your system, and
+Afterglow will clean up any mappings that had been assigned to it.
 
 == Mapping a Control to a Variable
 
@@ -112,6 +126,13 @@ scales the incoming control value to the range 0 through 3, then calls
 a custom function which rounds the scaled value to the nearest
 integer, and raises 2 to that power. The result gets stored into the
 show variable `:beat-ratio`.
+
+If you want to be able to later remove this variable mapping, be sure
+to save the value returned by `add-midi-control-to-var-mapping` in a
+variable, because you will need to pass it to
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-remove-midi-control-to-var-mapping[remove-midi-control-to-var-mapping].
+Or you can simply disconnect the controller from your system, and
+Afterglow will clean up any mappings that had been assigned to it.
 
 == Finding Mapping Details
 

@@ -110,9 +110,8 @@
            :doc "Functions to be called when MIDI Controller Change
   messages arrive from particular input ports. A set of nested maps
   whose keys are the `javax.sound.midi.MidiDevice` on which the
-  message should be watched for, the channel to watch, the controller
-  number to watch for, and a unique keyword to identify this
-  particular mapping for removal later. The values are the function to
+  message should be watched for, the channel to watch, and the
+  controller number to watch for. The values are sets of functions to
   be called with each matching message."}
   control-mappings (atom {}))
 
@@ -120,9 +119,8 @@
            :doc "Functions to be called when MIDI Note messages arrive
   from particular input ports. A set of nested maps whose keys are the
   `javax.sound.midi.MidiDevice` on which the message should be watched
-  for, the channel to watch, the note number to watch for, and a
-  unique keyword to identify this particular mapping for removal
-  later. The values are the function to be called with each matching
+  for, the channel to watch, and the note number to watch for. The
+  values are sets of functions to be called with each matching
   message."}
   note-mappings (atom {}))
 
@@ -131,9 +129,8 @@
   (polyphonic key pressure) messages arrive from particular input
   ports. A set of nested maps whose keys are the
   `javax.sound.midi.MidiDevice` on which the message should be watched
-  for, the channel to watch, the note number to watch for, and a
-  unique keyword to identify this particular mapping for removal
-  later. The values are the function to be called with each matching
+  for, the channel to watch, and the note number to watch for. The
+  values are sets of functions to be called with each matching
   message."}
   aftertouch-mappings (atom {}))
 
@@ -171,7 +168,7 @@
   as for launching cues or mapping show variables) attached to it, and
   if so, calls them."
   [msg]
-  (doseq [handler (vals (get-in @control-mappings [(:device (:device msg)) (:channel msg) (:note msg)]))]
+  (doseq [handler (get-in @control-mappings [(:device (:device msg)) (:channel msg) (:note msg)])]
     (handler msg)))
 
 (defn- note-message-handler
@@ -180,7 +177,7 @@
   launching cues or mapping show variables) attached to it, and if so,
   calls them."
   [msg]
-  (doseq [handler (vals (get-in @note-mappings [(:device (:device msg)) (:channel msg) (:note msg)]))]
+  (doseq [handler (get-in @note-mappings [(:device (:device msg)) (:channel msg) (:note msg)])]
     (handler msg)))
 
 (defn- aftertouch-message-handler
@@ -188,7 +185,7 @@
   aftertouch (polyphonic key pressure) message. Checks whether there
   are any handlers attached to it, and if so, calls them."
   [msg]
-  (doseq [handler (vals (get-in @aftertouch-mappings [(:device (:device msg)) (:channel msg) (:note msg)]))]
+  (doseq [handler (get-in @aftertouch-mappings [(:device (:device msg)) (:channel msg) (:note msg)])]
     (handler msg)))
 
 (defonce
@@ -839,89 +836,83 @@
 
 ;; TODO: apply to all matching input sources? Along with remove, and note & aftertouch messages?
 (defn add-control-mapping
-  "Register a handler to be called whenever a MIDI controller change
-  message is received from the specified device, on the specified
-  channel and controller number. A unique key must be given, by which
-  this mapping can later be removed. Any subsequent MIDI message which
-  matches will be passed to the handler as its single argument. The
-  first MIDI input source whose name or description matches the string
-  or regex pattern supplied for name-filter will be chosen."
-  [name-filter channel control-number k f]
+  "Register a handler function `f` to be called whenever a MIDI
+  controller change message is received from the specified device, on
+  the specified `channel` and `controller` number. Any subsequent MIDI
+  message which matches will be passed to `f` as its single argument.
+  The first MIDI input source whose name or description matches the
+  string or regex pattern supplied for `name-filter` will be chosen."
+  [name-filter channel control-number f]
   {:pre [(fn? f)]}
   (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
-    (swap! control-mappings #(assoc-in % [(:device (first result))
-                                          (int channel) (int control-number) (keyword k)] f))))
+    (swap! control-mappings #(update-in % [(:device (first result)) (int channel) (int control-number)]
+                                        clojure.set/union #{f}))))
 
 (defn remove-control-mapping
   "Unregister a handler previously registered with
-  [[add-control-mapping]], identified by the unique key. The first MIDI
-  input source whose name or description matches the string or regex
-  pattern supplied for name-filter will be chosen."
-  [name-filter channel control-number k]
+  [[add-control-mapping]]. The first MIDI input source whose name or
+  description matches the string or regex pattern supplied for
+  `name-filter` will be chosen."
+  [name-filter channel control-number f]
   (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
-    (swap! control-mappings #(update-in % [(:device (first result))
-                                           (int channel) (int control-number)] dissoc (keyword k)))))
+    (swap! control-mappings #(update-in % [(:device (first result)) (int channel) (int control-number)] disj f))))
 
 (defn add-note-mapping
-  "Register a handler to be called whenever a MIDI note message is
-  received from the specified device, on the specified channel and
-  note number. A unique key must be given, by which this mapping
-  can later be removed. Any subsequent MIDI message which matches will
-  be passed to the handler as its single argument. The first MIDI
+  "Register a handler function `f` to be called whenever a MIDI note
+  message is received from the specified device, on the specified
+  `channel` and `note` number. Any subsequent MIDI message which
+  matches will be passed to `f` as its single argument. The first MIDI
   input source whose name or description matches the string or regex
-  pattern supplied for name-filter will be chosen."
-  [name-filter channel note k f]
+  pattern supplied for `name-filter` will be chosen."
+  [name-filter channel note f]
   {:pre [(fn? f)]}
   (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
-    (swap! note-mappings #(assoc-in % [(:device (first result))
-                                       (int channel) (int note) (keyword k)] f))))
+    (swap! note-mappings #(update-in % [(:device (first result)) (int channel) (int note)]
+                                     clojure.set/union #{f}))))
 
 (defn remove-note-mapping
-  "Unregister a handler previously registered with [[add-note-mapping]],
-  identified by the unique key. The first MIDI input source whose name
-  or description matches the string or regex pattern supplied for
-  name-filter will be chosen."
-  [name-filter channel note k]
+  "Unregister a handler previously registered
+  with [[add-note-mapping]]. The first MIDI input source whose name or
+  description matches the string or regex pattern supplied for
+  `name-filter` will be chosen."
+  [name-filter channel note f]
   (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
-    (swap! note-mappings #(update-in % [(:device (first result))
-                                        (int channel) (int note)] dissoc (keyword k)))))
+    (swap! note-mappings #(update-in % [(:device (first result)) (int channel) (int note)] disj f))))
 
 (defn add-aftertouch-mapping
-  "Register a handler to be called whenever a MIDI
+  "Register a handler function `f` to be called whenever a MIDI
   aftertouch (polyphonic key pressure) message is received from the
-  specified device, on the specified channel and note number. A unique
-  key must be given, by which this mapping can later be removed. Any
-  subsequent MIDI message which matches will be passed to the handler
-  as its single argument. The first MIDI input source whose name or
+  specified device, on the specified `channel` and `note` number. Any
+  subsequent MIDI message which matches will be passed to `f` as its
+  single argument. The first MIDI input source whose name or
   description matches the string or regex pattern supplied for
-  name-filter will be chosen."
-  [name-filter channel note k f]
+  `name-filter` will be chosen."
+  [name-filter channel note f]
   {:pre [(fn? f)]}
   (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
-    (swap! aftertouch-mappings #(assoc-in % [(:device (first result))
-                                             (int channel) (int note) (keyword k)] f))))
+    (swap! aftertouch-mappings #(update-in % [(:device (first result)) (int channel) (int note)]
+                                           clojure.set/union #{f}))))
 
 (defn remove-aftertouch-mapping
-  "Unregister a handler previously registered with [[add-aftertouch-mapping]],
-  identified by the unique key. The first MIDI input source whose name
-  or description matches the string or regex pattern supplied for
-  name-filter will be chosen."
-  [name-filter channel note k]
+  "Unregister a handler previously registered
+  with [[add-aftertouch-mapping]]. The first MIDI input source whose
+  name or description matches the string or regex pattern supplied for
+  `name-filter` will be chosen."
+  [name-filter channel note f]
   (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
-    (swap! aftertouch-mappings #(update-in % [(:device (first result))
-                                              (int channel) (int note)] dissoc (keyword k)))))
+    (swap! aftertouch-mappings #(update-in % [(:device (first result)) (int channel) (int note)] disj f))))
 
 (defn find-midi-out
   "Find a MIDI output whose name matches the specified string or regex

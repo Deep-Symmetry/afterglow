@@ -79,6 +79,11 @@ This change log follows the conventions of
   `MidiDevice` object for their keys, which allows for more efficent
   lookup than the `overtone.midi` `:midi-device` map which was
   previously used.
+- The functions which add and remove bindings to MIDI control, note,
+  and aftertouch messages have been simplified so they no longer you
+  to come up with a unique keyword to use when later removing the
+  binding. Instead, you simply pass the same function that was used
+  when establishing the binding to remove it.
 - Various maps used to manage Afterglow state, such as shows, cue
   grids, Push controllers and auto-binding watchers, are now tagged
   with type metadata to make it easier to recognize them.
