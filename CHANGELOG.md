@@ -8,6 +8,21 @@ This change log follows the conventions of
 
 ### Added
 
+- Support for [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J),
+  to preferentially use MIDI devices returned by this new lightweight
+  open-source Java MIDI service provider implementation for Mac OS X.
+  CoreMIDI4J is compatible with current Java and OS versions, and
+  addresses long-standing defects in the standard Java MIDI
+  implementation, such as support for System Exclusive messages, and
+  reconfiguration of the MIDI environment as devices are connected and
+  disconnected. Afterglow's MIDI implementation now gracefully handles
+  changes in the MIDI environment, cleaning up bindings, synced
+  metronomes, grid controllers, and cue feedback functions associated
+  with devices which no longer exist, and making new devices available
+  for use.
+- MIDI device watchers, which can set up bindings whenever a specified
+  device is connected. These also allow effortless recovery from a
+  temporary disconnection from a device during a show.
 - Code cues, making it easy to trigger arbitrary activity from a cue
   grid, [issue 34](https://github.com/brunchboy/afterglow/issues/34).
 - Links to graphs and expanded discussion in the oscillator API docs.
@@ -60,6 +75,13 @@ This change log follows the conventions of
   mechanism added for MIDI control mappings in
   [issue 32](https://github.com/brunchboy/afterglow/issues/32). The
   documentation has been improved a bit as well.
+- The maps which track MIDI bindings now use the underlying Java
+  `MidiDevice` object for their keys, which allows for more efficent
+  lookup than the `overtone.midi` `:midi-device` map which was
+  previously used.
+- Various maps used to manage Afterglow state, such as shows, cue
+  grids, Push controllers and auto-binding watchers, are now tagged
+  with type metadata to make it easier to recognize them.
 
 ### Fixed
 

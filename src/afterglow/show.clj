@@ -389,11 +389,13 @@
 (defn register-show
   "Add a show to the list of available shows in the web interface."
   [show description]
+  {:pre [(= (type show) :show)]}
   (swap! shows assoc (:id show) [show description]))
 
 (defn unregister-show
   "Remove a show from the list of available shows in the web interface."
   [show]
+  {:pre [(= (type show) :show)]}
   (swap! shows dissoc (:id show)))
 
 ;; TODO: Should some of these atoms be refs and use dosync?
@@ -425,29 +427,31 @@
       :or {universes [1] base-metronome (rhythm/metronome 120) refresh-interval default-refresh-interval}}]
   {:pre [(sequential? universes) (pos? (count universes)) (every? integer? universes) (not-any? neg? universes)
          (satisfies? rhythm/IMetronome base-metronome) (number? refresh-interval) (pos? refresh-interval)]}
-  (let [result {:id (swap! show-counter inc)
-                :metronome base-metronome
-                :sync (atom nil)
-                :refresh-interval refresh-interval
-                :universes (set universes)
-                :next-id (atom 0)
-                :active-effects (atom {:effects []
-                                       :indices {}
-                                       :meta []
-                                       :ending #{}})
-                :variables (atom {})
-                :grand-master (master nil) ; Only the grand master can have no show, or parent.
-                :fixtures (atom {})
-                :movement (atom {}) ; Used to smooth head motion between frames
-                :statistics (atom { :afterglow-version (version/tag) :afterglow-title (version/title)})
-                :dimensions (atom {})
-                :grid-controllers (atom #{})
-                :frame-fns (atom #{})
-                :empty-buffer-fns (atom #{})
-                :send-buffer-fns (atom #{})
-                :task (atom nil)
-                :pool (atom nil)
-                :cue-grid (controllers/cue-grid)}]
+  (let [result (with-meta
+                 {:id (swap! show-counter inc)
+                  :metronome base-metronome
+                  :sync (atom nil)
+                  :refresh-interval refresh-interval
+                  :universes (set universes)
+                  :next-id (atom 0)
+                  :active-effects (atom {:effects []
+                                         :indices {}
+                                         :meta []
+                                         :ending #{}})
+                  :variables (atom {})
+                  :grand-master (master nil) ; Only the grand master can have no show, or parent.
+                  :fixtures (atom {})
+                  :movement (atom {}) ; Used to smooth head motion between frames
+                  :statistics (atom { :afterglow-version (version/tag) :afterglow-title (version/title)})
+                  :dimensions (atom {})
+                  :grid-controllers (atom #{})
+                  :frame-fns (atom #{})
+                  :empty-buffer-fns (atom #{})
+                  :send-buffer-fns (atom #{})
+                  :task (atom nil)
+                  :pool (atom nil)
+                  :cue-grid (controllers/cue-grid)}
+                 {:type :show})]
     (when-not (clojure.string/blank? description)
       (register-show result description))
     result))
@@ -909,6 +913,7 @@
   vector containing the cue and nil. If no cue was found at all,
   simply returns nil."
   [show x y]
+  {:pre [(= (type show) :show)]}
   (when-let [cue (controllers/cue-at (:cue-grid show) x y)]
     (let [effect-found (find-effect (:key cue))
           active (when (:active-id cue)
@@ -1110,6 +1115,7 @@
   "Returns a set of the keywords assigned to all currently-active
   effects."
   [show]
+  {:pre [(= (type show) :show)]}
   (set (map :key (:meta @(:active-effects show)))))
 
 (defn profile-show

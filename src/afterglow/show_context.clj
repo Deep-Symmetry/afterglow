@@ -35,4 +35,5 @@
   This makes sense when you are only working with one light show and
   do not want to have to use `with-show` all the time."
   [show]
+  {:pre [(= (type show) :show)]}
   (alter-var-root #'*show* (constantly show)))
