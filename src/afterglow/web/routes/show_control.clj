@@ -536,7 +536,7 @@
                 {:error (str "Unrecognized MIDI sync source id: " id)}
                 (let [[k v] (first choices)]
                   (if (= v id)
-                    (do (show/sync-to-external-clock (amidi/sync-to-midi-clock (:name k)))
+                    (do (show/sync-to-external-clock (amidi/sync-to-midi-clock k))
                         {:linked value})
                     (recur (rest choices)))))))
 
