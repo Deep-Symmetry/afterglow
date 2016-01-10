@@ -67,7 +67,7 @@ This change log follows the conventions of
   them in the new location directly, and are deprecated. The stubs
   will be removed in an upcoming release.
 - The former `IHeadParam` interface has been eliminated, folding its
-  semantics into the IParam interface, and simplifying the
+  semantics into the `IParam` interface, and simplifying the
   implementation of dynamic parameters,
   [issue 20](https://github.com/brunchboy/afterglow/issues/20).
 - The `:adjust-fn` parameter to `build-variable-param` has been
