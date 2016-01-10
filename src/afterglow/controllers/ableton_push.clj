@@ -1634,12 +1634,11 @@ color (colors/create-color
 
   If you have more than one Ableton Push connected, or have renamed
   how it appears in your list of MIDI devices, you need to supply a
-  value after `:device-name` which identifies the ports to be used to
+  value after `:device-filter` which identifies the ports to be used to
   communicate with the Push you want this function to use. The values
   returned by [[afterglow.midi/open-inputs-if-needed!]]
   and [[afterglow.midi/open-outputs-if-needed!]] will be searched, and
-  the first port whose name or description contains the supplied
-  string will be used.
+  the first port that matches with [[filter-devices]] will be used.
 
   The controller will be identified in the user interface (for the
   purposes of linking it to the web cue grid) as \"Ableton Push\". If
@@ -1650,13 +1649,13 @@ color (colors/create-color
   If you want the user interface to be refreshed at a different rate
   than the default of fifteen times per second, pass your desired
   number of milliseconds after `:refresh-interval`."
-  [show & {:keys [device-name refresh-interval display-name]
-           :or {device-name "User Port"
+  [show & {:keys [device-filter refresh-interval display-name]
+           :or {device-filter "User Port"
                 refresh-interval (/ 1000 15)
                 display-name "Ableton Push"}}]
   {:pre [(some? show)]}
-  (let [port-in (midi/midi-find-device (amidi/open-inputs-if-needed!) device-name)
-        port-out (midi/midi-find-device (amidi/open-outputs-if-needed!) device-name)]
+  (let [port-in (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
+        port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))]
     (if (every? some? [port-in port-out])
       (let [controller
             (with-meta
@@ -1715,7 +1714,7 @@ color (colors/create-color
         (show/register-grid-controller @(:grid-controller-impl controller))
         (amidi/add-disconnected-device-handler! port-in #(deactivate controller :disconnected true))
         controller)
-      (timbre/error "Unable to find Ableton Push with MIDI device name:" device-name))))
+      (timbre/error "Unable to find Ableton Push" (amidi/describe-device-filter device-filter)))))
 
 (defn auto-bind
   "Watches for an Ableton Push controller to be connected, and as soon
@@ -1728,12 +1727,11 @@ color (colors/create-color
 
   If you have more than one Ableton Push that might beconnected, or
   have renamed how it appears in your list of MIDI devices, you need
-  to supply a value after `:device-name` which identifies the ports to
+  to supply a value after `:device-filter` which identifies the ports to
   be used to communicate with the Push you want this function to use.
   The values returned by [[afterglow.midi/open-inputs-if-needed!]]
   and [[afterglow.midi/open-outputs-if-needed!]] will be searched, and
-  the first port whose name or description contains the supplied
-  string will be used.
+  the first port that matches using [[filter-devices]] will be used.
 
   Once bound, the controller will be identified in the user
   interface (for the purposes of linking it to the web cue grid) as
@@ -1744,8 +1742,8 @@ color (colors/create-color
   If you want the user interface to be refreshed at a different rate
   than the default of fifteen times per second, pass your desired
   number of milliseconds after `:refresh-interval`."
-  [show & {:keys [device-name refresh-interval display-name]
-           :or {device-name "User Port"
+  [show & {:keys [device-filter refresh-interval display-name]
+           :or {device-filter "User Port"
                 refresh-interval (/ 1000 15)
                 display-name "Ableton Push"}}]
   {:pre [(some? show)]}
@@ -1756,13 +1754,13 @@ color (colors/create-color
               (reset! idle true))
             (connection-handler [device]
               (when (compare-and-set! idle true false)
-                (if (and (nil? @controller) (seq (amidi/filter-devices [device] device-name)))
-                    (let [port-in (first (amidi/filter-devices (amidi/open-inputs-if-needed!) device-name))
-                          port-out (first (amidi/filter-devices (amidi/open-outputs-if-needed!) device-name))]
+                (if (and (nil? @controller) (seq (amidi/filter-devices device-filter [device])))
+                    (let [port-in (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
+                          port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))]
                       (when (every? some? [port-in port-out])  ; We found our Push! Bind to it in the background.
                         (timbre/info "Auto-binding to" device)
                         (future
-                          (reset! controller (bind-to-show show :device-name device-name
+                          (reset! controller (bind-to-show show :device-filter device-filter
                                                            :refresh-interval refresh-interval
                                                            :display-name display-name))
                           (amidi/add-disconnected-device-handler! (:port-in @controller) disconnection-handler))))
@@ -1773,7 +1771,7 @@ color (colors/create-color
                         (amidi/remove-disconnected-device-handler! device disconnection-handler)))]
 
       ;; See if our Push seems to already be connected, and if so, bind to it right away.
-      (when-let [found (first (amidi/filter-devices (amidi/open-inputs-if-needed!) device-name))]
+      (when-let [found (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))]
         (connection-handler found))
 
       ;; Set up to bind when connected in future.
@@ -1782,7 +1780,7 @@ color (colors/create-color
       ;; Return a watcher object which can provide access to the bound controller, and be canceled later.
       (with-meta
         {:controller controller
-         :device-name device-name
+         :device-filter device-filter
          :cancel cancel-handler}
         {:type :push-watcher}))))
 

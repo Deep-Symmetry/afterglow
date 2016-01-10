@@ -84,6 +84,9 @@ This change log follows the conventions of
   require you to come up with a unique keyword to use when later
   removing the binding. Instead, you simply pass the same function
   that was used when establishing the binding to remove it.
+- All functions which allow you to select a MIDI device have been made
+  consistent, and now allow you to filter devices by a variety of
+  criteria, not just the name and description.
 - Various maps used to manage Afterglow state, such as shows, cue
   grids, Push controllers and auto-binding watchers, are now tagged
   with type metadata to make it easier to recognize them.

@@ -739,25 +739,74 @@
                                                      (str "Last clock pulse received " lag "ms ago.")))
                     :else "Running, clock pulse buffer is full and current.")}))))
 
-(defn- describe-name-filter
-  "Returns a description of a name filter used to narrow down MIDI
-  sources, if one was supplied, or the empty string if none was."
-  [name-filter]
-  (if (or (nil? name-filter) (and (string? name-filter) (clojure.string/blank? name-filter)))
+(defn describe-device-filter
+  "Returns a description of a filter used to narrow down MIDI devices,
+  if one was supplied, or the empty string if none was."
+  [device-filter]
+  (cond
+    (or (nil? device-filter) (and (string? device-filter) (clojure.string/blank? device-filter)))
     ""
-    (str "matching " (with-out-str (clojure.pprint/write-out name-filter)) " ")))
+
+    (instance? Pattern device-filter)
+    (str "with a name or description matching " (with-out-str (clojure.pprint/write-out device-filter)) " ")
+
+    (instance? javax.sound.midi.MidiDevice device-filter)
+    (format "provided by %s " device-filter)
+
+    (= (type device-filter) :midi-device)
+    (describe-device-filter (:device device-filter))
+
+    (fn? device-filter)
+    (format "returning true when passed to %s " device-filter)
+
+    :else
+    (str "with a name or description matching \"" device-filter "\" ")))
 
 (defn filter-devices
-  "Return only those devices whose name and/or description match the
-  specified pattern. name-filter can either be a Pattern, or a string
-  which will be turned into a pattern which matches in a
-  case-insensitive way anywhere in the name or description."
-  [devices name-filter]
-  (if (or (nil? name-filter) (and (string? name-filter) (clojure.string/blank? name-filter)))
+  "Return only those devices matching the supplied `device-filter`.
+
+  The elements of `devices` must all be `:midi-device` maps as
+  returned by `overtone.midi`.
+
+  If `device-filter` is `nil` or an empty
+  string, `devices` is returned unfiltered. Otherwise it can be one of
+  the following things:
+
+  * A `java.util.regex.Pattern`, which will be matched against each
+  device name and description. If either match succeeds, the device
+  will be included in the results.
+
+  * A `String`, which will be turned into a `Pattern` which matches in
+  a case-insensitive way, as above. So if the device name or filter
+  contains the string, ignoring case, the device will be included.
+
+  * A `javax.sound.midi.MidiDevice` instance, which will match only
+  the device that it implements.
+
+  * A `:midi-device` map, which will match only itself.
+
+  * A function, which will be called with each device, and the device
+  will be included if the function returns a `true` value.
+
+  Anything else will be converted to a string and matched as above."
+  [device-filter devices]
+  (cond
+    (or (nil? device-filter) (and (string? device-filter) (clojure.string/blank? device-filter)))
     devices
-    (let [pattern (if (= (class name-filter) Pattern)
-                    name-filter
-                    (Pattern/compile (Pattern/quote (str name-filter)) Pattern/CASE_INSENSITIVE))]
+
+    (instance? javax.sound.midi.MidiDevice device-filter)
+    (filter #(= (:device %) device-filter) devices)
+
+    (= (type device-filter) :midi-device)
+    (filter #(= (:device %) (:device device-filter)) devices)
+
+    (fn? device-filter)
+    (filter device-filter devices)
+
+    :else
+    (let [pattern (if (instance? Pattern device-filter)
+                    device-filter
+                    (Pattern/compile (Pattern/quote (str device-filter)) Pattern/CASE_INSENSITIVE))]
       (filter #(or (re-find pattern (:name %1))
                    (re-find pattern (:description %1)))
               devices))))
@@ -784,20 +833,19 @@
   "Returns a sync function that will cause the beats-per-minute
   setting of the supplied metronome to track the MIDI clock messages
   received from the named MIDI source. This is intended for use with
-  afterglow.show/sync-to-external-clock. name-filter is only needed if
-  there is more than one connected device sending MIDI clock messages
-  when this function is invoked; it will be used to filter the
-  eligible devices. If it is a string, then the device name or
-  description must contain it. If it is a regular expression, the
-  device name or description must match it. If it is nil or a blank
-  string, no filtering is done. An exception will be thrown if there
-  is not exactly one matching eligible MIDI clock source."
+  [[afterglow.show/sync-to-external-clock]].
+
+  The `device-filter` argument is only needed if there is more than
+  one connected device sending MIDI clock messages when this function
+  is invoked; it will be used to filter the eligible devices
+  using [[filter-devices]]. An exception will be thrown if there is
+  not exactly one matching eligible MIDI clock source."
   ([]
    (sync-to-midi-clock nil))
-  ([name-filter]
-   (let [result (filter-devices (current-clock-sources) name-filter)]
+  ([device-filter]
+   (let [result (filter-devices device-filter (current-clock-sources))]
      (case (count result)
-       0 (throw (IllegalArgumentException. (str "No MIDI clock sources " (describe-name-filter name-filter)
+       0 (throw (IllegalArgumentException. (str "No MIDI clock sources " (describe-device-filter device-filter)
                                                 "were found.")))
 
        1 (fn [^afterglow.rhythm.Metronome metronome]
@@ -807,7 +855,7 @@
              (sync-start sync-handler)
              sync-handler))
 
-       (throw (IllegalArgumentException. (str "More than one MIDI clock source " (describe-name-filter name-filter)
+       (throw (IllegalArgumentException. (str "More than one MIDI clock source " (describe-device-filter device-filter)
                                               "was found.")))))))
 
 (defn identify-mapping
@@ -840,51 +888,55 @@
   controller change message is received from the specified device, on
   the specified `channel` and `controller` number. Any subsequent MIDI
   message which matches will be passed to `f` as its single argument.
-  The first MIDI input source whose name or description matches the
-  string or regex pattern supplied for `name-filter` will be chosen."
-  [name-filter channel control-number f]
+
+  The first MIDI input source whose device matches the
+  `device-filter` (using [[filter-devices]]) will be chosen."
+  [device-filter channel control-number f]
   {:pre [(fn? f)]}
-  (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
+  (let [result (filter-devices device-filter (open-inputs-if-needed!))]
     (when (empty? result)
-      (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
+      (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
     (swap! control-mappings #(update-in % [(:device (first result)) (int channel) (int control-number)]
                                         clojure.set/union #{f}))))
 
 (defn remove-control-mapping
   "Unregister a handler previously registered with
-  [[add-control-mapping]]. The first MIDI input source whose name or
-  description matches the string or regex pattern supplied for
-  `name-filter` will be chosen."
-  [name-filter channel control-number f]
-  (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
+  [[add-control-mapping]].
+
+  The first MIDI input source whose device matches the
+  `device-filter` (using [[filter-devices]]) will be chosen."
+  [device-filter channel control-number f]
+  (let [result (filter-devices device-filter (open-inputs-if-needed!))]
     (when (empty? result)
-      (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
+      (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
     (swap! control-mappings #(update-in % [(:device (first result)) (int channel) (int control-number)] disj f))))
 
 (defn add-note-mapping
   "Register a handler function `f` to be called whenever a MIDI note
   message is received from the specified device, on the specified
   `channel` and `note` number. Any subsequent MIDI message which
-  matches will be passed to `f` as its single argument. The first MIDI
-  input source whose name or description matches the string or regex
-  pattern supplied for `name-filter` will be chosen."
-  [name-filter channel note f]
+  matches will be passed to `f` as its single argument.
+
+  The first MIDI input source whose device matches the
+  `device-filter` (using [[filter-devices]]) will be chosen."
+  [device-filter channel note f]
   {:pre [(fn? f)]}
-  (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
+  (let [result (filter-devices device-filter (open-inputs-if-needed!))]
     (when (empty? result)
-      (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
+      (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
     (swap! note-mappings #(update-in % [(:device (first result)) (int channel) (int note)]
                                      clojure.set/union #{f}))))
 
 (defn remove-note-mapping
   "Unregister a handler previously registered
-  with [[add-note-mapping]]. The first MIDI input source whose name or
-  description matches the string or regex pattern supplied for
-  `name-filter` will be chosen."
-  [name-filter channel note f]
-  (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
+  with [[add-note-mapping]].
+
+  The first MIDI input source whose device matches the
+  `device-filter` (using [[filter-devices]]) will be chosen."
+  [device-filter channel note f]
+  (let [result (filter-devices device-filter (open-inputs-if-needed!))]
     (when (empty? result)
-      (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
+      (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
     (swap! note-mappings #(update-in % [(:device (first result)) (int channel) (int note)] disj f))))
 
 (defn add-aftertouch-mapping
@@ -892,33 +944,35 @@
   aftertouch (polyphonic key pressure) message is received from the
   specified device, on the specified `channel` and `note` number. Any
   subsequent MIDI message which matches will be passed to `f` as its
-  single argument. The first MIDI input source whose name or
-  description matches the string or regex pattern supplied for
-  `name-filter` will be chosen."
-  [name-filter channel note f]
+  single argument.
+
+  The first MIDI input source whose device matches the
+  `device-filter` (using [[filter-devices]]) will be chosen."
+  [device-filter channel note f]
   {:pre [(fn? f)]}
-  (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
+  (let [result (filter-devices device-filter (open-inputs-if-needed!))]
     (when (empty? result)
-      (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
+      (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
     (swap! aftertouch-mappings #(update-in % [(:device (first result)) (int channel) (int note)]
                                            clojure.set/union #{f}))))
 
 (defn remove-aftertouch-mapping
   "Unregister a handler previously registered
-  with [[add-aftertouch-mapping]]. The first MIDI input source whose
-  name or description matches the string or regex pattern supplied for
-  `name-filter` will be chosen."
-  [name-filter channel note f]
-  (let [result (filter-devices (open-inputs-if-needed!) name-filter)]
+  with [[add-aftertouch-mapping]].
+
+  The first MIDI input source whose device matches the
+  `device-filter` (using [[filter-devices]]) will be chosen."
+  [device-filter channel note f]
+  (let [result (filter-devices device-filter (open-inputs-if-needed!))]
     (when (empty? result)
-      (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
+      (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
     (swap! aftertouch-mappings #(update-in % [(:device (first result)) (int channel) (int note)] disj f))))
 
 (defn watch-for
-  "Watches for a device whose name or description matches the string
-  or regex pattern supplied for `name-filter`. If it is present when
+  "Watches for a device that matches
+  `device-filter` (using [[filter-devices]]). If it is present when
   this function is called, or whenever a matching device is connected
-  in the future (as long as none alread was), `found-fn` will be
+  in the future (as long as none already was), `found-fn` will be
   called, with no arguments. This is useful for setting up MIDI
   mappings to the device whenever it is present. If the device is
   disconnected and later reconnected, `found-fn` will be called again,
@@ -943,15 +997,15 @@
 
   The return value of `watch-for` is a function that you can call to
   cancel the watcher if you no longer need it."
-  [name-filter found-fn & {:keys [lost-fn sleep-time] :or {sleep-time 1000}}]
+  [device-filter found-fn & {:keys [lost-fn sleep-time] :or {sleep-time 1000}}]
   {:pre [(fn? found-fn) (or (nil? lost-fn) (fn? lost-fn)) (number? sleep-time)]}
   (let [found (atom false)]
     (letfn [(disconnection-handler []
               (when lost-fn (lost-fn))
               (reset! found false))
             (connection-handler [device]
-              (when (and (seq (filter-devices [device] name-filter)) (compare-and-set! found false true))
-                (timbre/info "watch-for found" (describe-name-filter name-filter))
+              (when (and (seq (filter-devices device-filter [device])) (compare-and-set! found false true))
+                (timbre/info "watch-for found device" (describe-device-filter device-filter))
                 (future
                   (Thread/sleep sleep-time)
                   (found-fn))
@@ -960,8 +1014,8 @@
               (remove-new-device-handler! connection-handler))]
 
       ;; See if the specified device seems to already be connected, and if so, bind to it right away.
-      (when-let [match (first (filter-devices (concat (open-inputs-if-needed!) (open-outputs-if-needed!))
-                                              name-filter))]
+      (when-let [match (first (filter-devices device-filter (concat (open-inputs-if-needed!)
+                                                                    (open-outputs-if-needed!))))]
         (connection-handler match))
 
       ;; Set up to bind when connected in the future
@@ -970,11 +1024,22 @@
       ;; Return the function that will cancel this watcher
       cancel-handler)))
 
-(defn find-midi-out
-  "Find a MIDI output whose name matches the specified string or regex
-  pattern."
-  [name-filter]
-  (let [result (filter-devices (open-outputs-if-needed!) name-filter)]
+(defn find-midi-in
+  "Find the first MIDI input port matching the specified
+  `device-filter` using [[filter-devices]], or throw an exception if
+  no matches can be found."
+  [device-filter]
+  (let [result (filter-devices device-filter (open-inputs-if-needed!))]
     (if (empty? result)
-      (throw (IllegalArgumentException. (str "No MIDI outputs " (describe-name-filter name-filter) "were found.")))
+      (throw (IllegalArgumentException. (str "No MIDI inputs " (describe-device-filter device-filter) "were found.")))
+      (first result))))
+
+(defn find-midi-out
+  "Find the first MIDI output port matching the specified
+  `device-filter` using [[filter-devices]], or throw an exception if
+  no matches can be found."
+  [device-filter]
+  (let [result (filter-devices device-filter (open-outputs-if-needed!))]
+    (if (empty? result)
+      (throw (IllegalArgumentException. (str "No MIDI outputs " (describe-device-filter device-filter) "were found.")))
       (first result))))

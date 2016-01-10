@@ -47,7 +47,9 @@ http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-add-midi-c
 
 This would cause Afterglow to start or stop the cue at grid position
 (0, 6) when a pad on the device named "nano" is pressed and sends a
-MIDI control change message on control number 46.
+MIDI control change message on control number 46. See the
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[documentation]
+for details on all the arguments.
 
 TIP: If the controller has LEDs associated with the controls, and you
 can configure it so that its LEDs are in external control mode,
@@ -96,7 +98,9 @@ variable bindings], the control surface can then vary the look of the
 effect created by the cue, both before the cue is launched, and while
 it is running.
 
-Here is a lower-level example of how I can have a knob on one of my
+Here is a lower-level example of how I can use
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-var-mapping[add-midi-control-to-var-mapping]
+have a knob on one of my
 simple MIDI controllers set the hue of all the lights. It shows up
 with a MIDI port name of `SLIDER/KNOB`, and its first rotary
 controller is control 16 on channel 0. I can map that to set a show
@@ -106,6 +110,9 @@ variable `knob-1` to the values 0-360 (the legal hue values):
 ----
 (show/add-midi-control-to-var-mapping "Slider" 0 16 :knob-1 :max 360)
 ----
+
+> See the
+http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-var-mapping[documentation] for details about all the arguments.
 
 Then I can create a global color effect based on that variable:
 
@@ -136,11 +143,11 @@ implement the varible binding like this:
 ----
 
 NOTE: This intercepts any MIDI control-change messages for the device
-whose name contains "SLIDER", on channel 0, controller number 1. It
-scales the incoming control value to the range 0 through 3, then calls
-a custom function which rounds the scaled value to the nearest
-integer, and raises 2 to that power. The result gets stored into the
-show variable `:beat-ratio`.
+whose name or description contains "SLIDER", on channel 0, controller
+number 1. It scales the incoming control value to the range 0 through
+3, then calls a custom function which rounds the scaled value to the
+nearest integer, and raises 2 to that power. The result gets stored
+into the show variable `:beat-ratio`.
 
 If you want to be able to later remove this variable mapping, be sure
 to save the value returned by `add-midi-control-to-var-mapping` in a
@@ -282,15 +289,20 @@ device sending MIDI clock, you can just execute:
 ----
 
 If there is ambiguity about which device’s MIDI clocks you want to
-process, Afterglow will complain. Resolve that by passing a substring
-which uniquely matches the name or description of the MIDI device that
-you want to sync to:
+process, Afterglow will complain. Resolve that by passing a device
+filter which matches the device you want to use. The simplest kind of
+filter you can pass is a string, which uniquely matches the name or
+description of the MIDI device that you want to sync to:
 
 [source,clojure]
 ----
 (show/sync-to-external-clock
   (afterglow.midi/sync-to-midi-clock "traktor"))
 ----
+
+The documentation for
+http://deepsymmetry.org/afterglow/doc/afterglow.midi.html#var-filter-devices[afterglow.midi/filter-devices]
+explains the other kinds of device filter you can use.
 
 NOTE: This section describes the low-level mechanisms available for
 establishing MIDI sync from code and the REPL. A much easier way is to
@@ -409,8 +421,8 @@ Whenever Afterglow detects a coordinated stream of messages on
 controllers `0` through `4` which are consistent with beat-phase
 information from this Traktor mapping, it offers that MIDI input
 device as a source of Traktor beat-phase synchronization, and if it is
-synchronizing a metronome with the MIDI clock messages on that port,
-will also synchronize the beats.
+<<syncing-to-midi-clock,synchronizing a metronome>> with the MIDI
+clock messages on that port, will also synchronize the beats.
 
 == Syncing to Pro DJ Link
 

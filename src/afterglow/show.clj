@@ -563,22 +563,25 @@
   ((keyword key) @(:variables *show*)))
 
 (defn add-midi-control-to-var-mapping
-  "Cause the specified variable in [[*show*]] to be updated by any
+  "Cause the specified `variable` in [[*show*]] to be updated by any
   MIDI controller-change messages from the specified device sent on
-  the specified channel and controller number.
+  the specified `channel` and `control-number`.
+
+  The first MIDI input source whose device matches the
+  `device-filter` (using [[filter-devices]]) will be chosen.
 
   If `:min` and/or `:max` are specified, the normal MIDI range from 0
   to 127 will be scaled to the supplied range instead.
 
-  If `:transform-fn is specified, it will be called with the midi
+  If `:transform-fn` is specified, it will be called with the MIDI
   value (after scaling, if any was specified), and its return value
   will be stored in the variable.
 
   Returns a MIDI mapping function which can be passed
   to [[remove-midi-control-to-var-mapping]] if you later want to stop
   the variable from responding to these MIDI messages."
-  [midi-device-name channel control-number variable & {:keys [min max transform-fn] :or {min 0 max 127}}]
-  {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
+  [device-filter channel control-number variable & {:keys [min max transform-fn] :or {min 0 max 127}}]
+  {:pre [(some? *show*) (some? device-filter) (integer? channel) (<= 0 channel 15)
          (integer? control-number) (<= 0 control-number 127) (some? variable)
          (number? min) (number? max) (not= min max) (or (nil? transform-fn) (fn? transform-fn))]}
   (let [show *show*  ; Bind so we can pass it to update function running on another thread
@@ -594,7 +597,7 @@
         update-fn (fn [msg]
                     (with-show show
                       (set-variable! variable (calc-fn (:velocity msg)))))]
-    (midi/add-control-mapping midi-device-name channel control-number update-fn)
+    (midi/add-control-mapping device-filter channel control-number update-fn)
     update-fn))
 
 (defn remove-midi-control-to-var-mapping
@@ -602,27 +605,31 @@
   specified MIDI controller-change messages are received. `f` is the
   function that was returned by [[add-midi-control-to-var-mapping]]
   when this relationship was created."
-  [midi-device-name channel control-number variable f]
-  {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
+  [device-filter channel control-number variable f]
+  {:pre [(some? *show*) (some? device-filter) (integer? channel) (<= 0 channel 15)
          (integer? control-number) (<= 0 control-number 127) (some? variable)]}
-  (midi/remove-control-mapping midi-device-name channel control-number f))
+  (midi/remove-control-mapping device-filter channel control-number f))
 
 (defn add-midi-control-to-master-mapping
   "Cause the specified [[dimmer/master]] in [[*show*]] to be updated
   by any MIDI controller-change messages from the specified device
-  sent on the specified channel and controller number. If `:min`
-  and/or `:max` are specified, they will be used instead of the normal
-  master range of 0 to 100. If given, both `:min` and `:max` must be
-  valid percentages (in the range 0 to 100). If no `:master` is
-  supplied, the show's grand master is mapped. If the value supplied
-  with `:master` is a keyword, it is resolved as a show variable
-  containing a dimmer master.
+  sent on the specified `channel` and `control-number`.
+
+  The first MIDI input source whose device matches the
+  `device-filter` (using [[filter-devices]]) will be chosen.
+
+  If `:min` and/or `:max` are specified, they will be used instead of
+  the normal master range of 0 to 100. If given, both `:min` and
+  `:max` must be valid percentages (in the range 0 to 100). If no
+  `:master` is supplied, the show's grand master is mapped. If the
+  value supplied with `:master` is a keyword, it is resolved as a show
+  variable containing a dimmer master.
 
   Returns a MIDI mapping function which can be passed
   to [[remove-midi-control-to-master-mapping]] if you later want to
   stop the dimmer master from being affected by these MIDI messages."
-  [midi-device-name channel control-number & {:keys [master min max] :or {master (:grand-master *show*) min 0 max 100}}]
-  {:pre [(some? *show*) (some? midi-device-name) (number? min) (number? max) (not= min max)
+  [device-filter channel control-number & {:keys [master min max] :or {master (:grand-master *show*) min 0 max 100}}]
+  {:pre [(some? *show*) (some? device-filter) (number? min) (number? max) (not= min max)
          (<= 0 min 100) (<= 0 max 100)
          (integer? channel) (<= 0 channel 15) (integer? control-number) (<= 0 control-number 127)]}
   (let [bound (bind-keyword-param master Master (:grand-master *show*))
@@ -633,7 +640,7 @@
                   (let [range (- min max)]
                     (fn [midi-val] (float (+ max (/ (* midi-val range) 127))))))
         update-fn (fn [msg] (master-set-level master (calc-fn (:velocity msg))))]
-    (midi/add-control-mapping midi-device-name channel control-number update-fn)
+    (midi/add-control-mapping device-filter channel control-number update-fn)
     update-fn))
 
 (defn remove-midi-control-to-master-mapping
@@ -641,44 +648,51 @@
   MIDI controller-change messages are received. `f` is the function
   that was returned by [[add-midi-control-to-master-mapping]] when
   this relationship was established."
-  [midi-device-name channel control-number f & {:keys [master] :or {master (:grand-master *show*)}}]
-  {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
+  [device-filter channel control-number f & {:keys [master] :or {master (:grand-master *show*)}}]
+  {:pre [(some? *show*) (some? device-filter) (integer? channel) (<= 0 channel 15)
          (integer? control-number) (<= 0 control-number 127)]}
   (let [bound (bind-keyword-param master Master (:grand-master *show*))
         master (resolve-param bound *show* (rhythm/metro-snapshot (:metronome *show*)))]
-    (midi/remove-control-mapping midi-device-name channel control-number f)))
+    (midi/remove-control-mapping device-filter channel control-number f)))
 
 (defn- add-midi-control-metronome-mapping
   "Helper function to perform some action on a metronome when a
   control-change message with non-zero value is received from the
-  specified device, channel, and controller number.
+  specified device, `channel`, and `control-number`.
+
+  The first MIDI input source whose device matches the
+  `device-filter` (using [[filter-devices]]) will be chosen.
 
   Returns a MIDI mapping function which can be passed
   to [[remove-midi-control-metronome-mapping]] if you later want to
   stop the metronome from being affected by these MIDI messages."
-  [midi-device-name channel control-number metronome mapped-fn]
-  {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
+  [device-filter channel control-number metronome mapped-fn]
+  {:pre [(some? *show*) (some? device-filter) (integer? channel) (<= 0 channel 15)
          (integer? control-number) (<= 0 control-number 127) (fn? mapped-fn)]}
   (let [bound (bind-keyword-param metronome Metronome (:metronome *show*))
         metronome (resolve-param bound *show* (rhythm/metro-snapshot (:metronome *show*)))
         update-fn (fn [msg] (when (pos? (:velocity msg)) (mapped-fn metronome)))]
-    (midi/add-control-mapping midi-device-name channel control-number update-fn)
+    (midi/add-control-mapping device-filter channel control-number update-fn)
     update-fn))
 
 (defn add-midi-control-metronome-reset-mapping
   "Cause a metronome to be reset to beat 1, bar 1, phrase 1 when a
   control-change message with non-zero value is received from the
-  specified device, channel, and controller number. If keyword
-  parameter `:metronome` is supplied, its value can either be a
-  [[rhythm/metronome]] object, or a keyword naming a show variable
-  containing such an object. If not supplied, the main metronome
-  attached to [[*show*]] is mapped.
+  specified `device`, `channel`, and `control-number`.
+
+  The first MIDI input source whose device matches the
+  `device-filter` (using [[filter-devices]]) will be chosen.
+
+  If keyword parameter `:metronome` is supplied, its value can either
+  be a [[rhythm/metronome]] object, or a keyword naming a show
+  variable containing such an object. If not supplied, the main
+  metronome attached to [[*show*]] is mapped.
 
   Returns a MIDI mapping function which can be passed
   to [[remove-midi-control-metronome-mapping]] if you later want to
   stop the metronome from being affected by these MIDI messages."
-  [midi-device-name channel control-number & {:keys [metronome] :or {metronome (:metronome *show*)}}]
-  (add-midi-control-metronome-mapping midi-device-name channel control-number metronome
+  [device-filter channel control-number & {:keys [metronome] :or {metronome (:metronome *show*)}}]
+  (add-midi-control-metronome-mapping device-filter channel control-number metronome
                                       #(rhythm/metro-start % 1)))
 
 (defn remove-midi-control-metronome-mapping
@@ -686,56 +700,65 @@
   controller-change messages are received. This undoes the effect of
   any of [[add-midi-control-metronome-reset-mapping]],
   [[add-midi-control-metronome-align-bar-mapping]], and
-  [[add-midi-control-metronome-align-phrase-mapping]]. If keyword
-  parameter `:metronome` is supplied, its value can either be a
-  [[rhythm/metronome]] object, or a keyword naming a show variable
-  containing such an object. If not supplied, the main metronome
-  attached to [[*show*]] is mapped.
+  [[add-midi-control-metronome-align-phrase-mapping]].
+
+  If keyword parameter `:metronome` is supplied, its value can either
+  be a [[rhythm/metronome]] object, or a keyword naming a show
+  variable containing such an object. If not supplied, the main
+  metronome attached to [[*show*]] is mapped.
 
   `f` is the function that was returned
   by [[add-midi-control-metronome-reset-mapping]],
   [[add-midi-control-metronome-align-bar-mapping]], or
   [[add-midi-control-metronome-align-phrase-mapping]] when this
   relationship was established."
-  [midi-device-name channel control-number f & {:keys [metronome] :or {metronome (:metronome *show*)}}]
-  {:pre [(some? *show*) (some? midi-device-name) (integer? channel) (<= 0 channel 15)
+  [device-filter channel control-number f & {:keys [metronome] :or {metronome (:metronome *show*)}}]
+  {:pre [(some? *show*) (some? device-filter) (integer? channel) (<= 0 channel 15)
          (integer? control-number) (<= 0 control-number 127)]}
   (let [bound (bind-keyword-param metronome Metronome (:metronome *show*))
         metronome (resolve-param bound *show* (rhythm/metro-snapshot (:metronome *show*)))]
-    (midi/remove-control-mapping midi-device-name channel control-number f)))
+    (midi/remove-control-mapping device-filter channel control-number f)))
 
 (defn add-midi-control-metronome-align-bar-mapping
   "Adjust a metronome so the closest beat is considered the first in
   the current measure, without moving the beat, when a control-change
   message with non-zero value is received from the specified device,
-  channel, and controller number If keyword
-  parameter `:metronome` is supplied, its value can either be a
-  [[rhythm/metronome]] object, or a keyword naming a show variable containing
-  such an object. If not supplied, the main metronome attached to [[*show*]]
-  is unmapped.
+  `channel`, and `control-number`.
+
+  The first MIDI input source whose device matches the
+  `device-filter` (using [[filter-devices]]) will be chosen.
+
+  If keyword parameter `:metronome` is supplied, its value can either
+  be a [[rhythm/metronome]] object, or a keyword naming a show
+  variable containing such an object. If not supplied, the main
+  metronome attached to [[*show*]] is unmapped.
 
   Returns a MIDI mapping function which can be passed
   to [[remove-midi-control-metronome-mapping]] if you later want to
   stop the metronome from being affected by these MIDI messages."
-  [midi-device-name channel control-number & {:keys [metronome] :or {metronome (:metronome *show*)}}]
-  (add-midi-control-metronome-mapping midi-device-name channel control-number metronome
+  [device-filter channel control-number & {:keys [metronome] :or {metronome (:metronome *show*)}}]
+  (add-midi-control-metronome-mapping device-filter channel control-number metronome
                                       #(rhythm/metro-bar-start % (rhythm/metro-bar %))))
 
 (defn add-midi-control-metronome-align-phrase-mapping
   "Adjust a metronome so the closest beat is considered the first in
   the current phrase, without moving the beat, when a control-change
   message with non-zero value is received from the specified device,
-  channel, and controller number. If keyword
-  parameter `:metronome` is supplied, its value can either be a
-  [[rhythm/metronome]] object, or a keyword naming a show variable
-  containing such an object. If not supplied, the main metronome
-  attached to [[*show*]] is mapped.
+  `channel`, and `control-number`.
+
+  The first MIDI input source whose device matches the
+  `device-filter` (using [[filter-devices]]) will be chosen.
+
+  If keyword parameter `:metronome` is supplied, its value can either
+  be a [[rhythm/metronome]] object, or a keyword naming a show
+  variable containing such an object. If not supplied, the main
+  metronome attached to [[*show*]] is mapped.
 
   Returns a MIDI mapping function which can be passed
   to [[remove-midi-control-metronome-mapping]] if you later want to
   stop the metronome from being affected by these MIDI messages."
-  [midi-device-name channel control-number & {:keys [metronome] :or {metronome (:metronome *show*)}}]
-  (add-midi-control-metronome-mapping midi-device-name channel control-number metronome
+  [device-filter channel control-number & {:keys [metronome] :or {metronome (:metronome *show*)}}]
+  (add-midi-control-metronome-mapping device-filter channel control-number metronome
                                       #(rhythm/metro-phrase-start % (rhythm/metro-phrase %))))
 
 (defn find-effect
@@ -965,10 +988,10 @@
   the next version, so please update your code to find it in its new
   location."
   {:deprecated "0.1.6"}
-  [midi-device-name channel kind note x y & {:keys [feedback-on feedback-off use-velocity? momentary?]
+  [device-filter channel kind note x y & {:keys [feedback-on feedback-off use-velocity? momentary?]
                                              :or {feedback-on 127 feedback-off 0 momentary? true}}]
   (require '[afterglow.effects.cues])
-  ((resolve 'afterglow.effects.cues/add-midi-control-to-cue-mapping) midi-device-name channel kind note x y
+  ((resolve 'afterglow.effects.cues/add-midi-control-to-cue-mapping) device-filter channel kind note x y
    :feedback-on feedback-on :feedback-off feedback-off :use-velocity? use-velocity? :momentary? momentary?))
 
 (defn remove-midi-control-to-cue-mapping
@@ -980,9 +1003,9 @@
   the next version, so please update your code to find it in its new
   location."
   {:deprecated "0.1.6"}
-  [midi-device-name channel kind note x y f]
+  [device-filter channel kind note x y f]
   (require '[afterglow.effects.cues])
-  ((resolve 'afterglow.effects.cues/remove-midi-control-to-cue-mapping) midi-device-name channel kind note x y f))
+  ((resolve 'afterglow.effects.cues/remove-midi-control-to-cue-mapping) device-filter channel kind note x y f))
 
 (defn- address-map-internal
   "Helper function which returns a sorted map whose keys are all
