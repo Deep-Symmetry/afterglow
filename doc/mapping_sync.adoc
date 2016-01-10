@@ -69,6 +69,12 @@ http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-remove-midi-contro
 Or you can simply disconnect the controller from your system, and
 Afterglow will clean up any mappings that had been assigned to it.
 
+Also be sure to see the section
+<<automatically-creating-bindings-when-a-device-connects,below>>
+that explains how you can arrange to have afterglow automatically call
+the relevant MIDI mapping functions to set up your device whenever it
+is connected.
+
 NOTE: If you are mapping a cue that is set up with velocity sensitive
 variables, and those variables do not have default values establised
 via `:start` entries, you should pass `:use-velocity true` to

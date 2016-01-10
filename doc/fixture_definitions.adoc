@@ -98,36 +98,36 @@ example:
 [source,clojure]
 ----
 (clojure.pprint/pprint (afterglow.fixtures.blizzard/snowball))
-; {:name "Blizzard Snowball",
-;  :channels
-;  [{:offset 1,
-;    :type :dimmer,
-;    :functions
-;    [{:start 0,
-;      :end 255,
-;      :range :variable,
-;      :type :dimmer,
-;      :label "Dimmer"}]}
-;   {:offset 2,
-;    :type :color,
-;    :functions
-;    [{:start 0, :end 255, :range :variable, :type :red, :label "Red"}],
-;    :color :red}
+ {:name "Blizzard Snowball",
+  :channels
+  [{:offset 1,
+    :type :dimmer,
+    :functions
+    [{:start 0,
+      :end 255,
+      :range :variable,
+      :type :dimmer,
+      :label "Dimmer"}]}
+   {:offset 2,
+    :type :color,
+    :functions
+    [{:start 0, :end 255, :range :variable, :type :red, :label "Red"}],
+    :color :red}
 ; [...many channels omitted for brevity...]
-;   {:offset 9,
-;    :type :control,
-;    :functions
-;    [{:start 0,
-;      :range :fixed,
-;      :type :no-function,
-;      :label "No function",
-;      :end 127}
-;     {:range :variable,
-;      :label "Sound-active",
-;      :type :sound-active,
-;      :var-label "Sensitivity",
-;      :start 128,
-;      :end 255}]}]}
+   {:offset 9,
+    :type :control,
+    :functions
+    [{:start 0,
+      :range :fixed,
+      :type :no-function,
+      :label "No function",
+      :end 127}
+     {:range :variable,
+      :label "Sound-active",
+      :type :sound-active,
+      :var-label "Sensitivity",
+      :start 128,
+      :end 255}]}]}
 ; -> nil
 ----
 

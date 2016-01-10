@@ -475,8 +475,14 @@ plugged in:
 ```clojure
 (show/add-midi-control-to-master-mapping "slider" 0 7)
 ```
+
 And then the last fader acts as my grand master dimmer, and I can
-quickly get relief from overly bright lights.
+quickly get relief from overly bright lights. (In a real performance
+context, you would want to use
+[this alternate approach](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#automatically-creating-bindings-when-a-device-connects)
+to automatically set up your bindings whenever the controller is
+connected. That way, if someone trips over the controller cable, as
+soon as you plug it back in, you are good to go again.)
 
 > If you have access to an Ableton Push, it is even easier to have
 > [intutive control](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#using-ableton-push)
@@ -488,8 +494,9 @@ quickly get relief from overly bright lights.
 
 ```clojure
 (require '[afterglow.controllers.ableton-push :as push])
-(def controller (push/bind-to-show *show*))
+(def watcher (push/auto-bind *show*))
 ```
+
 Moving on, though... we can change the global color to orange:
 
 ```clojure
@@ -658,7 +665,7 @@ encounter them!
     step can scale the output.
   - [x] All dimmer cues are assigned a master chain, defaulting to the
     grand master if none supplied.
-- [ ] Consider implementing virtual dimmer effects to allow fixtures
+- [x] Consider implementing virtual dimmer effects to allow fixtures
   which lack actual dimmer channels to simulate them and participate
   in the dimmer master chain, as proposed
   [here](https://github.com/brunchboy/afterglow/issues/43).
