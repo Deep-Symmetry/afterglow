@@ -559,7 +559,7 @@ Effects>> in those terms. This can be helpful, for example, when you
 want to fade between a specific direction that is easiest to express
 as a spatial vector, and one that is easiest to express in terms of
 angles. Use
-[build-direction-from-pan-tilt](http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-direction-param-from-pan-tilt)
+http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-direction-param-from-pan-tilt[build-direction-from-pan-tilt]
 to create a normal direction parameter starting from the same pan/tilt
 parameters described above.
 

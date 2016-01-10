@@ -290,17 +290,17 @@ Ableton Push would be bound as follows:
 [source,clojure]
 ----
 (require '[afterglow.controllers.ableton-push :as push])
-(def controller (push/bind-to-show *show*))
+(def controller (push/auto-bind *show*))
 ----
 
-Once this was done, you would see a link menu appear next to the
-scroll diamond, as shown in the above screen image. The link menu
-allows the web interface to be tied to a grid controller, so that each
-is always looking at the same page of cues. Using the scroll arrows on
-either the web interface, or on the controller itself if it has them
-(the Push does), will cause both to scroll simultaneously. This
-provides an excellent additional layer of information about the
-buttons on the physical controller.
+Once this was done, whenever a Push was connected and powered on, you
+would see a link menu appear next to the scroll diamond, as shown in
+the above screen image. The link menu allows the web interface to be
+tied to a grid controller, so that each is always looking at the same
+page of cues. Using the scroll arrows on either the web interface, or
+on the controller itself if it has them (the Push does), will cause
+both to scroll simultaneously. This provides an excellent additional
+layer of information about the buttons on the physical controller.
 
 TIP: Of course, there may be times you want to break this link, for
 example so you could have access to one set of cues on the physical
@@ -362,15 +362,14 @@ Link Pro traffic Afterglow has seen in the last few seconds, and will
 update as players and mixers start and stop sending clock or beat grid
 information.
 
-NOTE: Limitations in the Java MIDI drivers (at least on the Mac)
+NOTE: Limitations in the standard Java MIDI drivers on the Mac
 currently require any MIDI devices, whether real or virtual, to be
 connected when Afterglow first starts in order for them to be visible.
-We may write our own MIDI provider extension to resolve this issue,
-but it will involve a lot of tedious JNI code, and so far we have not
-wanted to delay other aspects of Afterglow to tackle this side
-project. It would be nice if Oracle solved this long-standing issue
-themselves, but they keep postponing it. DJ Link Pro does not suffer
-from such limitations.
+So if you are on a Mac, you will very much want to install
+https://github.com/DerekCook/CoreMidi4J/releases[CoreMIDI4J] as
+discussed on the
+https://github.com/brunchboy/afterglow/wiki/Questions#midi-from-java-on-the-mac[Afterglow
+Wiki].
 
 Once your sync is established, the `Tap Tempo` button changes. If you
 are using MIDI clock to sync the BPM, it becomes a `Tap Beat` button,
@@ -436,7 +435,8 @@ are built in to Afterglow, so you will probably need to create your
 own. The <<fixture_definitions#fixture-definitions,documentation>>
 explains how, and links to existing fixture definitions as examples.
 You can also ask for help on the
-https://github.com/brunchboy/afterglow/wiki/Questions[wiki].
+https://gitter.im/brunchboy/afterglow[Gitter chat] or the
+https://github.com/brunchboy/afterglow/wiki/Questions[Wiki].
 
 At this point you are almost certainly writing enough code that you
 want to save it for later reuse. The
@@ -498,7 +498,7 @@ Similarly, if you have created an awesome new kind of effect, please
 consider a pull request to add it somewhere within the effects
 namespace hierarchy. And if you are just tinkering with something new
 and experimental, please post about it on the
-https://github.com/brunchboy/afterglow/wiki[wiki]!
+https://gitter.im/brunchboy/afterglow[Gitter chat]!
 
 ## License
 

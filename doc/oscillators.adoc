@@ -13,9 +13,10 @@ information tracked by <<metronomes#metronomes,metronomes>> into
 waveforms that can be used to make lights do interesting things. They
 can be related to the beats, bars, or phrases of the metronome, or
 multiples or fractions thereof, and can create
-<<sawtooth-oscillators,sawtooth>>,
-<<triangle-oscillators,triangle>>, <<square-oscillators,square>>, or
-<<sine-oscillators,sine>> waves.
+<<sawtooth-oscillators,sawtooth>>, <<triangle-oscillators,triangle>>,
+<<square-oscillators,square>>, or <<sine-oscillators,sine>> waves, or
+any <<custom-oscillators,custom shape>> you can dream up and code a
+shape function for.
 
 Metronomes keep track of musical time relative to some starting point,
 in terms of beats, bars (by default four beats to a bar), and phrases

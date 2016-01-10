@@ -149,6 +149,12 @@ http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-remove-midi-contro
 Or you can simply disconnect the controller from your system, and
 Afterglow will clean up any mappings that had been assigned to it.
 
+Also be sure to see the section
+<<automatically-creating-bindings-when-a-device-connects,below>>
+that explains how you can arrange to have afterglow automatically call
+the relevant MIDI mapping functions to set up your device whenever it
+is connected.
+
 == Finding Mapping Details
 
 In the all-too likely event you don’t have all your MIDI port names and
@@ -166,9 +172,9 @@ message it receives:
 
 [source,clojure]
 ----
-; -> {:command :control-change, :channel 0, :note 32, :velocity 127,
-;     :device {:name "SLIDER/KNOB",
-;              :description "nanoKONTROL2 SLIDER/KNOB"}}
+{:command :control-change, :channel 0, :note 32, :velocity 127,
+ :device {:name "SLIDER/KNOB",
+          :description "nanoKONTROL2 SLIDER/KNOB"}}
 ----
 
 ____
@@ -180,17 +186,21 @@ If nothing is received for ten seconds, it will give up:
 
 [source,clojure]
 ----
-; -> nil
+nil
 ----
 
-If this happens, remember that you need to have all of your MIDI devices
-hooked up before you start Afterglow, because of limitations in the Java
-MIDI implementation. Try quitting and restarting Afterglow. If that
-doesn’t help, you will need to troubleshoot your MIDI setup.
+If this happens, and you are sure the device is connected, you will
+need to troubleshoot your MIDI setup. If you are on a Mac, and the
+device was not connected when you started Afterglow, be sure that you
+have installed
+https://github.com/DerekCook/CoreMidi4J/releases[CoreMIDI4J] as
+discussed on the
+https://github.com/brunchboy/afterglow/wiki/Questions#midi-from-java-on-the-mac[Afterglow
+Wiki].
 
 NOTE: These examples show how to perform low-level MIDI mapping. Over
 time, you might find that someone has written a rich user interface
-binding for your controller, as is happening for the
+binding for your controller, as has been done for the
 <<mapping_sync#using-ableton-push,Ableton Push>>, which would let you
 jump right in without having to worry about such details. These
 examples can still help explain how your controller's binding works,
@@ -568,11 +578,14 @@ and attach it to the current default show like this:
 [source,clojure]
 ----
 (require '[afterglow.controllers.ableton-push :as push])
-(def controller (push/bind-to-show *show*))
+(def watcher (push/auto-bind *show*))
 ----
 
 You will see a brief startup animation, and Afterglow's Push interface
-will start. Here is an overview:
+will start. (This also arranges for the Push to be re-bound to the
+show if it gets disconnected or powered off and then reappears, which
+is very handy in a performance setting.) Here is an overview of how
+the Push mapping works:
 
 image::assets/PushNoEffects.jpg[Push interface]
 
