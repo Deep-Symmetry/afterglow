@@ -98,8 +98,7 @@ variable `knob-1` to the values 0-360 (the legal hue values):
 
 [source,clojure]
 ----
-(show/add-midi-control-to-var-mapping
-  "Slider" 0 16 :knob-1 :max 360)
+(show/add-midi-control-to-var-mapping "Slider" 0 16 :knob-1 :max 360)
 ----
 
 Then I can create a global color effect based on that variable:
@@ -191,6 +190,48 @@ jump right in without having to worry about such details. These
 examples can still help explain how your controller's binding works,
 or encourage you to write and share a binding for a new controller
 that you happen to have.
+
+== Automatically Creating Bindings When a Device Connects
+
+You can tell Afterglow to watch for a particular device to be
+connected and call a function whenever it is present. This function
+can set up all of the MIDI bindings you want for that device. This is
+convenient because if the device is not there, nothing will happen
+(and there will be no errors), but if it is, the bindings will be set
+up. Even more importantly, in a performance context, if the device is
+accidentally disconnected or powered down, the bindings will be
+reconfigured as soon as it is reconnected.
+
+To do this, set up a function like `map-nano` in the example below
+which creates all the MIDI bindings you want for your device, and then
+call
+http://deepsymmetry.org/afterglow/doc/afterglow.midi.html#var-watch-for[afterglow.midi/watch-for]
+to cause that function to be called whenever a device with a matching
+name or description is connected:
+
+[source,clojure]
+----
+(defn map-nano []
+  (cues/add-midi-control-to-cue-mapping "nano" 0 :control 46 0 6)
+  (show/add-midi-control-to-var-mapping "nano" 0 16 :knob-1 :max 360))
+
+(afterglow.midi/watch-for "nano" map-nano)
+----
+
+TIP: If you want to be able to cancel the watcher later, be sure to
+save the value returned by `watch-for` in a variable. The return value
+is a function which cancels that watcher when you call it.
+
+See the `watch-for`
+http://deepsymmetry.org/afterglow/doc/afterglow.midi.html#var-watch-for[documentation]
+for details about other ways you can configure it, such as adjusting
+how long it waits for the new device to stabilize before calling your
+function, and how to provide another function that gets called to
+clean up when the device is disconnected. You do not need to worry
+about cleaning up ordinary MIDI bindings, since Afterglow
+automatically does that whenever a device is disconnected, but if you
+have set up any of your own state that you would like to remove, you
+can use this mechanism to do so.
 
 == Syncing to MIDI Clock
 
