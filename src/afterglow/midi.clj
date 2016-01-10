@@ -914,6 +914,62 @@
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-name-filter name-filter) "were found."))))
     (swap! aftertouch-mappings #(update-in % [(:device (first result)) (int channel) (int note)] disj f))))
 
+(defn watch-for
+  "Watches for a device whose name or description matches the string
+  or regex pattern supplied for `name-filter`. If it is present when
+  this function is called, or whenever a matching device is connected
+  in the future (as long as none alread was), `found-fn` will be
+  called, with no arguments. This is useful for setting up MIDI
+  mappings to the device whenever it is present. If the device is
+  disconnected and later reconnected, `found-fn` will be called again,
+  so those bindings can be counted on to be present whenver the device
+  is available.
+
+  If there is any cleanup that you need to perform when the device is
+  disconnected, you can pass the optional keyword argument `:lost-fn`
+  along with a function to be called (also with no arguments) whenever
+  a device reported by `found-fn` has disappeared. You do not need to
+  use `:lost-fn` to clean up MIDI bindings created by `found-fn`,
+  because Afterglow automatically cleans up any MIDI bindings for
+  devices which have been disconnected. But if you have your own data
+  structures or state that you want to update, you can use `:lost-fn`
+  to do that.
+
+  In order to give the newly-attached device time to stabilize before
+  trying to send messages to it, `watch-for` waits for a second after
+  it is seen before calling `found-fn`. If your device needs more (or
+  less) time to stabilize, you can pass a number of milliseconds after
+  the optional keyword argument `:sleep-time` to configure this delay.
+
+  The return value of `watch-for` is a function that you can call to
+  cancel the watcher if you no longer need it."
+  [name-filter found-fn & {:keys [lost-fn sleep-time] :or {sleep-time 1000}}]
+  {:pre [(fn? found-fn) (or (nil? lost-fn) (fn? lost-fn)) (number? sleep-time)]}
+  (let [found (atom false)]
+    (letfn [(disconnection-handler []
+              (when lost-fn (lost-fn))
+              (reset! found false))
+            (connection-handler [device]
+              (when (and (seq (filter-devices [device] name-filter)) (compare-and-set! found false true))
+                (timbre/info "watch-for found" (describe-name-filter name-filter))
+                (future
+                  (Thread/sleep sleep-time)
+                  (found-fn))
+                (add-disconnected-device-handler! device disconnection-handler)))
+            (cancel-handler []
+              (remove-new-device-handler! connection-handler))]
+
+      ;; See if the specified device seems to already be connected, and if so, bind to it right away.
+      (when-let [match (first (filter-devices (concat (open-inputs-if-needed!) (open-outputs-if-needed!))
+                                              name-filter))]
+        (connection-handler match))
+
+      ;; Set up to bind when connected in the future
+      (add-new-device-handler! connection-handler)
+
+      ;; Return the function that will cancel this watcher
+      cancel-handler)))
+
 (defn find-midi-out
   "Find a MIDI output whose name matches the specified string or regex
   pattern."
