@@ -1,10 +1,10 @@
-(defproject afterglow "0.1.6-SNAPSHOT"
+(defproject afterglow "0.1.6"
   :description "A live-coding environment for light shows, built on the Open Lighting Architecture, using bits of Overtone."
   :url "https://github.com/brunchboy/afterglow"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :jvm-opts ["-Dapple.awt.UIElement=true"]  ; Suppress dock icon and focus stealing when compiling on a Mac.
-  :dependencies [[org.clojure/clojure "1.8.0-RC4"]
+  :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/core.cache "0.6.4"]
                  [org.clojure/core.async "0.2.374"]
                  [org.clojure/data.json "0.2.6"]
@@ -23,14 +23,14 @@
                                                          com.google.protobuf/protobuf-java]]
                  [com.climate/claypoole "1.1.0"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
-                 [ola-clojure "0.1.3-SNAPSHOT"]
-                 [selmer "0.9.8"]
+                 [ola-clojure "0.1.3"]
+                 [selmer "0.9.9"]
                  [com.evocomputing/colors "1.0.3"]
                  [environ "1.0.1"]
                  [camel-snake-kebab "0.3.2"]
                  [com.taoensso/timbre "4.2.0"]
                  [com.taoensso/tower "3.0.2"]
-                 [markdown-clj "0.9.82"]
+                 [markdown-clj "0.9.85"]
                  [compojure "1.4.0" :exclusions [org.eclipse.jetty/jetty-server
                                                  clj-time]]
                  [ring/ring-defaults "0.1.5"]
@@ -39,8 +39,8 @@
                                                                       org.clojure/tools.reader
                                                                       org.clojure/java.classpath]]
                  [metosin/ring-http-response "0.6.5"]
-                 [prone "0.8.3"]
-                 [buddy "0.8.3"]
+                 [prone "1.0.0"]
+                 [buddy "0.9.0"]
                  [instaparse "1.4.1"]
                  [http-kit "2.1.19"]]
   :main afterglow.core
