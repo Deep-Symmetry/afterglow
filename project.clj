@@ -1,4 +1,4 @@
-(defproject afterglow "0.1.7-SNAPSHOT"
+(defproject afterglow "0.2.0-SNAPSHOT"
   :description "A live-coding environment for light shows, built on the Open Lighting Architecture, using bits of Overtone."
   :url "https://github.com/brunchboy/afterglow"
   :license {:name "Eclipse Public License"

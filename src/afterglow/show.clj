@@ -979,34 +979,6 @@
                          nil)))]
       [cue active])))
 
-(defn add-midi-control-to-cue-mapping
-  "This function was moved
-  to [[afterglow.effects.cues/add-midi-control-to-cue-mapping]] in
-  version 0.1.6 in order to resolve circular dependency issues
-  introduced when adding velocity and aftertouch support. This stub
-  was left behind for backwards compatibility, but will be removed in
-  the next version, so please update your code to find it in its new
-  location."
-  {:deprecated "0.1.6"}
-  [device-filter channel kind note x y & {:keys [feedback-on feedback-off use-velocity? momentary?]
-                                             :or {feedback-on 127 feedback-off 0 momentary? true}}]
-  (require '[afterglow.effects.cues])
-  ((resolve 'afterglow.effects.cues/add-midi-control-to-cue-mapping) device-filter channel kind note x y
-   :feedback-on feedback-on :feedback-off feedback-off :use-velocity? use-velocity? :momentary? momentary?))
-
-(defn remove-midi-control-to-cue-mapping
-"This function was moved
-  to [[afterglow.effects.cues/remove-midi-control-to-cue-mapping]] in
-  version 0.1.6 in order to resolve circular dependency issues
-  introduced when adding velocity and aftertouch support. This stub
-  was left behind for backwards compatibility, but will be removed in
-  the next version, so please update your code to find it in its new
-  location."
-  {:deprecated "0.1.6"}
-  [device-filter channel kind note x y f]
-  (require '[afterglow.effects.cues])
-  ((resolve 'afterglow.effects.cues/remove-midi-control-to-cue-mapping) device-filter channel kind note x y f))
-
 (defn- address-map-internal
   "Helper function which returns a sorted map whose keys are all
   addresses in use in a given universe within a fixture map, and whose

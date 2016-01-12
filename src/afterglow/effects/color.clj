@@ -16,35 +16,6 @@
             [taoensso.timbre.profiling :refer [pspy]])
   (:import (afterglow.effects Assigner Effect)))
 
-(defn find-rgb-heads
-  "In version 0.1.6 this was moved to the `afterglow.channels` namespace,
-  and this stub was left for backwards compatibility, but is deprecated
-  and will be removed in a future release.
-
-  Returns all heads of the supplied fixtures which are capable of mixing
-  RGB color, in other words they have at least a red, green, and blue
-  color channel. If the second argument is present and `true`, also
-  returns heads with color wheels."
-  {:deprecated "0.1.6"}
-  ([fixtures]
-   (find-rgb-heads fixtures false))
-  ([fixtures include-color-wheels?]
-   (channels/find-rgb-heads fixtures include-color-wheels?)))
-
-(defn has-rgb-heads?
-  "In version 0.1.6 this was moved to the `afterglow.channels` namespace,
-  and this stub was left for backwards compatibility, but is deprecated
-  and will be removed in a future release.
-
-  Given a fixture, returns a truthy value if it has any heads capable
-  of mixing RGB color. If the second argument is present and `true`,
-  having a head with a color wheel is good enough."
-  {:deprecated "0.1.6"}
-  ([fixture]
-   (has-rgb-heads? fixture false))
-  ([fixture include-color-wheels?]
-   (channels/has-rgb-heads? fixture include-color-wheels?)))
-
 (defn htp-merge
   "Helper function for assigners that want to use
   highest-takes-priority blending for RGB colors. Returns a color

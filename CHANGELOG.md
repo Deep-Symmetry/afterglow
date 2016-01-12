@@ -11,6 +11,28 @@ This change log follows the conventions of
 ### Changed
 
 - Updated to newly-released Clojure 1.8 for improved performance.
+- Deprecated functions were removed:
+  - `afterglow.effects.color/find-rgb-heads` (instead use `afterglow.channels/find-rgb-heads`)
+  - `afterglow.effects.color/has-rgb-heads?` (instead use `afterglow.channels/has-rgb-heads`)
+  - `afterglow.effects.oscillators/sawtooth-beat` (instead use `sawtooth`)
+  - `afterglow.effects.oscillators/sawtooth-bar` (instead use `sawtooth` with `:interval :bar`)
+  - `afterglow.effects.oscillators/sawtooth-phrase` (instead use `sawtooth` with `:interval :phrase`)
+  - `afterglow.effects.oscillators/triangle-beat` (instead use `triangle`)
+  - `afterglow.effects.oscillators/triangle-bar` (instead use `triangle` with `:interval :bar`)
+  - `afterglow.effects.oscillators/triangle-phrase` (instead use `triangle` with `:interval :phrase`)
+  - `afterglow.effects.oscillators/square-beat` (instead use `square`)
+  - `afterglow.effects.oscillators/square-bar` (instead use `square` with `:interval :bar`)
+  - `afterglow.effects.oscillators/square-phrase` (instead use `square` with `:interval :phrase`)
+  - `afterglow.effects.oscillators/sine-beat` (instead use `sine`)
+  - `afterglow.effects.oscillators/sine-bar` (instead use `sine` with `:interval :bar`)
+  - `afterglow.effects.oscillators/sine-phrase` (instead use `sine` with `:interval :phrase`)
+  - `afterglow.effects.params/build-oscillated-param` (instead use
+  `afterglow.effects.oscillators/build-oscillated-param`)
+  - `afterglow.show/add-midi-control-to-cue-mapping` (instead use
+    `afterglow.effects.cues/add-midi-control-to-cue-mapping`)
+  - `afterglow.show/remove-midi-control-to-cue-mapping` (instead use
+    `afterglow.effects.cues/remove-midi-control-to-cue-mapping`)
+
 
 ### Fixed
 

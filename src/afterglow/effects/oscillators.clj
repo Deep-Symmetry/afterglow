@@ -244,58 +244,6 @@
                    (build-fixed-sawtooth-shape-fn down?))]
     (build-oscillator shape-fn :interval interval :interval-ratio interval-ratio :phase phase)))
 
-(defn sawtooth-beat
-  "In version 0.1.6 this was replaced with the [[sawtooth]] function,
-  and this stub was left for backwards compatibility, but is
-  deprecated and will be removed in a future release.
-
-  Returns an oscillator which generates a sawtooth wave relative to the
-  phase of the current bar. Passing `true` with `:down?` creates an
-  inverse sawtooth wave (ramps downward rather than upward), supplying
-  a value with `:bar-ratio` will run the oscillator at the specified
-  fraction or multiple of a bar, and supplying a `:phase` will offset
-  the oscillator from the underlying metronome phase by that
-  amount. (See the
-  [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#sawtooth-oscillators)
-  for an expanded explanation illustrated with graphs.)"
-  {:deprecated "0.1.6"}
-  [& {:keys [down? beat-ratio phase] :or {down? false beat-ratio 1 phase 0.0}}]
-  (sawtooth :down? down? :interval-ratio beat-ratio :phase phase))
-
-(defn sawtooth-bar
-  "In version 0.1.6 this was replaced with the [[sawtooth]] function,
-  and this stub was left for backwards compatibility, but is
-  deprecated and will be removed in a future release.
-
-  Returns an oscillator which generates a sawtooth wave relative to the phase
-  of the current bar. Passing `true` with `:down?` creates an inverse sawtooth
-  wave (ramps downward rather than upward), supplying a value with
-  `:bar-ratio` will run the oscillator at the specified fraction or
-  multiple of a bar, and supplying a `:phase` will offset the oscillator
-  from the underlying metronome phase by that amount. (See the
-  [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#sawtooth-oscillators)
-  for an expanded explanation illustrated with graphs.)"
-  {:deprecated "0.1.6"}
-  [& {:keys [down? bar-ratio phase] :or {down? false bar-ratio 1 phase 0.0}}]
-  (sawtooth :interval :bar :down? down? :interval-ratio bar-ratio :phase phase))
-
-(defn sawtooth-phrase
-  "In version 0.1.6 this was replaced with the [[sawtooth]] function,
-  and this stub was left for backwards compatibility, but is
-  deprecated and will be removed in a future release.
-
-  Returns an oscillator which generates a sawtooth wave relative to the phase
-  of the current phrase. Passing `true` with `:down?` creates an inverse sawtooth wave
-  (ramps downward rather than upward), supplying a value with
-  `:phrase-ratio` will run the oscillator at the specified fraction or
-  multiple of a phrase, and supplying a `:phase` will offset the
-  oscillator from the underlying metronome phase by that amount. (See the
-  [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#sawtooth-oscillators)
-  for an expanded explanation illustrated with graphs.)"
-  {:deprecated "0.1.6"}
-  [& {:keys [down? phrase-ratio phase] :or {down? false phrase-ratio 1 phase 0.0}}]
-  (sawtooth :interval :phrase :down? down? :interval-ratio phrase-ratio :phase phase))
-
 (defn triangle
   "Returns an oscillator which generates a triangle wave relative to
   the phase of the current beat, bar, or phrase. With no arguments, it
@@ -321,54 +269,6 @@
                       (if (< phase 0.5)
                         (* phase 2.0)
                         (- 2.0 (* phase 2.0)))) :interval interval :interval-ratio interval-ratio :phase phase))
-
-(defn triangle-beat
-  "In version 0.1.6 this was replaced with the [[triangle]] function,
-  and this stub was left for backwards compatibility, but is
-  deprecated and will be removed in a future release.
-
-  Returns an oscillator which generates a triangle wave relative to
-  the phase of the current beat. Supplying a value with `:beat-ratio`
-  will run the oscillator at the specified fraction or multiple of a
-  beat, and supplying a `:phase` will offset the oscillator from the
-  underlying metronome phase by that amount. (See the
-  [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#triangle-oscillators)
-  for an expanded explanation illustrated with graphs.)"
-  {:deprecated "0.1.6"}
-  [& {:keys [beat-ratio phase] :or {beat-ratio 1 phase 0.0}}]
-  (triangle :interval-ratio beat-ratio :phase phase))
-
-(defn triangle-bar
-  "In version 0.1.6 this was replaced with the [[triangle]] function,
-  and this stub was left for backwards compatibility, but is
-  deprecated and will be removed in a future release.
-
-  Returns an oscillator which generates a triangle wave relative to
-  the phase of the current bar. Supplying a value with `:bar-ratio`
-  will run the oscillator at the specified fraction or multiple of a
-  bar, and supplying a `:phase` will offset the oscillator from the
-  underlying metronome phase by that amount. (See the
-  [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#triangle-oscillators)
-  for an expanded explanation illustrated with graphs.)"
-  {:deprecated "0.1.6"}
-  [& {:keys [bar-ratio phase] :or {bar-ratio 1 phase 0.0}}]
-  (triangle :interval :bar :interval-ratio bar-ratio :phase phase))
-
-(defn triangle-phrase
-  "In version 0.1.6 this was replaced with the [[triangle]] function,
-  and this stub was left for backwards compatibility, but is
-  deprecated and will be removed in a future release.
-
-  Returns an oscillator which generates a triangle wave relative to
-  the phase of the current phrase. Supplying a value with
-  `:phrase-ratio` will run the oscillator at the specified fraction or
-  multiple of a phrase, and supplying a `:phase` will offset the
-  oscillator from the underlying metronome phase by that amount. (See the
-  [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#triangle-oscillators)
-  for an expanded explanation illustrated with graphs.)"
-  {:deprecated "0.1.6"}
-  [& {:keys [phrase-ratio phase] :or {phrase-ratio 1 phase 0.0}}]
-  (triangle :interval :phrase :interval-ratio phrase-ratio :phase phase))
 
 (defn- build-fixed-square-shape-fn
   "Returns the shape function for a square wave with a fixed width."
@@ -420,67 +320,6 @@
                    (build-fixed-square-shape-fn width))]
     (build-oscillator shape-fn :interval interval :interval-ratio interval-ratio :phase phase)))
 
-(defn square-beat
-  "In version 0.1.6 this was replaced with the [[square]] function,
-  and this stub was left for backwards compatibility, but is
-  deprecated and will be removed in a future release.
-
-  Returns an oscillator which generates a square wave relative to the
-  phase of the current beat. Specifying a value with `:width` adjusts
-  how much of the time the wave is _on_ (high); the default is `0.5`,
-  lower values cause it to turn off sooner, larger values later. In
-  any case the width must be greater than `0.0` and less than `1.0`.
-  Supplying a value with `:beat-ratio` will run the oscillator at the
-  specified fraction or multiple of a beat, and supplying a `:phase`
-  will offset the oscillator from the underlying metronome phase by
-  that amount. (See the
-  [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#square-oscillators)
-  for an expanded explanation illustrated with graphs.)"
-  {:deprecated "0.1.6"}
-  [& {:keys [width beat-ratio phase] :or {width 0.5 beat-ratio 1 phase 0.0}}]
-  (square :width width :interval-ratio beat-ratio :phase phase))
-
-(defn square-bar
-  "In version 0.1.6 this was replaced with the [[square]] function,
-  and this stub was left for backwards compatibility, but is
-  deprecated and will be removed in a future release.
-
-  Returns an oscillator which generates a square wave relative to the
-  phase of the current bar. Specifying a value with `:width` adjusts
-  how much of the time the wave is _on_ (high); the default is `0.5`,
-  lower values cause it to turn off sooner, larger values later. In
-  any case the width must be greater than `0.0` and less than `1.0`.
-  Supplying a value with `:bar-ratio` will run the oscillator at the
-  specified fraction or multiple of a bar, and supplying a `:phase`
-  will offset the oscillator from the underlying metronome phase by
-  that amount. (See the
-  [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#square-oscillators)
-  for an expanded explanation illustrated with graphs.)"
-  {:deprecated "0.1.6"}
-  [& {:keys [width bar-ratio phase] :or {width 0.5 bar-ratio 1 phase 0.0}}]
-  (square :width width :interval :bar :interval-ratio bar-ratio :phase phase))
-
-(defn square-phrase
-  "In version 0.1.6 this was replaced with the [[square]] function,
-  and this stub was left for backwards compatibility, but is
-  deprecated and will be removed in a future release.
-
-  Returns an oscillator which generates a square wave relative to the
-  phase of the current phrase. Specifying a value with `:width`
-  adjusts how much of the time the wave is _on_ (high); the default is
-  `0.5`, lower values cause it to turn off sooner, larger values
-  later. In any case the width must be greater than `0.0` and less
-  than `1.0`. Supplying a value with `:phrase-ratio` will run the
-  oscillator at the specified fraction or multiple of a phrase, and
-  supplying a `:phase` will offset the oscillator from the underlying
-  metronome phase by that amount. (See the
-  [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#square-oscillators)
-  for an expanded explanation illustrated with graphs.)"
-  {:deprecated "0.1.6"}
-  [& {:keys [width phrase-ratio phase] :or {width 0.5 phrase-ratio 1 phase 0.0}}]
-  (square :width width :interval :phrase :interval-ratio phrase-ratio :phase phase))
-
-
 (defn sine
   "Returns an oscillator which generates a sine wave relative to the
   phase of the current beat, bar, or phrase. With no arguments, it
@@ -508,60 +347,6 @@
                         (let [adjusted-phase (- phase 0.25)]
                           (+ 0.5 (* 0.5 (Math/sin (* two-pi adjusted-phase))))))
                       :interval interval :interval-ratio interval-ratio :phase phase)))
-
-(defn sine-beat
-  "In version 0.1.6 this was replaced with the [[sine]] function,
-  and this stub was left for backwards compatibility, but is
-  deprecated and will be removed in a future release.
-
-  Returns an oscillator which generates a sine wave relative to the
-  phase of the current beat. The wave has value `0.0` at phase `0.0`,
-  rising to `1.0` at phase `0.5`, and returning to `0.0`. Supplying a
-  value with `:beat-ratio` will run the oscillator at the specified
-  fraction or multiple of a beat, and supplying a `:phase` will offset
-  the oscillator from the underlying metronome phase by that amount.
-  (See the
-  [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#sine-oscillators)
-  for an expanded explanation illustrated with graphs.)"
-  {:deprecated "0.1.6"}
-  [& {:keys [beat-ratio phase] :or {beat-ratio 1 phase 0.0}}]
-  (sine :interval-ratio beat-ratio :phase phase))
-
-(defn sine-bar
-  "In version 0.1.6 this was replaced with the [[sine]] function,
-  and this stub was left for backwards compatibility, but is
-  deprecated and will be removed in a future release.
-
-  Returns an oscillator which generates a sine wave relative to the
-  phase of the current bar. The wave has value `0.0` at phase `0.0`,
-  rising to `1.0` at phase `0.5`, and returning to `0.0`. Supplying a
-  value with `:bar-ratio` will run the oscillator at the specified
-  fraction or multiple of a bar, and supplying a `:phase` will offset
-  the oscillator from the underlying metronome phase by that
-  amount. (See the
-  [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#sine-oscillators)
-  for an expanded explanation illustrated with graphs.)"
-  {:deprecated "0.1.6"}
-  [& {:keys [bar-ratio phase] :or {bar-ratio 1 phase 0.0}}]
-  (sine :interval :bar :interval-ratio bar-ratio :phase phase))
-
-(defn sine-phrase
-  "In version 0.1.6 this was replaced with the [[sine]] function,
-  and this stub was left for backwards compatibility, but is
-  deprecated and will be removed in a future release.
-
-  Returns an oscillator which generates a sine wave relative to the
-  phase of the current phrase. The wave has value `0.0` at phase
-  `0.0`, rising to `1.0` at phase `0.5`, and returning to `0.0`.
-  Supplying a value with `:phrase-ratio` will run the oscillator at
-  the specified fraction or multiple of a phrase, and supplying a
-  `:phase` will offset the oscillator from the underlying metronome
-  phase by that amount. (See the
-  [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#sine-oscillators)
-  for an expanded explanation illustrated with graphs.)"
-  {:deprecated "0.1.6"}
-  [& {:keys [phrase-ratio phase] :or {phrase-ratio 1 phase 0.0}}]
-  (sine :interval :phrase :interval-ratio phrase-ratio :phase phase))
 
 (defn- evaluate-oscillator
   "Handles the calculation of an oscillator based on dynamic parameter
