@@ -159,9 +159,9 @@
   []
   {:pre [(some? *show*)]}
   (let [hue-bar (oscillators/build-oscillated-param  ; Spread a rainbow across a bar of music
-                 (oscillators/sawtooth-bar) :max 360)
+                 (oscillators/sawtooth :interval :bar) :max 360)
         desat-beat (oscillators/build-oscillated-param  ; Desaturate a color as a beat progresses
-                    (oscillators/sawtooth-beat :down? true) :max 100)
+                    (oscillators/sawtooth :down? true) :max 100)
         hue-gradient (params/build-spatial-param  ; Spread a rainbow across the light grid
                       (show/all-fixtures)
                       (fn [head] (- (:x head) (:min-x @(:dimensions *show*)))) :max 360)]
@@ -277,50 +277,50 @@
     (ct/set-cue! (:cue-grid *show*) 0 3
                  (cues/cue :dimmers (fn [_] (global-dimmer-effect
                                              (oscillators/build-oscillated-param
-                                              (oscillators/sawtooth-beat :down? true))
+                                              (oscillators/sawtooth :down? true))
                                              :effect-name "All Saw Down Beat"))
                            :color :yellow :end-keys [:ws-dimmers :hex-dimmers :snowball-dimmers]))
     (ct/set-cue! (:cue-grid *show*) 1 3
                  (cues/cue :ws-dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth-beat :down? true))
+                                    (oscillators/build-oscillated-param (oscillators/sawtooth :down? true))
                                     (show/fixtures-named "ws") :effect-name "WS Saw Down Beat"))
                            :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 2 3
                  (cues/cue :hex-dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth-beat :down? true))
+                                    (oscillators/build-oscillated-param (oscillators/sawtooth :down? true))
                                     (show/fixtures-named "hex") :effect-name "Hex Saw Down Beat"))
                            :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 3 3
                  (cues/cue :snowball-dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth-beat :down? true))
+                                    (oscillators/build-oscillated-param (oscillators/sawtooth :down? true))
                                     (show/fixtures-named "snowball") :effect-name "Snowball Saw Down Beat"))
                            :color :orange :end-keys [:dimmers]))
 
     ;; Dimmer oscillator cues: Sawtooth up each beat
     (ct/set-cue! (:cue-grid *show*) 4 3
                  (cues/cue :dimmers (fn [_] (global-dimmer-effect
-                                             (oscillators/build-oscillated-param (oscillators/sawtooth-beat))
+                                             (oscillators/build-oscillated-param (oscillators/sawtooth))
                                              :effect-name "All Saw Up Beat"))
                            :color :yellow :end-keys [:ws-dimmers :hex-dimmers :snowball-dimmers]))
     (ct/set-cue! (:cue-grid *show*) 5 3
                  (cues/cue :ws-dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth-beat))
+                                    (oscillators/build-oscillated-param (oscillators/sawtooth))
                                     (show/fixtures-named "ws") :effect-name "WS Saw Up Beat"))
                            :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 6 3
                  (cues/cue :hex-dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth-beat))
+                                    (oscillators/build-oscillated-param (oscillators/sawtooth))
                                     (show/fixtures-named "hex") :effect-name "Hex Saw Up Beat"))
                            :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 7 3
                  (cues/cue :snowball-dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth-beat))
+                                    (oscillators/build-oscillated-param (oscillators/sawtooth))
                                     (show/fixtures-named "snowball") :effect-name "Snowball Saw Up Beat"))
                            :color :orange :end-keys [:dimmers]))
 
@@ -328,27 +328,27 @@
     (ct/set-cue! (:cue-grid *show*) 0 4
                  (cues/cue :dimmers (fn [_] (global-dimmer-effect
                                              (oscillators/build-oscillated-param
-                                              (oscillators/sawtooth-beat :beat-ratio 2 :down? true))
+                                              (oscillators/sawtooth :interval-ratio 2 :down? true))
                                              :effect-name "All Saw Down 2 Beat"))
                            :color :yellow :end-keys [:ws-dimmers :hex-dimmers :snowball-dimmers]))
     (ct/set-cue! (:cue-grid *show*) 1 4
                  (cues/cue :ws-dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth-beat :beat-ratio 2
+                                    (oscillators/build-oscillated-param (oscillators/sawtooth :interval-ratio 2
                                                                                               :down? true))
                                     (show/fixtures-named "ws") :effect-name "WS Saw Down 2 Beat"))
                            :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 2 4
                  (cues/cue :hex-dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth-beat :beat-ratio 2
+                                    (oscillators/build-oscillated-param (oscillators/sawtooth :interval-ratio 2
                                                                                               :down? true))
                                     (show/fixtures-named "hex") :effect-name "Hex Saw Down 2 Beat"))
                            :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 3 4
                  (cues/cue :snowball-dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth-beat :beat-ratio 2
+                                    (oscillators/build-oscillated-param (oscillators/sawtooth :interval-ratio 2
                                                                                               :down? true))
                                     (show/fixtures-named "snowball") :effect-name "Snowball Saw Down 2 Beat"))
                            :color :orange :end-keys [:dimmers]))
@@ -357,74 +357,75 @@
     (ct/set-cue! (:cue-grid *show*) 4 4
                  (cues/cue :dimmers (fn [_] (global-dimmer-effect
                                              (oscillators/build-oscillated-param
-                                              (oscillators/sawtooth-beat :beat-ratio 2))
+                                              (oscillators/sawtooth :interval-ratio 2))
                                              :effect-name "All Saw Up 2 Beat"))
                            :color :yellow :end-keys [:ws-dimmers :hex-dimmers :snowball-dimmers]))
     (ct/set-cue! (:cue-grid *show*) 5 4
                  (cues/cue :ws-dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth-beat :beat-ratio 2))
+                                    (oscillators/build-oscillated-param (oscillators/sawtooth :interval-ratio 2))
                                     (show/fixtures-named "ws") :effect-name "WS Saw Up 2 Beat"))
                            :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 6 4
                  (cues/cue :hex-dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth-beat :beat-ratio 2))
+                                    (oscillators/build-oscillated-param (oscillators/sawtooth :interval-ratio 2))
                                     (show/fixtures-named "hex") :effect-name "Hex Saw Up 2 Beat"))
                            :color :orange :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 7 4
                  (cues/cue :snowball-dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth-beat :beat-ratio 2))
+                                    (oscillators/build-oscillated-param (oscillators/sawtooth :interval-ratio 2))
                                     (show/fixtures-named "snowball") :effect-name "Snowball Saw Up 2 Beat"))
                            :color :orange :end-keys [:dimmers]))
 
     ;; Dimmer oscillator cues: Sine over a bar
     (ct/set-cue! (:cue-grid *show*) 0 5
                  (cues/cue :dimmers (fn [_] (global-dimmer-effect
-                                             (oscillators/build-oscillated-param (oscillators/sine-bar) :min 1)
+                                             (oscillators/build-oscillated-param (oscillators/sine :interval :bar)
+                                                                                 :min 1)
                                              :effect-name "All Sine Bar"))
                            :color :cyan :end-keys [:ws-dimmers :hex-dimmers :snowball-dimmers]))
     (ct/set-cue! (:cue-grid *show*) 1 5
                  (cues/cue :ws-dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sine-bar) :min 1)
+                                    (oscillators/build-oscillated-param (oscillators/sine :interval :bar) :min 1)
                                     (show/fixtures-named "ws") :effect-name "WS Sine Bar"))
                            :color :blue :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 2 5
                  (cues/cue :hex-dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sine-bar) :min 1)
+                                    (oscillators/build-oscillated-param (oscillators/sine :interval :bar) :min 1)
                                     (show/fixtures-named "hex") :effect-name "Hex Sine Bar"))
                            :color :blue :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 3 5
                  (cues/cue :snowball-dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sine-bar) :min 1)
+                                    (oscillators/build-oscillated-param (oscillators/sine :interval :bar) :min 1)
                                     (show/fixtures-named "snowball") :effect-name "Snowball Sine Bar"))
                            :color :blue :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 4 5
                  (cues/cue :dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/triangle-bar) :min 1)
+                                    (oscillators/build-oscillated-param (oscillators/triangle :interval :bar) :min 1)
                                     (show/all-fixtures) :effect-name "All Triangle Bar"))
                            :color :purple :end-keys [:ws-dimmers :hex-dimmers :snowball-dimmers]))
     (ct/set-cue! (:cue-grid *show*) 5 5
                  (cues/cue :ws-dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/triangle-bar) :min 1)
+                                    (oscillators/build-oscillated-param (oscillators/triangle :interval :bar) :min 1)
                                     (show/fixtures-named "ws") :effect-name "WS Triangle Bar"))
                            :color :violet :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 6 5
                  (cues/cue :hex-dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/triangle-bar) :min 1)
+                                    (oscillators/build-oscillated-param (oscillators/triangle :interval :bar) :min 1)
                                     (show/fixtures-named "hex") :effect-name "Hex Triangle Bar"))
                            :color :violet :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 7 5
                  (cues/cue :snowball-dimmers
                            (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/triangle-bar) :min 1)
+                                    (oscillators/build-oscillated-param (oscillators/triangle :interval :bar) :min 1)
                                     (show/fixtures-named "snowball") :effect-name "Snowball Triangle Bar"))
                            :color :violet :end-keys [:dimmers]))
 
