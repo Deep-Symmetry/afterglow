@@ -1,10 +1,10 @@
-(defproject afterglow "0.1.6"
+(defproject afterglow "0.1.7-SNAPSHOT"
   :description "A live-coding environment for light shows, built on the Open Lighting Architecture, using bits of Overtone."
   :url "https://github.com/brunchboy/afterglow"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :jvm-opts ["-Dapple.awt.UIElement=true"]  ; Suppress dock icon and focus stealing when compiling on a Mac.
-  :dependencies [[org.clojure/clojure "1.7.0"]
+  :dependencies [[org.clojure/clojure "1.8.0-RC5"]
                  [org.clojure/core.cache "0.6.4"]
                  [org.clojure/core.async "0.2.374"]
                  [org.clojure/data.json "0.2.6"]
@@ -23,7 +23,7 @@
                                                          com.google.protobuf/protobuf-java]]
                  [com.climate/claypoole "1.1.0"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
-                 [ola-clojure "0.1.3"]
+                 [ola-clojure "0.1.4-SNAPSHOT"]
                  [selmer "0.9.9"]
                  [com.evocomputing/colors "1.0.3"]
                  [environ "1.0.1"]
