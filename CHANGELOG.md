@@ -8,6 +8,16 @@ This change log follows the conventions of
 
 ### Added
 
+### Changed
+
+- Updated to newly-released Clojure 1.8 for improved performance.
+
+### Fixed
+
+## [0.1.6] - 2016-01-11
+
+### Added
+
 - Support for [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J),
   to preferentially use MIDI devices returned by this new lightweight
   open-source Java MIDI service provider implementation for Mac OS X.
@@ -118,7 +128,7 @@ This change log follows the conventions of
   caused by the protocol definitions in `rhythm.clj`), were cleaned
   up.
 
-## [0.1.5] - 2015-01-25
+## [0.1.5] - 2015-11-25
 
 ### Added
 
@@ -293,7 +303,8 @@ This change log follows the conventions of
 - Initial Public Release
 
 
-[unreleased]: https://github.com/brunchboy/afterglow/compare/v0.1.5...HEAD
+[unreleased]: https://github.com/brunchboy/afterglow/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/brunchboy/afterglow/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/brunchboy/afterglow/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/brunchboy/afterglow/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/brunchboy/afterglow/compare/v0.1.2...v0.1.3
