@@ -347,11 +347,14 @@
   representing the opened inputs."
   []
   (ensure-threads-running)
-  (doseq [input (filter (create-midi-port-filter) (midi/midi-sources))]
-    (when-not (get @midi-inputs (:device input))
-      (let [connected (connect-midi-in input)]
-        (doseq [handler @new-device-handlers]
-          (handler connected)))))
+  ;; Don't rescan in an MMJ environment because its device objects are different on each scan,
+  ;; and the midi environment can't change under MMJ anyway.
+  (when (or (empty? @midi-inputs) (not mac?) (not (mmj-installed?)))
+    (doseq [input (filter (create-midi-port-filter) (midi/midi-sources))]
+      (when-not (get @midi-inputs (:device input))
+        (let [connected (connect-midi-in input)]
+          (doseq [handler @new-device-handlers]
+            (handler connected))))))
   (vals @midi-inputs))
 
 (defn open-outputs-if-needed!
@@ -360,11 +363,14 @@
   representing the opened outputs."
   []
   (ensure-threads-running)
-  (doseq [output (filter (create-midi-port-filter) (midi/midi-sinks))]
-    (when-not (get @midi-outputs (:device output))
-      (let [connected (connect-midi-out output)]
-        (doseq [handler @new-device-handlers]
-          (handler connected)))))
+  ;; Don't rescan in an MMJ environment because its device objects are different on each scan,
+  ;; and the midi environment can't change under MMJ anyway.
+  (when (or (empty? @midi-outputs) (not mac?) (not (mmj-installed?)))
+    (doseq [output (filter (create-midi-port-filter) (midi/midi-sinks))]
+      (when-not (get @midi-outputs (:device output))
+        (let [connected (connect-midi-out output)]
+          (doseq [handler @new-device-handlers]
+            (handler connected))))))
   (vals @midi-outputs))
 
 (defn- lost-midi-in
@@ -542,17 +548,26 @@
 (defn- start-scan-thread
   "If there is no existing value in `old-thread`, Checks
   whether [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J) is
-  installed, and if so, registers our notification handler to let us
-  know when the MIDI environment changes, and returns the value
-  `:environment-changed`. Otherwise creates, starts, and returns a
-  thread to periodically scan for such changes."
+  installed, and if so, register our notification handler to let us
+  know when the MIDI environment changes, and return the value
+  `:environment-changed`. If, on the other hand, MMJ is installed, we
+  are in a context where the environment cannot change, and if we try
+  to close devices, the VM will crash, so we simply return the value
+  `:stop`. Otherwise we create, start, and return a thread to
+  periodically scan for such changes."
   [old-thread]
   (or old-thread
-      (if (clojure.reflect/resolve-class (.getContextClassLoader (Thread/currentThread))
-                                         'uk.co.xfactorylibrarians.coremidi4j.CoreMidiNotification)
+      (cond
+        (clojure.reflect/resolve-class (.getContextClassLoader (Thread/currentThread))
+                                       'uk.co.xfactorylibrarians.coremidi4j.CoreMidiNotification)
         (do (require '[afterglow.coremidi4j])  ; Can use proactive change notification
             ((resolve 'afterglow.coremidi4j/add-environment-change-handler) environment-changed)
             :environment-changed)
+
+        (and (mac?) (mmj-installed?))
+        :stop
+
+        :else
         (doto (Thread. periodic-scan-handler "MIDI environment change scanner")  ; Need to poll
           (.setDaemon true)
           (.start)))))
