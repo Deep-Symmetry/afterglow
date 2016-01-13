@@ -548,21 +548,22 @@
 (defn- start-scan-thread
   "If there is no existing value in `old-thread`, Checks
   whether [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J) is
-  installed, and if so, register our notification handler to let us
-  know when the MIDI environment changes, and return the value
-  `:environment-changed`. If, on the other hand, MMJ is installed, we
-  are in a context where the environment cannot change, and if we try
-  to close devices, the VM will crash, so we simply return the value
-  `:stop`. Otherwise we create, start, and return a thread to
-  periodically scan for such changes."
+  installed and working, and if so, register our notification handler
+  to let us know when the MIDI environment changes, and return the
+  value `:environment-changed`. If, on the other hand, MMJ is
+  installed, we are in a context where the environment cannot change,
+  and if we try to close devices, the VM will crash, so we simply
+  return the value `:stop`. Otherwise we create, start, and return a
+  thread to periodically scan for such changes."
   [old-thread]
   (or old-thread
       (cond
-        (clojure.reflect/resolve-class (.getContextClassLoader (Thread/currentThread))
-                                       'uk.co.xfactorylibrarians.coremidi4j.CoreMidiNotification)
-        (do (require '[afterglow.coremidi4j])  ; Can use proactive change notification
-            ((resolve 'afterglow.coremidi4j/add-environment-change-handler) environment-changed)
-            :environment-changed)
+        (and (clojure.reflect/resolve-class (.getContextClassLoader (Thread/currentThread))
+                                            'uk.co.xfactorylibrarians.coremidi4j.CoreMidiNotification)
+             ;; It's safe to load the namespace; see if the library can give us proactive notifications
+             (do (require '[afterglow.coremidi4j])
+                 ((resolve 'afterglow.coremidi4j/add-environment-change-handler) environment-changed)))
+        :environment-changed
 
         (and (mac?) (mmj-installed?))
         :stop
