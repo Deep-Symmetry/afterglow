@@ -9,7 +9,7 @@
   (:import [java.io InputStream]
            [java.util.concurrent LinkedBlockingDeque]
            [java.util.regex Pattern]
-           [javax.sound.midi MidiDevice MidiDevice$Info]))
+           [javax.sound.midi MidiDevice MidiDevice$Info MidiUnavailableException]))
 
 (def ^:private max-clock-intervals
   "How many MIDI clock pulses and interval averages should be kept
@@ -49,11 +49,11 @@
   midi-outputs (atom {}))
 
 (defonce ^{:private true
-          :doc "Functions to be called when a new device appears in
-          the MIDI environment. They will be passed a single argument,
-          the `:midi-device` map from `overtone.midi` representing the
-          new device."}
-  new-device-handlers (atom #{}))
+           :doc "Functions to be called when a new device appears in
+  the MIDI environment. They will be passed a single argument, the
+  `:midi-device` map from `overtone.midi` representing the new
+  device."} new-device-handlers
+  (atom #{}))
 
 ;; Originally I was using the `:device`, which worked fine with CoreMIDI4J, but turned out
 ;; to be a different object every time the standard MIDI SPI was asked to enumerate devices.
@@ -90,7 +90,7 @@
   (swap! new-device-handlers disj f))
 
 (defonce ^{:private true
-          :doc "Functions to be called when a device disappears from
+           :doc "Functions to be called when a device disappears from
   the MIDI environment. Keys are the `javax.sound.midi.MidiDevice`
   whose departure is of interest, and values are a set of functions to
   be called if and when that device ceases to exist. They will be
@@ -309,23 +309,23 @@
   * Otherwise, the filter accepts all ports."
   (delay
    (cond
-    (and (mac?) (cm4j-installed?))
-    cm4j-device?  ;; Only use devices provided by CoreMIDI4J if it is installed.
+     (and (mac?) (cm4j-installed?))
+     cm4j-device?  ;; Only use devices provided by CoreMIDI4J if it is installed.
 
-    (and (mac?) (mmj-installed?))
-    (fn [device]
-      (let [mmj-descriptions (set (map :description (filter mmj-device? (overtone.midi/midi-sources))))]
-        (or (mmj-device? device)
-            ;; MMJ returns devices whose descriptions match the names of the
-            ;; broken devices returned by the broken Java MIDI implementation.
-            ;; But it does not wrap all devices, e.g. the Traktor Virtual Output,
-            ;; so we need to only screen out devices which are supported.
-            ;; MMJ support is only left in place to support Java 6 environments,
-            ;; in particular Max/MSP, where CoreMIDI4J is not available.
-            (not (mmj-descriptions (:name device))))))
+     (and (mac?) (mmj-installed?))
+     (fn [device]
+       (let [mmj-descriptions (set (map :description (filter mmj-device? (overtone.midi/midi-sources))))]
+         (or (mmj-device? device)
+             ;; MMJ returns devices whose descriptions match the names of the
+             ;; broken devices returned by the broken Java MIDI implementation.
+             ;; But it does not wrap all devices, e.g. the Traktor Virtual Output,
+             ;; so we need to only screen out devices which are supported.
+             ;; MMJ support is only left in place to support Java 6 environments,
+             ;; in particular Max/MSP, where CoreMIDI4J is not available.
+             (not (mmj-descriptions (:name device))))))
 
-    :else
-    identity)))
+     :else
+     identity)))
 
 (defn- incoming-message-handler
   "Attached to all midi input devices we manage. Puts the message on a
@@ -383,6 +383,7 @@
           (let [connected (connect-midi-in input)]
             (doseq [handler @new-device-handlers]
               (handler connected)))
+          (catch MidiUnavailableException e)  ; If we can't have it, give up gracefully
           (catch Throwable t
             (timbre/error t "Unable to connect MIDI input" input))))))
   (vals @midi-inputs))
@@ -402,6 +403,7 @@
           (let [connected (connect-midi-out output)]
                (doseq [handler @new-device-handlers]
                  (handler connected)))
+          (catch MidiUnavailableException e)  ; If we can't have it, give up gracefully
           (catch Throwable t
             (timbre/error t "Unable to connect MIDI output" output))))))
   (vals @midi-outputs))
