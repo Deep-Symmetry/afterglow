@@ -6,8 +6,10 @@
             [overtone.at-at :refer [now]]
             [overtone.midi :as midi]
             [taoensso.timbre :as timbre])
-  (:import [java.util.concurrent LinkedBlockingDeque]
-           [java.util.regex Pattern]))
+  (:import [java.io InputStream]
+           [java.util.concurrent LinkedBlockingDeque]
+           [java.util.regex Pattern]
+           [javax.sound.midi MidiDevice MidiDevice$Info]))
 
 (def ^:private max-clock-intervals
   "How many MIDI clock pulses and interval averages should be kept
@@ -53,6 +55,23 @@
           new device."}
   new-device-handlers (atom #{}))
 
+;; Originally I was using the `:device`, which worked fine with CoreMIDI4J, but turned out
+;; to be a different object every time the standard MIDI SPI was asked to enumerate devices.
+;; I then thought I would be reduced to using something like a tuple of the name and description
+;; for other SPIs, but did not want to do that with CoreMIDI4J because I knew that device names
+;; and descriptions are not necessarily unique in Core MIDI. Now it looks like using the :info
+;; object might be safe everywhere, but I am leaving this as a function which can vary by the
+;; environment in which Afterglow finds itself, in case that turns out to fail somewhere.
+(def midi-device-key
+  "Contains a function which returns the key by which an overtone.midi
+  `:midi-device` map should be indexed in a map. This must be a
+  value which is unique to each device, and stable over time as long
+  as that device is present in the MIDI environment. The first time
+  `midi-device-key` is dereferenced, the function is created. The same
+  function is returned whenever it is dereferenced in the future."
+  (delay
+   :info))
+
 (defn add-new-device-handler!
   "Add a function to be called whenever a new device appears in the
   MIDI environment. It will be passed a single argument, the
@@ -87,7 +106,7 @@
   performed on another thread."
   [device f]
   {:pre [(= (type device) :midi-device) (fn? f)]}
-  (swap! disconnected-device-handlers #(update-in % [(:device device)] clojure.set/union #{f})))
+  (swap! disconnected-device-handlers #(update-in % [(@midi-device-key device)] clojure.set/union #{f})))
 
 (defn remove-disconnected-device-handler!
   "No longer call the specified function if specified device
@@ -96,7 +115,7 @@
   removal is no longer of interest."
   [device f]
   {:pre [(= (type device) :midi-device) (fn? f)]}
-  (swap! disconnected-device-handlers #(update-in % [(:device device)] disj f)))
+  (swap! disconnected-device-handlers #(update-in % [(@midi-device-key device)] disj f)))
 
 (defonce ^{:private true
            :doc "The metronomes which are being synced to MIDI clock
@@ -159,7 +178,7 @@
   clock message. Checks whether there are any metronomes being synced
   to that device, and if so, passes along the event."
   [msg]
-  (doseq [handler (vals (get @synced-metronomes (:device (:device msg))))]
+  (doseq [handler (vals (get @synced-metronomes (@midi-device-key (:device msg))))]
     (handler msg)))
 
 (defn- cc-message-handler
@@ -168,7 +187,7 @@
   as for launching cues or mapping show variables) attached to it, and
   if so, calls them."
   [msg]
-  (doseq [handler (get-in @control-mappings [(:device (:device msg)) (:channel msg) (:note msg)])]
+  (doseq [handler (get-in @control-mappings [(@midi-device-key (:device msg)) (:channel msg) (:note msg)])]
     (handler msg)))
 
 (defn- note-message-handler
@@ -177,7 +196,7 @@
   launching cues or mapping show variables) attached to it, and if so,
   calls them."
   [msg]
-  (doseq [handler (get-in @note-mappings [(:device (:device msg)) (:channel msg) (:note msg)])]
+  (doseq [handler (get-in @note-mappings [(@midi-device-key (:device msg)) (:channel msg) (:note msg)])]
     (handler msg)))
 
 (defn- aftertouch-message-handler
@@ -185,7 +204,7 @@
   aftertouch (polyphonic key pressure) message. Checks whether there
   are any handlers attached to it, and if so, calls them."
   [msg]
-  (doseq [handler (get-in @aftertouch-mappings [(:device (:device msg)) (:channel msg) (:note msg)])]
+  (doseq [handler (get-in @aftertouch-mappings [(@midi-device-key (:device msg)) (:channel msg) (:note msg)])]
     (handler msg)))
 
 (defonce
@@ -211,23 +230,23 @@
   from the Afterglow Traktor controller mapping, providing beat grid
   information. If so, makes a note of that fact so the clock source
   can be reported as offering this extra feature."
-  [msg device]
+  [msg device-key]
   (when (= (:command msg) :control-change)
     (let [controller (:note msg)]
       (cond (and (zero? controller) (< (:velocity msg) 5))
-            (swap! clock-sources assoc-in [device :master] (:velocity msg))
+            (swap! clock-sources assoc-in [device-key :master] (:velocity msg))
 
-            (= controller (get-in @clock-sources [device :master]))
-            (swap! clock-sources assoc-in [device :traktor-beat-phase] (now))))))
+            (= controller (get-in @clock-sources [device-key :master]))
+            (swap! clock-sources assoc-in [device-key :traktor-beat-phase] (now))))))
 
 (defn- watch-for-clock-sources
   "Examines an incoming MIDI message to see if its source is a
   potential source for MIDI clock synchronization."
   [msg]
-  (let [device (:device (:device msg))]
+  (let [device-key (@midi-device-key (:device msg))]
     (when (= (:status msg) :timing-clock)
-      (swap! clock-sources assoc-in [device :timing-clock] (now)))
-    (check-for-traktor-beat-phase msg device)))
+      (swap! clock-sources assoc-in [device-key :timing-clock] (now)))
+    (check-for-traktor-beat-phase msg device-key)))
 
 (defonce ^:private ^{:doc "The queue used to hand MIDI events from the
   extension thread to our world, since there seem to be classloader
@@ -272,16 +291,24 @@
   []
   (some cm4j-device? (overtone.midi/midi-devices)))
 
-(defn create-midi-port-filter
-  "Return a filter which selects midi inputs and outputs we actually
-  want to use. If this is a Mac, and the CoreMIDI4J MIDI extension is
-  present, create a filter which will accept only its devices.
-  Otherwise, if the Humatic MIDI extension has been installed, create
-  a filter which will accept only its versions of ports which it
-  offers in parallel with the standard implementation. Otherwise,
-  return a filter which accepts all ports."
-  []
-  (cond
+(def midi-port-filter
+  "Contains a filter which selects midi inputs and outputs we actually
+  want to use. The first time the value is dereferenced, a filter
+  appropriate to the current environment will be created, and that
+  filter will be returned whenever the value is dereferenced again.
+
+  * If this is a Mac, and the CoreMIDI4J MIDI extension is present and
+    working, the filter will accept only its devices.
+
+  * Otherwise, if the Humatic MMJ extension is operating (also on a
+    Mac), the filter which will accept only MMJ's versions of ports
+    which it offers in parallel with the standard implementation, but
+    will accept the standard SPI's implementation of ports which MMJ
+    does not offer.
+
+  * Otherwise, the filter accepts all ports."
+  (delay
+   (cond
     (and (mac?) (cm4j-installed?))
     cm4j-device?  ;; Only use devices provided by CoreMIDI4J if it is installed.
 
@@ -298,7 +325,7 @@
             (not (mmj-descriptions (:name device))))))
 
     :else
-    identity))
+    identity)))
 
 (defn- incoming-message-handler
   "Attached to all midi input devices we manage. Puts the message on a
@@ -316,7 +343,7 @@
   [device]
   (let [opened (midi/midi-in device)]
     (timbre/info "Opened MIDI input:" opened)
-    (swap! midi-inputs assoc (:device opened) opened)
+    (swap! midi-inputs assoc (@midi-device-key opened) opened)
     (midi/midi-handle-events opened incoming-message-handler)
     opened))
 
@@ -325,7 +352,7 @@
   [device]
   (let [opened (midi/midi-out device)]
     (timbre/info "Opened MIDI output:" opened)
-    (swap! midi-outputs assoc (:device opened) opened)
+    (swap! midi-outputs assoc (@midi-device-key opened) opened)
     opened))
 
 (defn- environment-changed
@@ -350,8 +377,8 @@
   ;; Don't rescan in an MMJ environment because its device objects are different on each scan,
   ;; and the midi environment can't change under MMJ anyway.
   (when (or (empty? @midi-inputs) (not mac?) (not (mmj-installed?)))
-    (doseq [input (filter (create-midi-port-filter) (midi/midi-sources))]
-      (when-not (get @midi-inputs (:device input))
+    (doseq [input (filter @midi-port-filter (midi/midi-sources))]
+      (when-not (get @midi-inputs (@midi-device-key input))
         (let [connected (connect-midi-in input)]
           (doseq [handler @new-device-handlers]
             (handler connected))))))
@@ -366,8 +393,8 @@
   ;; Don't rescan in an MMJ environment because its device objects are different on each scan,
   ;; and the midi environment can't change under MMJ anyway.
   (when (or (empty? @midi-outputs) (not mac?) (not (mmj-installed?)))
-    (doseq [output (filter (create-midi-port-filter) (midi/midi-sinks))]
-      (when-not (get @midi-outputs (:device output))
+    (doseq [output (filter @midi-port-filter (midi/midi-sinks))]
+      (when-not (get @midi-outputs (@midi-device-key output))
         (let [connected (connect-midi-out output)]
           (doseq [handler @new-device-handlers]
             (handler connected))))))
@@ -379,15 +406,15 @@
   metronomes, handlers, etc. and closes it."
   [vanished]
   {:pre [(= (type vanished) :midi-device)]}
-  (let [device (:device vanished)]
-    (swap! midi-inputs dissoc device)
-    (swap! synced-metronomes dissoc device)
-    (swap! control-mappings dissoc device)
-    (swap! note-mappings dissoc device)
-    (swap! aftertouch-mappings dissoc device)
-    (swap! clock-sources dissoc device)
-    (swap! disconnected-device-handlers dissoc device)
-    (.close device))
+  (let [device-key (@midi-device-key vanished)]
+    (swap! midi-inputs dissoc device-key)
+    (swap! synced-metronomes dissoc device-key)
+    (swap! control-mappings dissoc device-key)
+    (swap! note-mappings dissoc device-key)
+    (swap! aftertouch-mappings dissoc device-key)
+    (swap! clock-sources dissoc device-key)
+    (swap! disconnected-device-handlers dissoc device-key)
+    (.close (:device vanished)))
   (timbre/info "Lost contact with MIDI input: " vanished))
 
 (defn- lost-midi-out
@@ -396,10 +423,10 @@
   it."
   [vanished]
   {:pre [(= (type vanished) :midi-device)]}
-  (let [device (:device vanished)]
-    (swap! midi-outputs dissoc device)
-    (swap! disconnected-device-handlers dissoc device)
-    (.close device))
+  (let [device-key (@midi-device-key vanished)]
+    (swap! midi-outputs dissoc device-key)
+    (swap! disconnected-device-handlers dissoc device-key)
+    (.close (:device vanished)))
   (timbre/info "Lost contact with MIDI output: " vanished))
 
 (defn scan-midi-environment
@@ -413,17 +440,16 @@
   as needed to keep up with future changes in the MIDI environment."
   []
   ;; Clean up devices which are no longer present, notifying registered listeners of their departure.
-  (let [f (create-midi-port-filter)]
-    (doseq [device (clojure.set/difference (set (keys @midi-inputs))
-                                           (set (map :device (filter f (midi/midi-sources)))))]
-      (doseq [handler (get @disconnected-device-handlers device)]
-        (handler))
-      (lost-midi-in (get @midi-inputs device)))
-    (doseq [device (clojure.set/difference (set (keys @midi-outputs))
-                                           (set (map :device (filter f (midi/midi-sinks)))))]
-      (doseq [handler (get @disconnected-device-handlers device)]
-        (handler))
-      (lost-midi-out (get @midi-outputs device))))
+  (doseq [device (clojure.set/difference (set (keys @midi-inputs))
+                                         (set (map @midi-device-key (filter @midi-port-filter (midi/midi-sources)))))]
+    (doseq [handler (get @disconnected-device-handlers device)]
+      (handler))
+    (lost-midi-in (get @midi-inputs device)))
+  (doseq [device (clojure.set/difference (set (keys @midi-outputs))
+                                         (set (map @midi-device-key (filter @midi-port-filter (midi/midi-sinks)))))]
+    (doseq [handler (get @disconnected-device-handlers device)]
+      (handler))
+    (lost-midi-out (get @midi-outputs device)))
 
   ;; Open and configure any newly available devices.
   (open-inputs-if-needed!)
@@ -709,12 +735,12 @@
 (defn- add-synced-metronome
   [midi-clock-source metronome f]
   {:pre [(= (type midi-clock-source) :midi-device) (satisfies? rhythm/IMetronome metronome) (fn? f)]}
-  (swap! synced-metronomes #(assoc-in % [(:device midi-clock-source) metronome] f)))
+  (swap! synced-metronomes #(assoc-in % [(@midi-device-key midi-clock-source) metronome] f)))
 
 (defn- remove-synced-metronome
   [midi-clock-source metronome]
   {:pre [(= (type midi-clock-source) :midi-device)]}
-  (swap! synced-metronomes #(update-in % [(:device midi-clock-source)] dissoc metronome)))
+  (swap! synced-metronomes #(update-in % [(@midi-device-key midi-clock-source)] dissoc metronome)))
 
 (defn- traktor-beat-phase-current
   "Checks whether our clock is being synced to ordinary MIDI clock, or
@@ -766,11 +792,12 @@
     (instance? Pattern device-filter)
     (str "with a name or description matching " (with-out-str (clojure.pprint/write-out device-filter)) " ")
 
-    (instance? javax.sound.midi.MidiDevice device-filter)
+    (or (instance? javax.sound.midi.MidiDevice device-filter)
+        (instance? javax.sound.midi.MidiDevice$Info device-filter))
     (format "provided by %s " device-filter)
 
     (= (type device-filter) :midi-device)
-    (describe-device-filter (:device device-filter))
+    (describe-device-filter (@midi-device-key device-filter))
 
     (fn? device-filter)
     (format "returning true when passed to %s " device-filter)
@@ -799,6 +826,9 @@
   * A `javax.sound.midi.MidiDevice` instance, which will match only
   the device that it implements.
 
+  * A `javax.sound.midi.MidiDevice.Info` instance, which will match
+  only the device it describes.
+
   * A `:midi-device` map, which will match only itself.
 
   * A function, which will be called with each device, and the device
@@ -813,8 +843,11 @@
     (instance? javax.sound.midi.MidiDevice device-filter)
     (filter #(= (:device %) device-filter) devices)
 
+    (instance? javax.sound.midi.MidiDevice$Info device-filter)
+    (filter #(= (:info %) device-filter) devices)
+
     (= (type device-filter) :midi-device)
-    (filter #(= (:device %) (:device device-filter)) devices)
+    (filter #(= (@midi-device-key %) (@midi-device-key device-filter)) devices)
 
     (fn? device-filter)
     (filter device-filter devices)
@@ -867,7 +900,8 @@
        1 (fn [^afterglow.rhythm.Metronome metronome]
            (let [sync-handler (ClockSync. metronome (first result) (ref (ring-buffer max-clock-intervals))
                                           (ref (ring-buffer max-clock-intervals))
-                                          (ref {:master (get-in @clock-sources [(:device (first result)) :master])}))]
+                                          (ref {:master (get-in @clock-sources [(@midi-device-key (first result))
+                                                                                :master])}))]
              (sync-start sync-handler)
              sync-handler))
 
@@ -912,7 +946,7 @@
   (let [result (filter-devices device-filter (open-inputs-if-needed!))]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
-    (swap! control-mappings #(update-in % [(:device (first result)) (int channel) (int control-number)]
+    (swap! control-mappings #(update-in % [(@midi-device-key (first result)) (int channel) (int control-number)]
                                         clojure.set/union #{f}))))
 
 (defn remove-control-mapping
@@ -925,7 +959,8 @@
   (let [result (filter-devices device-filter (open-inputs-if-needed!))]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
-    (swap! control-mappings #(update-in % [(:device (first result)) (int channel) (int control-number)] disj f))))
+    (swap! control-mappings #(update-in % [(@midi-device-key (first result)) (int channel) (int control-number)]
+                                        disj f))))
 
 (defn add-note-mapping
   "Register a handler function `f` to be called whenever a MIDI note
@@ -940,7 +975,7 @@
   (let [result (filter-devices device-filter (open-inputs-if-needed!))]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
-    (swap! note-mappings #(update-in % [(:device (first result)) (int channel) (int note)]
+    (swap! note-mappings #(update-in % [(@midi-device-key (first result)) (int channel) (int note)]
                                      clojure.set/union #{f}))))
 
 (defn remove-note-mapping
@@ -953,7 +988,7 @@
   (let [result (filter-devices device-filter (open-inputs-if-needed!))]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
-    (swap! note-mappings #(update-in % [(:device (first result)) (int channel) (int note)] disj f))))
+    (swap! note-mappings #(update-in % [(@midi-device-key (first result)) (int channel) (int note)] disj f))))
 
 (defn add-aftertouch-mapping
   "Register a handler function `f` to be called whenever a MIDI
@@ -969,7 +1004,7 @@
   (let [result (filter-devices device-filter (open-inputs-if-needed!))]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
-    (swap! aftertouch-mappings #(update-in % [(:device (first result)) (int channel) (int note)]
+    (swap! aftertouch-mappings #(update-in % [(@midi-device-key (first result)) (int channel) (int note)]
                                            clojure.set/union #{f}))))
 
 (defn remove-aftertouch-mapping
@@ -982,7 +1017,7 @@
   (let [result (filter-devices device-filter (open-inputs-if-needed!))]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
-    (swap! aftertouch-mappings #(update-in % [(:device (first result)) (int channel) (int note)] disj f))))
+    (swap! aftertouch-mappings #(update-in % [(@midi-device-key (first result)) (int channel) (int note)] disj f))))
 
 (defn watch-for
   "Watches for a device that matches

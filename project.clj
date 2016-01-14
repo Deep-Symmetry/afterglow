@@ -56,7 +56,7 @@
   ;; enable to start the nREPL server when the application launches
   ;; :env {:repl-port 16002}
 
-  :profiles {:provided {:dependencies [[uk.co.xfactory-librarians/coremidi4j "0.4-SNAPSHOT"]]}
+  :profiles {:provided {:dependencies [[uk.co.xfactory-librarians/coremidi4j "0.3"]]}
              :dev {:dependencies [[ring-mock "0.1.5"]
                                   [ring/ring-devel "1.4.0"]]
                    :repl-options {:init-ns afterglow.examples
