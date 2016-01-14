@@ -887,6 +887,9 @@
 (defn use-push
   "A trivial reminder of how to connect the Ableton Push to run the
   show. But also sets up the cues, if you haven't yet."
-  []
+  [& {:keys [device-filter refresh-interval display-name]
+           :or {device-filter "User Port"
+                refresh-interval (/ 1000 15)
+                display-name "Ableton Push"}}]
   (make-cues)
-  (push/auto-bind *show*))
+  (push/auto-bind *show* :device-filter device-filter :refresh-interval refresh-interval :display-name display-name))
