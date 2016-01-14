@@ -379,9 +379,12 @@
   (when (or (empty? @midi-inputs) (not mac?) (not (mmj-installed?)))
     (doseq [input (filter @midi-port-filter (midi/midi-sources))]
       (when-not (get @midi-inputs (@midi-device-key input))
-        (let [connected (connect-midi-in input)]
-          (doseq [handler @new-device-handlers]
-            (handler connected))))))
+        (try
+          (let [connected (connect-midi-in input)]
+            (doseq [handler @new-device-handlers]
+              (handler connected)))
+          (catch Throwable t
+            (timbre/error t "Unable to connect MIDI input" input))))))
   (vals @midi-inputs))
 
 (defn open-outputs-if-needed!
@@ -395,9 +398,12 @@
   (when (or (empty? @midi-outputs) (not mac?) (not (mmj-installed?)))
     (doseq [output (filter @midi-port-filter (midi/midi-sinks))]
       (when-not (get @midi-outputs (@midi-device-key output))
-        (let [connected (connect-midi-out output)]
-          (doseq [handler @new-device-handlers]
-            (handler connected))))))
+        (try
+          (let [connected (connect-midi-out output)]
+               (doseq [handler @new-device-handlers]
+                 (handler connected)))
+          (catch Throwable t
+            (timbre/error t "Unable to connect MIDI output" output))))))
   (vals @midi-outputs))
 
 (defn- lost-midi-in
