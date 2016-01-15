@@ -958,7 +958,7 @@
       (doseq [x (range 0 8)]
         (let [lightness-index (if (> x 3) (- 7 x) x)
               lightness ([10 30 50 70] lightness-index)
-color (colors/create-color
+              color (colors/create-color
                      :h (+ 60 (* 40 (- @counter 18))) :s 100 :l lightness)]
           (set-pad-color controller x (- 25 @counter) color)))
       
