@@ -36,6 +36,10 @@ This change log follows the conventions of
 
 ### Fixed
 
+- Some testing in a Windows virtual machine revealed issues when
+  working with standard Java Midi implementations (as opposed to
+  CoreMidi4J on the Mac). These were addressed.
+
 ## [0.1.6] - 2016-01-11
 
 ### Added
