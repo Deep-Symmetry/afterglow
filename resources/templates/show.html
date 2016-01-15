@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 
 {% block page-nav-items %}
-            <li class="navbar-text">Load: <canvas id="loadBar" width="100" height="14"></li>
+            <li class="navbar-text">Load: <canvas id="loadBar" width="100" height="14"></canvas></li>
             <li class="navbar-text">Status: <span id="status"></span>&nbsp;
               <button type="button" id="errorDetailsButton" class="btn btn-info btn-mini" aria-label="Left Align"
                       style="display: none;">
-                <span class="glyphicon glyphicon-info-sign" aria-hidden="true"> Details
+                <span class="glyphicon glyphicon-info-sign" aria-hidden="true"> Details</span>
               </button>&nbsp;
               <button type="button" id="stopButton" class="btn btn-danger btn-mini" aria-label="Left Align"
                       style="display: none;">
-                <span class="glyphicon glyphicon-off" aria-hidden="true"> Stop
+                <span class="glyphicon glyphicon-off" aria-hidden="true"> Stop</span>
               </button>
               <button type="button" id= "startButton" class="btn btn-success btn-mini" aria-label="Left Align"
                       style="display: none;">
-                <span class="glyphicon glyphicon-off" aria-hidden="true"> Start
+                <span class="glyphicon glyphicon-off" aria-hidden="true"> Start</span>
               </button>
             </li>
 {% endblock %}
@@ -78,7 +78,7 @@
         <tr>
           <td class="metronome" colspan="4"><input id="bpm-slider"
                                                    data-slider-min="{{min-bpm}}" data-slider-max="{{max-bpm}}"
-                                                   data-slider-step="0.1" data-slider-tooltip="hide"></input></td>
+                                                   data-slider-step="0.1" data-slider-tooltip="hide"></td>
         </tr>
       </table>
     </div>
