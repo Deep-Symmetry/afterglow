@@ -72,6 +72,13 @@
   (delay
    :info))
 
+(defn same-device?
+  "Checks whether two `:midi-device` maps seem to refer to the same
+  device, in a slightly more efficient way than comparing the entire
+  map."
+  [a b]
+  (= (@midi-device-key a) (@midi-device-key b)))
+
 (defn add-new-device-handler!
   "Add a function to be called whenever a new device appears in the
   MIDI environment. It will be passed a single argument, the

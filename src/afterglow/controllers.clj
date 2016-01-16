@@ -49,7 +49,45 @@
   In the latter case, the function will never be called again.")
   (remove-move-listener [this f]
   "Unregisters a move listener function so it will no longer be
-  called when the controller's origin is moved."))))
+  called when the controller's origin is moved."))
+
+(defprotocol IOverlay
+  "An activity which takes over part of the user interface
+  while it is active."
+  (captured-controls [this]
+  "Returns the MIDI control-change events that will be consumed by
+  this overlay while it is active, a set of integers.")
+  (captured-notes [this]
+  "Returns the MIDI note events that will be consumed by this overlay
+  while it is active, a set of integers.")
+  (adjust-interface [this]
+  "Set values for the next frame of the controller interface, however
+  that may be done; return a falsey value if the overlay is finished
+  and should be removed.")
+  (handle-control-change [this message]
+  "Called when a MIDI control-change event matching the
+  captured-controls lists has been received. Return a truthy value if
+  the overlay has consumed the event, so it should not be processed
+  further. If the special value `:done` is returned, it further
+  indicates the overlay is finished and should be removed.")
+  (handle-note-on [this message]
+  "Called when a MIDI note-on event matching the captured-notes lists
+  has been received. Return a truthy value if the overlay has consumed
+  the event, so it should not be processed further. If the special
+  value `:done` is returned, it further indicates the overlay is
+  finished and should be removed.")
+  (handle-note-off [this message]
+  "Called when a MIDI note-off event matching the captured-notes lists
+  has been received. Return a truthy value if the overlay has consumed
+  the event, so it should not be processed further. If the special
+  value `:done` is returned, it further indicates the overlay is
+  finished and should be removed.")
+  (handle-aftertouch [this message]
+  "Called when a MIDI aftertouch event matching the captured-notes
+  lists has been received. Return a truthy value if the overlay has
+  consumed the event, so it should not be processed further. If the
+  special value `:done` is returned, it further indicates the overlay
+  is finished and should be removed."))))
 
 (defn cue-grid
   "Return a two dimensional arrangement for launching and monitoring
@@ -258,3 +296,88 @@
                            (assoc result (keyword (:key v)) (value-for-velocity v velocity))
                            result))
           {} (:variables cue)))
+
+(defn create-overlay-state
+  "Return the state information needed to manage user-interface
+  overlays implementing the [[IOverlay]] protocol. Controllers
+  implementing this protocol will need to pass this object to the
+  functions that manipulate and invoke overlays."
+  []
+  (atom {:next-id 0
+         :overlays (sorted-map-by >)}))
+
+(defn add-overlay
+  "Add a temporary overlay to the interface. The `state` argument must
+  be a value created by [[create-overlay-state]], and `overlay` an
+  implementation of the [[IOverlay]] protocol to be added as the most
+  recent overlay to that state."
+  [state overlay]
+  (swap! state (fn [old-state]
+                 (let [id (:next-id old-state)
+                       overlays (:overlays old-state)]
+                   (assoc old-state :next-id (inc id) :overlays (assoc overlays id overlay))))))
+
+(defn add-control-held-feedback-overlay
+  "Builds a simple overlay which just adds something to the user
+  interface until a particular control (identified by `control-num`)
+  is released, and adds it to the controller. The overlay will end
+  when a control-change message with value 0 is sent to the specified
+  control number. Other than that, all it does is call the supplied
+  function every time the interface is being updated. As
+  with [[add-overlay]], `state` must be a value created
+  by [[creat-overlay-state]] and tracked by the controller."
+  [state control-num f]
+  (add-overlay state
+               (reify IOverlay
+                 (captured-controls [this] #{control-num})
+                 (captured-notes [this] #{})
+                 (adjust-interface [this] (f))
+                 (handle-control-change [this message]
+                   (when (zero? (:velocity message))
+                     :done))
+                 (handle-note-off [this message])
+                 (handle-note-on [this message])
+                 (handle-aftertouch [this message]))))
+
+(defn run-overlays
+  "Add any contributions from interface overlays, removing them if
+  they report being finished. Most recent overlays run last, having
+  the opportunity to override older ones. `state` must be a value
+  created by [[creat-overlay-state]] and tracked by the controller."
+  [state]
+  (doseq [[k overlay] (reverse (:overlays @state))]
+      (when-not (adjust-interface overlay)
+        (swap! state update-in [:overlays] dissoc k))))
+
+(defn overlay-handled?
+  "See if there is an interface overlay active which wants to consume
+  this message; if so, send it, and see if the overlay consumes it.
+  Returns truthy if an overlay consumed the message, and it should not
+  be given to anyone else. `state` must be a value created
+  by [[creat-overlay-state]] and tracked by the controller."
+  [state message]
+  (case (:command message)
+    (:note-on :note-off :poly-pressure)
+    (some (fn [[k overlay]]
+            (when (contains? (captured-notes overlay) (:note message))
+              (let [result (case (:command message)
+                             :note-on (handle-note-on overlay message)
+                             :note-off (handle-note-off overlay message)
+                             :poly-pressure (handle-aftertouch overlay message))]
+                (when (= result :done)
+                  (swap! state update-in [:overlays] dissoc k))
+                result)))
+          (seq (:overlays @state)))
+
+    :control-change
+    (some (fn [[k overlay]]
+            (when (contains? (captured-controls overlay) (:note message))
+              (let [result (handle-control-change overlay message)]
+                (when (= result :done)
+                  (swap! state update-in [:overlays] dissoc k))
+                result)))
+          (seq (:overlays @state)))
+
+    ;; Nothing we process
+    false))
+

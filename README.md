@@ -899,11 +899,6 @@ encounter them!
   [clojure-protobuf](https://github.com/flatland/clojure-protobuf).
 * The incomplete
   [Java OLA client](https://github.com/OpenLightingProject/ola/tree/master/java).
-* If I decide to use JNA to work around problems in the Mac Java MIDI
-  implementation someday, see
-  [clj-native](https://github.com/bagucode/clj-native). But most
-  likely I need to stick to lower level, lighter JNI, to avoid
-  polluting the extensions class path.
 
 ### Related Work
 
@@ -916,6 +911,11 @@ encounter them!
     of button sections.
   - [x] It looks like I can actually specify an RGB color for the buttons using another SysEx:
     [PushPix](https://cycling74.com/wiki/index.php?title=Push_Programming_Oct13_03)
+- [ ] Could add basic grid control using the
+  [Livid Ohm RGB](http://wiki.lividinstruments.com/wiki/OhmRGB),
+  alhough it supports only 7 colors, no pressure sensitivity, and has
+  been discontinued, so this is a low priority even though we own one,
+  unless/until someone requests it.
 - [x] Add a user interface using [Luminus](http://www.luminusweb.net/docs).
 - [x] Separate [ola-clojure](https://github.com/brunchboy/ola-clojure#ola-clojure) into its own project.
 
