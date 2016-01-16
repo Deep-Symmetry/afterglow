@@ -607,29 +607,29 @@
 (defn- render-cue-grid
   "Figure out how the cue grid pads should be illuminated, based on the
   currently active cues."
- [controller]
-   (doseq [x (range 8)
-           y (range 8)]
-    (let [[origin-x origin-y] @(:origin controller)
-          active-keys (show/active-effect-keys (:show controller))
-          [cue active] (show/find-cue-grid-active-effect (:show controller) (+ x origin-x) (+ y origin-y))
-          ending (and active (:ending active))
-          l-boost (when cue (if (zero? (colors/saturation (:color cue))) 20.0 0.0))
-          color (when cue
-                  (colors/create-color
-                   :h (colors/hue (:color cue))
-                   :s (colors/saturation (:color cue))
-                   ;; Figure the brightness. Active, non-ending cues are full brightness;
-                   ;; when ending, they blink between middle and low. If they are not active,
-                   ;; they are at middle brightness unless there is another active effect with
-                   ;; the same keyword, in which case they are dim.
-                   :l (+ (if active
-                           (if ending
-                             (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 10 20)
-                             50)
-                           (if (active-keys (:key cue)) 10 20))
-                         l-boost)))]
-      (aset (:next-grid-pads controller) (+ x (* y 8)) (or color off-color)))))
+  [controller]
+  (let [[origin-x origin-y] @(:origin controller)
+        active-keys (show/active-effect-keys (:show controller))]
+    (doseq [x (range 8)
+            y (range 8)]
+      (let [[cue active] (show/find-cue-grid-active-effect (:show controller) (+ x origin-x) (+ y origin-y))
+            ending (and active (:ending active))
+            l-boost (when cue (if (zero? (colors/saturation (:color cue))) 20.0 0.0))
+            color (when cue
+                    (colors/create-color
+                     :h (colors/hue (:color cue))
+                     :s (colors/saturation (:color cue))
+                     ;; Figure the brightness. Active, non-ending cues are full brightness;
+                     ;; when ending, they blink between middle and low. If they are not active,
+                     ;; they are at middle brightness unless there is another active effect with
+                     ;; the same keyword, in which case they are dim.
+                     :l (+ (if active
+                             (if ending
+                               (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 10 20)
+                               50)
+                             (if (active-keys (:key cue)) 10 20))
+                           l-boost)))]
+        (aset (:next-grid-pads controller) (+ x (* y 8)) (or color off-color))))))
 
 (defn- update-cue-grid
   "See if any of the cue grid button states have changed, and send any
