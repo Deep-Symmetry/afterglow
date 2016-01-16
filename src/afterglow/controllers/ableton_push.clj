@@ -1576,7 +1576,6 @@
                :midi-handler (atom nil)
                :tap-tempo-handler (amidi/create-tempo-tap-handler (:metronome show))
                :overlays (controllers/create-overlay-state)
-               :next-overlay (atom 0)
                :move-listeners (atom #{})
                :grid-controller-impl (atom nil)}
               {:type :ableton-push})]
@@ -1614,7 +1613,7 @@
   as it is, binds it to the specified show using [[bind-to-show]]. If
   that controller ever gets disconnected, it will be re-bound once it
   reappears. Returns a watcher structure which can be passed
-  to [[cancel-auto-bind]] if you would like to stop it watching for
+  to [[deactivate]] if you would like to stop it watching for
   reconnections. The underlying controller mapping, once bound, can be
   accessed through the watcher's `:controller` key.
 
@@ -1661,7 +1660,7 @@
             (cancel-handler []
               (amidi/remove-new-device-handler! connection-handler)
               (when-let [device (:port-in @controller)]
-                        (amidi/remove-disconnected-device-handler! device disconnection-handler)))]
+                (amidi/remove-disconnected-device-handler! device disconnection-handler)))]
 
       ;; See if our Push seems to already be connected, and if so, bind to it right away.
       (when-let [found (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))]
