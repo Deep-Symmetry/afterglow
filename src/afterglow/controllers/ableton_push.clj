@@ -108,11 +108,11 @@
 (def control-buttons
   "The labeled buttons which send and respond to Control Change
   events."
-  {:tap-tempo {:control 3 :kind :monochrome}
-   :metronome {:control 9 :kind :monochrome}
+  {:tap-tempo             {:control 3 :kind :monochrome}
+   :metronome             {:control 9 :kind :monochrome}
 
-   :master {:control 28 :kind :monochrome}
-   :stop   {:control 29 :kind :monochrome}
+   :master                {:control 28 :kind :monochrome}
+   :stop                  {:control 29 :kind :monochrome}
 
    :quarter               {:control 36 :kind :color}
    :quarter-triplet       {:control 37 :kind :color}
@@ -123,66 +123,66 @@
    :thirty-second         {:control 42 :kind :color}
    :thirty-second-triplet {:control 43 :kind :color}
 
-   :left-arrow  {:control 44 :kind :monochrome}
-   :right-arrow {:control 45 :kind :monochrome}
-   :up-arrow    {:control 46 :kind :monochrome}
-   :down-arrow  {:control 47 :kind :monochrome}
+   :left-arrow            {:control 44 :kind :monochrome}
+   :right-arrow           {:control 45 :kind :monochrome}
+   :up-arrow              {:control 46 :kind :monochrome}
+   :down-arrow            {:control 47 :kind :monochrome}
 
-   :select      {:control 48 :kind :monochrome}
-   :shift       {:control 49 :kind :monochrome}
-   :note        {:control 50 :kind :monochrome}
-   :session     {:control 51 :kind :monochrome}
-   :add-device  {:control 52 :kind :monochrome}
-   :add-track   {:control 53 :kind :monochrome}
+   :select                {:control 48 :kind :monochrome}
+   :shift                 {:control 49 :kind :monochrome}
+   :note                  {:control 50 :kind :monochrome}
+   :session               {:control 51 :kind :monochrome}
+   :add-device            {:control 52 :kind :monochrome}
+   :add-track             {:control 53 :kind :monochrome}
 
-   :octave-down {:control 54 :kind :monochrome}
-   :octave-up   {:control 55 :kind :monochrome}
-   :repeat      {:control 56 :kind :monochrome}
-   :accent      {:control 57 :kind :monochrome}
-   :scales      {:control 58 :kind :monochrome}
-   :user-mode   {:control 59 :kind :monochrome}
-   :mute        {:control 60 :kind :monochrome}
-   :solo        {:control 61 :kind :monochrome}
-   :in          {:control 62 :kind :monochrome}
-   :out         {:control 63 :kind :monochrome}
+   :octave-down           {:control 54 :kind :monochrome}
+   :octave-up             {:control 55 :kind :monochrome}
+   :repeat                {:control 56 :kind :monochrome}
+   :accent                {:control 57 :kind :monochrome}
+   :scales                {:control 58 :kind :monochrome}
+   :user-mode             {:control 59 :kind :monochrome}
+   :mute                  {:control 60 :kind :monochrome}
+   :solo                  {:control 61 :kind :monochrome}
+   :in                    {:control 62 :kind :monochrome}
+   :out                   {:control 63 :kind :monochrome}
 
-   :play         {:control 85 :kind :monochrome}
-   :record       {:control 86 :kind :monochrome}
-   :new          {:control 87 :kind :monochrome}
-   :duplicate    {:control 88 :kind :monochrome}
-   :automation   {:control 89 :kind :monochrome}
-   :fixed-length {:control 90 :kind :monochrome}
+   :play                  {:control 85 :kind :monochrome}
+   :record                {:control 86 :kind :monochrome}
+   :new                   {:control 87 :kind :monochrome}
+   :duplicate             {:control 88 :kind :monochrome}
+   :automation            {:control 89 :kind :monochrome}
+   :fixed-length          {:control 90 :kind :monochrome}
 
-   :device-mode   {:control 110 :kind :monochrome}
-   :browse-mode   {:control 111 :kind :monochrome}
-   :track-mode    {:control 112 :kind :monochrome}
-   :clip-mode     {:control 113 :kind :monochrome}
-   :volume-mode   {:control 114 :kind :monochrome}
-   :pan-send-mode {:control 115 :kind :monochrome}
+   :device-mode           {:control 110 :kind :monochrome}
+   :browse-mode           {:control 111 :kind :monochrome}
+   :track-mode            {:control 112 :kind :monochrome}
+   :clip-mode             {:control 113 :kind :monochrome}
+   :volume-mode           {:control 114 :kind :monochrome}
+   :pan-send-mode         {:control 115 :kind :monochrome}
 
-   :quantize {:control 116 :kind :monochrome}
-   :double   {:control 117 :kind :monochrome}
-   :delete   {:control 118 :kind :monochrome}
-   :undo     {:control 119 :kind :monochrome}})
+   :quantize              {:control 116 :kind :monochrome}
+   :double                {:control 117 :kind :monochrome}
+   :delete                {:control 118 :kind :monochrome}
+   :undo                  {:control 119 :kind :monochrome}})
 
 (def special-symbols
   "The byte values which draw special-purpose characters on the Push
   display."
-  {:up-arrow (byte 0)
-   :down-arrow (byte 1)
-   :pancake (byte 2)
-   :fader-left (byte 3)
-   :fader-right (byte 4)
-   :fader-center (byte 5)
-   :fader-empty (byte 6)
-   :folder (byte 7)
+  {:up-arrow            (byte 0)
+   :down-arrow          (byte 1)
+   :pancake             (byte 2)
+   :fader-left          (byte 3)
+   :fader-right         (byte 4)
+   :fader-center        (byte 5)
+   :fader-empty         (byte 6)
+   :folder              (byte 7)
    :split-vertical-line (byte 8)
-   :degree (byte 9)
-   :ellipsis (byte 28)
-   :solid-block (byte 29)
-   :right-arrow (byte 30)
-   :left-arrow (byte 31)
-   :selected-triangle (byte 127)})
+   :degree              (byte 9)
+   :ellipsis            (byte 28)
+   :solid-block         (byte 29)
+   :right-arrow         (byte 30)
+   :left-arrow          (byte 31)
+   :selected-triangle   (byte 127)})
 
 (defn button-state
   "Calculate the numeric value that corresponds to a particular
@@ -597,6 +597,7 @@
       ;; The metronome section is not active, so make its button dim
       (swap! (:next-text-buttons controller)
              assoc metronome-button (button-state metronome-button :dim)))
+
     ;; Regardless, flash the tap tempo button on beats
     (swap! (:next-text-buttons controller)
            assoc tap-tempo-button
@@ -1543,40 +1544,40 @@
   than the default of fifteen times per second, pass your desired
   number of milliseconds after `:refresh-interval`."
   [show & {:keys [device-filter refresh-interval display-name]
-           :or {device-filter "User Port"
-                refresh-interval (/ 1000 15)
-                display-name "Ableton Push"}}]
+           :or   {device-filter    "User Port"
+                  refresh-interval (/ 1000 15)
+                  display-name     "Ableton Push"}}]
   {:pre [(some? show)]}
-  (let [port-in (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
+  (let [port-in  (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
         port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))]
     (if (every? some? [port-in port-out])
       (let [controller
             (with-meta
-              {:id (swap! controller-counter inc)
-               :display-name display-name
-               :show show
-               :origin (atom [0 0])
-               :effect-offset (atom 0)
-               :refresh-interval refresh-interval
-               :port-in port-in
-               :port-out port-out
-               :task (atom nil)
-               :last-display (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
-               :next-display (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
-               :last-text-buttons (atom {})
-               :next-text-buttons (atom {})
-               :last-top-pads (int-array 8)
-               :next-top-pads (int-array 8)
-               :last-grid-pads (make-array clojure.lang.IPersistentMap 64)
-               :next-grid-pads (make-array clojure.lang.IPersistentMap 64)
-               :metronome-mode (atom {})
-               :last-marker (atom nil)
-               :shift-mode (atom false)
-               :stop-mode (atom false)
-               :midi-handler (atom nil)
-               :tap-tempo-handler (amidi/create-tempo-tap-handler (:metronome show))
-               :overlays (controllers/create-overlay-state)
-               :move-listeners (atom #{})
+              {:id                   (swap! controller-counter inc)
+               :display-name         display-name
+               :show                 show
+               :origin               (atom [0 0])
+               :effect-offset        (atom 0)
+               :refresh-interval     refresh-interval
+               :port-in              port-in
+               :port-out             port-out
+               :task                 (atom nil)
+               :last-display         (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
+               :next-display         (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
+               :last-text-buttons    (atom {})
+               :next-text-buttons    (atom {})
+               :last-top-pads        (int-array 8)
+               :next-top-pads        (int-array 8)
+               :last-grid-pads       (make-array clojure.lang.IPersistentMap 64)
+               :next-grid-pads       (make-array clojure.lang.IPersistentMap 64)
+               :metronome-mode       (atom {})
+               :last-marker          (atom nil)
+               :shift-mode           (atom false)
+               :stop-mode            (atom false)
+               :midi-handler         (atom nil)
+               :tap-tempo-handler    (amidi/create-tempo-tap-handler (:metronome show))
+               :overlays             (controllers/create-overlay-state)
+               :move-listeners       (atom #{})
                :grid-controller-impl (atom nil)}
               {:type :ableton-push})]
         (reset! (:midi-handler controller) (partial midi-received controller))
