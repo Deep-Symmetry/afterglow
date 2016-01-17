@@ -603,7 +603,7 @@ image::assets/PushNoEffects.jpg[Push interface]
 
 === Show Control
 
-Once you have the push linked to a show, it becomes a very intuitive
+Once you have the Push linked to a show, it becomes a very intuitive
 way to monitor and control the cues and other aspects of the show.
 
 The text area at the top of the Push displays the effects currently
@@ -623,9 +623,9 @@ release it, the display returns to showing whatever it was before.
 
 image::assets/GrandMaster.jpg[Grand Master adjustment]
 
-The red `Stop` button to the right of the top of the cue grid can be
+The red kbd:[Stop] button to the right of the top of the cue grid can be
 used to temporarily shut down the show, blacking out all universes
-that it controls.
+that it controls, and suspending the processing of its effects.
 
 image::assets/ShowStop.jpg[Show stopped]
 
@@ -644,6 +644,12 @@ can remind you of the names of the cues you are looking at, or it can
 be scrolled independently, allowing you access to more cues at the
 same time.
 
+TIP: If you have more than one compatible grid controller, you can
+have Afterglow using all of them at the same time; each can be
+scrolled to different areas of the cue grid, and each can even be
+linked to a different browser window if you have that much screen
+space.
+
 You can activate any cue shown by pressing its pad; running cues will
 light up, and darken again when they end. The effects which cues
 create will also appear in the text area above the cue pad, from left
@@ -656,14 +662,15 @@ pad that was used to launch it.
 
 image::assets/SparklePressure.jpg[Sparkle effect, ajusting chance variable]
 
-To stop a running cue, press its pad again, or press the red `End` pad
-underneath its effect entry in the text area. Some cues will end
+To stop a running cue, press its pad again, or press the red kbd:[End]
+pad underneath its effect entry in the text area. Some cues will end
 immediately, others will continue to run until they reach what they
 feel is an appropriate stopping point. While they are in the process
-of ending, the cue pad will blink, and the `End` pad will be labeled
-`Ending`. If you want the cue to end immediately even though it would
-otherwise run for a while longer, you can press the blinking cue pad
-(or effect `Ending` pad) again and it will be killed right then.
+of ending, the cue pad will blink, and the kbd:[End] pad will be
+labeled kbd:[Ending]. If you want the cue to end immediately even
+though it would otherwise run for a while longer, you can press the
+blinking cue pad (or effect kbd:[Ending] pad) again and it will be
+killed right then.
 
 The colors assigned to cue pads by the creator of the cue grid are
 intended to help identify related cues. Some cues (especially intense
@@ -671,7 +678,7 @@ ones like strobes) are configured to run only as long as they are held
 down. In that case, when you press cue pad, it lights up with a
 whitened version of the cue color as a hint that this is happening,
 and as soon as you release the pad, the cue will end. If you want to
-override this behavior, you can hold down the `Shift` button
+override this behavior, you can hold down the kbd:[Shift] button
 (towards the bottom right of the Push) as you press the cue pad, and
 it will activate as a normal cue, staying on until you press it a
 second time.
@@ -710,7 +717,7 @@ and to the right:
 
 image:assets/PushScroll.jpg[Push scroll diamond,300,337]
 
-If you hold down the `Shift` button, the arrows gain a different
+If you hold down the kbd:[Shift] button, the arrows gain a different
 purpose, allowing you to scroll the text display left and right, to
 see and <<mapping_sync#effect-control,adjust>> all of the currently
 running effects, even though only four at a time (or three, if the
@@ -718,7 +725,7 @@ running effects, even though only four at a time (or three, if the
 in the display. Pressing the left or right arrows scrolls the next
 group of effects in that direction into view; pressing the up arrow
 scrolls to the oldest (leftmost) effect, and pressing the down arrow
-scrolls to the most recent (rightmost) effect. While `Shift` is
+scrolls to the most recent (rightmost) effect. While kbd:[Shift] is
 pressed, the arrows will light up according to whether they can scroll
 effects rather than cues in the corresponding direction.
 
@@ -726,7 +733,7 @@ effects rather than cues in the corresponding direction.
 
 As described above, the effects created by cues appear in the text
 display area, and can be scrolled through and ended by pressing the
-corresponding red `End` pad which appears underneath them. If they
+corresponding red kbd:[End] pad which appears underneath them. If they
 have parameters assigned to them, the parameter names and values will
 appear above the effect name, and they can be adjusted using the
 encoder knob above the parameter. For example, in addition to varying
@@ -753,14 +760,14 @@ The <- indicator at the left of the text area in the above photo is an
 indicator that there are older effects which have been scrolled to the
 left, off the display. You will see -> at the bottom right of the
 display when there are newer effects to the right. You can scroll to
-them using the `Shift` button with the scroll arrow buttons as
+them using the kbd:[Shift] button with the scroll arrow buttons as
 described <<mapping_sync#scrolling,above>>.
 
 This photo also illustrates the dimming of incompatible cues discussed
 <<mapping_sync#exclusivity,above>>: The leftmost columns of blue cues
 all establish settings for the fixed gobo wheel of one of the Torrent
-moving-head spots. Since one of them is active (the &ldquo;T1 atom
-shake&rdquo; effect at the left of the text area corresponds to the
+moving-head spots. Since one of them is active (the `T1 atom
+shake` effect at the left of the text area corresponds to the
 bright blue button three rows down the second column), the others are
 dimmed to hint that pressing them would replace the active cue.
 
@@ -777,12 +784,12 @@ respect to the metronome, it is important to keep it synchronized with
 the music. When active, the metronome section takes over the leftmost
 quarter of the text area (so there are room to see only three effects,
 rather than the normal four). To toggle the metronome section, press
-the `Metronome` button. It will appear if it was not showing, and
-disappear if it was there. The `Metronome` button is lit more brightly
-when the section is active.
+the kbd:[Metronome] button. It will appear if it was not showing, and
+disappear if it was there. The kbd:[Metronome] button is lit more
+brightly when the section is active.
 
 The metronome section shows the current speed, in Beats Per Minute, of
-the metronome, and the `Tap Tempo` button label flashes at each beat
+the metronome, and the kbd:[Tap Tempo] button label flashes at each beat
 (this flashing happens regardless of whether the metronome section is
 visible in the text area). The metronome section also shows you the
 current phrase number, the bar within that phrase, and the beat within
@@ -790,30 +797,37 @@ that bar which has been reached.
 
 image:assets/PushMetronome.jpg[Metronome section]
 
-The most basic way of synchronizing the metronome is to tap the `Tap
-Tempo` button at each beat of the music. After a few taps, the
-metronome will be approximately synchronized to the music. You can
-also adjust the BPM by turning the BPM encoder, which is the
+The most basic way of synchronizing the metronome is to tap the
+kbd:[Tap Tempo] button at each beat of the music. After a few taps,
+the metronome will be approximately synchronized to the music. Once
+the tempo is correct, you can tell Afterglow exactly when the beats
+are actually hitting by holding down the kbd:[Shift] button while
+pressing kbd:[Tap Tempo]. This combination does not change the tempo,
+but tells Afterglow that a beat is occurring right when you hit the
+kbd:[Tap Tempo] button. After doing that, you should see the flashes
+taking place at the same time as the beats.
+
+You can also adjust the BPM by turning the BPM encoder, which is the
 rightmost encoder below the Metronome button:
 
 image:assets/PushBPM.jpg[BPM encoder]
 
-While you are holding this encoder, the symbol &uparrow; appears below
+While you are holding this encoder, the symbol `&uparrow;` appears below
 the BPM value as a visual reminder of what value you are adjusting.
 Turning the encoder clockwise raises the BPM, turning counterclockwise
 lowers it. While the metronome section is showing, you can also use
 the encoder above the BPM value to adjust it. But you can grab the
-dedicated BPM encoder below the `Metronome` button even when the
+dedicated BPM encoder below the kbd:[Metronome] button even when the
 metronome section is not showing, and it will appear while you have
 the encoder in your hand, so you can adjust the BPM quickly, and then
 get back to what you were doing.
 
-If you press the `Shift` button, the BPM encoder can be used to adjust
-the BPM by whole beats rather than tenths. While `Shift` is down, the
-&uparrow; will point to the left of the decimal point rather than to
-the right of it, and the BPM will change ten times as quickly as you
-turn it. You can switch back and forth in the middle of your
-adjustments by pressing and releasing the shift key at any time.
+If you press the kbd:[Shift] button, the BPM encoder can be used to
+adjust the BPM by whole beats rather than tenths. While kbd:[Shift] is
+down, the `&uparrow;` will point to the left of the decimal point
+rather than to the right of it, and the BPM will change ten times as
+quickly as you turn it. You can switch back and forth in the middle of
+your adjustments by pressing and releasing the shift key at any time.
 
 In order to make longer chases and effects line up properly with the
 music, you will also want to make sure the count is right, that the
@@ -824,26 +838,26 @@ encoder below the metronome button:
 
 image:assets/PushBeat.jpg[Beat encoder]
 
-While you are holding this encoder, the symbol &uparrow; appears below
-the beat number as a visual reminder of what value you are adjusting.
-Turning the encoder clockwise jumps to the next beat, turning
-counterclockwise jumps back to the previous one. As a tactile reminder
-that you are adjusting whole beats, this encoder moves with a distinct
-click as it changes value, while the BPM encoder turns smoothly as you
-scroll through fractional BPM values.
+While you are holding this encoder, the symbol `&uparrow;` appears
+below the beat number as a visual reminder of what value you are
+adjusting. Turning the encoder clockwise jumps to the next beat,
+turning counterclockwise jumps back to the previous one. As a tactile
+reminder that you are adjusting whole beats, this encoder moves with a
+distinct click as it changes value, while the BPM encoder turns
+smoothly as you scroll through fractional BPM values.
 
 While the metronome section is showing, you can also use the encoder
 above the Beat value to adjust it. But you can grab the dedicated Beat
-encoder below the `Metronome` button even when the metronome section
-is not showing, and it will appear while you have the encoder in your
-hand, so you can adjust the beat number quickly, and then get back to
-what you were doing.
+encoder below the kbd:[Metronome] button even when the metronome
+section is not showing, and it will appear while you have the encoder
+in your hand, so you can adjust the beat number quickly, and then get
+back to what you were doing.
 
-If you press the `Shift` button, the Beat encoder can be used to
+If you press the kbd:[Shift] button, the Beat encoder can be used to
 adjust the current bar within the phrase instead of the current beat.
-While `Shift` is down, the &uparrow; will point at the bar instead of
-the beat, and turning the encoder will jump that value forwards or
-backwards:
+While kbd:[Shift] is down, the `&uparrow;` will point at the bar
+instead of the beat, and turning the encoder will jump that value
+forwards or backwards:
 
 image:assets/PushBar.jpg[Bar jumping]
 
@@ -858,7 +872,9 @@ Afterglow's metronome synchronization features. If the DJ can send you
 connect via a Local Area Network to Pioneer professional DJ gear to
 lock into the beat grid established by
 <<mapping_sync#syncing-to-pro-dj-link,Pro DJ Link>>, Afterglow can
-keep the BPM (with MIDI) and even the beats (with Pro DJ Link)
+keep the BPM (with MIDI) and even the beats (with Pro DJ Link and the
+Traktor Afterglow Beat Phase
+<<mapping_sync#syncing-to-traktor-beat-phase,controller mapping>>)
 synchronized for you. The Sync pad in the Metronome section (showing
 `Manual` sync in these photos) will eventually allow you to set this
 up, but that is not yet implemented, so for now you will need to use
@@ -870,19 +886,34 @@ red means a requested automatic sync has failed. It is likely that a
 future release of Afterglow will let you press this pad to choose your
 sync source.
 
-Once your sync is established, the meaning of the `Tap Tempo` button
-changes. If you are using MIDI clock to sync the BPM, it becomes a
-`Tap Beat` button, which simply establishes where the beat falls. If
-you are locked in to a Pro DJ Link beat grid, it becomes a `Tap Bar`
-button which, when pressed, indicates that the current beat is the
-down beat (start) of a bar. (Similarly, if you press the metronome
-Reset pad while synced to a Pro DJ Link beat grid, the beat itself
-will not move, but the beat closest to when you pressed the pad will
-be identified as Beat 1.)
+Once your sync is established, the meaning of the kbd:[Tap Tempo]
+button changes. If you are using MIDI clock to sync the BPM, it
+becomes a kbd:[Tap Beat] button, which simply establishes where the
+beat falls. If you are locked in to a Pro DJ Link beat grid or using
+the Traktor beat phase mapping, the beats are automatically aligned
+for you so, it becomes a kbd:[Tap Bar] button which, when pressed,
+indicates that the current beat is the down beat (start) of a bar.
+(Similarly, if you press the metronome kbd:[Reset] pad while synced to
+a Pro DJ Link beat grid or Traktor beat phase, the beat itself will
+not move, but the beat closest to when you pressed the pad will be
+identified as Beat 1.) In these sync modes you can also use the
+kbd:[Shift] button to align at the next bigger boundary: If tapping
+would normally move the beat, shift-tapping will move the bar; if
+tapping would normally move the bar, shift-tapping will move the
+phrase.
 
 If you try to adjust the BPM encoder while sync is active, it will
-have no effect, and Afterglow will highlight the sync mode to explain
+have no effect, and Afterglow will point at the sync mode to explain
 why it is ignoring your adjustments.
+
+=== Sharing the Push
+
+If you are using Afterglow at the same time as Ableton Live, you can
+switch back and forth between which has control of the Push by
+pressing the kbd:[User] button. If Live is not running when you press
+kbd:[User], the Push interface will simply go blank (except for the
+kbd:[User] button itself), until you press it again, at which point
+Afterglow will light it up.
 
 NOTE: Future releases will also take advantage of more of the buttons
 on the controller, as well as the nice big touch strip to the left of
@@ -910,9 +941,154 @@ You will see a brief startup animation, and Afterglow's Launchpad
 interface will start. (This also arranges for the Launchpad to be
 re-bound to the show if it gets disconnected or powered off and then
 reappears, which is very handy in a performance setting.) Here is an
-overview of how the Launchpad mapping works:
+overview of how the Launchpad Pro mapping works:
 
-> TODO: Take and explain photos!
+image::assets/LaunchpadPro.jpg[Launchpad Pro interface]
+
+=== Show Control
+
+Once you have the push linked to a show, it becomes a very intuitive
+way to monitor and control the cues and help with synchronization of
+the show.
+
+The red kbd:[Stop] button at the bottom can be used to stop a running
+show, which will suspend the processing of its effects, and black out
+all universes assigned to the show. The button will be illuminated
+brightly while the show is stopped. Pressing it again will restart the
+show where it would have been had it not stopped, and dim the button
+again.
+
+Most of the space on the interface is dedicated to an 8&times;8 grid
+of color coded cue trigger pads, which provide a window onto the
+show's overall <<cues#cues,cue grid>>. The Launchpad can be
+<<README#scrolling-and-linked-controllers,linked>> to the
+<<README#the-embedded-web-interface,web interface>> so that both
+always display the same section of the cue grid, and the web interface
+can remind you of the names of the cues you are looking at, or it can
+be scrolled independently, allowing you access to more cues at the
+same time.
+
+TIP: If you have more than one compatible grid controller, you can
+have Afterglow using all of them at the same time; each can be
+scrolled to different areas of the cue grid, and each can even be
+linked to a different browser window if you have that much screen
+space.
+
+You can activate any cue shown by pressing its pad; running cues will
+light up, and darken again when they end. If the cues are configured
+to respond to velocity, you can adjust the corresponding parameters by
+how hard you are pressing on the pad while the cue is running.
+
+To stop a running cue, press its pad again. Some cues will end
+immediately, others will continue to run until they reach what they
+feel is an appropriate stopping point. While they are in the process
+of ending, the cue pad will blink. If you want the cue to end
+immediately even though it would otherwise run for a while longer, you
+can press the blinking cue pad again and it will be killed right then.
+
+The colors assigned to cue pads by the creator of the cue grid are
+intended to help identify related cues. Some cues (especially intense
+ones like strobes) are configured to run only as long as they are held
+down. In that case, when you press cue pad, it lights up with a
+whitened version of the cue color as a hint that this is happening,
+and as soon as you release the pad, the cue will end. If you want to
+override this behavior, you can hold down the kbd:[Shift] button
+(towards the top left of the Launchpad Pro) as you press the cue pad,
+and it will activate as a normal cue, staying on until you press it a
+second time.
+
+As noted above, cues can also be configured to take advantage of the
+pressure sensitivity of the Launchpad Pro cue pads, so that as you
+vary the pressure with which you are holding down the pad, some
+visible parameter of the cue is altered. The strobe and sparkle cues
+in created by
+http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[afterglow.examples/make-cues]
+for the sample show work this way: the intensity and lightness of the
+strobe are increased by pressure, and so is the chance that a sparkle
+will be assigned to a light on each frame.
+
+Cues may be mutually exclusive by nature, and if they were created to
+reflect this (by using the same keyword to register their effects with
+the show), when you activate one, the other cues which use the same
+keyword are dimmed. This is a hint that when you activate one of them,
+it will _replace_ the others, rather than running at the same time.
+(There are photos demonstrating this effect in the Ableton Push
+discussion above.)
+
+=== Scrolling
+
+The show will likely have many more cues than fit on the pad grid; the
+row of arrow buttons at the top left allow you to page through the
+larger show grid. If there are more cues available in a given
+direction, that arrow will be lit, otherwise it is dark. Pressing an
+active arrow scrolls the view one &ldquo;page&rdquo; in that
+direction. In the photo below, it is currently possible to scroll down
+and to the left:
+
+image::assets/LaunchpadPro-scroll.jpg[Launchpad Pro interface]
+
+=== Metronome Control
+
+The kbd:[Click] button lets you monitor and adjust the Metronome that
+the show is using to keep time with the music that is being played.
+Since Afterglow's effects are generally defined with respect to the
+metronome, it is important to keep it synchronized with the music. The
+kbd:[Click] button label flashes at each beat, and the color of the
+button tells you whether the metronome is syncronized to an external
+source. If it is blue, as in the first photo in this section, the
+tempo is being set manually. If green, as is shown right above, then
+tempo is being driven by an external source, such as MIDI or DJ Link
+Pro. If the button is red, it means that Afterglow was configured to
+sync to some external source, but has lost contact with it.
+
+The most basic way of synchronizing the metronome is to tap the
+kbd:[Click] button at each beat of the music. After a few taps, the
+metronome will be approximately synchronized to the music. Once the
+tempo is correct, you can tell Afterglow exactly when the beats are
+actually hitting by holding down the kbd:[Shift] button while pressing
+kbd:[Click]. This combination does not change the tempo, but tells
+Afterglow that a beat is occurring right when you hit the kbd:[Click]
+button. After doing that, you should see the flashes taking place at
+the same time as the beats.
+
+Trying to keep up with tempo changes during dynamic shows can be very
+difficult, so you will hopefully be able to take advantage of
+Afterglow's metronome synchronization features. If the DJ can send you
+<<mapping_sync#syncing-to-midi-clock,MIDI clock pulses>>, or you can
+connect via a Local Area Network to Pioneer professional DJ gear to
+lock into the beat grid established by
+<<mapping_sync#syncing-to-pro-dj-link,Pro DJ Link>>, Afterglow can
+keep the BPM (with MIDI) and even the beats (with Pro DJ Link and the
+Traktor Afterglow Beat Phase
+<<mapping_sync#syncing-to-traktor-beat-phase,controller mapping>>)
+synchronized for you. You can use the <<README#metronome-control,web
+interface>> to configure metronome sync.
+
+Once your sync is established, the meaning of the kbd:[Click] button
+changes. If you are using MIDI clock to sync the BPM, it becomes a
+kbd:[Tap Beat] button, which simply establishes where the beat falls.
+If you are locked in to a Pro DJ Link beat grid or using the Traktor
+beat phase mapping, the beats are automatically aligned for you so, it
+becomes a kbd:[Tap Bar] button which, when pressed, indicates that the
+current beat is the down beat (start) of a bar. In these sync modes
+you can also use the kbd:[Shift] button to align at the next bigger
+boundary: If tapping kbd:[Click] would normally move the beat,
+shift-tapping will move the bar; if tapping would normally move the
+bar, shift-tapping will move the phrase.
+
+=== Sharing the Launchpad Pro
+
+If you are using Afterglow at the same time as Ableton Live, you can
+switch back and forth between which has control of the Launchpad Pro
+by pressing the kbd:[User] button. If Live is not running when you
+press kbd:[User], the Launchpad interface will simply go blank (except for
+the kbd:[User] button itself), until you press it again, at which
+point Afterglow will light it up.
+
+NOTE: Future releases will likely advantage of more of the buttons on
+the controller, and perhaps support mappings to other controllers in
+the Launchpad line. If you want that to happen, loaning hardware to
+the Afterglow developer will definitely speed it along!
 
 ==== License
 
