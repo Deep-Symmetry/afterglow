@@ -503,7 +503,8 @@
       (swap! clients update-in [page-id] assoc :move-handler move-handler :linked-controller controller)
       (swap! clients assoc-in [page-id :controller-info :selected] controller)
       (controllers/add-move-listener controller move-handler)
-      (move-view page-info (controllers/current-left controller) (controllers/current-bottom controller)))))
+      (move-view (dissoc page-info :linked-controller)
+                 (controllers/current-left controller) (controllers/current-bottom controller)))))
 
 (defn- handle-link-controller-event
   "Process a request to specify a controller to link to."
