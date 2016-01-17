@@ -368,17 +368,28 @@
 (defn- interpret-tempo-tap
   "React appropriately to a tempo tap, based on the sync mode of the
   show metronome. If it is manual, invoke the metronome tap-tempo
-  handler. If MIDI, align the current beat to the tap. If DJ Link, set
-  the current beat to be a down beat (first beat of a bar)."
+  handler. If MIDI, align the current beat to the tap. If DJ Link or
+  Traktor Beat phase (so beats are already automatically aligned), set
+  the current beat to be a down beat (first beat of a bar). If the
+  shift key is held down, synchronize at the next higher level."
   [controller]
   (with-show (:show controller)
-    (let [metronome (get-in controller [:show :metronome])]
-      (case (:level (show/sync-status))
-        nil ((:tap-tempo-handler controller))
-        :bpm (rhythm/metro-beat-phase metronome 0)
+    (let [metronome  (get-in controller [:show :metronome])
+          base-level (:level (show/sync-status))
+          level      (if @(:shift-mode controller)
+                       (case base-level
+                         nil   :bpm
+                         :bpm  :beat
+                         :beat :bar
+                         :bar  :phrase
+                         base-level)
+                       base-level)]
+      (case level
+        nil   ((:tap-tempo-handler controller))
+        :bpm  (rhythm/metro-beat-phase metronome 0)
         :beat (rhythm/metro-bar-start metronome (rhythm/metro-bar metronome))
-        :bar (rhythm/metro-phrase-start metronome (rhythm/metro-bar metronome))
-        (warn "Don't know how to tap tempo for sync type" (show/sync-status))))))
+        :bar  (rhythm/metro-phrase-start metronome (rhythm/metro-phrase metronome))
+        (warn "Don't know how to tap tempo for sync type" level)))))
 
 (defn- metronome-sync-label
   "Determine the sync type label to display under the BPM section."
