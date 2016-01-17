@@ -866,8 +866,8 @@ the <<README#metronome-control,web interface>> to configure it.
 
 NOTE: The pad does already change color to let you know the sync
 status: amber means manual, green means successful automatic sync, and
-red means a requested automatic sync has failed. It is likely that the
-second release of Afterglow will let you press this pad to choose your
+red means a requested automatic sync has failed. It is likely that a
+future release of Afterglow will let you press this pad to choose your
 sync source.
 
 Once your sync is established, the meaning of the `Tap Tempo` button
@@ -887,6 +887,32 @@ why it is ignoring your adjustments.
 NOTE: Future releases will also take advantage of more of the buttons
 on the controller, as well as the nice big touch strip to the left of
 the cue grid.
+
+== Using Launchpad Pro
+
+Although when compared with the Ableton Push it lacks a text display
+and rotary encoders, the Novation Launchpad Pro makes an excellent
+grid controller for Afterglow, and a custom
+http://deepsymmetry.org/afterglow/doc/afterglow.controllers.launchpad-pro.html[mapping]
+is being created for it as well.
+
+Assuming you had a Launchpad Pro connected to the machine running
+Afterglow when it was started up, you can activate the Launchpad
+mapping and attach it to the current default show like this:
+
+[source,clojure]
+----
+(require '[afterglow.controllers.launchpad-pro :as lp])
+(def watcher (lp/auto-bind *show*))
+----
+
+You will see a brief startup animation, and Afterglow's Launchpad
+interface will start. (This also arranges for the Launchpad to be
+re-bound to the show if it gets disconnected or powered off and then
+reappears, which is very handy in a performance setting.) Here is an
+overview of how the Launchpad mapping works:
+
+> TODO: Take and explain photos!
 
 ==== License
 

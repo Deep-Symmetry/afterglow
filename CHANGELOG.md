@@ -8,6 +8,9 @@ This change log follows the conventions of
 
 ### Added
 
+- Rich grid controller mapping for the
+  [Novation Launchpad Pro](https://us.novationmusic.com/launch/launchpad-pro#).
+
 ### Changed
 
 - Updated to newly-released Clojure 1.8 for improved performance.

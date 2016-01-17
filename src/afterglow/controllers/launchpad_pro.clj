@@ -768,6 +768,7 @@
                       (when (every? some? [port-in port-out])  ; We found our Launchpad! Bind to it in the background.
                         (timbre/info "Auto-binding to" device)
                         (future
+                          (Thread/sleep 3000)  ; Allow for firmware's own welcome animation
                           (reset! controller (bind-to-show show :device-filter device-filter
                                                            :refresh-interval refresh-interval
                                                            :display-name display-name))

@@ -73,6 +73,8 @@ or
   [adjustable parameters](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters)
   that can be controlled through a rich binding to an
   [Ableton Push](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#using-ableton-push)
+  or
+  [Novation Launchpad Pro](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#using-launchpad-pro)
   controller.
 
 * The timing of effects is pervasively influenced by a deep notion of
@@ -140,18 +142,19 @@ together nicely, though there may be a few more changes.
 
 There is now an embedded web application, which is growing into a show
 control interface for people who are not Clojure hackers, and a useful
-adjunct to the Ableton Push control surface interface. Both are
-explained in the documentation link above. Afterglow also includes the
-beginnings of a show visualizer for designing and working on effects
-without having to physically hook up lights (a proof of concept,
-really, at this point). This is implemented in WebGL using a
-volumetric ray tracer and looks quite promising, at least for a small
-number of fixtures; it will probably overwhelm the graphics processor
-on most systems once you add too many lights. However, the framework
-can be used by someone who actually knows OpenGL programming to build
-a more scalable preview (albeit one that probably doesn’t look quite
-so photo-realistic with beams impacting drifting fog). This is an area
-where I would love some help if it sounds interesting!
+adjunct to the Ableton Push and Launchpad Pro control surface
+interfaces. Each is explained in the documentation link above.
+Afterglow also includes the beginnings of a show visualizer for
+designing and working on effects without having to physically hook up
+lights (a proof of concept, really, at this point). This is
+implemented in WebGL using a volumetric ray tracer and looks quite
+promising, at least for a small number of fixtures; it will probably
+overwhelm the graphics processor on most systems once you add too many
+lights. However, the framework can be used by someone who actually
+knows OpenGL programming to build a more scalable preview (albeit one
+that probably doesn’t look quite so photo-realistic with beams
+impacting drifting fog). This is an area where I would love some help
+if it sounds interesting!
 
 ## Usage
 
@@ -350,9 +353,10 @@ tweak something quickly, you can use that:
 
 The web interface does provide a nice show control page, though, with
 access to a scrollable grid of cues, and the ability to track the cues
-displayed on a physical cue grid control surface like the Ableton
-Push, so you can control them from either place, and see the names
-that go with the colored buttons on the control surface:
+displayed on a physical cue grid control surface like the Ableton Push
+or Novation Launchpad Pro, so you can control them from either place,
+and see the names that go with the colored buttons on the control
+surface:
 
 ![Show control](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/ShowGrid.png)
 
@@ -368,10 +372,10 @@ which you are applying to the pads:
 You can adjust running effects, scroll around the cue grid, and adjust
 or sync the show metronome from either interface. Other MIDI
 controllers can be mapped to provide similar functionality, and
-hopefully such mappings will make their way into Afterglow soon, but
-it will be hard to find many as nicely designed as the Push. (The
-Afterglow mapping is done entirely on the User layer as well, so it
-coexists gracefully with Ableton Live, and you can switch back and
+hopefully such mappings will make their way into Afterglow soon, and
+indeed, the Novation Launchpad Pro is supported now too. (The
+Afterglow mappings are done entirely on the User layer as well, so
+they coexist gracefully with Ableton Live, and you can switch back and
 forth by pressing the User button if you want to perform with both.)
 
 But, getting back to our REPL-based example: We next start the sample
