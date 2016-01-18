@@ -1007,6 +1007,15 @@ for the sample show work this way: the intensity and lightness of the
 strobe are increased by pressure, and so is the chance that a sparkle
 will be assigned to a light on each frame.
 
+NOTE: In order for aftertouch to work with your cues--in other words,
+for you to be able to adjust cue parameters by varing pressure on the
+pad after you have launched it--you need to set your Launchpad Pro's
+*Aftertouch* mode to *Polyphonic*, as described in the *Setup Button*
+section of the
+https://us.novationmusic.com/sites/default/files/novation/downloads/10594/launchpad-pro-user-guide-en.pdf[User
+Guide]. You might also want to set the *Aftertouch Threshold* to
+*Low*.
+
 Cues may be mutually exclusive by nature, and if they were created to
 reflect this (by using the same keyword to register their effects with
 the show), when you activate one, the other cues which use the same
