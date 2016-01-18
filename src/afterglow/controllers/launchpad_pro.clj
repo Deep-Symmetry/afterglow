@@ -190,7 +190,9 @@
                                          (if ending
                                            (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 5 22)
                                            60)
-                                         (if (active-keys (:key cue)) 5 22))
+                                         (if (or (active-keys (:key cue))
+                                                 (seq (clojure.set/intersection active-keys (set (:end-keys cue)))))
+                                           5 22))
                                        l-boost)))]
                     (or color button-off-color))))))))
 

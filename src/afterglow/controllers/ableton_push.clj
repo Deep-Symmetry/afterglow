@@ -639,7 +639,8 @@
                              (if ending
                                (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 6 22)
                                55)
-                             (if (active-keys (:key cue)) 6 22))
+                             (if (or (active-keys (:key cue))
+                                     (seq (clojure.set/intersection active-keys (set (:end-keys cue))))) 6 22))
                            l-boost)))]
         (aset (:next-grid-pads controller) (+ x (* y 8)) (or color off-color))))))
 
