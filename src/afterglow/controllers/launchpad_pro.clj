@@ -259,13 +259,14 @@
 (defn- enter-stop-mode
   "The user has asked to stop the show. Suspend its update task
   and black it out until the stop button is pressed again."
-  [controller]
+  [controller & {:keys [already-stopped]}]
 
   (reset! (:stop-mode controller) true)
-  (with-show (:show controller)
-    (show/stop!)
-    (Thread/sleep (:refresh-interval (:show controller)))
-    (show/blackout-show))
+  (when-not already-stopped
+    (with-show (:show controller)
+      (show/stop!)
+      (Thread/sleep (:refresh-interval (:show controller)))
+      (show/blackout-show)))
 
   (controllers/add-overlay (:overlays controller)
                            (reify controllers/IOverlay
@@ -319,7 +320,7 @@
     ;; If the show has stopped without us noticing, enter stop mode
     (with-show (:show controller)
       (when-not (or (show/running?) @(:stop-mode controller))
-        (enter-stop-mode controller)))
+        (enter-stop-mode controller :already-stopped true)))
 
     ;; Reflect the shift button state
     (swap! (:next-text-buttons controller)
