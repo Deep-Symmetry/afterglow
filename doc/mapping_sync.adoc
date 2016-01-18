@@ -697,13 +697,13 @@ you are adjusting them, as shown in the photo above.
 
 [[exclusivity]]Cues may be mutually exclusive by nature, and if they
 were created to reflect this (by using the same keyword to register
-their effects with the show), when you activate one, the other cues
-which use the same keyword are dimmed. This is a hint that when you
-activate one of them, it will _replace_ the others, rather than
-running at the same time. In the photo
-<<mapping_sync#gobo-photo,below>>, the rest of the Torrent 1 fixed
-gobo cues (the leftmost blue cues) are dimmed because they would
-replace the running &ldquo;T1 atom shake&rdquo; cue.
+their effects with the show, or specifying other effect keys in their
+`:end-keys` list), when you activate one, the other cues which use the
+same keyword are dimmed. This is a hint that when you activate one of
+them, it will _replace_ the others, rather than running at the same
+time. In the photo <<mapping_sync#gobo-photo,below>>, the rest of the
+Torrent 1 fixed gobo cues (the leftmost blue cues) are dimmed because
+they would replace the running &ldquo;T1 atom shake&rdquo; cue.
 
 === Scrolling
 
@@ -1018,11 +1018,12 @@ Guide]. You might also want to set the *Aftertouch Threshold* to
 
 Cues may be mutually exclusive by nature, and if they were created to
 reflect this (by using the same keyword to register their effects with
-the show), when you activate one, the other cues which use the same
-keyword are dimmed. This is a hint that when you activate one of them,
-it will _replace_ the others, rather than running at the same time.
-(There are photos demonstrating this effect in the Ableton Push
-discussion above.)
+the show, or specifying other effect keys in their `:end-keys` list),
+when you activate one, the other cues which use the same keyword are
+dimmed. This is a hint that when you activate one of them, it will
+_replace_ the others, rather than running at the same time. (There are
+photos demonstrating this effect in the Ableton Push discussion
+above.)
 
 === Scrolling
 
