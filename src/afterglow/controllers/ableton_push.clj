@@ -637,9 +637,9 @@
                      ;; the same keyword, in which case they are dim.
                      :l (+ (if active
                              (if ending
-                               (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 10 20)
-                               50)
-                             (if (active-keys (:key cue)) 10 20))
+                               (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 6 22)
+                               55)
+                             (if (active-keys (:key cue)) 6 22))
                            l-boost)))]
         (aset (:next-grid-pads controller) (+ x (* y 8)) (or color off-color))))))
 

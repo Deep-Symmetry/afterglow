@@ -177,7 +177,7 @@
            (vec (for [x (range 8)]
                   (let [[cue active] (show/find-cue-grid-active-effect (:show controller) (+ x origin-x) (+ y origin-y))
                         ending (and active (:ending active))
-                        l-boost (when cue (if (zero? (colors/saturation (:color cue))) 20.0 0.0))
+                        l-boost (when cue (if (zero? (colors/saturation (:color cue))) 2.0 0.0))
                         color (when cue
                                 (colors/create-color
                                  :h (colors/hue (:color cue))
@@ -188,9 +188,9 @@
                                  ;; the same keyword, in which case they are dim.
                                  :l (+ (if active
                                          (if ending
-                                           (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 10 20)
-                                           50)
-                                         (if (active-keys (:key cue)) 10 20))
+                                           (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 5 22)
+                                           60)
+                                         (if (active-keys (:key cue)) 5 22))
                                        l-boost)))]
                     (or color button-off-color))))))))
 
