@@ -38,52 +38,45 @@ rendering process, Afterglow takes a very different approach to
 controlling light shows than other software. It won't be right for
 everyone, but will be extremely compelling to a particular niche. The
 early stages of its
-[rendering loop](doc/rendering_loop.adoc#the-rendering-loop)
-can offer higher levels of abstraction than the usual DMX
-[channel value](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#channel-effects)
-or
-[fixture function](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#function-effects)
-(although those are fully supported too):
+[rendering loop](doc/rendering_loop.adoc#the-rendering-loop) can offer
+higher levels of abstraction than the usual DMX
+[channel value](doc/effects.adoc#channel-effects) or
+[fixture function](doc/effects.adoc#function-effects) (although those
+are fully supported too):
 
 * You can express your desired results in terms of an abstract
-  [color](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#color-effects),
-  including support for the hue-saturation-lightness model, which is
-  great for algorithmic looks, and have it translated to whatever
-  color channels (or color wheel) your fixture supports.
+  [color](doc/effects.adoc#color-effects), including support for the
+  hue-saturation-lightness model, which is great for algorithmic
+  looks, and have it translated to whatever color channels (or color
+  wheel) your fixture supports.
 
 * Groups of moving heads can be told to face particular
-  [directions](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#direction-effects)
-  by specifying parameterized vectors, or to
-  [aim](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#aim-effects)
-  at a particular point in space, and Afterglow figures out how to
+  [directions](doc/effects.adoc#direction-effects) by specifying
+  parameterized vectors, or to [aim](doc/effects.adoc#aim-effects) at
+  a particular point in space, and Afterglow figures out how to
   translate that into DMX control values given its understanding of
-  the
-  [fixture](https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#fixture-definitions)
-  and
-  [where](https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space),
-  and at what angle, you hung it.
+  the [fixture](doc/fixture_definitions.adoc#fixture-definitions) and
+  [where](doc/show_space.adoc#show-space), and at what angle, you hung
+  it.
 
 * There are a variety of
-  [oscillators](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#oscillators)
-  which can efficiently drive effect parameters.
+  [oscillators](doc/oscillators.adoc#oscillators) which can
+  efficiently drive effect parameters.
 
 * You can also create
-  [complex effects](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#complex-effects),
-  with
-  [adjustable parameters](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters)
-  that can be controlled through a rich binding to an
-  [Ableton Push](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#using-ableton-push)
-  or
-  [Novation Launchpad Pro](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#using-launchpad-pro)
+  [complex effects](doc/effects.adoc#complex-effects), with
+  [adjustable parameters](doc/parameters.adoc#dynamic-parameters) that
+  can be controlled through a rich binding to an
+  [Ableton Push](doc/mapping_sync.adoc#using-ableton-push) or
+  [Novation Launchpad Pro](doc/mapping_sync.adoc#using-launchpad-pro)
   controller.
 
 * The timing of effects is pervasively influenced by a deep notion of
-  [musical time](https://github.com/brunchboy/afterglow/blob/master/doc/metronomes.adoc#metronomes),
-  with support for synchronization via
-  [MIDI clock](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#syncing-to-midi-clock)
-  or Pioneer
-  [Pro DJ Link](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#syncing-to-pro-dj-link)
-  beat grids.
+  [musical time](doc/metronomes.adoc#metronomes), with support for
+  synchronization via
+  [MIDI clock](doc/mapping_sync.adoc#syncing-to-midi-clock) or Pioneer
+  [Pro DJ Link](doc/mapping_sync.adoc#syncing-to-pro-dj-link) beat
+  grids.
 
 * You can even host Afterglow within
   [Cycling ‘74’s Max](https://cycling74.com/) visual interactive
@@ -161,10 +154,8 @@ if it sounds interesting!
 > The rest of this document primarily provides an introduction to the
 > configuration of Afterglow from the command line and text files. The
 > show control interface is explained in the
-> [web](https://github.com/brunchboy/afterglow/blob/master/doc/README.adoc#the-embedded-web-interface)
-> and
-> [Push](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#using-ableton-push)
-> sections.
+> [web](doc/README.adoc#the-embedded-web-interface) and
+> [Push](doc/mapping_sync.adoc#using-ableton-push) sections.
 
 Although you will often want to use Afterglow from a Clojure repl, you
 can also bring it up as an executable jar, and run it using `java
@@ -265,7 +256,7 @@ in a file `my-show.clj` and then invoke Afterglow as `java -jar afterglow.jar my
 ```
 
 As noted, you will want to look at the
-[afterglow.examples](https://github.com/brunchboy/afterglow/blob/master/src/afterglow/examples.clj)
+[afterglow.examples](src/afterglow/examples.clj)
 namespace for some examples of how to populate this file; the rest of
 this section gives an overview and walk-through of how pieces of that
 namespace work. The `:require` section at the top of `my-show.clj` is
@@ -431,11 +422,12 @@ set up a Universe with ID 1.
 > functions inside of `(with-show ...)` to establish a context. You
 > will likely want to do something similar in setting up your own
 > shows, since a single show is the most common scenario. See the
-> [afterglow.show-context](http://deepsymmetry.org/afterglow/doc/afterglow.show-context.html)
-> API documentation for more details. The `show-context` namespace
-> also defines the dynamic variable `*show*` which you can use to
-> refer to the current default show when you need to mention it
-> explicitly, as you will see in some of the examples below.
+> `afterglow.show-context`
+> [API documentation](http://deepsymmetry.org/afterglow/doc/afterglow.show-context.html)
+> for more details. The `show-context` namespace also defines the
+> dynamic variable `*show*` which you can use to refer to the current
+> default show when you need to mention it explicitly, as you will see
+> in some of the examples below.
 
 The actual content of `fiat-lux` is quite simple, creating
 three effects to achieve the goals mentioned above:
@@ -486,13 +478,13 @@ plugged in:
 And then the last fader acts as my grand master dimmer, and I can
 quickly get relief from overly bright lights. (In a real performance
 context, you would want to use
-[this alternate approach](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#automatically-creating-bindings-when-a-device-connects)
+[this alternate approach](doc/mapping_sync.adoc#automatically-creating-bindings-when-a-device-connects)
 to automatically set up your bindings whenever the controller is
 connected. That way, if someone trips over the controller cable, as
 soon as you plug it back in, you are good to go again.)
 
 > If you have access to an Ableton Push, it is even easier to have
-> [intutive control](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#using-ableton-push)
+> [intutive control](doc/mapping_sync.adoc#using-ableton-push)
 > over your show’s grand master dimmer. As soon as you bind the Push
 > to your show, the Push Master encoder is automatically tied to the
 > show master dimmer, with nice graphical feedback in the text area.
@@ -546,9 +538,9 @@ Clojure seize control of your lights!
 
 If you have DJ software or a mixer sending you MIDI clock data, you
 can sync the show’s BPM to it (see the
-[docs](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#syncing-to-midi-clock)
-for details, and for a Traktor controller mapping file that lets you
-sync to its beat phase information as well):
+[docs](doc/mapping_sync.adoc#syncing-to-midi-clock) for details, and
+for a Traktor controller mapping file that lets you sync to its beat
+phase information as well):
 
 ```clojure
 (show/sync-to-external-clock (afterglow.midi/sync-to-midi-clock "traktor"))
@@ -570,15 +562,14 @@ Or, if you need to be woken up a bit,
   "Fast blast!" :strobe 100 (show/all-fixtures)))
 ```
 
-> The [project documentation](https://github.com/brunchboy/afterglow/blob/master/doc/README.adoc#afterglow-documentation)
+> The [project documentation](doc/README.adoc#afterglow-documentation)
 > has more examples of
-> [building effects](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#effect-examples),
-> and
-> [mapping parameters](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#midi-mapping-and-beat-sync)
+> [building effects](doc/effects.adoc#effect-examples), and
+> [mapping parameters](doc/mapping_sync.adoc#midi-mapping-and-beat-sync)
 > to MIDI controllers. There is also low-level
 > [API documentation](http://deepsymmetry.org/afterglow/doc), but the
-> project documentation is the best starting point for a conceptual overview and
-> introduction.
+> project documentation is the best starting point for a conceptual
+> overview and introduction.
 
 When you are all done, you can terminate the effect handler thread...
 
@@ -785,7 +776,7 @@ encounter them!
   if there is a SysEx for setting RGB pad colors available, or if we
   will need to go back to using MIDI notes; if the latter, the colors
   are all wrong and need to be rediscovered.
-- [ ] Support the Novation Launchpad series. The Pro has pressure
+- [x] Support the Novation Launchpad series. The Pro has pressure
   sensitivity, so start there. They also provide excellent programmer
   documentation, so it will even be straightforward. For example,
   [Launchpad Pro Programmers Reference Guide](http://global.novationmusic.com/sites/default/files/novation/downloads/10598/launchpad-pro-programmers-reference-guide_0.pdf),
