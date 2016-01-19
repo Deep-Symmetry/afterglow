@@ -2,6 +2,7 @@
 James Elliott <james@deepsymmetry.org>
 :icons: font
 :experimental:
+:api-doc: http://deepsymmetry.org/afterglow/doc/
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
@@ -213,14 +214,14 @@ independently, such as through a jar file. Afterglow can offer an
 embedded `nrepl` server, which can be brought up via either
 https://github.com/brunchboy/afterglow#usage[command-line arguments],
 or by using the web console to invoke
-http://deepsymmetry.org/afterglow/doc/afterglow.core.html#var-start-nrepl[core/start-nrepl].
+{api-doc}afterglow.core.html#var-start-nrepl[`core/start-nrepl`].
 
 === Show Control
 
 Once you have the web interface open, and a show running, you will
 spend most of your time on the show page. Here a look at the cue grid
 that gets created for the sample show by
-http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[afterglow.examples/make-cues]:
+{api-doc}afterglow.examples.html#var-make-cues[`afterglow.examples/make-cues`]:
 
 image:assets/ShowGrid.gif[Show control]
 
@@ -452,13 +453,13 @@ that tells Afterglow what fixtures you have, and the DMX universes and
 channels you have them connected to, and how you have them arranged in
 physical space. You will want to create a namespace for your show
 along the lines of
-http://deepsymmetry.org/afterglow/doc/afterglow.examples.html[afterglow.examples],
+{api-doc}afterglow.examples.html[`afterglow.examples`],
 and a function like
-http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-use-sample-show[use-sample-show]
+{api-doc}afterglow.examples.html#var-use-sample-show[`use-sample-show`]
 which sets up your own show.
 
 . Create the cues you want. Much as the
-http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[make-cues]
+{api-doc}afterglow.examples.html#var-make-cues[`make-cues`]
 function in the examples namespace creates a bunch of cues that work
 with the sample show's fixtures, you will want cues that create
 effects to make your lights do interesting things, and which are
