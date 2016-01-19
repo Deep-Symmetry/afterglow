@@ -23,7 +23,7 @@
   which that cue cell should be drawn in the web interface."
   [show active-keys cue cue-effect held?]
   (let [ending (and cue-effect (:ending cue-effect))
-        l-boost (if (zero? (colors/saturation (:color cue))) 20.0 0.0)]
+        l-boost (if (zero? (colors/saturation (:color cue))) 10.0 0.0)]
     (colors/create-color
      :h (colors/hue (:color cue))
      ;; Figure the lightness. Held cues are the lightest, followed by active, non-ending
@@ -33,10 +33,10 @@
      :s (colors/saturation (:color cue))
      :l (+ (if cue-effect
              (if ending
-               (if (> (rhythm/metro-beat-phase (:metronome show)) 0.4) 20.0 40.0)
-               (if held? 80.0 65.0))
+               (if (> (rhythm/metro-beat-phase (:metronome show)) 0.4) 25.0 50.0)
+               (if held? 90.0 80.0))
              (if (or (active-keys (:key cue))
-                     (seq (clojure.set/intersection active-keys (set (:end-keys cue))))) 25.0 40.0))
+                     (seq (clojure.set/intersection active-keys (set (:end-keys cue))))) 25.0 50.0))
            l-boost))))
 
 (defn cue-view
@@ -207,7 +207,9 @@
   an empty string so the text color is used."
   [color]
   (if (and color
-           (> (colors/lightness color) 60.0))
+           ;; Calculate the perceived brightness of the color.
+           (let [[r g b] (map #(/ % 255) [(colors/red color) (colors/green color) (colors/blue color)])]
+             (> (Math/sqrt (+ (* 0.299 r r) (* 0.587 g g) (* 0.114 b b))) 0.6)))
     "#000"
     ""))
 
