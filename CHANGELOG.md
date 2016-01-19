@@ -10,6 +10,11 @@ This change log follows the conventions of
 
 - Rich grid controller mapping for the
   [Novation Launchpad Pro](https://us.novationmusic.com/launch/launchpad-pro#).
+- Shift key can be used with tap tempo buttons on controllers to set
+  the start of a beat, bar, or phrase, depending on the
+  synchronization level of the metronome.
+- Animated GIFs to the documentation to illustrate how the cue user
+  interface works.
 
 ### Changed
 
@@ -39,6 +44,15 @@ This change log follows the conventions of
 
 ### Fixed
 
+- Cue colors were improved in the web interface and on the Push to
+  make it easier to see which cues are active, as well as to make the
+  colors more faithful to the cue's intent.
+- The text labels on cues in the web interface are now more legible
+  because they use a contrasting color based on the cell's perceived
+  brightness.
+- Incompatible cues are now identified not just from matching effect
+  keys, but also from their `:end-keys` lists, so the web and
+  controller interfaces provide even more guidance.
 - Some testing in a Windows virtual machine revealed issues when
   working with standard Java Midi implementations (as opposed to
   CoreMidi4J on the Mac). These were addressed.

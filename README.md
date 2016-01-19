@@ -906,6 +906,7 @@ encounter them!
   [clojure-protobuf](https://github.com/flatland/clojure-protobuf).
 * The incomplete
   [Java OLA client](https://github.com/OpenLightingProject/ola/tree/master/java).
+* Making [Animated GIF Screencasts](https://gist.github.com/dergachev/4627207).
 
 ### Related Work
 
