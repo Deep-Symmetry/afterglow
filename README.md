@@ -358,7 +358,7 @@ or Novation Launchpad Pro, so you can control them from either place,
 and see the names that go with the colored buttons on the control
 surface:
 
-![Show control](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/ShowGrid.png)
+![Show control](doc/assets/ShowGrid.gif)
 
 Here is the Ableton Push interface tied to that same section of the
 cue grid. This physical control surface lets you trigger more than one
