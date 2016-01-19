@@ -38,7 +38,7 @@ rendering process, Afterglow takes a very different approach to
 controlling light shows than other software. It won't be right for
 everyone, but will be extremely compelling to a particular niche. The
 early stages of its
-[rendering loop](https://github.com/brunchboy/afterglow/blob/master/doc/rendering_loop.adoc#the-rendering-loop)
+[rendering loop](doc/rendering_loop.adoc#the-rendering-loop)
 can offer higher levels of abstraction than the usual DMX
 [channel value](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#channel-effects)
 or
