@@ -330,13 +330,13 @@ controls whether a browser window should be automatically opened):
 (core/start-web-server 16000 true)
 ```
 
-![Web interface](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/WebHome.png)
+![Web interface](doc/assets/WebHome.png)
     
 As noted at the bottom, the web interface provides a minimal console
 as well, so if you are running Afterglow from a jar and just want to
 tweak something quickly, you can use that:
 
-![Web console](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/Console.png)
+![Web console](doc/assets/Console.png)
 
 > However, this does not offer the valuable support you would have
 > from a dedicated REPL like
@@ -356,18 +356,21 @@ access to a scrollable grid of cues, and the ability to track the cues
 displayed on a physical cue grid control surface like the Ableton Push
 or Novation Launchpad Pro, so you can control them from either place,
 and see the names that go with the colored buttons on the control
-surface:
+surface. This image shows how cues respond to clicks, lightening while
+they run, and darkening any cues which cannot run at the same time. It
+also shows how you can scroll around a larger grid than fits on the
+screen at one time:
 
 ![Show control](doc/assets/ShowGrid.gif)
 
-Here is the Ableton Push interface tied to that same section of the
+Here is the Ableton Push interface tied to that an earlier of the same
 cue grid. This physical control surface lets you trigger more than one
 cue at the same time, and also gives you niceties unavailable with a
 mouse, like pressure sensitivity so your effect intensity, speed,
 color, or other parameters can be varied as you alter the pressure
 which you are applying to the pads:
 
-![Push interface](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/AbletonInterface.jpg)
+![Push interface](doc/assets/AbletonInterface.jpg)
 
 You can adjust running effects, scroll around the cue grid, and adjust
 or sync the show metronome from either interface. Other MIDI

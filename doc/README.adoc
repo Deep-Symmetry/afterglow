@@ -218,11 +218,11 @@ http://deepsymmetry.org/afterglow/doc/afterglow.core.html#var-start-nrepl[core/s
 === Show Control
 
 Once you have the web interface open, and a show running, you will
-spend most of your time on the show page. Here is the bottom left
-corner of the cue grid that gets created for the sample show by
+spend most of your time on the show page. Here a look at the cue grid
+that gets created for the sample show by
 http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[afterglow.examples/make-cues]:
 
-image:assets/ShowGrid.png[Show control]
+image:assets/ShowGrid.gif[Show control]
 
 There are a number of different things you can control from this page.
 The load indicator in the middle of the navigation bar gives you a
@@ -266,12 +266,13 @@ a normal cue, staying on until you click it a second time.
 
 Cues may be mutually exclusive by nature, and if they were created to
 reflect this (by using the same keyword to register their effects with
-the show), when you activate one, the other cues which use the same
-keyword are dimmed. This is a hint that when you activate one of them,
-it will _replace_ the others, rather than running at the same time. In
-the image above, the &ldquo;All Sine Bar&rdquo;, &ldquo;All Saw Up 2
-Beat&rdquo;, and &ldquo;All Saw Down Beat&rdquo; cues are dimmed
-because they would replace the running &ldquo;All Dimmers&rdquo; cue.
+the show, or specifying other effect keys in their `:end-keys` list),
+when you activate one, the other cues which use the same keyword are
+darkened. This is a hint that when you activate one of them, it will
+_replace_ the others, rather than running at the same time. The
+https://github.com/brunchboy/afterglow/blob/master/doc/cues.adoc#the-cue-grid[Cue
+Grid section] of the Cues documentation goes into more details about
+the relationships between cues illustrated in the above animation.
 
 ==== Scrolling and Linked Controllers
 

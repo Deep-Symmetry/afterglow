@@ -32,25 +32,32 @@ same way, so the browser window can act as documentation to help the
 user learn the cue names associated with each available cue pad on the
 controller.
 
-image::assets/ShowGrid.png[Web interface]
+image::assets/ShowGrid.gif[Web interface]
 
 In addition to names, cues can be assigned colors in the grid, and the
 web interface will honor those colors, as will the physical grid
 controllers, within the limits of their capabilities. To provide
 feedback about cue activation, a lightened version of the cue color is
 displayed for cues which are currently active. And to help inform the
-user about cue compatibility, any cues which are assigned the same
-effect keyword, meaning they will terminate each other when launched,
-will be displayed in a darkened color if an effect with that keyword
-is currently running. Examples of both of these can be seen in the
-first column of cues above, in which the &ldquo;All Dimmers&rdquo; cue
-is active and displaying a lightened version of the yellow color
-assigned to it, and the two cues above it, &ldquo;All Saw Down
-Beat&rdquo; and &ldquo;All Saw Up 2 Beat&rdquo; use the same keyword
-and color, and so are displaying a darkened version of the yellow
-color. This is a useful technique for building easy-to-learn cue
-grids. The same cues are shown on the Ableton Push below, so you can
-see how the color relationships help with learning the cue names.
+user about cue compatibility, any cues which would cause a running
+effect to end (either because they are assigned the same effect
+keyword, or they mention that keyword in their `:end-keys` list) will
+be displayed in a darkened color.
+
+Examples of these features can be seen in the animation above, in
+which the first two rows of color cues are all mutually exclusive,
+while the four rows of dimmer cues above them have a more complex
+interrelationship: The &ldquo;All Dimmers&rdquo; cues in the leftmost
+column darken the entire rectangle of dimmer cues, while individual
+fixture dimmer cues to their right darken their just their own columns
+as well as the "all" cues. On the blue/green page of Torrent gobo
+cues, you can see how each gobo wheel cue dims other cues which
+use the same fixture and gobo wheel while it is active.
+
+This is a useful technique for building easy-to-learn cue grids. A
+slightly older version of the same cues are shown on the Ableton Push
+below, so you can see how the color relationships help with learning
+the cue names.
 
 image::assets/AbletonInterface.jpg[Ableton Push interface]
 
