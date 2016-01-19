@@ -58,8 +58,7 @@ image:assets/sawtooth-beat.png[Default Sawtooth Oscillator]
 
 You can change the nature of the wave by using optional keyword
 parameters, and the values you use with them can be be
-https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters[dynamic
-parameters]:
+<<parameters#dynamic-parameters,dynamic parameters>>:
 
 [cols=",,",options="header",]
 |=======================================================================
@@ -170,8 +169,7 @@ image:assets/triangle-beat.png[Default Triangle Oscillator]
 
 You can change the nature of the wave by using optional keyword
 parameters, and the values you use with them can be be
-https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters[dynamic
-parameters]:
+<<parameters#dynamic-parameters,dynamic parameters>>:
 
 [cols=",,",options="header",]
 |=======================================================================
@@ -236,8 +234,7 @@ image:assets/sine-beat.png[Default Sine Oscillator]
 
 You can change the nature of the wave by using optional keyword
 parameters, and the values you use with them can be be
-https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters[dynamic
-parameters]:
+<<parameters#dynamic-parameters,dynamic parameters>>:
 
 [cols=",,",options="header",]
 |=======================================================================
@@ -299,8 +296,7 @@ image:assets/square-beat.png[Square Beat Oscillator]
 
 You can change the nature of the wave by using optional keyword
 parameters, and the values you use with them can be be
-https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters[dynamic
-parameters]:
+<<parameters#dynamic-parameters,dynamic parameters>>:
 
 [cols=",,",options="header",]
 |=======================================================================

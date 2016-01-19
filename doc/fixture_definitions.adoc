@@ -422,15 +422,14 @@ channels.
 
 |:inverted-from
 
-[[inverted-channels]]
-|If this key is present, the value established by the channel's
-https://github.com/brunchboy/afterglow/blob/master/doc/rendering_loop.adoc#channel-assigners[assigners]
-will be
+[[inverted-channels]] |If this key is present, the value established
+by the channel's <<rendering_loop#channel-assigners,assigners>> will
+be
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.channel.html#var-apply-channel-value[reversed]
-when it is sent to the fixture. This is necessary to support fixtures which have inverted dimmer channels,
-and can be configured when
-https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#dimmer-channels[creating]
-the dimmer channel specification.
+when it is sent to the fixture. This is necessary to support fixtures
+which have inverted dimmer channels, and can be configured when
+<<fixture_definitions#dimmer-channels,creating>> the dimmer channel
+specification.
 
 |===
 
@@ -1229,7 +1228,7 @@ misidentified, as described above, some fixtures have _inverted_
 dimmer channels, which do not get brighter as the DMX value increases.
 The `.qxf` file does not record this information, so you will need to
 manually add it to the
-https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#dimmer-channels[specification].
+<<fixture_definitions#dimmer-channels,specification>>.
 
 #### Color Channels
 

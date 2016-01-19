@@ -92,11 +92,10 @@ cue to include `:start` values for those variables, and remove the
 You can also tie an encoder or fader on a MIDI control surface to a
 show variable, so that turning the encoder or sliding the fader
 changes the value of the variable. If you have set up cues to look at
-that variable, through
-https://github.com/brunchboy/afterglow/blob/master/doc/cues.adoc#cue-variables[cue-specific
-variable bindings], the control surface can then vary the look of the
-effect created by the cue, both before the cue is launched, and while
-it is running.
+that variable, through <<cues#cue-variables,cue-specific variable
+bindings>>, the control surface can then vary the look of the effect
+created by the cue, both before the cue is launched, and while it is
+running.
 
 Here is a lower-level example of how I can use
 http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-var-mapping[add-midi-control-to-var-mapping]

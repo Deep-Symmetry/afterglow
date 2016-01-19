@@ -269,9 +269,8 @@ rather than each beat, by passing the optional keyword argument
 oscillators, you can use the optional keyword argument
 `:interval-ratio` to have the parameter run at the specified fraction
 or multiple of the chosen interval. The way that `:interval-ratio`
-works is illustrated in the
-https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#ratios[Ratios]
-section of the oscillator documentation.
+works is illustrated in the `<<oscillators#ratios,Ratios>> section of
+the oscillator documentation.
 
 As one example of `:inteval-ratio` specifically applied to step
 parameters, here is what the preceding graph would look like if the
@@ -629,9 +628,9 @@ feeding into the effects you are creating with it.
 
 If you are using a show variable to hold values as the basis of your
 dynamic parameter, perhaps by
-https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#mapping-a-control-to-a-variable[mapping]
-incoming MIDI events to it, can check the current value of the
-variable at any time like this:
+<<mapping_sync#mapping-a-control-to-a-variable,mapping>> incoming MIDI
+events to it, can check the current value of the variable at any time
+like this:
 
 [source,clojure]
 ----

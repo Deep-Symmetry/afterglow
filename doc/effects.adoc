@@ -661,8 +661,8 @@ active; `2` causes the second to be seen, and so on. Non-integer
 values are how fades are accomplished, they result in a linear blend
 between the corresponding effects. In order to make the chase evolve
 over time, `position` needs to be a dynamic variable parameter, and
-https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#step-parameters[Step
-Parameters], created by the function
+<<parameters#step-parameters,Step Parameters>>, created by the
+function
 http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-step-param[afterglow.effects.params/build-step-param],
 are designed specifically to work with chases.
 
@@ -788,9 +788,8 @@ Out] color cycle chase changes the color of a group of fixtures to a
 different color for each bar of a phrase of music. During the down
 beat of each new bar, the color spreads over the participating
 fixtures starting at their geometric center in the x-y plane of
-https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space[show
-space], and spreading in an expanding circle until reaching the
-furthest heads at the end of the down beat.
+<<show_space#show-space,show space>>, and spreading in an expanding
+circle until reaching the furthest heads at the end of the down beat.
 
 [source,clojure]
 ----
