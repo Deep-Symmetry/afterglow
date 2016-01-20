@@ -3,6 +3,7 @@ James Elliott <james@deepsymmetry.org>
 :icons: font
 :toc:
 :toc-placement: preamble
+:api-doc: http://brunchboy.github.io/afterglow/api-doc/master/
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
@@ -23,17 +24,17 @@ Beyond laser shows.
 == Frame Rendering Stages
 
 When an afterglow show is running, that is, from when
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-start.21[(show/start!)]
+{api-doc}afterglow.show.html#var-start.21[`(show/start!)`]
 has been called, until
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-stop.21[(show/stop!)]
+{api-doc}afterglow.show.html#var-stop.21[`(show/stop!)`]
 or
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-stop-all.21[(show/stop-all!)]
+{api-doc}afterglow.show.html#var-stop-all.21[`(show/stop-all!)`]
 is called, there is a background task scheduled to run many times per
 second, to calculate the next “frame” of control values to send to the
 universes controlled by the show, and then send those values. The rate
 at which this activity is scheduled is determined by the
 `refresh-interval` value established when the show was
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-show[created].
+{api-doc}afterglow.show.html#var-show[created].
 If not explicitly set as a parameter to `(show/show)`, an interval of
 25 milliseconds is used, causing the lights to be updated forty times
 each second. If your DMX interface is running at a different rate, you
@@ -74,9 +75,9 @@ When it is time to determine the next set of values to send to the
 show’s patched fixtures, this is what happens:
 
 . The first thing Afterglow does is take a
-http://deepsymmetry.org/afterglow/doc/afterglow.rhythm.html#var-ISnapshot[snapshot]
+{api-doc}afterglow.rhythm.html#var-ISnapshot[snapshot]
 of the show
-https://github.com/brunchboy/afterglow/wiki/Metronomes[metronome] to
+<<metronomes#metronomes,metronome>> to
 identify a common point in time for all the effects to use in deciding
 how they should look. This enables a consistent, coordinated appearance
 for everything in the frame.
@@ -95,7 +96,7 @@ they are removed from the list of active effects.
 . Then it makes another loop over any effects that did not end, to see
 how they want to affect the lights. It does this by calling, in order,
 each effect’s
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-generate[generate]
+{api-doc}afterglow.effects.html#var-generate[`generate`]
 function, passing in the show and the metronome snapshot. In order to
 make the lights do things, each effect returns a list of
 <<rendering_loop#assigners,Assigners>> specifying the things it wants
@@ -118,7 +119,7 @@ frame, it can simply return an empty assigner list.
 . Once all the assigners have been collected into their kind/target
 lists, each list is evaluated. The assigner kinds are processed in the
 order established by
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-resolution-order[show/resolution-order]
+{api-doc}afterglow.show.html#var-resolution-order[`show/resolution-order`]
 and starts with low-level, single channel `:channel` assigners, then
 moves up to more complex `:function`, `:color`, `:pan-tilt`,
 `:direction`, and `:aim` assigners. (This order was chosen because
@@ -128,7 +129,7 @@ running last.) Within each kind, however, the lists can be processed
 in parallel, since they will all affect separate targets.
 +
 To process a list, each assigner’s
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-assign[assign]
+{api-doc}afterglow.effects.html#var-assign[`assign`]
 function is called, again passing in the show and the metronome
 snapshot, the target which is being assigned (a DMX channel in a show
 universe, or a fixture or fixture head, depending on the assigner
@@ -156,7 +157,7 @@ current frame.
 
 . Afterglow uses these assignment results to establish actual DMX
 values for the frame, using the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-resolve-assignment[resolve-assignment]
+{api-doc}afterglow.effects.html#var-resolve-assignment[`resolve-assignment`]
 multimethod, whose implementations (which are specific for each of the
 possible assignment kinds) finally resolve any remaining dynamic
 parameters, and then turn abstractions like color objects and aiming
@@ -178,9 +179,9 @@ abstract assigners, or a simple DMX channel for Channel assigners), at
 a given point in time. It really is the heart of implementing an effect.
 
 The assigner fulfills this responsibility by implementing the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-assign[assign]
+{api-doc}afterglow.effects.html#var-assign[`assign`]
 function in the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-IAssigner[IAssigner]
+{api-doc}afterglow.effects.html#var-IAssigner[`IAssigner`]
 protocol. It is passed the show, the metronome snapshot which
 identifies the point in musical time that has been reached, the target
 being assigned, and the value that any earlier assigners of the same
@@ -195,18 +196,18 @@ assigner of that type in the effect chain.
 
 The best way to understand this is probably to look at examples of
 effects that ship with Afterglow, starting with simple ones like
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.color.html#var-color-effect[color-effect],
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.dimmer.html[dimmer-effect],
+{api-doc}afterglow.effects.color.html#var-color-effect[`color-effect`],
+{api-doc}afterglow.effects.dimmer.html#var-dimmer-effect[`dimmer-effect`],
 and
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.movement.html#var-direction-effect[direction-effect],
+{api-doc}afterglow.effects.movement.html#var-direction-effect[`direction-effect`],
 then slightly more complex
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-strobe[strobe]
+{api-doc}afterglow.effects.fun.html#var-strobe[`strobe`]
 and
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-sparkle[sparkle]
+{api-doc}afterglow.effects.fun.html#var-sparkle[`sparkle`]
 effects, and on up to more sophisticated compound effects like
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-color-cycle-chase[color-cycle-chase],
+{api-doc}afterglow.effects.fun.html#var-color-cycle-chase[`color-cycle-chase`],
 and the spatially mapped elaborations of it like
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-iris-out-color-cycle-chase[iris-out-color-cycle-chase].
+{api-doc}afterglow.effects.fun.html#var-iris-out-color-cycle-chase[`iris-out-color-cycle-chase`].
 
 Once you can understand how all of those pieces fit together, you will
 be ready to build your own complex and mesmerizing effects!
@@ -240,7 +241,7 @@ fixtures which have inverted dimmers, is established by the presence
 of an `:inverted-from` entry in the
 <<fixture_definitions#inverted-channels,channel specification>>, and
 taken care of by
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.channel.html#var-apply-channel-value[apply-channel-value],
+{api-doc}afterglow.effects.channel.html#var-apply-channel-value[`apply-channel-value`],
 which is invoked by the channel assignment resolver, so channel
 assigners do not need to worry about this detail, and can always work
 in terms of non-inverted channel values. (This is important, for
@@ -376,9 +377,9 @@ If you want Afterglow to control something that does not respond to
 DMX values, you might be able to do so by extending the rendering
 loop. There is an example of doing just this to control laser shows by
 communicating with Pangolin's Beyond software in the
-http://deepsymmetry.org/afterglow/doc/afterglow.beyond.html[afterglow.beyond]
+{api-doc}afterglow.beyond.html[`afterglow.beyond`]
 namespace, and another example in
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.show-variable.html[afterglow.effects.show-variable],
+{api-doc}afterglow.effects.show-variable.html[`afterglow.effects.show-variable`],
 which creates effects that set show variables when they are run.
 
 === Introducing New Assigner Types
@@ -396,7 +397,7 @@ contrast, more than one `:beyond-cue` can be active at once, so its
 Afterglow needs to be told how to handle your new kinds of assigners.
 First, you need to establish the order in which they should be run by
 calling
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-set-extension-resolution-order.21[show/set-extension-resolution-order!]
+{api-doc}afterglow.show.html#var-set-extension-resolution-order.21[`show/set-extension-resolution-order!`]
 with your unique extension key and the list of all your assigner types
 in the order in which they should be resolved. You need to do this
 even if you don't care about the order, or have only one new assigner
@@ -408,7 +409,7 @@ Then you need to tell afterglow how to actually resolve one of your
 assigners. You do this in the same way Afterglow registers its own
 built-in assigners, by using `defmethod` to add a new implementation
 of the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-resolve-assignment[resolve-assignment]
+{api-doc}afterglow.effects.html#var-resolve-assignment[`resolve-assignment`]
 multimethod, for your new assigner keyword. Again, the end of the
 Beyond integration provides a concrete example.
 
@@ -417,7 +418,7 @@ Beyond integration provides a concrete example.
 If you want to support smooth fades between different values being
 returned by your assigners, you will also want to `defmethod` an
 implementation of the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-fade-between-assignments[fade-between-assignments]
+{api-doc}afterglow.effects.html#var-fade-between-assignments[`fade-between-assignments`]
 multimethod. This is the last thing that the Beyond integration does.
 
 TIP: If you do not provide an implementation of
@@ -432,14 +433,14 @@ setup at the start of a frame before your assigners can be resolved,
 and then will want to actually do something when the frame is rendered
 and being sent to the lights. To accomplish these tasks, you register
 functions with a show:
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-empty-buffer-fn.21[add-empty-buffer-fn!]
+{api-doc}afterglow.show.html#var-add-empty-buffer-fn.21[`add-empty-buffer-fn!`]
 tells the show to call the supplied function when a frame is about to
 be rendered, allowing you to set up any buffers your assigners will
 need, and
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-send-buffer-fn.21[add-send-buffer-fn!]
+{api-doc}afterglow.show.html#var-add-send-buffer-fn.21[`add-send-buffer-fn!`]
 tells the show to call the supplied function when it is time to
 actually send out the frame. The Beyond integration calls these in its
-http://deepsymmetry.org/afterglow/doc/afterglow.beyond.html#var-bind-to-show[bind-to-show]
+{api-doc}afterglow.beyond.html#var-bind-to-show[`bind-to-show`]
 function.
 
 Having done all these things, it becomes possible to create cues which

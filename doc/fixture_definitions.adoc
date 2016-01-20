@@ -3,6 +3,8 @@ James Elliott <james@deepsymmetry.org>
 :icons: font
 :toc:
 :toc-placement: preamble
+:api-doc: http://brunchboy.github.io/afterglow/api-doc/master/
+:branch-base: https://github.com/brunchboy/afterglow/blob/master/
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
@@ -46,19 +48,19 @@ can be a huge help.
 ====
 
 The namespace
-http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.html[afterglow.fixtures]
+{api-doc}afterglow.fixtures.html[`afterglow.fixtures`]
 has definitions for very basic one-channel generic dimmers and
 switches. Looking at the source for those can illustrate the most
 basic structure of a fixture definition. It also contains some helper
 functions Afterglow uses in processing fixture definitions.
 
 The namespace
-http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.american-dj.html[afterglow.fixtures.american-dj]
+{api-doc}afterglow.fixtures.american-dj.html[`afterglow.fixtures.american-dj`]
 contains definitions for fixtures made by American DJ. Currently, only
 the Hypnotic RGB laser is present.
 
 The namespace
-http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.blizzard.html[afterglow.fixtures.blizzard]
+{api-doc}afterglow.fixtures.blizzard.html[`afterglow.fixtures.blizzard`]
 is the most complete so far, mostly because the author lives close to
 Blizzard and mostly owns fixures made by them. It includes definitions
 for a full-featured moving head spot (the Torrent F3), a moving head
@@ -68,7 +70,7 @@ moonflower effect (the Snowball). These might be useful examples for
 fixtures you want to create.
 
 The namespace
-http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.chauvet.html[afterglow.fixtures.chauvet]
+{api-doc}afterglow.fixtures.chauvet.html[`afterglow.fixtures.chauvet`]
 is for fixtures made by Chauvet.
 
 == Structure of a Fixture Definition
@@ -85,7 +87,7 @@ an argument to the fixture definition function, and tells it what
 version of the map to return. For convenience, the function may let
 you call it with no argument, and assume a default mode. Its
 documentation should reflect this, see for example the
-http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.blizzard.html#var-blade-rgbw[blade-rgbw]
+{api-doc}afterglow.fixtures.blizzard.html#var-blade-rgbw[`blade-rgbw`]
 documentation.
 
 When you are learning how to write fixture definitions, it can be
@@ -141,14 +143,14 @@ almost all of the information Afterglow needs is found in the
 creating the fixture definition.
 
 If you had already looked at the source for
-http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.blizzard.html#var-snowball[snowball]
+{api-doc}afterglow.fixtures.blizzard.html#var-snowball[`snowball`]
 (which you can get to by clicking the `view source` button at the
 bottom of all the API documentation entries), you might have noticed
 that the source is a lot shorter than the resulting map. That's
 because it can take advantage of a bunch of helper functions described
 on this page to help with the tedious and repetetive parts of
 constructing the map. And when you patch a fixture into a show using
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-patch-fixture.21[afterglow.show/patch-fixture!]
+{api-doc}afterglow.show.html#var-patch-fixture.21[`afterglow.show/patch-fixture!`]
 the map gets much bigger again, as Afterglow annotates it with
 information you provided during the patching process, assigning the
 actual universes and DMX channels for each logical channel in the
@@ -357,7 +359,7 @@ most-significant byte (MSB) of the value as the `:offset`, and the
 channel containing the least-significant byte (LSB) is specified in
 the same channel specification using the key `:fine-offset`. The
 function
-http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-fine-channel[afterglow.channels/fine-channel]
+{api-doc}afterglow.channels.html#var-fine-channel[`afterglow.channels/fine-channel`]
 helps create such a channel specification map. (In fact, it has other
 handy features which make it useful even when you are creating a
 channel specification that does not need a `:fine-offset` value).
@@ -400,7 +402,7 @@ channel specification that does not need a `:fine-offset` value).
 
 If you don't want Afterglow to mix colors using this channel, leave
 out the `:hue` entry. The fixture definition function for the Chauvet
-http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.chauvet.html#var-slimpar-hex3-irc[SlimPar
+{api-doc}afterglow.fixtures.chauvet.html#var-slimpar-hex3-irc[SlimPar
 Hex3 IRC] uses optional keyword arguments to let the show creator
 decide whether or not to include them for its amber and ultraviolet
 channels.
@@ -425,7 +427,7 @@ channels.
 [[inverted-channels]] |If this key is present, the value established
 by the channel's <<rendering_loop#channel-assigners,assigners>> will
 be
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.channel.html#var-apply-channel-value[reversed]
+{api-doc}afterglow.effects.channel.html#var-apply-channel-value[reversed]
 when it is sent to the fixture. This is necessary to support fixtures
 which have inverted dimmer channels, and can be configured when
 <<fixture_definitions#dimmer-channels,creating>> the dimmer channel
@@ -627,7 +629,7 @@ to actually pick the DMX value to send. A good example of a reason to
 do this is with the `strobe` function, so that different fixtures can
 be coaxed into strobing at roughly the same rate. The fixture
 definitions that ship with Afterglow use
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.channel.html#var-function-value-scaler[afterglow.effects.channel/function-value-scaler]
+{api-doc}afterglow.effects.channel.html#var-function-value-scaler[`afterglow.effects.channel/function-value-scaler`]
 to build `:scale-fn` functions for their `:strobe` functions so that,
 rather than a percentage, the strobe function value is interpreted as
 an approximate tenth-Hz rate (flashes per ten seconds), normalized for
@@ -639,7 +641,7 @@ Channels>> section below explains this further.
 === Channel Creation Functions
 
 The
-http://deepsymmetry.org/afterglow/doc/afterglow.channels.html[afterglow.channels]
+{api-doc}afterglow.channels.html[`afterglow.channels`]
 namespace provides a number of functions to help you create channel
 specifications in your fixture definitions. You will see these used
 all over the place in the fixture definitions which ship with
@@ -647,7 +649,7 @@ Afterglow; here is an introduction to how they work.
 
 ==== Color Channels
 
-http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-color[afterglow.channels/color]
+{api-doc}afterglow.channels.html#var-color[`afterglow.channels/color`]
 returns a channel specification for a channel that controls an
 individual color intensity (such as with an RGB LED fixture). Its two
 mandatory arguments are the channel `offset` (the channel number
@@ -677,7 +679,7 @@ your desired label with the optional keyword argument
 
 ==== Dimmer Channels
 
-http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-dimmer[afterglow.channels/dimmer]
+{api-doc}afterglow.channels.html#var-dimmer[`afterglow.channels/dimmer`]
 returns a specification for a channel that controls the dimmer of a
 fixture or head. It always takes at least one argument, the channel
 `offset` (as described <<channel-offset,above>>). If the fixture uses
@@ -698,7 +700,7 @@ be specified as `:inverted-from 1`.
 
 ==== Focus Channels
 
-http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-focus[afterglow.channels/focus]
+{api-doc}afterglow.channels.html#var-focus[`afterglow.channels/focus`]
 returns a specification for a channel that controls the focal plane of
 a fixture or head, usually a moving head spot which can project gobo
 (template) images. It always takes at least one argument, the channel
@@ -710,7 +712,7 @@ least-significant byte as the second argument, `fine-offset`.
 
 ==== Frost Channels
 
-http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-frost[afterglow.channels/frost]
+{api-doc}afterglow.channels.html#var-frost[`afterglow.channels/frost`]
 returns a specification for a channel that controls the frost effect
 of a fixture or head, softening the beam of light it emits. It always
 takes at least one argument, the channel `offset` (as described
@@ -722,7 +724,7 @@ the second argument, `fine-offset`.
 
 ==== Iris Channels
 
-http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-iris[afterglow.channels/iris]
+{api-doc}afterglow.channels.html#var-iris[`afterglow.channels/iris`]
 returns a specification for a channel that controls the iris
 (aperture) of a fixture or head, widening or narrowing the beam of
 light it emits. It always takes at least one argument, the channel
@@ -734,7 +736,7 @@ least-significant byte as the second argument, `fine-offset`.
 
 ==== Pan Channels
 
-http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-pan[afterglow.channels/pan]
+{api-doc}afterglow.channels.html#var-pan[`afterglow.channels/pan`]
 returns a specification for a channel that controls the pan (rotation
 around the Y axis) of a fixture or head. It always takes at least one
 argument, the channel `offset` (as described
@@ -746,7 +748,7 @@ second argument, `fine-offset`.
 
 ==== Tilt Channels
 
-http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-tilt[afterglow.channels/tilt]
+{api-doc}afterglow.channels.html#var-tilt[`afterglow.channels/tilt`]
 returns a specification for a channel that controls the tilt (rotation
 around the X axis) of a fixture or head. It always takes at least one
 argument, the channel `offset` (as described
@@ -758,7 +760,7 @@ second argument, `fine-offset`.
 
 ==== Zoom Channels
 
-http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-zoom[afterglow.channels/zoom]
+{api-doc}afterglow.channels.html#var-zoom[`afterglow.channels/zoom`]
 returns a specification for a channel that controls the zoom of a
 fixture or head, changing how much the beam spreads as it travels from
 the fixture. It always takes at least one argument, the channel
@@ -770,7 +772,7 @@ least-significant byte as the second argument, `fine-offset`.
 
 ==== Function Channels
 
-http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-functions[afterglow.channels/functions]
+{api-doc}afterglow.channels.html#var-functions[`afterglow.channels/functions`]
 returns a specification for a channel that implements a list of
 different functions for different ranges of DMX values. Its first two arguments are `chan-type`, the keyword which identifies the type of the channel (please see the list of
 <<standard-function-types,standard function types>> below and try to
@@ -859,7 +861,7 @@ Afterglow to not create a function for them.
 
 If none of the above functions match the channel you are creating, you
 can use
-http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-fine-channel[afterglow.channels/fine-channel]
+{api-doc}afterglow.channels.html#var-fine-channel[`afterglow.channels/fine-channel`]
 to create the definition.
 
 It always takes at least two arguments: `chan-type`, a keyword
@@ -894,13 +896,13 @@ your channel definitions.
 
 ==== Color Wheel Hue
 
-http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-color-wheel-hue[afterglow.channels/color-wheel-hue]
+{api-doc}afterglow.channels.html#var-color-wheel-hue[`afterglow.channels/color-wheel-hue`]
 returns a function specification which ties a color wheel position to
 a particular hue, so the color wheel can participate in Afterglow's
 color effects. See the
-http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-color-wheel-hue[API
+{api-doc}afterglow.channels.html#var-color-wheel-hue[API
 documentation] for more details, and the
-http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.blizzard.html#var-torrent-f3[Torrent
+{api-doc}afterglow.fixtures.blizzard.html#var-torrent-f3[Torrent
 F3] fixture definition source for an example of its use.
 
 ## Standard Function Types
@@ -956,7 +958,7 @@ yours.
  this value, and a corresponding function range. If your fixture has
  LEDs of colors other than these, use the color name to identify the
  function. (This will happen automatically when you use the
- http://deepsymmetry.org/afterglow/doc/afterglow.channels.html#var-color[color]
+ {api-doc}afterglow.channels.html#var-color[`color`]
  channel <<channel-creation-functions,creation function>> to create
  the channel.) Color channels are fundamental channel types in
  Afterglow, and the colors `:red`, `:green`, `:blue`, and `:white`
@@ -982,7 +984,7 @@ yours.
  values within the function range cause the fixture to strobe at
  different speeds. If possible, use a `:scale-fn` function (with the
  help of
- http://deepsymmetry.org/afterglow/doc/afterglow.effects.channel.html#var-function-value-scaler[afterglow.effects.channel/function-value-scaler])
+ {api-doc}afterglow.effects.channel.html#var-function-value-scaler[`afterglow.effects.channel/function-value-scaler`])
  when creating a strobe function so that the function level is
  interpreted as an approximate Hz rate for the strobe, and your new
  fixture will strobe in rough tandem with other fixtures being
@@ -1123,7 +1125,7 @@ would result in the following Afterglow fixture definition file:
   Please flesh out this documentation if you are submitting this for
   inclusion into Afterglow. See, for example, the Blizzard fixture
   definitions:
-  http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.blizzard.html"
+  http://brunchboy.github.io/afterglow/api-doc/master/afterglow.fixtures.blizzard.html"
   []
   {:channels [(chan/color 1 :uv)  ; TODO: add :hue key if you want to color mix this
               (chan/fine-channel :strobing 2
@@ -1174,7 +1176,7 @@ listed after it.
 Using the fixture definition from this example, once the file is
 loaded, is as simple as calling
 `(afterglow.fixtures.american-dj/eco-uv-bar-dmx)` within
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-patch-fixture.21[show/patch-fixture!].
+{api-doc}afterglow.show.html#var-patch-fixture.21[`show/patch-fixture!`].
 
 ### What's Missing from Translated Fixture Definitions
 
@@ -1241,7 +1243,7 @@ color mixing capabilities, as noted by the `TODO:` comment in the
 translation example above, you will need to add a `:hue` key to the
 color channel definition, containing the actual hue value of the LEDs
 controlled by that channel. The Chauvet SlimPar Hex IRC
-https://github.com/brunchboy/afterglow/blob/master/src/afterglow/fixtures/chauvet.clj[definition]
+{branch-base}src/afterglow/fixtures/chauvet.clj[definition]
 that ships with Afterglow contains a nice example of doing this for
 its amber and UV channels, and shows how to make this extended color
 mixing an optional feature when using the fixture definition.

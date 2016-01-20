@@ -3,6 +3,7 @@ James Elliott <james@deepsymmetry.org>
 :icons: font
 :toc:
 :toc-placement: preamble
+:api-doc: http://brunchboy.github.io/afterglow/api-doc/master/
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
@@ -379,11 +380,11 @@ You can build your own oscillator with any shape waveform that you
 like by defining a _shape function_ for it, and let Afterglow do all
 the hard work of hosting it within the oscillator framework by passing
 that shape function to
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.oscillators.html#var-build-oscillator[afterglow.effects.oscillators/build-oscillator].
+{api-doc}afterglow.effects.oscillators.html#var-build-oscillator[`afterglow.effects.oscillators/build-oscillator`].
 All of the oscillators you have seen so far use this approach, and you
 can see how simple they actually are by looking at the source of one,
 for example
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.oscillators.html#var-triangle[triangle],
+{api-doc}afterglow.effects.oscillators.html#var-triangle[`triangle`],
 which defines a the triangle wave oscillator. (Click on the `view
 source` button at the bottom of the linked documentation.)
 

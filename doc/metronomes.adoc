@@ -1,6 +1,7 @@
 = Metronomes
 James Elliott <james@deepsymmetry.org>
 :icons: font
+:api-doc: http://brunchboy.github.io/afterglow/api-doc/master/
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
@@ -76,7 +77,7 @@ end up with confusing results because time is moving on while you are
 calling the individual functions to ask for information, and you might
 be on a different beat, bar, or phrase for a later call than an earlier
 one. So the way to start is by asking the Metronome for a
-_http://deepsymmetry.org/afterglow/doc/afterglow.rhythm.html#var-ISnapshot[snapshot]_
+_{api-doc}afterglow.rhythm.html#var-ISnapshot[snapshot]_
 of its state at an instant in time, and then ask the snapshot for the
 individual pieces of information you want. Afterglow does this when it
 starts generating a frame of lighting effects, to make sure that all the
@@ -161,11 +162,11 @@ beats per bar (`metro-bpb`) and beats per phrase (`metro-bpp`).
 
 There are a number of other functions which can be called on metronomes
 and snapshots. The
-http://deepsymmetry.org/afterglow/doc/afterglow.rhythm.html#var-IMetronome[IMetronome]
+{api-doc}afterglow.rhythm.html#var-IMetronome[`IMetronome`]
 and
-http://deepsymmetry.org/afterglow/doc/afterglow.rhythm.html#var-ISnapshot[ISnapshot]
+{api-doc}afterglow.rhythm.html#var-ISnapshot[`ISnapshot`]
 protocols in
-http://deepsymmetry.org/afterglow/doc/afterglow.rhythm.html[afterglow.rhythm]
+{api-doc}afterglow.rhythm.html[`afterglow.rhythm`]
 specify and describe them.
 
 == Watching Metronomes

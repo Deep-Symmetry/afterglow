@@ -1,6 +1,7 @@
 = Show Space
 James Elliott <james@deepsymmetry.org>
 :icons: font
+:api-doc: http://brunchboy.github.io/afterglow/api-doc/master/
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
@@ -36,9 +37,9 @@ image:assets/Show-Space.png[Afterglow show axes]
 
 Distance units are in meters, but if you find it easier to measure
 inches or feet, you can call
-http://deepsymmetry.org/afterglow/doc/afterglow.transform.html#var-inches[afterglow.transform/inches]
+{api-doc}afterglow.transform.html#var-inches[`afterglow.transform/inches`]
 and
-http://deepsymmetry.org/afterglow/doc/afterglow.transform.html#var-feet[afterglow.transform/feet]
+{api-doc}afterglow.transform.html#var-feet[`afterglow.transform/feet`]
 to convert them to meters for you.
 
 To express rotations, the same frame of reference is used. If a light
@@ -46,13 +47,13 @@ has been hung upside down compared to its standard orientation (which
 should be documented in the
 <<fixture_definitions#fixture-definitions,fixture definition>>), you
 need to account for that when calling
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-patch-fixture.21[show/patch-fixture].
+{api-doc}afterglow.show.html#var-patch-fixture.21[`show/patch-fixture`].
 Rotations are expressed in terms of the axes as well. For example, if
 a fixture has been tumbled towards the audience by a quarter rotation,
 that would be a rotation around the X axis of π/2. (Rotations are
 expressed in radians, a complete rotation being 2π. Again, if you find
 it more convenient to work in degrees, you can call
-http://deepsymmetry.org/afterglow/doc/afterglow.transform.html#var-degrees[afterglow.transform/degrees]
+{api-doc}afterglow.transform.html#var-degrees[`afterglow.transform/degrees`]
 to convert them into radians for you.) To figure out which direction
 of rotation is positive, imagine you are standing looking towards the
 origin on the axis in question, so its arrowhead is pointing at your

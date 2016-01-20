@@ -4,6 +4,7 @@ James Elliott <james@deepsymmetry.org>
 :experimental:
 :toc:
 :toc-placement: preamble
+:api-doc: http://brunchboy.github.io/afterglow/api-doc/master/
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
@@ -38,7 +39,7 @@ when you press and release the interface element you want to assign
 the cue. Afterglow can help with that too, as described
 <<finding-mapping-details,below>>. Once you have the cue created and
 the control identified, you can create the mapping using
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[afterglow.effects.cues/add-midi-control-to-cue-mapping], like:
+{api-doc}afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[`afterglow.effects.cues/add-midi-control-to-cue-mapping`], like:
 
 [source,clojure]
 ----
@@ -48,7 +49,7 @@ http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-add-midi-c
 This would cause Afterglow to start or stop the cue at grid position
 (0, 6) when a pad on the device named "nano" is pressed and sends a
 MIDI control change message on control number 46. See the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[documentation]
+{api-doc}afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[documentation]
 for details on all the arguments.
 
 TIP: If the controller has LEDs associated with the controls, and you
@@ -61,13 +62,13 @@ there is some other reason why you want to avoid having Afterglow send
 it MIDI messages about the cue status, pass the additional arguments
 `:feedback-on false` to `add-midi-control-to-cue-mapping`. See the
 function
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[documentation]
+{api-doc}afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[documentation]
 for full details.
 
 If you want to be able to later remove this cue mapping, be sure to
 save the value returned by `add-midi-control-to-cue-mapping` in a
 variable, because you will need to pass it to
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-remove-midi-control-to-cue-mapping[remove-midi-control-to-cue-mapping].
+{api-doc}afterglow.show.html#var-remove-midi-control-to-cue-mapping[`remove-midi-control-to-cue-mapping`].
 Or you can simply disconnect the controller from your system, and
 Afterglow will clean up any mappings that had been assigned to it.
 
@@ -98,7 +99,7 @@ created by the cue, both before the cue is launched, and while it is
 running.
 
 Here is a lower-level example of how I can use
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-var-mapping[add-midi-control-to-var-mapping]
+{api-doc}afterglow.show.html#var-add-midi-control-to-var-mapping[`add-midi-control-to-var-mapping`]
 have a knob on one of my
 simple MIDI controllers set the hue of all the lights. It shows up
 with a MIDI port name of `SLIDER/KNOB`, and its first rotary
@@ -111,7 +112,7 @@ variable `knob-1` to the values 0-360 (the legal hue values):
 ----
 
 > See the
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-midi-control-to-var-mapping[documentation] for details about all the arguments.
+{api-doc}afterglow.show.html#var-add-midi-control-to-var-mapping[documentation] for details about all the arguments.
 
 Then I can create a global color effect based on that variable:
 
@@ -151,7 +152,7 @@ into the show variable `:beat-ratio`.
 If you want to be able to later remove this variable mapping, be sure
 to save the value returned by `add-midi-control-to-var-mapping` in a
 variable, because you will need to pass it to
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-remove-midi-control-to-var-mapping[remove-midi-control-to-var-mapping].
+{api-doc}afterglow.show.html#var-remove-midi-control-to-var-mapping[`remove-midi-control-to-var-mapping`].
 Or you can simply disconnect the controller from your system, and
 Afterglow will clean up any mappings that had been assigned to it.
 
@@ -227,7 +228,7 @@ reconfigured as soon as it is reconnected.
 To do this, set up a function like `map-nano` in the example below
 which creates all the MIDI bindings you want for your device, and then
 call
-http://deepsymmetry.org/afterglow/doc/afterglow.midi.html#var-watch-for[afterglow.midi/watch-for]
+{api-doc}afterglow.midi.html#var-watch-for[`afterglow.midi/watch-for`]
 to cause that function to be called whenever a device with a matching
 name or description is connected:
 
@@ -245,7 +246,7 @@ save the value returned by `watch-for` in a variable. The return value
 is a function which cancels that watcher when you call it.
 
 See the `watch-for`
-http://deepsymmetry.org/afterglow/doc/afterglow.midi.html#var-watch-for[documentation]
+{api-doc}afterglow.midi.html#var-watch-for[documentation]
 for details about other ways you can configure it, such as adjusting
 how long it waits for the new device to stabilize before calling your
 function, and how to provide another function that gets called to
@@ -300,7 +301,7 @@ description of the MIDI device that you want to sync to:
 ----
 
 The documentation for
-http://deepsymmetry.org/afterglow/doc/afterglow.midi.html#var-filter-devices[afterglow.midi/filter-devices]
+{api-doc}afterglow.midi.html#var-filter-devices[`afterglow.midi/filter-devices`]
 explains the other kinds of device filter you can use.
 
 NOTE: This section describes the low-level mechanisms available for
@@ -566,7 +567,7 @@ or even black things out:
 Some controllers have such rich capabilities that they deserve their
 own custom mapping implementations to exploit their capabilities as a
 show control interface. The Ableton Push is one, and a powerful
-http://deepsymmetry.org/afterglow/doc/afterglow.controllers.ableton-push.html[mapping]
+{api-doc}afterglow.controllers.ableton-push.html[mapping]
 is being created. You can already use it to do most of the things that
 you would use the <<README#the-embedded-web-interface,web interface>>
 for, and often with deeper control, since you can press multiple cue
@@ -687,7 +688,7 @@ pressure sensitivity of the Push cue pads, so that as you vary the
 pressure with which you are holding down the pad, some visible
 parameter of the cue is altered. The strobe and sparkle cues in
 created by
-http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[afterglow.examples/make-cues]
+{api-doc}afterglow.examples.html#var-make-cues[`afterglow.examples/make-cues`]
 for the sample show work this way: the intensity and lightness of the
 strobe are increased by pressure, and so is the chance that a sparkle
 will be assigned to a light on each frame. You can see these
@@ -923,7 +924,7 @@ the cue grid.
 Although when compared with the Ableton Push it lacks a text display
 and rotary encoders, the Novation Launchpad Pro makes an excellent
 grid controller for Afterglow, and a custom
-http://deepsymmetry.org/afterglow/doc/afterglow.controllers.launchpad-pro.html[mapping]
+{api-doc}afterglow.controllers.launchpad-pro.html[mapping]
 is being created for it as well.
 
 Assuming you had a Launchpad Pro connected to the machine running
@@ -1001,7 +1002,7 @@ pressure sensitivity of the Launchpad Pro cue pads, so that as you
 vary the pressure with which you are holding down the pad, some
 visible parameter of the cue is altered. The strobe and sparkle cues
 in created by
-http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[afterglow.examples/make-cues]
+{api-doc}afterglow.examples.html#var-make-cues[`afterglow.examples/make-cues`]
 for the sample show work this way: the intensity and lightness of the
 strobe are increased by pressure, and so is the chance that a sparkle
 will be assigned to a light on each frame.

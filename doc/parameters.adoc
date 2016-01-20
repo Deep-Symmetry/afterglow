@@ -3,6 +3,7 @@ James Elliott <james@deepsymmetry.org>
 :icons: font
 :toc:
 :toc-placement: preamble
+:api-doc: http://brunchboy.github.io/afterglow/api-doc/master/
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
@@ -49,7 +50,7 @@ used.
 
 This keyword shorthand is just a convenience mechanism provided by
 functions like
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-color-param[build-color-param].
+{api-doc}afterglow.effects.params.html#var-build-color-param[`build-color-param`].
 You can also explicitly build a reference to a show variable like
 this:
 
@@ -97,7 +98,7 @@ building a dynamic parameter from a show variable is if the parameter
 holds keywords. In that case, clearly Afterglow can't assume that a
 keyword is shorthand for a show variable. The `:interval` parameter
 for Afterglow's built in oscillator-building functions, like
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.oscillators.html#var-sine[afterglow.effects.oscillators/sine],
+{api-doc}afterglow.effects.oscillators.html#var-sine[`afterglow.effects.oscillators/sine`],
 is an example of such a parameter: It expects the value `:beat`,
 `:bar`, or `:phrase`. So to have an oscillator look up and use the
 value in the show variable `:my-interval` to control the interval over
@@ -123,7 +124,7 @@ oscillates, related to beats, bars, or phrases of the underlying
 metronome. The resulting value can then be scaled to meet the needs of
 whatever is being generated (a dimmer level, color component, or light
 rotation). Oscillated parameters are created by calling
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.oscillators.html#var-build-oscillated-param[afterglow.effects.oscillators/build-oscillated-param].
+{api-doc}afterglow.effects.oscillators.html#var-build-oscillated-param[`afterglow.effects.oscillators/build-oscillated-param`].
 
 
 [source,clojure]
@@ -134,7 +135,7 @@ http://deepsymmetry.org/afterglow/doc/afterglow.effects.oscillators.html#var-bui
 The `oscillator` parameter is an
 <<oscillators#oscillators,Oscillator>> created by one of the functions
 in
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.oscillators.html[afterglow.effects.oscillators]
+{api-doc}afterglow.effects.oscillators.html[`afterglow.effects.oscillators`]
 which, as described above, determines how to react to the time
 information provided by the metronome. Additionally, you can supply
 one of the following optional keyword parameters:
@@ -169,7 +170,7 @@ the main show metronome, synced to DJ equipment). But rather than
 moving back and forth, step parameters increase steadily over time,
 because they are designed to control the progression of a
 <<effects#chases,chase>>. Step parameters are created by calling
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-step-param[afterglow.effects.params/build-step-param].
+{api-doc}afterglow.effects.params.html#var-build-step-param[`afterglow.effects.params/build-step-param`].
 
 [source,clojure]
 ----
@@ -301,7 +302,7 @@ precalculating as much as possible.
 
 Color parameters are an extremely flexible way of dynamically assigning
 color. The basic way to create one is to call
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-color-param[afterglow.effects.params/build-color-param].
+{api-doc}afterglow.effects.params.html#var-build-color-param[`afterglow.effects.params/build-color-param`].
 
 [source,clojure]
 ----
@@ -398,7 +399,7 @@ Effects>>. (<<parameters#pan-tilt-parameters,Pan Tilt Parameters>> and
 <<effects#pan-tilt-effects,Pan/Tilt Effects>> are the other way to
 achieve that result.) The basic way to create a direction parameter is
 to call
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-direction-param[afterglow.effects.params/build-direction-param].
+{api-doc}afterglow.effects.params.html#var-build-direction-param[`afterglow.effects.params/build-direction-param`].
 
 
 [source,clojure]
@@ -482,9 +483,9 @@ make the specified movement, if they are capable.
 
 If you need to convert inches or feet to meters, which are the
 standard distance units in Afterglow, you can use
-http://deepsymmetry.org/afterglow/doc/afterglow.transform.html#var-inches[afterglow.transform/inches]
+{api-doc}afterglow.transform.html#var-inches[`afterglow.transform/inches`]
 and
-http://deepsymmetry.org/afterglow/doc/afterglow.transform.html#var-feet[afterglow.transform/feet].
+{api-doc}afterglow.transform.html#var-feet[`afterglow.transform/feet`].
 
 All of these parameters, except for `frame-dynamic`, can themselves be
 dynamic parameters, such as show <<variable-parameters,variables>>
@@ -558,7 +559,7 @@ Effects>> in those terms. This can be helpful, for example, when you
 want to fade between a specific direction that is easiest to express
 as a spatial vector, and one that is easiest to express in terms of
 angles. Use
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-direction-param-from-pan-tilt[build-direction-from-pan-tilt]
+{api-doc}afterglow.effects.params.html#var-build-direction-param-from-pan-tilt[`build-direction-from-pan-tilt`]
 to create a normal direction parameter starting from the same pan/tilt
 parameters described above.
 
@@ -568,7 +569,7 @@ parameters described above.
 Spatial parameters allow you to base an effect parameter on the physical
 arrangement or relationships between fixtures in your light show. The
 way to create one is to call
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-spatial-param[afterglow.effects.params/build-spatial-param].
+{api-doc}afterglow.effects.params.html#var-build-spatial-param[`afterglow.effects.params/build-spatial-param`].
 
 [source,clojure]
 ----
@@ -639,7 +640,7 @@ like this:
 
 If you want to be informed more proactively whenever the show variable
 value changes, you can register a
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-add-variable-set-fn.21[watch
+{api-doc}afterglow.show.html#var-add-variable-set-fn.21[watch
 function] to be called whenever the variable changes. The following example
 prints the new values of the variable named `:key` each time it is changed.
 
@@ -665,9 +666,9 @@ where their value is stored; instead, it is calculated for a
 particular point in time (and perhaps space). But you can ask the
 parameter to evaluate itself by giving it the proper, context, in the
 same way Afterglow itself does, using the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-evaluate[evaluate]
+{api-doc}afterglow.effects.params.html#var-evaluate[`evaluate`]
 function in the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-IParam[IParam]
+{api-doc}afterglow.effects.params.html#var-IParam[`IParam`]
 protocol. All dynamic parameters implement this protocol. To call
 `evaluate`, you pass in the dynamic parameter, the show in which it is
 running, and a metronome snapshot to identify the instant in time you
@@ -702,7 +703,7 @@ how it is behaving.
 === Digging Deeper
 
 For more details, see the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html[API
+{api-doc}afterglow.effects.params.html[API
 documentation].
 
 ==== License

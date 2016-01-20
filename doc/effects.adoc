@@ -3,6 +3,7 @@ James Elliott <james@deepsymmetry.org>
 :icons: font
 :toc:
 :toc-placement: preamble
+:api-doc: http://brunchboy.github.io/afterglow/api-doc/master/
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
@@ -108,13 +109,13 @@ an earlier effect chose a higher value, let it win, otherwise use the
 value this effect wants.
 
 The
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.dimmer.html#var-dimmer-effect[API
+{api-doc}afterglow.effects.dimmer.html#var-dimmer-effect[API
 documentation] also identifies some optional keyword arguments you can
 pass. If `:htp?` passed with a `false`, value this effect will simply
 overwrite any previous assignments it finds for the dimmers it is
 controlling. Omitting `:htp?` is the same as passing it with a `true`
 value. And you can change the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.dimmer.html#var-master[master]
+{api-doc}afterglow.effects.dimmer.html#var-master[`master`]
 that scales the dimmer value by passing one along with `:master`. If
 you do not, the effect will be tied directly to the show's grand
 master.
@@ -211,7 +212,7 @@ looks you want is the color effect. To create an effect that will
 assign a color to a fixture (which will assign colors to all of the
 fixture’s heads), or a single head of a fixture, pass the fixture or
 head to
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.color.html#var-color-effect[color-effect]:
+{api-doc}afterglow.effects.color.html#var-color-effect[`color-effect`]:
 
 [source,clojure]
 ----
@@ -221,7 +222,7 @@ http://deepsymmetry.org/afterglow/doc/afterglow.effects.color.html#var-color-eff
 The `name` parameter is intended to help identify the purpose of the
 effect, and shows up when examining the created effect. Put something
 descriptive in there, or use a helper function like
-http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-global-color-effect[afterglow.examples/global-color-effect]
+{api-doc}afterglow.examples.html#var-global-color-effect[`afterglow.examples/global-color-effect`]
 which builds the effect for you, figuring out a reasonable name in
 many cases.
 
@@ -312,8 +313,8 @@ lights should be pointing. It is a `javax.vector.Vector3d` pointing in
 the direction the lights should face, with respect to the show’s
 <<show_space#show-space,frame of reference>>. An easy way to create
 one is to call
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-direction-param[afterglow.effects.params/build-direction-param] or
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-direction-param-from-pan-tilt[afterglow.effects.params/build-direction-param-from-pan-tilt].
+{api-doc}afterglow.effects.params.html#var-build-direction-param[`afterglow.effects.params/build-direction-param`] or
+{api-doc}afterglow.effects.params.html#var-build-direction-param-from-pan-tilt[`afterglow.effects.params/build-direction-param-from-pan-tilt`].
 These can create static vectors for you, but can also create
 <<parameters#dynamic-parameters,Dynamic Parameters>> whose value
 depends on a <<metronomes#metronomes,Metronome>>, the physical
@@ -363,7 +364,7 @@ The `target-point` parameter is where you specify the point at which
 the lights should be aiming. It is a `javax.vector.Point3d`
 identifying a point within the show’s <<show_space#show-space,frame of
 reference>>. An easy way to create one is to call
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-aim-param[afterglow.effects.params/build-aim-param].
+{api-doc}afterglow.effects.params.html#var-build-aim-param[`afterglow.effects.params/build-aim-param`].
 This can create static points for you, but can also create
 <<parameters#dynamic-parameters,Dynamic Parameters>> whose value
 depends on a <<metronomes#metronomes,Metronome>>, the physical
@@ -403,7 +404,7 @@ the `tilt` angle. These angles tell the fixture how far, in radians,
 it should rotate away from pointing straight out at the audience
 (along the `z` axis of the show’s <<show_space#show-space,frame of
 reference>>). An easy way to create the pan-tilt vector is to call
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-pan-tilt-param[afterglow.effects.params/build-pan-tilt-param].
+{api-doc}afterglow.effects.params.html#var-build-pan-tilt-param[`afterglow.effects.params/build-pan-tilt-param`].
 This function also allows you to work in degrees rather than radians,
 if that is more convenient. It can create static angle vectors for
 you, but can also create <<parameters#dynamic-parameters,Dynamic
@@ -495,11 +496,11 @@ the DMX range. This is helpful, for example, to allow strobe settings to
 be interpreted as approximate Hz values, so fixtures from different
 manufacturers can be asked to strobe at roughly the same rate for the
 same function setting. You can view the source of the
-http://deepsymmetry.org/afterglow/doc/afterglow.fixtures.blizzard.html[Blizzard
+{api-doc}afterglow.fixtures.blizzard.html[Blizzard
 fixture definitions] for examples of how this is done, passing the
 minimum and maximum Hz strobe rates of the actual fixture to create a
 partial implementation of
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.channel.html#var-function-value-scaler[afterglow.effects.channel/function-value-scaler]
+{api-doc}afterglow.effects.channel.html#var-function-value-scaler[`afterglow.effects.channel/function-value-scaler`]
 which is passed the value that the effect is trying to establish, and
 converts it to a position in that fixture’s range which attempts to
 approximate that strobing rate.
@@ -549,7 +550,7 @@ which enable that.
 The simplest way to build a compound effect is to combine a group of
 effects into one which can be started and stopped as a unit. That is
 the purpose of the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-scene[scene]
+{api-doc}afterglow.effects.html#var-scene[`scene`]
 function in the `afterglow.effects` namespace. It takes a name for the
 scene to be created, followed by one or more effects to be grouped,
 and returns an effect which combines them all under that name:
@@ -578,14 +579,14 @@ that as it fades towards the blank effect, whatever effects were being
 replaced by the fade are restored.
 
 To create a blank effect, simply call the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-blank[blank]
+{api-doc}afterglow.effects.html#var-blank[`blank`]
 function in the `afterglow.effects` namespace.
 
 === Fades
 
 A fade effect lets you smoothly transition from one effect to another,
 blending a weighted combination of each. The
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-fade[fade]
+{api-doc}afterglow.effects.html#var-fade[`fade`]
 function in the `afterglow.effects` namespace supports this. It takes
 a name for the fade to be created, followed by `from-effect` and
 `to-effect`, the two effects to be faded between, and a `phase`
@@ -640,7 +641,7 @@ the time.
 Chase effects allow you to sequence a series of effects one after
 another, with optional <<effects#fades,fades>> between them. They are
 built using the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-chase[chase]
+{api-doc}afterglow.effects.html#var-chase[`chase`]
 function in the `afterglow.effects` namespace. Of course each effect
 within the chase can itself be a <<effects#scenes,scene>>, which
 groups many other effects, or a <<effects#blank-effects,blank
@@ -663,7 +664,7 @@ between the corresponding effects. In order to make the chase evolve
 over time, `position` needs to be a dynamic variable parameter, and
 <<parameters#step-parameters,Step Parameters>>, created by the
 function
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.params.html#var-build-step-param[afterglow.effects.params/build-step-param],
+{api-doc}afterglow.effects.params.html#var-build-step-param[`afterglow.effects.params/build-step-param`],
 are designed specifically to work with chases.
 
 With no other arguments, the chase will end when `position` has a
@@ -697,13 +698,13 @@ them in the order 1 &rarr; 2 &rarr; 3 &rarr; 1 &rarr; 2 &rarr; 3
 === Conditional Effects
 
 The
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-conditional-effect[conditional-effect]
+{api-doc}afterglow.effects.html#var-conditional-effect[`conditional-effect`]
 function in the `afterglow.effects` namespace wraps another effect,
 allowing it to run only when the value of some dynamic parameter (most
 likely a <<parameters#variable-parameters,variable parameter>> or
 <<parameters#oscillated-parameters,oscillated parameter>>) is not
 zero.
-http://deepsymmetry.org/afterglow/doc/afterglow.shows.sallie.html#var-global-color-effect[afterglow.shows.sallie/global-color-effect]
+{api-doc}afterglow.shows.sallie.html#var-global-color-effect[`afterglow.shows.sallie/global-color-effect`]
 shows an example of using it within a scene to optionally have the
 color effect apply to a laser show running simultaneously with the
 light show, controlled by the show variable `:also-color-laser`. This
@@ -727,7 +728,7 @@ running, by means of a Variable Effect, described in the next section.
 === Variable Effects
 
 The
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.show-variable.html#var-create-for-show[variable-effect]
+{api-doc}afterglow.effects.show-variable.html#var-create-for-show[`variable-effect`]
 function in the `afterglow.effects.show-variable` namespace creates an
 effect which does not set any DMX values. Instead, it makes use of the
 rendering loop <<rendering_loop#extensions,extension mechanism>> to
@@ -735,11 +736,11 @@ set a show variable while the effect is active. This dovetails very
 nicely with Conditional Effects, described above.
 
 You can see an example of how to use variable effects in
-http://deepsymmetry.org/afterglow/doc/afterglow.shows.sallie.html#var-use-sallie-show[afterglow.shows.sallie/use-sallie-show],
+{api-doc}afterglow.shows.sallie.html#var-use-sallie-show[`afterglow.shows.sallie/use-sallie-show`],
 which creates a binding to the show variables using
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.show-variable.html#var-create-for-show[afterglow.effects.show-variable/create-for-show].
+{api-doc}afterglow.effects.show-variable.html#var-create-for-show[`afterglow.effects.show-variable/create-for-show`].
 Then
-http://deepsymmetry.org/afterglow/doc/afterglow.shows.sallie.html#var-make-cues[afterglow.shows.sallie/make-cues]
+{api-doc}afterglow.shows.sallie.html#var-make-cues[`afterglow.shows.sallie/make-cues`]
 uses that `var-binder` to create a `:color-laser` cue which sets the
 show variable `:also-color-laser` while it runs:
 
@@ -783,7 +784,7 @@ times, with very little code required in each. They are useful in
 themselves, and as examples of how to write similar effects.
 
 The
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-iris-out-color-cycle-chase[Iris
+{api-doc}afterglow.effects.fun.html#var-iris-out-color-cycle-chase[Iris
 Out] color cycle chase changes the color of a group of fixtures to a
 different color for each bar of a phrase of music. During the down
 beat of each new bar, the color spreads over the participating
@@ -799,13 +800,13 @@ circle until reaching the furthest heads at the end of the down beat.
 
 If you look at the source code (which you can always get to by
 following the &ldquo;view source&rdquo; link at the bottom of the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-iris-out-color-cycle-chase[API
+{api-doc}afterglow.effects.fun.html#var-iris-out-color-cycle-chase[API
 documentation], or typing `(source
 afterglow.effects.fun/iris-out-color-cycle-chase)` in a REPL or the
 web console), you will see that it is only a few lines, once you get
 past the documentation and parameters, most of which are given default
 values to pass along to
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-color-cycle-chase[color-cycle-chase],
+{api-doc}afterglow.effects.fun.html#var-color-cycle-chase[`color-cycle-chase`],
 which is used to actually implement the chase.
 
 Those parameters can be used to change the set of colors in the cycle,
@@ -822,14 +823,14 @@ effects which create different spatial transitions for the color cycle
 chase.
 
 For example,
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-wipe-right-color-cycle-chase[Wipe
+{api-doc}afterglow.effects.fun.html#var-wipe-right-color-cycle-chase[Wipe
 Right], which transitions the lights from left to right, ignoring both
 the y and z axes. The work of both of these chases is simplified with
 the help of
-http://deepsymmetry.org/afterglow/doc/afterglow.transform.html#var-build-distance-measure[afterglow.transform/build-distance-measure],
+{api-doc}afterglow.transform.html#var-build-distance-measure[`afterglow.transform/build-distance-measure`],
 a function for constructing distance measure functions for use in
 effects like this, and
-http://deepsymmetry.org/afterglow/doc/afterglow.transform.html#var-calculate-bounds[afterglow.transform/calculate-bounds],
+{api-doc}afterglow.transform.html#var-calculate-bounds[`afterglow.transform/calculate-bounds`],
 which calculates a bounding box and center for a group of fixtures and
 the heads which make them up.
 
@@ -843,7 +844,7 @@ the heads which make them up.
 
 Creates a random sparkling effect like a particle generator over the
 supplied RGB fixture heads. See the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-sparkle[API
+{api-doc}afterglow.effects.fun.html#var-sparkle[API
 documentation] for details.
 
 [source,clojure]
@@ -853,7 +854,7 @@ documentation] for details.
 ----
 
 You can also create a
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-dimmer-sparkle[similar
+{api-doc}afterglow.effects.fun.html#var-dimmer-sparkle[similar
 effect] with fixtures that have only dimmer channels, rather than RGB
 capabilities.
 
@@ -880,7 +881,7 @@ the same time, you can combine these two effects with a
 
 A flexible strobe effect designed for intuitive tweaking via pressure-sensitive controllers like the Ableton Push.
 See the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-strobe[API
+{api-doc}afterglow.effects.fun.html#var-strobe[API
 documentation] for details.
 
 [source,clojure]
@@ -913,7 +914,7 @@ color on the down beat and another color on the other beats of the
 show metronome. The default down beat color is a lightened red, and
 the other beat color is a darkened yellow; these can be overridden by
 optional keyword parameters. See the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-metronome-effect[API
+{api-doc}afterglow.effects.fun.html#var-metronome-effect[API
 documentation] for details.
 
 == The Effect Lifecycle
@@ -932,7 +933,7 @@ Since later effects get a chance to override earlier effects, this
 means that higher-priority effects, and effects added later, win.
 
 All effects implement the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.html#var-IEffect[afterglow.effects/IEffect]
+{api-doc}afterglow.effects.html#var-IEffect[`afterglow.effects/IEffect`]
 protocol. As each frame of lighting control values is rendered, a
 snapshot is created from the show metronome, so every effect shares the
 same notion of the point in time at which effects are being rendered.
@@ -1123,7 +1124,7 @@ fixtures, because of the way that later (and higher priority) effects
 can see what earlier effects have done, and modify the results.
 
 The
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.color.html#var-transform-colors[transform-colors]
+{api-doc}afterglow.effects.color.html#var-transform-colors[`transform-colors`]
 effect is an example of how easy and flexible this can be. (As always
 with the API documentation, you can click on the `viw source` button
 to see the actual implementation of the function.) This effect uses
@@ -1145,7 +1146,7 @@ transformation itself is separated into another function, which can be
 passed in as an argument to achieve a totally different kind of
 transformation. The default transformation if none is specified is
 created by calling
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.color.html#var-build-saturation-transformation[build-saturation-transformation]
+{api-doc}afterglow.effects.color.html#var-build-saturation-transformation[`build-saturation-transformation`]
 with no arguments. The source of this function shows how easy it is to
 write a transformation given the support provided by the Rendering
 Loop and `transform-colors`.

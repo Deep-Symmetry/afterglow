@@ -3,6 +3,7 @@ James Elliott <james@deepsymmetry.org>
 :icons: font
 :toc:
 :toc-placement: preamble
+:api-doc: http://brunchboy.github.io/afterglow/api-doc/master/
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
@@ -11,11 +12,11 @@ ifdef::env-github[:outfilesuffix: .adoc]
 Cues are designed to support creating user interfaces for controlling
 effects. They provide a convenient way to organize, identify, trigger,
 adjust, and monitor effects. Each
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html[show] in
+{api-doc}afterglow.show.html[`show`] in
 Afterglow maintains a cue grid, which can be viewed and interacted
 with through the <<README#the-embedded-web-interface,embedded web
 interface>> and MIDI controller mapping implementations which can be
-http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-register-grid-controller[registered
+{api-doc}afterglow.show.html#var-register-grid-controller[registered
 as grid controllers], like the <<mapping_sync#using-ableton-push,Ableton Push>>.
 
 == The Cue Grid
@@ -93,9 +94,9 @@ by the cue can be updated by the strike and aftertouch pressure
 exerted by the operator as they hold down the pad. This can make for
 very expressive effects, as exemplified by the Sparkle cue set up
 early in the examples namespace's
-http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[make-cues]
+{api-doc}afterglow.examples.html#var-make-cues[`make-cues`]
 function, and its
-http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-strobe-cue[strobe]
+{api-doc}afterglow.examples.html#var-make-strobe-cue[strobe]
 cues. Of course, this pressure sensitivity is not possible with the
 web cue grid.
 
@@ -115,7 +116,7 @@ Cues can also be triggered from simpler MIDI controllers (which
 don't register as grid controllers) by explicitly mapping notes
 or control changes sent by the controller to cues within the grid
 using
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[afterglow.effects.cues/add-midi-control-to-cue-mapping].
+{api-doc}afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[`afterglow.effects.cues/add-midi-control-to-cue-mapping`].
 Regardless of the mechanism by which a cue is triggered, the web
 interface, a registered grid controller, or an explicitly mapped MIDI
 note or control change, feedback will be sent to all interfaces so the
@@ -127,7 +128,7 @@ For example, to be able to trigger the Sparkle cue, which the examples
 namespace places at `(0, 7)` within the sample show cue grid, by
 pressing the bottom leftmost button on my inexpensive Korg nanoKontrol
 2 MIDI controller, after using
-http://deepsymmetry.org/afterglow/doc/afterglow.midi.html#var-identify-mapping[afterglow.midi/identify-mapping]
+{api-doc}afterglow.midi.html#var-identify-mapping[`afterglow.midi/identify-mapping`]
 to determine that the button sends control-change messages for
 controller number `43`, I can simply evaluate:
 
@@ -158,9 +159,9 @@ configuration tools to enable this kind of external control.
 == Creating Cues
 
 The
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html[afterglow.effects.cues]
+{api-doc}afterglow.effects.cues.html[`afterglow.effects.cues`]
 namespace provides functions for creating cues. Unsurprisingly, the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-cue[cue]
+{api-doc}afterglow.effects.cues.html#var-cue[`cue`]
 function creates a cue. At its most basic, you pass in two parameters,
 `show-key` which is the keyword that will be used to add the cue's
 effect to the show when the cue is triggered, ending any other effect
@@ -180,7 +181,7 @@ special-purpose `function-cue` described
 
 There are a number of optional keyword parameters which can be used to
 modify the cue that is created. Remember that you can also consult the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-cue[API
+{api-doc}afterglow.effects.cues.html#var-cue[API
 documentation] for another explanation of these functions, and for
 links to examine the source code, which is the most authoritative
 explanation of how they work, and can offer inspiration for variations
@@ -214,7 +215,7 @@ understand the interface. If not specified, white is used.
 
 |A list of keywords that identify additional effects to be ended when
 launching this cue. See the dimmer cue section of
-http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[make-cues]
+{api-doc}afterglow.examples.html#var-make-cues[`make-cues`]
 for an example of how this can be helpful: it sets up a couple of rows
 of dimmer cues where the leftmost affects all the dimmers in the
 lighting rig, and cancels all the cues that work on individual light
@@ -231,7 +232,7 @@ other effects in the <<rendering_loop#the-rendering-loop,rendering
 loop>>. Effects are run in order, and later effects can modify or
 override the results of earlier ones, like the way the Sparkle effect
 in
-http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[make-cues]
+{api-doc}afterglow.examples.html#var-make-cues[`make-cues`]
 is assigned a priority of 100 so it sorts after any chase which may be
 running, and its sparkles can lighten the color which would otherwise
 be present in their fixtures.
@@ -245,7 +246,7 @@ down, if the controller supports that capability. All current
 controller implementations, including the web interface, the
 <<mapping_sync#using-ableton-push,Ableton Push mapping>>, and mappings
 to generic MIDI controllers created using
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[afterglow.effects.cues/add-midi-control-to-cue-mapping]
+{api-doc}afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[`afterglow.effects.cues/add-midi-control-to-cue-mapping`]
 do honor this setting. The web interface and controllers like the
 Push, which can vary the color of cue grid cells, will provide
 feedback that a cue will last only as long as it is held by displaying
@@ -283,7 +284,7 @@ creating the cue's effect.
 |Identifies the variable that is being bound to the cue. This can
  either be a keyword, and refer to an existing show variable (set
  using
- http://deepsymmetry.org/afterglow/doc/afterglow.show.html#var-set-variable.21[afterglow.show/set-variable!]),
+ {api-doc}afterglow.show.html#var-set-variable.21[`afterglow.show/set-variable!`]),
  or a string, meaning that a new variable should be introduced for the
  cue. The actual name of this new variable will be assigned when the
  cue is activated. In order for the effect to be able to access the
@@ -294,11 +295,11 @@ creating the cue's effect.
  keyword of the variable that was created for the cue to go with that
  key. An example of using such cue-local variables can be found in the
  source of the
- http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-strobe-cue[make-strobe-cue]
+ {api-doc}afterglow.examples.html#var-make-strobe-cue[`make-strobe-cue`]
  example, for the variable `level`. That cue also makes use of the
  independent show variable `:strobe-lightness` which is set by a
  separate `adjust-strobe` cue running the effect
- http://deepsymmetry.org/afterglow/doc/afterglow.effects.fun.html#var-adjust-strobe[afterglow.fun/adjust-strobe],
+ {api-doc}afterglow.effects.fun.html#var-adjust-strobe[`afterglow.fun/adjust-strobe`],
  forming an interesting demonstration of interacting cues.
 
 |`:start`
@@ -424,7 +425,7 @@ fixture definition within Afterglow, which can unfortunately get
 confusing when we are talking about invoking Clojure functions). To
 make it easy to work with such fixture capabilities, the
 `afterglow.effects.cues` namespace also offers the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-function-cue[function-cue]
+{api-doc}afterglow.effects.cues.html#var-function-cue[`function-cue`]
 function. It is quite similar to the `cue` function described
 <<cues#creating-cues,above>>, but it takes care of creating the effect
 for you, given the function name you want to apply to a fixture or set
@@ -449,7 +450,7 @@ essentially a one-liner to create a button in your cue grid which
 activates a function and then, if your controller supports it, lets
 you tweak that function while is running. Examples include the Torrent
 gobo, focus, and prism cues created by
-http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[make-cues].
+{api-doc}afterglow.examples.html#var-make-cues[`make-cues`].
 
 Minimally, `function-cue` requires three parameters: `show-key` which
 is the keyword that will be used to add the cue's effect to the show
@@ -463,7 +464,7 @@ will be affected by the cue.)
 
 There are a number of optional keyword parameters which can be used to
 modify the cue that is created, and are described below. See the
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-function-cue[API
+{api-doc}afterglow.effects.cues.html#var-function-cue[API
 documentation] for more details.
 
 [cols="1a,1a,5a", options="header"]
@@ -521,7 +522,7 @@ understand the interface. If not specified, white is used.
 
 |A list of keywords that identify additional effects to be ended when
 launching this cue. See the dimmer cue section of
-http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[make-cues]
+{api-doc}afterglow.examples.html#var-make-cues[`make-cues`]
 for an example of how this can be helpful: it sets up a couple of rows
 of dimmer cues where the leftmost affects all the dimmers in the
 lighting rig, and cancels all the cues that work on individual light
@@ -538,7 +539,7 @@ other effects in the <<rendering_loop#the-rendering-loop,rendering
 loop>>. Effects are run in order, and later effects can modify or
 override the results of earlier ones, like the way the Sparkle effect
 in
-http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[make-cues]
+{api-doc}afterglow.examples.html#var-make-cues[`make-cues`]
 is assigned a priority of 100 so it sorts after any chase which may be
 running, and its sparkles can lighten the color which would otherwise
 be present in their fixtures.
@@ -552,7 +553,7 @@ down, if the controller supports that capability. All current
 controller implementations, including the web interface, the
 <<mapping_sync#using-ableton-push,Ableton Push mapping>>, and mappings
 to generic MIDI controllers created using
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[afterglow.effects.cues/add-midi-control-to-cue-mapping]
+{api-doc}afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[`afterglow.effects.cues/add-midi-control-to-cue-mapping`]
 do honor this setting. The web interface and controllers like the
 Push, which can vary the color of cue grid cells, will provide
 feedback that a cue will last only as long as it is held by displaying
@@ -600,7 +601,7 @@ which have nothing directly to do with lighting effects. For example,
 if your grid controller doesn't have a dedicated button for resetting
 the show metronome, you might want to use one of the cue grid cells
 for that purpose. The
-http://deepsymmetry.org/afterglow/doc/afterglow.effects.cues.html#var-code-cue[code-cue]
+{api-doc}afterglow.effects.cues.html#var-code-cue[`code-cue`]
 function makes this easy. It creates a cue that does nothing other
 than call the function you supply, one time, when the cue is launched.
 Your function must take two arguments, because it will be called with
@@ -636,10 +637,10 @@ the show metronome when it is launched:
 == Controlling Cues
 
 The
-http://deepsymmetry.org/afterglow/doc/afterglow.controllers.html[afterglow.controllers]
+{api-doc}afterglow.controllers.html[`afterglow.controllers`]
 namespace defines some helpful functions for working with cues, and
 defines a
-http://deepsymmetry.org/afterglow/doc/afterglow.controllers.html#var-IGridController[grid
+{api-doc}afterglow.controllers.html#var-IGridController[grid
 controller protocol] which rich controller mappings, like the one for
 the <<mapping_sync#using-ableton-push,Ableton Push>>, use to attach
 themselves to a running show, and synchronize with the web interface.
@@ -651,16 +652,16 @@ when you are done, submit a pull request to add your implementation to
 Afterglow!)
 
 When you are setting up the cue grid for your show, you will use
-http://deepsymmetry.org/afterglow/doc/afterglow.controllers.html#var-set-cue.21[set-cue!]
+{api-doc}afterglow.controllers.html#var-set-cue.21[`set-cue!`]
 to arrange the cues you want it to contain. The
-http://deepsymmetry.org/afterglow/doc/afterglow.examples.html#var-make-cues[make-cues]
+{api-doc}afterglow.examples.html#var-make-cues[`make-cues`]
 function in the examples namespace contains a lot of examples of doing
 this. As cues are added to the grid, its dimensions are updated, and
 the web interfaces and any registered grid controllers will
 immediately reflect the new cue and dimensions.
 
 You can remove a cue from the grid with
-http://deepsymmetry.org/afterglow/doc/afterglow.controllers.html#var-clear-cue.21[clear-cue].
+{api-doc}afterglow.controllers.html#var-clear-cue.21[`clear-cue`].
 
 === Digging Deeper
 
