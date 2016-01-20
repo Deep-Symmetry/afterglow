@@ -352,8 +352,14 @@
     (global-color-cue "green" 3 0 :include-color-wheels? true)
     (global-color-cue "blue" 4 0 :include-color-wheels? true)
     (global-color-cue "purple" 5 0 :include-color-wheels? true)
-    (global-color-cue "white" 6 0 :include-color-wheels? true)
-
+    ;;(global-color-cue "white" 6 0 :include-color-wheels? true)
+    (ct/set-cue! (:cue-grid *show*) 6 0
+                 (cues/cue :color (fn [var-map] (global-color-effect
+                                                 (params/bind-keyword-param (:color var-map :white)
+                                                                            :com.evocomputing.colors/color
+                                                                            (create-color :white))
+                                                                     :include-color-wheels? true))
+                           :variables [{:key "color" :start (create-color :white) :type :color}]))
 
     (ct/set-cue! (:cue-grid *show*) 0 1
                  (cues/cue :color (fn [_] (global-color-effect

@@ -684,10 +684,18 @@
   [controller cue v len effect-id]
   (let [val (cues/get-cue-variable cue v :controller controller :when-id effect-id)
         formatted (if val
-                    (case (:type v)
-                      :integer (int val)
+                    (cond
+                      (= (:type v) :integer)
+                      (int val)
+
+                      (or (= (type val) :com.evocomputing.colors/color) (= (:type v) :color))
+                      (colors/rgb-hexstr val)
+
                       ;; If we don't know what else to do, at least turn ratios to floats
+                      :else
                       (float val))
+
+                    ;; We got no value, display an ellipsis
                     "...")
         padding (clojure.string/join (repeat len " "))]
     (clojure.string/join (take len (str formatted padding)))))
@@ -1362,6 +1370,141 @@
     (let [effect-found (show/find-effect (:key cue))]
       (and effect-found (= (:id effect-found) id)))))
 
+(defn- build-numeric-adjustment-overlay
+  "Create an overlay for adjusting a numeric cue parameter. `note`
+  identifies the encoder that was touched to bring up this overlay,
+  `cue` is the cue whose variable is being adjusted, `effect` is the
+  effect which that cue is running, and `info` is the metadata about
+  that effect."
+  [controller note cue effect info]
+  (let [x (quot note 2)
+        var-index (rem note 2)]
+    (if (> (count (:variables cue)) 1)
+      ;; More than one variable, adjust whichever's encoder was touched
+      (reify controllers/IOverlay
+        (captured-controls [this] #{(control-for-top-encoder-note note)})
+        (captured-notes [this] #{note})
+        (adjust-interface [this]
+          (when (same-effect-active controller cue (:id info))
+            (draw-variable-gauge controller x 8 (* 9 var-index)
+                                 cue (get (:variables cue) var-index) (:id info))
+            true))
+        (handle-control-change [this message]
+          (adjust-variable-value controller message cue
+                                 (get (:variables cue) var-index) (:id info)))
+        (handle-note-on [this message])
+        (handle-note-off [this message]
+          :done)
+        (handle-aftertouch [this message]))
+
+      ;; Just one variable, take full cell, using either encoder,
+      ;; suppress the other one.
+      (let [paired-note (if (odd? note) (dec note) (inc note))]
+        (reify controllers/IOverlay
+          (captured-controls [this] #{(control-for-top-encoder-note note)})
+          (captured-notes [this] #{note paired-note})
+          (adjust-interface [this]
+            (when (same-effect-active controller cue (:id info))
+              (draw-variable-gauge controller x 17 0 cue
+                                   (first (:variables cue)) (:id info))
+              true))
+          (handle-control-change [this message]
+            (adjust-variable-value controller message cue
+                                   (first (:variables cue)) (:id info)))
+          (handle-note-on [this message]
+            true)
+          (handle-note-off [this message]
+            (when (= (:note message) note)
+              :done))
+          (handle-aftertouch [this message]))))))
+
+(def ^:private color-picker-grid
+  (let [result (make-array clojure.lang.IPersistentMap 64)]
+    (doseq [i (range 16)]
+      (let [x (* 4 (rem i 2))
+            y (- 7 (quot i 2))
+            origin (+ x (* 8 y))
+            hue (* 360 (/ i 15))
+            base-color (colors/create-color :hue hue :saturation 100 :lightness 50)]
+        (aset result origin base-color)
+        (aset result (inc origin) (colors/desaturate base-color 25))
+        (aset result (+ origin 2) (colors/desaturate base-color 50))
+        (aset result (+ origin 3) (colors/desaturate base-color 75))))
+    (aset result 4 (colors/create-color :h 0 :s 0 :l 100))
+    (aset result 5 (colors/create-color :h 0 :s 0 :l 50))
+    (aset result 6 (colors/create-color :h 0 :s 0 :l 0))
+    result))
+
+(defn- build-color-adjustment-overlay
+  "Create an overlay for adjusting a color cue parameter. `note`
+  identifies the encoder that was touched to bring up this overlay,
+  `cue` is the cue whose variable is being adjusted, `effect` is the
+  effect which that cue is running, and `info` is the metadata about
+  that effect."
+  [controller note cue effect info]
+  (let [anchors (atom #{note})  ; Track which encoders are keeping the overlay active
+        x (quot note 2)
+        var-index (min (rem note 2) (dec (count (:variables cue))))
+        cue-var (get (:variables cue) var-index)
+        effect-id (:id info)]
+    ;; Take full cell, using both encoders to adjust hue and saturation.
+    (let [[hue-note sat-note] (if (odd? note) [(dec note) note] [note (inc note)])
+          [hue-control sat-control] (map control-for-top-encoder-note [hue-note sat-note])]
+      (reify controllers/IOverlay
+        (captured-controls [this] #{hue-control sat-control})
+        (captured-notes [this] (clojure.set/union #{hue-note sat-note} (set (drop 36 (range 100)))))
+        (adjust-interface [this]
+          (when (same-effect-active controller cue (:id info))
+            ;; Draw the color picker grid
+            (System/arraycopy color-picker-grid 0 (:next-grid-pads controller) 0 64)
+            (let [current-color (or (cues/get-cue-variable cue cue-var :controller controller :when-id effect-id)
+                                    (aget color-picker-grid 6))]
+              ;; Show the preview color at the bottom right
+              (aset (:next-grid-pads controller) 7 current-color)
+              ;; Blink any pad which matches the currently selected color
+              (when (< (rhythm/metro-beat-phase (:metronome (:show controller))) 0.3)
+                (doseq [i (range 64)]
+                  (when (and (not= i 7) (colors/color= current-color (aget (:next-grid-pads controller) i)))
+                    (aset (:next-grid-pads controller) i (if (= i 4)
+                                                           (colors/darken current-color 20)
+                                                           (colors/lighten current-color 20))))))
+              ;; Display the hue and saturation numbers and gauges
+              (let [hue-str (clojure.string/join (take 5 (str (float (colors/hue current-color)) "     ")))
+                    sat-str (clojure.string/join (take 5 (str (float (colors/saturation current-color)))))
+                    hue-gauge (make-pan-gauge (colors/hue current-color) :highest 360 :width 8)
+                    sat-gauge (make-gauge (colors/saturation current-color) :width 8)]
+                (write-display-cell controller 0 x (str "H: " hue-str " S: " sat-str))
+                (write-display-text controller 1 (* x 17) hue-gauge)
+                (write-display-text controller 1 (+ 9 (* x 17)) sat-gauge))
+              true)))
+        (handle-control-change [this message]
+          ;; Adjust hue or saturation depending on controller
+          (let [current-color (or (cues/get-cue-variable cue cue-var :controller controller :when-id effect-id)
+                                  (aget color-picker-grid 6))
+                delta (* (sign-velocity (:velocity message)) 0.5)]
+            (cues/set-cue-variable! cue cue-var
+                                    (if (= (:note message) hue-control)
+                                      (colors/adjust-hue current-color delta)
+                                      (colors/saturate current-color delta))
+                                    :controller controller :when-id effect-id))
+          true)
+        (handle-note-on [this message]
+          (let [note (:note message)]
+            (if (#{hue-note sat-note} note)
+              ;; The user has grabbed another of our controllers, stay active until it is released.
+              (swap! anchors conj note)
+
+              ;; It's a grid pad. Set the color based on the selected note, unless it's the preview pad.
+              (when-not (= note 43)
+                (let [chosen-color (aget color-picker-grid (- note 36))]
+                  (cues/set-cue-variable! cue cue-var chosen-color :controller controller :when-id effect-id)))))
+          true)
+        (handle-note-off [this message]
+          (swap! anchors disj (:note message))
+          (when (empty? @anchors)
+            :done))
+        (handle-aftertouch [this message])))))
+
 (defn- display-encoder-touched
   "One of the eight encoders above the text display was touched."
   [controller note]
@@ -1379,47 +1522,24 @@
     (when (and (seq fx) (< index (count fx)))
       (let [effect (get fx index)
             info (get fx-meta index)
-            cue (:cue info)]
-        (case (count (:variables cue))
-          0 nil ; No variables to adjust
-          1 (controllers/add-overlay (:overlays controller)
-                                     ;; Just one variable, take full cell, using either encoder,
-                                     ;; suppress the other one.
-                                     (let [paired-note (if (odd? note) (dec note) (inc note))]
-                                       (reify controllers/IOverlay
-                                         (captured-controls [this] #{(control-for-top-encoder-note note)})
-                                         (captured-notes [this] #{note paired-note})
-                                         (adjust-interface [this]
-                                           (when (same-effect-active controller cue (:id info))
-                                             (draw-variable-gauge controller x 17 0 cue
-                                                                  (first (:variables cue)) (:id info))
-                                             true))
-                                         (handle-control-change [this message]
-                                           (adjust-variable-value controller message cue
-                                                                  (first (:variables cue)) (:id info)))
-                                         (handle-note-on [this message]
-                                           true)
-                                         (handle-note-off [this message]
-                                           (when (= (:note message) note)
-                                             :done))
-                                         (handle-aftertouch [this message]))))
-          (controllers/add-overlay (:overlays controller)
-                                   ;; More than one variable, adjust whichever's encoder was touched
-                                   (reify controllers/IOverlay
-                                     (captured-controls [this] #{(control-for-top-encoder-note note)})
-                                     (captured-notes [this] #{note})
-                                     (adjust-interface [this]
-                                       (when (same-effect-active controller cue (:id info))
-                                         (draw-variable-gauge controller x 8 (* 9 var-index)
-                                                              cue (get (:variables cue) var-index) (:id info))
-                                         true))
-                                     (handle-control-change [this message]
-                                       (adjust-variable-value controller message cue
-                                                              (get (:variables cue) var-index) (:id info)))
-                                     (handle-note-on [this message])
-                                     (handle-note-off [this message]
-                                       :done)
-                                     (handle-aftertouch [this message]))))))))
+            cue (:cue info)
+            cue-var (case (count (:variables cue))
+                      0 nil ; No variables to adjust
+                      1 (first (:variables cue))
+                      (get (:variables cue) var-index))]
+        (when cue-var
+          (let [cur-val (cues/get-cue-variable cue cue-var :controller controller :when-id (:id info))]
+            (cond
+              (or (number? cur-val) (#{:integer :float} (:type cue-var :float)))
+              (controllers/add-overlay (:overlays controller)
+                                       (build-numeric-adjustment-overlay controller note cue effect info))
+
+              (or (= (type cur-val) :com.evocomputing.colors/color) (= (:type cue-var) :color))
+              (controllers/add-overlay (:overlays controller)
+                                       (build-color-adjustment-overlay controller note cue effect info))
+
+              :else  ; Something we don't know how to adjust
+              nil)))))))
 
 (defn- note-on-received
   "Process a note-on message which was not handled by an interface
