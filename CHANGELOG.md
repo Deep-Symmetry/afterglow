@@ -15,7 +15,7 @@ This change log follows the conventions of
 - The Shift button can be used with tap tempo buttons on controllers
   to set the start of a beat, bar, or phrase, depending on the
   synchronization level of the metronome.
-- Animated GIFs to the documentation to illustrate how the cue user
+- Animated GIFs in the documentation illustrate how the cue user
   interface works.
 
 ### Changed
