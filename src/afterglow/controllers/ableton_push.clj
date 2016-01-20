@@ -1421,8 +1421,8 @@
 (def ^:private color-picker-grid
   (let [result (make-array clojure.lang.IPersistentMap 64)]
     (doseq [i (range 16)]
-      (let [x (* 4 (rem i 2))
-            y (- 7 (quot i 2))
+      (let [x (* 4 (quot i 8))
+            y (- 7 (rem i 8))
             origin (+ x (* 8 y))
             hue (* 360 (/ i 15))
             base-color (colors/create-color :hue hue :saturation 100 :lightness 50)]
