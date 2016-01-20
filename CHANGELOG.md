@@ -8,10 +8,12 @@ This change log follows the conventions of
 
 ### Added
 
-- Rich grid controller mapping for the
+- A rich grid controller mapping for the
   [Novation Launchpad Pro](https://us.novationmusic.com/launch/launchpad-pro#).
-- Shift key can be used with tap tempo buttons on controllers to set
-  the start of a beat, bar, or phrase, depending on the
+- A rich color picker interface on the Ableton Push for cues with
+  color variables.
+- The Shift button can be used with tap tempo buttons on controllers
+  to set the start of a beat, bar, or phrase, depending on the
   synchronization level of the metronome.
 - Animated GIFs to the documentation to illustrate how the cue user
   interface works.
@@ -40,6 +42,10 @@ This change log follows the conventions of
     `afterglow.effects.cues/add-midi-control-to-cue-mapping`)
   - `afterglow.show/remove-midi-control-to-cue-mapping` (instead use
     `afterglow.effects.cues/remove-midi-control-to-cue-mapping`)
+- The detailed documentation was updated to use attributes to link to the API
+  documentation so it could be linked to release-specific version.
+- The API documentation was moved into a github-pages branch so
+  versioned snapshots can be kept around.
 
 
 ### Fixed
