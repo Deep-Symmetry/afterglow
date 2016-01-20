@@ -22,7 +22,7 @@ This page provides an introduction in how to install and use
 Afterglow. The main
 [documentation](doc/README.adoc#afterglow-documentation) goes much
 deeper, and there is also
-[API documentation](http://deepsymmetry.org/afterglow/doc/index.html).
+[API documentation](http://brunchboy.github.io/afterglow/api-doc/master/index.html).
 Finally, the project
 [wiki](https://github.com/brunchboy/afterglow/wiki) offers a place for
 fluid discussion of ideas and sharing of code and discoveries among
@@ -338,7 +338,7 @@ tweak something quickly, you can use that:
 > when you are running from a jar rather than launching from a REPL,
 > you will often want to access a real REPL. You can accomplish that
 > with command-line arguments or by using the web console to invoke
-> [core/start-nrepl](http://deepsymmetry.org/afterglow/doc/afterglow.core.html#var-start-nrepl)
+> [core/start-nrepl](http://brunchboy.github.io/afterglow/api-doc/master/afterglow.core.html#var-start-nrepl)
 > and then connecting your favorite REPL environment to the network
 > REPL port you created.
 
@@ -423,7 +423,7 @@ set up a Universe with ID 1.
 > will likely want to do something similar in setting up your own
 > shows, since a single show is the most common scenario. See the
 > `afterglow.show-context`
-> [API documentation](http://deepsymmetry.org/afterglow/doc/afterglow.show-context.html)
+> [API documentation](http://brunchboy.github.io/afterglow/api-doc/master/afterglow.show-context.html)
 > for more details. The `show-context` namespace also defines the
 > dynamic variable `*show*` which you can use to refer to the current
 > default show when you need to mention it explicitly, as you will see
@@ -466,7 +466,7 @@ to the show’s dimmer grand master. Setting this to a value less than
 100 scales the dimmer values sent to the lights down by that amount.
 So the above command dims the lights to 80% of their possible
 brightness, no matter what else the cues are trying to do. See the
-[dimmer effects API documentation](http://deepsymmetry.org/afterglow/doc/afterglow.effects.dimmer.html)
+[dimmer effects API documentation](http://brunchboy.github.io/afterglow/api-doc/master/afterglow.effects.dimmer.html)
 for more details. Here is an example of what I call right away when
 testing effects in my office with the little Korg nanoKONTROL 2
 plugged in:
