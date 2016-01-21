@@ -804,7 +804,7 @@ the bottom right let you select white, medium gray, and black as color
 values as well, and the last pad displays a preview of the currently
 selected color, rather than doing anything when you press it.
 
-If any pad other than the preview pad match the currently selected
+If any pad other than the preview pad matches the currently selected
 color, it blinks (regardless of whether you chose that color by
 pressing the pad or by turning the encoders).
 
