@@ -733,15 +733,19 @@ effects rather than cues in the corresponding direction.
 
 As described above, the effects created by cues appear in the text
 display area, and can be scrolled through and ended by pressing the
-corresponding red kbd:[End] pad which appears underneath them. If they
-have parameters assigned to them, the parameter names and values will
-appear above the effect name, and they can be adjusted using the
-encoder knob above the parameter. For example, in addition to varying
-the sparkle `chance` parameter using the pad pressure, as was done
-above, its `Fade` parameter can be adjusted using the effect parameter
-encoder above it. As soon as you touch the encode knob associated with
-a parameter, a graphical representation of the current value replaces
-its name, and updates as you turn the encoder to change the value.
+corresponding red kbd:[End] pad which appears underneath them.
+
+==== Numeric Cue Parameters
+
+If the cue that created an effect has numeric parameters assigned to
+it, the parameter names and values will appear above the effect name,
+and they can be adjusted using the encoder knob above the parameter.
+For example, in addition to varying the sparkle `chance` parameter
+using the pad pressure, as was done above, its `Fade` parameter can be
+adjusted using the effect parameter encoder above it. As soon as you
+touch the encode knob associated with a parameter, a graphical
+representation of the current value replaces its name, and updates as
+you turn the encoder to change the value.
 
 image::assets/AdjustingFade.jpg[Adjusting Fade parameter]
 
@@ -774,6 +778,38 @@ dimmed to hint that pressing them would replace the active cue.
 This dimming can also be seen in the web interface view of the cue grid:
 
 image::assets/GoboCues.png[Gobo cues]
+
+==== Color Cue Parameters
+
+If a cue has color parameters assigned to it, they will also appear
+above the effect name. The currently assigned color value will be
+displayed as a six digit hexadecimal number, representing the eight
+bit red, green, and blue representation of the color value, #rrggbb.
+In this photo, a cue with a color parameter that starts out white has
+just been launched:
+
+image::assets/ColorParam.jpg[Cue with color parameter]
+
+When an effect is displaying a color cue parameter, touching the
+associated encoder will open up a special color selection interface,
+which takes over the entire cue grid, as well as the effect cell:
+
+image::assets/ColorPalette.jpg[Color adjustment palette]
+
+In addition to adjusting the color's hue and saturation using the
+encoders above the effect, you can instantly jump to a color by
+tapping any of the pads in the grid, which form a palette of four
+saturation levels of hues spread across the rainbow. The four pads on
+the bottom right let you select white, medium gray, and black as color
+values as well, and the last pad displays a preview of the currently
+selected color, rather than doing anything when you press it.
+
+If any pad other than the preview pad match the currently selected
+color, it blinks (regardless of whether you chose that color by
+pressing the pad or by turning the encoders).
+
+As soon as you let go of both the hue and saturation encoders, the
+palette disappears and the normal cue grid returns.
 
 === Metronome Control
 
