@@ -409,7 +409,7 @@
         [_ column row] (clojure.string/split kind #"-")
         [x y] (map + (map #(Integer/valueOf %) [column row]) [left bottom])
         [cue active] (show/find-cue-grid-active-effect (:show page-info) x y)
-        shift (get-in req [:params :shift])]
+        shift (= (get-in req [:params :shift]) "true")]
     (if cue
       (with-show (:show page-info)
         (if (and active (not (:held cue)))
@@ -587,19 +587,28 @@
   show metronome. If it is manual, invoke the metronome tap-tempo
   handler. If MIDI, align the current beat to the tap. If DJ Link, set
   the current beat to be a down beat (first beat of a bar)."
-  [page-info]
+  [page-info req]
   (with-show (:show page-info)
-    (let [metronome (get-in page-info [:show :metronome])]
-      (case (:level (show/sync-status))
+    (let [metronome (get-in page-info [:show :metronome])
+          base-level (:level (show/sync-status))
+          level      (if (= (get-in req [:params :shift]) "true")
+                       (case base-level
+                         nil   :bpm
+                         :bpm  :beat
+                         :beat :bar
+                         :bar  :phrase
+                         base-level)
+                       base-level)]
+      (case level
         nil (do ((:tap-tempo-handler page-info))
                 {:tempo "adjusting"})
         :bpm (do (rhythm/metro-beat-phase metronome 0)
                  {:started "beat"})
         :beat (do (rhythm/metro-bar-start metronome (rhythm/metro-bar metronome))
                   {:started "bar"})
-        :bar (do (rhythm/metro-phrase-start metronome (rhythm/metro-bar metronome))
+        :bar (do (rhythm/metro-phrase-start metronome (rhythm/metro-phrase metronome))
                  {:started "phrase"})
-        (let [warning (str "Don't know how to tap tempo for sync type" (show/sync-status))]
+        (let [warning (str "Don't know how to tap tempo for sync type" level)]
           (warn warning)
           {:error warning})))))
 
@@ -643,7 +652,7 @@
                       {:adjusted kind})
 
                   (= kind "tap-tempo")
-                  (interpret-tempo-tap page-info)
+                  (interpret-tempo-tap page-info req)
 
                   (= kind "startButton")
                   (with-show (:show page-info)

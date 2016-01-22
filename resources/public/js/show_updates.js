@@ -13,6 +13,28 @@ function updateButtons( data ) {
 }
 
 var bpmSliderBeingDragged = false;
+var bpmSyncMode = "";
+var shifted = false;
+
+function updateTapLabel( ) {
+    switch (bpmSyncMode) {
+
+    case "bpm":
+        $("#tap-tempo").text(shifted ? "Tap Bar" : "Tap Beat");
+        break;
+
+    case "beat":
+        $("#tap-tempo").text(shifted ? "Tap Phrase" : "Tap Bar");
+        break;
+
+    case "bar":
+        $("#tap-tempo").text("Tap Phrase");
+        break;
+
+    default:
+        $("#tap-tempo").text(shifted ? "Tap Beat" : "Tap Tempo");
+    }
+}
 
 function updateMetronome( data ) {
     $.each( data, function( key, val ) {
@@ -39,7 +61,8 @@ function updateMetronome( data ) {
             break;
 
         case "sync":
-            if (val.val.level) {
+            bpmSyncMode = val.val.level;
+            if (bpmSyncMode) {
                 $("#slider-in-bpm").fadeOut();
                 $("#sync-button").removeClass('btn-primary');
                 if (val.val.current) {
@@ -49,31 +72,13 @@ function updateMetronome( data ) {
                     $("#sync-button").addClass('btn-danger');
                     $("#sync-button").removeClass('btn-success');
                 }
-                switch (val.val.level) {
-
-                case "bpm":
-                    $("#tap-tempo").text("Tap Beat");
-                    break;
-
-                case "beat":
-                    $("#tap-tempo").text("Tap Bar");
-                    break;
-
-                case "bar":
-                    $("#tap-tempo").text("Tap Phrase");
-                    break;
-
-                default:
-                    $("#tap-tempo").text("Beat");
-                }
-                    
             } else {
                 $("#slider-in-bpm").fadeIn();
                 $("#sync-button").addClass('btn-primary');
                 $("#sync-button").removeClass('btn-danger');
                 $("#sync-button").removeClass('btn-success');
-                $("#tap-tempo").text("Tap Tempo");
             }
+            updateTapLabel();
             break;
         }
     });
@@ -210,7 +215,8 @@ function errorDetailsClicked( eventObject ) {
 
 function metronomeAdjustClicked( eventObject ) {
     var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + this.id),
-                        { "__anti-forgery-token": csrf_token } ).fail(function() {
+                        { "__anti-forgery-token": csrf_token,
+                          "shift": eventObject.shiftKey } ).fail(function() {
         console.log("Problem requesting metronome adjustment.");
     });
 }
@@ -219,9 +225,9 @@ var $doc = $(document);
 
 function cueCellClicked( eventObject ) {
     var cell = this.id;
-    var shiftParam = eventObject.shiftKey ? "?shift=down" : "";
-    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + cell + shiftParam),
-                        { "__anti-forgery-token": csrf_token }, function(data) {
+    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + cell),
+                        { "__anti-forgery-token": csrf_token,
+                          "shift": eventObject.shiftKey }, function(data) {
                             if ('holding' in data) {
                                 var id = data['holding']['id'];
                                 var x = data['holding']['x'];
@@ -319,6 +325,14 @@ $( document ).ready(function() {
         }
     });
     
+    $( document ).on("keyup keydown", function(e) {
+        if (shifted != e.shiftKey) {
+            shifted = e.shiftKey;
+            updateTapLabel();
+        }
+        return true;
+    });
+
     // See https://github.com/seiyria/bootstrap-slider
     $("#bpm-slider").slider({id: "slider-in-bpm"}).on("slideStart", bpmSlideStart).on("slide", bpmSlide).on("slideStop", bpmSlideStop);
     updateShow();

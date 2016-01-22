@@ -13,8 +13,8 @@ This change log follows the conventions of
 - A rich color picker interface on the Ableton Push for cues with
   color variables.
 - The Shift button can be used with tap tempo buttons on controllers
-  to set the start of a beat, bar, or phrase, depending on the
-  synchronization level of the metronome.
+  and the web UI to set the start of a beat, bar, or phrase, depending
+  on the synchronization level of the metronome.
 - Animated GIFs in the documentation illustrate how the cue user
   interface works.
 
