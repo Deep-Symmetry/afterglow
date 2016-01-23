@@ -31,9 +31,9 @@ mv README.md README.md.old
 sed "s/brunchboy.github.io\/afterglow\/api-doc\/${replace}/brunchboy.github.io\/afterglow\/api-doc\/${version}/g" README.md.old > README.md
 rm -f README.md.old
 
-
-#for fl in *.php; do
-#mv $fl $fl.old
-#sed 's/FINDSTRING/REPLACESTRING/g' $fl.old > $fl
-#rm -f $fl.old
-#done
+for fl in doc/*.adoc; do
+    mv $fl $fl.old
+    sed "s/brunchboy.github.io\/afterglow\/api-doc\/${replace}/brunchboy.github.io\/afterglow\/api-doc\/${version}/g" $fl.old > $fl.middle
+    sed "s/github.com\/brunchboy\/afterglow\/blob\/${replace}/github.com\/brunchboy\/afterglow\/blob\/${version}/g" $fl.middle > $fl
+    rm -f $fl.old $fl.middle
+done

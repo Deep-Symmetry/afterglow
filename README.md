@@ -625,20 +625,46 @@ encounter them!
 
 Here is the set of tasks needed to cut a new release:
 
+### Prerelease Steps
+
 - [ ] Set the project version at the top of
   [`project.clj`](project.clj) to the appropriate non-snapshot version
   number (probably just removing the `-SNAPHSOT` suffix). This example
   assumes release 0.2.0 is about to be cut, so the `defproject` form
   would begin `afterglow "0.2.0"`.
-- [ ] Set the codox `:source-uri` prefix at the bottom of
-  [`project.clj`](project.clj) to point at where the git tag
-  associated with this upcoming release will be found, something like
-  `https://github.com/brunchboy/afterglow/blob/v0.2.0/`. (That is,
-  simply change `master` in the path to the tag name.)
+- [ ] From the top level of the git checkout, run the release
+  preparation script with the name of the git tag that will be
+  associated with the release, to update all of the documentation
+  links to point at the appropriate permanent home: `bash
+  scripts/prepare_release.sh v0.2.0`
 - [ ] Build the codox documentation, and copy it to an appropriate
   tag-named folder within the `gh-pages` branch, to form the permanent
   archive of this release of the API documentation: `lein codox`
   followed by `mv target/doc gh-pages/api-doc/v0.2.0`.
+- [ ] Update [`CHANGELOG.md`](CHANGELOG.md) to reflect the release:
+  make sure nothing is missing, and rename the sections to reflect the
+  fact that the unreleased code is now released, and there is nothing
+  unreleased.
+
+### Release Steps
+
+- [ ] Commit, tag with the tag name used above, and push including the
+  tag.
+- [ ] Build the uberjar with `lein uberjar`.
+- [ ] Create the release record on github, reference the associated
+  tag, copy in the release notes from [`CHANGELOG.md`](CHANGELOG.md), and upload the
+  uberjar.
+
+### Postrelease Steps
+
+- [ ] Run the release preparation script with no argument to restore
+  the documentation links to point at the master branch: `bash
+  scripts/prepare_release.sh`
+- [ ] Update [`CHANGELOG.md`](CHANGELOG.md) to include a new
+  unreleased section.
+- [ ] Set the version at the top of [`project.clj`](project.clj) to
+  the next `-SNAPSHOT` version being developed.
+- [ ] Commit and push.
 
 ## Tasks
 
