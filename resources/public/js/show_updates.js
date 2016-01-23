@@ -302,6 +302,13 @@ function decorateMetronomeAdjusters( selector, onMouseDown ) {
     );
 }
 
+function checkShiftKey( eventObject ) {
+    if (shifted != eventObject.shiftKey) {
+        shifted = eventObject.shiftKey;
+        updateTapLabel();
+    }
+}
+
 $( document ).ready(function() {
     $("#startButton").click(uiButtonClicked);
     $("#stopButton").click(uiButtonClicked);
@@ -325,11 +332,13 @@ $( document ).ready(function() {
         }
     });
     
+    // Set up to keep track of the shift key and update the tap tempo label accordingly
     $( document ).on("keyup keydown", function(e) {
-        if (shifted != e.shiftKey) {
-            shifted = e.shiftKey;
-            updateTapLabel();
-        }
+        checkShiftKey(e);
+        return true;
+    });
+    $( window ).on("focusin", function(e) {
+        checkShiftKey(e);
         return true;
     });
 
