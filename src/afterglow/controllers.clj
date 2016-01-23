@@ -4,6 +4,7 @@
   (:require [overtone.at-at :as at-at]
             [overtone.midi :as midi]
             [afterglow.midi :as amidi]
+            [afterglow.rhythm :as rhythm]
             [taoensso.timbre :as timbre]))
 
 (defonce
@@ -380,3 +381,95 @@
 
     ;; Nothing we process
     false))
+
+(defonce ^{:private true
+           :doc "Keeps track of all controller elements that should
+  receive beat feedback. A map whose keys are a tuple of [midi-device
+  channel note kind], and whose values are [metronome on-value
+  off-value device-map disconnect-handler]."} beat-feedback
+  (atom {}))
+
+(defonce ^{:private true
+           :doc "When any devices are requesting beat feedback, contains
+  a task which sends their MIDI messages."}
+  beat-task
+  (atom nil))
+
+(def beat-refresh-interval
+  "How often, in milliseconds, are the controllers requesting beat
+  feedback refreshed."
+  (/ 1000 30))
+
+(defonce ^{:private true
+           :doc "Keeps track of the most recent marker seen for each
+  beat mapping, so we can tell if this is a new beat."}
+  last-marker
+  (atom {}))
+
+(defn- new-beat?
+  "Returns true if the metronome is reporting a different marker
+  position than the last time this function was called."
+  [entry marker]
+  (when (not= marker (get @last-marker entry))
+    (swap! last-marker assoc entry marker)))
+
+(defn- give-beat-feedback
+  "Called periodically to send feedback to non-grid controllers
+  requesting flashes driven by metronome beats."
+  []
+  (doseq [[entry [metronome on off device]] @beat-feedback]
+    (let [[_ channel note kind] entry
+          marker (rhythm/metro-marker metronome)
+          bright (or (new-beat? entry marker) (< (rhythm/metro-beat-phase metronome) 0.15))]
+      (if (= :control kind)
+        (midi/midi-control device note (if bright on off) channel)
+        (if bright
+          (midi/midi-note-on device note on channel)
+          (midi/midi-note-off device note channel))))))
+
+(defn- update-beat-task
+  "Checks whether the beat refresh task is currently needed (if there
+  are any controllers registered to receive beat feedback), whether it
+  is currently running, and starts or ends it accordingly."
+  []
+  (swap! beat-task (fn [current]
+                     (if (empty? @beat-feedback)
+                       (when current (do (at-at/kill current) nil))  ; Should not be running; kill if it was.
+                       (if current  ; Should be running, return if it is, or start it.
+                         current
+                         (at-at/every beat-refresh-interval give-beat-feedback pool
+                                      :desc "Metronome beat feedback update"))))))
+
+(defn clear-beat-feedback!
+  "Ceases flashing the specified non-grid MIDI controller element
+  on beats of the specified metronome."
+  [metronome device channel kind note]
+  {:pre [(satisfies? rhythm/IMetronome metronome) (= (type device) :midi-device) (#{:control :note} kind)]}
+  (let [entry [(:device device) channel note kind]
+        [_ _ off _ disconnect-handler] (get @beat-feedback entry)]
+    (swap! beat-feedback dissoc entry)
+    (update-beat-task)
+    (when (some? disconnect-handler)
+      (amidi/remove-disconnected-device-handler! device disconnect-handler))
+    (when off ; We were giving feedback, make sure we leave the LED in an off state
+      (if (= :control kind)
+                (midi/midi-control device note off channel)
+                (midi/midi-note-off device note channel))))
+  nil)
+
+(defn add-beat-feedback!
+  "Arranges for the specified non-grid MIDI controller to receive
+  feedback events to make a particular LED flash on each beat of
+  the specified metronome."
+  [metronome device channel kind note & {:keys [on off] :or {on 127 off 0}}]
+  {:pre [(satisfies? rhythm/IMetronome metronome) (= (type device) :midi-device)
+         (#{:control :note} kind) (integer? on) (integer? off) (<= 0 on 127) (<= 0 off 127)]}
+  (clear-beat-feedback! metronome device channel kind note)  ; In case there was an already in effect
+  (letfn [(disconnect-handler []
+            (clear-beat-feedback! metronome device channel kind note))]
+    (amidi/add-disconnected-device-handler! device disconnect-handler)
+    (swap! beat-feedback assoc [(:device device) channel note kind]
+           [metronome on off device disconnect-handler]))
+  (update-beat-task)
+  nil)
+
