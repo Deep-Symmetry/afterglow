@@ -69,6 +69,6 @@
   :plugins [[lein-codox "0.9.1"]
             [lein-environ "1.0.1"]]
 
-  :codox {:source-uri "http://github.com/brunchboy/afterglow/blob/master/{filepath}#L{line}"
+  :codox {:source-uri "https://github.com/brunchboy/afterglow/blob/master/{filepath}#L{line}"
           :metadata {:doc/format :markdown}}
   :min-lein-version "2.0.0")

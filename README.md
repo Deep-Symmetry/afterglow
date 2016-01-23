@@ -621,7 +621,32 @@ feel free to log
 [issues](https://github.com/brunchboy/afterglow/issues) as you
 encounter them!
 
+## Release Checklist
+
+Here is the set of tasks needed to cut a new release:
+
+- [ ] Set the project version at the top of
+  [`project.clj`](project.clj) to the appropriate non-snapshot version
+  number (probably just removing the `-SNAPHSOT` suffix). This example
+  assumes release 0.2.0 is about to be cut, so the `defproject` form
+  would begin `afterglow "0.2.0"`.
+- [ ] Set the codox `:source-uri` prefix at the bottom of
+  [`project.clj`](project.clj) to point at where the git tag
+  associated with this upcoming release will be found, something like
+  `https://github.com/brunchboy/afterglow/blob/v0.2.0/`. (That is,
+  simply change `master` in the path to the tag name.)
+- [ ] Build the codox documentation, and copy it to an appropriate
+  tag-named folder within the `gh-pages` branch, to form the permanent
+  archive of this release of the API documentation: `lein codox`
+  followed by `mv target/doc gh-pages/api-doc/v0.2.0`.
+
 ## Tasks
+
+To a large extent, this is now historical, and issue and enhancement
+tracking has moved to the
+[issues](https://github.com/brunchboy/afterglow/issues) system. There
+are still some interesting ideas here for longer-term consideration,
+though.
 
 - [x] Sync metronomes to MIDI
 - [x] Add metronome chase for clear sync testing
