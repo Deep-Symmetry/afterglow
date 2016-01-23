@@ -1,5 +1,6 @@
 (ns afterglow.web.routes.show-control
   (:require [afterglow.controllers :as controllers]
+            [afterglow.controllers.tempo :as tempo]
             [afterglow.dj-link :as dj-link]
             [afterglow.midi :as amidi]
             [afterglow.rhythm :as rhythm]
@@ -192,9 +193,11 @@
       (error t "Problem opening MIDI inputs")))
   (let [[show description] (get @show/shows (Integer/valueOf show-id))
         grid (cue-view show 0 0 8 8 nil)
-        page-id (:counter (swap! clients update-in [:counter] inc))]
+        page-id (:counter (swap! clients update-in [:counter] inc))
+        shift-mode (atom false)]
     (swap! clients update-in [page-id] assoc :show show :id page-id
-           :tap-tempo-handler (amidi/create-tempo-tap-handler (:metronome show)))
+           :shift-mode shift-mode
+           :tempo-tap-handler (tempo/create-show-tempo-tap-handler show :shift-fn (fn [] @shift-mode)))
     (record-page-grid page-id grid 0 0 8 8)
     (layout/render "show.html" {:show show :title description :grid grid :page-id page-id
                                 :min-bpm controllers/minimum-bpm :max-bpm controllers/maximum-bpm
@@ -584,33 +587,10 @@
 
 (defn- interpret-tempo-tap
   "React appropriately to a tempo tap, based on the sync mode of the
-  show metronome. If it is manual, invoke the metronome tap-tempo
-  handler. If MIDI, align the current beat to the tap. If DJ Link, set
-  the current beat to be a down beat (first beat of a bar)."
+  show metronome."
   [page-info req]
-  (with-show (:show page-info)
-    (let [metronome (get-in page-info [:show :metronome])
-          base-level (:level (show/sync-status))
-          level      (if (= (get-in req [:params :shift]) "true")
-                       (case base-level
-                         nil   :bpm
-                         :bpm  :beat
-                         :beat :bar
-                         :bar  :phrase
-                         base-level)
-                       base-level)]
-      (case level
-        nil (do ((:tap-tempo-handler page-info))
-                {:tempo "adjusting"})
-        :bpm (do (rhythm/metro-beat-phase metronome 0)
-                 {:started "beat"})
-        :beat (do (rhythm/metro-bar-start metronome (rhythm/metro-bar metronome))
-                  {:started "bar"})
-        :bar (do (rhythm/metro-phrase-start metronome (rhythm/metro-phrase metronome))
-                 {:started "phrase"})
-        (let [warning (str "Don't know how to tap tempo for sync type" level)]
-          (warn warning)
-          {:error warning})))))
+  (reset! (:shift-mode page-info) (= (get-in req [:params :shift]) "true"))
+  ((:tempo-tap-handler page-info)))
 
 (defn post-ui-event
   "Route which reports a user interaction with the show web

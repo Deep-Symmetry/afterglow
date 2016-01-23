@@ -3,6 +3,7 @@
   for Afterglow."
   {:author "James Elliott"}
   (:require [afterglow.controllers :as controllers]
+            [afterglow.controllers.tempo :as tempo]
             [afterglow.effects.cues :as cues]
             [afterglow.effects.dimmer :refer [master-get-level master-set-level]]
             [afterglow.midi :as amidi]
@@ -359,34 +360,7 @@
     (update-text-buttons controller)
 
     (catch Throwable t
-      (warn t "Problem updating Ableton Push Interface"))))
-
-(defn- interpret-tempo-tap
-  "React appropriately to a tempo tap, based on the sync mode of the
-  show metronome. If it is manual, invoke the metronome tap-tempo
-  handler. If MIDI, align the current beat to the tap. If DJ Link or
-  Traktor Beat phase (so beats are already automatically aligned), set
-  the current beat to be a down beat (first beat of a bar). If the
-  shift key is held down, synchronize at the next higher level."
-  [controller]
-  (with-show (:show controller)
-    (let [metronome  (get-in controller [:show :metronome])
-          base-level (:level (show/sync-status))
-          level      (if @(:shift-mode controller)
-                       (case base-level
-                         nil   :bpm
-                         :bpm  :beat
-                         :beat :bar
-                         :bar  :phrase
-                         base-level)
-                       base-level)]
-      (case level
-        nil   ((:tap-tempo-handler controller))
-        :bpm  (rhythm/metro-beat-phase metronome 0)
-        :beat (rhythm/metro-bar-start metronome (rhythm/metro-bar metronome))
-        :bar  (rhythm/metro-phrase-start metronome (rhythm/metro-phrase metronome))
-        (warn "Don't know how to tap tempo for sync type" level)))))
-
+      (warn t "Problem updating Launchpad Pro Interface"))))
 
 
 (defn- leave-user-mode
@@ -427,7 +401,7 @@
   (case (:note message)
     70  ; Tap tempo (click) button
     (when (pos? (:velocity message))
-      (interpret-tempo-tap controller))
+      ((:tempo-tap-handler controller)))
 
     8  ; Stop button
     (when (pos? (:velocity message))
@@ -722,7 +696,8 @@
   (let [port-in  (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
         port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))]
     (if (every? some? [port-in port-out])
-      (let [controller
+      (let [shift-mode (atom false)
+            controller
             (with-meta
               {:id                   (swap! controller-counter inc)
                :display-name         display-name
@@ -736,10 +711,10 @@
                :next-text-buttons    (atom {})
                :last-grid-pads       (atom nil)
                :next-grid-pads       (atom nil)
-               :shift-mode           (atom false)
+               :shift-mode           shift-mode
                :stop-mode            (atom false)
                :midi-handler         (atom nil)
-               :tap-tempo-handler    (amidi/create-tempo-tap-handler (:metronome show))
+               :tempo-tap-handler    (tempo/create-show-tempo-tap-handler show :shift-fn (fn [] @shift-mode))
                :last-marker          (atom nil)
                :overlays             (controllers/create-overlay-state)
                :move-listeners       (atom #{})
