@@ -184,11 +184,11 @@
   frame."
   [show snapshot]
   (let [active @(:active-effects show)
-           indexed (cp/pmap @(:pool show) vector (range) (:effects active))]
-       (cp/pdoseq @(:pool show) [[index effect] indexed]
-                  (when-not (fx/still-active? effect show snapshot)
-                    (let [fx-meta (get (:meta active) index)]
-                      (end-effect! (:key fx-meta) :force true :when-id (:id fx-meta)))))))
+        indexed (cp/pmap @(:pool show) vector (range) (:effects active))]
+    (cp/pdoseq @(:pool show) [[index effect] indexed]
+               (when-not (fx/still-active? effect show snapshot)
+                 (let [fx-meta (get (:meta active) index)]
+                   (end-effect! (:key fx-meta) :force true :when-id (:id fx-meta)))))))
 
 (defn- send-dmx-buffers
   "Once a frame has been calculated, send the DMX universe buffers to
