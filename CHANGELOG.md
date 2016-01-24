@@ -46,7 +46,7 @@ This change log follows the conventions of
   - `afterglow.show/remove-midi-control-to-cue-mapping` (instead use
     `afterglow.effects.cues/remove-midi-control-to-cue-mapping`)
 - The detailed documentation was updated to use attributes to link to the API
-  documentation so it could be linked to release-specific version.
+  documentation so it could be linked to its release-specific version.
 - The API documentation was moved into a github-pages branch so
   versioned snapshots can be kept around.
 
