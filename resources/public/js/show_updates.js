@@ -6,6 +6,53 @@ function updateCueGrid( data ) {
     });
 }
 
+function updateEffectState() {
+    if ($("#effects-table tr").length > 0) {
+        $("#no-effects").hide();
+        $("#effects-table").show();
+    } else {
+        $("#no-effects").show();
+        $("#effects-table").hide();
+    }
+}
+
+var entityMap = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': '&quot;',
+    "'": '&#39;',
+    "/": '&#x2F;'
+};
+
+function escapeHtml(string) {
+    return String(string).replace(/[&<>"'\/]/g, function (s) {
+        return entityMap[s];
+    });
+}
+
+function processEffectUpdate( data ) {
+    $.each( data, function( key, val ) {
+        switch (key) {
+
+        case "ended":
+            $("#effect-" + val).remove();
+            break;
+
+        case "started":
+            $("#effects-table").append('<tr id="effect-' + val.id + '"><td>' + escapeHtml(val.name) + "</td></tr>");
+            break;
+        }
+    });
+}
+
+function updateEffectList( data ) {
+    $.each( data, function( key, val ) {
+        processEffectUpdate(val);
+    });
+    updateEffectState();
+}
+
 function updateButtons( data ) {
     $.each( data, function( key, val ) {
         $('#' + val.id).prop('disabled', val.disabled);
@@ -160,6 +207,10 @@ function updateShow() {
             switch (key) {
             case "grid-changes":
                 updateCueGrid(val);
+                break;
+
+            case "effect-changes":
+                updateEffectList(val);
                 break;
 
             case "button-changes":

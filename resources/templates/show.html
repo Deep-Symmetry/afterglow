@@ -120,9 +120,20 @@
         </tr>
       </table>
     </div>
-</div>
+  </div>
 
-<div id="syncModal" class="modal fade">
+  <div class="row">
+    <div class="col-md-12">
+      <h4>Effects</h4>
+      <div id="no-effects">
+        <p>No effects are active.</p>
+      </div>
+      <table id="effects-table" class="table effects">
+      </table>
+    </div>
+ </div>
+
+  <div id="syncModal" class="modal fade">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -141,9 +152,9 @@
             </div>
         </div>
     </div>
-</div>
+  </div>
 
-<div id="errorDetailsModal" class="modal fade">
+  <div id="errorDetailsModal" class="modal fade">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -161,7 +172,7 @@
             </div>
         </div>
     </div>
-</div>
+  </div>
 
 {% endblock %}
 {% block page-scripts %}

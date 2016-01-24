@@ -216,6 +216,39 @@
     "#000"
     ""))
 
+(defn- effect-summary
+  "Gather summary information about the effects currently running for
+  display on the page."
+  [show]
+  (let [active @(:active-effects show)
+        combine (fn [effect meta]
+                  (merge (assoc meta :effect effect)
+                         (when ((:ending active) (:key meta))
+                           {:ending true})))]
+    (map combine (:effects active) (:meta active))))
+
+(defn- new-effect-info
+  "If the effect was not present when the page was last rendered,
+  return information about it to render now."
+  [last-ids effect]
+  (when-not (last-ids (:id effect))
+    {:started (merge (select-keys effect [:id :priority :started])
+                     {:name (:name (:effect effect))})}))
+
+(defn- effect-changes
+  "Returns the changes which need to be sent to a page to update its
+  effect display since it was last rendered, and updates the record."
+  [page-id]
+  (let [last-info (get @clients page-id)
+        current (effect-summary (:show last-info))
+        current-ids (set (map :id current))
+        last-ids (set (map :id (:effects last-info)))
+        deletions (map (fn [id] {:ended id}) (clojure.set/difference last-ids current-ids))
+        additions (filter identity (map (partial new-effect-info last-ids) current))
+        changes (concat deletions additions)]
+    (swap! clients update-in [page-id] assoc :effects current)
+    (when (seq changes) {:effect-changes changes})))
+
 (defn- grid-changes
   "Returns the changes which need to be sent to a page to update its
   cue grid display since it was last rendered, and updates the
@@ -393,6 +426,7 @@
         (let [[left bottom width height] (:view last-info)]
           (response (merge {}
                            (grid-changes page-id left bottom width height)
+                           (effect-changes page-id)
                            (button-changes page-id left bottom width height)
                            (sync-menu-changes page-id)
                            (link-menu-changes page-id)
