@@ -12,9 +12,12 @@ This change log follows the conventions of
   [Novation Launchpad Pro](https://us.novationmusic.com/launch/launchpad-pro#).
 - A rich color picker interface on the Ableton Push for cues with
   color variables.
-- The Shift button can be used with tap tempo buttons on controllers
+- The Shift button can be used with Tap Tempo buttons on controllers
   and the web UI to set the start of a beat, bar, or phrase, depending
   on the synchronization level of the metronome.
+- Buttons or pads on any MIDI controller can now easily be mapped to
+  act like the smart Tap Tempo and Shift buttons on the Ableton Push
+  and Novation Launchpad.
 - Animated GIFs in the documentation illustrate how the cue user
   interface works.
 

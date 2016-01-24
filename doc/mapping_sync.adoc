@@ -25,14 +25,16 @@ assumed to be running; if not, `(show/start!)`
 == Mapping Cues to a Controller
 
 Although the most convenient and powerful way of running cues with
-Afterglow is to use a large grid controller with color feedback, like
-the Ableton Push which can mirror the cue grid of the web interface,
-you can still accomplish a great deal with a simple controller with a
-few buttons. You will still want to start by creating the cues in the
-show cue grid, not only so you can see and manipulate them with the
-web interface, but also because that is how they can be mapped to MIDI
-controllers. (The Push mapping is described in detail
-<<mapping_sync#using-ableton-push,below>>.)
+Afterglow is to use a large grid controller with color feedback (like
+the Ableton Push or Novation Launchpad Pro, which can mirror the cue
+grid of the web interface) you can still accomplish a great deal with
+a simple controller with a few buttons. You will still want to start
+by creating the cues in the show cue grid, not only so you can see and
+manipulate them with the web interface, but also because that is how
+they can be mapped to MIDI controllers. (The
+<<mapping_sync#using-ableton-push,Push>> and
+<<mapping_sync#using-launchpad-pro,Launchpad Pro>> mappings are
+described in detail below.)
 
 First you need to identify the MIDI messages that the controller sends
 when you press and release the interface element you want to assign
@@ -255,6 +257,144 @@ about cleaning up ordinary MIDI bindings, since Afterglow
 automatically does that whenever a device is disconnected, but if you
 have set up any of your own state that you would like to remove, you
 can use this mechanism to do so.
+
+== Mapping Metronome Control
+
+The rich grid controller bindings created for the Ableton Push and
+Novation Launch Pad provide very convenient metronome control using
+Tap Tempo buttons that flash on each beat of the show metronome, and
+respond to taps appropriately for any metronome synchronization (as
+described in the <<syncing-to-midi-clock,next sections>>) the show may
+have established.
+
+Even if you don't have such a controller, you can set up a button or
+pad on any MIDI controller you own to work the same way. Simply
+<<finding-mapping-details,identify the mapping>> you need to interact
+with that button or pad as decribed above, then call
+{api-doc}afterglow.controllers.tempo.html#var-add-midi-control-to-tempo-mapping[`afterglow.controllers.tempo/add-midi-control-to-tempo-mapping`]
+to set it up.
+
+NOTE: As with cue mappings, these mappings work best if you can
+configure your controller so that its LEDs are in external control
+mode (instead of local control mode), so that Afterglow is completely
+in control of when they are lit. If you can't do that, of there is
+some other reason why you want to avoid having Afterglow send MIDI
+messages to try to control the LEDs, you can pass the additional
+arguments `:feedback-on false` when setting up the mappings. Of course
+this will mean that the Tap Tempo button can't blink on beat for you.
+
+For example, to set this up for the kbd:[Record] button on a Korg
+nanoKONTROL2 controller, you can call:
+
+[source,clojure]
+----
+(def tempo-map
+  (afterglow.controllers.tempo/add-midi-control-to-tempo-mapping
+    "nano" 0 :control 45))
+----
+
+> See the
+{api-doc}afterglow.controllers.tempo.html#var-add-midi-control-to-tempo-mapping[documentation]
+for details about all the arguments.
+
+From that point on, the kbd:[Record] button blinks on each beat of the
+show metronome, and when you press the button, it adjusts the tempo of
+the show. Assuming you have no metronone synchronization established
+for the show, tapping the button sets the metronome's BPM. Tap it as
+you hear each beat of the music, and after a few taps, the speed of
+the metronome will be approximately synchronized with the music.
+
+NOTE: To synchronize the actual beats themselves, see the discussion
+about how to pair this mapping with a shift button, coming up shortly.
+
+If the metronome's BPM is already being synced automatically, via MIDI
+clock messages as described in the <<syncing-to-midi-clock,next
+section>>, then tapping the button will not change the BPM. Instead,
+it acts as a Tap Beat button, moving the start of the current beat to
+match when you tapped the button.
+
+If the metronome's BPM and beat positions are both being synced
+automatically, either via the <<syncing-to-traktor-beat-phase,Traktor
+beat phase mapping>> or <<syncing-to-pro-dj-link,Pioneer Pro DJ Link>>
+(as described further below) then tapping the button acts as a Tap Bar
+button, telling Afterglow that the closest beat to when you tapped the
+button is the down beat, the start of the current bar.
+
+In addition to Tap Tempo buttons, the grid controllers have Shift
+buttons which modify the behavior of other buttons, including the Tap
+Tempo button. That can be very convenient, especially when you are not
+using any kind of automatic BPM sync, so you want to be able to set
+both the tempo and the beat location. You can set up another button on
+your controller to act this way and work with your Tap Tempo button,
+but you need to map it before mapping the Tap Tempo button, so you can
+make use of it in setting up the Tap Tempo mapping.
+
+To set up a Shift button on any MIDI controller you happen to have,
+start by <<finding-mapping-details,identifying the mapping>> you need
+to interact with the button or pad you want to use, then call
+{api-doc}afterglow.controllers.tempo.html#var-add-midi-control-to-shift-mapping[`afterglow.controllers.tempo/add-midi-control-to-shift-mapping`]
+to set it up.
+
+For example, to set this up for the kbd:[Play] button on a Korg
+nanoKONTROL2 controller, you can call:
+
+[source,clojure]
+----
+(def shift-map
+  (afterglow.controllers.tempo/add-midi-control-to-shift-mapping
+    "nano" 0 :control 41))
+----
+
+> See the
+{api-doc}afterglow.controllers.tempo.html#var-add-midi-control-to-shift-mapping[documentation]
+for details about all the arguments.
+
+Once you've done that, when you hold down that button Afterglow lights
+it up, and when you release it Afterglow darkens it. But more
+importantly, you can use the value it returned to set up a
+relationship between your Shift button and a Tap Tempo button:
+
+[source,clojure]
+----
+(def tempo-map
+  (afterglow.controllers.tempo/add-midi-control-to-tempo-mapping
+    "nano" 0 :control 45 :shift-fn (:state shift-map)))
+----
+
+This tells Afterglow to check the state of your Shift button whenever
+you it your Tap Tempo button. If the Shift button is not held down,
+the Tap Tempo button acts as described above, but if your Shift button
+_is_ being held down, tempo taps act differently, synchronizing at one
+level higher.
+
+So if your show metronome is unsynchronized, and the Tap Tempo button
+would normally set the BPM, then tapping it while holding down your
+Shift key makes it act as a Tap Beat button, moving the start of the
+current beat to match when you tapped the button.
+
+If the metronome's BPM is already being synced automatically so the
+button would normally act as a Tap Beat button, then with Shift down
+it acts as a Tap Bar button, telling Afterglow that the closest beat
+to when you tapped the button is the down beat, the start of the
+current bar.
+
+And if the BPM and beat positions are already being synced
+automatically so the button would normally act as a Tap Bar button,
+then with Shift down it acts as a Tap Phrase button, telling Afterglow
+that the closest beat to when you tapped the button is the start of an
+entire phrase.
+
+If you ever want to stop using the mapped buttons, there are
+corresponding functions to remove the mappings. This would undo what
+we did above:
+
+[source,clojure]
+----
+(afterglow.controllers.tempo/remove-midi-control-to-tempo-mapping
+  "nano" 0 :control 45 tempo-map)
+(afterglow.controllers.tempo/remove-midi-control-to-shift-mapping
+  "nano" 0 :control 41 shift-map)
+----
 
 == Syncing to MIDI Clock
 

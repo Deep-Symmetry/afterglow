@@ -4,6 +4,7 @@
   (:require [afterglow.beyond :as beyond]
             [afterglow.controllers.ableton-push :as push]
             [afterglow.controllers :as ct]
+            [afterglow.controllers.tempo]
             [afterglow.core :as core]
             [afterglow.effects :as fx]
             [afterglow.effects.color :as color-fx]
