@@ -31,6 +31,10 @@ function escapeHtml(string) {
     });
 }
 
+function buildEffectRow( data ) {
+    return '<tr id="effect-' + data.id + '"><td>' + escapeHtml(data.name) + '</td></tr>';
+}
+
 function processEffectUpdate( data ) {
     $.each( data, function( key, val ) {
         switch (key) {
@@ -40,7 +44,11 @@ function processEffectUpdate( data ) {
             break;
 
         case "started":
-            $("#effects-table").append('<tr id="effect-' + val.id + '"><td>' + escapeHtml(val.name) + "</td></tr>");
+            if (val.after > 0) {
+                $("#effect-" + val.after).after(buildEffectRow(val));
+            } else {
+                $("#effects-table").prepend(buildEffectRow(val));
+            }
             break;
         }
     });

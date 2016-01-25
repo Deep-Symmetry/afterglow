@@ -229,11 +229,30 @@
 
 (defn- new-effect-info
   "If the effect was not present when the page was last rendered,
-  return information about it to render now."
-  [last-ids effect]
+  return information about it to render now. If there are any existing
+  effects on the page which come after it (meaning they have higher
+  priority), note that this new effect should be rendered on the page
+  after the first existing one found."
+  [last-ids effect other-effects]
   (when-not (last-ids (:id effect))
-    {:started (merge (select-keys effect [:id :priority :started])
-                     {:name (:name (:effect effect))})}))
+    [{:started (merge (select-keys effect [:id :priority :started])
+                      {:name (:name (:effect effect))}
+                      (when-let [after (some last-ids (map :id other-effects))]
+                        {:after after}))}]))
+
+(defn- new-effects
+  "Returns descriptions about effects that are new to the page and,
+  where relevant, the existing effects they should be added after.
+  Effects are traversed in increasing priority order, and added to the
+  top of the page, so highest priority and newest are on top."
+  [last-ids current]
+  (loop [left current
+         result []]
+    (if (empty? left)
+      result
+      (let [remainder (rest left)]
+        (recur remainder
+               (concat result (new-effect-info last-ids (first left) remainder)))))))
 
 (defn- effect-changes
   "Returns the changes which need to be sent to a page to update its
@@ -244,8 +263,7 @@
         current-ids (set (map :id current))
         last-ids (set (map :id (:effects last-info)))
         deletions (map (fn [id] {:ended id}) (clojure.set/difference last-ids current-ids))
-        additions (filter identity (map (partial new-effect-info last-ids) current))
-        changes (concat deletions additions)]
+        changes (concat deletions (new-effects last-ids current))]
     (swap! clients update-in [page-id] assoc :effects current)
     (when (seq changes) {:effect-changes changes})))
 

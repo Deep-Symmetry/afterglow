@@ -8,6 +8,9 @@ This change log follows the conventions of
 
 ### Added
 
+- Running effects are now listed on the Show Control page of the Web
+  UI, in descending priority order. Coming soon: Controls to end them
+  and view and adjust cue parameters.
 - A rich grid controller mapping for the
   [Novation Launchpad Pro](https://us.novationmusic.com/launch/launchpad-pro#).
 - A rich color picker interface on the Ableton Push for cues with
@@ -20,6 +23,21 @@ This change log follows the conventions of
   and Novation Launchpad.
 - Animated GIFs in the documentation illustrate how the cue user
   interface works.
+
+### Fixed
+
+- Cue colors were improved in the web interface and on the Push to
+  make it easier to see which cues are active, as well as to make the
+  colors more faithful to the cue's intent.
+- The text labels on cues in the web interface are now more legible
+  because they use a contrasting color based on the cell's perceived
+  brightness.
+- Incompatible cues are now identified not just from matching effect
+  keys, but also from their `:end-keys` lists, so the web and
+  controller interfaces provide even more guidance.
+- Some testing in a Windows virtual machine revealed issues when
+  working with standard Java Midi implementations (as opposed to
+  CoreMidi4J on the Mac). These were addressed.
 
 ### Changed
 
@@ -50,21 +68,6 @@ This change log follows the conventions of
 - The API documentation was moved into a github-pages branch so
   versioned snapshots can be kept around.
 
-
-### Fixed
-
-- Cue colors were improved in the web interface and on the Push to
-  make it easier to see which cues are active, as well as to make the
-  colors more faithful to the cue's intent.
-- The text labels on cues in the web interface are now more legible
-  because they use a contrasting color based on the cell's perceived
-  brightness.
-- Incompatible cues are now identified not just from matching effect
-  keys, but also from their `:end-keys` lists, so the web and
-  controller interfaces provide even more guidance.
-- Some testing in a Windows virtual machine revealed issues when
-  working with standard Java Midi implementations (as opposed to
-  CoreMidi4J on the Mac). These were addressed.
 
 ## [0.1.6] - 2016-01-11
 
