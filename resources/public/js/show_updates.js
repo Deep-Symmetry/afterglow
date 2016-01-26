@@ -25,11 +25,16 @@ function buildEffectRow( data ) {
         .text(data.name)
         .appendTo(row);
 
+    $('<td></td>', { "style": "text-align: right" })
+        .text(data.startstring)
+        .append("<br>")
+        .append(data.marker)
+        .appendTo(row);
+
     var endCell = $('<td></td>');
-    $('<button type="button" class="btn btn-warning"/>')
+    $('<button/>', { "type": "button", "id": "effect-" + data.id + "-end", "class": "btn btn-warning" })
         .text("End")
         .click(function ( eventObject ) {
-            $(this).removeClass("btn-warning").addClass("btn-danger").text("Kill");
             var jqxhr = $.post( (context + "/ui-event/" + page_id + "/end-effect"),
                                 { "effect-id": data.id,
                                   "key": data.key,
@@ -47,7 +52,13 @@ function buildEffectRow( data ) {
 
 function processEffectUpdate( data ) {
     $.each( data, function( key, val ) {
+
         switch (key) {
+
+        case "ending":
+            $("#effect-" + val).addClass("warning");
+            $("#effect-" + val + "-end").removeClass("btn-warning").addClass("btn-danger").text("Kill");
+            break;
 
         case "ended":
             $("#effect-" + val).remove();

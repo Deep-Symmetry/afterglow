@@ -7,6 +7,7 @@
             [afterglow.show :as show]
             [afterglow.show-context :refer [with-show]]
             [afterglow.web.layout :as layout]
+            (clj-time core format coerce)
             [clojure.data.json :refer [read-json write-str]]
             [com.evocomputing.colors :as colors]
             [org.httpkit.server :refer [with-channel on-receive on-close]]
@@ -216,14 +217,25 @@
     "#000"
     ""))
 
+(def effect-time-formatter
+  "The format to use when showing the time an effect was started. See
+  the [clj-time documentation](https://github.com/clj-time/clj-time)
+  if you want details of how to set up a different format string."
+  (clj-time.format/formatter-local "HH:mm:ss"))
+
 (defn- effect-summary
   "Gather summary information about the effects currently running for
   display on the page."
   [show]
   (let [active @(:active-effects show)
+        ending (:ending active)
         combine (fn [effect effect-meta]
                   (merge (assoc effect-meta :effect effect)
-                         (when ((:ending active) (:key effect-meta))
+                         {:startstring (clj-time.format/unparse
+                                        effect-time-formatter
+                                        (clj-time.core/to-time-zone (clj-time.coerce/from-long (:started effect))
+                                                                    (clj-time.core/default-time-zone)))}
+                         (when (ending (:key effect-meta))
                            {:ending true})))]
     (map combine (:effects active) (:meta active))))
 
@@ -235,7 +247,7 @@
   after the first existing one found."
   [last-ids effect other-effects]
   (when-not (last-ids (:id effect))
-    [{:started (merge (select-keys effect [:key :id :priority :started])
+    [{:started (merge (select-keys effect [:key :id :priority :started :startstring :marker])
                       {:name (:name (:effect effect))}
                       (when-let [after (some last-ids (map :id other-effects))]
                         {:after after}))}]))
@@ -262,9 +274,11 @@
         current (effect-summary (:show last-info))
         current-ids (set (map :id current))
         last-ids (set (map :id (:effects last-info)))
+        ending (set (filter identity (map #(when (:ending %) (:id %)) current)))
+        endings (map (fn [id] {:ending id}) (clojure.set/difference ending (:effects-ending last-info)))
         deletions (map (fn [id] {:ended id}) (clojure.set/difference last-ids current-ids))
-        changes (concat deletions (new-effects last-ids current))]
-    (swap! clients update-in [page-id] assoc :effects current)
+        changes (concat deletions (new-effects last-ids current) endings)]
+    (swap! clients update-in [page-id] assoc :effects current :effects-ending ending)
     (when (seq changes) {:effect-changes changes})))
 
 (defn- grid-changes

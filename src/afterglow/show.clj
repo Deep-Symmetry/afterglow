@@ -831,7 +831,8 @@
         index (find-insertion-index (:meta base) priority)]
     {:effects (vec-insert (:effects base) index f)
      :indices (insert-key (:indices base) key index)
-     :meta (vec-insert (:meta base) index (merge {:key key :priority priority :id id :started (at-at/now)}
+     :meta (vec-insert (:meta base) index (merge {:key key :priority priority :id id :started (at-at/now)
+                                                  :marker (rhythm/metro-marker (:metronome *show*))}
                                                  (when from-cue {:cue from-cue})
                                                  (when x {:x x}) (when y {:y y})
                                                  (when var-map {:variables var-map})))
