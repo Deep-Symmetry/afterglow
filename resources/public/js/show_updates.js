@@ -16,6 +16,11 @@ function updateEffectState() {
     }
 }
 
+function buildFraction( n ) {
+    return $('<span></span>', { "class": "time-fraction" })
+        .text((n < 10? ".0" : ".") + n);
+}
+
 function buildEffectRow( data ) {
     var row = $('<tr></tr>', {
         "id": "effect-" + data.id
@@ -25,10 +30,18 @@ function buildEffectRow( data ) {
         .text(data.name)
         .appendTo(row);
 
+    var timeFrac = $('<span></span>', { "class": "time-fraction" })
+        .text("." + data["start-time-frac"]);
+
+    var beatFrac = $('<span></span>', { "class": "time-fraction" })
+        .text("." + data["start-beat-frac"]);
+
     $('<td></td>', { "style": "text-align: right" })
-        .text(data.startstring)
+        .text(data["start-time"])
+        .append(buildFraction(data["start-time-frac"]))
         .append("<br>")
-        .append(data.marker)
+        .append(data["start-beat"])
+        .append(buildFraction(data["start-beat-frac"]))
         .appendTo(row);
 
     var endCell = $('<td></td>');

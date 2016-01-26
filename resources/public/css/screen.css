@@ -81,6 +81,10 @@ table.metronome {
     color: #f77;
 }
 
+.time-fraction {
+    color: #bbb;
+}
+
 #slider-in-bpm .slider-track-high {
     background: darkslategray;
 }

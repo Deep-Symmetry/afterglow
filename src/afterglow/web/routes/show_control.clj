@@ -223,6 +223,15 @@
   if you want details of how to set up a different format string."
   (clj-time.format/formatter-local "HH:mm:ss"))
 
+(defn hundredths
+  "Given a value from 0 to 1, return it as a rounded number of
+  hundredths, except return 99 when it would round to 100, since it
+  has to tie in with a whole value that we cannot easily increment.
+  Used to provide information about the fractional beat and second at
+  which an effect was started in the web interface."
+  [n]
+  (min 99 (Math/round (* 100.0 n))))
+
 (defn- effect-summary
   "Gather summary information about the effects currently running for
   display on the page."
@@ -230,13 +239,20 @@
   (let [active @(:active-effects show)
         ending (:ending active)
         combine (fn [effect effect-meta]
-                  (merge (assoc effect-meta :effect effect)
-                         {:startstring (clj-time.format/unparse
-                                        effect-time-formatter
-                                        (clj-time.core/to-time-zone (clj-time.coerce/from-long (:started effect))
-                                                                    (clj-time.core/default-time-zone)))}
-                         (when (ending (:key effect-meta))
-                           {:ending true})))]
+                  (let [started (:started effect-meta)
+                        start-ms (:instant started)
+                        start-time (clj-time.core/to-time-zone (clj-time.coerce/from-long start-ms)
+                                                                 (clj-time.core/default-time-zone))
+                        start-time-frac (hundredths (/ (clj-time.core/milli start-time) 1000))
+                        start-beat (str (:phrase started) "." (rhythm/snapshot-bar-within-phrase started) "."
+                                          (rhythm/snapshot-beat-within-bar started))
+                        start-beat-frac (hundredths (rhythm/snapshot-beat-phase started))]
+                    (merge (assoc effect-meta :effect effect)
+                           {:start-time (clj-time.format/unparse effect-time-formatter start-time)
+                            :start-time-frac start-time-frac
+                            :start-beat start-beat :start-beat-frac start-beat-frac}
+                           (when (ending (:key effect-meta))
+                             {:ending true}))))]
     (map combine (:effects active) (:meta active))))
 
 (defn- new-effect-info
@@ -247,7 +263,8 @@
   after the first existing one found."
   [last-ids effect other-effects]
   (when-not (last-ids (:id effect))
-    [{:started (merge (select-keys effect [:key :id :priority :started :startstring :marker])
+    [{:started (merge (select-keys effect [:key :id :priority :start-time :start-time-frac
+                                           :start-beat :start-beat-frac])
                       {:name (:name (:effect effect))}
                       (when-let [after (some last-ids (map :id other-effects))]
                         {:after after}))}]))
