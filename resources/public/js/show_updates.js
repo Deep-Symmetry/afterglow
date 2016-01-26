@@ -16,23 +16,33 @@ function updateEffectState() {
     }
 }
 
-var entityMap = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': '&quot;',
-    "'": '&#39;',
-    "/": '&#x2F;'
-};
-
-function escapeHtml(string) {
-    return String(string).replace(/[&<>"'\/]/g, function (s) {
-        return entityMap[s];
-    });
-}
-
 function buildEffectRow( data ) {
-    return '<tr id="effect-' + data.id + '"><td>' + escapeHtml(data.name) + '</td></tr>';
+    var row = $('<tr></tr>', {
+        "id": "effect-" + data.id
+    });
+
+    $('<td></td>')
+        .text(data.name)
+        .appendTo(row);
+
+    var endCell = $('<td></td>');
+    $('<button type="button" class="btn btn-warning"/>')
+        .text("End")
+        .click(function ( eventObject ) {
+            $(this).removeClass("btn-warning").addClass("btn-danger").text("Kill");
+            var jqxhr = $.post( (context + "/ui-event/" + page_id + "/end-effect"),
+                                { "effect-id": data.id,
+                                  "key": data.key,
+                                  "__anti-forgery-token": csrf_token } )
+                .fail(function() {
+                    console.log("Problem ending an effect.");
+                });
+        })
+        .appendTo(endCell);
+
+    endCell.appendTo(row);
+
+    return row;
 }
 
 function processEffectUpdate( data ) {
@@ -264,7 +274,7 @@ function updateShow() {
 function uiButtonClicked( eventObject ) {
     var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + this.id),
                         { "__anti-forgery-token": csrf_token } ).fail(function() {
-        console.log("Problem requesting cue grid move.");
+        console.log("Problem reporting UI button press.");
     });
 }
 

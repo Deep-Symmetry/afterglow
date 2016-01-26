@@ -221,9 +221,9 @@
   display on the page."
   [show]
   (let [active @(:active-effects show)
-        combine (fn [effect meta]
-                  (merge (assoc meta :effect effect)
-                         (when ((:ending active) (:key meta))
+        combine (fn [effect effect-meta]
+                  (merge (assoc effect-meta :effect effect)
+                         (when ((:ending active) (:key effect-meta))
                            {:ending true})))]
     (map combine (:effects active) (:meta active))))
 
@@ -235,7 +235,7 @@
   after the first existing one found."
   [last-ids effect other-effects]
   (when-not (last-ids (:id effect))
-    [{:started (merge (select-keys effect [:id :priority :started])
+    [{:started (merge (select-keys effect [:key :id :priority :started])
                       {:name (:name (:effect effect))}
                       (when-let [after (some last-ids (map :id other-effects))]
                         {:after after}))}]))
@@ -495,6 +495,13 @@
           {:error (str "Cue was not held for cell: " kind)}))
       {:error (str "No cue found for cell: " kind)})))
 
+(defn- handle-end-effect-event
+  "Process a mouse down on an event's end button."
+  [req]
+  (let [id (Integer/valueOf (get-in req [:params :effect-id]))]
+    (show/end-effect! (get-in req [:params :key]) :when-id id)
+    {:ended id}))
+
 (defn- move-view
   "Updates the origin of our view rectangle, and if it actually
   changed, also moves any linked controller."
@@ -660,6 +667,9 @@
                   
                   (.startsWith kind "cues-")
                   (handle-cue-move-event page-info kind)
+
+                  (= kind "end-effect")
+                  (handle-end-effect-event req)
 
                   (= kind "link-select")
                   (handle-link-controller-event page-info (get-in req [:params :value]))
