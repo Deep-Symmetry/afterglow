@@ -657,7 +657,7 @@
   "Truncates the current value of a cue variable to fit available
   space."
   [controller cue v len effect-id]
-  (let [val (cues/get-cue-variable cue v :controller controller :when-id effect-id)
+  (let [val (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
         formatted (if val
                     (cond
                       (= (:type v) :integer)
@@ -1308,7 +1308,7 @@
                            (when (:velocity v)
                              (cues/set-cue-variable! cue v
                                                      (controllers/value-for-velocity v (:velocity message))
-                                                     :controller controller :when-id id)))))))))))))
+                                                     :show (:show controller) :when-id id)))))))))))))
 
 (defn- control-for-top-encoder-note
   "Return the control number on which rotation of the encoder whose
@@ -1319,7 +1319,7 @@
 (defn- draw-variable-gauge
   "Display the value of a variable being adjusted in the effect list."
   [controller cell width offset cue v effect-id]
-  (let [value (or (cues/get-cue-variable cue v :controller controller :when-id effect-id) 0)
+  (let [value (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id) 0)
         low (min value (:min v))  ; In case user set "out of bounds".
         high (max value (:max v))
         gauge (if (:centered v)
@@ -1331,12 +1331,12 @@
   "Handle a control change from turning an encoder associated with a
   variable being adjusted in the effect list."
   [controller message cue v effect-id]
-  (let [value (or (cues/get-cue-variable cue v :controller controller :when-id effect-id) 0)
+  (let [value (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id) 0)
         low (min value (:min v))  ; In case user set "out of bounds".
         high (max value (:max v))
         resolution (or (:resolution v) (/ (- high low) 200))
         delta (* (sign-velocity (:velocity message)) resolution)]
-    (cues/set-cue-variable! cue v (max low (min high (+ value delta))) :controller controller :when-id effect-id)))
+    (cues/set-cue-variable! cue v (max low (min high (+ value delta))) :show (:show controller) :when-id effect-id)))
 
 (defn- same-effect-active
   "See if the specified effect is still active with the same id."
@@ -1432,7 +1432,7 @@
           (when (same-effect-active controller cue (:id info))
             ;; Draw the color picker grid
             (System/arraycopy color-picker-grid 0 (:next-grid-pads controller) 0 64)
-            (let [current-color (or (cues/get-cue-variable cue cue-var :controller controller :when-id effect-id)
+            (let [current-color (or (cues/get-cue-variable cue cue-var :show (:show controller) :when-id effect-id)
                                     (aget color-picker-grid 6))]
               ;; Show the preview color at the bottom right
               (aset (:next-grid-pads controller) 7 current-color)
@@ -1454,14 +1454,14 @@
               true)))
         (handle-control-change [this message]
           ;; Adjust hue or saturation depending on controller
-          (let [current-color (or (cues/get-cue-variable cue cue-var :controller controller :when-id effect-id)
+          (let [current-color (or (cues/get-cue-variable cue cue-var :show (:show controller) :when-id effect-id)
                                   (aget color-picker-grid 6))
                 delta (* (sign-velocity (:velocity message)) 0.5)]
             (cues/set-cue-variable! cue cue-var
                                     (if (= (:note message) hue-control)
                                       (colors/adjust-hue current-color delta)
                                       (colors/saturate current-color delta))
-                                    :controller controller :when-id effect-id))
+                                    :show (:show controller) :when-id effect-id))
           true)
         (handle-note-on [this message]
           (let [note (:note message)]
@@ -1472,7 +1472,7 @@
               ;; It's a grid pad. Set the color based on the selected note, unless it's the preview pad.
               (when-not (= note 43)
                 (let [chosen-color (aget color-picker-grid (- note 36))]
-                  (cues/set-cue-variable! cue cue-var chosen-color :controller controller :when-id effect-id)))))
+                  (cues/set-cue-variable! cue cue-var chosen-color :show (:show controller) :when-id effect-id)))))
           true)
         (handle-note-off [this message]
           (swap! anchors disj (:note message))
@@ -1503,7 +1503,7 @@
                       1 (first (:variables cue))
                       (get (:variables cue) var-index))]
         (when cue-var
-          (let [cur-val (cues/get-cue-variable cue cue-var :controller controller :when-id (:id info))]
+          (let [cur-val (cues/get-cue-variable cue cue-var :show (:show controller) :when-id (:id info))]
             (cond
               (or (number? cur-val) (#{:integer :float} (:type cue-var :float)))
               (controllers/add-overlay (:overlays controller)

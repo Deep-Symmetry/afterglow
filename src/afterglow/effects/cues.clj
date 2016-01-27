@@ -300,12 +300,12 @@
   passed with `:when-id`, and this id must match the id of the actual
   effect currently running under that key, or `nil` will be returned.
 
-  If a controller is passed with the `:controller` optional keyword
-  argument, the effect is looked up in the show associated with that
-  controller. Otherwise, it is looked up in the default show."
-  [cue var-spec & {:keys [controller when-id]}]
-  (if controller
-    (with-show (:show controller)
+  If a show is passed with the `:show` optional keyword argument, the
+  effect is looked up in that show. Otherwise, it is looked up in the
+  default show."
+  [cue var-spec & {:keys [show when-id]}]
+  (if show
+    (with-show show
       (find-cue-variable-keyword cue var-spec :when-id when-id))
     (let [effect (show/find-effect (:key cue))]
       (if (keyword? (:key var-spec))
@@ -329,12 +329,15 @@
   that effect's id with `:with-id`, and the same restriction will then
   be applied as is for temporary variables.
 
-  If a controller is passed with the `:controller` optional keyword
-  argument, the effect is looked up in the show associated with that
-  controller. Otherwise, it is looked up in the default show."
-  [cue var-spec & {:keys [controller when-id]}]
-  (when-let [k (find-cue-variable-keyword cue var-spec :controller controller :when-id when-id)]
-    (show/get-variable k)))
+  If a show is passed with the `:show` optional keyword argument, the
+  effect is looked up in that show. Otherwise, it is looked up in the
+  default show."
+  [cue var-spec & {:keys [show when-id]}]
+  (if show
+    (with-show show
+      (get-cue-variable cue var-spec :when-id when-id))
+    (when-let [k (find-cue-variable-keyword cue var-spec :when-id when-id)]
+      (show/get-variable k))))
 
 (defn set-cue-variable!
   "Sets the current value of the supplied cue variable, which may be
@@ -351,12 +354,15 @@
   that effect's id with `:with-id`, and the same restriction will then
   be applied as is for temporary variables.
 
-  If a controller is passed with the `:controller` optional keyword
-  argument, the effect is looked up in the show associated with that
-  controller. Otherwise, it is looked up in the default show."
-  [cue var-spec value & {:keys [controller when-id]}]
-  (when-let [k (find-cue-variable-keyword cue var-spec :controller controller :when-id when-id)]
-    (show/set-variable! k value)))
+  If a show is passed with the `:show` optional keyword argument, the
+  effect is looked up in that. Otherwise, it is looked up in the
+  default show."
+  [cue var-spec value & {:keys [show when-id]}]
+  (if show
+    (with-show show
+      (set-cue-variable! cue var-spec value :when-id when-id))
+    (when-let [k (find-cue-variable-keyword cue var-spec :when-id when-id)]
+      (show/set-variable! k value))))
 
 (defn add-midi-control-to-cue-mapping
   "Cause the specified cue from the [[*show*]] cue grid to be

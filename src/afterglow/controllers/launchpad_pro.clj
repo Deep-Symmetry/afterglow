@@ -499,7 +499,7 @@
                            (when (:velocity v)
                              (cues/set-cue-variable! cue v
                                                      (controllers/value-for-velocity v (:velocity message))
-                                                     :controller controller :when-id id)))))))))))))
+                                                     :show (:show controller) :when-id id)))))))))))))
 
 (defn- note-on-received
   "Process a note-on message which was not handled by an interface
