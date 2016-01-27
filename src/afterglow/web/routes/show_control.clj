@@ -225,7 +225,7 @@
   (flatten
        (for [effect current]
          (for [v (:variables (:cue effect))]
-           (let [value (cues/get-cue-variable (:cue effect) (timbre/spy :info v) :show show :when-id (:id effect))]
+           (let [value (cues/get-cue-variable (:cue effect) v :show show :when-id (:id effect))]
              (when value
                {:effect (:key effect)
                 :id (:id effect)
