@@ -350,8 +350,8 @@ creating the cue's effect.
 |`:float`
 
 |Provides a hint for how the variable should be formatted in
- adjustment interfaces. Supported values are `:integer` and `:float`.
- Others may be added in the future. If not provided (or an
+ adjustment interfaces. Supported values are `:integer`, `:float` and
+ `:color`. Others may be added in the future. If not provided (or an
  unrecognized value is provided), the variable is assumed to hold
  floating-point values.
 
