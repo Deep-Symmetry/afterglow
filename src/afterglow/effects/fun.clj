@@ -445,9 +445,11 @@
                                                  show snapshot)))
                  (or (nil? @ending) (= @current-index @ending)))
                (fn [show snapshot] assigners)
-               (fn [snow snapshot]  ;; Arrange to shut down when the next color starts to appear
-                 (reset! ending @current-index)
-                 nil)))))
+               (fn [snow snapshot]
+                 (or (nil? @current-index)  ; We never got started--show stopped? End right away.
+                     (do  ; Arrange to shut down when the next color starts to appear.
+                       (reset! ending @current-index)
+                       nil)))))))
 
 (defn iris-out-color-cycle-chase
   "Returns an effect which changes the color of a group of fixture
