@@ -84,6 +84,9 @@ function processEffectUpdate( data ) {
                 $("#effects-table").prepend(buildEffectRow(val));
             }
             break;
+
+        case "cue-var-change":
+            console.log(val);
         }
     });
 }

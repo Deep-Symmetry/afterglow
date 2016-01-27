@@ -2,6 +2,7 @@
   (:require [afterglow.controllers :as controllers]
             [afterglow.controllers.tempo :as tempo]
             [afterglow.dj-link :as dj-link]
+            [afterglow.effects.cues :as cues]
             [afterglow.midi :as amidi]
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
@@ -217,6 +218,34 @@
     "#000"
     ""))
 
+(defn- cue-var-values
+  "Returns information about the current cue variable values for all
+  currently running effects."
+  [show current]
+  (flatten
+       (for [effect current]
+         (for [v (:variables (:cue effect))]
+           (let [value (cues/get-cue-variable (:cue effect) (timbre/spy :info v) :show show :when-id (:id effect))]
+             (when value
+               {:effect (:key effect)
+                :id (:id effect)
+                :var (merge {:name (name (:key v))}
+                            (select-keys v [:key :name :min :max :type]))
+                :value value}))))))
+
+(defn- cue-var-changes
+  "Returns information about any cue variables for current effects
+  that are different from the last values reported, and updates the
+  list of reported values."
+  [page-id current-effects]
+  (let [last-info (get @clients page-id)
+        show (:show last-info)
+        current-vars (set (cue-var-values show current-effects))
+        changes (for [change (clojure.set/difference current-vars (:cue-vars last-info))]
+                  {:cue-var-change change})]
+    (swap! clients update-in [page-id] assoc :cue-vars current-vars)
+    changes))
+
 (def effect-time-formatter
   "The format to use when showing the time an effect was started. See
   the [clj-time documentation](https://github.com/clj-time/clj-time)
@@ -234,10 +263,10 @@
 
 (defn- effect-summary
   "Gather summary information about the effects currently running for
-  display on the page."
-  [show]
-  (let [active @(:active-effects show)
-        ending (:ending active)
+  display on the page, given the currently active effects reported by
+  the show."
+  [active]
+  (let [ending (:ending active)
         combine (fn [effect effect-meta]
                   (let [started (:started effect-meta)
                         start-ms (:instant started)
@@ -288,13 +317,15 @@
   effect display since it was last rendered, and updates the record."
   [page-id]
   (let [last-info (get @clients page-id)
-        current (effect-summary (:show last-info))
+        show (:show last-info)
+        active @(:active-effects show)
+        current (effect-summary active)
         current-ids (set (map :id current))
         last-ids (set (map :id (:effects last-info)))
         ending (set (filter identity (map #(when (:ending %) (:id %)) current)))
         endings (map (fn [id] {:ending id}) (clojure.set/difference ending (:effects-ending last-info)))
         deletions (map (fn [id] {:ended id}) (clojure.set/difference last-ids current-ids))
-        changes (concat deletions (new-effects last-ids current) endings)]
+        changes (concat deletions (new-effects last-ids current) endings (cue-var-changes page-id current))]
     (swap! clients update-in [page-id] assoc :effects current :effects-ending ending)
     (when (seq changes) {:effect-changes changes})))
 
