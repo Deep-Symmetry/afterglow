@@ -559,10 +559,22 @@
 
 (defn- handle-end-effect-event
   "Process a mouse down on an event's end button."
-  [req]
+  [page-info req]
   (let [id (Integer/valueOf (get-in req [:params :effect-id]))]
-    (show/end-effect! (get-in req [:params :key]) :when-id id)
+    (with-show (:show page-info)
+      (show/end-effect! (get-in req [:params :key]) :when-id id))
     {:ended id}))
+
+(defn- handle-set-cue-var-event
+  "Process a change to a cue variable (e.g. dragging the slider)."
+  [page-info req]
+  (with-show (:show page-info)
+    (let [{:keys [effect-key effect-id var-key value]} (:params req)
+          effect (show/find-effect effect-key)
+          cue (:cue effect)
+          var-spec (some #(when (= (name (:key %)) var-key) %) (:variables cue))]
+      (when (every? some? [cue var-spec value])
+        (cues/set-cue-variable! cue var-spec (Float/valueOf value) :when-id (Integer/valueOf effect-id))))))
 
 (defn- move-view
   "Updates the origin of our view rectangle, and if it actually
@@ -731,7 +743,10 @@
                   (handle-cue-move-event page-info kind)
 
                   (= kind "end-effect")
-                  (handle-end-effect-event req)
+                  (handle-end-effect-event page-info req)
+
+                  (= kind "set-cue-var")
+                  (handle-set-cue-var-event page-info req)
 
                   (= kind "link-select")
                   (handle-link-controller-event page-info (get-in req [:params :value]))

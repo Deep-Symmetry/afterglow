@@ -7,7 +7,7 @@ function updateCueGrid( data ) {
 }
 
 function updateEffectState() {
-    if ($("#effects-table tr").length > 0) {
+    if ($("#effects-table tbody tr").length > 0) {
         $("#no-effects").hide();
         $("#effects-table").show();
     } else {
@@ -36,7 +36,7 @@ function buildEffectRow( data ) {
     var beatFrac = $('<span></span>', { "class": "time-fraction" })
         .text("." + data["start-beat-frac"]);
 
-    $('<td></td>', { "style": "text-align: right" })
+    $('<td></td>', { style: "text-align: right" })
         .text(data["start-time"])
         .append(buildFraction(data["start-time-frac"]))
         .append("<br>")
@@ -44,8 +44,10 @@ function buildEffectRow( data ) {
         .append(buildFraction(data["start-beat-frac"]))
         .appendTo(row);
 
-    var endCell = $('<td></td>');
-    $('<button/>', { "type": "button", "id": "effect-" + data.id + "-end", "class": "btn btn-warning" })
+    $('<td></td>', { style: "text-align: right" }).appendTo(row);  // Space for cue variables, if any
+
+    var endCell = $('<td></td>', { "style": "text-align: right" });
+    $('<button/>', { type: "button", id: "effect-" + data.id + "-end", "class": "btn btn-warning" })
         .text("End")
         .click(function ( eventObject ) {
             var jqxhr = $.post( (context + "/ui-event/" + page_id + "/end-effect"),
@@ -53,7 +55,7 @@ function buildEffectRow( data ) {
                                   "key": data.key,
                                   "__anti-forgery-token": csrf_token } )
                 .fail(function() {
-                    console.log("Problem ending an effect.");
+                    console.log("Problem ending effect with id " + data.id + ".");
                 });
         })
         .appendTo(endCell);
@@ -61,6 +63,81 @@ function buildEffectRow( data ) {
     endCell.appendTo(row);
 
     return row;
+}
+
+var cueSlidersBeingDragged = { };
+
+function sendCueVarUpdate( effectKey, id, varKey, value ) {
+    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/set-cue-var"),
+                        { "effect-key": effectKey,
+                          "effect-id": id,
+                          "var-key": varKey,
+                          "value": value,
+                          "__anti-forgery-token": csrf_token } )
+        .fail(function() {
+            console.log("Problem setting cue variable for effect with id " + id + ".");
+        });
+    //console.log("effectKey " + effectKey + " (id " + id + ") varKey " + varKey + " set to " + value);
+}
+
+function findOrCreateCueVarSlider( data, varSpec ) {
+    var idBase = 'cue-var-' + data.id + '-' + varSpec.key;
+    var sliderId = idBase + '-slider';
+    var result = $('#' + sliderId);
+    if (result.length < 1) {
+        var cell = $('#effect-' + data.id + ' td:nth-child(3)');
+        if (cell.text() != "") {
+            $('<br>').appendTo(cell);
+        }
+        $('<span></span>')
+            .text(varSpec.name + " ")
+            .appendTo(cell);
+        var sliderProps = { value: data.value,
+                            min: varSpec.min,
+                            max: varSpec.max,
+                            handle: "triangle",
+                            tooltip: "show" };
+        if (varSpec.resolution) {
+            sliderProps.step = resolution;
+        }
+
+        var sliderInput = $("<input>", { id: sliderId });
+        sliderInput.appendTo(cell);
+        sliderInput.slider(sliderProps)
+            .on("slideStart", function( e ) {
+                cueSlidersBeingDragged[sliderId] = true;
+                sendCueVarUpdate(data.effect, data.id, varSpec.key, this.value);
+            })
+            .on("slide", function ( e ) {
+                sendCueVarUpdate(data.effect, data.id, varSpec.key, this.value);
+            })
+            .on("slideStop", function ( e ) {
+                sendCueVarUpdate(data.effect, data.id, varSpec.key, this.value);
+                delete cueSlidersBeingDragged[sliderId];
+            });
+
+        result = $('#' + sliderId);
+    }
+    return result;
+}
+
+function processCueVarChange( data ) {
+
+    // console.log(data);
+    var varSpec = data["var"];
+
+    switch (varSpec.type) {
+
+    case "color":
+        break;
+
+    default:  // Integer or float
+        var varSlider = findOrCreateCueVarSlider(data, varSpec);
+        if (!cueSlidersBeingDragged[varSlider.attr("id")]) {
+            varSlider.slider('setValue', Number(data.value));
+        }
+        break;
+    }
 }
 
 function processEffectUpdate( data ) {
@@ -81,12 +158,13 @@ function processEffectUpdate( data ) {
             if (val.after > 0) {
                 $("#effect-" + val.after).after(buildEffectRow(val));
             } else {
-                $("#effects-table").prepend(buildEffectRow(val));
+                $("#effects-table tbody").prepend(buildEffectRow(val));
             }
             break;
 
         case "cue-var-change":
-            console.log(val);
+            processCueVarChange(val);
+            break;
         }
     });
 }
@@ -440,5 +518,7 @@ $( document ).ready(function() {
 
     // See https://github.com/seiyria/bootstrap-slider
     $("#bpm-slider").slider({id: "slider-in-bpm"}).on("slideStart", bpmSlideStart).on("slide", bpmSlide).on("slideStop", bpmSlideStop);
+
+    updateEffectState();
     updateShow();
 });
