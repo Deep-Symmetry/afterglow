@@ -231,7 +231,9 @@
                 :id (:id effect)
                 :var (merge {:name (name (:key v))}
                             (select-keys v [:key :name :min :max :type]))
-                :value value}))))))
+                :value (case (:type v)
+                         :color (colors/rgb-hexstr value)
+                         value)}))))))
 
 (defn- cue-var-changes
   "Returns information about any cue variables for current effects
@@ -574,7 +576,10 @@
           cue (:cue effect)
           var-spec (some #(when (= (name (:key %)) var-key) %) (:variables cue))]
       (when (every? some? [cue var-spec value])
-        (cues/set-cue-variable! cue var-spec (Float/valueOf value) :when-id (Integer/valueOf effect-id))))))
+        (let [value (case (:type var-spec)
+                      :color (colors/create-color value)
+                      (Float/valueOf value))]
+          (cues/set-cue-variable! cue var-spec value :when-id (Integer/valueOf effect-id)))))))
 
 (defn- move-view
   "Updates the origin of our view rectangle, and if it actually

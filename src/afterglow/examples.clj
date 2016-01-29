@@ -91,7 +91,7 @@
   This became vastly more useful once I implemented dynamic color
   parameters. Can include only a specific set of lights by passing
   them with :lights"
-  [color & {:keys [include-color-wheels? lights] :or {lights (show/all-fixtures)}}]
+  [color & {:keys [include-color-wheels? lights effect-name] :or {lights (show/all-fixtures)}}]
   (try
     (let [[c desc] (cond (= (type color) :com.evocomputing.colors/color)
                        [color (color-name color)]
@@ -100,7 +100,8 @@
                        [color "variable"]
                        :else
                        [(create-color color) color])]
-      (color-fx/color-effect (str "Color: " desc) c lights :include-color-wheels? include-color-wheels?))
+      (color-fx/color-effect (or effect-name (str "Global " desc)) c lights
+                             :include-color-wheels? include-color-wheels?))
     (catch Exception e
       (throw (Exception. (str "Can't figure out how to create color from " color) e)))))
 
@@ -228,11 +229,20 @@
   (core/stop-osc-server))
 
 (defn global-color-cue
-  "Create a cue-grid entry which establishes a global color effect."
-  [color x y & {:keys [include-color-wheels? held]}]
-  (let [cue (cues/cue :color (fn [_] (global-color-effect color :include-color-wheels? include-color-wheels?))
+  "Create a cue-grid entry which establishes a global color effect,
+  given a named color. Also set up a cue color parameter so the color
+  can be tweaked in the Web UI or on the Ableton Push."
+  [color-name x y & {:keys [include-color-wheels? held]}]
+  (let [color (create-color color-name)
+        cue (cues/cue :color (fn [var-map]
+                               (global-color-effect (params/bind-keyword-param (:color var-map color)
+                                                                               :com.evocomputing.colors/color
+                                                                               color)
+                                                    :effect-name (str "Global " color-name)
+                                                    :include-color-wheels? include-color-wheels?))
                       :held held
-                      :color (create-color color))]
+                      :color color
+                      :variables [{:key "color" :start color :type :color}])]
     (ct/set-cue! (:cue-grid *show*) x y cue)))
 
 (defn- name-torrent-gobo-cue
@@ -353,14 +363,7 @@
     (global-color-cue "green" 3 0 :include-color-wheels? true)
     (global-color-cue "blue" 4 0 :include-color-wheels? true)
     (global-color-cue "purple" 5 0 :include-color-wheels? true)
-    ;;(global-color-cue "white" 6 0 :include-color-wheels? true)
-    (ct/set-cue! (:cue-grid *show*) 6 0
-                 (cues/cue :color (fn [var-map] (global-color-effect
-                                                 (params/bind-keyword-param (:color var-map :white)
-                                                                            :com.evocomputing.colors/color
-                                                                            (create-color :white))
-                                                                     :include-color-wheels? true))
-                           :variables [{:key "color" :start (create-color :white) :type :color}]))
+    (global-color-cue "white" 6 0 :include-color-wheels? true)
 
     (ct/set-cue! (:cue-grid *show*) 0 1
                  (cues/cue :color (fn [_] (global-color-effect

@@ -121,14 +121,51 @@ function findOrCreateCueVarSlider( data, varSpec ) {
     return result;
 }
 
+function findOrCreateColorPicker( data, varSpec ) {
+    var idBase = 'cue-var-' + data.id + '-' + varSpec.key;
+    var pickerId = idBase + '-slider';
+    var result = $('#' + pickerId);
+    if (result.length < 1) {
+        var cell = $('#effect-' + data.id + ' td:nth-child(3)');
+        if (cell.text() != "") {
+            $('<br>').appendTo(cell);
+        }
+        $('<span></span>')
+            .text(varSpec.name + " ")
+            .appendTo(cell);
+        var pickerProps = {  };
+
+        var pickerInput = $('<input>', { id: pickerId,
+                                         type: "hidden",
+                                         value: data.value });
+        pickerInput.appendTo(cell);
+        pickerInput.minicolors({ changeDelay: 33,
+                                 position: "top right",
+                                 change: function( value, opacity ) {
+                                     if (cueSlidersBeingDragged[pickerId] != value) {
+                                         cueSlidersBeingDragged[pickerId] = value;
+                                         sendCueVarUpdate(data.effect, data.id, varSpec.key, value);
+                                     }
+                                 }});
+
+        result = $('#' + pickerId);
+    }
+    return result;
+}
+
 function processCueVarChange( data ) {
 
-    // console.log(data);
+    //console.log(data);
     var varSpec = data["var"];
 
     switch (varSpec.type) {
 
     case "color":
+        var colorPicker = findOrCreateColorPicker(data, varSpec);
+        if (data.value != cueSlidersBeingDragged[colorPicker.attr("id")]) {
+            cueSlidersBeingDragged[colorPicker.attr("id")] = data.value;
+            colorPicker.minicolors('value', data.value);
+        }
         break;
 
     default:  // Integer or float

@@ -96,3 +96,12 @@ table.metronome {
 #loadBar {
     vertical-align: text-top;
 }
+
+#effects-table .tooltip-inner {
+    background-color: slategray;
+}
+
+#effects-table .tooltip.top .tooltip-arrow {
+    border-top-color: slategray;
+}
+
