@@ -277,8 +277,7 @@
                         start-time (clj-time.core/to-time-zone (clj-time.coerce/from-long start-ms)
                                                                  (clj-time.core/default-time-zone))
                         start-time-frac (hundredths (/ (clj-time.core/milli start-time) 1000))
-                        start-beat (str (:phrase started) "." (rhythm/snapshot-bar-within-phrase started) "."
-                                          (rhythm/snapshot-beat-within-bar started))
+                        start-beat (rhythm/snapshot-marker started)
                         start-beat-frac (hundredths (rhythm/snapshot-beat-phase started))]
                     (merge (assoc effect-meta :effect effect)
                            {:start-time (clj-time.format/unparse effect-time-formatter start-time)

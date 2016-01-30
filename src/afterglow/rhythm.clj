@@ -121,7 +121,10 @@
   the metronome.")
   (snapshot-phrase-start? [snapshot]
   "True if the current beat at the time of the snapshot wass the first
-  beat in its phrase."))))
+  beat in its phrase.")
+  (snapshot-marker [snapshot]
+  "Returns the time represented by the snapshot as
+  `\"phrase.bar.beat`"))))
 
 ;; Rhythm
 
@@ -194,7 +197,9 @@
       (inc (int (floor (/ (snapshot-phrase-phase snapshot 1) phrase-size))))))
   (snapshot-phrase-start? [snapshot]
     (let [phrase-size (/ 1 bpp)]
-      (zero? (floor (/ (snapshot-phrase-phase snapshot 1) phrase-size))))))
+      (zero? (floor (/ (snapshot-phrase-phase snapshot 1) phrase-size)))))
+  (snapshot-marker [snapshot]
+    (str (:phrase snapshot) "." (snapshot-bar-within-phrase snapshot) "." (snapshot-beat-within-bar snapshot))))
 
 (defn normalize-phase
   "Makes sure a phase value is in the range [0.0,1.0)"
@@ -374,8 +379,7 @@
        (MetronomeSnapshot. @start @bpm @bpb @bpp instant beat bar phrase beat-phase bar-phase phrase-phase))))
 
   (metro-marker [metro]
-    (let [snap (metro-snapshot metro)]
-      (str (:phrase snap) "." (snapshot-bar-within-phrase snap) "." (snapshot-beat-within-bar snap))))
+    (snapshot-marker (metro-snapshot metro)))
 
   (metro-add-bpm-watch [metro key f]
     (add-watch bpm key f))
