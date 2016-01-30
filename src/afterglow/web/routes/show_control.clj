@@ -43,6 +43,19 @@
                      (seq (clojure.set/intersection active-keys (set (:end-keys cue))))) 25.0 50.0))
            l-boost))))
 
+(defn- contrasting-text-color
+  "If the default text color of white will be hard to read against a
+  cell assigned the specified color, returns black. Otherwise returns
+  white. Both are in the form of hex strings suitable for use in a CSS
+  style."
+  [color]
+  (if (and color
+           ;; Calculate the perceived brightness of the color.
+           (let [[r g b] (map #(/ % 255) [(colors/red color) (colors/green color) (colors/blue color)])]
+             (> (Math/sqrt (+ (* 0.299 r r) (* 0.587 g g) (* 0.114 b b))) 0.6)))
+    "#000"
+    "#fff"))
+
 (defn cue-view
   "Returns a nested structure of rows of cue information starting at
   the specified origin, with the specified width and height. Ideal for
@@ -62,7 +75,8 @@
            (let [held? (and holding (= holding [x y (:id active)]))
                  color (current-cue-color show active-keys cue active held? snapshot)]
              (assoc cue :current-color color
-                    :style-color (str "style=\"background-color: " (colors/rgb-hexstr color) "\"")))
+                    :style-color (str "style=\"background-color: " (colors/rgb-hexstr color)
+                                      "; color: " (contrasting-text-color color) "\"")))
            ;; No actual cue found, start with an empty map
            {})
          ;; Add the ID whether or not there is a cue
@@ -207,18 +221,6 @@
                                 :min-bpm controllers/minimum-bpm :max-bpm controllers/maximum-bpm
                                 :link-menu (build-link-select (update-known-controllers page-id))
                                 :csrf-token *anti-forgery-token*})))
-
-(defn- contrasting-text-color
-  "If the default text color of white will be hard to read against a
-  cell assigned the specified color, returns black. Otherwise returns
-  an empty string so the text color is used."
-  [color]
-  (if (and color
-           ;; Calculate the perceived brightness of the color.
-           (let [[r g b] (map #(/ % 255) [(colors/red color) (colors/green color) (colors/blue color)])]
-             (> (Math/sqrt (+ (* 0.299 r r) (* 0.587 g g) (* 0.114 b b))) 0.6)))
-    "#000"
-    ""))
 
 (defn- cue-var-values
   "Returns information about the current cue variable values for all
