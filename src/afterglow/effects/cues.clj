@@ -304,15 +304,15 @@
                                        [id (:key (controllers/cue-at (:cue-grid show) x y))]))))]
     (Effect. name
              (fn [show snapshot]  ; We are still running if any of the nested effects we launched are.
-               (some (fn [[id k]]
-                       (with-show show
+               (with-show show
+                 (some (fn [[id k]]
                          (when-let [effect (show/find-effect k)]
-                           (= (:id effect) id))))
-                      running))
+                           (= (:id effect) id)))
+                       running)))
              (fn [show snapshot] nil)  ; We do not assign any values; only the nested effects do.
              (fn [show snapshot]  ; Tell all our launched effects to end.
-               (doseq [[id k] running]
-                 (with-show show
+               (with-show show
+                 (doseq [[id k] running]
                    (show/end-effect! k :when-id id)))))))
 
 
