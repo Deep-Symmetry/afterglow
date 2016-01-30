@@ -168,28 +168,30 @@
 
 (defn- render-cue-grid
   "Figure out how the cue grid pads should be illuminated, based on
-  the currently active cues. Returns a vector of the rows, from bottom
-  to top. Each row is a vector of the colors in that row, from left to
-  right."
-  [controller]
+  the currently active cues and a metronome snapshot identifying the
+  point in musical time at which the interface is being rendered.
+  Returns a vector of the rows, from bottom to top. Each row is a
+  vector of the colors in that row, from left to right."
+  [controller snapshot]
   (let [[origin-x origin-y] @(:origin controller)
         active-keys (show/active-effect-keys (:show controller))]
     (vec (for [y (range 8)]
            (vec (for [x (range 8)]
                   (let [[cue active] (show/find-cue-grid-active-effect (:show controller) (+ x origin-x) (+ y origin-y))
                         ending (and active (:ending active))
-                        l-boost (when cue (if (zero? (colors/saturation (:color cue))) 2.0 0.0))
-                        color (when cue
+                        base-color (when cue (cues/current-cue-color cue active (:show controller) snapshot))
+                        l-boost (when base-color (if (zero? (colors/saturation base-color)) 2.0 0.0))
+                        color (when base-color
                                 (colors/create-color
-                                 :h (colors/hue (:color cue))
-                                 :s (colors/saturation (:color cue))
+                                 :h (colors/hue base-color)
+                                 :s (colors/saturation base-color)
                                  ;; Figure the brightness. Active, non-ending cues are full brightness;
                                  ;; when ending, they blink between middle and low. If they are not active,
                                  ;; they are at middle brightness unless there is another active effect with
                                  ;; the same keyword, in which case they are dim.
                                  :l (+ (if active
                                          (if ending
-                                           (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 5 22)
+                                           (if (> (rhythm/snapshot-beat-phase snapshot) 0.4) 5 22)
                                            60)
                                          (if (or (active-keys (:key cue))
                                                  (seq (clojure.set/intersection active-keys (set (:end-keys cue)))))
@@ -333,28 +335,28 @@
     (update-scroll-arrows controller)
     
     ;; Flash the tap tempo button on beats
-    (let [metronome (:metronome (:show controller))
-          marker (rhythm/metro-marker metronome)
+    (let [snapshot (rhythm/metro-snapshot (get-in controller [:show :metronome]))
+          marker (rhythm/snapshot-marker snapshot)
           colors (metronome-sync-colors controller)]
       (swap! (:next-text-buttons controller)
              assoc (:tap-tempo control-buttons)
-             (if (or (new-beat? controller marker) (< (rhythm/metro-beat-phase metronome) 0.15))
-               (second colors) (first colors))))
+             (if (or (new-beat? controller marker) (< (rhythm/snapshot-beat-phase snapshot) 0.15))
+               (second colors) (first colors)))
 
-    ;; Make the User button bright, since we live in User mode
-    (swap! (:next-text-buttons controller)
-           assoc (:user-mode control-buttons) button-active-color)
+      ;; Make the User button bright, since we live in User mode
+      (swap! (:next-text-buttons controller)
+             assoc (:user-mode control-buttons) button-active-color)
 
-    ;; Make the stop button visible, since we support it
-    (swap! (:next-text-buttons controller)
-           assoc (:stop control-buttons)
-           stop-available-color)
+      ;; Make the stop button visible, since we support it
+      (swap! (:next-text-buttons controller)
+             assoc (:stop control-buttons)
+             stop-available-color)
 
-    (reset! (:next-grid-pads controller) (render-cue-grid controller))
+      (reset! (:next-grid-pads controller) (render-cue-grid controller snapshot))
 
-    ;; Add any contributions from interface overlays, removing them
-    ;; if they report being finished.
-    (controllers/run-overlays (:overlays controller))
+      ;; Add any contributions from interface overlays, removing them
+      ;; if they report being finished.
+      (controllers/run-overlays (:overlays controller) snapshot))
 
     (update-cue-grid controller)
     (update-text-buttons controller)

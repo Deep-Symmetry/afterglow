@@ -598,11 +598,12 @@
             y (range 8)]
       (let [[cue active] (show/find-cue-grid-active-effect (:show controller) (+ x origin-x) (+ y origin-y))
             ending (and active (:ending active))
-            l-boost (when cue (if (zero? (colors/saturation (:color cue))) 20.0 0.0))
-            color (when cue
+            base-color (when cue (cues/current-cue-color cue active (:show controller) snapshot))
+            l-boost (when base-color (if (zero? (colors/saturation base-color)) 20.0 0.0))
+            color (when base-color
                     (colors/create-color
-                     :h (colors/hue (:color cue))
-                     :s (colors/saturation (:color cue))
+                     :h (colors/hue base-color)
+                     :s (colors/saturation base-color)
                      ;; Figure the brightness. Active, non-ending cues are full brightness;
                      ;; when ending, they blink between middle and low. If they are not active,
                      ;; they are at middle brightness unless there is another active effect with

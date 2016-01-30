@@ -26,8 +26,8 @@
   which that cue cell should be drawn in the web interface."
   [show active-keys cue cue-effect held? snapshot]
   (let [ending (and cue-effect (:ending cue-effect))
-        l-boost (if (zero? (colors/saturation (:color cue))) 10.0 0.0)
-        color (cues/current-cue-color cue cue-effect show snapshot)]
+        color (cues/current-cue-color cue cue-effect show snapshot)
+        l-boost (if (zero? (colors/saturation color)) 10.0 0.0)]
     (colors/create-color
      :h (colors/hue color)
      ;; Figure the lightness. Held cues are the lightest, followed by active, non-ending
