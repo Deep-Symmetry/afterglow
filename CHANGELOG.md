@@ -21,6 +21,8 @@ This change log follows the conventions of
 - Buttons or pads on any MIDI controller can now easily be mapped to
   act like the smart Tap Tempo and Shift buttons on the Ableton Push
   and Novation Launchpad.
+- Cues can have animated colors on grid controllers including the web
+  interfaces, to help remind operators about the effects they launch.
 - Animated GIFs in the documentation illustrate how the cue user
   interface works.
 
@@ -35,6 +37,9 @@ This change log follows the conventions of
 - Incompatible cues are now identified not just from matching effect
   keys, but also from their `:end-keys` lists, so the web and
   controller interfaces provide even more guidance.
+- The entire frame of a user interface being rendered on a grid
+  controller or the web interface now uses the same metronome
+  snapshot, to represent a consistent point in time.
 - Some testing in a Windows virtual machine revealed issues when
   working with standard Java Midi implementations (as opposed to
   CoreMidi4J on the Mac). These were addressed.
