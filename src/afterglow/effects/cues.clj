@@ -37,6 +37,18 @@
   help the user identify it. This is only a request, as not all
   control surfaces support all (or any) colors. The color is passed
   to [[interpret-color]], so it can be specified in a variety of ways.
+  If omitted, a default color of white is used.
+
+  `:color-fn`, if present, is a function that will be called to
+  determine the current color to be used in user interfaces for cues
+  that have variable colors. This function will be called with the
+  cue, the currently-running effect launched by that cue (if any), as
+  returned by [[show/find-effect]], the show, and metronome snapshot
+  representing the time at which the user interface is being updated.
+  If it returns a value, that will be used rather than the static
+  color in `:color`. If it returns `nil`, `:color` is used instead. As
+  with `:color`, the presence of this function is only a request, not
+  all user interfaces support dynamic cue colors.
 
   `:end-keys` introduces a sequence of keywords identifying other
   effects which should be ended whenever this one is started. This
@@ -115,18 +127,19 @@
   * `:velocity-min` and `:velocity-max` specify the range into
      which MIDI velocity and aftertouch values will be mapped, if they are present.
      Otherwise the standard `:min` and `:max` values will be used."
-  [show-key effect-fn & {:keys [short-name color end-keys priority held variables]
+  [show-key effect-fn & {:keys [short-name color color-fn end-keys priority held variables]
                          :or {short-name (:name (effect-fn {})) color :white priority 0}}]
-  {:pre [(some? show-key) (fn? effect-fn) (satisfies? fx/IEffect (effect-fn {}))]}
-  {:name (name short-name)
-   :key (keyword show-key)
-   :effect effect-fn
-   :priority priority
-   :held held
-   :color (params/interpret-color (if (keyword? color) (name color) color))
-   :end-keys (vec end-keys)
-   :variables (vec variables)
-   })
+  {:pre [(some? show-key) (fn? effect-fn) (satisfies? fx/IEffect (effect-fn {}))
+         (or (nil? color-fn) (fn? color-fn))]}
+  (merge {:name (name short-name)
+          :key (keyword show-key)
+          :effect effect-fn
+          :priority priority
+          :held held
+          :color (params/interpret-color (if (keyword? color) (name color) color))
+          :end-keys (vec end-keys)
+          :variables (vec variables)}
+         (when color-fn {:color-fn color-fn})))
 
 (defn function-cue
   "Creates a cue that applies the specified function to the supplied
@@ -197,7 +210,7 @@
   that variable, allowing it to be controlled by strike and aftertouch
   pressure on control surfaces which support that feature, as described
   in [[cue]]."
-  [show-key function fixtures & {:keys [level htp? effect-name short-name color end-keys priority held
+  [show-key function fixtures & {:keys [level htp? effect-name short-name color color-fn end-keys priority held
                                         velocity velocity-min velocity-max]
                                  :or {color :white level 0 priority 0}}]
   (let [function (keyword function)
@@ -217,6 +230,7 @@
                                                           fixtures :htp? htp?))
              :short-name short-name
              :color color
+             :color-fn color-fn
              :end-keys end-keys
              :priority priority
              :held held
@@ -229,9 +243,47 @@
                                                   fixtures :htp? htp?))
            :short-name short-name
            :color color
+           :color-fn color-fn
            :end-keys end-keys
            :priority priority
            :held held))))
+
+(defn current-cue-color
+  "Given a cue, an active effect map, and a metronome snapshot
+  representing the moment for which the user interface is being
+  rendered, return the color with which the cue should be rendered on
+  a cue grid. If the cue is not currently running, `active` should be
+  `nil`. Handles the delegation to the cue's dynamic color function if
+  one has been assigned. Useful dynamic color functions are built
+  by [[color-fn-from-cue-var]] and [[color-fn-from-param]]."
+  [cue active show snapshot]
+  (if-let [f (:color-fn cue)]
+    (or (f cue active show snapshot) (:color cue))
+    (:color cue)))
+
+(defn color-fn-from-cue-var
+  [var-spec]
+  "Builds a dynamic cue color function which reports the color of a
+  cue based on the content of a cue variable, given the cue variable
+  map. If the cue variable is temporary, when the cue is not running,
+  the function returns non-dynamic cue color. When running, or if the
+  variable is not temporary, it looks up the value of the specified
+  cue variable, and returns that. If the variable is `nil`, the
+  non-dynamic cue color is returned."
+  (fn [cue active show _]
+    (if (or active (keyword? (:key var-spec)))
+      (or (get-cue-variable cue var-spec :show show :when-id (:id active))
+          (:color cue))
+      (:color cue))))
+
+(defn color-fn-from-param
+  "Builds a dynamic cue color function which reports the color of a
+  cue based on the value of a dynamic parameter. If the parameter
+  evaluates to `nil`, the non-dynamic cue color is returned."
+  [param]
+  (params/validate-param-type param :com.evocomputing.colors/color)
+  (fn [cue active show snapshot]
+    (or (params/evaluate param show snapshot nil) (:color cue))))
 
 ;; TODO: A compound function cue which takes a vector of functions
 ;;       and htp/velocity/level/var-label-overrides and builds a

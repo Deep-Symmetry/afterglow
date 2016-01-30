@@ -234,6 +234,7 @@
   can be tweaked in the Web UI or on the Ableton Push."
   [color-name x y & {:keys [include-color-wheels? held]}]
   (let [color (create-color color-name)
+        color-var {:key "color" :start color :type :color}
         cue (cues/cue :color (fn [var-map]
                                (global-color-effect (params/bind-keyword-param (:color var-map color)
                                                                                :com.evocomputing.colors/color
@@ -242,7 +243,8 @@
                                                     :include-color-wheels? include-color-wheels?))
                       :held held
                       :color color
-                      :variables [{:key "color" :start color :type :color}])]
+                      :color-fn (cues/color-fn-from-cue-var color-var)
+                      :variables [color-var])]
     (ct/set-cue! (:cue-grid *show*) x y cue)))
 
 (defn- name-torrent-gobo-cue
@@ -366,11 +368,12 @@
     (global-color-cue "white" 6 0 :include-color-wheels? true)
 
     (ct/set-cue! (:cue-grid *show*) 0 1
-                 (cues/cue :color (fn [_] (global-color-effect
-                                           (params/build-color-param :s :rainbow-saturation :l 50 :h hue-bar)))
-                           :short-name "Rainbow Bar Fade"
-                           :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
-                                        :type :integer}]))
+                 (let [color-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-bar)]
+                   (cues/cue :color (fn [_] (global-color-effect color-param))
+                             :color-fn (cues/color-fn-from-param color-param)
+                             :short-name "Rainbow Bar Fade"
+                             :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
+                                          :type :integer}])))
     (ct/set-cue! (:cue-grid *show*) 1 1
                  (cues/cue :color (fn [_] (global-color-effect
                                            (params/build-color-param :s :rainbow-saturation :l 50 :h hue-gradient)
@@ -379,17 +382,19 @@
                            :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
                                         :type :integer}]))
     (ct/set-cue! (:cue-grid *show*) 2 1
-                 (cues/cue :color (fn [_] (global-color-effect
-                                           (params/build-color-param :s :rainbow-saturation :l 50 :h hue-gradient
-                                                                     :adjust-hue hue-bar)))
-                           :short-name "Rainbow Grid+Bar"
-                           :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
-                                        :type :integer}]))
+                 (let [color-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-gradient
+                                                             :adjust-hue hue-bar)]
+                   (cues/cue :color (fn [_] (global-color-effect color-param))
+                             :color-fn (cues/color-fn-from-param color-param)
+                             :short-name "Rainbow Grid+Bar"
+                             :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
+                                          :type :integer}])))
     (ct/set-cue! (:cue-grid *show*) 3 1  ; Desaturate the rainbow as each beat progresses
-                 (cues/cue :color (fn [_] (global-color-effect
-                                           (params/build-color-param :s desat-beat :l 50 :h hue-gradient
-                                                                     :adjust-hue hue-bar)))
-                           :short-name "Rainbow Pulse"))
+                 (let [color-param (params/build-color-param :s desat-beat :l 50 :h hue-gradient
+                                                             :adjust-hue hue-bar)]
+                   (cues/cue :color (fn [_] (global-color-effect color-param))
+                             :color-fn (cues/color-fn-from-param color-param)
+                             :short-name "Rainbow Pulse")))
 
     (ct/set-cue! (:cue-grid *show*) 5 1
                  (cues/cue :color (fn [_] (global-color-effect
@@ -397,17 +402,19 @@
                                            :include-color-wheels? true))
                            :short-name "Z Rainbow Grid"))
     (ct/set-cue! (:cue-grid *show*) 6 1
-                 (cues/cue :color (fn [_] (global-color-effect
-                                           (params/build-color-param :s 100 :l 50 :h hue-z-gradient
-                                                                     :adjust-hue hue-bar)))
-                           :short-name "Z Rainbow Grid+Bar"))
+                 (let [color-param (params/build-color-param :s 100 :l 50 :h hue-z-gradient
+                                                             :adjust-hue hue-bar)]
+                   (cues/cue :color (fn [_] (global-color-effect color-param))
+                             :color-fn (cues/color-fn-from-param color-param)
+                             :short-name "Z Rainbow Grid+Bar")))
 
     (ct/set-cue! (:cue-grid *show*) 7 1
-                 (cues/cue :color (fn [_] (global-color-effect
-                                           (params/build-color-param :s 100 :l 50 :h hue-gradient
-                                                                     :adjust-hue hue-bar)
-                                           :lights (show/fixtures-named "blade")))
-                           :short-name "Rainbow Blades"))
+                 (let [color-param (params/build-color-param :s 100 :l 50 :h hue-gradient
+                                                             :adjust-hue hue-bar)]
+                   (cues/cue :color (fn [_] (global-color-effect color-param
+                                                                 :lights (show/fixtures-named "blade")))
+                             :color-fn (cues/color-fn-from-param color-param)
+                             :short-name "Rainbow Blades")))
 
 
     ;; TODO: Write a macro to make it easier to bind cue variables.

@@ -24,19 +24,20 @@
   currently running in that show, a cue, and the currently-running
   effect launched by that cue (if any), determines the color with
   which that cue cell should be drawn in the web interface."
-  [show active-keys cue cue-effect held?]
+  [show active-keys cue cue-effect held? snapshot]
   (let [ending (and cue-effect (:ending cue-effect))
-        l-boost (if (zero? (colors/saturation (:color cue))) 10.0 0.0)]
+        l-boost (if (zero? (colors/saturation (:color cue))) 10.0 0.0)
+        color (cues/current-cue-color cue cue-effect show snapshot)]
     (colors/create-color
-     :h (colors/hue (:color cue))
+     :h (colors/hue color)
      ;; Figure the lightness. Held cues are the lightest, followed by active, non-ending
      ;; cues. When ending, cues blink between middle and low. If they are not active,
      ;; they are at middle lightness unless there is another active effect with the same
      ;; keyword, in which case they are dim.
-     :s (colors/saturation (:color cue))
+     :s (colors/saturation color)
      :l (+ (if cue-effect
              (if ending
-               (if (> (rhythm/metro-beat-phase (:metronome show)) 0.4) 25.0 50.0)
+               (if (> (rhythm/snapshot-beat-phase snapshot) 0.4) 25.0 50.0)
                (if held? 90.0 80.0))
              (if (or (active-keys (:key cue))
                      (seq (clojure.set/intersection active-keys (set (:end-keys cue))))) 25.0 50.0))
@@ -52,14 +53,14 @@
   assigned a unique cue ID (identifying page-relative coordinates,
   with zero at the lower left) so they can be updated if a cue is
   created for that slot while the page is still up."
-  [show left bottom width height holding]
+  [show left bottom width height holding snapshot]
   (let [active-keys (show/active-effect-keys show)]
     (for [y (range (dec (+ bottom height)) (dec bottom) -1)]
       (for [x (range left (+ left width))]
         (assoc
          (if-let [[cue active] (show/find-cue-grid-active-effect show x y)]
            (let [held? (and holding (= holding [x y (:id active)]))
-                 color (current-cue-color show active-keys cue active held?)]
+                 color (current-cue-color show active-keys cue active held? snapshot)]
              (assoc cue :current-color color
                     :style-color (str "style=\"background-color: " (colors/rgb-hexstr color) "\"")))
            ;; No actual cue found, start with an empty map
@@ -194,7 +195,8 @@
     (catch Throwable t
       (error t "Problem opening MIDI inputs")))
   (let [[show description] (get @show/shows (Integer/valueOf show-id))
-        grid (cue-view show 0 0 8 8 nil)
+        snapshot (rhythm/metro-snapshot (:metronome show))
+        grid (cue-view show 0 0 8 8 nil snapshot)
         page-id (:counter (swap! clients update-in [:counter] inc))
         shift-mode (atom false)]
     (swap! clients update-in [page-id] assoc :show show :id page-id
@@ -335,9 +337,9 @@
   "Returns the changes which need to be sent to a page to update its
   cue grid display since it was last rendered, and updates the
   record."
-  [page-id left bottom width height]
+  [page-id left bottom width height snapshot]
   (let [last-info (get @clients page-id)
-        grid (cue-view (:show last-info) left bottom width height (:holding last-info))
+        grid (cue-view (:show last-info) left bottom width height (:holding last-info) snapshot)
         changes (filter identity (flatten (for [[last-row row] (map list (:grid last-info) grid)]
                                             (for [[last-cell cell] (map list last-row row)]
                                               (when (not= last-cell cell)
@@ -376,10 +378,9 @@
 
 (defn metronome-states
   "Gather details about the current state of the main show metronome."
-  [show last-states]
+  [show last-states snap]
   (with-show show
-    (let [snap (rhythm/metro-snapshot (:metronome show))
-          position {:phrase (:phrase snap)
+    (let [position {:phrase (:phrase snap)
                     :bar (rhythm/snapshot-bar-within-phrase snap)
                     :beat (rhythm/snapshot-beat-within-bar snap)}]
       (merge {:bpm (format "%.1f" (float (:bpm snap)))
@@ -391,10 +392,10 @@
 (defn metronome-changes
   "Return the list of changes that should be applied to the show
   metronome section since the last time it was updated."
-  [page-id]
+  [page-id snapshot]
   (let [last-info (get @clients page-id)
         last-states (:metronome last-info)
-        next-states (metronome-states (:show last-info) last-states)
+        next-states (metronome-states (:show last-info) last-states snapshot)
         changes (filter identity (for [[k v] next-states]
                                    (when (not= (k last-states) (k next-states))
                                      {:id (name k) :val v})))]
@@ -505,14 +506,15 @@
     (let [page-id(Integer/valueOf id)]
       (if-let [last-info (find-page-in-cache page-id)]
         ;; Found the page tracking information, send an update.
-        (let [[left bottom width height] (:view last-info)]
+        (let [[left bottom width height] (:view last-info)
+              snapshot (rhythm/metro-snapshot (get-in last-info [:show :metronome]))]
           (response (merge {}
-                           (grid-changes page-id left bottom width height)
+                           (grid-changes page-id left bottom width height snapshot)
                            (effect-changes page-id)
                            (button-changes page-id left bottom width height)
                            (sync-menu-changes page-id)
                            (link-menu-changes page-id)
-                           (metronome-changes page-id)
+                           (metronome-changes page-id snapshot)
                            (load-update page-id)
                            (status-update page-id))))
         ;; Found no page tracking information, advise the page to reload itself.
