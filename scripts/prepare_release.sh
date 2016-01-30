@@ -21,19 +21,21 @@ else
 fi
 
 # Update codox source link
+sourceswap="s/github.com\/brunchboy\/afterglow\/blob\/${replace}/github.com\/brunchboy\/afterglow\/blob\/${version}/g"
 mv project.clj project.clj.old
-sed "s/https:\/\/github.com\/brunchboy\/afterglow\/blob\/${replace}/https:\/\/github.com\/brunchboy\/afterglow\/blob\/${version}/g" project.clj.old > project.clj
+sed "${sourceswap}" project.clj.old > project.clj
 rm -f project.clj.old
 
 
 # Update API documentation links
 mv README.md README.md.old
-sed "s/brunchboy.github.io\/afterglow\/api-doc\/${replace}/brunchboy.github.io\/afterglow\/api-doc\/${version}/g" README.md.old > README.md
+docswap="s/cdn.rawgit.com\/brunchboy\/afterglow\/${replace}\/api-doc/cdn.rawgit.com\/brunchboy\/afterglow\/${version}\/api-doc/g"
+sed "${docswap}" README.md.old > README.md
 rm -f README.md.old
 
 for fl in doc/*.adoc; do
     mv $fl $fl.old
-    sed "s/brunchboy.github.io\/afterglow\/api-doc\/${replace}/brunchboy.github.io\/afterglow\/api-doc\/${version}/g" $fl.old > $fl.middle
-    sed "s/github.com\/brunchboy\/afterglow\/blob\/${replace}/github.com\/brunchboy\/afterglow\/blob\/${version}/g" $fl.middle > $fl
+    sed "${docswap}" $fl.old > $fl.middle
+    sed "${sourceswap}" $fl.middle > $fl
     rm -f $fl.old $fl.middle
 done
