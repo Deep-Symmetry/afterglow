@@ -247,7 +247,7 @@
   (let [last-info (get @clients page-id)
         show (:show last-info)
         current-vars (set (cue-var-values show current-effects))
-        changes (for [change (clojure.set/difference current-vars (:cue-vars last-info))]
+        changes (for [change (filter identity (clojure.set/difference current-vars (:cue-vars last-info)))]
                   {:cue-var-change change})]
     (swap! clients update-in [page-id] assoc :cue-vars current-vars)
     changes))
