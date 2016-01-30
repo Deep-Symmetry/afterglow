@@ -256,8 +256,8 @@
    (add-button-held-feedback-overlay controller button button-active-color))
   ([controller button color]
    (controllers/add-control-held-feedback-overlay (:overlays controller) button
-                                                  #(swap! (:next-text-buttons controller)
-                                                          assoc button color))))
+                                                  (fn [_] (swap! (:next-text-buttons controller)
+                                                                 assoc button color)))))
 
 (defn- enter-stop-mode
   "The user has asked to stop the show. Suspend its update task
@@ -275,7 +275,7 @@
                            (reify controllers/IOverlay
                              (captured-controls [this] #{8})
                              (captured-notes [this] #{})
-                             (adjust-interface [this]
+                             (adjust-interface [this _]
                                (swap! (:next-text-buttons controller)
                                       assoc (:stop control-buttons) stop-active-color)
                                (with-show (:show controller)
@@ -378,7 +378,7 @@
                            (reify controllers/IOverlay
                              (captured-controls [this] #{98})
                              (captured-notes [this] #{})
-                             (adjust-interface [this]
+                             (adjust-interface [this _]
                                true)
                              (handle-control-change [this message]
                                (when (pos? (:velocity message))
@@ -474,7 +474,7 @@
                    (reify controllers/IOverlay
                      (captured-controls [this] #{})
                      (captured-notes [this] #{note})
-                     (adjust-interface [this]
+                     (adjust-interface [this _]
                        (when holding
                          (let [color (colors/create-color
                                       :h (colors/hue (:color cue))

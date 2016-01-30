@@ -61,10 +61,13 @@
   (captured-notes [this]
   "Returns the MIDI note events that will be consumed by this overlay
   while it is active, a set of integers.")
-  (adjust-interface [this]
+  (adjust-interface [this snapshot]
   "Set values for the next frame of the controller interface, however
   that may be done; return a falsey value if the overlay is finished
-  and should be removed.")
+  and should be removed. The `snapshot` is an [[IMetroSnapshot]] that
+  specifies the instant in musical time at which the interface is
+  being rendered, so this overlay can be drawn in sync with the rest
+  of the interface.")
   (handle-control-change [this message]
   "Called when a MIDI control-change event matching the
   captured-controls lists has been received. Return a truthy value if
@@ -291,7 +294,7 @@
   respond to MIDI velocity, and assign their initial values based on
   the velocity of the MIDI message. Returns a map suitable for use
   with the `:var-overrides` argument to
-  <<show/add-effect-from-cue-grid!>>."
+  [[show/add-effect-from-cue-grid!]]."
   [cue velocity]
   (reduce (fn [result v] (if (:velocity v)
                            (assoc result (keyword (:key v)) (value-for-velocity v velocity))
@@ -326,13 +329,13 @@
   control number. Other than that, all it does is call the supplied
   function every time the interface is being updated. As
   with [[add-overlay]], `state` must be a value created
-  by [[creat-overlay-state]] and tracked by the controller."
+  by [[create-overlay-state]] and tracked by the controller."
   [state control-num f]
   (add-overlay state
                (reify IOverlay
                  (captured-controls [this] #{control-num})
                  (captured-notes [this] #{})
-                 (adjust-interface [this] (f))
+                 (adjust-interface [this snapshot] (f snapshot))
                  (handle-control-change [this message]
                    (when (zero? (:velocity message))
                      :done))
@@ -344,10 +347,14 @@
   "Add any contributions from interface overlays, removing them if
   they report being finished. Most recent overlays run last, having
   the opportunity to override older ones. `state` must be a value
-  created by [[creat-overlay-state]] and tracked by the controller."
-  [state]
+  created by [[create-overlay-state]] and tracked by the controller.
+  The `snapshot` is an [[IMetroSnapshot]] that captures the instant in
+  time at which the interface is being rendered, and is passed in to
+  the overlay so it can be rendered in sync with all other interface
+  elements."
+  [state snapshot]
   (doseq [[k overlay] (reverse (:overlays @state))]
-      (when-not (adjust-interface overlay)
+      (when-not (adjust-interface overlay snapshot)
         (swap! state update-in [:overlays] dissoc k))))
 
 (defn overlay-handled?
@@ -355,7 +362,7 @@
   this message; if so, send it, and see if the overlay consumes it.
   Returns truthy if an overlay consumed the message, and it should not
   be given to anyone else. `state` must be a value created
-  by [[creat-overlay-state]] and tracked by the controller."
+  by [[create-overlay-state]] and tracked by the controller."
   [state message]
   (case (:command message)
     (:note-on :note-off :poly-pressure)

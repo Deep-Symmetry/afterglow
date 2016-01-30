@@ -431,7 +431,7 @@
                (reify controllers/IOverlay
                  (captured-controls [this] #{72})
                  (captured-notes [this] #{1 9})
-                 (adjust-interface [this]
+                 (adjust-interface [this _]
                    (bpm-adjusting-interface controller)
                    true)
                  (handle-control-change [this message]
@@ -477,7 +477,7 @@
                (reify controllers/IOverlay
                  (captured-controls [this] #{71})
                  (captured-notes [this] #{0 10})
-                 (adjust-interface [this]
+                 (adjust-interface [this _]
                    (beat-adjusting-interface controller))
                  (handle-control-change [this message]
                    (adjust-beat-from-encoder controller message))
@@ -499,7 +499,7 @@
                (reify controllers/IOverlay
                  (captured-controls [this] #{3 9 20 21})
                  (captured-notes [this] #{0 1})
-                 (adjust-interface [this]
+                 (adjust-interface [this _]
                    ;; Make the metronome button bright, since its information is active
                    (swap! (:next-text-buttons controller)
                           assoc (:metronome control-buttons)
@@ -527,16 +527,16 @@
                      (when (pos? (:velocity message))
                        (rhythm/metro-phrase-start (:metronome (:show controller)) 1)
                        (controllers/add-control-held-feedback-overlay (:overlays controller) 20
-                                                                      #(aset (:next-top-pads controller)
-                                                                             0 (top-pad-state :bright :red)))
+                                                                      (fn [_] (aset (:next-top-pads controller)
+                                                                                    0 (top-pad-state :bright :red))))
                        true)
                      21 ; Sync pad
                      (when (pos? (:velocity message))
                        ;; TODO: Actually implement a new overlay
                        (controllers/add-control-held-feedback-overlay
-                        (:overlays controller) 21 #(aset (:next-top-pads controller)
-                                                         1 (top-pad-state :bright
-                                                                          (metronome-sync-color controller))))
+                        (:overlays controller) 21 (fn [_] (aset (:next-top-pads controller)
+                                                                1 (top-pad-state :bright
+                                                                                 (metronome-sync-color controller)))))
                        true)))
                  (handle-note-on [this message]
                    ;; Whoops, user grabbed encoder closest to beat or BPM display
@@ -558,18 +558,15 @@
 (defn- update-metronome-section
   "Updates the sections of the interface related to metronome
   control."
-  [controller]
-  (let [metronome (:metronome (:show controller))
-        marker (rhythm/metro-marker metronome)
+  [controller snapshot]
+  (let [marker (rhythm/snapshot-marker snapshot)
         metronome-button (:metronome control-buttons)
         tap-tempo-button (:tap-tempo control-buttons)
         metronome-mode @(:metronome-mode controller)]
     ;; Is the first cell reserved for metronome information?
     (if (seq metronome-mode)
       ;; Draw the beat and BPM information
-      (let [metronome (:metronome (:show controller))
-            marker (rhythm/metro-marker metronome)
-            bpm (format "%.1f" (float (rhythm/metro-bpm metronome)))
+      (let [bpm (format "%.1f" (float (:bpm snapshot)))
             chars (+ (count marker) (count bpm))
             padding (clojure.string/join (take (- 17 chars) (repeat " ")))]
         (write-display-cell controller 1 0 (str marker padding bpm))
@@ -588,13 +585,13 @@
     (swap! (:next-text-buttons controller)
            assoc tap-tempo-button
            (button-state tap-tempo-button
-                         (if (or (new-beat? controller marker) (< (rhythm/metro-beat-phase metronome) 0.15))
+                         (if (or (new-beat? controller marker) (< (rhythm/snapshot-beat-phase snapshot) 0.15))
                            :bright :dim)))))
 
 (defn- render-cue-grid
   "Figure out how the cue grid pads should be illuminated, based on the
-  currently active cues."
-  [controller]
+  currently active cues and our current point in musical time."
+  [controller snapshot]
   (let [[origin-x origin-y] @(:origin controller)
         active-keys (show/active-effect-keys (:show controller))]
     (doseq [x (range 8)
@@ -612,7 +609,7 @@
                      ;; the same keyword, in which case they are dim.
                      :l (+ (if active
                              (if ending
-                               (if (> (rhythm/metro-beat-phase (:metronome (:show controller))) 0.4) 6 22)
+                               (if (> (rhythm/snapshot-beat-phase snapshot) 0.4) 6 22)
                                55)
                              (if (or (active-keys (:key cue))
                                      (seq (clojure.set/intersection active-keys (set (:end-keys cue))))) 6 22))
@@ -795,36 +792,37 @@
     (reset! (:next-text-buttons controller) {})
     (Arrays/fill (:next-top-pads controller) 0)
 
-    (update-effect-list controller)
-    (update-metronome-section controller)
+    (let [snapshot (rhythm/metro-snapshot (get-in controller [:show :metronome]))]
+      (update-effect-list controller)
+      (update-metronome-section controller snapshot)
 
-    ;; If the show has stopped without us noticing, enter stop mode
-    (with-show (:show controller)
-      (when-not (or (show/running?) @(:stop-mode controller))
-        (enter-stop-mode controller :already-stopped true)))
+      ;; If the show has stopped without us noticing, enter stop mode
+      (with-show (:show controller)
+        (when-not (or (show/running?) @(:stop-mode controller))
+          (enter-stop-mode controller :already-stopped true)))
 
-    ;; Reflect the shift button state
-    (swap! (:next-text-buttons controller)
-           assoc (:shift control-buttons)
-           (button-state (:shift control-buttons)
-                         (if @(:shift-mode controller) :bright :dim)))
-    
-    (render-cue-grid controller)
-    (update-scroll-arrows controller)
-    
-    ;; Make the User button bright, since we live in User mode
-    (swap! (:next-text-buttons controller)
-           assoc (:user-mode control-buttons)
-           (button-state (:user-mode control-buttons) :bright))
+      ;; Reflect the shift button state
+      (swap! (:next-text-buttons controller)
+             assoc (:shift control-buttons)
+             (button-state (:shift control-buttons)
+                           (if @(:shift-mode controller) :bright :dim)))
 
-    ;; Make the stop button visible, since we support it
-    (swap! (:next-text-buttons controller)
-           assoc (:stop control-buttons)
-           (button-state (:stop control-buttons) :dim))
+      (render-cue-grid controller snapshot)
+      (update-scroll-arrows controller)
 
-    ;; Add any contributions from interface overlays, removing them
-    ;; if they report being finished.
-    (controllers/run-overlays (:overlays controller))
+      ;; Make the User button bright, since we live in User mode
+      (swap! (:next-text-buttons controller)
+             assoc (:user-mode control-buttons)
+             (button-state (:user-mode control-buttons) :bright))
+
+      ;; Make the stop button visible, since we support it
+      (swap! (:next-text-buttons controller)
+             assoc (:stop control-buttons)
+             (button-state (:stop control-buttons) :dim))
+
+      ;; Add any contributions from interface overlays, removing them
+      ;; if they report being finished.
+      (controllers/run-overlays (:overlays controller) snapshot))
 
     (update-cue-grid controller)
     (update-text controller)
@@ -961,7 +959,7 @@
                            (reify controllers/IOverlay
                              (captured-controls [this] #{79})
                              (captured-notes [this] #{8})
-                             (adjust-interface [this]
+                             (adjust-interface [this _]
                                (let [level (master-get-level (get-in controller [:show :grand-master]))]
                                  (write-display-cell controller 0 3 (make-gauge level))
                                  (write-display-cell controller 1 3
@@ -990,7 +988,7 @@
                            (reify controllers/IOverlay
                              (captured-controls [this] #{15})
                              (captured-notes [this] #{9 1})
-                             (adjust-interface [this]
+                             (adjust-interface [this _]
                                (bpm-adjusting-interface controller)
                                true)
                              (handle-control-change [this message]
@@ -1017,7 +1015,7 @@
                            (reify controllers/IOverlay
                              (captured-controls [this] #{14})
                              (captured-notes [this] #{10 0})
-                             (adjust-interface [this]
+                             (adjust-interface [this _]
                                (beat-adjusting-interface controller))
                              (handle-control-change [this message]
                                (adjust-beat-from-encoder controller message))
@@ -1049,7 +1047,7 @@
                            (reify controllers/IOverlay
                              (captured-controls [this] #{59})
                              (captured-notes [this] #{})
-                             (adjust-interface [this]
+                             (adjust-interface [this _]
                                true)
                              (handle-control-change [this message]
                                (when (pos? (:velocity message))
@@ -1081,7 +1079,7 @@
                            (reify controllers/IOverlay
                              (captured-controls [this] #{29})
                              (captured-notes [this] #{})
-                             (adjust-interface [this]
+                             (adjust-interface [this _]
                                (write-display-cell controller 0 1 "")
                                (write-display-cell controller 0 2 "")
                                (write-display-cell controller 1 1 "         *** Show")
@@ -1113,8 +1111,8 @@
   as the user is holding it down."
   [controller button]
   (controllers/add-control-held-feedback-overlay (:overlays controller) (:control button)
-                                                 #(swap! (:next-text-buttons controller)
-                                                         assoc button (button-state button :bright))))
+                                                 (fn [_] (swap! (:next-text-buttons controller)
+                                                                assoc button (button-state button :bright)))))
 
 (defn- handle-end-effect
   "Process a tap on one of the pads which indicate the user wants to
@@ -1136,7 +1134,7 @@
                                  (reify controllers/IOverlay
                                    (captured-controls [this] #{note (inc note)})
                                    (captured-notes [this] #{})
-                                   (adjust-interface [this]
+                                   (adjust-interface [this _]
                                      (write-display-cell controller 0 x "")
                                      (write-display-cell controller 1 x "Ending:")
                                      (write-display-cell controller 2 x (or (:name (:cue info)) (:name effect)))
@@ -1283,7 +1281,7 @@
                    (reify controllers/IOverlay
                      (captured-controls [this] #{})
                      (captured-notes [this] #{note})
-                     (adjust-interface [this]
+                     (adjust-interface [this _]
                        (when holding
                          (let [color (colors/create-color
                                       :h (colors/hue (:color cue))
@@ -1359,7 +1357,7 @@
       (reify controllers/IOverlay
         (captured-controls [this] #{(control-for-top-encoder-note note)})
         (captured-notes [this] #{note})
-        (adjust-interface [this]
+        (adjust-interface [this _]
           (when (same-effect-active controller cue (:id info))
             (draw-variable-gauge controller x 8 (* 9 var-index)
                                  cue (get (:variables cue) var-index) (:id info))
@@ -1378,7 +1376,7 @@
         (reify controllers/IOverlay
           (captured-controls [this] #{(control-for-top-encoder-note note)})
           (captured-notes [this] #{note paired-note})
-          (adjust-interface [this]
+          (adjust-interface [this _]
             (when (same-effect-active controller cue (:id info))
               (draw-variable-gauge controller x 17 0 cue
                                    (first (:variables cue)) (:id info))
@@ -1428,7 +1426,7 @@
       (reify controllers/IOverlay
         (captured-controls [this] #{hue-control sat-control})
         (captured-notes [this] (clojure.set/union #{hue-note sat-note} (set (drop 36 (range 100)))))
-        (adjust-interface [this]
+        (adjust-interface [this _]
           (when (same-effect-active controller cue (:id info))
             ;; Draw the color picker grid
             (System/arraycopy color-picker-grid 0 (:next-grid-pads controller) 0 64)
