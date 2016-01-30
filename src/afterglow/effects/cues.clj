@@ -248,43 +248,6 @@
            :priority priority
            :held held))))
 
-(defn current-cue-color
-  "Given a cue, an active effect map, and a metronome snapshot
-  representing the moment for which the user interface is being
-  rendered, return the color with which the cue should be rendered on
-  a cue grid. If the cue is not currently running, `active` should be
-  `nil`. Handles the delegation to the cue's dynamic color function if
-  one has been assigned. Useful dynamic color functions are built
-  by [[color-fn-from-cue-var]] and [[color-fn-from-param]]."
-  [cue active show snapshot]
-  (if-let [f (:color-fn cue)]
-    (or (f cue active show snapshot) (:color cue))
-    (:color cue)))
-
-(defn color-fn-from-cue-var
-  [var-spec]
-  "Builds a dynamic cue color function which reports the color of a
-  cue based on the content of a cue variable, given the cue variable
-  map. If the cue variable is temporary, when the cue is not running,
-  the function returns non-dynamic cue color. When running, or if the
-  variable is not temporary, it looks up the value of the specified
-  cue variable, and returns that. If the variable is `nil`, the
-  non-dynamic cue color is returned."
-  (fn [cue active show _]
-    (if (or active (keyword? (:key var-spec)))
-      (or (get-cue-variable cue var-spec :show show :when-id (:id active))
-          (:color cue))
-      (:color cue))))
-
-(defn color-fn-from-param
-  "Builds a dynamic cue color function which reports the color of a
-  cue based on the value of a dynamic parameter. If the parameter
-  evaluates to `nil`, the non-dynamic cue color is returned."
-  [param]
-  (params/validate-param-type param :com.evocomputing.colors/color)
-  (fn [cue active show snapshot]
-    (or (params/evaluate param show snapshot nil) (:color cue))))
-
 ;; TODO: A compound function cue which takes a vector of functions
 ;;       and htp/velocity/level/var-label-overrides and builds a
 ;;       single effect.
@@ -528,4 +491,41 @@
   (case kind
     :control (midi/remove-control-mapping device-filter channel note f)
     :note (midi/remove-note-mapping device-filter channel note f)))
+
+(defn current-cue-color
+  "Given a cue, an active effect map, and a metronome snapshot
+  representing the moment for which the user interface is being
+  rendered, return the color with which the cue should be rendered on
+  a cue grid. If the cue is not currently running, `active` should be
+  `nil`. Handles the delegation to the cue's dynamic color function if
+  one has been assigned. Useful dynamic color functions are built
+  by [[color-fn-from-cue-var]] and [[color-fn-from-param]]."
+  [cue active show snapshot]
+  (if-let [f (:color-fn cue)]
+    (or (f cue active show snapshot) (:color cue))
+    (:color cue)))
+
+(defn color-fn-from-cue-var
+  [var-spec]
+  "Builds a dynamic cue color function which reports the color of a
+  cue based on the content of a cue variable, given the cue variable
+  map. If the cue variable is temporary, when the cue is not running,
+  the function returns non-dynamic cue color. When running, or if the
+  variable is not temporary, it looks up the value of the specified
+  cue variable, and returns that. If the variable is `nil`, the
+  non-dynamic cue color is returned."
+  (fn [cue active show _]
+    (if (or active (keyword? (:key var-spec)))
+      (or (get-cue-variable cue var-spec :show show :when-id (:id active))
+          (:color cue))
+      (:color cue))))
+
+(defn color-fn-from-param
+  "Builds a dynamic cue color function which reports the color of a
+  cue based on the value of a dynamic parameter. If the parameter
+  evaluates to `nil`, the non-dynamic cue color is returned."
+  [param]
+  (params/validate-param-type param :com.evocomputing.colors/color)
+  (fn [cue active show snapshot]
+    (or (params/evaluate param show snapshot nil) (:color cue))))
 
