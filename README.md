@@ -635,12 +635,10 @@ Here is the set of tasks needed to cut a new release:
 - [ ] From the top level of the git checkout, run the release
   preparation script with the name of the git tag that will be
   associated with the release, to update all of the documentation
-  links to point at the appropriate permanent home: `bash
-  scripts/prepare_release.sh v0.2.0`
-- [ ] Build the codox documentation, and copy it to an appropriate
-  tag-named folder within the `gh-pages` branch, to form the permanent
-  archive of this release of the API documentation: `lein codox`
-  followed by `mv target/doc gh-pages/api-doc/v0.2.0`.
+  links to point at the appropriate version-specific tag: `bash
+  scripts/prepare_release.sh v0.2.0`.
+- [ ] Build the codox documentation, with the release project version
+  and tagged source and documentation links: `lein codox`.
 - [ ] Update [`CHANGELOG.md`](CHANGELOG.md) to reflect the release:
   make sure nothing is missing, and rename the sections to reflect the
   fact that the unreleased code is now released, and there is nothing
@@ -648,8 +646,9 @@ Here is the set of tasks needed to cut a new release:
 
 ### Release Steps
 
-- [ ] Commit, tag with the tag name used above, and push including the
-  tag.
+- [ ] Commit everything including the rebuilt API docs, tag the commit
+  with the tag name used above, and push including the tag. `git
+  commit -a`, `git tag -a v0.2.0 -m "Release 0.2.0"`, `git push --tags`.
 - [ ] Build the uberjar with `lein uberjar`.
 - [ ] Create the release record on github, reference the associated
   tag, copy in the release notes from [`CHANGELOG.md`](CHANGELOG.md), and upload the
