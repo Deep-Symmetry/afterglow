@@ -22,7 +22,9 @@ This change log follows the conventions of
   act like the smart Tap Tempo and Shift buttons on the Ableton Push
   and Novation Launchpad.
 - Cues can have animated colors on grid controllers including the web
-  interfaces, to help remind operators about the effects they launch.
+  interface, to help remind operators about the effects they launch,
+  or reflect the current value of a color variable on which they are
+  based.
 - Animated GIFs in the documentation illustrate how the cue user
   interface works.
 
