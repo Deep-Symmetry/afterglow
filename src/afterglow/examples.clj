@@ -367,6 +367,7 @@
     (global-color-cue "purple" 5 0 :include-color-wheels? true)
     (global-color-cue "white" 6 0 :include-color-wheels? true)
 
+    (show/set-variable! :rainbow-saturation 100)
     (ct/set-cue! (:cue-grid *show*) 0 1
                  (let [color-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-bar)]
                    (cues/cue :color (fn [_] (global-color-effect color-param))
