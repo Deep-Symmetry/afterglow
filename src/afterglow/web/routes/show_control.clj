@@ -246,10 +246,11 @@
   [page-id current-effects]
   (let [last-info (get @clients page-id)
         show (:show last-info)
-        current-vars (set (cue-var-values show current-effects))
-        changes (for [change (filter identity (clojure.set/difference current-vars (:cue-vars last-info)))]
-                  {:cue-var-change change})]
-    (swap! clients update-in [page-id] assoc :cue-vars current-vars)
+        current-vars (cue-var-values show current-effects)
+        changes (filter identity (for [candidate current-vars]
+                                   (when-not ((:cue-vars last-info) candidate) 
+                                     {:cue-var-change candidate})))]
+    (swap! clients update-in [page-id] assoc :cue-vars (set current-vars))
     changes))
 
 (def effect-time-formatter
