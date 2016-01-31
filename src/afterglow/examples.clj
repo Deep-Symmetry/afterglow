@@ -337,12 +337,11 @@
                            (fn [var-map] (fun/strobe-2 (str "Strobe " name) fixtures
                                                        (:level var-map 50) (:lightness var-map 100)))
                            :color :purple
-                           :color-fn (fn [cue active show _]
-                                       (let [base-color (or (show/get-variable :strobe-color)
-                                                            (:color cue))]
-                                         (if (> (mod (System/currentTimeMillis) 500) 400)
-                                           white
-                                           base-color)))
+                           :color-fn (fn [cue active show snapshot]
+                                       (if (> (rhythm/snapshot-beat-phase snapshot 0.5) 0.7)
+                                         white
+                                         (or (show/get-variable :strobe-color)
+                                             (:color cue))))
                            :held true
                            :priority 100
                            :variables [{:key "level" :min 0 :max 100 :start 100 :name "Level"}
