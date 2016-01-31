@@ -15,6 +15,9 @@ This change log follows the conventions of
   [Novation Launchpad Pro](https://us.novationmusic.com/launch/launchpad-pro#).
 - A rich color picker interface on the Ableton Push for cues with
   color variables.
+- The example global color and strobe cues have been upgraded to take
+  advantage of the new color cue parameters, so their colors can be
+  adjusted on the fly using the web or Push interfaces.
 - The Shift button can be used with Tap Tempo buttons on controllers
   and the web UI to set the start of a beat, bar, or phrase, depending
   on the synchronization level of the metronome.
@@ -30,6 +33,9 @@ This change log follows the conventions of
 
 ### Fixed
 
+- Using dynamic color variables to as inputs for other dynamic color
+  parameters could cause crashes when trying to adjust the incoming
+  color values due to a longstanding subtle bug, which has been fixed.
 - Cue colors were improved in the web interface and on the Push to
   make it easier to see which cues are active, as well as to make the
   colors more faithful to the cue's intent.

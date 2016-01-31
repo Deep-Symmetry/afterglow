@@ -293,10 +293,17 @@
                           "gobo-moving-blue-mega-hazard" "gobo-moving-turbine"])]))
 
 (defn make-strobe-cue
-  "Create a cue which strobes a set of fixtures as long as the cue pad
-  is held down, letting the operator adjust the lightness of the
-  strobe color by varying the pressure they are applying to the pad on
-  controllers which support pressure sensitivity."
+  "_This is no longer used in the sample cue set, but is left as an
+  example in case you want to create a strobe cue that depends only on
+  numeric parameters, rather than the newer color paramter
+  capabilities._
+
+  Create a cue which strobes a set of fixtures as long
+  as the cue pad is held down, letting the operator adjust the
+  lightness of the strobe color by varying the pressure they are
+  applying to the pad on controllers which support pressure
+  sensitivity, and having the base strobe color depend on a set of
+  shared numeric show variable."
   [name fixtures x y]
   (ct/set-cue! (:cue-grid *show*) x y	
                (cues/cue (keyword (str "strobe-" (clojure.string/replace (clojure.string/lower-case name) " " "-")))
@@ -307,6 +314,31 @@
                          :priority 100
                          :variables [{:key "level" :min 0 :max 100 :start 100 :name "Level"}
                                      {:key "lightness" :min 0 :max 100 :name "Lightness" :velocity true}])))
+
+(defn make-strobe-cue-2
+  "Create a cue which strobes a set of fixtures as long as the cue pad
+  is held down, letting the operator adjust the lightness of the
+  strobe color by varying the pressure they are applying to the pad on
+  controllers which support pressure sensitivity, and having the base
+  strobe color depend on a shared show color variable. On controllers
+  which support it, the color of the cue pad will be also driven by
+  this shared color variable."
+  [name fixtures x y]
+  (when-not (= (type (show/get-variable :strobe-color)) :com.evocomputing.colors/color)
+    ;; If the default strobe color has not yet been established, set it to purple.
+    (show/set-variable! :strobe-color (create-color :purple)))
+  (let [color-var {:key :strobe-color :type :color :name "Strobe Color"}]
+    (ct/set-cue! (:cue-grid *show*) x y
+                 (cues/cue (keyword (str "strobe-" (clojure.string/replace (clojure.string/lower-case name) " " "-")))
+                           (fn [var-map] (fun/strobe-2 (str "Strobe " name) fixtures
+                                                       (:level var-map 50) (:lightness var-map 100)))
+                           :color :purple
+                           :color-fn (cues/color-fn-from-cue-var color-var)
+                           :held true
+                           :priority 100
+                           :variables [{:key "level" :min 0 :max 100 :start 100 :name "Level"}
+                                       {:key "lightness" :min 0 :max 100 :name "Lightness" :velocity true}
+                                       color-var]))))
 
 (defn x-phase
   "Return a value that ranges from zero for the leftmost fixture in a
@@ -639,14 +671,23 @@
                                                   :puck-dimmers :hex-dimmers :snowball-dimmers]))
 
     ;; Strobe cues
-    (make-strobe-cue "All" (show/all-fixtures) 0 6)
-    (make-strobe-cue "Torrents" (show/fixtures-named "torrent") 1 6)
-    (make-strobe-cue "Blades" (show/fixtures-named "blade") 2 6)
-    (make-strobe-cue "Weather Systems" (show/fixtures-named "ws") 3 6)
-    (make-strobe-cue "Hexes" (show/fixtures-named "hex") 4 6)
-    (make-strobe-cue "Pucks" (show/fixtures-named "puck") 5 6)
+    (make-strobe-cue-2 "All" (show/all-fixtures) 0 6)
+    (make-strobe-cue-2 "Torrents" (show/fixtures-named "torrent") 1 6)
+    (make-strobe-cue-2 "Blades" (show/fixtures-named "blade") 2 6)
+    (make-strobe-cue-2 "Weather Systems" (show/fixtures-named "ws") 3 6)
+    (make-strobe-cue-2 "Hexes" (show/fixtures-named "hex") 4 6)
+    (make-strobe-cue-2 "Pucks" (show/fixtures-named "puck") 5 6)
 
-    (ct/set-cue! (:cue-grid *show*) 7 6
+    (let [color-var {:key :strobe-color :type :color :name "Strobe Color"}]
+      (ct/set-cue! (:cue-grid *show*) 7 6
+                   (cues/cue :strobe-color (fn [_] (fx/blank))
+                             :color :purple
+                             :color-fn (cues/color-fn-from-cue-var color-var)
+                             :variables [color-var])))
+
+    ;; This was the old way of adjusting strobe cues with only numeric parameters. The above
+    ;; cue shows how to do it with the newer color parameter approach.
+    #_(ct/set-cue! (:cue-grid *show*) 7 6
                  (cues/cue :adjust-strobe (fn [_] (fun/adjust-strobe))
                            :color :purple
                            :variables [{:key :strobe-hue :min 0 :max 360 :name "Hue" :centered true}

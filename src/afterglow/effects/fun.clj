@@ -250,7 +250,7 @@
   "A compound effect which sets dimmers to the level determined by the
   show variable `:strobe-dimmers` (defaulting to 255), assigns a color
   based on the show variables `:strobe-hue` (with a default of 277,
-  purple) `:strobe-saturation` (with a default of 100), and and the
+  purple) `:strobe-saturation` (with a default of 100), and the
   specified `lightness` (which may be a dynamic parameter), with a
   default of 100, which would white out the hue until it was lowered.
   The effect then sets the fixtures' strobe channel to the specified
@@ -286,7 +286,7 @@
                (fx/end function show snapshot)))))
 
 ;; TODO: Consider getting rid of this and moving these variables to the strobe
-;;       effect itself once the web and Push interfaces allow access to more
+;;       effect itself once the Push interface allow access to more
 ;;       than the first two cue variables?
 (defn adjust-strobe
   "An auxiliary effect which creates no assigners to directly affect
@@ -306,6 +306,47 @@
               (show/set-variable! :strobe-hue saved-hue)
               (show/set-variable! :strobe-saturation saved-saturation)
               true))))
+
+(defn strobe-2
+  "An updated version of [[strobe]] which takes advantage of the new
+  ability to use color variables with rich user interfaces on the web
+  and Ableton Push. A compound effect which sets dimmers to the level
+  determined by the show variable `:strobe-dimmers` (defaulting to
+  255), assigns a color based on the show variable
+  `:strobe-color` (with a default of a fully-saturated purple), and
+  the specified `lightness` (which may be a dynamic parameter), with a
+  default of 100, which would white out the hue until it was lowered.
+  The effect then sets the fixtures' strobe channel to the specified
+  `level`, which may also be a dynamic parameter.
+
+  This is designed to be run as a high priority queue, ideally while
+  held and with aftertouch adjusting a cue-introduced variable for
+  `level` (which is used to control the strobe function of the
+  affected fixtures, setting the strobe speed, and defaults to a
+  middle value). The global strobe color can be adjusted via the show
+  variables, either by aftertouch or by another effect with no assigners,
+  like [[adjust-strobe]]."
+  [name fixtures level lightness]
+  {:pre [(some? *show*)]}
+  (let [level-param (params/bind-keyword-param level Number 50)
+        lightness-param (params/bind-keyword-param lightness Number 100)
+        color-param (params/bind-keyword-param :strobe-color :com.evocomputing.colors/color
+                                               (colors/create-color :purple))
+        dimmer-param (params/bind-keyword-param :strobe-dimmers Number 255)
+        dimmers (dimmer-fx/dimmer-effect dimmer-param fixtures)
+        color (color-fx/color-effect "strobe color"
+                                     (params/build-color-param :color color-param :l lightness-param)
+                                     fixtures :include-color-wheels? true)  ; :htp true tends to wash out right away
+        function (chan-fx/function-effect "strobe level" :strobe level-param fixtures)]
+    (Effect. name fx/always-active
+             (fn [show snapshot] (concat
+                                  (fx/generate dimmers show snapshot)
+                                  (fx/generate color show snapshot)
+                                  (fx/generate function show snapshot)))
+             (fn [show snapshot]
+               (fx/end dimmers show snapshot)
+               (fx/end color show snapshot)
+               (fx/end function show snapshot)))))
 
 (def default-color-cycle
   "The default list of colors to cycle through for
