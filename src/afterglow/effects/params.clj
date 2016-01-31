@@ -493,7 +493,7 @@
                   ;; We were given an explicit value for frame-dynamic
                   (boolean frame-dynamic))
             eval-fn (fn [show snapshot head]
-                      (let [result-color (atom c)]
+                      (let [result-color (atom (resolve-param c show snapshot head))]
                         (if (seq (filter identity [r g b]))
                           (let [red (when r (colors/clamp-rgb-int
                                              (math/round (resolve-param r show snapshot head))))
