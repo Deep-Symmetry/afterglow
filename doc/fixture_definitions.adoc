@@ -3,7 +3,7 @@ James Elliott <james@deepsymmetry.org>
 :icons: font
 :toc:
 :toc-placement: preamble
-:api-doc: http://cdn.rawgit.com/brunchboy/afterglow/master/api-doc/
+:api-doc: http://rawgit.com/brunchboy/afterglow/master/api-doc/
 :branch-base: https://github.com/brunchboy/afterglow/blob/master/
 
 // Set up support for relative links on GitHub; add more conditions
@@ -1125,7 +1125,7 @@ would result in the following Afterglow fixture definition file:
   Please flesh out this documentation if you are submitting this for
   inclusion into Afterglow. See, for example, the Blizzard fixture
   definitions:
-  http://cdn.rawgit.com/brunchboy/afterglow/master/api-doc/afterglow.fixtures.blizzard.html"
+  http://rawgit.com/brunchboy/afterglow/master/api-doc/afterglow.fixtures.blizzard.html"
   []
   {:channels [(chan/color 1 :uv)  ; TODO: add :hue key if you want to color mix this
               (chan/fine-channel :strobing 2
@@ -1329,5 +1329,5 @@ http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
 are agreeing to be bound by the terms of this license. You must not
 remove this notice, or any other, from this software. A copy of the
 license can be found in
-https://cdn.rawgit.com/brunchboy/afterglow/master/resources/public/epl-v10.html[resources/public/epl-v10.html]
+https://rawgit.com/brunchboy/afterglow/master/resources/public/epl-v10.html[resources/public/epl-v10.html]
 within this project.
