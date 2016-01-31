@@ -3,6 +3,7 @@
             [afterglow.controllers.tempo :as tempo]
             [afterglow.dj-link :as dj-link]
             [afterglow.effects.cues :as cues]
+            [afterglow.effects.dimmer :as dimmer]
             [afterglow.midi :as amidi]
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
@@ -247,8 +248,9 @@
   (let [last-info (get @clients page-id)
         show (:show last-info)
         current-vars (cue-var-values show current-effects)
+        prev-vars (or (:cue-vars last-info) #{})
         changes (filter identity (for [candidate current-vars]
-                                   (when-not ((:cue-vars last-info) candidate) 
+                                   (when-not (prev-vars candidate)
                                      {:cue-var-change candidate})))]
     (swap! clients update-in [page-id] assoc :cue-vars (set current-vars))
     changes))
@@ -334,6 +336,16 @@
         changes (concat deletions (new-effects last-ids current) endings (cue-var-changes page-id current))]
     (swap! clients update-in [page-id] assoc :effects current :effects-ending ending)
     (when (seq changes) {:effect-changes changes})))
+
+(defn- grand-master-changes
+  "If the dimmer grand master has changed since the last update, report that."
+  [page-id]
+  (let [last-info (get @clients page-id)
+        show (:show last-info)
+        master (dimmer/master-get-level (:grand-master show))]
+    (when (not= master (:grand-master last-info))
+      (swap! clients update-in [page-id] assoc :grand-master master)
+      {:grand-master master})))
 
 (defn- grid-changes
   "Returns the changes which need to be sent to a page to update its
@@ -513,6 +525,7 @@
           (response (merge {}
                            (grid-changes page-id left bottom width height snapshot)
                            (effect-changes page-id)
+                           (grand-master-changes page-id)
                            (button-changes page-id left bottom width height)
                            (sync-menu-changes page-id)
                            (link-menu-changes page-id)
@@ -774,6 +787,10 @@
                   (= kind "bpm-slider")
                   (rhythm/metro-bpm (:metronome (:show page-info))
                                     (Float/valueOf (get-in req [:params :value])))
+
+                  (= kind "grand-master-slider")
+                  (dimmer/master-set-level (:grand-master (:show page-info))
+                                           (Float/valueOf (get-in req [:params :value])))
 
                   (= kind "phrase-reset")
                   (do (rhythm/metro-phrase-start (:metronome (:show page-info)) 1)

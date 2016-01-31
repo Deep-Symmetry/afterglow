@@ -213,6 +213,35 @@ function updateEffectList( data ) {
     updateEffectState();
 }
 
+var grandMasterSliderBeingDragged = false;
+
+function updateGrandMaster( data ) {
+    if (!grandMasterSliderBeingDragged) {
+        $("#grand-master-slider").slider("setValue", Number(data));
+    }
+}
+
+function grandMasterSlideStart( eventObject ) {
+    grandMasterSliderBeingDragged = true;
+}
+
+function sendGrandMasterUpdate( control_id, value ) {
+    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + control_id),
+                        { "value": value,
+                          "__anti-forgery-token": csrf_token } ).fail(function() {
+                              console.log("Problem specifying updated Grand Master value.");
+                          });
+}
+
+function grandMasterSlide( eventObject ) {
+    sendGrandMasterUpdate(this.id, this.value);
+}
+
+function grandMasterSlideStop( eventObject ) {
+    grandMasterSliderBeingDragged = false;
+    sendGrandMasterUpdate(this.id, this.value);
+}
+
 function updateButtons( data ) {
     $.each( data, function( key, val ) {
         $('#' + val.id).prop('disabled', val.disabled);
@@ -371,6 +400,10 @@ function updateShow() {
 
             case "effect-changes":
                 updateEffectList(val);
+                break;
+
+            case "grand-master":
+                updateGrandMaster(val);
                 break;
 
             case "button-changes":
@@ -554,7 +587,20 @@ $( document ).ready(function() {
     });
 
     // See https://github.com/seiyria/bootstrap-slider
-    $("#bpm-slider").slider({id: "slider-in-bpm"}).on("slideStart", bpmSlideStart).on("slide", bpmSlide).on("slideStop", bpmSlideStop);
+    $("#bpm-slider").slider({id: "slider-in-bpm"})
+        .on("slideStart", bpmSlideStart)
+        .on("slide", bpmSlide)
+        .on("slideStop", bpmSlideStop);
+    $("#grand-master-slider").slider({ id: "slider-in-grand-master",
+                                       min: 0,
+                                       max: 100,
+                                       step: 0.1,
+                                       handle: "triangle",
+                                       tooltip: "show",
+                                       tooltip_position: "bottom" })
+        .on("slideStart", grandMasterSlideStart)
+        .on("slide", grandMasterSlide)
+        .on("slideStop", grandMasterSlideStop);
 
     updateEffectState();
     updateShow();

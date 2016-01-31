@@ -93,6 +93,14 @@ table.metronome {
     background: slategray;
 }
 
+#slider-in-grand-master .tooltip-inner {
+    background-color: slategray;
+}
+
+#slider-in-grand-master .tooltip.bottom .tooltip-arrow {
+    border-bottom-color: slategray;
+}
+
 #loadBar {
     vertical-align: text-top;
 }

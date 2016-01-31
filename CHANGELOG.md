@@ -11,6 +11,8 @@ This change log follows the conventions of
 - Running effects are now listed on the Show Control page of the Web
   UI, in descending priority order, with buttons to end them, and
   controls to adjust cue parameters, including colors.
+- The show's dimmer grand master is now visible and controllable
+  below the cue grid in the web UI.
 - A rich grid controller mapping for the
   [Novation Launchpad Pro](https://us.novationmusic.com/launch/launchpad-pro#).
 - A rich color picker interface on the Ableton Push for cues with
