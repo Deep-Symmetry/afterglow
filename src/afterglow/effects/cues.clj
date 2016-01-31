@@ -97,14 +97,12 @@
     If not supplied, 100 is assumed.
 
   * `:start` specifies the value to assign to the variable at the
-    start of the cue, if any. This is honored only for temporary
-    variables introduced for the cue, in other words when `:key` is
-    given with a string rather than a keyword.
+    start of the cue, if any.
 
   * `:type` identifies the type of the variable, to help formatting
-    its display. Supported values are `:integer`, `:float`, possibly
-    others in the future. If omitted or unrecognized, `:float` is
-    assumed.
+    its display. Supported values are `:integer`, `:float`, and
+    `:color`. Other types may be supported in the future. If omitted or
+    unrecognized, `:float` is assumed.
 
   * `:centered` supplied with a true value requests that the gauge
     displayed when adjusting this variable's value be like a pan
