@@ -210,6 +210,42 @@ long or not informative enough.
 purpose and relatedness to other cues, to help operators learn and
 understand the interface. If not specified, white is used.
 
+|`:color-fn`
+|none
+
+|Specifies a function to call to obtain the current color to use for
+the cue within the grid, so that an dynamic/animated color can provide
+even more intense hinting about its purpose and relatedness to other
+cues, to help operators learn and understand the interface. If not
+specified, the static value specified by `:color` is used.
+
+The function provided will be called whenever the grid interface is
+being updated, and will be called with four arguments: the `cue` whose
+current color is desired; the map describing the currently active
+`effect` that was launched by that cue, if any; the `show` in which
+the cue and effect exist; and the metronome `snapshot` representing
+the moment in time at which the interface is being rendered. The
+function can use this information to calculate and return a color
+value, which will be used to draw the cue in the interface, or it can
+return `nil`, in which case the static `:color` value will be
+displayed instead.
+
+Helper functions exist to create cue color functions for commonly
+useful situations.
+{api-doc}afterglow.effects.cues.html#var-color-fn-from-cue-var[`afterglow.effects.cues/color-fn-from-cue-var`]
+returns a function that causes the cue to appear in the same color as
+a cue color parameter, whenever the cue is running and that parameter
+has a value. Similarly,
+{api-doc}afterglow.effects.cues.html#var-color-fn-from-param[`afterglow.effects.cues/color-fn-from-param`]
+causes the cue to appear in whatever color is returned by evaluating
+the specified dynamic parameter at that point within the show. The
+source code of those helper functions are good examples of how to
+create dynamic cue color functions, and the source of the
+{api-doc}afterglow.examples.html#var-make-strobe-cue-2[`make-strobe-cue-2`]
+function in the examples namespace shows how the strobe cues are
+configured to flash between current color of the `:strobe-color` show
+variable and white to emphasize their strobe nature.
+
 |`:end-keys`
 |none
 

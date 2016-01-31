@@ -326,7 +326,8 @@
   controllers which support pressure sensitivity, and having the base
   strobe color depend on a shared show color variable. On controllers
   which support it, the color of the cue pad will be also driven by
-  this shared color variable."
+  this shared color variable, with a white flicker to emphasize them
+  as strobing cues."
   [name fixtures x y]
   (when-not (= (type (show/get-variable :strobe-color)) :com.evocomputing.colors/color)
     ;; If the default strobe color has not yet been established, set it to purple.
