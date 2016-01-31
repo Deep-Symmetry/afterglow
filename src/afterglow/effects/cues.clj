@@ -504,7 +504,6 @@
     (:color cue)))
 
 (defn color-fn-from-cue-var
-  [var-spec]
   "Builds a dynamic cue color function which reports the color of a
   cue based on the content of a cue variable, given the cue variable
   map. If the cue variable is temporary, when the cue is not running,
@@ -512,6 +511,7 @@
   variable is not temporary, it looks up the value of the specified
   cue variable, and returns that. If the variable is `nil`, the
   non-dynamic cue color is returned."
+  [var-spec]
   (fn [cue active show _]
     (if (or active (keyword? (:key var-spec)))
       (or (get-cue-variable cue var-spec :show show :when-id (:id active))
