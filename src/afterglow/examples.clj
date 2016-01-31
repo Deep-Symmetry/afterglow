@@ -21,7 +21,7 @@
             [afterglow.show :as show]
             [afterglow.show-context :refer [*show* with-show set-default-show!]]
             [afterglow.transform :as tf]
-            [com.evocomputing.colors :refer [color-name create-color hue adjust-hue]]
+            [com.evocomputing.colors :as colors :refer [color-name create-color hue adjust-hue]]
             [overtone.osc :as osc]
             [taoensso.timbre :as timbre]))
 
@@ -315,6 +315,10 @@
                          :variables [{:key "level" :min 0 :max 100 :start 100 :name "Level"}
                                      {:key "lightness" :min 0 :max 100 :name "Lightness" :velocity true}])))
 
+(def white
+  "The color to flash strobe cues to identify them as such."
+  (create-color :white))
+
 (defn make-strobe-cue-2
   "Create a cue which strobes a set of fixtures as long as the cue pad
   is held down, letting the operator adjust the lightness of the
@@ -333,7 +337,12 @@
                            (fn [var-map] (fun/strobe-2 (str "Strobe " name) fixtures
                                                        (:level var-map 50) (:lightness var-map 100)))
                            :color :purple
-                           :color-fn (cues/color-fn-from-cue-var color-var)
+                           :color-fn (fn [cue active show _]
+                                       (let [base-color (or (show/get-variable :strobe-color)
+                                                            (:color cue))]
+                                         (if (> (mod (System/currentTimeMillis) 500) 400)
+                                           white
+                                           base-color)))
                            :held true
                            :priority 100
                            :variables [{:key "level" :min 0 :max 100 :start 100 :name "Level"}
