@@ -1282,11 +1282,13 @@
                    (reify controllers/IOverlay
                      (captured-controls [this] #{})
                      (captured-notes [this] #{note})
-                     (adjust-interface [this _]
+                     (adjust-interface [this snapshot]
                        (when holding
-                         (let [color (colors/create-color
-                                      :h (colors/hue (:color cue))
-                                      :s (colors/saturation (:color cue))
+                         (let [active (show/find-effect (:key cue))
+                               base-color (cues/current-cue-color cue active (:show controller) snapshot)
+                               color (colors/create-color
+                                      :h (colors/hue base-color)
+                                      :s (colors/saturation base-color)
                                       :l 75)]
                            (aset (:next-grid-pads controller) (+ pad-x (* pad-y 8)) color)))
                        true)
