@@ -42,6 +42,10 @@ This change log follows the conventions of
 - Using dynamic color variables to as inputs for other dynamic color
   parameters could cause crashes when trying to adjust the incoming
   color values due to a longstanding subtle bug, which has been fixed.
+- Ordinary MIDI control surfaces were sometimes being mistakenly
+  identified as candidate sources of Tratktor beat phase information,
+  leading to exceptions in the log file. Now only devices sending
+  clock pulses are considered beat phase candidates.
 - Cue colors were improved in the web interface and on the Push to
   make it easier to see which cues are active, as well as to make the
   colors more faithful to the cue's intent.
