@@ -1,6 +1,6 @@
 (ns afterglow.controllers.tempo
   "Provides support for easily implementing tap-tempo and shift
-  buttons on any controller."
+  buttons on any MIDI controller."
   {:author "James Elliott"}
   (:require [overtone.midi :as midi]
             [afterglow.controllers :as controllers]
@@ -150,9 +150,9 @@
   can be used to modify other mappings. The shift state is entered
   whenever the specified note (when `kind` is `:note`) or
   controller-change (when `kind` is `:control`) message is received
-  with a non-zero velocity (or control value), and left whenever a
-  matching note-off or controller message with velocity zero is
-  received.
+  with a non-zero velocity (or control value) on the specified
+  `channel`. The shift state is ended whenever a matching note-off or
+  controller-change message with velocity zero is received.
 
   The device to be mapped is identified by `device-filter`. The first
   input port which matches using [[filter-devices]] will be used.
