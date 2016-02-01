@@ -70,7 +70,7 @@ for full details.
 If you want to be able to later remove this cue mapping, be sure to
 save the value returned by `add-midi-control-to-cue-mapping` in a
 variable, because you will need to pass it to
-{api-doc}afterglow.show.html#var-remove-midi-control-to-cue-mapping[`remove-midi-control-to-cue-mapping`].
+{api-doc}afterglow.midi.html#var-remove-control-mapping[`remove-control-mapping`].
 Or you can simply disconnect the controller from your system, and
 Afterglow will clean up any mappings that had been assigned to it.
 
@@ -113,8 +113,12 @@ variable `knob-1` to the values 0-360 (the legal hue values):
 (show/add-midi-control-to-var-mapping "Slider" 0 16 :knob-1 :max 360)
 ----
 
-> See the
-{api-doc}afterglow.show.html#var-add-midi-control-to-var-mapping[documentation] for details about all the arguments.
+NOTE: See the
+{api-doc}afterglow.show.html#var-add-midi-control-to-var-mapping[documentation]
+for details about all the arguments. Also, if you want to map a color
+component like this, there is a
+<<mapping-a-control-to-a-color-component,better way>> to do it that
+makes it easier to work with the color in the web interface.
 
 Then I can create a global color effect based on that variable:
 
@@ -154,7 +158,7 @@ into the show variable `:beat-ratio`.
 If you want to be able to later remove this variable mapping, be sure
 to save the value returned by `add-midi-control-to-var-mapping` in a
 variable, because you will need to pass it to
-{api-doc}afterglow.show.html#var-remove-midi-control-to-var-mapping[`remove-midi-control-to-var-mapping`].
+{api-doc}afterglow.midi.html#var-remove-control-mapping[`remove-control-mapping`].
 Or you can simply disconnect the controller from your system, and
 Afterglow will clean up any mappings that had been assigned to it.
 
@@ -257,6 +261,79 @@ about cleaning up ordinary MIDI bindings, since Afterglow
 automatically does that whenever a device is disconnected, but if you
 have set up any of your own state that you would like to remove, you
 can use this mechanism to do so.
+
+== Mapping a Control to a Color Component
+
+When you are working with colors for cues, Afterglow lets you put a
+<<color.adoc#working-with-color,color object>> in a show variable or
+cue parameter, rather than simply storing individual numeric
+components like the hue. Doing this lets the web and Ableton Push
+interfaces give the user a rich color picker interface for adjusting
+that variable or parameter, so it is usually a better approach than
+just storing the numbers that make up the color.
+
+When you do that, you can still use any MIDI controller to adjust
+components of that color, using
+{api-doc}afterglow.controllers.color.html#var-add-midi-control-to-color-mapping[`afterglow.controllers.color/add-midi-control-to-color-mapping`].
+
+Here is an example of how to tie the left six faders on one of my
+simple MIDI controllers to adjust all of the components that make up
+the color used by the sample show's strobe effects. The controller
+shows up with a MIDI port name of `SLIDER/KNOB`, and its fader
+controllers are controls 0 through 7 on channel 0. Assigning the
+first six to adjust components of the strobe color looks like:
+
+[source,clojure]
+----
+(require '[afterglow.controllers.color :as color-ctl])
+(color-ctl/add-midi-control-to-color-mapping "SLIDER" 0 0 :strobe-color :red)
+(color-ctl/add-midi-control-to-color-mapping "SLIDER" 0 1 :strobe-color :green)
+(color-ctl/add-midi-control-to-color-mapping "SLIDER" 0 2 :strobe-color :blue)
+(color-ctl/add-midi-control-to-color-mapping "SLIDER" 0 3 :strobe-color :hue)
+(color-ctl/add-midi-control-to-color-mapping "SLIDER" 0 4 :strobe-color :saturation)
+(color-ctl/add-midi-control-to-color-mapping "SLIDER" 0 5 :strobe-color :lightness)
+----
+
+NOTE: See the
+{api-doc}afterglow.controllers.color.html#var-add-midi-control-to-color-mapping[documentation]
+for details about all the arguments; this simple example assumes you
+want to access the full range of each color component and that higher
+MIDI values should map to higher color values. Also, even though it is
+included here for completeness, there is no point in assigning a value
+to the `:strobe-color` variable's `:lightness` component, since that
+is under the control of the strobe cue.
+
+With this done, as I move the sliders on this MIDI controller, I can
+see the colors of the strobe cues in the web interface and on the
+Ableton Push and Novation Launchpad grids changing (and on the lights
+themselves if any strobe cue is running at the time).
+
+== Mapping a Control to a Dimmer Master
+
+The web interface and Ableton Push mapping have dedicated interfaces
+for controlling the show's dimmer grand master, but you can map any
+MIDI controller fader or rotary controller to it, or to any other
+dimmer master that you have created to control your cues, using
+{api-doc}afterglow.show.html#var-add-midi-control-to-master-mapping[`add-midi-control-to-master-mapping`].
+
+Here is an example of how to tie the leftmost fader on one of my
+simple MIDI controllers to the show's dimmer grand master. The
+controller shows up with a MIDI port name of `SLIDER/KNOB`, and its
+first fader controller is control 0 on channel 0. I can map that to
+set the show grand master to the values 0-100 (the legal dimmer master
+values) by simply calling:
+
+[source,clojure]
+----
+(show/add-midi-control-to-master-mapping "Slider" 0 0)
+----
+
+NOTE: See the
+{api-doc}afterglow.show.html#var-add-midi-control-to-master-mapping[documentation]
+for details about all the arguments; this simple call takes advantage
+of the fact that the show dimmer grand master is the default master if
+you don't pass one in with `:master`.
+
 
 == Mapping Metronome Control
 
@@ -384,17 +461,17 @@ then with Shift down it acts as a Tap Phrase button, telling Afterglow
 that the closest beat to when you tapped the button is the start of an
 entire phrase.
 
-If you ever want to stop using the mapped buttons, there are
-corresponding functions to remove the mappings. This would undo what
-we did above:
+If you ever want to stop using the mapped buttons, there is a function
+to remove MIDI mappings. This would undo what we did above:
 
 [source,clojure]
 ----
-(afterglow.controllers.tempo/remove-midi-control-to-tempo-mapping
-  "nano" 0 :control 45 tempo-map)
-(afterglow.controllers.tempo/remove-midi-control-to-shift-mapping
-  "nano" 0 :control 41 shift-map)
+(afterglow.midi/remove-control-mapping "nano" 0 :control 45 tempo-map)
+(afterglow.midi/remove-control-mapping "nano" 0 :control 41 shift-map)
 ----
+
+Simply detaching the MIDI controller also automatically removes any
+mappings that were created for it.
 
 == Syncing to MIDI Clock
 
@@ -671,8 +748,7 @@ bar 1, phrase 1.
 
 You can add mappings to reset metronomes which are stored in show
 variables by adding the variable name as an additional parameter at the
-end of this function call. And there is a corresponding
-`remove-midi-control-metronome-mapping` function to break the binding.
+end of this function call.
 
 As noted above, even when you have a rock solid beat sync with your
 mixer, you sometimes want to adjust when bars or phrases begin,

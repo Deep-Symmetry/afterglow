@@ -246,6 +246,11 @@ function in the examples namespace shows how the strobe cues are
 configured to flash between current color of the `:strobe-color` show
 variable and white to emphasize their strobe nature.
 
+NOTE: When assigning a color to a cue in the user interface, the
+lightness of the color has no effect, because that is assigned by the
+controller to indicate the cue state, so you will need to use changes
+in hue and saturation for your animation.
+
 |`:end-keys`
 |none
 
@@ -306,6 +311,21 @@ function when the cue is triggered, so they can be used as needed when
 creating the cue's effect.
 
 |===
+
+The ability to create animated cue colors in a grid controller
+interface via the `:color-fn` key described above can come in handy
+when there are a lot of cues and you want some to stand out to the
+operator, but there are contexts in which it might be gratuitous or
+distracting; the example strobe and rainbow-shifting cues provided
+with Afterglow might tend toward that extreme. So you don't need to
+use it, but you can if it makes sense.
+
+It is hard to argue against the usefulness of a dynamic color that is
+tied to a show variable, however, like the `:strobe-color` example, or
+even a cue parameter, like the example global color cues, because this
+approach updates the grid controller interface to reflect a color
+chosen by the user, and so provides valuable information in a
+non-distracting way.
 
 [cols="1a,1a,5a", options="header"]
 .[[cue-variables]]Cue variable specification maps
@@ -529,6 +549,47 @@ one) when the cue is running.
 |Sets the color of the cue within the grid for hinting about its
 purpose and relatedness to other cues, to help operators learn and
 understand the interface. If not specified, white is used.
+
+|`:color-fn`
+|none
+
+|Specifies a function to call to obtain the current color to use for
+the cue within the grid, so that an dynamic/animated color can provide
+even more intense hinting about its purpose and relatedness to other
+cues, to help operators learn and understand the interface. If not
+specified, the static value specified by `:color` is used.
+
+The function provided will be called whenever the grid interface is
+being updated, and will be called with four arguments: the `cue` whose
+current color is desired; the map describing the currently active
+`effect` that was launched by that cue, if any; the `show` in which
+the cue and effect exist; and the metronome `snapshot` representing
+the moment in time at which the interface is being rendered. The
+function can use this information to calculate and return a color
+value, which will be used to draw the cue in the interface, or it can
+return `nil`, in which case the static `:color` value will be
+displayed instead.
+
+Helper functions exist to create cue color functions for commonly
+useful situations.
+{api-doc}afterglow.effects.cues.html#var-color-fn-from-cue-var[`afterglow.effects.cues/color-fn-from-cue-var`]
+returns a function that causes the cue to appear in the same color as
+a cue color parameter, whenever the cue is running and that parameter
+has a value. Similarly,
+{api-doc}afterglow.effects.cues.html#var-color-fn-from-param[`afterglow.effects.cues/color-fn-from-param`]
+causes the cue to appear in whatever color is returned by evaluating
+the specified dynamic parameter at that point within the show. The
+source code of those helper functions are good examples of how to
+create dynamic cue color functions, and the source of the
+{api-doc}afterglow.examples.html#var-make-strobe-cue-2[`make-strobe-cue-2`]
+function in the examples namespace shows how the strobe cues are
+configured to flash between current color of the `:strobe-color` show
+variable and white to emphasize their strobe nature.
+
+NOTE: When assigning a color to a cue in the user interface, the
+lightness of the color has no effect, because that is assigned by the
+controller to indicate the cue state, so you will need to use changes
+in hue and saturation for your animation.
 
 |`:level`
 |`0`
