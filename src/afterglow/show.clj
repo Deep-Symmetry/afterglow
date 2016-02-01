@@ -585,14 +585,17 @@
          (integer? control-number) (<= 0 control-number 127) (some? variable)
          (number? min) (number? max) (not= min max) (or (nil? transform-fn) (fn? transform-fn))]}
   (let [show *show*  ; Bind so we can pass it to update function running on another thread
-        scale-fn (cond (and (zero? min) (= max 127))
-                      (fn [midi-val] midi-val)
-                      (< min max)
-                      (let [range (- max min)]
-                        (fn [midi-val] (float (+ min (/ (* midi-val range) 127)))))
-                      :else
-                      (let [range (- min max)]
-                        (fn [midi-val] (float (+ max (/ (* midi-val range) 127))))))
+        scale-fn (cond
+                   (and (zero? min) (= max 127))
+                   (fn [midi-val] midi-val)
+
+                   (< min max)
+                   (let [range (- max min)]
+                     (fn [midi-val] (float (+ min (/ (* midi-val range) 127)))))
+
+                   :else
+                   (let [range (- min max)]
+                     (fn [midi-val] (float (+ max (/ (* midi-val range) 127))))))
         calc-fn (apply comp (filter identity [transform-fn scale-fn]))
         update-fn (fn [msg]
                     (with-show show
