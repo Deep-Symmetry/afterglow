@@ -275,14 +275,56 @@ _replace_ the others, rather than running at the same time. The
 into more details about the relationships between cues illustrated in
 the above animation.
 
+==== Effect Control
+
+When any effects are running, whether they were launched by a cue
+button or some other means, they are listed at the bottom of the show
+control page, in descending order of priority. (Effects are run in the
+reverse order that they appear on the screen, so effects towards the
+top of the list can override things done by those further down. Newly
+launched effects assigned a given priority appear above older ones
+with the same priority.)
+
+image:assets/EffectList.png[The Effect List]
+
+The name of the effect is shown, along with when it was started, in
+terms of time (hours, minutes, seconds, and hundredths), and the show
+Metronome (phrase, bar, beat, and hundredths).
+
+A running effect can be asked to end by clicking its kbd:[End] button.
+If the effect takes a while to end, its entire row will take on the
+color of the kbd:[End] button while it is in the process of ending,
+and the button becomes a kbd:[Kill] button which can be clicked to
+instantly terminate the ending effect:
+
+image:assets/EffectEnding.png[An Ending Effect]
+
+If an effect was launched by a cue with any cue variables, they
+appear next to the kbd:[End] button. Numeric cue variables can be
+adjusted by dragging the associated slider. The current value appears
+as a popup above the slider thumb when the mouse is over the slider.
+Color cue variables can also be adjusted. The current color value
+appears as a swatch; clicking on that swatch opens a color picker
+interface which can be used to adjust the color parameter:
+
+image:assets/EffectColor.png[Effect Color Parameter Adjustment]
+
+Click anywhere outside the swatch and color picker to dismiss the
+color adjustment interface.
+
+If cue variables are adjusted somewhere else, such as a mapped MIDI
+controller or from other code that is running, the web interface will
+update to show their changed values.
+
 ==== Scrolling and Linked Controllers
 
 The show may have many more cues than fit on the screen at once; the
-diamond of blue arrows at the bottom right allow you to page through
-the larger grid. If there are more cues available in a given
-direction, that arrow will be enabled, otherwise it is dimmed.
-Clicking an active arrow scrolls the view one page in that direction.
-In this grid, it is currently possible to scroll up and to the right.
+diamond of blue arrows below the bottom right of the cue grid allow
+you to page through the larger grid. If there are more cues available
+in a given direction, that arrow will be enabled, otherwise it is
+dimmed. Clicking an active arrow scrolls the view one page in that
+direction. In this grid, it is currently possible to scroll up and to
+the right.
 
 image:assets/CueScrollLink.png[Cue scroll arrows and link menu,align="right"]
 
@@ -310,17 +352,31 @@ buttons of your controller, while simultaneously being able to control
 others via the screen and mouse. To do that, simply use the link menu
 to turn off the link.
 
+==== Brightness Control
+
+In the center of the interface below the cue grid is a slider that
+lets you adjust the show's dimmer grand master. This can be used to
+control the overall brightness of the show, because any dimmer cues
+that are running will be affected by the value of this master. If it
+is set at 100% (all the way to the right), the dimmer cues can operate
+at full brightness. As you slide it to the left, it gradually reduces
+the maximum brightness that any dimmer cue can achieve. In the middle,
+all dimmer cues will be reduced by 50%, and all the way to the left,
+all dimmer cues will be zeroed out.
+
+image:assets/GrandMaster.png[Dimmer Grand Master]
+
 ==== Metronome Control
 
-The final section of the show control interface lets you view and
-adjust the Metronome that the show is using to keep time with the
-music that is being played. Since Afterglow's effects are generally
-defined with respect to the metronome, it is important to keep it
-synchronized with the music. The metronome section shows the current
-speed, in Beats Per Minute, of the metronome, and the `Tap Tempo`
-button label flashes yellow at each beat. It also shows you the
-current phrase number, the bar within that phrase, and beat within
-that bar which has been reached.
+The final section of the show control interface, left of the Dimmer
+Grand Master section, lets you view and adjust the Metronome that the
+show is using to keep time with the music that is being played. Since
+Afterglow's effects are generally defined with respect to the
+metronome, it is important to keep it synchronized with the music. The
+metronome section shows the current speed, in Beats Per Minute, of the
+metronome, and the `Tap Tempo` button label flashes yellow at each
+beat. It also shows you the current phrase number, the bar within that
+phrase, and beat within that bar which has been reached.
 
 image:assets/Metronome.png[Metronome]
 
