@@ -66,11 +66,11 @@
                         (show/set-variable! variable
                                             (case component
                                               :red (colors/create-color
-                                                    (merge rgb {:r (colors/clamp-rgb-int (int value))}))
+                                                    (merge rgb {:r (colors/clamp-rgb-int (Math/round value))}))
                                               :green (colors/create-color
-                                                      (merge rgb {:g (colors/clamp-rgb-int (int value))}))
+                                                      (merge rgb {:g (colors/clamp-rgb-int (Math/round value))}))
                                               :blue (colors/create-color
-                                                     (merge rgb {:b (colors/clamp-rgb-int (int value))}))
+                                                     (merge rgb {:b (colors/clamp-rgb-int (Math/round value))}))
                                               :hue (colors/create-color (merge hsl {:h (colors/clamp-hue value)}))
                                               :saturation (colors/create-color
                                                            (merge hsl {:s (colors/clamp-percent-float value)}))
