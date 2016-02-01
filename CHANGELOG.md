@@ -17,6 +17,10 @@ This change log follows the conventions of
   [Novation Launchpad Pro](https://us.novationmusic.com/launch/launchpad-pro#).
 - A rich color picker interface on the Ableton Push for cues with
   color variables.
+- You can now map sliders and encoders on any MIDI controller to
+  adjust components of a color stored in a show variable (that is,
+  adjust its red, green, and blue values, or its hue, saturation, and
+  lightness).
 - The example global color and strobe cues have been upgraded to take
   advantage of the new color cue parameters, so their colors can be
   adjusted on the fly using the web or Push interfaces.
