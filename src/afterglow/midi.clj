@@ -240,7 +240,7 @@
   [msg device-key]
   (when (= (:command msg) :control-change)
     (let [controller (:note msg)]
-      (cond (and (zero? controller) (< (:velocity msg) 5))
+      (cond (and (get @clock-sources device-key) (zero? controller) (< (:velocity msg) 5))
             (swap! clock-sources assoc-in [device-key :master] (:velocity msg))
 
             (= controller (get-in @clock-sources [device-key :master]))
