@@ -309,6 +309,14 @@ If cue variables are adjusted somewhere else, such as a mapped MIDI
 controller or from other code that is running, the web interface will
 update to show their changed values.
 
+A running effect can be asked to end by clicking its kbd:[End] button.
+If the effect takes a while to end, its entire row will take on the
+color of the kbd:[End] button while it is in the process of ending,
+and the button becomes a kbd:[Kill] button which can be clicked to
+instantly terminate the ending effect:
+
+image:assets/EffectEnding.png[An Ending Effect]
+
 ==== Scrolling and Linked Controllers
 
 The show may have many more cues than fit on the screen at once; the
