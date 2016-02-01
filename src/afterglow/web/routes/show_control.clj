@@ -228,17 +228,16 @@
   currently running effects."
   [show current]
   (flatten
-       (for [effect current]
-         (for [v (:variables (:cue effect))]
-           (let [value (cues/get-cue-variable (:cue effect) v :show show :when-id (:id effect))]
-             (when value
-               {:effect (:key effect)
-                :id (:id effect)
-                :var (merge {:name (name (:key v))}
-                            (select-keys v [:key :name :min :max :type]))
-                :value (case (:type v)
-                         :color (colors/rgb-hexstr value)
-                         value)}))))))
+   (for [effect current]
+     (for [v (:variables (:cue effect))]
+       (let [value (cues/get-cue-variable (:cue effect) v :show show :when-id (:id effect))]
+         {:effect (:key effect)
+          :id (:id effect)
+          :var (merge {:name (name (:key v))}
+                      (select-keys v [:key :name :min :max :type]))
+          :value (case (:type v)
+                   :color (when value (colors/rgb-hexstr value))
+                   value)})))))
 
 (defn- cue-var-changes
   "Returns information about any cue variables for current effects
