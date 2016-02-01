@@ -288,24 +288,17 @@ with the same priority.)
 image:assets/EffectList.png[The Effect List]
 
 The name of the effect is shown, along with when it was started, in
-terms of time (hours, minutes, seconds, and hundredths), and the show
-Metronome (phrase, bar, beat, and hundredths).
+terms of clock time (down to 1/100 of a second), and the show
+Metronome (phrase, bar, beat, and hundredths of a beat).
 
-A running effect can be asked to end by clicking its kbd:[End] button.
-If the effect takes a while to end, its entire row will take on the
-color of the kbd:[End] button while it is in the process of ending,
-and the button becomes a kbd:[Kill] button which can be clicked to
-instantly terminate the ending effect:
-
-image:assets/EffectEnding.png[An Ending Effect]
-
-If an effect was launched by a cue with any cue variables, they
-appear next to the kbd:[End] button. Numeric cue variables can be
-adjusted by dragging the associated slider. The current value appears
-as a popup above the slider thumb when the mouse is over the slider.
-Color cue variables can also be adjusted. The current color value
-appears as a swatch; clicking on that swatch opens a color picker
-interface which can be used to adjust the color parameter:
+If an effect was launched by a cue with any cue variables, they appear
+after the start time. Numeric cue variables can be adjusted by
+dragging the associated slider. As shown in the image above, the
+current value appears as a popup above the slider thumb when the mouse
+is over the slider. Color cue variables can also be adjusted. The
+current color value appears as a swatch; clicking on that swatch opens
+a color picker interface which can be used to adjust the color
+parameter:
 
 image:assets/EffectColor.png[Effect Color Parameter Adjustment]
 
