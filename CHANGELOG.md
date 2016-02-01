@@ -34,6 +34,7 @@ This change log follows the conventions of
   interface, to help remind operators about the effects they launch,
   or reflect the current value of a color variable on which they are
   based.
+- Documentation of how to bind a MIDI controller to a dimmer master.
 - Animated GIFs in the documentation illustrate how the cue user
   interface works.
 
