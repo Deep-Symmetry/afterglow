@@ -31,7 +31,9 @@ to your effects which change over time and space, enabling much more
 interesting and complex appearance and behavior.
 
 <<cues#cues,Cues>>:: Provide a convenient way to organize and trigger
-effects.
+effects. Allow you to build a user interface for your show, through a
+colorful cue grid in the web UI, on a supported grid controller, a
+basic MIDI controller, or a combination of several of these options.
 
 <<metronomes#metronomes,Metronomes>>:: Keep track of musical time, in
 terms of beats, bars, and phrases, and can be
