@@ -1,6 +1,7 @@
 # Afterglow
 
-[![Join the chat at https://gitter.im/brunchboy/afterglow](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/brunchboy/afterglow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) <image align="right" width="275"
+[![Gitter](https://img.shields.io/gitter/room/brunchboy/afterglow.svg)](https://gitter.im/brunchboy/afterglow)
+ <image align="right" width="275"
 src="doc/assets/Afterglow-logo-padded-left.png">
 <br/><br/>
 An environment supporting
@@ -24,8 +25,7 @@ Afterglow. The main
 deeper, and there is also
 [API documentation](http://rawgit.com/brunchboy/afterglow/master/api-doc/index.html).
 For faster, more interactive help, the
-[Afterglow room](https://gitter.im/brunchboy/afterglow)
-[![Gitter](https://img.shields.io/gitter/room/brunchboy/afterglow.svg)](https://gitter.im/brunchboy/afterglow)
+[Afterglow room on Gitter](https://gitter.im/brunchboy/afterglow)
 is the place to start, and if you want to build some more structured
 and lasting community-driven documentation, there is also a project
 [wiki](https://github.com/brunchboy/afterglow/wiki).
