@@ -627,6 +627,11 @@ Here is the set of tasks needed to cut a new release:
 
 ### Prerelease Steps
 
+- [ ] Check over the documentation. If any moving screen captures are
+  needed, see this [gist](https://gist.github.com/dergachev/4627207).
+  The command I have used so far is: `ffmpeg -i ~/Desktop/Cues.mov
+  -pix_fmt rgb24 -r 10 -f gif - | gifsicle --optimize=3 --delay=10 >
+  ~/Desktop/Cues.gif`
 - [ ] Set the project version at the top of
   [`project.clj`](project.clj) to the appropriate non-snapshot version
   number (probably just removing the `-SNAPHSOT` suffix). This example
