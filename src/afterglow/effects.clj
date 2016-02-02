@@ -171,9 +171,17 @@
   "Create an effect which does nothing. This can be useful, for
   example, when you want to use [[fade]] to fade into an effect from a
   state where there was simply nothing happening (or where earlier and
-  lower-priority effects can show through)."
-  []
-  blank-effect)
+  lower-priority effects can show through). If you want the blank
+  effect to have a particular name, for example you are using it to
+  set shared cue variables, you can pass a string argument."
+  ([]
+   blank-effect)
+  ([effect-name]
+   (Effect. effect-name
+            always-active
+            (fn [show snapshot]
+              [])
+            end-immediately)))
 
 (defn code
   "An effect which simply calls a function, then ends immediately,
