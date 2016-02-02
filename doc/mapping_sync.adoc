@@ -81,14 +81,15 @@ the relevant MIDI mapping functions to set up your device whenever it
 is connected.
 
 NOTE: If you are mapping a cue that is set up with velocity sensitive
-variables, and those variables do not have default values establised
-via `:start` entries, you should pass `:use-velocity true` to
-`add-midi-control-to-cue-mapping` even if your controller is not
-velocity sensitive, so those variables get assigned values. Those
-values will be whatever standard velocity/control value the controller
-sends. If that isn't giving you good results, consider modifying the
-cue to include `:start` values for those variables, and remove the
-`:use-velocity` argument in this binding.
+variables, and your controller is not actually velocity-sensitive, you
+might find the cue being activated more intensely than you like,
+because the controller is always sending maximum velocity values when
+pressed. You can work around this by passing the optional
+`:use-veolocity` argument along with an explicit velocity value from
+`0` to `127` to `add-midi-control-to-cue-mapping`. This will cause the
+mapping to act as if the button was pressed with the velocity you
+specified here, allowing you to choose the values with which the cue
+gets activated.
 
 == Mapping a Control to a Variable
 

@@ -949,22 +949,27 @@
   `:end-keys`. Returns the id of the new effect, or nil if no cue was
   found.
 
+  Any cue variables which are configured to be responsive to MIDI
+  velocity will be set according to the velocity value passed in with
+  `:velocity`. If no velocity is specified, then a default velocity of
+  `127` is assumed.
+
   A map of variable keywords to values can be supplied with
   `:var-overrides`, and the corresponding value will be used rather
   than the `:start` value specified in the cue for that variable when
   it is introduced as a cue variable. This is used by compound cues to
-  launch their nested cues with customized values, for setting the
-  initial values of cue values which are affected by MIDI velocity,
-  and by
+  launch their nested cues with customized values, and by
   [afterglow-max](https://github.com/brunchboy/afterglow-max) to start
   cues with alternate values if its patchers have been configured to
-  do so."
-  [x y & {:keys [var-overrides]}]
-  {:pre [(some? *show*)]}
+  do so. If a `:var-override` is specified for a variable which is
+  also configured as velocity sensitive, the override will win."
+  [x y & {:keys [velocity var-overrides] :or {velocity 127}}]
+  {:pre [(some? *show*) (number? velocity) (<= 0 velocity 127)]}
   (when-let [cue (controllers/cue-at (:cue-grid *show*) x y)]
     (doseq [k (:end-keys cue)]
       (end-effect! k))
-    (let [var-map (introduce-cue-variables cue x y var-overrides)
+    (let [velocity-vars (controllers/starting-vars-for-velocity cue velocity)
+          var-map (introduce-cue-variables cue x y (merge velocity-vars var-overrides))
           id (add-effect! (:key cue) ((:effect cue) var-map)
                           :priority (:priority cue) :from-cue cue :x x :y y :var-map var-map)]
       (controllers/activate-cue! (:cue-grid *show*) x y id)

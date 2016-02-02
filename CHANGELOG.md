@@ -34,7 +34,12 @@ This change log follows the conventions of
   interface, to help remind operators about the effects they launch,
   or reflect the current value of a color variable on which they are
   based.
-- Documentation of how to bind a MIDI controller to a dimmer master.
+- When binding a generic MIDI controller to launch a cue, if that
+  controller does not have velocity-sensitive pads, you can assign an
+  explicit velocity to use in the binding, for the purpose of setting
+  any velocity-sensitive cue variables.
+- An explanation of how to bind a MIDI controller to a dimmer master
+  has been added to the mapping documentation.
 - Animated GIFs in the documentation illustrate how the cue user
   interface works.
 
@@ -56,6 +61,11 @@ This change log follows the conventions of
 - Incompatible cues are now identified not just from matching effect
   keys, but also from their `:end-keys` lists, so the web and
   controller interfaces provide even more guidance.
+- Launching cues from the web interface was not setting any value for
+  cue variables configured to be velocity sensitive, which was
+  sometimes causing issues. Now the assignment of velocity-adjustable
+  variables happens in the process of launching any cue from the grid,
+  and a default velocity of 127 is assumed if none is specified.
 - The entire frame of a user interface being rendered on a grid
   controller or the web interface now uses the same metronome
   snapshot, to represent a consistent point in time.

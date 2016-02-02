@@ -401,10 +401,21 @@
 
   If the controller is pressure-sensitive and you would like to have
   the velocity information passed on to any cue variables which are
-  configured to respond to it, pass `true` with `use-velocity?`. Doing
-  this also enables responsiveness to aftertouch messages, which can
-  adjust the cue variable for as long as you are holding down the key
-  or pad, if your controller sends them (and `kind` is `:note`).
+  configured to respond to it, pass `true` with `:use-velocity`. This
+  is the default assumed if `:use-velocity` is omitted, and also
+  enables responsiveness to aftertouch (polyphonic key pressure)
+  messages, which can adjust the cue variable for as long as you are
+  holding down the key or pad, if your controller sends them (and
+  `kind` is `:note`).
+
+  If the controller is not pressure-sensitive, and you would like to
+  have the cue react as if it was pressed with a particular velocity,
+  you can pass a number from `0` to `127` with `:use-velocity`.
+  Whenever the cue is activated, it will be activated with the
+  specified velocity. If you pass `:use-velocity` with `false`, the
+  cue will be activated with a default velocity. In any of these cases
+  where `use-velocity` is not `true`, no attempt will be made to
+  respond to aftertouch messages.
 
   Afterglow assumes the control is momentary, meaning it sends a note
   off (or control value of 0) as soon as it is released, and a second
@@ -419,12 +430,13 @@
   Returns the cue-triggering function which can be passed
   to [[remove-midi-control-to-cue-mapping]] if you ever want to stop
   the MIDI control or note from affecting the cue in the future."
-  [device-filter channel kind note x y & {:keys [feedback-on feedback-off use-velocity? momentary?]
-                                             :or {feedback-on 127 feedback-off 0 momentary? true}}]
+  [device-filter channel kind note x y & {:keys [feedback-on feedback-off use-velocity momentary?]
+                                             :or {feedback-on 127 feedback-off 0 use-velocity true momentary? true}}]
   {:pre [(some? *show*) (#{:control :note} kind) (some? device-filter) (integer? channel) (<= 0 channel 15)
          (integer? note) (<= 0 note 127) (integer? x) (<= 0 x) (integer? y) (<= 0 y)
          (or (not feedback-on) (and (integer? feedback-on) (<= 0 feedback-on 127)))
-         (integer? feedback-off) (<= 0 feedback-off 127)]}
+         (integer? feedback-off) (<= 0 feedback-off 127)
+         (or (true? use-velocity) (false? use-velocity) (and (integer? use-velocity) (<= 0 use-velocity 127)))]}
   (let [show *show*  ; Bind so we can pass it to update functions running on another thread
         feedback-device (when feedback-on (midi/find-midi-out device-filter))
         our-id (atom nil)  ; Track when we have created an effect
@@ -445,13 +457,15 @@
                                ;; Control or note has been pressed
                                (if (and active (not (:held cue)))
                                  (show/end-effect! (:key cue))
-                                 (let [vars (when use-velocity? (controllers/starting-vars-for-velocity cue velocity))]
-                                   (reset! our-id (show/add-effect-from-cue-grid! x y :var-overrides vars))
-                                   (when (and use-velocity? (= kind :note))
+                                 (let [effective-velocity (if (true? use-velocity) velocity use-velocity)]
+                                   (if use-velocity
+                                     (reset! our-id (show/add-effect-from-cue-grid! x y :velocity effective-velocity))
+                                     (reset! our-id (show/add-effect-from-cue-grid! x y)))
+                                   (when (and (true? use-velocity) (= kind :note))
                                      (midi/add-aftertouch-mapping device-filter channel note aftertouch-handler))))
                                ;; Control has been released
                                (when (some? @our-id)
-                                 (when (and use-velocity? (= kind :note))
+                                 (when (and (true? use-velocity) (= kind :note))
                                    (midi/remove-aftertouch-mapping device-filter channel note aftertouch-handler))
                                  (when (or (:held cue) (not momentary?))
                                    (show/end-effect! (:key cue) :when-id @our-id)
