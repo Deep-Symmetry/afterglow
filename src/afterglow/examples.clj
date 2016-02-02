@@ -689,7 +689,7 @@
 
     (let [color-var {:key :strobe-color :type :color :name "Strobe Color"}]
       (ct/set-cue! (:cue-grid *show*) 7 6
-                   (cues/cue :strobe-color (fn [_] (fx/blank))
+                   (cues/cue :strobe-color (fn [_] (fx/blank "Strobe Color"))
                              :color :purple
                              :color-fn (cues/color-fn-from-cue-var color-var)
                              :variables [color-var])))
