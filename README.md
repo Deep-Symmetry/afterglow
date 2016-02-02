@@ -15,7 +15,7 @@ and pieces of the [Overtone](http://overtone.github.io) toolkit.
 Beyond building on pieces of Overtone, the entire Afterglow project
 was [inspired](https://vimeo.com/22798433) by it.
 
-[![License](https://img.shields.io/github/license/brunchboy/afterglow.svg)](#license)
+[![License](https://img.shields.io/badge/License-Eclipse%20Public%20License%201.0-blue.svg)](#license)
 
 ### Documentation Overview
 
@@ -112,7 +112,7 @@ If any of this sounds interesting to you, here is how to get started:
 If you want to run Afterglow as a standalone executable, you can
 download the executable &uuml;berjar from the
 [releases](https://github.com/brunchboy/afterglow/releases) page.
-[![&uuml;berjar](https://img.shields.io/github/downloads/brunchboy/afterglow/latest/afterglow.jar.svg)](https://github.com/brunchboy/afterglow/releases)
+[![&uuml;berjar](https://img.shields.io/github/downloads/brunchboy/afterglow/total.svg)](https://github.com/brunchboy/afterglow/releases)
 
 For an example of a project which uses Afterglow as a dependency, as
 described above, see
