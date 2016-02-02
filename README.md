@@ -35,7 +35,7 @@ and lasting community-driven documentation, there is also a project
 As suggested by the live-coding orientation mentioned above, which is
 designed to let you inject your own code right into the frame
 rendering process, Afterglow takes a very different approach to
-controlling light shows than other software. It won't be right for
+controlling light shows than other software. It won&rsquo;t be right for
 everyone, but will be extremely compelling to a particular niche. The
 early stages of its
 [rendering loop](doc/rendering_loop.adoc#the-rendering-loop) can offer
@@ -121,7 +121,7 @@ which hosts Afterglow inside [Cycling ‘74’s Max](https://cycling74.com/).
 
 ## Status
 
-Although Afterglow is far from finished, it's ready for the world to
+Although Afterglow is far from finished, it&rsquo;s ready for the world to
 start exploring, and helping decide directions in which to grow next
 (as well as identifying areas where the documentation needs
 clarification or reinforcement).
@@ -278,11 +278,11 @@ adjust and optimize it yourself.
 
 As your show gets more complex, you may want to split this into
 multiple files, which you can either load by listing them all on the
-command line, or by using Clojure's `load-file` function from within
+command line, or by using Clojure&rsquo;s `load-file` function from within
 the first file. Or, once you are comfortable with idomatic Clojure
 development, by organizing them into a hierarchy of namespaces, and
 using the normal `:require` mechanism that is used to pull in
-Afterglow's own namespaces.
+Afterglow&rsquo;s own namespaces.
 
 > :heavy_exclamation_mark: At this early stage of development, using
 > Afterglow as an executable jar is less-tested territory, and you may
@@ -604,7 +604,7 @@ do that, afterglow will create any missing directories in the log file
 path, and fail with a clear error message if it is unable to log to
 the place you asked it to.
 
-The Open Lighting Architecture's
+The Open Lighting Architecture&rsquo;s
 [web interface](http://localhost:9090/new/#/), which you can find on
 port 9090 of the machine running afterglow-max if you installed it in
 the normal way, can be useful in troubleshooting as well. You can see
@@ -730,10 +730,10 @@ though.
     current variable values for saving, and to look them up when
     saved.
 - [ ] Compound cues:
-  - [x] Unflattened compound cues trigger multiple cues' effects:
+  - [x] Unflattened compound cues trigger multiple cues&rsquo; effects:
     - [x] Each effect gets its own priority, parameters.
     - [x] The compound finishes when all triggered effects do.
-    - [x] Implement by having the outer cue's effect call
+    - [x] Implement by having the outer cue&rsquo;s effect call
       `show/add-effect-from-cue-grid!` to launch all the nested
       effects, recording their IDs. The effect will never return any
       assigners, but will report that it has ended when all of the
@@ -744,7 +744,7 @@ though.
     - [x] Add a `:variable-overrides` parameter to
       `show/add-effect-from-cue-grid!` so compound cues can use it to
       customize the values of parameters introduced by nested cues.
-  - [ ] Flattened compound cues flatten their nested cues' effects
+  - [ ] Flattened compound cues flatten their nested cues&rsquo; effects
     into a single new effect:
     - [ ] This effect gets assigned a new priority.
     - [ ] The compound cue aggregates nested cue variables into one
@@ -827,7 +827,7 @@ though.
 - [ ] Support Push version 2 if possible. The display will be most
   difficult since it seems not to use MIDI, but there is a
   [library](http://sigabort.co/p2d) which can address it; I have
-  reached out to the authors to see if they can help. I don't yet know
+  reached out to the authors to see if they can help. I don&rsquo;t yet know
   if there is a SysEx for setting RGB pad colors available, or if we
   will need to go back to using MIDI notes; if the latter, the colors
   are all wrong and need to be rediscovered.
