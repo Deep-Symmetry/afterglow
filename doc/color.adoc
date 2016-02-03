@@ -100,6 +100,43 @@ function in the `examples` namespace provides an example of how to do
 this (click the kbd:[view source] link below the description to see
 how it is done).
 
+You may also want to have a group of cues which share a same basic
+color, like the strobe cues do in the sample show. In that case,
+rather than having a color variable that exists only within the cue,
+you will want to set up a show variable to contain the color, and have
+each cue share the same show variable as a cue variable. The
+{api-doc}afterglow.examples.html#var-make-strobe-cue[`make-strobe-cue`]
+function in the `examples` namespace shows how to do this (again click
+the kbd:[view source] link below the description to see how it is
+done). All of the strobe cues in the sample show use the same color,
+and if you adjust that color while one is running, the cue cells
+within the web interface and on the Ableton Push and Novation
+Launchpad Pro will update to show the new color you have chosen, and
+it will be used when you press any of them.
+
+In order to let you adjust the strobe color even when no strobe cue is
+running, the sample show also sets up a &ldquo;Strobe Color&rdquo;
+cue. All it does is run a
+{api-doc}afterglow.effects.html#var-blank[`blank`] effect, while
+binding a cue variable to the show variable that is being used to set
+strobe colors, so that you can run the cue to adjust the color without
+firing any strobes:
+
+[source,clojure]
+----
+(let [color-var {:key :strobe-color :type :color :name "Strobe Color"}]
+      (ct/set-cue! (:cue-grid *show*) 7 6
+                   (cues/cue :strobe-color (fn [_] (fx/blank "Strobe Color"))
+                             :color :purple
+                             :color-fn (cues/color-fn-from-cue-var color-var)
+                             :variables [color-var])))
+----
+
+This example also shows how to use the cue `:color-fn` key to
+configure the cue grid to display the cue using the current value of
+the color variable associated with it, as an additional aid to the
+show operator.
+
 #### License
 
 +++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++

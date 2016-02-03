@@ -141,9 +141,11 @@ MIDI control surface. It often makes sense to use
 <<parameters#oscillated-parameters,oscillated parameters>> with dimmer
 cues.
 
-TIP: If you have color effects running for a light and you aren’t seeing
-anything, make sure you have a dimmer effect setting the dimmer to some
-visible level.
+TIP: If you have color effects running for a light and you aren’t
+seeing anything, make sure you have a dimmer effect setting the dimmer
+to some visible level. And if the fixture has a shutter (either
+physical or electronic), you may need an effect running to open that
+as well.
 
 ==== Virtual Dimmers
 
@@ -253,9 +255,11 @@ the keyword `:color`:
                           "Plain red" (create-color "red") (show/all-fixtures)))
 ----
 
-TIP: Remember that if aren’t seeing anything when you have assigned color
-effects to a fixture to make sure you also have a dimmer effect setting
-that fixture’s dimmer to some visible level.
+TIP: Remember that if aren’t seeing anything when you have assigned
+color effects to a fixture to make sure you also have a dimmer effect
+setting that fixture’s dimmer to some visible level. And if the
+fixture has a shutter (either physical or electronic), you may need an
+effect running to open that as well.
 
 You can also assign colors to lights that use color wheels instead of
 RGB mixing by passing a `true` value with the optional keyword
@@ -581,6 +585,11 @@ replaced by the fade are restored.
 To create a blank effect, simply call the
 {api-doc}afterglow.effects.html#var-blank[`blank`]
 function in the `afterglow.effects` namespace.
+
+You might also want to create a blank effect as part of a cue whose
+purpose is simply to provide a way to adjust a show variable. The
+<<color#colors-and-cues,Colors and Cues>> discussion provides an
+example of doing just that.
 
 === Fades
 
@@ -1007,9 +1016,11 @@ through all colors over one bar of the show metronome:
    (params/build-color-param :s 100 :l 50 :h hue-param)))
 ----
 
-TIP: Remember that if you aren’t seeing anything when after assigning color
-effects to a fixture to make sure you also have a dimmer effect setting
-that fixture’s dimmer to some visible level.
+TIP: Remember that if you aren’t seeing anything when after assigning
+color effects to a fixture to make sure you also have a dimmer effect
+setting that fixture’s dimmer to some visible level. And if the
+fixture has a shutter (either physical or electronic), you may need an
+effect running to open that as well.
 
 We can set up separate metronomes as show variables, so that effect
 timing can be separate from the main show, which is intended to track
