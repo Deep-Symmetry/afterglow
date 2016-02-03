@@ -349,34 +349,35 @@ access to a scrollable grid of cues, and the ability to track the cues
 displayed on a physical cue grid control surface like the Ableton Push
 or Novation Launchpad Pro, so you can control them from either place,
 and see the names that go with the colored buttons on the control
-surface. This image shows how cues respond to clicks, lightening while
-they run, and darkening any cues which cannot run at the same time. It
-also shows how you can scroll around a larger grid than fits on the
-screen at one time:
+surface. This animated GIF shows how cues respond to clicks,
+lightening while they run, and darkening any cues which cannot run at
+the same time. It also shows how you can scroll around a larger grid
+than fits on the screen at one time (although it has reduced colors,
+frame rate, and quality when compared to the actual web interface):
 
 ![Show control](doc/assets/ShowGrid.gif)
 
-Here is the Ableton Push interface tied to that an earlier of the same
-cue grid. This physical control surface lets you trigger more than one
-cue at the same time, and also gives you niceties unavailable with a
-mouse, like pressure sensitivity so your effect intensity, speed,
-color, or other parameters can be varied as you alter the pressure
-which you are applying to the pads:
+Here is the Ableton Push interface tied to an earlier version of the
+same cue grid. This physical control surface lets you trigger more
+than one cue at the same time, and also gives you niceties unavailable
+with a mouse, like pressure sensitivity so your effect intensity,
+speed, color, or other parameters can be varied as you alter the
+pressure which you are applying to the pads:
 
 ![Push interface](doc/assets/AbletonInterface.jpg)
 
 You can adjust running effects, scroll around the cue grid, and adjust
 or sync the show metronome from either interface. Other MIDI
 controllers can be mapped to provide similar functionality, and
-hopefully such mappings will make their way into Afterglow soon, and
-indeed, the Novation Launchpad Pro is supported now too. (The
+hopefully such mappings will make their way into Afterglow soon
+(indeed, the Novation Launchpad Pro is supported now too). The
 Afterglow mappings are done entirely on the User layer as well, so
 they coexist gracefully with Ableton Live, and you can switch back and
-forth by pressing the User button if you want to perform with both.)
+forth by pressing the User button if you want to perform with both.
 
 But, getting back to our REPL-based example: We next start the sample
 show, which runs on DMX universe 1. You will want to have OLA
-configured to at least have an ArtNet universe with that ID so you can
+configured to at least have an dummy universe with that ID so you can
 watch the DMX values using its web interface. It would be even better
 if you had an actual DMX interface hooked up, and changed the show to
 include some real lights you have connected. Either way, here is how
@@ -608,9 +609,9 @@ the place you asked it to.
 
 The Open Lighting Architecture&rsquo;s
 [web interface](http://localhost:9090/new/#/), which you can find on
-port 9090 of the machine running afterglow-max if you installed it in
-the normal way, can be useful in troubleshooting as well. You can see
-if the universes that afterglow is expecting to interact with actually
+port 9090 of the machine running afterglow if you installed it in the
+normal way, can be useful in troubleshooting as well. You can see if
+the universes that afterglow is expecting to interact with actually
 exist, are configured to talk to the lighting interfaces you expect,
 and are sending DMX channel values that seem reasonable.
 
@@ -622,6 +623,10 @@ branch to keep up with the current rapid pace of development. Please
 feel free to log
 [issues](https://github.com/brunchboy/afterglow/issues) as you
 encounter them!
+
+NOTE: Everything beyond this point is written for people who are
+working on enhancing Afterglow itself. If you are trying to learn how
+to use it, jump to the main [documentation](doc/README.adoc) page now!
 
 ## Release Checklist
 
