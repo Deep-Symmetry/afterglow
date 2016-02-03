@@ -74,7 +74,9 @@ are fully supported too):
 * The timing of effects is pervasively influenced by a deep notion of
   [musical time](doc/metronomes.adoc#metronomes), with support for
   synchronization via
-  [MIDI clock](doc/mapping_sync.adoc#syncing-to-midi-clock) or Pioneer
+  [MIDI clock](doc/mapping_sync.adoc#syncing-to-midi-clock),
+  [Traktor Beat Phase](doc/mapping_sync#syncing-to-traktor-beat-phase),
+  or Pioneer
   [Pro DJ Link](doc/mapping_sync.adoc#syncing-to-pro-dj-link) beat
   grids.
 
