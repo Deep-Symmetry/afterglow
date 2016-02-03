@@ -76,8 +76,7 @@ are fully supported too):
   synchronization via
   [MIDI clock](doc/mapping_sync.adoc#syncing-to-midi-clock),
   [Traktor Beat Phase](doc/mapping_sync.adoc#syncing-to-traktor-beat-phase),
-  https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#syncing-to-traktor-beat-phase
-or Pioneer
+  or Pioneer
   [Pro DJ Link](doc/mapping_sync.adoc#syncing-to-pro-dj-link) beat
   grids.
 
