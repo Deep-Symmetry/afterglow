@@ -195,7 +195,7 @@
   (let [chance (params/bind-keyword-param chance Number 0.001)
         fade-time (params/bind-keyword-param fade-time Number 500)
         master (params/bind-keyword-param master Master (:grand-master *show*))
-        fixtures (if include-rgb-fixtures? fixtures (filter (complement channels/has-rgb-heads?) fixtures))]
+        fixtures (if include-rgb-fixtures? fixtures (remove channels/has-rgb-heads? fixtures))]
     (let [full-channels (dimmer-fx/gather-dimmer-channels fixtures)
           function-heads (dimmer-fx/gather-partial-dimmer-function-heads fixtures)
           running (atom true)

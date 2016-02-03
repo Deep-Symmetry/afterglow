@@ -441,11 +441,10 @@
   []
   (swap! beat-task (fn [current]
                      (if (empty? @beat-feedback)
-                       (when current (do (at-at/kill current) nil))  ; Should not be running; kill if it was.
-                       (if current  ; Should be running, return if it is, or start it.
-                         current
-                         (at-at/every beat-refresh-interval give-beat-feedback pool
-                                      :desc "Metronome beat feedback update"))))))
+                       (when current (at-at/kill current) nil)  ; Should not be running; kill if it was.
+                       (or current  ; Should be running, return if it is, or start it.
+                           (at-at/every beat-refresh-interval give-beat-feedback pool
+                                        :desc "Metronome beat feedback update"))))))
 
 (defn clear-beat-feedback!
   "Ceases flashing the specified non-grid MIDI controller element

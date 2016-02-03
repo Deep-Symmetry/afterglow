@@ -70,7 +70,7 @@
   heads are suitable for creating virtual dimmer effects when
   desired."
   [fixtures]
-  (let [no-dimmers (filter #(not (:dimmer (into #{} (mapcat keys (map :function-map (channels/expand-heads [%]))))))
+  (let [no-dimmers (filter #(not (:dimmer (set (mapcat keys (map :function-map (channels/expand-heads [%]))))))
                            fixtures)]
     (channels/find-rgb-heads no-dimmers)))
 

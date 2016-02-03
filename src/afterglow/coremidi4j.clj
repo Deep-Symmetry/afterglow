@@ -13,6 +13,6 @@
   is inactive."
   [f]
   (when (CoreMidiDeviceProvider/isLibraryLoaded)
-    (do
-      (CoreMidiDeviceProvider/addNotificationListener (reify CoreMidiNotification (midiSystemUpdated [this] (f))))
-      true)))
+    (CoreMidiDeviceProvider/addNotificationListener
+     (reify CoreMidiNotification (midiSystemUpdated [this] (f))))
+    true))
