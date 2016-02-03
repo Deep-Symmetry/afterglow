@@ -89,9 +89,10 @@ Someday a user interface for building shows and fixture definitions
 may be created, either within Afterglow, or as a companion project,
 but that is not currently planned. For now the focus is on building
 rich user interfaces for controlling shows, such as the
-<<mapping_sync#using-ableton-push,Ableton Push mapping>> and
-<<README#the-embedded-web-interface,web interface>>, while using the
-concise expressive power of Clojure for writing the fixture
+<<mapping_sync#using-ableton-push,Ableton Push>> and
+<<mapping_sync#using-launchpad-pro,Novation Launchpad Pro>> mappings and the
+<<README#the-embedded-web-interface,embedded web interface>>, while
+using the concise expressive power of Clojure for writing the fixture
 definitions, effects, and cues.
 
 Afterglow communicates with the lighting hardware using the
@@ -115,7 +116,7 @@ running, Afterglow runs a thread which periodically asks “what should
 all the lights be doing now?” (resulting in a single “frame” of
 control values representing that moment in time), and sends the
 results of that analysis to all of the OLA universes the show is
-configured to control. By default this happens thirty times each
+configured to control. By default this happens 40 times each
 second, but the interval is configurable within the show, and should
 be decided based on the fastest refresh rate of any physical
 interfaces you have hooked up to Afterglow. This is described in more
@@ -170,13 +171,14 @@ physical grid controllers or simpler MIDI controllers.
 == The Embedded Web Interface
 
 Although a physical grid controller (especially one as well-designed
-as the <<mapping_sync#using-ableton-push,Ableton Push>>) offers the
-ideal control surface for running a light show, you can do a lot with
-just the web interface built in to Afterglow. And even when you have a
-Push or other grid controller, the web interface makes it all the more
-powerful by adding at-a-glance documentation of cue names, as well as
-alternate ways of doing things, or the opportunity to interact with
-more than one section of the cue grid at once.
+as the <<mapping_sync#using-ableton-push,Ableton Push>> or
+<<mapping_sync#using-launchpad-pro,Novation Launchpad Pro>>) offers
+the ideal control surface for running a light show, you can do a lot
+with just the web interface built in to Afterglow. And even when you
+have a Push or other grid controller, the web interface makes it all
+the more powerful by adding at-a-glance documentation of cue names, as
+well as alternate ways of doing things, or the opportunity to interact
+with more than one section of the cue grid at once.
 
 If you have started Afterglow by running the jar file, it will have
 opened a browser window on the web interface by default. Otherwise,
@@ -403,14 +405,15 @@ Trying to keep up with tempo changes during dynamic shows can be very
 difficult, so you will hopefully be able to take advantage of
 Afterglow's metronome synchronization features. If you can get the DJ
 to feed you <<mapping_sync#syncing-to-midi-clock,MIDI clock pulses>>
+or <<mapping_sync#syncing-to-traktor-beat-phase,Traktor Beat Phase>>,
 or connect via a Local Area Network to Pioneer professional DJ gear to
 lock into the beat grid established by
 <<mapping_sync#syncing-to-pro-dj-link,Pro DJ Link>>, Afterglow can
-keep the BPM (with MIDI) and even the beats (with Pro DJ Link)
-synchronized for you. To configure that synchronization, click the
-`Sync` button once you have the MIDI clock or network Pro DJ Link
-signals reaching the machine running Afterglow, and choose the sync
-source you want to use.
+keep the BPM (with MIDI) and even the beats (with Traktor Beat Phase
+or Pro DJ Link) synchronized for you. To configure that
+synchronization, click the `Sync` button once you have the MIDI clock,
+beat phase, or network Pro DJ Link signals reaching the machine
+running Afterglow, and choose the sync source you want to use.
 
 image:assets/MetronomeSync.png[Metronome sync]
 
@@ -435,12 +438,13 @@ Wiki].
 Once your sync is established, the `Tap Tempo` button changes. If you
 are using MIDI clock to sync the BPM, it becomes a `Tap Beat` button,
 which simply establishes where the beat falls. If you are locked in to
-a Pro DJ Link beat grid, it becomes a `Tap Bar` button which, when
-pressed, indicates that the current beat is the down beat (start) of a
-bar. Similarly, if you press the metronome Reset button (the red x
-above the phrase counter) while synced to a Pro DJ Link beat grid, the
-beat itself will not move, but the beat closest to when you pressed
-the pad will be identified as Beat 1.
+a Pro DJ Link or Traktor Beat Phase beat grid, it becomes a `Tap Bar`
+button which, when pressed, indicates that the current beat is the
+down beat (start) of a bar. Similarly, if you press the metronome
+Reset button (the red x above the phrase counter) while synced to a
+Pro DJ Link or Traktor Beat Phase beat grid, the beat itself will not
+move, but the beat closest to when you pressed the pad will be
+identified as Beat 1.
 
 image:assets/MetronomeSynced.png[Metronome synced]
 
@@ -498,14 +502,14 @@ explains how, and links to existing fixture definitions as examples.
 You can also ask for help on the
 https://gitter.im/brunchboy/afterglow[Gitter chat] or the
 https://github.com/brunchboy/afterglow/wiki/Questions[Wiki].
-
++
 At this point you are almost certainly writing enough code that you
 want to save it for later reuse. The
 https://github.com/brunchboy/afterglow#usage[Usage] section of the
 project page explains how you can have Afterglow load files when it
 starts up when you are running it as a standalone jar, which makes it
 easier to use your own configuration files.
-
++
 . Patch your actual fixture channels and locations. Once you have
 working definitions for your fixtures, you will want to create a show
 that tells Afterglow what fixtures you have, and the DMX universes and
@@ -532,7 +536,7 @@ Afterglow offers. Or perhaps a
 if you just have a simple MIDI controller with a few buttons and
 faders, or even a keyboard, you can
 <<mapping_sync#midi-mapping-and-beat-sync,map>> keys, buttons, and
-faders to do trigger cues and adjust variables used by the cues.
+faders to trigger cues and adjust variables used by the cues.
 
 . Run the show! With or without a physical controller, you can create
 your show by calling the function you wrote modeled on
