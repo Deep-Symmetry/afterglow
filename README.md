@@ -624,9 +624,9 @@ feel free to log
 [issues](https://github.com/brunchboy/afterglow/issues) as you
 encounter them!
 
-NOTE: Everything beyond this point is written for people who are
-working on enhancing Afterglow itself. If you are trying to learn how
-to use it, jump to the main [documentation](doc/README.adoc) page now!
+> Everything beyond this point is written for people who are
+> working on enhancing Afterglow itself. If you are trying to learn how
+> to use it, jump to the main [documentation](doc/README.adoc) page now!
 
 ## Release Checklist
 
