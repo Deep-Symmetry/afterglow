@@ -1,6 +1,7 @@
 = Working with Color
 James Elliott <james@deepsymmetry.org>
 :icons: font
+:experimental:
 :api-doc: http://rawgit.com/brunchboy/afterglow/master/api-doc/
 
 // Set up support for relative links on GitHub; add more conditions
@@ -94,7 +95,7 @@ Even if you are creating a cue to simply assign a fixed color to a
 group of lights, it is worth setting that color up as a cue variable,
 because it will allow the show operator to adjust the color in a very
 convenient way when running the show. The
-{api-doc}afterglow.examples.html#var-global-color-effect[`global-color-effect`]
+{api-doc}afterglow.examples.html#var-global-color-cue[`global-color-cue`]
 function in the `examples` namespace provides an example of how to do
 this (click the kbd:[view source] link below the description to see
 how it is done).

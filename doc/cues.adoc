@@ -2,6 +2,7 @@
 James Elliott <james@deepsymmetry.org>
 :icons: font
 :toc:
+:experimental:
 :toc-placement: preamble
 :api-doc: http://rawgit.com/brunchboy/afterglow/master/api-doc/
 
