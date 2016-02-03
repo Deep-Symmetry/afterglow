@@ -40,7 +40,7 @@ You can often avoid having to write your own function entirely by
 clever combinations of oscillated parameters for creating dynamic
 color parameters.
 
-### Thinking in Hue, Saturation, and Lightness
+## Thinking in Hue, Saturation, and Lightness
 
 If you are not accustomed to working with colors in the HSL space, it
 is definitely worth spending a little time becoming familiar with it,
@@ -74,13 +74,29 @@ Lightness::
   lets the color "be itself" when fully saturated. Lightnesses above
   fifty start to whiten it, while those below fifty blacken it.
 
-### Modifying Colors
+## Modifying Colors
 
 You can also create a variety of layered looks by building effects
 that work with each other, rather than having to create a separate
 effect for each combination. The discussion on
 <<effects#layering-effects,layering effects>> explains how to do this
 and points at a sample implementation that ships with Afterglow.
+
+## Colors and Cues
+
+When you create a cue that assigns a color to a group of lights, you
+can take advantage of Afterglow's rich user interfaces for picking
+colors to let the operator tweak that color during the show, simply by
+making the color a <<cues#cue-variables,cue variable>>.
+
+Even if you are creating a cue to simply assign a fixed color to a
+group of lights, it is worth setting that color up as a cue variable,
+because it will allow the show operator to adjust the color in a very
+convenient way when running the show. The
+{api-doc}afterglow.examples.html#var-global-color-effect[`global-color-effect`]
+function in the `examples` namespace provides an example of how to do
+this (click the kbd:[view source] link below the description to see
+how it is done).
 
 #### License
 

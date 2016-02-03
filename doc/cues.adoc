@@ -327,8 +327,35 @@ approach updates the grid controller interface to reflect a color
 chosen by the user, and so provides valuable information in a
 non-distracting way.
 
+=== Cue Variables
+
+As noted above, a cue can contain a map under the key `:variables`
+which assigns variables to the cue. These variables allow the cue to
+be adjusted by the show operator in convenient and powerful ways,
+either through the interfaces automatically presented by the Effect
+Control sections of the <<README#effect-control,embedded Web
+interface>> or <<mapping_sync#effect-control,Ableton Push mapping>>,
+through pressure-sensitive grid controllers like the Push or
+<<mapping_sync#using-launchpad-pro,Launchpad Pro>>, or a binding to
+<<mapping_sync#mapping-cues-to-a-controller,any pressure-sensitive
+MIDI controller>>.
+
+Cue Variables can either be numeric, and adjusted by sliders in the
+web UI, or rotary encoders and faders on MIDI controllers, or they can
+store colors, in which case both the web UI and
+<<mapping_sync#color-cue-parameters,Push mapping>> provide a powerful
+interface for picking and adjusting the color.
+
+They can also be temporary, lasting only the duration of the cue, or
+tied to a {api-doc}afterglow.show.html#var-set-variable.21[show
+variable], so they can be shared between cues, and have values which
+last between activations of the cue. Color variables which are stored
+as show variables can be adjusted by
+<<mapping_sync#mapping-a-control-to-a-color-component,any MIDI
+controller>>.
+
 [cols="1a,1a,5a", options="header"]
-.[[cue-variables]]Cue variable specification maps
+.Cue variable specification maps
 |===
 |Key
 |Default
