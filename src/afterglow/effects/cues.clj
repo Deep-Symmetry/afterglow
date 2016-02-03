@@ -377,7 +377,7 @@
     (when-let [k (find-cue-variable-keyword cue var-spec :when-id when-id)]
       (show/set-variable! k value))))
 
-(defn add-midi-control-to-cue-mapping
+(defn add-midi-to-cue-mapping
   "Cause the specified cue from the [[*show*]] cue grid to be
   triggered by receipt of the specified note (when `kind` is `:note`)
   or controller-change (when `kind` is `:control`) message with a
@@ -428,8 +428,8 @@
   `:held`.
 
   Returns the cue-triggering function which can be passed
-  to [[remove-midi-control-to-cue-mapping]] if you ever want to stop
-  the MIDI control or note from affecting the cue in the future."
+  to [[remove-midi-to-cue-mapping]] if you ever want to stop the MIDI
+  control or note from affecting the cue in the future."
   [device-filter channel kind note x y & {:keys [feedback-on feedback-off use-velocity momentary?]
                                              :or {feedback-on 127 feedback-off 0 use-velocity true momentary? true}}]
   {:pre [(some? *show*) (#{:control :note} kind) (some? device-filter) (integer? channel) (<= 0 channel 15)
@@ -482,12 +482,21 @@
       :note (midi/add-note-mapping device-filter channel note midi-handler))
     midi-handler))
 
-(defn remove-midi-control-to-cue-mapping
+(defn add-midi-control-to-cue-mapping
+  "Deprecated in favor of the more accurately
+  named [[add-midi-to-cue-mapping]]."
+  {:deprecated "0.2.0"}
+  [device-filter channel kind note x y & {:keys [feedback-on feedback-off use-velocity momentary?]
+                                          :or {feedback-on 127 feedback-off 0 use-velocity true momentary? true}}]
+  (add-midi-to-cue-mapping device-filter channel kind note x y :feedback-on feedback-on :feedback-off feedback-off
+                           :use-velocity use-velocity :momentary? momentary?))
+
+(defn remove-midi-to-cue-mapping
   "Stop triggering the specified cue from the [[*show*]] cue grid upon
   receipt of the specified note or controller-change message. The
   desired cue is identified by passing in its `x` and `y` coordinates
   within the show cue grid. `f` is the handler function that was
-  returned by [[add-midi-control-to-cue-mapping]] when the mapping was
+  returned by [[add-midi-to-cue-mapping]] when the mapping was
   established."
   [device-filter channel kind note x y f]
   {:pre [(some? *show*) (#{:control :note} kind) (some? device-filter) (integer? channel) (<= 0 channel 15)
@@ -503,6 +512,13 @@
   (case kind
     :control (midi/remove-control-mapping device-filter channel note f)
     :note (midi/remove-note-mapping device-filter channel note f)))
+
+(defn remove-midi-control-to-cue-mapping
+  "Deprecated in favor of the more accurately named
+  [[remove-midi-to-cue-mapping]]."
+  {:deprecated "0.2.0"}
+  [device-filter channel kind note x y f]
+  (remove-midi-to-cue-mapping device-filter channel kind note x y f))
 
 (defn current-cue-color
   "Given a cue, an active effect map, and a metronome snapshot

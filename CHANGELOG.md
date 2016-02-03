@@ -94,14 +94,23 @@ This change log follows the conventions of
   - `afterglow.effects.params/build-oscillated-param` (instead use
   `afterglow.effects.oscillators/build-oscillated-param`)
   - `afterglow.show/add-midi-control-to-cue-mapping` (instead use
-    `afterglow.effects.cues/add-midi-control-to-cue-mapping`)
+    `afterglow.effects.cues/add-midi-to-cue-mapping`)
   - `afterglow.show/remove-midi-control-to-cue-mapping` (instead use
-    `afterglow.effects.cues/remove-midi-control-to-cue-mapping`)
+    `afterglow.effects.cues/remove-midi-to-cue-mapping`)
 - The detailed documentation was updated to use attributes to link to the API
   documentation so it could be linked to its release-specific version.
 - The API documentation was moved into a github-pages branch so
   versioned snapshots can be kept around.
-
+- A few functions were newly deprecated to improve the consistency of the API:
+  - `afterglow.effects.cues/add-midi-control-to-cue-mapping` (instead
+    use the more accurately named `add-midi-to-cue-mapping`)
+  - `afterglow.effects.cues/remove-midi-control-to-cue-mapping`
+    (instead use the more accurately named `remove-midi-to-cue-mapping`)
+  - `afterglow.show/remove-midi-control-to-var-mapping`,
+    `afterglow.show/remove-midi-control-to-master-mapping`, and
+    `afterglow.show/remove-midi-control-metronome-mapping` (they are
+    no longer needed, the general-purpose function
+    `afterglow.midi/remove-control-mapping` works instead of each)
 
 ## [0.1.6] - 2016-01-11
 

@@ -41,17 +41,17 @@ when you press and release the interface element you want to assign
 the cue. Afterglow can help with that too, as described
 <<finding-mapping-details,below>>. Once you have the cue created and
 the control identified, you can create the mapping using
-{api-doc}afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[`afterglow.effects.cues/add-midi-control-to-cue-mapping`], like:
+{api-doc}afterglow.effects.cues.html#var-add-midi-to-cue-mapping[`afterglow.effects.cues/add-midi-to-cue-mapping`], like:
 
 [source,clojure]
 ----
-(cues/add-midi-control-to-cue-mapping "nano" 0 :control 46 0 6)
+(cues/add-midi-to-cue-mapping "nano" 0 :control 46 0 6)
 ----
 
 This would cause Afterglow to start or stop the cue at grid position
 (0, 6) when a pad on the device named "nano" is pressed and sends a
 MIDI control change message on control number 46. See the
-{api-doc}afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[documentation]
+{api-doc}afterglow.effects.cues.html#var-add-midi-to-cue-mapping[documentation]
 for details on all the arguments.
 
 TIP: If the controller has LEDs associated with the controls, and you
@@ -62,15 +62,15 @@ you started it using this controller), and darkening it when the cue
 ends. If you are unable to configure your controller in this way, or
 there is some other reason why you want to avoid having Afterglow send
 it MIDI messages about the cue status, pass the additional arguments
-`:feedback-on false` to `add-midi-control-to-cue-mapping`. See the
+`:feedback-on false` to `add-midi-to-cue-mapping`. See the
 function
-{api-doc}afterglow.effects.cues.html#var-add-midi-control-to-cue-mapping[documentation]
+{api-doc}afterglow.effects.cues.html#var-add-midi-to-cue-mapping[documentation]
 for full details.
 
 If you want to be able to later remove this cue mapping, be sure to
-save the value returned by `add-midi-control-to-cue-mapping` in a
+save the value returned by `add-midi-to-cue-mapping` in a
 variable, because you will need to pass it to
-{api-doc}afterglow.midi.html#var-remove-control-mapping[`remove-control-mapping`].
+{api-doc}afterglow.effects.cues.html#var-remove-midi-to-cue-mapping[`remove-midi-to-cue-mapping`].
 Or you can simply disconnect the controller from your system, and
 Afterglow will clean up any mappings that had been assigned to it.
 
@@ -86,7 +86,7 @@ might find the cue being activated more intensely than you like,
 because the controller is always sending maximum velocity values when
 pressed. You can work around this by passing the optional
 `:use-veolocity` argument along with an explicit velocity value from
-`0` to `127` to `add-midi-control-to-cue-mapping`. This will cause the
+`0` to `127` to `add-midi-to-cue-mapping`. This will cause the
 mapping to act as if the button was pressed with the velocity you
 specified here, allowing you to choose the values with which the cue
 gets activated.
@@ -242,7 +242,7 @@ name or description is connected:
 [source,clojure]
 ----
 (defn map-nano []
-  (cues/add-midi-control-to-cue-mapping "nano" 0 :control 46 0 6)
+  (cues/add-midi-to-cue-mapping "nano" 0 :control 46 0 6)
   (show/add-midi-control-to-var-mapping "nano" 0 16 :knob-1 :max 360))
 
 (afterglow.midi/watch-for "nano" map-nano)
