@@ -21,10 +21,10 @@
                  [overtone/osc-clj "0.9.0"]
                  [amalloy/ring-buffer "1.2" :exclusions [org.clojure/tools.reader
                                                          com.google.protobuf/protobuf-java]]
-                 [com.climate/claypoole "1.1.0"]
+                 [com.climate/claypoole "1.1.1"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
                  [ola-clojure "0.1.4"]
-                 [selmer "0.9.9"]
+                 [selmer "1.0.0"]
                  [com.evocomputing/colors "1.0.3"]
                  [environ "1.0.1"]
                  [camel-snake-kebab "0.3.2"]
@@ -40,7 +40,7 @@
                                                                       org.clojure/tools.reader
                                                                       org.clojure/java.classpath]]
                  [metosin/ring-http-response "0.6.5"]
-                 [prone "1.0.0"]
+                 [prone "1.0.1"]
                  [buddy "0.9.0"]
                  [instaparse "1.4.1"]
                  [http-kit "2.1.19"]]
