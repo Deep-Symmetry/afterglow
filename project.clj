@@ -1,4 +1,4 @@
-(defproject afterglow "0.2.0"
+(defproject afterglow "0.2.1-SNAPSHOT"
   :description "A live-coding environment for light shows, built on the Open Lighting Architecture, using bits of Overtone."
   :url "https://github.com/brunchboy/afterglow"
   :license {:name "Eclipse Public License"
@@ -70,6 +70,6 @@
             [lein-environ "1.0.1"]]
 
   :codox {:output-path "api-doc"
-          :source-uri "https://github.com/brunchboy/afterglow/blob/v0.2.0/{filepath}#L{line}"
+          :source-uri "https://github.com/brunchboy/afterglow/blob/master/{filepath}#L{line}"
           :metadata {:doc/format :markdown}}
   :min-lein-version "2.0.0")
