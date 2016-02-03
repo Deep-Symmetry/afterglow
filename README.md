@@ -24,11 +24,11 @@ Afterglow. The main
 [documentation](doc/README.adoc#afterglow-documentation) goes much
 deeper, and there is also
 [API documentation](http://rawgit.com/brunchboy/afterglow/master/api-doc/index.html).
-For faster, more interactive help, the
-[Afterglow room on Gitter](https://gitter.im/brunchboy/afterglow)
-is the place to start, and if you want to build some more structured
-and lasting community-driven documentation, there is also a project
-[wiki](https://github.com/brunchboy/afterglow/wiki).
+For more interactive help, the
+[Afterglow room on Gitter](https://gitter.im/brunchboy/afterglow) is
+the place to start, and if you want to see (or contribute to) more
+structured and lasting community-driven documentation, there is also a
+project [wiki](https://github.com/brunchboy/afterglow/wiki).
 
 ## Why Explore Afterglow?
 
