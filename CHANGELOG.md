@@ -6,6 +6,10 @@ This change log follows the conventions of
 
 ## [Unreleased][unreleased]
 
+Nothing yet!
+
+## [0.2.0] - 2016-02-02
+
 ### Added
 
 - Running effects are now listed on the Show Control page of the Web
@@ -401,7 +405,8 @@ This change log follows the conventions of
 - Initial Public Release
 
 
-[unreleased]: https://github.com/brunchboy/afterglow/compare/v0.1.6...HEAD
+[unreleased]: https://github.com/brunchboy/afterglow/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/brunchboy/afterglow/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/brunchboy/afterglow/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/brunchboy/afterglow/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/brunchboy/afterglow/compare/v0.1.3...v0.1.4
