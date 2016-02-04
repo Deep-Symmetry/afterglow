@@ -63,6 +63,14 @@ detail how a frame of lighting control data is calculated and sent to
 the lights in the show. This is advanced, low-level information for
 people who are ready to create their own custom effect algorithms.
 
+{api-doc}index.html[API Documentation]:: Generated from Afterglow's
+Clojure source code, to provide information about all the namespaces
+and functions that make it work. The rest of the documentation
+sometimes links to related sections of the API documentation, and vice
+versa.
+
+<<videos#videos,Videos>>:: Show examples of Afterglow in action.
+
 ****
 
 image:assets/Afterglow-logo.png[Afterglow logo,128,127,align="center"]
