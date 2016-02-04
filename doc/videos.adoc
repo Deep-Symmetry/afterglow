@@ -10,14 +10,15 @@ This page collects performance videos that highlight Afterglow in
 action. If you have any to share, please post them to the
 https://gitter.im/brunchboy/afterglow[Afterglow room on Gitter]!
 
-+++<a href="https://vimeo.com/153492480"><img src="assets/Deepower-2015.png" align="right" alt="Deepower Live Report"></a>+++
-Since I have been too busy working on the software to get out and
-perform with it, I am deeply grateful to
++++<a href="https://vimeo.com/153492480"><img
+src="assets/Deepower-2015.png" align="right" alt="Deepower Live
+Report"></a>+++ Since I have been too busy working on the software to
+get out and perform with it, I am deeply grateful to
 https://github.com/dandaka[Vlad Rafeev] for getting this page started
 by sharing a video of a
 https://www.facebook.com/deepowerband/[Deepower audiovisual] show he
-lit using Afterglow in December, 2015, in Kaliningrad, Russia last
-month. He modestly says, “My first experience with lights, still a lot
-to accomplish.” And I say, there is a ton left to implement in the
-software too. But it is already fun to see
-https://vimeo.com/153492480[great video like this]!
+lit using Afterglow in Kaliningrad, in December, 2015. He modestly
+says, “My first experience with lights, still a lot to accomplish.”
+And I say, there is a ton left to implement in the software too. But
+it is already fun to see https://vimeo.com/153492480[great video like
+this]!
