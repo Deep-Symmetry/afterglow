@@ -10,7 +10,7 @@ This page collects performance videos that highlight Afterglow in
 action. If you have any to share, please post them to the
 https://gitter.im/brunchboy/afterglow[Afterglow room on Gitter]!
 
-https://vimeo.com/153492480[image:assets/Deepower-2015.png[Deepower Live Report,align="right",float="right"]]
++++<a href="https://vimeo.com/153492480"><img src="assets/Deepower-2015.png" align="right" alt="Deepower Live Report"></a>+++
 Since I have been too busy working on the software to get out and
 perform with it, I am deeply grateful to
 https://github.com/dandaka[Vlad Rafeev] for getting this page started
