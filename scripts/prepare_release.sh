@@ -30,6 +30,11 @@ mv project.clj project.clj.old
 sed "${sourceswap}" project.clj.old > project.clj
 rm -f project.clj.old
 
+# Update web interface documentation link
+webswap="s/\/github.com\/brunchboy\/afterglow\/tree${replace}/\/github.com\/brunchboy\/afterglow\/tree${version}/g"
+mv resources/templates/home.html resources/templates/home.html.old
+sed "${webswap}" resources/templates/home.html.old > resources/templates/home.html
+rm -f resources/templates/home.html.old
 
 # Update API documentation links
 mv README.md README.md.old
