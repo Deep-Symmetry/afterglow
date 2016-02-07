@@ -39,7 +39,7 @@
          :body (-> "templates/error.html" io/resource slurp)}))))
 
 (defn wrap-dev [handler]
-  (if (env :dev)
+  (if (Boolean/valueOf (env :dev))
     (-> handler
         wrap-error-page
         wrap-exceptions)

@@ -26,7 +26,7 @@
                  [ola-clojure "0.1.4"]
                  [selmer "1.0.0"]
                  [com.evocomputing/colors "1.0.3"]
-                 [environ "1.0.1"]
+                 [environ "1.0.2"]
                  [camel-snake-kebab "0.3.2"]
                  [com.taoensso/timbre "4.2.1"]
                  [com.taoensso/tower "3.0.2"]
@@ -63,11 +63,11 @@
                    :repl-options {:init-ns afterglow.examples
                                   :welcome (println "afterglow loaded.")}
                    :jvm-opts ["-XX:-OmitStackTraceInFastThrow" "-Dapple.awt.UIElement=true"]
-                   :env {:dev true}}
-             :uberjar {:env {:production true}
+                   :env {:dev "true"}}
+             :uberjar {:env {:production "true"}
                        :aot :all}}
-  :plugins [[lein-codox "0.9.1"]
-            [lein-environ "1.0.1"]]
+  :plugins [[lein-codox "0.9.3"]
+            [lein-environ "1.0.2"]]
 
   :codox {:output-path "api-doc"
           :source-uri "https://github.com/brunchboy/afterglow/blob/master/{filepath}#L{line}"

@@ -71,7 +71,7 @@
    {:appenders @appenders})
 
   ;; Disable Selmer's template cache in development mode
-  (if (env :dev) (parser/cache-off!)))
+  (if (Boolean/valueOf (env :dev)) (parser/cache-off!)))
 
 (defonce ^{:private true
            :doc "Used to ensure log initialization takes place exactly once."}

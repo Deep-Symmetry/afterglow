@@ -18,7 +18,7 @@
       (parser/render-file
         (assoc params
           :page template
-          :dev (env :dev)
+          :dev (Boolean/valueOf (env :dev))
           :csrf-token *anti-forgery-token*
           :servlet-context *servlet-context*
           :identity *identity*))
