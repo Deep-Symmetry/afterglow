@@ -40,7 +40,7 @@
                                                                       org.clojure/tools.reader
                                                                       org.clojure/java.classpath]]
                  [metosin/ring-http-response "0.6.5"]
-                 [prone "1.0.1"]
+                 [prone "1.0.2"]
                  [buddy "0.9.0"]
                  [instaparse "1.4.1"]
                  [http-kit "2.1.19"]]
