@@ -850,6 +850,11 @@ though.
   found on their
   [Downloads Page](http://global.novationmusic.com/support/product-downloads?product=Launchpad+Pro).
   Having someone loan me one would speed this up!
+- [ ] Novation is loaning me a Launchpad Mini! It
+  [seems](http://www.soundonsound.com/sos/jan14/articles/novation-launchpad.htm)
+  to use the same control messages as the Launchpad S, so refer to
+  that guide in trying to set it up. Has only red/green 2 bit LEDs, so
+  don&rsquo;t try to replicate colors from the cue grid.
 
 ### Ideas
 

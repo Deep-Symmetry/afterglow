@@ -87,19 +87,23 @@
   (colors/create-color :red))
 
 (def click-unsynced-beat-color
-  "The color of the tap tempo button when a beat is taking place."
+  "The color of the tap tempo button when synchronization is off and a
+  beat is taking place."
   (colors/create-color :blue))
 
 (def click-unsynced-off-beat-color
-  "The color of the tap tempo button when a beat is not taking place."
+  "The color of the tap tempo button when synchronization is off and a
+  beat is not taking place."
   (colors/darken click-unsynced-beat-color 45))
 
 (def click-synced-beat-color
-  "The color of the tap tempo button when a beat is taking place."
+  "The color of the tap tempo button when the metronome is
+  synchronzied and a beat is taking place."
   (colors/create-color :green))
 
 (def click-synced-off-beat-color
-  "The color of the tap tempo button when a beat is not taking place."
+  "The color of the tap tempo button when the metronome is
+  synchronized and a beat is not taking place."
   (colors/darken click-synced-beat-color 45))
 
 (defn led-color-values
