@@ -161,6 +161,13 @@
   aftertouch-mappings (atom {}))
 
 (defonce ^{:private true
+           :doc "Functions to be called when MIDI System Exclusive
+  messages arrive from particular input ports. A map whose keys are
+  the `javax.sound.midi.MidiDevice` on which the message should be
+  watched for. The values are sets of functions to be called with each
+  matching message."} sysex-mappings (atom {}))
+
+(defonce ^{:private true
            :doc "Functions to be called when any MIDI message at all
   is received."}
   global-handlers (atom #{}))
@@ -212,6 +219,15 @@
   are any handlers attached to it, and if so, calls them."
   [msg]
   (doseq [handler (get-in @aftertouch-mappings [(@midi-device-key (:device msg)) (:channel msg) (:note msg)])]
+    (handler msg)))
+
+(defn- sysex-message-handler
+  "Invoked whenever any midi input device being managed receives a
+  System Exclusive message. Checks whether there are any handlers
+  attached to it, and if so, calls them."
+  [msg]
+  (timbre/info "Got SysEx:" msg)
+  (doseq [handler (get-in @sysex-mappings [(@midi-device-key (:device msg))])]
     (handler msg)))
 
 (defonce
@@ -351,7 +367,7 @@
   (let [opened (midi/midi-in device)]
     (timbre/info "Opened MIDI input:" opened)
     (swap! midi-inputs assoc (@midi-device-key opened) opened)
-    (midi/midi-handle-events opened incoming-message-handler)
+    (midi/midi-handle-events opened incoming-message-handler incoming-message-handler)
     opened))
 
 (defn- connect-midi-out
@@ -427,6 +443,7 @@
     (swap! control-mappings dissoc device-key)
     (swap! note-mappings dissoc device-key)
     (swap! aftertouch-mappings dissoc device-key)
+    (swap! sysex-mappings dissoc device-key)
     (swap! clock-sources dissoc device-key)
     (swap! disconnected-device-handlers dissoc device-key)
     (.close (:device vanished)))
@@ -512,14 +529,19 @@
             ;; Then call specific message handlers that match
             (when @running
               (try
-                (if (#{:timing-clock :start :stop} (:status msg))
-                  (clock-message-handler msg)
-                  (case (:command msg)
-                    :control-change (do (cc-message-handler msg)
-                                        (clock-message-handler msg)) ; In case it is a Traktor beat phase message
-                    (:note-on :note-off) (note-message-handler msg)
-                    :poly-pressure (aftertouch-message-handler msg)
-                    nil))
+                (cond (#{:timing-clock :start :stop} (:status msg))
+                      (clock-message-handler msg)
+
+                      (= 0xf0 (:status msg))
+                      (sysex-message-handler msg)
+
+                      :else
+                      (case (:command msg)
+                        :control-change (do (cc-message-handler msg)
+                                            (clock-message-handler msg)) ; In case it is a Traktor beat phase message
+                        (:note-on :note-off) (note-message-handler msg)
+                        :poly-pressure (aftertouch-message-handler msg)
+                        nil))
                 (catch InterruptedException e
                   (timbre/info "MIDI event handler thread interrupted, shutting down.")
                   (reset! running false)
@@ -1033,6 +1055,33 @@
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
     (swap! aftertouch-mappings #(update-in % [(@midi-device-key (first result)) (int channel) (int note)] disj f))))
+
+(defn add-sysex-mapping
+  "Register a handler function `f` to be called whenever a MIDI System
+  Exclusive message is received from the specified device. Any
+  subsequent MIDI message which matches will be passed to `f` as its
+  single argument.
+
+  The first MIDI input source whose device matches the
+  `device-filter` (using [[filter-devices]]) will be chosen."
+  [device-filter f]
+  {:pre [(fn? f)]}
+  (let [result (filter-devices device-filter (open-inputs-if-needed!))]
+    (when (empty? result)
+      (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
+    (swap! sysex-mappings #(update-in % [(@midi-device-key (first result))] clojure.set/union #{f}))))
+
+(defn remove-sysex-mapping
+  "Unregister a handler previously registered
+  with [[add-sysex-mapping]].
+
+  The first MIDI input source whose device matches the
+  `device-filter` (using [[filter-devices]]) will be chosen."
+  [device-filter f]
+  (let [result (filter-devices device-filter (open-inputs-if-needed!))]
+    (when (empty? result)
+      (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
+    (swap! sysex-mappings #(update-in % [(@midi-device-key (first result))] disj f))))
 
 (defn watch-for
   "Watches for a device that matches
