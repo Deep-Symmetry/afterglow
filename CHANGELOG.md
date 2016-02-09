@@ -6,7 +6,21 @@ This change log follows the conventions of
 
 ## [Unreleased][unreleased]
 
-Nothing yet!
+### Added
+
+- Support for other members of the Novation Launchpad family of grid
+  controllers (underway).
+- Incoming MIDI System Exclusive messages can now be received and
+  delivered to handlers.
+- The identity of grid controllers is verified before binding to them,
+  by sending a MIDI Device Inquiry message and inspecting the
+  response.
+
+### Fixed
+
+- The documentation link in the web interface now takes you to the
+  proper version-specific tag of the documentation if it is a release
+  build. Snapshot builds take you to `master`.
 
 ## [0.2.0] - 2016-02-02
 
