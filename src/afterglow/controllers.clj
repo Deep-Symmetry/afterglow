@@ -479,3 +479,18 @@
   (update-beat-task)
   nil)
 
+(defn identify
+  "Sends a MIDI Device Inquiry message to the specified device and
+  returns the response, waiting for up to a second, and trying up to
+  three times if no response is received in that second. If the third
+  attempt fails, returns `nil`."
+  [port-in port-out]
+  (let [result (promise)
+        handler (fn [msg] (deliver result msg))]
+    (try
+      (amidi/add-sysex-mapping port-in handler)
+      (loop [attempts 0]
+        (overtone.midi/midi-sysex port-out [240 126 127 6 1 247])
+        (let [found (deref result 1000 nil)]
+          (or found (when (< attempts 2) (recur (inc attempts))))))
+      (finally (amidi/remove-sysex-mapping port-in handler)))))

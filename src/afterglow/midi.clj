@@ -226,7 +226,6 @@
   System Exclusive message. Checks whether there are any handlers
   attached to it, and if so, calls them."
   [msg]
-  (timbre/info "Got SysEx:" msg)
   (doseq [handler (get-in @sysex-mappings [(@midi-device-key (:device msg))])]
     (handler msg)))
 

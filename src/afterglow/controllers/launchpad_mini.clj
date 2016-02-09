@@ -80,3 +80,14 @@
   0x1c)
 
 
+(defn- valid-identity
+  "Checks that the device we are trying to bind to reports the proper
+  identity in response to a MIDI Device Inquiry message. This also
+  gives it time to boot if it has just powered on. Returns the
+  assigned device ID if the identity is correct, or logs an error and
+  returns nil if it is not."
+  [port-in port-out]
+  (let [ident (controllers/identify port-in port-out)]
+    (if (= (take 5 (drop 4 (:data ident))) '(0 32 41 54 0))
+      (aget (:data ident) 1)
+      (timbre/error "Device does not identify as a Launchpad Mini:" port-in))))

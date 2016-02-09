@@ -540,6 +540,17 @@
       (when (= (:command message) :note-off)
         (note-off-received controller message)))))
 
+(defn- start-interface
+  "Set up the thread which keeps the user interface up to date."
+  [controller]
+  (clear-interface controller)
+  (amidi/add-global-handler! @(:midi-handler controller))
+  (reset! (:task controller) (at-at/every (:refresh-interval controller)
+                                          #(update-interface controller)
+                                          controllers/pool
+                                          :initial-delay 10
+                                          :desc "Launchpad Pro interface update")))
+
 (defn- welcome-frame
   "Render a frame of the welcome animation, or if it is done, start
   the main interface update thread, and terminate the task running the
@@ -589,13 +600,7 @@
       
       :else
       (do
-        (clear-interface controller)
-        (amidi/add-global-handler! @(:midi-handler controller))
-        (reset! (:task controller) (at-at/every (:refresh-interval controller)
-                                                #(update-interface controller)
-                                                controllers/pool
-                                                :initial-delay 10
-                                                :desc "Launchpad Pro interface update"))
+        (start-interface controller)
         (at-at/kill @task)))
     (catch Throwable t
       (warn t "Animation frame failed")))
@@ -664,13 +669,25 @@
     (.addShutdownHook (Runtime/getRuntime) hook)
     hook))
 
+(defn- valid-identity
+  "Checks that the device we are trying to bind to reports the proper
+  identity in response to a MIDI Device Inquiry message. This also
+  gives it time to boot if it has just powered on. Returns the
+  assigned device ID if the identity is correct, or logs an error and
+  returns nil if it is not."
+  [port-in port-out]
+  (let [ident (controllers/identify port-in port-out)]
+    (if (= (take 5 (drop 4 (:data ident))) '(0 32 41 81 0))
+      (aget (:data ident) 1)
+      (timbre/error "Device does not identify as a Launchpad Pro:" port-in))))
+
 (defn bind-to-show
   "Establish a connection to the Novation Launchpad Pro, for managing
   the given show.
 
-  Initializes the display, and starts the UI updater thread. Since
-  SysEx messages are required for updating the display, if you are on
-  a Mac, you must
+  Makes sure it identifies as a Launchpad Pro, then initializes the
+  display and starts the UI updater thread. Since SysEx messages are
+  required for updating the display, if you are on a Mac, you must
   install [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J) to
   provide a working implementation. (If you need to work with Java
   1.6, you can instead
@@ -694,15 +711,19 @@
 
   If you want the user interface to be refreshed at a different rate
   than the default of fifteen times per second, pass your desired
-  number of milliseconds after `:refresh-interval`."
-  [show & {:keys [device-filter refresh-interval display-name]
+  number of milliseconds after `:refresh-interval`.
+
+  If you would like to skip the startup animation (for example because
+  the device has just powered on and run its own animation), pass
+  `true` after `:skip-animation`."
+  [show & {:keys [device-filter refresh-interval display-name skip-animation]
            :or   {device-filter    "Standalone Port"
                   refresh-interval (/ 1000 15)
                   display-name     "Launchpad Pro"}}]
   {:pre [(some? show)]}
   (let [port-in  (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
         port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))]
-    (if (every? some? [port-in port-out])
+    (if (and (every? some? [port-in port-out]) (valid-identity port-in port-out))
       (let [shift-mode (atom false)
             controller
             (with-meta
@@ -742,7 +763,9 @@
         ;; Set controller in Programmer mode
         (midi/midi-sysex (:port-out controller) [240 0 32 41 2 16 44 3 247])
         (clear-interface controller)
-        (welcome-animation controller)
+        (if skip-animation
+          (start-interface controller)
+          (welcome-animation controller))
         (swap! active-bindings assoc (:id controller) controller)
         (show/register-grid-controller @(:grid-controller-impl controller))
         (amidi/add-disconnected-device-handler! port-in #(deactivate controller :disconnected true))
@@ -787,20 +810,24 @@
     (letfn [(disconnection-handler []
               (reset! controller nil)
               (reset! idle true))
-            (connection-handler [device]
-              (when (compare-and-set! idle true false)
-                (if (and (nil? @controller) (seq (amidi/filter-devices device-filter [device])))
-                    (let [port-in (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
-                          port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))]
-                      (when (every? some? [port-in port-out])  ; We found our Launchpad! Bind to it in the background.
-                        (timbre/info "Auto-binding to" device)
-                        (future
-                          (Thread/sleep 3000)  ; Allow for firmware's own welcome animation
-                          (reset! controller (bind-to-show show :device-filter device-filter
-                                                           :refresh-interval refresh-interval
-                                                           :display-name display-name))
-                          (amidi/add-disconnected-device-handler! (:port-in @controller) disconnection-handler))))
-                    (reset! idle true))))
+            (connection-handler
+              ([device]
+               (connection-handler device true))
+              ([device wait-for-boot]
+               (when (compare-and-set! idle true false)
+                 (if (and (nil? @controller) (seq (amidi/filter-devices device-filter [device])))
+                   (let [port-in (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
+                         port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))]
+                     (when (every? some? [port-in port-out])  ; We found our Launchpad! Bind to it in the background.
+                       (timbre/info "Auto-binding to" device)
+                       (future
+                         (when wait-for-boot (Thread/sleep 3000)) ; Allow for firmware's own welcome animation
+                         (reset! controller (bind-to-show show :device-filter device-filter
+                                                          :refresh-interval refresh-interval
+                                                          :display-name display-name
+                                                          :skip-animation wait-for-boot))
+                         (amidi/add-disconnected-device-handler! (:port-in @controller) disconnection-handler))))
+                   (reset! idle true)))))
             (cancel-handler []
               (amidi/remove-new-device-handler! connection-handler)
               (when-let [device (:port-in @controller)]
@@ -808,7 +835,7 @@
 
       ;; See if our Launchpad seems to already be connected, and if so, bind to it right away.
       (when-let [found (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))]
-        (connection-handler found))
+        (connection-handler found false))
       
       ;; Set up to bind when connected in future.
       (amidi/add-new-device-handler! connection-handler)
