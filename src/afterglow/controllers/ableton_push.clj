@@ -1620,6 +1620,18 @@
     (.addShutdownHook (Runtime/getRuntime) hook)
     hook))
 
+(defn- valid-identity
+  "Checks that the device we are trying to bind to reports the proper
+  identity in response to a MIDI Device Inquiry message. This also
+  gives it time to boot if it has just powered on. Returns the
+  assigned device ID if the identity is correct, or logs an error and
+  returns nil if it is not."
+  [port-in port-out]
+  (let [ident (controllers/identify port-in port-out)]
+    (if (= (take 5 (drop 4 (:data ident))) '(71 21 0 25 0))
+      (aget (:data ident) 1)
+      (timbre/error "Device does not identify as an Ableton Push:" port-in))))
+
 (defn bind-to-show
   "Establish a connection to the Ableton Push, for managing the given
   show.
@@ -1658,7 +1670,7 @@
   {:pre [(some? show)]}
   (let [port-in  (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
         port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))]
-    (if (every? some? [port-in port-out])
+    (if (and (every? some? [port-in port-out]) (valid-identity port-in port-out))
       (let [shift-mode (atom false)
             controller
             (with-meta
