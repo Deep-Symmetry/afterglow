@@ -223,10 +223,10 @@
   active cues and overlays. On the Launchpad Pro this can be done with
   a single Sysex message, but doing that when there are few changes
   results in a visible flicker. So as a compromise, we update the
-  whole grid when six or more cells have changed, otherwise we send
+  whole grid when eight or more cells have changed, otherwise we send
   the differences individually."
   [controller]
-  (let [limit 6
+  (let [limit 8
         changes (count-grid-changes controller limit)]
     (if (>= changes limit)
       (midi/midi-sysex (:port-out controller)  ; Send the entire grid as one Sysex message
@@ -237,8 +237,8 @@
               y (range 8)]
         (let [color (get-in @(:next-grid-pads controller) [y x])]
           (when-not (= (get-in @(:last-grid-pads controller) [y x]) color)
-            (set-pad-color controller x y color)))))
-    (reset! (:last-grid-pads controller) @(:next-grid-pads controller))))
+            (set-pad-color controller x y color))))))
+  (reset! (:last-grid-pads controller) @(:next-grid-pads controller)))
 
 
 (defn- update-scroll-arrows
