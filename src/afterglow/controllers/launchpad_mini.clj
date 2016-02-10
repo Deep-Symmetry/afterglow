@@ -61,28 +61,45 @@
   0x0d)
 
 (def stop-active-color
-  "The color of the stop button when active."
+  "The color of the Stop button when active."
   0x0f)
 
-(def click-unsynced-beat-color
+(def shift-available-color
+  "The color of the Shift button when not active."
+  0x2d)
+
+(def shift-active-color
+  "The color of the Shift button when active."
+  0x3e)
+
+(def tempo-unsynced-beat-color
   "The color of the tap tempo button when synchronization is off and a
   beat is taking place."
   0x3e)
 
-(def click-unsynced-off-beat-color
+(def tempo-unsynced-off-beat-color
   "The color of the tap tempo button when synchronization is off and a
   beat is not taking place."
   0x1d)
 
-(def click-synced-beat-color
+(def tempo-synced-beat-color
   "The color of the tap tempo button when the metronome is
   synchronzied and a beat is taking place."
   0x3c)
 
-(def click-synced-off-beat-color
+(def tempo-synced-off-beat-color
   "The color of the tap tempo button when the metronome is
   synchronized and a beat is not taking place."
   0x1c)
+
+(def cue-held-color
+  "The color to light up a pad when a cue runs only as long as it is
+  held."
+  0x3f)
+
+(def cue-running-color
+  "The color to light up a pad when it is running a cue."
+  0x3c)
 
 (defn set-pad-color
   "Set one of the 64 grid pads to one of the color values specified
@@ -104,8 +121,6 @@
     (reset! (:origin controller) origin)
     (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :moved))))
 
-
-
 (defn clear-interface
   "Clears all illuminated buttons and pads."
   [controller]
@@ -114,15 +129,332 @@
   (reset! (:last-grid-pads controller) nil)
   (reset! (:last-control-buttons controller) {}))
 
+(defn- update-control-buttons
+  "Sees if any top row buttons have changed state since the last time
+  the interface was updated, and if so, sends the necessary MIDI
+  commands to update them on the Launchpad Mini."
+  [controller]
+  ;; First turn off any which were on before but no longer are
+  (doseq [[button old-color] @(:last-control-buttons controller)]
+    (when-not (get @(:next-control-buttons controller) button)
+      (midi/midi-control (:port-out controller) button button-off-color)))
+
+  ;; Then, light any currently active buttons
+  (doseq [[button color] @(:next-control-buttons controller)]
+    (when-not (= (get @(:last-control-buttons controller) button) color)
+      (midi/midi-control (:port-out controller) button color)))
+
+  ;; And record the new state for next time
+  (reset! (:last-control-buttons controller) @(:next-control-buttons controller)))
+
+(defn- render-cue-grid
+  "Figure out how the cue grid pads should be illuminated, based on
+  the currently active cues and a metronome snapshot identifying the
+  point in musical time at which the interface is being rendered.
+  Returns a vector of the rows, from bottom to top. Each row is a
+  vector of the colors in that row, from left to right."
+  [controller snapshot]
+  (let [[origin-x origin-y] @(:origin controller)
+        active-keys (show/active-effect-keys (:show controller))]
+    (vec (for [y (range 8)]
+           (vec (for [x (range 8)]
+                  (let [[cue active] (show/find-cue-grid-active-effect (:show controller) (+ x origin-x) (+ y origin-y))
+                        ending (and active (:ending active))
+                        color (when cue (if active
+                                          (if ending
+                                            (if (> (rhythm/snapshot-beat-phase snapshot) 0.4)
+                                              stop-available-color
+                                              stop-active-color)
+                                            cue-running-color)
+                                          (if (or (active-keys (:key cue))
+                                                  (seq (clojure.set/intersection active-keys (set (:end-keys cue)))))
+                                            button-dimmed-color button-available-color)))]
+                    (or color button-off-color))))))))
+
+(defn- update-cue-grid
+  "Set the colors of all the cue grid pads, based on the currently
+  active cues and overlays."
+  [controller]
+  (doseq [x (range 8)  ; Send the changes only, individually
+              y (range 8)]
+        (let [color (get-in @(:next-grid-pads controller) [y x])]
+          (when-not (= (get-in @(:last-grid-pads controller) [y x]) color)
+            (set-pad-color controller x y color)))))
+
+(defn- update-scroll-arrows
+  "Activate the arrow buttons for directions in which scrolling is
+  possible."
+  [controller]
+  (let [[origin-x origin-y] @(:origin controller)]
+    (when (pos? origin-x)
+      (swap! (:next-control-buttons controller) assoc (:left-arrow control-buttons) button-available-color))
+    (when (pos? origin-y)
+      (swap! (:next-control-buttons controller) assoc (:down-arrow control-buttons) button-available-color))
+    (when (> (- (controllers/grid-width (:cue-grid (:show controller))) origin-x) 7)
+      (swap! (:next-control-buttons controller) assoc (:right-arrow control-buttons) button-available-color))
+    (when (> (- (controllers/grid-height (:cue-grid (:show controller))) origin-y) 7)
+      (swap! (:next-control-buttons controller) assoc (:up-arrow control-buttons) button-available-color))))
+
+(defn add-button-held-feedback-overlay
+  "Adds a simple overlay which keeps a control button bright as long
+  as the user is holding it down."
+  ([controller button]
+   (add-button-held-feedback-overlay controller button button-active-color))
+  ([controller button color]
+   (controllers/add-control-held-feedback-overlay (:overlays controller) button
+                                                  (fn [_] (swap! (:next-control-buttons controller)
+                                                                 assoc button color)))))
+
+(defn- enter-stop-mode
+  "The user has asked to stop the show. Suspend its update task
+  and black it out until the stop button is pressed again."
+  [controller & {:keys [already-stopped]}]
+
+  (reset! (:stop-mode controller) true)
+  (when-not already-stopped
+    (with-show (:show controller)
+      (show/stop!)
+      (Thread/sleep (:refresh-interval (:show controller)))
+      (show/blackout-show)))
+
+  (controllers/add-overlay (:overlays controller)
+                           (reify controllers/IOverlay
+                             (captured-controls [this] #{(:stop control-buttons)})
+                             (captured-notes [this] #{})
+                             (adjust-interface [this _]
+                               (swap! (:next-control-buttons controller)
+                                      assoc (:stop control-buttons) stop-active-color)
+                               (with-show (:show controller)
+                                 (when (show/running?)
+                                   (reset! (:stop-mode controller) false))
+                                 @(:stop-mode controller)))
+                             (handle-control-change [this message]
+                               (when (pos? (:velocity message))
+                                 ;; End stop mode
+                                 (with-show (:show controller)
+                                   (show/start!))
+                                 (reset! (:stop-mode controller) false)
+                                 :done))
+                             (handle-note-on [this message])
+                             (handle-note-off [this message])
+                             (handle-aftertouch [this message]))))
+
+(defn- new-beat?
+  "Returns true if the metronome is reporting a different marker
+  position than the last time this function was called."
+  [controller marker]
+  (when (not= marker @(:last-marker controller))
+    (reset! (:last-marker controller) marker)))
+
+(defn- metronome-sync-colors
+  "Determine the colors to light the tap tempo button. Returns a tuple
+  of the off-beat and on-beat colors based on the current sync
+  status."
+  [controller]
+  (with-show (:show controller)
+    (if (= (:type (show/sync-status)) :manual)
+      [tempo-unsynced-off-beat-color tempo-unsynced-beat-color]
+      (if (:current (show/sync-status))
+        [tempo-synced-off-beat-color tempo-synced-beat-color]
+        [stop-available-color stop-active-color]))))
+
+(defn- update-interface
+  "Determine the desired current state of the interface, and send any
+  changes needed to get it to that state."
+  [controller]
+  (try
+    ;; Assume we are starting out with a blank interface.
+    (reset! (:next-control-buttons controller) {})
+
+    ;; If the show has stopped without us noticing, enter stop mode
+    (with-show (:show controller)
+      (when-not (or (show/running?) @(:stop-mode controller))
+        (enter-stop-mode controller :already-stopped true)))
+
+    ;; Reflect the shift button state
+    (swap! (:next-control-buttons controller)
+           assoc (:shift control-buttons)
+           (if @(:shift-mode controller) shift-active-color shift-available-color))
+
+    (update-scroll-arrows controller)
+
+    ;; Flash the tap tempo button on beats
+    (let [snapshot (rhythm/metro-snapshot (get-in controller [:show :metronome]))
+          marker (rhythm/snapshot-marker snapshot)
+          colors (metronome-sync-colors controller)]
+      (swap! (:next-control-buttons controller)
+             assoc (:tap-tempo control-buttons)
+             (if (or (new-beat? controller marker) (< (rhythm/snapshot-beat-phase snapshot) 0.15))
+               (second colors) (first colors)))
+
+      ;; Make the User button bright, since we live in User mode
+      (swap! (:next-control-buttons controller)
+             assoc (:device-mode control-buttons) button-active-color)
+
+      ;; Make the stop button visible, since we support it
+      (swap! (:next-control-buttons controller)
+             assoc (:stop control-buttons)
+             stop-available-color)
+
+      (reset! (:next-grid-pads controller) (render-cue-grid controller snapshot))
+
+      ;; Add any contributions from interface overlays, removing them
+      ;; if they report being finished.
+      (controllers/run-overlays (:overlays controller) snapshot))
+
+    (update-cue-grid controller)
+    (update-control-buttons controller)
+
+    (catch Throwable t
+      (warn t "Problem updating Launchpad Mini/S Interface"))))
 
 
+(defn- leave-user-mode
+  "The user has asked to exit user mode, so suspend our display
+  updates, and prepare to restore our state when user mode is pressed
+  again."
+  [controller]
+  (swap! (:task controller) (fn [task]
+                              (when task (at-at/kill task))
+                              nil))
+  (clear-interface controller)
+  ;; In case Live isn't running, leave the User Mode button dimly lit, to help the user return.
+  (midi/midi-control (:port-out controller) (:device-mode control-buttons) button-available-color)
+  (controllers/add-overlay (:overlays controller)
+                           (reify controllers/IOverlay
+                             (captured-controls [this] #{(:device-mode control-buttons)})
+                             (captured-notes [this] #{})
+                             (adjust-interface [this _]
+                               true)
+                             (handle-control-change [this message]
+                               (when (pos? (:velocity message))
+                                 ;; We are returning to user mode, restore display
+                                 (clear-interface controller)
+                                 (reset! (:task controller) (at-at/every (:refresh-interval controller)
+                                                                         #(update-interface controller)
+                                                                         controllers/pool
+                                                                         :initial-delay 250
+                                                                         :desc "Launchpad Mini/S interface update"))
+                                 :done))
+                             (handle-note-on [this message])
+                             (handle-note-off [this message])
+                             (handle-aftertouch [this message]))))
+
+(defn- control-change-received
+  "Process a control change message which was not handled by an
+  interface overlay."
+  [controller message]
+  (case (:note message)
+    108  ; Tap tempo button
+    (when (pos? (:velocity message))
+      ((:tempo-tap-handler controller)))
+
+    111  ; Stop button
+    (when (pos? (:velocity message))
+      (enter-stop-mode controller))
+
+    109 ; Shift button
+    (swap! (:shift-mode controller) (fn [_] (pos? (:velocity message))))
+
+    106 ; Left arrow
+    (when (pos? (:velocity message))
+      (let [[x y] @(:origin controller)]
+        (when (pos? x)
+          (move-origin controller [(max 0 (- x 8)) y])
+          (add-button-held-feedback-overlay controller (:left-arrow control-buttons)))))
+
+    107 ; Right arrow
+    (when (pos? (:velocity message))
+      (let [[x y] @(:origin controller)]
+        (when (> (- (controllers/grid-width (:cue-grid (:show controller))) x) 7)
+          (move-origin controller [(+ x 8) y])
+          (add-button-held-feedback-overlay controller (:right-arrow control-buttons)))))
+
+    104 ; Up arrow
+    (when (pos? (:velocity message))
+      (let [[x y] @(:origin controller)]
+        (when (> (- (controllers/grid-height (:cue-grid (:show controller))) y) 7)
+          (move-origin controller [x (+ y 8)])
+          (add-button-held-feedback-overlay controller (:up-arrow control-buttons)))))
+
+    105 ; Down arrow
+    (when (pos? (:velocity message))
+      (let [[x y] @(:origin controller)]
+        (when (pos? y)
+          (move-origin controller [x (max 0 (- y 8))])
+          (add-button-held-feedback-overlay controller (:down-arrow control-buttons)))))
+
+    110 ; Device mode button
+    (when (pos? (:velocity message))
+      (leave-user-mode controller))
+
+    ;; Something we don't care about
+    nil))
+
+(defn- note-to-cue-coordinates
+  "Translate the MIDI note associated with an incoming message to its
+  coordinates in the show cue grid."
+  [controller note]
+  (let [[origin-x origin-y] @(:origin controller)
+        pad-x (rem note 16)
+        pad-y (- 7 (quot note 16))
+        cue-x (+ origin-x pad-x)
+        cue-y (+ origin-y pad-y)]
+    [cue-x cue-y pad-x pad-y]))
+
+;; TODO: Add a way for user to configure default virtual velocity for whole grid and individual cells.
+(defn- cue-grid-pressed
+  "One of the pads in the 8x8 cue grid was pressed."
+  [controller note]
+  (let [[cue-x cue-y pad-x pad-y] (note-to-cue-coordinates controller note)
+        [cue active] (show/find-cue-grid-active-effect (:show controller) cue-x cue-y)]
+          (when cue
+            (with-show (:show controller)
+              (if (and active (not (:held cue)))
+                (show/end-effect! (:key cue))
+                (let [id (show/add-effect-from-cue-grid! cue-x cue-y)
+                      holding (and (:held cue) (not @(:shift-mode controller)))]
+                  (controllers/add-overlay
+                   (:overlays controller)
+                   (reify controllers/IOverlay
+                     (captured-controls [this] #{})
+                     (captured-notes [this] #{note})
+                     (adjust-interface [this snapshot]
+                       (when holding
+                         (swap! (:next-grid-pads controller) assoc-in [cue-y cue-x] cue-held-color))
+                       true)
+                     (handle-control-change [this message])
+                     (handle-note-on [this message])
+                     (handle-note-off [this message]
+                       (when holding
+                         (with-show (:show controller)
+                           (show/end-effect! (:key cue) :when-id id)))
+                       :done)
+                     (handle-aftertouch [this message])))))))))
+
+(defn- note-on-received
+  "Process a note-on message which was not handled by an interface
+  overlay."
+  [controller message]
+  (let [note (:note message)]
+    (when (and (<= (rem note 16) 7) (<= 0 (quot note 16) 7))
+      (cue-grid-pressed controller note))))
+
+(defn- note-off-received
+  "Process a note-off message which was not handled by an interface
+  overlay."
+  [controller message]
+  (case (:note message)
+
+    ;; Something we don't care about
+    nil))
 
 (defn- midi-received
   "Called whenever a MIDI message is received while the controller is
   active; checks if it came in on the right port, and if so, decides
   what should be done."
   [controller message]
-  #_(when (amidi/same-device? (:device message) (:port-in controller))
+  (when (amidi/same-device? (:device message) (:port-in controller))
     ;;(timbre/info message)
     (when-not (controllers/overlay-handled? (:overlays controller) message)
       (when (= (:command message) :control-change)
@@ -132,9 +464,86 @@
       (when (= (:command message) :note-off)
         (note-off-received controller message)))))
 
+(defn- start-interface
+  "Set up the thread which keeps the user interface up to date."
+  [controller]
+  (clear-interface controller)
+  (amidi/add-global-handler! @(:midi-handler controller))
+  (reset! (:task controller) (at-at/every (:refresh-interval controller)
+                                          #(update-interface controller)
+                                          controllers/pool
+                                          :initial-delay 10
+                                          :desc "Launchpad Mini/S interface update")))
 
+(defn- welcome-frame
+  "Render a frame of the welcome animation, or if it is done, start
+  the main interface update thread, and terminate the task running the
+  animation."
+  [controller counter task]
+  (try
+    (cond
+      true  ; TODO: For now we have no animation; remove this entry once the below is finished.
+      (do
+        (start-interface controller)
+        (at-at/kill @task))
 
+      (< @counter 8)
+      (doseq [y (range 0 (inc @counter))]
+        (let [color (colors/create-color
+                     :h 0 :s 0 :l (max 10 (- 75 (/ (* 50 (- @counter y)) 6))))]
+          (set-pad-color controller 3 y color)
+          (set-pad-color controller 4 y color)))
 
+      (< @counter 12)
+      (doseq [x (range 0 (- @counter 7))
+              y (range 0 8)]
+        (let [color (colors/create-color
+                     :h 340 :s 100 :l (- 75 (* (- @counter 8 x) 20)))]
+          (set-pad-color controller (- 3 x) y color)
+          (set-pad-color controller (+ 4 x) y color)))
+
+      (< @counter 15)
+      (doseq [y (range 0 8)]
+        (let [color (colors/create-color
+                     :h (* 13 (- @counter 11)) :s 100 :l 50)]
+          (set-pad-color controller (- @counter 7) y color)
+          (set-pad-color controller (- 14 @counter) y color)))
+
+      #_(= @counter 15)
+      #_(show-labels controller (colors/create-color :cyan))
+
+      (< @counter 24)
+      (doseq [x (range 0 8)]
+        (let [lightness-index (if (> x 3) (- 7 x) x)
+              lightness ([10 30 50 70] lightness-index)
+              color (colors/create-color
+                     :h (+ 60 (* 40 (- @counter 18))) :s 100 :l lightness)]
+          (set-pad-color controller x (- 23 @counter) color)))
+
+      #_(= @counter 24)
+      #_(show-labels controller (colors/create-color :blue))
+
+      (< @counter 33)
+      (doseq [x (range 0 8)]
+        (set-pad-color controller x (- 32 @counter) button-off-color))
+
+      :else
+      (do
+        (start-interface controller)
+        (at-at/kill @task)))
+    (catch Throwable t
+      (warn t "Animation frame failed")))
+
+  (swap! counter inc))
+
+(defn- welcome-animation
+  "Provide a fun animation to make it clear the Launchpad Mini/S is
+  online."
+  [controller]
+  (let [counter (atom 0)
+        task (atom nil)]
+    (reset! task (at-at/every 50 #(welcome-frame controller counter task)
+                              controllers/pool))))
 
 (defn deactivate
   "Deactivates a controller interface, killing its update thread and
@@ -167,7 +576,7 @@
         (clear-interface controller)
         ;; Leave the User button bright, in case the user has Live
         ;; running and wants to be able to see how to return to it.
-        (set-control-button-color controller (:user-mode control-buttons) button-available-color))
+        (set-control-button-color controller (:device-mode control-buttons) button-available-color))
 
       ;; Cancel any UI overlays which were in effect
       (reset! (:overlays controller) (controllers/create-overlay-state))
@@ -282,7 +691,7 @@
                   (add-move-listener [this f] (swap! (:move-listeners controller) conj f))
                   (remove-move-listener [this f] (swap! (:move-listeners controller) disj f))))
         (clear-interface controller)
-        #_(if skip-animation
+        (if skip-animation
           (start-interface controller)
           (welcome-animation controller))
         (swap! active-bindings assoc (:id controller) controller)
