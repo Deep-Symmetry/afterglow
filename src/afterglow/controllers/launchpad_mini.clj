@@ -649,15 +649,17 @@
            :or   {device-filter    "Mini"
                   refresh-interval (/ 1000 15)}}]
   {:pre [(some? show)]}
-  (let [port-in  (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
-        port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))
-        [_  model] (when (every? some? [port-in port-out]) (valid-identity port-in port-out))]
+  (let [port-in        (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
+        port-out       (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))
+        [device model] (when (every? some? [port-in port-out]) (valid-identity port-in port-out))]
     (if model
       (let [shift-mode (atom false)
             controller
             (with-meta
               {:id                   (swap! controller-counter inc)
                :display-name         (or display-name model)
+               :model                model
+               :device-id            device
                :show                 show
                :origin               (atom [0 0])
                :refresh-interval     refresh-interval

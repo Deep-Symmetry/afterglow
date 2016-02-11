@@ -1669,13 +1669,15 @@
                   display-name     "Ableton Push"}}]
   {:pre [(some? show)]}
   (let [port-in  (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
-        port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))]
-    (if (and (every? some? [port-in port-out]) (valid-identity port-in port-out))
+        port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))
+        device   (when (every? some? [port-in port-out]) (valid-identity port-in port-out))]
+    (if device
       (let [shift-mode (atom false)
             controller
             (with-meta
               {:id                   (swap! controller-counter inc)
                :display-name         display-name
+               :device-id            device
                :show                 show
                :origin               (atom [0 0])
                :effect-offset        (atom 0)
