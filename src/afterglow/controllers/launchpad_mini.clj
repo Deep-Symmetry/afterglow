@@ -509,6 +509,9 @@
         (= @counter 12)
         (show-round-buttons controller 0x3e)
 
+        (< @counter 20)
+        nil  ; Just stall
+
         (= @counter 20)
         (show-round-buttons controller 0x1f)
 
