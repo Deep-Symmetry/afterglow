@@ -121,6 +121,16 @@
     (reset! (:origin controller) origin)
     (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :moved))))
 
+(defn show-round-buttons
+  "Illuminates all round buttons."
+  ([controller]
+   (show-round-buttons controller button-available-color))
+  ([controller color]
+   (doseq [[_ control] control-buttons]
+     (midi/midi-control (:port-out controller) control color))
+   (doseq [note (range 8 121 16)]
+     (midi/midi-note-on (:port-out controller) note color))))
+
 (defn clear-interface
   "Clears all illuminated buttons and pads."
   [controller]
@@ -480,59 +490,38 @@
   the main interface update thread, and terminate the task running the
   animation."
   [controller counter task]
-  (try
-    (cond
-      true  ; TODO: For now we have no animation; remove this entry once the below is finished.
-      (do
-        (start-interface controller)
-        (at-at/kill @task))
+  (let [gradient [0x3c 0x3e 0x3f 0x2f 0x1f 0x0f 0x0e 0x0d]]
+    (try
+      (cond
+        (< @counter 8)
+        (doseq [y (range 0 (inc @counter))]
+          (let [color (gradient (- @counter y))]
+            (set-pad-color controller 3 y color)
+            (set-pad-color controller 4 y color)))
 
-      (< @counter 8)
-      (doseq [y (range 0 (inc @counter))]
-        (let [color (colors/create-color
-                     :h 0 :s 0 :l (max 10 (- 75 (/ (* 50 (- @counter y)) 6))))]
-          (set-pad-color controller 3 y color)
-          (set-pad-color controller 4 y color)))
+        (< @counter 12)
+        (doseq [x (range 0 (- @counter 7))
+                y (range 0 8)]
+          (let [color (gradient (- @counter 8 x))]
+            (set-pad-color controller (- 3 x) y color)
+            (set-pad-color controller (+ 4 x) y color)))
 
-      (< @counter 12)
-      (doseq [x (range 0 (- @counter 7))
-              y (range 0 8)]
-        (let [color (colors/create-color
-                     :h 340 :s 100 :l (- 75 (* (- @counter 8 x) 20)))]
-          (set-pad-color controller (- 3 x) y color)
-          (set-pad-color controller (+ 4 x) y color)))
+        (= @counter 12)
+        (show-round-buttons controller 0x3e)
 
-      (< @counter 15)
-      (doseq [y (range 0 8)]
-        (let [color (colors/create-color
-                     :h (* 13 (- @counter 11)) :s 100 :l 50)]
-          (set-pad-color controller (- @counter 7) y color)
-          (set-pad-color controller (- 14 @counter) y color)))
+        (= @counter 20)
+        (show-round-buttons controller 0x1f)
 
-      #_(= @counter 15)
-      #_(show-labels controller (colors/create-color :cyan))
+        (< @counter 29)
+        (doseq [x (range 0 8)]
+          (set-pad-color controller x (- 28 @counter) button-off-color))
 
-      (< @counter 24)
-      (doseq [x (range 0 8)]
-        (let [lightness-index (if (> x 3) (- 7 x) x)
-              lightness ([10 30 50 70] lightness-index)
-              color (colors/create-color
-                     :h (+ 60 (* 40 (- @counter 18))) :s 100 :l lightness)]
-          (set-pad-color controller x (- 23 @counter) color)))
-
-      #_(= @counter 24)
-      #_(show-labels controller (colors/create-color :blue))
-
-      (< @counter 33)
-      (doseq [x (range 0 8)]
-        (set-pad-color controller x (- 32 @counter) button-off-color))
-
-      :else
-      (do
-        (start-interface controller)
-        (at-at/kill @task)))
-    (catch Throwable t
-      (warn t "Animation frame failed")))
+        :else
+        (do
+          (start-interface controller)
+          (at-at/kill @task)))
+      (catch Throwable t
+        (warn t "Animation frame failed"))))
 
   (swap! counter inc))
 
@@ -606,9 +595,11 @@
   assigned device ID if the identity is correct, or logs an error and
   returns nil if it is not."
   [port-in port-out]
-  (let [ident (controllers/identify port-in port-out)]
-    (if (= (take 5 (drop 4 (:data ident))) '(0 32 41 54 0))
-      (aget (:data ident) 1)
+  (let [ident-msg (controllers/identify port-in port-out)
+        ident (take 5 (drop 4 (:data ident-msg)))]
+    (if (or (= ident '(0 32 41 54 0))   ; Launchpad Mini
+            (= ident '(0 32 41 32 0)))  ; Launchpad S
+      (aget (:data ident-msg) 1)
       (timbre/error "Device does not identify as a Launchpad Mini:" port-in))))
 
 (defn bind-to-show
