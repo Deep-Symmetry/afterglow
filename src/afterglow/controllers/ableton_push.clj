@@ -1774,7 +1774,7 @@
                     (let [port-in (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
                           port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))]
                       (when (every? some? [port-in port-out])  ; We found our Push! Bind to it in the background.
-                        (timbre/info "Auto-binding to" device)
+                        (timbre/info "Auto-binding to Ableton Push" device)
                         (future
                           (reset! controller (bind-to-show show :device-filter device-filter
                                                            :refresh-interval refresh-interval
