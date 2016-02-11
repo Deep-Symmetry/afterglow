@@ -149,8 +149,8 @@
   "Clears all illuminated buttons and pads."
   [controller]
   (midi/midi-sysex (:port-out controller) [240 0 32 41 2 16 14 0 247])  ; Sets all LEDs to blackout
-  (reset! (:last-grid-pads controller) nil)
-  (reset! (:last-text-buttons controller) {}))  ; Note that no buttons are lit
+  (reset! (:last-grid-pads controller) nil)  ; Note that no buttons are lit
+  (reset! (:last-text-buttons controller) {}))
 
 (defn- update-text-buttons
   "Sees if any labeled buttons have changed state since the last time
@@ -240,7 +240,6 @@
             (set-pad-color controller x y color))))))
   (reset! (:last-grid-pads controller) @(:next-grid-pads controller)))
 
-
 (defn- update-scroll-arrows
   "Activate the arrow buttons for directions in which scrolling is
   possible."
@@ -279,7 +278,7 @@
 
   (controllers/add-overlay (:overlays controller)
                            (reify controllers/IOverlay
-                             (captured-controls [this] #{8})
+                             (captured-controls [this] #{(:stop control-buttons)})
                              (captured-notes [this] #{})
                              (adjust-interface [this _]
                                (swap! (:next-text-buttons controller)
@@ -368,6 +367,11 @@
     (catch Throwable t
       (warn t "Problem updating Launchpad Pro Interface"))))
 
+(defn- set-layout
+  "Put the controller in the Programmer layout, which is most
+  appropriate for Afterglow."
+  [controller]
+  (midi/midi-sysex (:port-out controller) [240 0 32 41 2 16 44 3 247]))
 
 (defn- leave-user-mode
   "The user has asked to exit user mode, so suspend our display
@@ -382,13 +386,14 @@
   (set-led-color controller (:user-mode control-buttons) button-available-color)
   (controllers/add-overlay (:overlays controller)
                            (reify controllers/IOverlay
-                             (captured-controls [this] #{98})
+                             (captured-controls [this] #{(:user-mode control-buttons)})
                              (captured-notes [this] #{})
                              (adjust-interface [this _]
                                true)
                              (handle-control-change [this message]
                                (when (pos? (:velocity message))
-                                 ;; We are returning to user mode, restore display
+                                 ;; We are returning to user mode, restore layout and display
+                                 (set-layout controller)
                                  (clear-interface controller)
                                  (reset! (:task controller) (at-at/every (:refresh-interval controller)
                                                                          #(update-interface controller)
@@ -762,8 +767,7 @@
                   (current-left [this x] (move-origin controller (assoc @(:origin controller) 0 x)))
                   (add-move-listener [this f] (swap! (:move-listeners controller) conj f))
                   (remove-move-listener [this f] (swap! (:move-listeners controller) disj f))))
-        ;; Set controller in Programmer mode
-        (midi/midi-sysex (:port-out controller) [240 0 32 41 2 16 44 3 247])
+        (set-layout controller)
         (clear-interface controller)
         (if skip-animation
           (start-interface controller)
@@ -821,7 +825,7 @@
                    (let [port-in (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
                          port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))]
                      (when (every? some? [port-in port-out])  ; We found our Launchpad! Bind to it in the background.
-                       (timbre/info "Auto-binding to" device)
+                       (timbre/info "Auto-binding to Launchpad Pro" device)
                        (future
                          (when wait-for-boot (Thread/sleep 3000)) ; Allow for firmware's own welcome animation
                          (reset! controller (bind-to-show show :device-filter device-filter

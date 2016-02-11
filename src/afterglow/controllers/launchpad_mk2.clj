@@ -1,13 +1,16 @@
-(ns afterglow.controllers.launchpad-mini
-  "Allows the Novation Launchpad Mini and Launchpad S to be used as
-  control surfaces for Afterglow."
-  {:author "James Elliott"}
+(ns afterglow.controllers.launchpad-mk2
+    "Allows the Novation Launchpad Mk2 to be used as a control surface
+  for Afterglow." {:author "James Elliott"}
   (:require [afterglow.controllers :as controllers]
             [afterglow.controllers.tempo :as tempo]
+            [afterglow.effects.cues :as cues]
             [afterglow.midi :as amidi]
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
             [afterglow.show-context :refer [with-show]]
+            [afterglow.util :as util]
+            [clojure.math.numeric-tower :as math]
+            [com.evocomputing.colors :as colors]
             [overtone.at-at :as at-at]
             [overtone.midi :as midi]
             [taoensso.timbre :as timbre :refer [warn]]
@@ -32,82 +35,62 @@
    :right-arrow 107
    :tap-tempo   108
    :shift       109
-   :device-mode 110
+   :user-mode   110
    :stop        111})
 
 (def button-off-color
   "The color of buttons that are completely off."
-  0x0c)
-
-(def button-dimmed-color
-  "The color of buttons that can be pressed but are in conflict or
-  otherwise backgrounded."
-  0x1d)
+  (colors/create-color :black))
 
 (def button-available-color
   "The color of buttons that can be pressed but haven't yet been."
-  0x2e)
+  (colors/darken (colors/create-color :orange) 45))
 
 (def button-active-color
   "The color of an available button that is currently being pressed."
-  0x3f)
+  (colors/create-color :yellow))
 
 (def stop-available-color
   "The color of the Stop button when not active."
-  0x0d)
+  (colors/darken (colors/create-color :red) 45))
 
 (def stop-active-color
-  "The color of the Stop button when active."
-  0x0f)
-
-(def shift-available-color
-  "The color of the Shift button when not active."
-  0x2d)
-
-(def shift-active-color
-  "The color of the Shift button when active."
-  0x3e)
+  "The color of the stop button when active."
+  (colors/create-color :red))
 
 (def tempo-unsynced-beat-color
   "The color of the tap tempo button when synchronization is off and a
   beat is taking place."
-  0x3e)
+  (colors/create-color :blue))
 
 (def tempo-unsynced-off-beat-color
   "The color of the tap tempo button when synchronization is off and a
   beat is not taking place."
-  0x1d)
+  (colors/darken tempo-unsynced-beat-color 45))
 
 (def tempo-synced-beat-color
   "The color of the tap tempo button when the metronome is
   synchronzied and a beat is taking place."
-  0x3c)
+  (colors/create-color :green))
 
 (def tempo-synced-off-beat-color
   "The color of the tap tempo button when the metronome is
   synchronized and a beat is not taking place."
-  0x1c)
+  (colors/darken tempo-synced-beat-color 45))
 
-(def cue-held-color
-  "The color to light up a pad when a cue runs only as long as it is
-  held."
-  0x3f)
-
-(def cue-running-color
-  "The color to light up a pad when it is running a cue."
-  0x3c)
+(defn set-led-color
+  "Set one of the LEDs, given its control or note number, to a
+  specific RGB color."
+  [controller led color]
+  (let [r (colors/red color)
+        g (colors/green color)
+        b (colors/blue color)]
+    (midi/midi-sysex (:port-out controller) [240 0 32 41 2 24 10 led (quot r 4) (quot g 4) (quot b 4) 247])))
 
 (defn set-pad-color
-  "Set one of the 64 grid pads to one of the color values specified
-  above."
+  "Set the color of one of the 64 touch pads to a specific RGB color."
   [controller x y color]
-  (midi/midi-note-on (:port-out controller) (+ x (- 112 (* y 16))) color))
-
-(defn set-control-button-color
-  "Set one of the top row of control buttons to one of the color
-  values specified above."
-  [controller button color]
-  (midi/midi-control (:port-out controller) button color))
+  (set-led-color controller (+ 11 x (* y 10)) color))
 
 (defn- move-origin
   "Changes the origin of the controller, notifying any registered
@@ -122,36 +105,35 @@
   ([controller]
    (show-round-buttons controller button-available-color))
   ([controller color]
-   (doseq [[_ control] control-buttons]
-     (midi/midi-control (:port-out controller) control color))
-   (doseq [note (range 8 121 16)]
-     (midi/midi-note-on (:port-out controller) note color))))
+   (doseq [[_ led] control-buttons]
+     (set-led-color controller led color))
+   (doseq [led (range 19 90 10)]
+     (set-led-color controller led color))))
 
 (defn clear-interface
   "Clears all illuminated buttons and pads."
   [controller]
-  (midi/midi-control (:port-out controller) 0 0)
-  (midi/midi-control (:port-out controller) 0 1)
+  (midi/midi-sysex (:port-out controller) [240 0 32 41 2 24 14 0 247])  ; Sets all LEDs to blackout
   (reset! (:last-grid-pads controller) nil)  ; Note that no buttons are lit
-  (reset! (:last-control-buttons controller) {}))
+  (reset! (:last-round-buttons controller) {}))
 
-(defn- update-control-buttons
-  "Sees if any top row buttons have changed state since the last time
+(defn- update-round-buttons
+  "Sees if any round buttons have changed state since the last time
   the interface was updated, and if so, sends the necessary MIDI
-  commands to update them on the Launchpad Mini."
+  commands to update them on the Launchpad Mk2."
   [controller]
   ;; First turn off any which were on before but no longer are
-  (doseq [[button old-color] @(:last-control-buttons controller)]
-    (when-not (get @(:next-control-buttons controller) button)
-      (midi/midi-control (:port-out controller) button button-off-color)))
+  (doseq [[button old-color] @(:last-round-buttons controller)]
+    (when-not (get @(:next-round-buttons controller) button)
+      (set-led-color controller button button-off-color)))
 
   ;; Then, light any currently active buttons
-  (doseq [[button color] @(:next-control-buttons controller)]
-    (when-not (= (get @(:last-control-buttons controller) button) color)
-      (midi/midi-control (:port-out controller) button color)))
+  (doseq [[button color] @(:next-round-buttons controller)]
+    (when-not (= (get @(:last-round-buttons controller) button) color)
+      (set-led-color controller button color)))
 
   ;; And record the new state for next time
-  (reset! (:last-control-buttons controller) @(:next-control-buttons controller)))
+  (reset! (:last-round-buttons controller) @(:next-round-buttons controller)))
 
 (defn- render-cue-grid
   "Figure out how the cue grid pads should be illuminated, based on
@@ -166,26 +148,36 @@
            (vec (for [x (range 8)]
                   (let [[cue active] (show/find-cue-grid-active-effect (:show controller) (+ x origin-x) (+ y origin-y))
                         ending (and active (:ending active))
-                        color (when cue (if active
-                                          (if ending
-                                            (if (> (rhythm/snapshot-beat-phase snapshot) 0.4)
-                                              stop-available-color
-                                              stop-active-color)
-                                            cue-running-color)
-                                          (if (or (active-keys (:key cue))
-                                                  (seq (clojure.set/intersection active-keys (set (:end-keys cue)))))
-                                            button-dimmed-color button-available-color)))]
+                        base-color (when cue (cues/current-cue-color cue active (:show controller) snapshot))
+                        l-boost (when base-color (if (zero? (colors/saturation base-color)) 2.0 0.0))
+                        color (when base-color
+                                (colors/create-color
+                                 :h (colors/hue base-color)
+                                 :s (colors/saturation base-color)
+                                 ;; Figure the brightness. Active, non-ending cues are full brightness;
+                                 ;; when ending, they blink between middle and low. If they are not active,
+                                 ;; they are at middle brightness unless there is another active effect with
+                                 ;; the same keyword, in which case they are dim.
+                                 :l (+ (if active
+                                         (if ending
+                                           (if (> (rhythm/snapshot-beat-phase snapshot) 0.4) 5 22)
+                                           60)
+                                         (if (or (active-keys (:key cue))
+                                                 (seq (clojure.set/intersection active-keys (set (:end-keys cue)))))
+                                           5 22))
+                                       l-boost)))]
                     (or color button-off-color))))))))
 
 (defn- update-cue-grid
   "Set the colors of all the cue grid pads, based on the currently
   active cues and overlays."
   [controller]
-  (doseq [x (range 8)  ; Send the changes only, individually
-              y (range 8)]
-        (let [color (get-in @(:next-grid-pads controller) [y x])]
-          (when-not (= (get-in @(:last-grid-pads controller) [y x]) color)
-            (set-pad-color controller x y color)))))
+  (doseq [x (range 8)
+          y (range 8)]
+    (let [color (get-in @(:next-grid-pads controller) [y x])]
+      (when-not (= (get-in @(:last-grid-pads controller) [y x]) color)
+        (set-pad-color controller x y color))))
+  (reset! (:last-grid-pads controller) @(:next-grid-pads controller)))
 
 (defn- update-scroll-arrows
   "Activate the arrow buttons for directions in which scrolling is
@@ -193,13 +185,13 @@
   [controller]
   (let [[origin-x origin-y] @(:origin controller)]
     (when (pos? origin-x)
-      (swap! (:next-control-buttons controller) assoc (:left-arrow control-buttons) button-available-color))
+      (swap! (:next-round-buttons controller) assoc (:left-arrow control-buttons) button-available-color))
     (when (pos? origin-y)
-      (swap! (:next-control-buttons controller) assoc (:down-arrow control-buttons) button-available-color))
+      (swap! (:next-round-buttons controller) assoc (:down-arrow control-buttons) button-available-color))
     (when (> (- (controllers/grid-width (:cue-grid (:show controller))) origin-x) 7)
-      (swap! (:next-control-buttons controller) assoc (:right-arrow control-buttons) button-available-color))
+      (swap! (:next-round-buttons controller) assoc (:right-arrow control-buttons) button-available-color))
     (when (> (- (controllers/grid-height (:cue-grid (:show controller))) origin-y) 7)
-      (swap! (:next-control-buttons controller) assoc (:up-arrow control-buttons) button-available-color))))
+      (swap! (:next-round-buttons controller) assoc (:up-arrow control-buttons) button-available-color))))
 
 (defn add-button-held-feedback-overlay
   "Adds a simple overlay which keeps a control button bright as long
@@ -208,7 +200,7 @@
    (add-button-held-feedback-overlay controller button button-active-color))
   ([controller button color]
    (controllers/add-control-held-feedback-overlay (:overlays controller) button
-                                                  (fn [_] (swap! (:next-control-buttons controller)
+                                                  (fn [_] (swap! (:next-round-buttons controller)
                                                                  assoc button color)))))
 
 (defn- enter-stop-mode
@@ -228,7 +220,7 @@
                              (captured-controls [this] #{(:stop control-buttons)})
                              (captured-notes [this] #{})
                              (adjust-interface [this _]
-                               (swap! (:next-control-buttons controller)
+                               (swap! (:next-round-buttons controller)
                                       assoc (:stop control-buttons) stop-active-color)
                                (with-show (:show controller)
                                  (when (show/running?)
@@ -270,7 +262,7 @@
   [controller]
   (try
     ;; Assume we are starting out with a blank interface.
-    (reset! (:next-control-buttons controller) {})
+    (reset! (:next-round-buttons controller) {})
 
     ;; If the show has stopped without us noticing, enter stop mode
     (with-show (:show controller)
@@ -278,9 +270,9 @@
         (enter-stop-mode controller :already-stopped true)))
 
     ;; Reflect the shift button state
-    (swap! (:next-control-buttons controller)
+    (swap! (:next-round-buttons controller)
            assoc (:shift control-buttons)
-           (if @(:shift-mode controller) shift-active-color shift-available-color))
+           (if @(:shift-mode controller) button-active-color button-available-color))
 
     (update-scroll-arrows controller)
 
@@ -288,17 +280,17 @@
     (let [snapshot (rhythm/metro-snapshot (get-in controller [:show :metronome]))
           marker (rhythm/snapshot-marker snapshot)
           colors (metronome-sync-colors controller)]
-      (swap! (:next-control-buttons controller)
+      (swap! (:next-round-buttons controller)
              assoc (:tap-tempo control-buttons)
              (if (or (new-beat? controller marker) (< (rhythm/snapshot-beat-phase snapshot) 0.15))
                (second colors) (first colors)))
 
       ;; Make the User button bright, since we live in User mode
-      (swap! (:next-control-buttons controller)
-             assoc (:device-mode control-buttons) button-active-color)
+      (swap! (:next-round-buttons controller)
+             assoc (:user-mode control-buttons) button-active-color)
 
       ;; Make the stop button visible, since we support it
-      (swap! (:next-control-buttons controller)
+      (swap! (:next-round-buttons controller)
              assoc (:stop control-buttons)
              stop-available-color)
 
@@ -309,11 +301,16 @@
       (controllers/run-overlays (:overlays controller) snapshot))
 
     (update-cue-grid controller)
-    (update-control-buttons controller)
+    (update-round-buttons controller)
 
     (catch Throwable t
-      (warn t "Problem updating Launchpad Mini/S Interface"))))
+      (warn t "Problem updating Launchpad Mk2 Interface"))))
 
+(defn- set-layout
+  "Put the controller in the User 2 layout, which is most appropriate
+  for Afterglow."
+  [controller]
+  (midi/midi-sysex (:port-out controller) [240 0 32 41 2 24 34 2 247]))
 
 (defn- leave-user-mode
   "The user has asked to exit user mode, so suspend our display
@@ -325,22 +322,23 @@
                               nil))
   (clear-interface controller)
   ;; In case Live isn't running, leave the User Mode button dimly lit, to help the user return.
-  (midi/midi-control (:port-out controller) (:device-mode control-buttons) button-available-color)
+  (set-led-color controller (:user-mode control-buttons) button-available-color)
   (controllers/add-overlay (:overlays controller)
                            (reify controllers/IOverlay
-                             (captured-controls [this] #{(:device-mode control-buttons)})
+                             (captured-controls [this] #{(:user-mode control-buttons)})
                              (captured-notes [this] #{})
                              (adjust-interface [this _]
                                true)
                              (handle-control-change [this message]
                                (when (pos? (:velocity message))
-                                 ;; We are returning to user mode, restore display
+                                 ;; We are returning to user mode, restore layout and display
+                                 (set-layout controller)
                                  (clear-interface controller)
                                  (reset! (:task controller) (at-at/every (:refresh-interval controller)
                                                                          #(update-interface controller)
                                                                          controllers/pool
                                                                          :initial-delay 250
-                                                                         :desc "Launchpad Mini/S interface update"))
+                                                                         :desc "Launchpad Mk2 interface update"))
                                  :done))
                              (handle-note-on [this message])
                              (handle-note-off [this message])
@@ -390,7 +388,7 @@
           (move-origin controller [x (max 0 (- y 8))])
           (add-button-held-feedback-overlay controller (:down-arrow control-buttons)))))
 
-    110 ; Device mode button
+    110 ; User mode button
     (when (pos? (:velocity message))
       (leave-user-mode controller))
 
@@ -401,14 +399,14 @@
   "Translate the MIDI note associated with an incoming message to its
   coordinates in the show cue grid."
   [controller note]
-  (let [[origin-x origin-y] @(:origin controller)
-        pad-x (rem note 16)
-        pad-y (- 7 (quot note 16))
+  (let [base (- note 11)
+        [origin-x origin-y] @(:origin controller)
+        pad-x (rem base 10)
+        pad-y (quot base 10)
         cue-x (+ origin-x pad-x)
         cue-y (+ origin-y pad-y)]
     [cue-x cue-y pad-x pad-y]))
 
-;; TODO: Add a way for user to configure default virtual velocity for whole grid and individual cells.
 (defn- cue-grid-pressed
   "One of the pads in the 8x8 cue grid was pressed."
   [controller note]
@@ -427,7 +425,13 @@
                      (captured-notes [this] #{note})
                      (adjust-interface [this snapshot]
                        (when holding
-                         (swap! (:next-grid-pads controller) assoc-in [cue-y cue-x] cue-held-color))
+                         (let [active (show/find-effect (:key cue))
+                               base-color (cues/current-cue-color cue active (:show controller) snapshot)
+                               color (colors/create-color
+                                      :h (colors/hue base-color)
+                                      :s (colors/saturation base-color)
+                                      :l 75)]
+                           (swap! (:next-grid-pads controller) assoc-in [cue-y cue-x] color)))
                        true)
                      (handle-control-change [this message])
                      (handle-note-on [this message])
@@ -443,7 +447,7 @@
   overlay."
   [controller message]
   (let [note (:note message)]
-    (when (and (<= (rem note 16) 7) (<= 0 (quot note 16) 7))
+    (when (and (<= 1 (rem note 10) 8) (<= 1 (quot note 10) 8))
       (cue-grid-pressed controller note))))
 
 (defn- note-off-received
@@ -479,54 +483,66 @@
                                           #(update-interface controller)
                                           controllers/pool
                                           :initial-delay 10
-                                          :desc "Launchpad Mini/S interface update")))
+                                          :desc "Launchpad Mk2 interface update")))
 
 (defn- welcome-frame
   "Render a frame of the welcome animation, or if it is done, start
   the main interface update thread, and terminate the task running the
   animation."
   [controller counter task]
-  (let [gradient [0x3c 0x3e 0x3f 0x2f 0x1f 0x0f 0x0e 0x0d]]
-    (try
-      (cond
-        (< @counter 8)
-        (doseq [y (range 0 (inc @counter))]
-          (let [color (gradient (- @counter y))]
-            (set-pad-color controller 3 y color)
-            (set-pad-color controller 4 y color)))
+  (try
+    (cond
+      (< @counter 8)
+      (doseq [y (range 0 (inc @counter))]
+        (let [color (colors/create-color
+                     :h 0 :s 0 :l (max 10 (- 75 (/ (* 50 (- @counter y)) 6))))]
+          (set-pad-color controller 3 y color)
+          (set-pad-color controller 4 y color)))
 
-        (< @counter 12)
-        (doseq [x (range 0 (- @counter 7))
-                y (range 0 8)]
-          (let [color (gradient (- @counter 8 x))]
-            (set-pad-color controller (- 3 x) y color)
-            (set-pad-color controller (+ 4 x) y color)))
+      (< @counter 12)
+      (doseq [x (range 0 (- @counter 7))
+              y (range 0 8)]
+        (let [color (colors/create-color
+                     :h 340 :s 100 :l (- 75 (* (- @counter 8 x) 20)))]
+          (set-pad-color controller (- 3 x) y color)
+          (set-pad-color controller (+ 4 x) y color)))
 
-        (= @counter 12)
-        (show-round-buttons controller 0x3e)
+      (< @counter 15)
+      (doseq [y (range 0 8)]
+        (let [color (colors/create-color
+                     :h (* 13 (- @counter 11)) :s 100 :l 50)]
+          (set-pad-color controller (- @counter 7) y color)
+          (set-pad-color controller (- 14 @counter) y color)))
 
-        (< @counter 20)
-        nil  ; Just stall
+      (= @counter 15)
+      (show-round-buttons controller (colors/create-color :cyan))
 
-        (= @counter 20)
-        (show-round-buttons controller 0x1f)
+      (< @counter 24)
+      (doseq [x (range 0 8)]
+        (let [lightness-index (if (> x 3) (- 7 x) x)
+              lightness ([10 30 50 70] lightness-index)
+              color (colors/create-color
+                     :h (+ 60 (* 40 (- @counter 18))) :s 100 :l lightness)]
+          (set-pad-color controller x (- 23 @counter) color)))
 
-        (< @counter 29)
-        (doseq [x (range 0 8)]
-          (set-pad-color controller x (- 28 @counter) button-off-color))
+      (= @counter 24)
+      (show-round-buttons controller (colors/create-color :blue))
 
-        :else
-        (do
-          (start-interface controller)
-          (at-at/kill @task)))
-      (catch Throwable t
-        (warn t "Animation frame failed"))))
+      (< @counter 33)
+      (doseq [x (range 0 8)]
+        (set-pad-color controller x (- 32 @counter) button-off-color))
+
+      :else
+      (do
+        (start-interface controller)
+        (at-at/kill @task)))
+    (catch Throwable t
+      (warn t "Animation frame failed")))
 
   (swap! counter inc))
 
 (defn- welcome-animation
-  "Provide a fun animation to make it clear the Launchpad Mini/S is
-  online."
+  "Provide a fun animation to make it clear the Launchpad Mk2 is online."
   [controller]
   (let [counter (atom 0)
         task (atom nil)]
@@ -545,8 +561,8 @@
   by the watcher, if it is currently connected, and cancel the
   watcher itself. In such cases, `:disconnected` is meaningless."
   [controller & {:keys [disconnected] :or {disconnected false}}]
-  {:pre [(have? #{:launchpad-mini :launchpad-mini-watcher} (type controller))]}
-  (if (= (type controller) :launchpad-mini-watcher)
+  {:pre [(have? #{:launchpad-mk2 :launchpad-mk2-watcher} (type controller))]}
+  (if (= (type controller) :launchpad-mk2-watcher)
     (do ((:cancel controller))  ; Shut down the watcher
         (when-let [watched-controller @(:controller controller)]
           (deactivate watched-controller)))  ; And deactivate the controller it was watching for
@@ -564,7 +580,7 @@
         (clear-interface controller)
         ;; Leave the User button bright, in case the user has Live
         ;; running and wants to be able to see how to return to it.
-        (set-control-button-color controller (:device-mode control-buttons) button-available-color))
+        (set-led-color controller (:user-mode control-buttons) (colors/create-color :white)))
 
       ;; Cancel any UI overlays which were in effect
       (reset! (:overlays controller) (controllers/create-overlay-state))
@@ -580,7 +596,7 @@
   (doseq [[_ controller] @active-bindings]
     (deactivate controller)))
 
-(defonce ^{:doc "Deactivates any Launchpad Mini bindings when Java is shutting down."
+(defonce ^{:doc "Deactivates any Launchpad Mk2 bindings when Java is shutting down."
            :private true}
   shutdown-hook
   (let [hook (Thread. deactivate-all)]
@@ -590,29 +606,22 @@
 (defn- valid-identity
   "Checks that the device we are trying to bind to reports the proper
   identity in response to a MIDI Device Inquiry message. This also
-  gives it time to boot if it has just powered on. Returns a vector
-  containing the assigned device ID and model name if the identity is
-  supported, or logs an error and returns nil if it is not."
+  gives it time to boot if it has just powered on. Returns the
+  assigned device ID if the identity is correct, or logs an error and
+  returns nil if it is not."
   [port-in port-out]
-  (let [ident-msg (controllers/identify port-in port-out)
-        ident (take 5 (drop 4 (:data ident-msg)))
-        device (aget (:data ident-msg) 1)]
-    (cond (= ident '(0 32 41 54 0))
-          [device "Launchpad Mini"]
-
-          (= ident '(0 32 41 32 0))
-          [device "Launchpad S"]
-
-          :else
-          (timbre/error "Device does not identify as a Launchpad Mini or S:" port-in))))
+  (let [ident (controllers/identify port-in port-out)]
+    (if (= (take 5 (drop 4 (:data ident))) '(0 32 41 105 0))
+      (aget (:data ident) 1)
+      (timbre/error "Device does not identify as a Launchpad Mk2:" port-in))))
 
 (defn bind-to-show
-  "Establish a connection to the Novation Launchpad Mini, for managing
+  "Establish a connection to the Novation Launchpad Mk2, for managing
   the given show.
 
-  Makes sure it identifies as a Launchpad Mini, then initializes the
+  Makes sure it identifies as a Launchpad Mk2, then initializes the
   display and starts the UI updater thread. Since SysEx messages are
-  required for communicating with it, if you are on a Mac, you must
+  required for updating the display, if you are on a Mac, you must
   install [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J) to
   provide a working implementation. (If you need to work with Java
   1.6, you can instead
@@ -620,17 +629,17 @@
   longer developed, and does not support connecting or disconnecting
   MIDI devices after Java has started.)
 
-  If you have more than one Launchpad Mini connected, or have renamed
-  how it appears in your list of MIDI devices, you need to supply a
-  value after `:device-filter` which identifies the ports to be used
-  to communicate with the Launchpad you want this function to use. The
+  If you have more than one Launchpad connected, or have renamed how
+  it appears in your list of MIDI devices, you need to supply a value
+  after `:device-filter` which identifies the ports to be used to
+  communicate with the Launchpad you want this function to use. The
   values returned by [[afterglow.midi/open-inputs-if-needed!]]
   and [[afterglow.midi/open-outputs-if-needed!]] will be searched, and
   the first port that matches with [[filter-devices]] will be used.
 
   The controller will be identified in the user interface (for the
-  purposes of linking it to the web cue grid) as \"Launchpad Mini\".
-  If you would like to use a different name (for example, if have more
+  purposes of linking it to the web cue grid) as \"Launchpad Mk2\". If
+  you would like to use a different name (for example, if have more
   than one Launchpad), you can pass in a custom value after
   `:display-name`.
 
@@ -642,19 +651,19 @@
   the device has just powered on and run its own animation), pass
   `true` after `:skip-animation`."
   [show & {:keys [device-filter refresh-interval display-name skip-animation]
-           :or   {device-filter    "Mini"
-                  refresh-interval (/ 1000 15)}}]
-  {:pre [(have? some? show)]}
-  (let [port-in        (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
-        port-out       (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))
-        [device model] (when (every? some? [port-in port-out]) (valid-identity port-in port-out))]
-    (if model
+           :or   {device-filter    "Mk2"
+                  refresh-interval (/ 1000 15)
+                  display-name     "Launchpad Mk2"}}]
+  {:pre [(some? show)]}
+  (let [port-in  (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
+        port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))
+        device   (when (every? some? [port-in port-out]) (valid-identity port-in port-out))]
+    (if device
       (let [shift-mode (atom false)
             controller
             (with-meta
               {:id                   (swap! controller-counter inc)
-               :display-name         (or display-name model)
-               :model                model
+               :display-name         display-name
                :device-id            device
                :show                 show
                :origin               (atom [0 0])
@@ -662,8 +671,8 @@
                :port-in              port-in
                :port-out             port-out
                :task                 (atom nil)
-               :last-control-buttons (atom {})
-               :next-control-buttons (atom {})
+               :last-round-buttons    (atom {})
+               :next-round-buttons    (atom {})
                :last-grid-pads       (atom nil)
                :next-grid-pads       (atom nil)
                :shift-mode           shift-mode
@@ -674,7 +683,7 @@
                :overlays             (controllers/create-overlay-state)
                :move-listeners       (atom #{})
                :grid-controller-impl (atom nil)}
-              {:type :launchpad-mini})]
+              {:type :launchpad-pro})]
         (reset! (:midi-handler controller) (partial midi-received controller))
         (reset! (:grid-controller-impl controller)
                 (reify controllers/IGridController
@@ -687,6 +696,7 @@
                   (current-left [this x] (move-origin controller (assoc @(:origin controller) 0 x)))
                   (add-move-listener [this f] (swap! (:move-listeners controller) conj f))
                   (remove-move-listener [this f] (swap! (:move-listeners controller) disj f))))
+        (set-layout controller)
         (clear-interface controller)
         (if skip-animation
           (start-interface controller)
@@ -695,18 +705,19 @@
         (show/register-grid-controller @(:grid-controller-impl controller))
         (amidi/add-disconnected-device-handler! port-in #(deactivate controller :disconnected true))
         controller)
-      (timbre/error "Unable to find Launchpad Mini" (amidi/describe-device-filter device-filter)))))
+      (timbre/error "Unable to find Launchpad Mk2" (amidi/describe-device-filter device-filter)))))
 
 (defn auto-bind
-  "Watches for a Novation Launchpad Mini controller to be connected,
+  "Watches for a Novation Launchpad Mk2 controller to be connected,
   and as soon as it is, binds it to the specified show
   using [[bind-to-show]]. If that controller ever gets disconnected,
   it will be re-bound once it reappears. Returns a watcher structure
-  which can be passed to [[deactivate]] if you would like to stop it
-  watching for reconnections. The underlying controller mapping, once
-  bound, can be accessed through the watcher's `:controller` key.
+  which can be passed to [[deactivate]] if you would like to
+  stop it watching for reconnections. The underlying controller
+  mapping, once bound, can be accessed through the watcher's
+  `:controller` key.
 
-  If you have more than one Launchpad Mini that might beconnected, or
+  If you have more than one Launchpad Mk2 that might beconnected, or
   have renamed how it appears in your list of MIDI devices, you need
   to supply a value after `:device-filter` which identifies the ports
   to be used to communicate with the Launchpad you want this function
@@ -717,7 +728,7 @@
 
   Once bound, the controller will be identified in the user
   interface (for the purposes of linking it to the web cue grid) as
-  \"Launchpad Pro\". If you would like to use a different name (for
+  \"Launchpad Mk2\". If you would like to use a different name (for
   example, if you have more than one Launchpad), you can pass in a
   custom value after `:display-name`.
 
@@ -725,9 +736,10 @@
   than the default of fifteen times per second, pass your desired
   number of milliseconds after `:refresh-interval`."
   [show & {:keys [device-filter refresh-interval display-name]
-           :or {device-filter "Mini"
-                refresh-interval (/ 1000 15)}}]
-  {:pre [(have? some? show)]}
+           :or {device-filter "Mk2"
+                refresh-interval (/ 1000 15)
+                display-name "Launchpad Mk2"}}]
+  {:pre [(some? show)]}
   (let [idle (atom true)
         controller (atom nil)]
     (letfn [(disconnection-handler []
@@ -742,7 +754,7 @@
                    (let [port-in (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
                          port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))]
                      (when (every? some? [port-in port-out])  ; We found our Launchpad! Bind to it in the background.
-                       (timbre/info "Auto-binding to Launchpad Mini or S" device)
+                       (timbre/info "Auto-binding to Launchpad Mk2" device)
                        (future
                          (when wait-for-boot (Thread/sleep 3000)) ; Allow for firmware's own welcome animation
                          (reset! controller (bind-to-show show :device-filter device-filter
@@ -768,4 +780,4 @@
         {:controller controller
          :device-filter device-filter
          :cancel cancel-handler}
-        {:type :launchpad-mini-watcher}))))
+        {:type :launchpad-mk2-watcher}))))
