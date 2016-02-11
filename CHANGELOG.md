@@ -9,7 +9,10 @@ This change log follows the conventions of
 ### Added
 
 - Support for other members of the Novation Launchpad family of grid
-  controllers (underway).
+  controllers:
+  - Launchpad Mini
+  - Launchpad S (untested, but basis for Mini, which works)
+  - Launchpad Mk2 (untested)
 - Incoming MIDI System Exclusive messages can now be received and
   delivered to handlers.
 - The identity of grid controllers is verified before binding to them,
