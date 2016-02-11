@@ -1,17 +1,13 @@
 (ns afterglow.controllers.launchpad-mini
-  "Allows the Novation Launchpad Mini to be used as a control surface
-  for Afterglow."
+  "Allows the Novation Launchpad Mini and Launchpad S to be used as
+  control surfaces for Afterglow."
   {:author "James Elliott"}
   (:require [afterglow.controllers :as controllers]
             [afterglow.controllers.tempo :as tempo]
-            [afterglow.effects.cues :as cues]
             [afterglow.midi :as amidi]
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
             [afterglow.show-context :refer [with-show]]
-            [afterglow.util :as util]
-            [clojure.math.numeric-tower :as math]
-            [com.evocomputing.colors :as colors]
             [overtone.at-at :as at-at]
             [overtone.midi :as midi]
             [taoensso.timbre :as timbre :refer [warn]]
@@ -549,7 +545,7 @@
   by the watcher, if it is currently connected, and cancel the
   watcher itself. In such cases, `:disconnected` is meaningless."
   [controller & {:keys [disconnected] :or {disconnected false}}]
-  {:pre [(#{:launchpad-mini :launchpad-mini-watcher} (type controller))]}
+  {:pre [(have? #{:launchpad-mini :launchpad-mini-watcher} (type controller))]}
   (if (= (type controller) :launchpad-mini-watcher)
     (do ((:cancel controller))  ; Shut down the watcher
         (when-let [watched-controller @(:controller controller)]
@@ -648,7 +644,7 @@
   [show & {:keys [device-filter refresh-interval display-name skip-animation]
            :or   {device-filter    "Mini"
                   refresh-interval (/ 1000 15)}}]
-  {:pre [(some? show)]}
+  {:pre [(have? some? show)]}
   (let [port-in        (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
         port-out       (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))
         [device model] (when (every? some? [port-in port-out]) (valid-identity port-in port-out))]
@@ -731,7 +727,7 @@
   [show & {:keys [device-filter refresh-interval display-name]
            :or {device-filter "Mini"
                 refresh-interval (/ 1000 15)}}]
-  {:pre [(some? show)]}
+  {:pre [(have? some? show)]}
   (let [idle (atom true)
         controller (atom nil)]
     (letfn [(disconnection-handler []
