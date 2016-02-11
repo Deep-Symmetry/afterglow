@@ -594,16 +594,21 @@
 (defn- valid-identity
   "Checks that the device we are trying to bind to reports the proper
   identity in response to a MIDI Device Inquiry message. This also
-  gives it time to boot if it has just powered on. Returns the
-  assigned device ID if the identity is correct, or logs an error and
-  returns nil if it is not."
+  gives it time to boot if it has just powered on. Returns a vector
+  containing the assigned device ID and model name if the identity is
+  supported, or logs an error and returns nil if it is not."
   [port-in port-out]
   (let [ident-msg (controllers/identify port-in port-out)
-        ident (take 5 (drop 4 (:data ident-msg)))]
-    (if (or (= ident '(0 32 41 54 0))   ; Launchpad Mini
-            (= ident '(0 32 41 32 0)))  ; Launchpad S
-      (aget (:data ident-msg) 1)
-      (timbre/error "Device does not identify as a Launchpad Mini:" port-in))))
+        ident (take 5 (drop 4 (:data ident-msg)))
+        device (aget (:data ident-msg) 1)]
+    (cond (= ident '(0 32 41 54 0))
+          [device "Launchpad Mini"]
+
+          (= ident '(0 32 41 32 0))
+          [device "Launchpad S"]
+
+          :else
+          (timbre/error "Device does not identify as a Launchpad Mini or S:" port-in))))
 
 (defn bind-to-show
   "Establish a connection to the Novation Launchpad Mini, for managing
@@ -642,17 +647,17 @@
   `true` after `:skip-animation`."
   [show & {:keys [device-filter refresh-interval display-name skip-animation]
            :or   {device-filter    "Mini"
-                  refresh-interval (/ 1000 15)
-                  display-name     "Launchpad Mini"}}]
+                  refresh-interval (/ 1000 15)}}]
   {:pre [(some? show)]}
   (let [port-in  (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
-        port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))]
-    (if (and (every? some? [port-in port-out]) (valid-identity port-in port-out))
+        port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))
+        [_  model] (when (every? some? [port-in port-out]) (valid-identity port-in port-out))]
+    (if model
       (let [shift-mode (atom false)
             controller
             (with-meta
               {:id                   (swap! controller-counter inc)
-               :display-name         display-name
+               :display-name         (or display-name model)
                :show                 show
                :origin               (atom [0 0])
                :refresh-interval     refresh-interval
@@ -723,8 +728,7 @@
   number of milliseconds after `:refresh-interval`."
   [show & {:keys [device-filter refresh-interval display-name]
            :or {device-filter "Mini"
-                refresh-interval (/ 1000 15)
-                display-name "Launchpad Mini"}}]
+                refresh-interval (/ 1000 15)}}]
   {:pre [(some? show)]}
   (let [idle (atom true)
         controller (atom nil)]
@@ -740,7 +744,7 @@
                    (let [port-in (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
                          port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))]
                      (when (every? some? [port-in port-out])  ; We found our Launchpad! Bind to it in the background.
-                       (timbre/info "Auto-binding to Launchpad Mini" device)
+                       (timbre/info "Auto-binding to Launchpad Mini or S" device)
                        (future
                          (when wait-for-boot (Thread/sleep 3000)) ; Allow for firmware's own welcome animation
                          (reset! controller (bind-to-show show :device-filter device-filter
