@@ -24,12 +24,19 @@ This change log follows the conventions of
 - The documentation link in the web interface now takes you to the
   proper version-specific tag of the documentation if it is a release
   build. Snapshot builds take you to `master`.
+- All MIDI event handler functions are now called in a context which
+  properly recovers from exceptions at the level of that individual
+  handler, so other handlers will not be affected.
 
 ### Changed
 
 - The code to gracefully shut down active controller bindings, which
   was becoming duplicated with every new controller mapping created,
   has been pulled up into the shared controllers namespace.
+- The ability to register an interest in all events from a specific
+  MIDI device was added, and the controller mapping implementations
+  were updated to take advantage of this, so they no longer need to
+  receive and filter out all the events from other devices.
 
 ## [0.2.0] - 2016-02-02
 
