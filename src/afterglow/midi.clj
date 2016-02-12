@@ -469,6 +469,7 @@
   (let [device-key (@midi-device-key vanished)]
     (swap! midi-inputs dissoc device-key)
     (swap! synced-metronomes dissoc device-key)
+    (swap! device-mappings dissoc device-key)
     (swap! control-mappings dissoc device-key)
     (swap! note-mappings dissoc device-key)
     (swap! aftertouch-mappings dissoc device-key)
@@ -541,8 +542,10 @@
               (when @running
                 (run-message-handler handler msg running)))
             
-            ;; Then call any registered port listeners for the port on which
-            ;; it arrived
+            ;; Then call any registered port listeners for the port on which it arrived
+            (doseq [handler (get-in @device-mappings [(@midi-device-key (:device msg))])]
+              (when @running
+                (run-message-handler handler msg running)))
 
             ;; Then call specific message handlers that match
             (when @running
@@ -973,7 +976,33 @@
                   :device (select-keys (:device found) [:name :description]))))
        (finally (remove-global-handler! message-finder))))))
 
-;; TODO: apply to all matching input sources? Along with remove, and note & aftertouch messages?
+;; TODO: apply to all matching input sources? Along with remove, and control, note & aftertouch messages?
+(defn add-device-mapping
+  "Register a handler function `f` to be called whenever any MIDI
+  message is received from the specified device. Any subsequent MIDI
+  message which matches will be passed to `f` as its single argument.
+
+  The first MIDI input source whose device matches the
+  `device-filter` (using [[filter-devices]]) will be chosen."
+  [device-filter f]
+  {:pre [(fn? f)]}
+  (let [result (filter-devices device-filter (open-inputs-if-needed!))]
+    (when (empty? result)
+      (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
+    (swap! device-mappings #(update-in % [(@midi-device-key (first result))] clojure.set/union #{f}))))
+
+(defn remove-device-mapping
+  "Unregister a handler previously registered with
+  [[add-device-mapping]].
+
+  The first MIDI input source whose device matches the
+  `device-filter` (using [[filter-devices]]) will be chosen."
+  [device-filter f]
+  (let [result (filter-devices device-filter (open-inputs-if-needed!))]
+    (when (empty? result)
+      (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
+    (swap! device-mappings #(update-in % [(@midi-device-key (first result))] disj f))))
+
 (defn add-control-mapping
   "Register a handler function `f` to be called whenever a MIDI
   controller change message is received from the specified device, on
