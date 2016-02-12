@@ -683,7 +683,7 @@
                :overlays             (controllers/create-overlay-state)
                :move-listeners       (atom #{})
                :grid-controller-impl (atom nil)}
-              {:type :launchpad-pro})]
+              {:type :launchpad-mk2})]
         (reset! (:midi-handler controller) (partial midi-received controller))
         (reset! (:grid-controller-impl controller)
                 (reify controllers/IGridController
