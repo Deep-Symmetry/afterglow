@@ -13,3 +13,7 @@
 /research
 /target
 logs/*.log*
+.idea/
+*.iml
+*.ipr
+*.iws
