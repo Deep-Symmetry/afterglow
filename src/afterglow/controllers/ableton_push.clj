@@ -1681,7 +1681,7 @@
                :grid-controller-impl (atom nil)}
               {:type :ableton-push})]
         (reset! (:midi-handler controller) (partial midi-received controller))
-        (reset! (:deactivate-handler controller) (partial deactivate controller))
+        (reset! (:deactivate-handler controller) #(deactivate controller))
         (reset! (:grid-controller-impl controller)
                 (reify controllers/IGridController
                   (display-name [this] (:display-name controller))
