@@ -124,27 +124,42 @@
   {:pre [(= (type device) :midi-device) (fn? f)]}
   (swap! disconnected-device-handlers #(update-in % [(@midi-device-key device)] disj f)))
 
+(defonce ^:private ^{:doc "The queue used to hand MIDI events from the
+  extension thread to our world, since there seem to be classloader
+  compatibility issues, and the Java3d classes are not available to
+  threads that are directly dispatching MIDI events. Although we
+  allocate a capacity of 100 elements, it is expected that the queue
+  will be drained much more quickly than events arrive, and so it will
+  almost always be empty."} midi-queue
+  (LinkedBlockingDeque. 100))
+
+(defonce ^:private ^{:doc "The thread used to hand MIDI events from
+  the extension thread to our world, since there seem to be
+  classloader compatibility issues, and the Java3d classes are not
+  available to threads that are directly dispatching MIDI events."}
+  midi-transfer-thread
+  (atom nil))
+
 (defonce ^{:private true
            :doc "The metronomes which are being synced to MIDI clock
-  pulses. A map whose keys are the `javax.sound.midi.MidiDevice` on
-  which clock pulses are being received, and whose values are in turn
-  maps whose keys are the metronomes being synced to pulses from that
-  device, and whose values are the sync function to call when each
-  pulse is received."} synced-metronomes (atom {}))
+  pulses. A map whose keys are the [[midi-device-key]] on which clock
+  pulses are being received, and whose values are in turn maps whose
+  keys are the metronomes being synced to pulses from that device, and
+  whose values are the sync function to call when each pulse is
+  received."} synced-metronomes (atom {}))
 
 (defonce ^{:private true
            :doc "Functions to be called when MIDI Controller Change
   messages arrive from particular input ports. A set of nested maps
-  whose keys are the `javax.sound.midi.MidiDevice` on which the
-  message should be watched for, the channel to watch, and the
-  controller number to watch for. The values are sets of functions to
-  be called with each matching message."}
-  control-mappings (atom {}))
+  whose keys are the [[midi-device-key]] on which the message should
+  be watched for, the channel to watch, and the controller number to
+  watch for. The values are sets of functions to be called with each
+  matching message."} control-mappings (atom {}))
 
 (defonce ^{:private true
            :doc "Functions to be called when MIDI Note messages arrive
   from particular input ports. A set of nested maps whose keys are the
-  `javax.sound.midi.MidiDevice` on which the message should be watched
+  [[midi-device-key]] on which the message should be watched
   for, the channel to watch, and the note number to watch for. The
   values are sets of functions to be called with each matching
   message."}
@@ -153,19 +168,26 @@
 (defonce ^{:private true
            :doc "Functions to be called when MIDI Aftertouch
   (polyphonic key pressure) messages arrive from particular input
-  ports. A set of nested maps whose keys are the
-  `javax.sound.midi.MidiDevice` on which the message should be watched
-  for, the channel to watch, and the note number to watch for. The
-  values are sets of functions to be called with each matching
-  message."}
-  aftertouch-mappings (atom {}))
+  ports. A set of nested maps whose keys are the [[midi-device-key]]
+  on which the message should be watched for, the channel to watch,
+  and the note number to watch for. The values are sets of functions
+  to be called with each matching message."} aftertouch-mappings (atom
+  {}))
 
 (defonce ^{:private true
            :doc "Functions to be called when MIDI System Exclusive
   messages arrive from particular input ports. A map whose keys are
-  the `javax.sound.midi.MidiDevice` on which the message should be
-  watched for. The values are sets of functions to be called with each
-  matching message."} sysex-mappings (atom {}))
+  the [[midi-device-key]] on which the message should be watched for.
+  The values are sets of functions to be called with each matching
+  message."} sysex-mappings (atom {}))
+
+(defonce ^{:private true
+           :doc "Functions to be called when any MIDI message is
+  received from a specific device. A map whose keys are the
+  [[midi-device-key]] on which the message should be watched for, and
+  whose values are sets of functions to be called with each matching
+  message."}
+  device-mappings (atom {}))
 
 (defonce ^{:private true
            :doc "Functions to be called when any MIDI message at all
@@ -186,48 +208,72 @@
   [f]
   (swap! global-handlers disj f))
 
+(defn- run-message-handler
+  "Invokes a registered MIDI message handler function with an incoming
+  message that has been identified as appropriate to send to it. If an
+  exception is thrown during that invocation, responds appropriately,
+  including shutting down the message handler thread if it was
+  interrupted. This is done by setting the `running` atom to `false`."
+  [handler msg running]
+  (try
+    ;; TODO: This is not really safe because if the handler blocks it ties up all future
+    ;;       MIDI dispatch. Should do in a future with a timeout? Don't want to use a million
+    ;;       threads for this either, so a core.async channel approach is probably best.
+    ;;
+    (handler msg)
+    (catch InterruptedException e
+      (timbre/info "MIDI event handler thread interrupted, shutting down.")
+      (reset! running false)
+      (reset! midi-transfer-thread nil))
+    (catch Throwable t
+      (timbre/error t "Problem running MIDI event handler."))))
 
 (defn- clock-message-handler
   "Invoked whenever any midi input device being managed receives a
   clock message. Checks whether there are any metronomes being synced
   to that device, and if so, passes along the event."
-  [msg]
+  [msg running]
   (doseq [handler (vals (get @synced-metronomes (@midi-device-key (:device msg))))]
-    (handler msg)))
+    (when @running
+      (run-message-handler handler msg running))))
 
 (defn- cc-message-handler
   "Invoked whenever any midi input device being managed receives a
   control change message. Checks whether there are any handlers (such
   as for launching cues or mapping show variables) attached to it, and
   if so, calls them."
-  [msg]
+  [msg running]
   (doseq [handler (get-in @control-mappings [(@midi-device-key (:device msg)) (:channel msg) (:note msg)])]
-    (handler msg)))
+    (when @running
+      (run-message-handler handler msg running))))
 
 (defn- note-message-handler
   "Invoked whenever any midi input device being managed receives a
   note message. Checks whether there are any handlers (such as for
   launching cues or mapping show variables) attached to it, and if so,
   calls them."
-  [msg]
+  [msg running]
   (doseq [handler (get-in @note-mappings [(@midi-device-key (:device msg)) (:channel msg) (:note msg)])]
-    (handler msg)))
+    (when @running
+      (run-message-handler handler msg running))))
 
 (defn- aftertouch-message-handler
   "Invoked whenever any midi input device being managed receives an
   aftertouch (polyphonic key pressure) message. Checks whether there
   are any handlers attached to it, and if so, calls them."
-  [msg]
+  [msg running]
   (doseq [handler (get-in @aftertouch-mappings [(@midi-device-key (:device msg)) (:channel msg) (:note msg)])]
-    (handler msg)))
+    (when @running
+      (run-message-handler handler msg running))))
 
 (defn- sysex-message-handler
   "Invoked whenever any midi input device being managed receives a
   System Exclusive message. Checks whether there are any handlers
   attached to it, and if so, calls them."
-  [msg]
+  [msg running]
   (doseq [handler (get-in @sysex-mappings [(@midi-device-key (:device msg))])]
-    (handler msg)))
+    (when @running
+      (run-message-handler handler msg running))))
 
 (defonce
   ^{:private true
@@ -235,7 +281,7 @@
   be offered as synchronization sources. Also notes when they seem to
   be sending the additional beat phase information provided by the
   Afterglow Traktor controller mapping. Holds a set of nested maps
-  whose top-level keys are the `javax.sound.midi.MidiDevice` on which
+  whose top-level keys are the [[midi-device-key]] on which
   clock pulses have been detected, and whose second-level keys can
   include `:timing-clock`, which will store the timestamp of the
   most-recently received clock pulse from that device, `:master`,
@@ -269,22 +315,6 @@
     (when (= (:status msg) :timing-clock)
       (swap! clock-sources assoc-in [device-key :timing-clock] (now)))
     (check-for-traktor-beat-phase msg device-key)))
-
-(defonce ^:private ^{:doc "The queue used to hand MIDI events from the
-  extension thread to our world, since there seem to be classloader
-  compatibility issues, and the Java3d classes are not available to
-  threads that are directly dispatching MIDI events. Although we
-  allocate a capacity of 100 elements, it is expected that the queue
-  will be drained much more quickly than events arrive, and so it will
-  almost always be empty."} midi-queue
-  (LinkedBlockingDeque. 100))
-
-(defonce ^:private ^{:doc "The thread used to hand MIDI events from
-  the extension thread to our world, since there seem to be
-  classloader compatibility issues, and the Java3d classes are not
-  available to threads that are directly dispatching MIDI events."}
-  midi-transfer-thread
-  (atom nil))
 
 (defn mac?
   "Return true if we seem to be running on a Mac."
@@ -509,55 +539,30 @@
             ;; First call the global message handlers
             (doseq [handler @global-handlers]
               (when @running
-                (try
-                  ;; TODO: This is not really safe because if the handler blocks it ties up all future
-                  ;;       MIDI dispatch. Should do in a future with a timeout? Don't want to use a million
-                  ;;       threads for this either, so a core.async channel approach is probably best.
-                  ;;
-                  (handler msg)
-                  (catch InterruptedException e
-                    (timbre/info "MIDI event handler thread interrupted, shutting down.")
-                    (reset! running false)
-                    (reset! midi-transfer-thread nil))
-                  (catch Throwable t
-                    (timbre/error t "Problem running global MIDI event handler.")))))
+                (run-message-handler handler msg running)))
             
             ;; Then call any registered port listeners for the port on which
             ;; it arrived
 
             ;; Then call specific message handlers that match
             (when @running
-              (try
-                (cond (#{:timing-clock :start :stop} (:status msg))
-                      (clock-message-handler msg)
+              (cond (#{:timing-clock :start :stop} (:status msg))
+                    (clock-message-handler msg running)
 
-                      (= 0xf0 (:status msg))
-                      (sysex-message-handler msg)
+                    (= 0xf0 (:status msg))
+                    (sysex-message-handler msg running)
 
-                      :else
-                      (case (:command msg)
-                        :control-change (do (cc-message-handler msg)
-                                            (clock-message-handler msg)) ; In case it is a Traktor beat phase message
-                        (:note-on :note-off) (note-message-handler msg)
-                        :poly-pressure (aftertouch-message-handler msg)
-                        nil))
-                (catch InterruptedException e
-                  (timbre/info "MIDI event handler thread interrupted, shutting down.")
-                  (reset! running false)
-                  (reset! midi-transfer-thread nil))
-                (catch Throwable t
-                  (timbre/error t "Problem running MIDI event handler"))))
+                    :else
+                    (case (:command msg)
+                      :control-change (do (cc-message-handler msg running)
+                                          (clock-message-handler msg running)) ; Might be Traktor beat phase message
+                      (:note-on :note-off) (note-message-handler msg running)
+                      :poly-pressure (aftertouch-message-handler msg running)
+                      nil)))
 
             ;; Finally, keep track of any MIDI clock messages we have seen so the
             ;; user can be informed of them as potential sync sources.
-            (try
-              (watch-for-clock-sources msg)
-              (catch InterruptedException e
-                (timbre/info "MIDI event handler thread interrupted, shutting down.")
-                (reset! running false)
-                (reset! midi-transfer-thread nil))
-              (catch Throwable t
-                (timbre/error t "Problem looking for MIDI clock sources"))))))
+            (run-message-handler watch-for-clock-sources msg running))))
 
       ;; If we have not been shut down, do it all again for the next message.
       (when @running (recur (.take midi-queue))))))
