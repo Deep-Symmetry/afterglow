@@ -448,25 +448,23 @@
     nil))
 
 (defn- midi-received
-  "Called whenever a MIDI message is received while the controller is
-  active; checks if it came in on the right port, and if so, decides
-  what should be done."
+  "Called whenever a MIDI message is received from the controller
+  while the mapping is active; takes whatever action is appropriate."
   [controller message]
-  (when (amidi/same-device? (:device message) (:port-in controller))
-    ;;(timbre/info message)
-    (when-not (controllers/overlay-handled? (:overlays controller) message)
-      (when (= (:command message) :control-change)
-        (control-change-received controller message))
-      (when (= (:command message) :note-on)
-        (note-on-received controller message))
-      (when (= (:command message) :note-off)
-        (note-off-received controller message)))))
+  ;;(timbre/info message)
+  (when-not (controllers/overlay-handled? (:overlays controller) message)
+    (when (= (:command message) :control-change)
+      (control-change-received controller message))
+    (when (= (:command message) :note-on)
+      (note-on-received controller message))
+    (when (= (:command message) :note-off)
+      (note-off-received controller message))))
 
 (defn- start-interface
   "Set up the thread which keeps the user interface up to date."
   [controller]
   (clear-interface controller)
-  (amidi/add-global-handler! @(:midi-handler controller))
+  (amidi/add-device-mapping (:port-in controller) @(:midi-handler controller))
   (reset! (:task controller) (at-at/every (:refresh-interval controller)
                                           #(update-interface controller)
                                           controllers/pool
@@ -549,7 +547,7 @@
       (show/unregister-grid-controller @(:grid-controller-impl controller))
       (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :deactivated))
       (reset! (:move-listeners controller) #{})
-      (amidi/remove-global-handler! @(:midi-handler controller))
+      (amidi/remove-device-mapping (:port-in controller) @(:midi-handler controller))
 
       (when-not disconnected
         (Thread/sleep 35) ; Give the UI update thread time to shut down
