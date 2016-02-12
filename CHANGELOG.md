@@ -11,8 +11,8 @@ This change log follows the conventions of
 - Support for other members of the Novation Launchpad family of grid
   controllers:
   - Launchpad Mini
-  - Launchpad S (untested, but basis for Mini, which works)
-  - Launchpad Mk2 (untested)
+  - Launchpad S (untested, but the Mini, which works, is based on the S)
+  - Launchpad Mk2
 - Incoming MIDI System Exclusive messages can now be received and
   delivered to handlers.
 - The identity of grid controllers is verified before binding to them,
@@ -24,6 +24,12 @@ This change log follows the conventions of
 - The documentation link in the web interface now takes you to the
   proper version-specific tag of the documentation if it is a release
   build. Snapshot builds take you to `master`.
+
+### Changed
+
+- The code to gracefully shut down active controller bindings, which
+  was becoming duplicated with every new controller mapping created,
+  has been pulled up into the shared controllers namespace.
 
 ## [0.2.0] - 2016-02-02
 
