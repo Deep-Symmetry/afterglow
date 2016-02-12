@@ -494,3 +494,46 @@
         (let [found (deref result 1000 nil)]
           (or found (when (< attempts 2) (recur (inc attempts))))))
       (finally (amidi/remove-sysex-mapping port-in handler)))))
+
+(defonce ^{:doc "Controllers which are currently bound to shows can
+  register a deactivation function here. All functions in this set
+  will be called when [[deactivate-all]] is called, and when the JVM
+  is shutting down, to gracefully shut down those bindings."
+           :private true}
+  active-bindings (atom #{}))
+
+(defn add-active-binding
+  "Registers a controller which has been bound to a show, and which
+  should be deactivated when [[deactivate-all]] is called or the JVM
+  is shutting down, to gracefully clean up the binding. The single
+  argument is a function that will be called with no arguments when
+  the binding should be deactivated."
+  [f]
+  {:pre [(fn? f)]}
+  (swap! active-bindings conj f))
+
+(defn remove-active-binding
+  "Removes a controller from the set of active bindings, so it will no
+  longer be deactivated when [[deactivate-all]] is called or the JVM
+  is shutting down. The single argument is a function that was
+  registered with [[add-active-binding]]."
+  [f]
+  {:pre [(fn? f)]}
+  (swap! active-bindings disj f))
+
+(defn deactivate-all
+  "Deactivates all controller bindings which are currently active.
+  This will be registered as a shutdown hook to be called when the
+  Java environment is shutting down, to clean up gracefully."
+  []
+  (doseq [f @active-bindings]
+    (f)))
+
+(defonce ^{:doc "Deactivates any registered controller bindings when
+  Java is shutting down."
+           :private true}
+  shutdown-hook
+  (let [hook (Thread. deactivate-all)]
+    (.addShutdownHook (Runtime/getRuntime) hook)
+    hook))
+

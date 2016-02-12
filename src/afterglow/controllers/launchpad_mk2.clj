@@ -16,14 +16,6 @@
             [taoensso.timbre :as timbre :refer [warn]]
             [taoensso.truss :as truss :refer [have have! have?]]))
 
-(defonce ^{:doc "Counts the controller bindings which have been made,
-  so each can be assigned a unique ID."}
-  controller-counter (atom 0))
-
-(defonce ^{:doc "Controllers which are currently bound to shows,
-  indexed by the controller binding ID."}
-  active-bindings (atom {}))
-
 (def control-buttons
   "The round buttons which send and respond to Control Change events.
   These assignments don't correspond with any standard decal beyond
@@ -586,22 +578,7 @@
       (reset! (:overlays controller) (controllers/create-overlay-state))
 
       ;; And finally, note that we are no longer active.
-      (swap! active-bindings dissoc (:id controller)))))
-
-(defn deactivate-all
-  "Deactivates all controller bindings which are currently active.
-  This will be regustered as a shutdown hook to be called when the
-  Java environment is shutting down, to clean up gracefully."
-  []
-  (doseq [[_ controller] @active-bindings]
-    (deactivate controller)))
-
-(defonce ^{:doc "Deactivates any Launchpad Mk2 bindings when Java is shutting down."
-           :private true}
-  shutdown-hook
-  (let [hook (Thread. deactivate-all)]
-    (.addShutdownHook (Runtime/getRuntime) hook)
-    hook))
+      (controllers/remove-active-binding @(:deactivate-handler controller)))))
 
 (defn- valid-identity
   "Checks that the device we are trying to bind to reports the proper
@@ -662,8 +639,7 @@
       (let [shift-mode (atom false)
             controller
             (with-meta
-              {:id                   (swap! controller-counter inc)
-               :display-name         display-name
+              {:display-name         display-name
                :device-id            device
                :show                 show
                :origin               (atom [0 0])
@@ -678,6 +654,7 @@
                :shift-mode           shift-mode
                :stop-mode            (atom false)
                :midi-handler         (atom nil)
+               :deactivate-handler   (atom nil)
                :tempo-tap-handler    (tempo/create-show-tempo-tap-handler show :shift-fn (fn [] @shift-mode))
                :last-marker          (atom nil)
                :overlays             (controllers/create-overlay-state)
@@ -685,6 +662,7 @@
                :grid-controller-impl (atom nil)}
               {:type :launchpad-mk2})]
         (reset! (:midi-handler controller) (partial midi-received controller))
+        (reset! (:deactivate-handler controller) (partial deactivate controller))
         (reset! (:grid-controller-impl controller)
                 (reify controllers/IGridController
                   (display-name [this] (:display-name controller))
@@ -701,7 +679,7 @@
         (if skip-animation
           (start-interface controller)
           (welcome-animation controller))
-        (swap! active-bindings assoc (:id controller) controller)
+        (controllers/add-active-binding @(:deactivate-handler controller))
         (show/register-grid-controller @(:grid-controller-impl controller))
         (amidi/add-disconnected-device-handler! port-in #(deactivate controller :disconnected true))
         controller)
