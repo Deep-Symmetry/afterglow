@@ -32,6 +32,10 @@ project [wiki](https://github.com/brunchboy/afterglow/wiki).
 
 ## Why Explore Afterglow?
 
+> tl;dr&mdash;show me? Check out the
+> [Show Control pics](https://github.com/brunchboy/afterglow/blob/master/doc/README.adoc#show-control)
+> and [performance video](https://github.com/brunchboy/afterglow/blob/master/doc/videos.adoc#videos).
+
 As suggested by the live-coding orientation mentioned above, which is
 designed to let you inject your own code right into the frame
 rendering process, Afterglow takes a very different approach to
