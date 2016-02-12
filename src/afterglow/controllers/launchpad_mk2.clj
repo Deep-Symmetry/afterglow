@@ -85,7 +85,7 @@
   (let [r (colors/red color)
         g (colors/green color)
         b (colors/blue color)]
-    (midi/midi-sysex (:port-out controller) [240 0 32 41 2 24 10 led (quot r 4) (quot g 4) (quot b 4) 247])))
+    (midi/midi-sysex (:port-out controller) [240 0 32 41 2 24 11 led (quot r 4) (quot g 4) (quot b 4) 247])))
 
 (defn set-pad-color
   "Set the color of one of the 64 touch pads to a specific RGB color."
