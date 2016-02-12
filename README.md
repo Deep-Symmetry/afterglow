@@ -72,7 +72,7 @@ are fully supported too):
   [adjustable parameters](doc/parameters.adoc#dynamic-parameters) that
   can be controlled through a rich binding to an
   [Ableton Push](doc/mapping_sync.adoc#using-ableton-push) or
-  [Novation Launchpad Pro](doc/mapping_sync.adoc#using-launchpad-pro)
+  [Novation Launchpad family](doc/mapping_sync.adoc#using-launchpad-pro)
   controller.
 
 * The timing of effects is pervasively influenced by a deep notion of
@@ -141,7 +141,7 @@ together nicely, though there may be a few more changes.
 
 There is now an embedded web application, which is growing into a show
 control interface for people who are not Clojure hackers, and a useful
-adjunct to the Ableton Push and Launchpad Pro control surface
+adjunct to the Ableton Push and Launchpad family control surface
 interfaces. Each is explained in the documentation link above.
 Afterglow also includes the beginnings of a show visualizer for
 designing and working on effects without having to physically hook up
@@ -351,13 +351,14 @@ tweak something quickly, you can use that:
 The web interface does provide a nice show control page, though, with
 access to a scrollable grid of cues, and the ability to track the cues
 displayed on a physical cue grid control surface like the Ableton Push
-or Novation Launchpad Pro, so you can control them from either place,
-and see the names that go with the colored buttons on the control
-surface. This animated GIF shows how cues respond to clicks,
-lightening while they run, and darkening any cues which cannot run at
-the same time. It also shows how you can scroll around a larger grid
-than fits on the screen at one time (although it has reduced colors,
-frame rate, and quality when compared to the actual web interface):
+or a current member of the Novation Launchpad family, so you can
+control them from either place, and see the names that go with the
+colored buttons on the control surface. This animated GIF shows how
+cues respond to clicks, lightening while they run, and darkening any
+cues which cannot run at the same time. It also shows how you can
+scroll around a larger grid than fits on the screen at one time
+(although it has reduced colors, frame rate, and quality when compared
+to the actual web interface):
 
 ![Show control](doc/assets/ShowGrid.gif)
 
@@ -374,8 +375,8 @@ You can adjust running effects, scroll around the cue grid, and adjust
 or sync the show metronome from either interface. Other MIDI
 controllers can be mapped to provide similar functionality, and
 hopefully such mappings will make their way into Afterglow soon
-(indeed, the Novation Launchpad Pro is supported now too). The
-Afterglow mappings are done entirely on the User layer as well, so
+(indeed, the current Novation Launchpad family is now supported too).
+The Afterglow mappings are done entirely on the User layer as well, so
 they coexist gracefully with Ableton Live, and you can switch back and
 forth by pressing the User button if you want to perform with both.
 
@@ -854,11 +855,13 @@ though.
   found on their
   [Downloads Page](http://global.novationmusic.com/support/product-downloads?product=Launchpad+Pro).
   Having someone loan me one would speed this up!
-- [ ] Novation is loaning me a Launchpad Mini! It
-  [seems](http://www.soundonsound.com/sos/jan14/articles/novation-launchpad.htm)
-  to use the same control messages as the Launchpad S, so refer to
-  that guide in trying to set it up. Has only red/green 2 bit LEDs, so
-  don&rsquo;t try to replicate colors from the cue grid.
+  - [x] Novation is loaning me a Launchpad Mini! It
+    [seems](http://www.soundonsound.com/sos/jan14/articles/novation-launchpad.htm)
+    to use the same control messages as the Launchpad S, so refer to
+    that guide in trying to set it up. Has only red/green 2 bit LEDs, so
+    don&rsquo;t try to replicate colors from the cue grid.
+  - [x] Novation Launchpad Mk2 support added with the testing help of
+    [Benjamin Gudehus](https://github.com/hastebrot).
 
 ### Ideas
 

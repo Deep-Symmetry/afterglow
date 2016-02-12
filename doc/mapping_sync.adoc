@@ -33,7 +33,7 @@ by creating the cues in the show cue grid, not only so you can see and
 manipulate them with the web interface, but also because that is how
 they can be mapped to MIDI controllers. (The
 <<mapping_sync#using-ableton-push,Push>> and
-<<mapping_sync#using-launchpad-pro,Launchpad Pro>> mappings are
+<<mapping_sync#using-launchpad-pro,Launchpad family>> mappings are
 described in detail below.)
 
 First you need to identify the MIDI messages that the controller sends
@@ -1176,9 +1176,13 @@ the cue grid.
 
 Although when compared with the Ableton Push it lacks a text display
 and rotary encoders, the Novation Launchpad Pro makes an excellent
-grid controller for Afterglow, and a custom
-{api-doc}afterglow.controllers.launchpad-pro.html[mapping]
-is being created for it as well.
+grid controller for Afterglow, and has its own custom
+{api-doc}afterglow.controllers.launchpad-pro.html[mapping].
+
+> There are also mappings for the
+  <<mapping_sync#using-launchpad-mk2,Launchpad Mk2>>,
+  <<mapping_sync#using-launchpad-mini-and-launchpad-s,Launchpad Mini,
+  and Launchpad S>>
 
 Assuming you had a Launchpad Pro connected to the machine running
 Afterglow when it was started up, you can activate the Launchpad
@@ -1352,6 +1356,33 @@ NOTE: Future releases will likely advantage of more of the buttons on
 the controller, and perhaps support mappings to other controllers in
 the Launchpad line. If you want that to happen, loaning hardware to
 the Afterglow developer will definitely speed it along!
+
+== Using Launchpad Mk2
+
+The Launchpad Mk2 is very similar to the Pro, except that it lacks
+velocity sensitivity and has fewer buttons outside the cue grid. For
+the most part you can follow the
+<<mapping_sync#using-launchpad-pro,Launchpad Pro>> instructions.
+
+== Using Launchpad Mini and Launchpad S
+
+These two controllers share the same mapping because they are
+functionally identical, the Mini is a highly compact version of the S.
+Neither supports velocity, and they have a very limited color palette,
+so they do not attempt to mimic the cue grid colors. Instead, colors
+are used to represent cue state.
+
+=== Launchpad Mini and S Cue Grid Colors
+
+Pads which have no cues associated with them are dark. If the pad has
+a cue that is not running, it will be amber. If the cue conflicts with
+a cue that is running, it will be a dim amber. Cues which are running
+are bright green; cues which are ending blink red. Cues which run only
+while you hold them down are bright amber rather than green while you
+hold them, so you can tell they will end when you let them go. As with
+other controllers, if you hold down the Shift button while launching
+such a momentary cue, it will stay running even after you let it go,
+and in that case will be green.
 
 ==== License
 
