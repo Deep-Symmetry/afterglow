@@ -352,7 +352,7 @@
       (enter-stop-mode controller))
 
     109 ; Shift button
-    (swap! (:shift-mode controller) (fn [_] (pos? (:velocity message))))
+    (reset! (:shift-mode controller) (pos? (:velocity message)))
 
     106 ; Left arrow
     (when (pos? (:velocity message))
