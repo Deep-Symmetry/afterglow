@@ -17,18 +17,28 @@
             [taoensso.truss :as truss :refer [have have! have?]]))
 
 (def control-buttons
-  "The round buttons which send and respond to Control Change events.
-  These assignments don't correspond with any standard decal beyond
-  the first four (arrows), but reflect Afterglow's needs. Maybe
-  someone can make an Afterglow sticker for us."
+  "The round buttons along the top which send and respond to Control
+  Change events."
   {:up-arrow    104
    :down-arrow  105
    :left-arrow  106
    :right-arrow 107
-   :tap-tempo   108
-   :shift       109
-   :user-mode   110
-   :stop        111})
+   :session     108
+   :user-1      109
+   :user-2      110
+   :mixer       111})
+
+(def note-buttons
+  "The round buttons along the right which send and respond to Note
+  events."
+  {:volume     89  ; Used as tap tempo
+   :pan        79  ; Used as shift
+   :send-a     69
+   :send-b     59
+   :stop       49
+   :mute       39
+   :solo       29
+   :record-arm 19})
 
 (def button-off-color
   "The color of buttons that are completely off."
@@ -97,9 +107,7 @@
   ([controller]
    (show-round-buttons controller button-available-color))
   ([controller color]
-   (doseq [[_ led] control-buttons]
-     (set-led-color controller led color))
-   (doseq [led (range 19 90 10)]
+   (doseq [[_ led] (concat control-buttons note-buttons)]
      (set-led-color controller led color))))
 
 (defn clear-interface
@@ -209,23 +217,23 @@
 
   (controllers/add-overlay (:overlays controller)
                            (reify controllers/IOverlay
-                             (captured-controls [this] #{(:stop control-buttons)})
-                             (captured-notes [this] #{})
+                             (captured-controls [this] #{})
+                             (captured-notes [this] #{(:stop note-buttons)})
                              (adjust-interface [this _]
                                (swap! (:next-round-buttons controller)
-                                      assoc (:stop control-buttons) stop-active-color)
+                                      assoc (:stop note-buttons) stop-active-color)
                                (with-show (:show controller)
                                  (when (show/running?)
                                    (reset! (:stop-mode controller) false))
                                  @(:stop-mode controller)))
-                             (handle-control-change [this message]
+                             (handle-control-change [this message])
+                             (handle-note-on [this message]
                                (when (pos? (:velocity message))
                                  ;; End stop mode
                                  (with-show (:show controller)
                                    (show/start!))
                                  (reset! (:stop-mode controller) false)
                                  :done))
-                             (handle-note-on [this message])
                              (handle-note-off [this message])
                              (handle-aftertouch [this message]))))
 
@@ -261,29 +269,29 @@
       (when-not (or (show/running?) @(:stop-mode controller))
         (enter-stop-mode controller :already-stopped true)))
 
-    ;; Reflect the shift button state
+    ;; Reflect the Pan (shift) button state
     (swap! (:next-round-buttons controller)
-           assoc (:shift control-buttons)
+           assoc (:pan note-buttons)
            (if @(:shift-mode controller) button-active-color button-available-color))
 
     (update-scroll-arrows controller)
 
-    ;; Flash the tap tempo button on beats
+    ;; Flash the volume (tap tempo) button on beats
     (let [snapshot (rhythm/metro-snapshot (get-in controller [:show :metronome]))
           marker (rhythm/snapshot-marker snapshot)
           colors (metronome-sync-colors controller)]
       (swap! (:next-round-buttons controller)
-             assoc (:tap-tempo control-buttons)
+             assoc (:volume note-buttons)
              (if (or (new-beat? controller marker) (< (rhythm/snapshot-beat-phase snapshot) 0.15))
                (second colors) (first colors)))
 
-      ;; Make the User button bright, since we live in User mode
+      ;; Make the User 2 button bright, since we live in that layout
       (swap! (:next-round-buttons controller)
-             assoc (:user-mode control-buttons) button-active-color)
+             assoc (:user-2 control-buttons) button-active-color)
 
       ;; Make the stop button visible, since we support it
       (swap! (:next-round-buttons controller)
-             assoc (:stop control-buttons)
+             assoc (:stop note-buttons)
              stop-available-color)
 
       (reset! (:next-grid-pads controller) (render-cue-grid controller snapshot))
@@ -313,11 +321,11 @@
                               (when task (at-at/kill task))
                               nil))
   (clear-interface controller)
-  ;; In case Live isn't running, leave the User Mode button dimly lit, to help the user return.
-  (set-led-color controller (:user-mode control-buttons) button-available-color)
+  ;; In case Live isn't running, leave the User 2 button dimly lit, to help the user return.
+  (set-led-color controller (:user-2 control-buttons) button-available-color)
   (controllers/add-overlay (:overlays controller)
                            (reify controllers/IOverlay
-                             (captured-controls [this] #{(:user-mode control-buttons)})
+                             (captured-controls [this] #{(:user-2 control-buttons)})
                              (captured-notes [this] #{})
                              (adjust-interface [this _]
                                true)
@@ -341,17 +349,6 @@
   interface overlay."
   [controller message]
   (case (:note message)
-    108  ; Tap tempo button
-    (when (pos? (:velocity message))
-      ((:tempo-tap-handler controller)))
-
-    111  ; Stop button
-    (when (pos? (:velocity message))
-      (enter-stop-mode controller))
-
-    109 ; Shift button
-    (swap! (:shift-mode controller) (fn [_] (pos? (:velocity message))))
-
     106 ; Left arrow
     (when (pos? (:velocity message))
       (let [[x y] @(:origin controller)]
@@ -380,7 +377,7 @@
           (move-origin controller [x (max 0 (- y 8))])
           (add-button-held-feedback-overlay controller (:down-arrow control-buttons)))))
 
-    110 ; User mode button
+    110 ; User 2 mode button
     (when (pos? (:velocity message))
       (leave-user-mode controller))
 
@@ -439,14 +436,31 @@
   overlay."
   [controller message]
   (let [note (:note message)]
-    (when (and (<= 1 (rem note 10) 8) (<= 1 (quot note 10) 8))
-      (cue-grid-pressed controller note))))
+    (if (and (<= 1 (rem note 10) 8) (<= 1 (quot note 10) 8))
+      (cue-grid-pressed controller note)
+      (case note
+        89  ; Volume (tap tempo) button
+        (when (pos? (:velocity message))
+          ((:tempo-tap-handler controller)))
+
+        79  ; Pan (shift) button
+        (reset! (:shift-mode controller) (pos? (:velocity message)))
+
+        49  ; Stop button
+        (when (pos? (:velocity message))
+          (enter-stop-mode controller))
+
+        ;; Something we don't care about
+        nil))))
 
 (defn- note-off-received
   "Process a note-off message which was not handled by an interface
   overlay."
   [controller message]
   (case (:note message)
+
+    79  ; Pan (shift) button
+    (reset! (:shift-mode controller) false)
 
     ;; Something we don't care about
     nil))
@@ -570,7 +584,7 @@
         (clear-interface controller)
         ;; Leave the User button bright, in case the user has Live
         ;; running and wants to be able to see how to return to it.
-        (set-led-color controller (:user-mode control-buttons) (colors/create-color :white)))
+        (set-led-color controller (:user-2 control-buttons) (colors/create-color :white)))
 
       ;; Cancel any UI overlays which were in effect
       (reset! (:overlays controller) (controllers/create-overlay-state))
