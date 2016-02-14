@@ -32,13 +32,13 @@
   "The round buttons along the right which send and respond to Note
   events."
   {:volume     89  ; Used as tap tempo
-   :pan        79  ; Used as shift
+   :pan        79
    :send-a     69
    :send-b     59
    :stop       49
    :mute       39
    :solo       29
-   :record-arm 19})
+   :record-arm 19})  ; Used as shift
 
 (def button-off-color
   "The color of buttons that are completely off."
@@ -269,9 +269,9 @@
       (when-not (or (show/running?) @(:stop-mode controller))
         (enter-stop-mode controller :already-stopped true)))
 
-    ;; Reflect the Pan (shift) button state
+    ;; Reflect the Record Arm (shift) button state
     (swap! (:next-round-buttons controller)
-           assoc (:pan note-buttons)
+           assoc (:record-arm note-buttons)
            (if @(:shift-mode controller) button-active-color button-available-color))
 
     (update-scroll-arrows controller)
@@ -377,7 +377,7 @@
           (move-origin controller [x (max 0 (- y 8))])
           (add-button-held-feedback-overlay controller (:down-arrow control-buttons)))))
 
-    110 ; User 2 mode button
+    110 ; User 2 button
     (when (pos? (:velocity message))
       (leave-user-mode controller))
 
@@ -443,7 +443,7 @@
         (when (pos? (:velocity message))
           ((:tempo-tap-handler controller)))
 
-        79  ; Pan (shift) button
+        19  ; Record Arm (shift) button
         (reset! (:shift-mode controller) (pos? (:velocity message)))
 
         49  ; Stop button
@@ -459,7 +459,7 @@
   [controller message]
   (case (:note message)
 
-    79  ; Pan (shift) button
+    19  ; Record Arm (shift) button
     (reset! (:shift-mode controller) false)
 
     ;; Something we don't care about

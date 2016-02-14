@@ -800,9 +800,9 @@ pointers to documentation or open-source implementations of these
 features on Push 2 would be greatly appreciated, and might make
 support possible!
 
-Assuming you had an Ableton Push connected to the machine running
-Afterglow when it was started up, you can activate the Push mapping
-and attach it to the current default show like this:
+Assuming you have an Ableton Push connected to the machine running
+Afterglow, you can activate the Push mapping and attach it to the
+current default show like this:
 
 [source,clojure]
 ----
@@ -1184,14 +1184,14 @@ grid controller for Afterglow, and has its own custom
   <<mapping_sync#using-launchpad-mini-and-launchpad-s,Launchpad Mini,
   and Launchpad S>>
 
-Assuming you had a Launchpad Pro connected to the machine running
-Afterglow when it was started up, you can activate the Launchpad
-mapping and attach it to the current default show like this:
+Assuming you have a Launchpad Pro connected to the machine running
+Afterglow, you can activate the Launchpad mapping and attach it to the
+current default show like this:
 
 [source,clojure]
 ----
-(require '[afterglow.controllers.launchpad-pro :as lp])
-(def watcher (lp/auto-bind *show*))
+(require '[afterglow.controllers.launchpad-pro :as lpro])
+(def pro-watcher (lpro/auto-bind *show*))
 ----
 
 You will see a brief startup animation, and Afterglow's Launchpad
@@ -1362,27 +1362,64 @@ the Afterglow developer will definitely speed it along!
 The Launchpad Mk2 is very similar to the Pro, except that it lacks
 velocity sensitivity and has fewer buttons outside the cue grid. For
 the most part you can follow the
-<<mapping_sync#using-launchpad-pro,Launchpad Pro>> instructions.
+<<mapping_sync#using-launchpad-pro,Launchpad Pro>> instructions above,
+but refer to the button mapping in the following image:
 
 == Using Launchpad Mini and Launchpad S
 
 These two controllers share the same mapping because they are
-functionally identical, the Mini is a highly compact version of the S.
+functionally identical--the Mini is a highly compact version of the S.
 Neither supports velocity, and they have a very limited color palette,
-so they do not attempt to mimic the cue grid colors. Instead, colors
-are used to represent cue state.
+so the mapping does not attempt to reflect the Afterglow cue grid
+colors. Instead, colors are used to represent cue state.
+
+Assuming you have a Launchpad Mini or S connected to the machine
+running Afterglow, you can activate its mapping and attach it to the
+current default show like this:
+
+[source,clojure]
+----
+(require '[afterglow.controllers.launchpad-mini :as mini])
+(def mini-watcher (mini/auto-bind *show*))
+----
+
+You will see a brief startup animation, and Afterglow's Launchpad Mini
+interface will start. (This also arranges for the Launchpad to be
+re-bound to the show if it gets disconnected or powered off and then
+reappears, which is very handy in a performance setting.) Here is an
+overview of how the Launchpad Mini mapping works:
+
 
 === Launchpad Mini and S Cue Grid Colors
 
 Pads which have no cues associated with them are dark. If the pad has
-a cue that is not running, it will be amber. If the cue conflicts with
-a cue that is running, it will be a dim amber. Cues which are running
-are bright green; cues which are ending blink red. Cues which run only
-while you hold them down are bright amber rather than green while you
-hold them, so you can tell they will end when you let them go. As with
-other controllers, if you hold down the Shift button while launching
-such a momentary cue, it will stay running even after you let it go,
-and in that case will be green.
+a cue that is not running, it will be amber. If the pad's cue
+conflicts with another cue that is running, it will be a dim amber.
+Cues which are running are bright green; cues which are ending blink
+red, as illustrated below.
+
+The round buttons along the top are used to scroll around the grid,
+using the same conventions as the decals which come with the Launchpad
+Mini (and the arrows printed on the Launchpad S). The User 2 button
+can be used suspend and resume the Afterglow mapping. The round
+buttons on the right side are used to adjust the metronome, and start
+or stop the show, as shown:
+
+image::assets/LaunchpadMini.jpg[Launchpad Mini interface]
+
+> The Tap Tempo button corresponds to the button labeled Volume on the
+Launchpad S (and on the decal which comes with the Launchpad Mini),
+the Stop button matches the decal and printed label, and the Shift
+button corresponds to the Arm button. Although the locations of these
+buttons are different, they light up and respond as described in the
+<<mapping_sync#using-launchpad-pro,Launchpad Pro>> instructions above.
+
+Cues which run only while you hold them down will light up as bright
+amber instead of green while you are holding them, to let you know
+they will end as soon as you release the pad. As with other controller
+mappings, if you hold down the Shift button (the bottom right round
+button) while launching such a momentary cue, it will stay running
+even after you let it go, and in that case will be green.
 
 ==== License
 
