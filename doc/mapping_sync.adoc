@@ -1362,8 +1362,28 @@ the Afterglow developer will definitely speed it along!
 The Launchpad Mk2 is very similar to the Pro, except that it lacks
 velocity sensitivity and has fewer buttons outside the cue grid. For
 the most part you can follow the
-<<mapping_sync#using-launchpad-pro,Launchpad Pro>> instructions above,
-but refer to the button mapping in the following image:
+<<mapping_sync#using-launchpad-pro,Launchpad Pro>> instructions above
+(ignoring the discussion of velocity sensitivity and aftertouch
+configuration), but refer to the button mapping shown for the
+Launchpad Mini and Launchpad S
+<<mapping_sync#launchpad-mini-image,below>>, because the Launchpad Mk2
+mapping uses the same arrangement of round buttons as those
+controllers.
+
+Assuming you have a Launchpad Mk2 connected to the machine
+running Afterglow, you can activate its mapping and attach it to the
+current default show like this:
+
+[source,clojure]
+----
+(require '[afterglow.controllers.launchpad-mk2 :as mk2])
+(def mk2-watcher (mk2/auto-bind *show*))
+----
+
+You will see a brief startup animation, and Afterglow's Launchpad Mk2
+interface will start. (This also arranges for the Launchpad to be
+re-bound to the show if it gets disconnected or powered off and then
+reappears, which is very handy in a performance setting.)
 
 == Using Launchpad Mini and Launchpad S
 
@@ -1386,9 +1406,7 @@ current default show like this:
 You will see a brief startup animation, and Afterglow's Launchpad Mini
 interface will start. (This also arranges for the Launchpad to be
 re-bound to the show if it gets disconnected or powered off and then
-reappears, which is very handy in a performance setting.) Here is an
-overview of how the Launchpad Mini mapping works:
-
+reappears, which is very handy in a performance setting.)
 
 === Launchpad Mini and S Cue Grid Colors
 
@@ -1405,6 +1423,7 @@ can be used suspend and resume the Afterglow mapping. The round
 buttons on the right side are used to adjust the metronome, and start
 or stop the show, as shown:
 
+[[launchpad-mini-image]]
 image::assets/LaunchpadMini.jpg[Launchpad Mini interface]
 
 > The Tap Tempo button corresponds to the button labeled Volume on the
