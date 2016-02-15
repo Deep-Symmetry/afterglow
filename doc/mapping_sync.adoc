@@ -1367,8 +1367,8 @@ the most part you can follow the
 configuration), but refer to the button mapping shown for the
 Launchpad Mini and Launchpad S
 <<mapping_sync#launchpad-mini-image,below>>, because the Launchpad Mk2
-mapping uses the same arrangement of round buttons as those
-controllers.
+{api-doc}afterglow.controllers.launchpad-mk2.html[mapping] uses the
+same arrangement of round buttons as those controllers.
 
 Assuming you have a Launchpad Mk2 connected to the machine
 running Afterglow, you can activate its mapping and attach it to the
@@ -1387,11 +1387,16 @@ reappears, which is very handy in a performance setting.)
 
 == Using Launchpad Mini and Launchpad S
 
-These two controllers share the same mapping because they are
-functionally identical--the Mini is a highly compact version of the S.
-Neither supports velocity, and they have a very limited color palette,
-so the mapping does not attempt to reflect the Afterglow cue grid
-colors. Instead, colors are used to represent cue state.
+These two controllers share the same
+{api-doc}afterglow.controllers.launchpad-mini.html[mapping] because
+they are functionally identical--the Mini is a highly compact version
+of the S. Neither supports velocity, and they have a very limited
+color palette, so the mapping does not attempt to reflect the
+Afterglow cue grid colors. Instead, colors are used to represent cue
+state.
+
+> The mapping of these controllers was made possible thanks to the
+  kind loan of a Launchpad Mini for that purpose by Novation.
 
 Assuming you have a Launchpad Mini or S connected to the machine
 running Afterglow, you can activate its mapping and attach it to the
