@@ -935,11 +935,16 @@
               (if (string? (:key v))
                 ;; Needs to be introduced as a temp variable
                 (let [temp-var (keyword (str "cue-temp-" x "-" y "-" (:key v)))]
-                  (when initial-value (set-variable! temp-var initial-value))
+                  (when initial-value
+                    (if (keyword? initial-value)
+                      (set-variable! temp-var (get-variable initial-value))
+                      (set-variable! temp-var initial-value)))
                   (assoc result (keyword (:key v)) temp-var))
                 ;; Not a temp variable, just set starting value if needed
                 (do
-                  (when initial-value (set-variable! (:key v) initial-value))
+                  (when initial-value (if (keyword? initial-value)
+                                        (set-variable! (:key v) (get-variable initial-value))
+                                        (set-variable! (:key v) initial-value)))
                   result)))) {} (:variables cue)))
 
 (defn add-effect-from-cue-grid!

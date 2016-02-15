@@ -401,6 +401,10 @@ controller>>.
  are using a shared variable to adjust the appearance of many cues,
  unless you want the start of this cue to affect them all.
 
+If the value of `:start` is a keyword, this cue variable will be
+initialized with the value held in the show variable by that name when
+the cue begins.
+
 |`:name`
 |variable name
 
