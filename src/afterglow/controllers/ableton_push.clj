@@ -1326,7 +1326,10 @@
   (let [value (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id) 0)
         low (min value (:min v))  ; In case user set "out of bounds".
         high (max value (:max v))
-        resolution (or (:resolution v) (/ (- high low) 200))
+        raw-resolution (/ (- high low) 200)
+        resolution (or (:resolution v) (if (= :integer (:type v))
+                                         (max 1 (Math/round (float raw-resolution)))
+                                         raw-resolution))
         delta (* (sign-velocity (:velocity message)) resolution)]
     (cues/set-cue-variable! cue v (max low (min high (+ value delta))) :show (:show controller) :when-id effect-id)))
 
