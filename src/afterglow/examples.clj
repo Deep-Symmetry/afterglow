@@ -14,6 +14,7 @@
             [afterglow.effects.movement :as move]
             [afterglow.effects.oscillators :as oscillators]
             [afterglow.effects.params :as params]
+            [afterglow.effects.show-variable :as var-fx]
             [afterglow.fixtures.american-dj :as adj]
             [afterglow.fixtures.blizzard :as blizzard]
             [afterglow.fixtures.chauvet :as chauvet]
@@ -24,6 +25,10 @@
             [com.evocomputing.colors :as colors :refer [color-name create-color hue adjust-hue]]
             [overtone.osc :as osc]
             [taoensso.timbre :as timbre]))
+
+(defonce ^{:doc "Allows effects to set variables in the running show."}
+  var-binder
+  (atom nil))
 
 (defonce ^{:doc "Holds the sample show if it has been created,
   so it can be unregistered if it is being re-created."}
@@ -83,6 +88,8 @@
   (show/patch-fixture! :snowball (blizzard/snowball) universe 33 :x (tf/inches -76) :y (tf/inches 32)
                        :z (tf/inches 164.5))
   (show/patch-fixture! :hyp-rgb (adj/hypnotic-rgb) universe 45)
+
+  (reset! var-binder (var-fx/create-for-show *show*))
   '*show*)
 
 
@@ -349,6 +356,148 @@
                                        {:key "lightness" :min 0 :max 100 :name "Lightness" :velocity true}
                                        color-var]))))
 
+(defn build-ratio-param
+  "Creates a dynamic parameter for setting the beat ratio of one of
+  the dimmer oscillator cues in [[make-cues]] by forming the ratio of
+  the cue variables introduced by the cue. This allows the show
+  operator to decide over how many beats the oscillator runs, and how
+  many times it cycles in that interval.
+
+  Expects the cue's variable map to contain entries `:beats` and
+  `:cycles` which will form the numerator and denominator of the
+  ratio. If any entry is missing, a default value of `1` is used
+  for it."
+  [var-map]
+  (let [beats-param (params/bind-keyword-param (:beats var-map) Number 1)
+        cycles-param (params/bind-keyword-param (:cycles var-map) Number 1)]
+    (reify params/IParam
+      (evaluate [this show snapshot head]
+        (/ (params/resolve-param beats-param show snapshot head)
+           (params/resolve-param cycles-param show snapshot head)))
+      (frame-dynamic? [this]
+        true)
+      (result-type [this]
+        Number)
+      (resolve-non-frame-dynamic-elements [this _ _ _]
+        this))))
+
+(defn make-sawtooth-cue
+  "Create a cue which applies a sawtooth oscillator to the specified
+  set of fixtures, with cue parameters to adjust the beat ratio,
+  starting with default values established by show parameters."
+  [effect-name x y effect-key fixtures & {:keys [color end-keys]}]
+  ;; TODO: Add support for boolean cue parameters, and a parameter to set up/down direction.
+  ;; For now, just bind to show variable, without ability to adjust it per cue.
+  (when-not (= (type (show/get-variable :sawtooth-down?)) Boolean)
+    ;; If the default sawtooth direction has not yet been set, establish it as down
+    (show/set-variable! :sawtooth-down? true))
+  (when-not (= (type (show/get-variable :starting-beats)) Long)
+    ;; If the default beat ratio numerator has not yet been set, establish it as 2
+    (show/set-variable! :starting-beats 2))
+  (when-not (= (type (show/get-variable :starting-cycles)) Long)
+    ;; If the default beat ratio denominator has not yet been set, establish it as 1
+    (show/set-variable! :starting-cycles 1))
+  
+  (ct/set-cue! (:cue-grid *show*) x y
+               (cues/cue effect-key
+                         (fn [var-map] (dimmer-effect
+                                        (oscillators/build-oscillated-param
+                                         (oscillators/sawtooth :down? (params/bind-keyword-param :sawtooth-down?
+                                                                                                 Boolean true)
+                                                               :interval-ratio (build-ratio-param var-map)))
+                                        fixtures
+                                        :effect-name effect-name))
+                         :color color
+                         :variables [{:key "beats" :min 1 :max 32 :type :integer :start :starting-beats :name "Beats"}
+                                     {:key "cycles" :min 1 :max 10 :type :integer :start :starting-cycles
+                                      :name "Cycles"}]
+                         :end-keys end-keys)))
+
+(defn make-triangle-cue
+  "Create a cue which applies a triangle oscillator to the specified
+  set of fixtures, with cue parameters to adjust the beat ratio,
+  starting with default values established by show parameters."
+  [effect-name x y effect-key fixtures & {:keys [color end-keys]}]
+  (when-not (= (type (show/get-variable :starting-beats)) Long)
+    ;; If the default beat ratio numerator has not yet been set, establish it as 2
+    (show/set-variable! :starting-beats 2))
+  (when-not (= (type (show/get-variable :starting-cycles)) Long)
+    ;; If the default beat ratio denominator has not yet been set, establish it as 1
+    (show/set-variable! :starting-cycles 1))
+  
+  (ct/set-cue! (:cue-grid *show*) x y
+               (cues/cue effect-key
+                         (fn [var-map] (dimmer-effect
+                                        (oscillators/build-oscillated-param
+                                         (oscillators/triangle :interval-ratio (build-ratio-param var-map)))
+                                        fixtures
+                                        :effect-name effect-name))
+                         :color color
+                         :variables [{:key "beats" :min 1 :max 32 :type :integer :start :starting-beats :name "Beats"}
+                                     {:key "cycles" :min 1 :max 10 :type :integer :start :starting-cycles
+                                      :name "Cycles"}]
+                         :end-keys end-keys)))
+
+(defn make-sine-cue
+  "Create a cue which applies a sine oscillator to the specified
+  set of fixtures, with cue parameters to adjust the beat ratio,
+  starting with default values established by show parameters."
+  [effect-name x y effect-key fixtures & {:keys [color end-keys]}]
+  (when-not (= (type (show/get-variable :starting-beats)) Long)
+    ;; If the default beat ratio numerator has not yet been set, establish it as 2
+    (show/set-variable! :starting-beats 2))
+  (when-not (= (type (show/get-variable :starting-cycles)) Long)
+    ;; If the default beat ratio denominator has not yet been set, establish it as 1
+    (show/set-variable! :starting-cycles 1))
+  
+  (ct/set-cue! (:cue-grid *show*) x y
+               (cues/cue effect-key
+                         (fn [var-map] (dimmer-effect
+                                        (oscillators/build-oscillated-param
+                                         (oscillators/sine :interval-ratio (build-ratio-param var-map)) :min 1)
+                                        fixtures
+                                        :effect-name effect-name))
+                         :color color
+                         :variables [{:key "beats" :min 1 :max 32 :type :integer :start :starting-beats :name "Beats"}
+                                     {:key "cycles" :min 1 :max 10 :type :integer :start :starting-cycles
+                                      :name "Cycles"}]
+                         :end-keys end-keys)))
+
+(defn make-square-cue
+  "Create a cue which applies a square oscillator to the specified set
+  of fixtures, with cue parameters to adjust the beat ratio and pulse
+  width, starting with default values established by show parameters."
+  [effect-name x y effect-key fixtures & {:keys [color end-keys]}]
+  (when-not (= (type (show/get-variable :starting-beats)) Long)
+    ;; If the default beat ratio numerator has not yet been set, establish it as 2
+    (show/set-variable! :starting-beats 2))
+  (when-not (= (type (show/get-variable :starting-cycles)) Long)
+    ;; If the default beat ratio denominator has not yet been set, establish it as 1
+    (show/set-variable! :starting-cycles 1))
+  (when-not (= (type (show/get-variable :starting-width)) Double)
+    ;; If the default pulse width has not yet been set, establish it as 0.5
+    (show/set-variable! :starting-width 0.5))
+  (when-not (= (type (show/get-variable :starting-phase)) Double)
+    ;; If the default pulse phase has not yet been set, establish it as 0.0
+    (show/set-variable! :starting-phase 0.0))
+  
+  ;; TODO: Make width and phase adjustable params. Is blowing up in oscillators/square right now
+  (ct/set-cue! (:cue-grid *show*) x y
+               (cues/cue effect-key
+                         (fn [var-map] (dimmer-effect
+                                        (oscillators/build-oscillated-param
+                                         (oscillators/square :interval-ratio (build-ratio-param var-map)
+                                                             #_:width #_(params/bind-keyword-param (:width var-map)
+                                                                                                   Number 0.5)))
+                                        fixtures
+                                        :effect-name effect-name))
+                         :color color
+                         :variables [{:key "beats" :min 1 :max 32 :type :integer :start :starting-beats :name "Beats"}
+                                     {:key "cycles" :min 1 :max 10 :type :integer :start :starting-cycles
+                                      :name "Cycles"}
+                                     {:key "width" :min 0 :max 1 :start :starting-width :name "Width"}]
+                         :end-keys end-keys)))
+
 (defn x-phase
   "Return a value that ranges from zero for the leftmost fixture in a
   show to 1 for the rightmost, for staggering the phase of an
@@ -438,6 +587,10 @@
                              :color-fn (cues/color-fn-from-param color-param)
                              :short-name "Rainbow Pulse")))
 
+    (ct/set-cue! (:cue-grid *show*) 4 1
+                 (cues/cue :transform-colors (fn [_] (color-fx/transform-colors (show/all-fixtures)))
+                           :priority 1000))
+
     (ct/set-cue! (:cue-grid *show*) 5 1
                  (cues/cue :color (fn [_] (global-color-effect
                                            (params/build-color-param :s 100 :l 50 :h hue-z-gradient)
@@ -458,23 +611,7 @@
                              :color-fn (cues/color-fn-from-param color-param)
                              :short-name "Rainbow Blades")))
 
-
-    ;; TODO: Write a macro to make it easier to bind cue variables.
-    (ct/set-cue! (:cue-grid *show*) 0 7
-                 (cues/cue :sparkle (fn [var-map] (fun/sparkle (show/all-fixtures)
-                                                               :chance (:chance var-map 0.05)
-                                                               :fade-time (:fade-time var-map 50)))
-                           :held true
-                           :priority 100
-                           :variables [{:key "chance" :min 0.0 :max 0.4 :start 0.05 :velocity true}
-                                       {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
-
-    (ct/set-cue! (:cue-grid *show*) 2 7
-                 (cues/cue :transform-colors (fn [_] (color-fx/transform-colors (show/all-fixtures)))
-                           :priority 1000))
-
-
-    (ct/set-cue! (:cue-grid *show*) 7 7
+    #_(ct/set-cue! (:cue-grid *show*) 7 7
                  (cues/function-cue :strobe-all :strobe (show/all-fixtures) :effect-name "Raw Strobe"))
 
 
@@ -492,21 +629,21 @@
                                                            (show/fixtures-named "torrent")
                                                            :effect-name "Torrent Dimmers"))
                            :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
-                           :color :orange :end-keys [:dimmers]))
+                           :color :yellow :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 2 2
                  (cues/cue :blade-dimmers (fn [var-map] (dimmer-effect
                                                          (params/bind-keyword-param (:level var-map 255) Number 255)
                                                          (show/fixtures-named "blade")
                                                          :effect-name "Blade Dimmers"))
                            :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
-                           :color :orange :end-keys [:dimmers]))
+                           :color :yellow :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 3 2
                  (cues/cue :ws-dimmers (fn [var-map] (dimmer-effect
                                                       (params/bind-keyword-param (:level var-map 255) Number 255)
                                                       (show/fixtures-named "ws")
                                                       :effect-name "Weather System Dimmers"))
                            :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
-                           :color :orange :end-keys [:dimmers]))
+                           :color :yellow :end-keys [:dimmers]))
 
     (ct/set-cue! (:cue-grid *show*) 4 2
                  (cues/cue :hex-dimmers (fn [var-map] (dimmer-effect
@@ -514,181 +651,152 @@
                                                        (show/fixtures-named "hex")
                                                        :effect-name "Hex Dimmers"))
                            :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
-                           :color :orange :end-keys [:dimmers]))
+                           :color :yellow :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 5 2
                  (cues/cue :puck-dimmers (fn [var-map] (dimmer-effect
                                                         (params/bind-keyword-param (:level var-map 255) Number 255)
                                                         (show/fixtures-named "puck")
                                                         :effect-name "Puck Dimmers"))
                            :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
-                           :color :orange :end-keys [:dimmers]))
+                           :color :yellow :end-keys [:dimmers]))
     (ct/set-cue! (:cue-grid *show*) 6 2
                  (cues/cue :snowball-dimmers (fn [var-map] (dimmer-effect
                                                             (params/bind-keyword-param (:level var-map 255) Number 255)
                                                             (show/fixtures-named "snowball")
                                                             :effect-name "Snowball Dimmers"))
                            :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
-                           :color :orange :end-keys [:dimmers]))
+                           :color :yellow :end-keys [:dimmers]))
+
+    ;; TODO: Write a macro to make it easier to bind cue variables?
     (ct/set-cue! (:cue-grid *show*) 7 2
-                 (cues/cue :torrent-1-dimmer (fn [var-map] (dimmer-effect
-                                                            (params/bind-keyword-param (:level var-map 255) Number 255)
-                                                            (show/fixtures-named "torrent-1")
-                                                            :effect-name "Torrent 1 Dimmer"))
-                           :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
-                           :color :orange :end-keys [:dimmers :torrent-dimmers]))
+                 (cues/cue :sparkle (fn [var-map] (fun/sparkle (show/all-fixtures)
+                                                               :chance (:chance var-map 0.05)
+                                                               :fade-time (:fade-time var-map 50)))
+                           :held true
+                           :priority 100
+                           :variables [{:key "chance" :min 0.0 :max 0.4 :start 0.05 :velocity true}
+                                       {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
 
-    ;; Dimmer oscillator cues: Sawtooth down each beat
-    (ct/set-cue! (:cue-grid *show*) 0 3
-                 (cues/cue :dimmers (fn [_] (global-dimmer-effect
-                                             (oscillators/build-oscillated-param
-                                              (oscillators/sawtooth :down? true))
-                                             :effect-name "All Saw Down Beat"))
-                           :color :yellow :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
-                                                     :puck-dimmers :hex-dimmers :snowball-dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 1 3
-                 (cues/cue :torrent-dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth :down? true))
-                                    (show/fixtures-named "torrent") :effect-name "Torrent Saw Down Beat"))
-                           :color :orange :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 2 3
-                 (cues/cue :blade-dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth :down? true))
-                                    (show/fixtures-named "blade") :effect-name "Blade Saw Down Beat"))
-                           :color :orange :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 3 3
-                 (cues/cue :ws-dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth :down? true))
-                                    (show/fixtures-named "ws") :effect-name "WS Saw Down Beat"))
-                           :color :orange :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 4 3
-                 (cues/cue :hex-dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth :down? true))
-                                    (show/fixtures-named "hex") :effect-name "Hex Saw Down Beat"))
-                           :color :orange :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 5 3
-                 (cues/cue :puck-dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth :down? true))
-                                    (show/fixtures-named "puck") :effect-name "Puck Saw Down Beat"))
-                           :color :orange :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 6 3
-                 (cues/cue :snowball-dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth :down? true))
-                                    (show/fixtures-named "snowball") :effect-name "Snowball Saw Down Beat"))
-                           :color :orange :end-keys [:dimmers]))
 
-    ;; Dimmer oscillator cues: Sawtooth up over 2 beat
-    (ct/set-cue! (:cue-grid *show*) 0 4
-                 (cues/cue :dimmers (fn [_] (global-dimmer-effect
-                                             (oscillators/build-oscillated-param
-                                              (oscillators/sawtooth :interval-ratio 2))
-                                             :effect-name "All Saw Up 2 Beat"))
-                           :color :yellow :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
-                                                     :puck-dimmers :hex-dimmers :snowball-dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 1 4
-                 (cues/cue :torrent-dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth :interval-ratio 2))
-                                    (show/fixtures-named "torrent") :effect-name "Torrent Saw Up 2 Beat"))
-                           :color :orange :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 2 4
-                 (cues/cue :blade-dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth :interval-ratio 2))
-                                    (show/fixtures-named "blade") :effect-name "Blade Saw Up 2 Beat"))
-                           :color :orange :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 3 4
-                 (cues/cue :ws-dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth :interval-ratio 2))
-                                    (show/fixtures-named "ws") :effect-name "WS Saw Up 2 Beat"))
-                           :color :orange :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 4 4
-                 (cues/cue :hex-dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth :interval-ratio 2))
-                                    (show/fixtures-named "hex") :effect-name "Hex Saw Up 2 Beat"))
-                           :color :orange :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 5 4
-                 (cues/cue :puck-dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth :interval-ratio 2))
-                                    (show/fixtures-named "puck") :effect-name "Puck Saw Up 2 Beat"))
-                           :color :orange :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 6 4
-                 (cues/cue :snowball-dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sawtooth :interval-ratio 2))
-                                    (show/fixtures-named "snowball") :effect-name "Snowball Saw Up 2 Beat"))
-                           :color :orange :end-keys [:dimmers]))
+    ;; Dimmer oscillator cues: Sawtooth 
+    (make-sawtooth-cue "All Sawtooth" 0 3 :dimmers (show/all-fixtures) :color :yellow
+                       :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers :puck-dimmers :hex-dimmers
+                                  :snowball-dimmers])
 
-    ;; Dimmer oscillator cues: Sine over a bar
-    (ct/set-cue! (:cue-grid *show*) 0 5
-                 (cues/cue :dimmers (fn [_] (global-dimmer-effect
-                                             (oscillators/build-oscillated-param (oscillators/sine :interval :bar)
-                                                                                 :min 1)
-                                             :effect-name "All Sine Bar"))
-                           :color :cyan :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
-                                                   :puck-dimmers :hex-dimmers :snowball-dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 1 5
-                 (cues/cue :torrent-dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sine :interval :bar) :min 1)
-                                    (show/fixtures-named "torrent") :effect-name "Torrent Sine Bar"))
-                           :color :blue :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 2 5
-                 (cues/cue :blade-dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sine :interval :bar) :min 1)
-                                    (show/fixtures-named "blade") :effect-name "Blade Sine Bar"))
-                           :color :blue :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 3 5
-                 (cues/cue :ws-dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sine :interval :bar) :min 1)
-                                    (show/fixtures-named "ws") :effect-name "WS Sine Bar"))
-                           :color :blue :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 4 5
-                 (cues/cue :hex-dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sine :interval :bar) :min 1)
-                                    (show/fixtures-named "hex") :effect-name "Hex Sine Bar"))
-                           :color :blue :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 5 5
-                 (cues/cue :puck-dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sine :interval :bar) :min 1)
-                                    (show/fixtures-named "puck") :effect-name "Puck Sine Bar"))
-                           :color :blue :end-keys [:dimmers]))
-    (ct/set-cue! (:cue-grid *show*) 6 5
-                 (cues/cue :snowball-dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/sine :interval :bar) :min 1)
-                                    (show/fixtures-named "snowball") :effect-name "Snowball Sine Bar"))
-                           :color :blue :end-keys [:dimmers]))
+    (make-sawtooth-cue "Torrent Saw" 1 3 :torrent-dimmers (show/fixtures-named "torrent") :color :orange
+                       :end-keys [:dimmers])
+
+    (make-sawtooth-cue "Blade Saw" 2 3 :blade-dimmers (show/fixtures-named "blade") :color :orange
+                       :end-keys [:dimmers])
+
+    (make-sawtooth-cue "WS Saw" 3 3 :ws-dimmers (show/fixtures-named "ws") :color :orange
+                       :end-keys [:dimmers])
+
+    (make-sawtooth-cue "Hex Saw" 4 3 :hex-dimmers (show/fixtures-named "hex") :color :orange
+                       :end-keys [:dimmers])
+
+    (make-sawtooth-cue "Puck Saw" 5 3 :puck-dimmers (show/fixtures-named "puck") :color :orange
+                       :end-keys [:dimmers])
+
+    (make-sawtooth-cue "Snowball Saw" 6 3 :snowball-dimmers (show/fixtures-named "snowball") :color :orange
+                       :end-keys [:dimmers])
+
+    (ct/set-cue! (:cue-grid *show*) 7 3
+                 (cues/cue :sawtooth-down? (fn [_] (var-fx/variable-effect @var-binder :sawtooth-down? false))
+                           :color :red :short-name "Saw Up"))
+
+    ;; Dimmer oscillator cues: Triangle
+    (make-triangle-cue "All Triangle" 0 4 :dimmers (show/all-fixtures) :color :orange
+                       :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers :puck-dimmers :hex-dimmers
+                                  :snowball-dimmers])
+
+    (make-triangle-cue "Torrent Triangle" 1 4 :torrent-dimmers (show/fixtures-named "torrent") :color :red
+                       :end-keys [:dimmers])
+
+    (make-triangle-cue "Blade Triangle" 2 4 :blade-dimmers (show/fixtures-named "blade") :color :red
+                       :end-keys [:dimmers])
+
+    (make-triangle-cue "WS Triangle" 3 4 :ws-dimmers (show/fixtures-named "ws") :color :red
+                       :end-keys [:dimmers])
+
+    (make-triangle-cue "Hex Triangle" 4 4 :hex-dimmers (show/fixtures-named "hex") :color :red
+                       :end-keys [:dimmers])
+
+    (make-triangle-cue "Puck Triangle" 5 4 :puck-dimmers (show/fixtures-named "puck") :color :red
+                       :end-keys [:dimmers])
+
+    (make-triangle-cue "Snowball Triangle" 6 4 :snowball-dimmers (show/fixtures-named "snowball") :color :red
+                       :end-keys [:dimmers])
+
+    ;; Dimmer oscillator cues: Sine
+    (make-sine-cue "All Sine" 0 5 :dimmers (show/all-fixtures) :color :cyan
+                   :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers :puck-dimmers :hex-dimmers
+                              :snowball-dimmers])
+
+    (make-sine-cue "Torrent Sine" 1 5 :torrent-dimmers (show/fixtures-named "torrent") :color :blue
+                       :end-keys [:dimmers])
+
+    (make-sine-cue "Blade Sine" 2 5 :blade-dimmers (show/fixtures-named "blade") :color :blue
+                       :end-keys [:dimmers])
+
+    (make-sine-cue "WS Sine" 3 5 :ws-dimmers (show/fixtures-named "ws") :color :blue
+                       :end-keys [:dimmers])
+
+    (make-sine-cue "Hex Sine" 4 5 :hex-dimmers (show/fixtures-named "hex") :color :blue
+                       :end-keys [:dimmers])
+
+    (make-sine-cue "Puck Sine" 5 5 :puck-dimmers (show/fixtures-named "puck") :color :blue
+                       :end-keys [:dimmers])
+
+    (make-sine-cue "Snowball Sine" 6 5 :snowball-dimmers (show/fixtures-named "snowball") :color :blue
+                       :end-keys [:dimmers])
+
     (ct/set-cue! (:cue-grid *show*) 7 5
-                 (cues/cue :dimmers
-                           (fn [_] (dimmer-effect
-                                    (oscillators/build-oscillated-param (oscillators/triangle :interval :bar) :min 1)
-                                    (show/all-fixtures) :effect-name "All Triangle Bar"))
-                           :color :red :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers
-                                                  :puck-dimmers :hex-dimmers :snowball-dimmers]))
+                 (cues/cue :beat-ratio
+                           (fn [_] (fx/blank "Starting Ratio"))
+                           :variables [{:key :starting-beats :min 1 :max 32 :type :integer :name "Beats"}
+                                       {:key :starting-cycles :min 1 :max 10 :type :integer :name "Cycles"}]))
+
+    ;; Dimmer oscillator cues: Square
+    (make-square-cue "All Square" 0 6 :dimmers (show/all-fixtures) :color :cyan
+                   :end-keys [:torrent-dimmers :blade-dimmers :ws-dimmers :puck-dimmers :hex-dimmers
+                              :snowball-dimmers])
+
+    (make-square-cue "Torrent Square" 1 6 :torrent-dimmers (show/fixtures-named "torrent") :color :green
+                       :end-keys [:dimmers])
+
+    (make-square-cue "Blade Square" 2 6 :blade-dimmers (show/fixtures-named "blade") :color :green
+                       :end-keys [:dimmers])
+
+    (make-square-cue "WS Square" 3 6 :ws-dimmers (show/fixtures-named "ws") :color :green
+                       :end-keys [:dimmers])
+
+    (make-square-cue "Hex Square" 4 6 :hex-dimmers (show/fixtures-named "hex") :color :green
+                       :end-keys [:dimmers])
+
+    (make-square-cue "Puck Square" 5 6 :puck-dimmers (show/fixtures-named "puck") :color :green
+                       :end-keys [:dimmers])
+
+    (make-square-cue "Snowball Square" 6 6 :snowball-dimmers (show/fixtures-named "snowball") :color :green
+                       :end-keys [:dimmers])
+
+    (ct/set-cue! (:cue-grid *show*) 7 6
+                 (cues/cue :beat-ratio
+                           (fn [_] (fx/blank "Starting Shape"))
+                           :variables [{:key :starting-width :min 0 :max 1 :name "Width"}
+                                     {:key :starting-phase :min 0 :max 1 :name "Phase"}]))
 
     ;; Strobe cues
-    (make-strobe-cue-2 "All" (show/all-fixtures) 0 6)
-    (make-strobe-cue-2 "Torrents" (show/fixtures-named "torrent") 1 6)
-    (make-strobe-cue-2 "Blades" (show/fixtures-named "blade") 2 6)
-    (make-strobe-cue-2 "Weather Systems" (show/fixtures-named "ws") 3 6)
-    (make-strobe-cue-2 "Hexes" (show/fixtures-named "hex") 4 6)
-    (make-strobe-cue-2 "Pucks" (show/fixtures-named "puck") 5 6)
+    (make-strobe-cue-2 "All" (show/all-fixtures) 0 7)
+    (make-strobe-cue-2 "Torrents" (show/fixtures-named "torrent") 1 7)
+    (make-strobe-cue-2 "Blades" (show/fixtures-named "blade") 2 7)
+    (make-strobe-cue-2 "Weather Systems" (show/fixtures-named "ws") 3 7)
+    (make-strobe-cue-2 "Hexes" (show/fixtures-named "hex") 4 7)
+    (make-strobe-cue-2 "Pucks" (show/fixtures-named "puck") 5 7)
+    (make-strobe-cue-2 "Snowball" (show/fixtures-named "snowball") 6 7)
 
     (let [color-var {:key :strobe-color :type :color :name "Strobe Color"}]
-      (ct/set-cue! (:cue-grid *show*) 7 6
+      (ct/set-cue! (:cue-grid *show*) 7 7
                    (cues/cue :strobe-color (fn [_] (fx/blank "Strobe Color"))
                              :color :purple
                              :color-fn (cues/color-fn-from-cue-var color-var)
