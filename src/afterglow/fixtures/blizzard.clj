@@ -27,11 +27,10 @@
        names))
 
 (defn torrent-f3
-  "[Torrent F3](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&id=174:torrent-f3™&Itemid=71)
-  moving head effects spotlight. The default patching orientation is sitting on its feet
-  with the LCD and control panel right side up and facing the
-  audience. In this orientation, at a pan of 0, the beam is straight
-  into the audience.
+  "Torrent F3 moving head effects spotlight. The default patching
+  orientation is sitting on its feet with the LCD and control panel
+  right side up and facing the audience. In this orientation, at a pan
+  of 0, the beam is straight into the audience.
 
   The origin of the light is, as for all moving heads, at the
   intersection of the pan and tilt axes. That is the point that you
@@ -145,7 +144,7 @@
 
 (defn blade-rgbw
   "[Blade
-  RGBW](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&layout=item&id=177&Itemid=157)
+  RGBW](http://www.blizzardlighting.com/products/moving-head-lights/item/163-blade-rgbw)
   moving head. The default patching orientation is sitting on its feet
   with the LCD and control panel right side up and facing the
   audience. In this orientation, at a pan of 0, the beam is straight
@@ -301,7 +300,7 @@
 
 (defn weather-system
   "[Weather
-  System](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&layout=item&id=173&Itemid=152)
+  System](http://www.blizzardlighting.com/products/all-in-one-lighting-systems/item/209-weather-system)
   8-fixture LED bar. Even though this fixture does not move, it is
   important to patch it at the correct orientation, so Afterglow can
   properly reason about the spatial relationships between the eight
@@ -345,8 +344,46 @@
           :name "Blizzard Weather System"
           :mode mode)))
 
+(defn- snowbank-head
+  "Creates a head definition for one head of the Snowbank."
+  [index]
+  ;; TODO: Actually implement! The snowbank has two rows of heads, that scan in opposite orders, and
+  ;;       project forward different amounts. But it has not been worth mapping them for our own fixture,
+  ;;       because it has too many failed LED channels. So we only use it in 7-channel mode as a blinder
+  ;;       generally aimed at the ceiling. For now, just cheating and pretending the heads are arranged
+  ;;       the same as for a Weather System
+  (ws-head index))
+
+(defn snowbank
+  "[Snow
+  Bank](http://www.blizzardlighting.com/products/led-effects/item/212-snowbank)
+  RGB Blinder / LED Pixel Effect."
+  ([]
+   (snowbank :26-channel))
+  ([mode]
+   (assoc (case mode
+            :7-channel {:channels [(chan/dimmer 1) (chan/color 2 :red) (chan/color 3 :green) (chan/color 4 :blue)
+                                   (chan/functions :control 5
+                                                   0 nil 8 "Red" 16 "Yellow" 24 "Green" 32 "Cyan" 40 "Blue"
+                                                   48 "Purple" 56 "White" (range 64 232 8) "Program"
+                                                   232 :sound-active)
+                                   (chan/functions :speed 6 0 nil 64 :speed)
+                                   (chan/functions :strobe 7 0 nil
+                                                   11 {:type :strobe
+                                                       :label "Strobe (?->?Hz)"
+                                                       :range :variable})]}
+            :26-channel {:channels [(chan/dimmer 1)
+                                    (chan/functions :strobe 26
+                                                    0 nil
+                                                    11 {:type :strobe
+                                                        :label "Strobe (?->?Hz)"
+                                                        :range :variable})]
+                         :heads (map snowbank-head (range 8))})
+          :name "Blizzard Snowbank"
+          :mode mode)))
+
 (defn snowball
-  "[Snowball](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&layout=item&id=100&Itemid=96)
+  "[Snowball](http://www.blizzardlighting.com/products/led-effects/item/210-snowball)
   multi-beam moonflower effect light."
   []
   {:name "Blizzard Snowball"
