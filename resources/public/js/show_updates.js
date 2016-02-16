@@ -99,6 +99,11 @@ function findOrCreateCueVarSlider( data, varSpec ) {
                             tooltip: "show" };
         if (varSpec.resolution) {
             sliderProps.step = resolution;
+        } else if (varSpec.type != "integer") {
+            var range =  varSpec.max - varSpec.min;
+            if (range < 200) {
+                sliderProps.step = range / 200;
+            }
         }
 
         var sliderInput = $("<input>", { id: sliderId });
