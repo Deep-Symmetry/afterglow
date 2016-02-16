@@ -18,6 +18,8 @@ This change log follows the conventions of
 - The identity of grid controllers is verified before binding to them,
   by sending a MIDI Device Inquiry message and inspecting the
   response.
+- Cue variables can now be Booleans, to support cues which want to be
+  able to adjust the direction of a sawtooth oscillator while running.
 
 ### Fixed
 
@@ -37,6 +39,8 @@ This change log follows the conventions of
   MIDI device was added, and the controller mapping implementations
   were updated to take advantage of this, so they no longer need to
   receive and filter out all the events from other devices.
+- A lot of repetitive code in the examples namespace was consolitated
+  using helper functions.
 
 ## [0.2.0] - 2016-02-02
 
