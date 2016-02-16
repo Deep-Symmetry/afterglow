@@ -929,7 +929,7 @@
   for them in the cue, whether or not they are temporary. These
   initial values can be overridden by the values passed in
   `var-overrides` as described in <<add-effect-from-cue-grid!>>."
-  [cue x y var-overrides]
+  [var-map x y var-overrides]
   (reduce (fn [result v]
             (let [initial-value (or ((keyword (:key v)) var-overrides) (:start v))]
               (if (string? (:key v))
@@ -945,7 +945,7 @@
                   (when initial-value (if (keyword? initial-value)
                                         (set-variable! (:key v) (get-variable initial-value))
                                         (set-variable! (:key v) initial-value)))
-                  result)))) {} (:variables cue)))
+                  result)))) {} var-map))
 
 (defn add-effect-from-cue-grid!
   "Finds the cue, if any, at the specified grid coordinates, and
@@ -974,11 +974,21 @@
     (doseq [k (:end-keys cue)]
       (end-effect! k))
     (let [velocity-vars (controllers/starting-vars-for-velocity cue velocity)
-          var-map (introduce-cue-variables cue x y (merge velocity-vars var-overrides))
+          var-map (introduce-cue-variables (:variables cue) x y (merge velocity-vars var-overrides))
           id (add-effect! (:key cue) ((:effect cue) var-map)
                           :priority (:priority cue) :from-cue cue :x x :y y :var-map var-map)]
       (controllers/activate-cue! (:cue-grid *show*) x y id)
       id)))
+
+(defn get-cue-effect
+  "Sets up a cue as though it is about to run, in order to test that
+  its effect function returns an effect. Used in validating the cue
+  when it is created."
+  [effect-fn var-map]
+  (let [vars (introduce-cue-variables var-map "x" "y" nil)
+        effect (effect-fn vars)]
+    (clean-cue-temporary-variables vars)
+    effect))
 
 ;; TODO: Now that grid controllers are actively informed of cues ending,
 ;;       the code that checks for matching IDs and send end events may

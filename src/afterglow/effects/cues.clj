@@ -125,9 +125,9 @@
   * `:velocity-min` and `:velocity-max` specify the range into
      which MIDI velocity and aftertouch values will be mapped, if they are present.
      Otherwise the standard `:min` and `:max` values will be used."
-  [show-key effect-fn & {:keys [short-name color color-fn end-keys priority held variables]
-                         :or {short-name (:name (effect-fn {})) color :white priority 0}}]
-  {:pre [(some? show-key) (fn? effect-fn) (satisfies? fx/IEffect (effect-fn {}))
+  [show-key effect-fn & {:keys [variables short-name color color-fn end-keys priority held]
+                         :or {short-name (:name (show/get-cue-effect effect-fn variables)) color :white priority 0}}]
+  {:pre [(some? show-key) (fn? effect-fn) (satisfies? fx/IEffect (show/get-cue-effect effect-fn variables))
          (or (nil? color-fn) (fn? color-fn))]}
   (merge {:name (name short-name)
           :key (keyword show-key)
