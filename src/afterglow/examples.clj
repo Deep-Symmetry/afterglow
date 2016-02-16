@@ -532,15 +532,15 @@
                          (fn [var-map] (dimmer-effect
                                         (oscillators/build-oscillated-param
                                          (oscillators/square :interval-ratio (build-ratio-param var-map)
-                                                             #_:width #_(params/bind-keyword-param (:width var-map)
+                                                             :width (params/bind-keyword-param (:width var-map)
                                                                                                    Number 0.5)))
                                         fixtures
                                         :effect-name effect-name))
                          :color color
                          :variables [{:key "beats" :min 1 :max 32 :type :integer :start :starting-beats :name "Beats"}
+                                     {:key "width" :min 0 :max 1 :start :starting-width :name "Width"}
                                      {:key "cycles" :min 1 :max 10 :type :integer :start :starting-cycles
-                                      :name "Cycles"}
-                                     {:key "width" :min 0 :max 1 :start :starting-width :name "Width"}]
+                                      :name "Cycles"}]
                          :end-keys end-keys))))
 
 (defn x-phase
