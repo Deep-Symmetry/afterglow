@@ -353,7 +353,9 @@ the `:phase` argument, as with all oscillators, in the manner
 described <<phase-shifting,above>>.
 
 NOTE: The `:width` value must be greater than `0` and less than `1`,
-or the oscillator would not oscillate at all.
+or the oscillator does not oscillate at all. A value of `0` leaves it
+permanently off, and a value of `1` leaves it permanently on. Values
+outside that range are not accepted.
 
 As noted in the table above, to have the oscillator work with
 intervals other than beats, you use the optional keyword argument

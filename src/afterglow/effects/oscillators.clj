@@ -273,7 +273,7 @@
 (defn- build-fixed-square-shape-fn
   "Returns the shape function for a square wave with a fixed width."
   [width]
-  (when-not (and (> width 0.0) (< width 1.0))
+  (when-not  (<= 0.0 width 1.0)
     (throw (IllegalArgumentException. "width must fall between 0.0 and 1.0")))
   (fn [phase]
     (if (< phase width) 1.0 0.0)))
@@ -287,7 +287,8 @@
   Specifying a value with `:width` adjusts how much of the time the
   wave is _on_ (high); the default is `0.5`, lower values cause it to
   turn off sooner, larger values later. In any case the width must be
-  greater than `0.0` and less than `1.0`.
+  within the range `0.0` to `1.0`. A value of zero means the
+  oscillator is always off, and a value of one means it is always on.
 
   Passing the value `:bar` or `:phrase` with the optional keyword
   argument `:interval` makes the wave cycle over a bar or phrase
@@ -308,7 +309,7 @@
                    (reify IVariableShape  ; The shape function changes based on the dynamic value of width
                      (value-for-phase [this phase show snapshot head]
                        (let [width (params/resolve-param width show snapshot head)]
-                         (when-not (and (> width 0.0) (< width 1.0))
+                         (when-not (<= 0.0 width 1.0)
                            (throw (IllegalArgumentException. "width must fall between 0.0 and 1.0")))
                          (if (< phase width) 1.0 0.0)))
                      (simplify-unless-frame-dynamic [this show snapshot head]
