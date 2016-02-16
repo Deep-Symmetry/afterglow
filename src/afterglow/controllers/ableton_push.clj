@@ -656,7 +656,7 @@
   space."
   [controller cue v len effect-id]
   (let [val (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
-        formatted (if val
+        formatted (if (some? val)
                     (cond
                       (= (:type v) :integer)
                       (int val)
@@ -1336,12 +1336,76 @@
         delta (* (sign-velocity (:velocity message)) resolution)]
     (cues/set-cue-variable! cue v (max low (min high (+ value delta))) :show (:show controller) :when-id effect-id)))
 
+(defn- draw-boolean-gauge
+  "Display the value of a boolean variable being adjusted in the effect list."
+  [controller cell width offset cue v effect-id]
+  (let [value (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
+        gauge (concat "No" (when-not value [(:left-arrow special-symbols)])
+                      (repeat (- width 6) \ )
+                      (when value [(:right-arrow special-symbols)]) "Yes")]
+    (write-display-text controller 0 (+ offset (* cell 17)) gauge)))
+
+(defn- adjust-boolean-value
+  "Handle a control change from turning an encoder associated with a
+  boolean variable being adjusted in the effect list."
+  [controller message cue v effect-id]
+  (let [new-value (true? (> (sign-velocity (:velocity message)) 0))]
+    (cues/set-cue-variable! cue v new-value :show (:show controller) :when-id effect-id)))
+
 (defn- same-effect-active
   "See if the specified effect is still active with the same id."
   [controller cue id]
   (with-show (:show controller)
     (let [effect-found (show/find-effect (:key cue))]
       (and effect-found (= (:id effect-found) id)))))
+
+(defn- build-boolean-adjustment-overlay
+  "Create an overlay for adjusting a boolean cue parameter. `note`
+  identifies the encoder that was touched to bring up this overlay,
+  `cue` is the cue whose variable is being adjusted, `effect` is the
+  effect which that cue is running, and `info` is the metadata about
+  that effect."
+  [controller note cue effect info]
+  (let [x (quot note 2)
+        var-index (rem note 2)]
+    (if (> (count (:variables cue)) 1)
+      ;; More than one variable, adjust whichever's encoder was touched
+      (reify controllers/IOverlay
+        (captured-controls [this] #{(control-for-top-encoder-note note)})
+        (captured-notes [this] #{note})
+        (adjust-interface [this _]
+          (when (same-effect-active controller cue (:id info))
+            (draw-boolean-gauge controller x 8 (* 9 var-index)
+                                 cue (get (:variables cue) var-index) (:id info))
+            true))
+        (handle-control-change [this message]
+          (adjust-boolean-value controller message cue
+                                (get (:variables cue) var-index) (:id info)))
+        (handle-note-on [this message])
+        (handle-note-off [this message]
+          :done)
+        (handle-aftertouch [this message]))
+
+      ;; Just one variable, take full cell, using either encoder,
+      ;; suppress the other one.
+      (let [paired-note (if (odd? note) (dec note) (inc note))]
+        (reify controllers/IOverlay
+          (captured-controls [this] #{(control-for-top-encoder-note note)})
+          (captured-notes [this] #{note paired-note})
+          (adjust-interface [this _]
+            (when (same-effect-active controller cue (:id info))
+              (draw-boolean-gauge controller x 17 0 cue
+                                   (first (:variables cue)) (:id info))
+              true))
+          (handle-control-change [this message]
+            (adjust-boolean-value controller message cue
+                                  (first (:variables cue)) (:id info)))
+          (handle-note-on [this message]
+            true)
+          (handle-note-off [this message]
+            (when (= (:note message) note)
+              :done))
+          (handle-aftertouch [this message]))))))
 
 (defn- build-numeric-adjustment-overlay
   "Create an overlay for adjusting a numeric cue parameter. `note`
@@ -1510,6 +1574,10 @@
               (or (= (type cur-val) :com.evocomputing.colors/color) (= (:type cue-var) :color))
               (controllers/add-overlay (:overlays controller)
                                        (build-color-adjustment-overlay controller note cue effect info))
+
+              (or (= (type cur-val) Boolean) (= (:type cue-var) :boolean))
+              (controllers/add-overlay (:overlays controller)
+                                       (build-boolean-adjustment-overlay controller note cue effect info))
 
               :else  ; Something we don't know how to adjust
               nil)))))))
