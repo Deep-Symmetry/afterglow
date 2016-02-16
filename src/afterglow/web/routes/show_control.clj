@@ -594,6 +594,7 @@
       (when (every? some? [cue var-spec value])
         (let [value (case (:type var-spec)
                       :color (colors/create-color value)
+                      :boolean (Boolean/valueOf value)
                       (Float/valueOf value))]
           (cues/set-cue-variable! cue var-spec value :when-id (Integer/valueOf effect-id)))))))
 

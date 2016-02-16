@@ -664,6 +664,9 @@
                       (or (= (type val) :com.evocomputing.colors/color) (= (:type v) :color))
                       (colors/rgb-hexstr val)
 
+                      (or (= (type val) Boolean) (= (:type v) :boolean))
+                      (if val "Yes" "No")
+
                       ;; If we don't know what else to do, at least turn ratios to floats
                       :else
                       (float val))

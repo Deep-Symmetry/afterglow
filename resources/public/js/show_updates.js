@@ -121,6 +121,38 @@ function findOrCreateCueVarSlider( data, varSpec ) {
     return result;
 }
 
+function findOrCreateCheckbox (data, varSpec ) {
+    var idBase = 'cue-var-' + data.id + '-' + varSpec.key;
+    var boxId = idBase + '-checkbox';
+    var result = $('#' + boxId);
+    if (result.length < 1) {
+        var cell = $('#effect-' + data.id + ' td:nth-child(3)');
+        if (cell.text() != "") {
+            $('<br>').appendTo(cell);
+        }
+        var label = $('<label></label>', { class: "checkbox-inline" })
+            .text(varSpec.name)
+            .append('&nbsp;&nbsp;');
+        var switchProps = { state: data.value,
+                            size: "mini",
+                            onText: "Yes",
+                            offText: "No",
+                            onSwitchChange: function ( e, state ) {
+                                sendCueVarUpdate(data.effect, data.id, varSpec.key, state);
+                            }};
+        var box = $('<input>', { id: boxId,
+                                 type: "checkbox",
+                                 value: data.value });
+        box.appendTo(label);
+        label.appendTo(cell);
+
+        result = $('#' + boxId);
+        result.bootstrapSwitch(switchProps);
+        result = $('#' + boxId);
+    }
+    return result;
+}
+
 function findOrCreateColorPicker( data, varSpec ) {
     var idBase = 'cue-var-' + data.id + '-' + varSpec.key;
     var pickerId = idBase + '-slider';
@@ -166,6 +198,11 @@ function processCueVarChange( data ) {
             cueSlidersBeingDragged[colorPicker.attr("id")] = data.value;
             colorPicker.minicolors('value', data.value);
         }
+        break;
+
+    case "boolean":
+        var checkbox = findOrCreateCheckbox(data, varSpec);
+        $(checkbox).bootstrapSwitch('state', data.value);
         break;
 
     default:  // Integer or float

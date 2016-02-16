@@ -386,8 +386,6 @@
   set of fixtures, with cue parameters to adjust the beat ratio,
   starting with default values established by show parameters."
   [effect-name x y effect-key fixtures & {:keys [color end-keys]}]
-  ;; TODO: Add support for boolean cue parameters, and a parameter to set up/down direction.
-  ;; For now, just bind to show variable, without ability to adjust it per cue.
   (when-not (= (type (show/get-variable :sawtooth-down?)) Boolean)
     ;; If the default sawtooth direction has not yet been set, establish it as down
     (show/set-variable! :sawtooth-down? true))
@@ -402,13 +400,14 @@
                (cues/cue effect-key
                          (fn [var-map] (dimmer-effect
                                         (oscillators/build-oscillated-param
-                                         (oscillators/sawtooth :down? (params/bind-keyword-param :sawtooth-down?
+                                         (oscillators/sawtooth :down? (params/bind-keyword-param (:down var-map)
                                                                                                  Boolean true)
                                                                :interval-ratio (build-ratio-param var-map)))
                                         fixtures
                                         :effect-name effect-name))
                          :color color
                          :variables [{:key "beats" :min 1 :max 32 :type :integer :start :starting-beats :name "Beats"}
+                                     {:key "down" :type :boolean :start :sawtooth-down? :name "Down?"}
                                      {:key "cycles" :min 1 :max 10 :type :integer :start :starting-cycles
                                       :name "Cycles"}]
                          :end-keys end-keys)))
