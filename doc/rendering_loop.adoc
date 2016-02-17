@@ -297,7 +297,10 @@ has to be &ldquo;close enough&rdquo; to the assigned hue for Afterglow
 to use it. By default, as long as the hue values are within 60&deg; of
 each other (which is very lenient), Afterglow will use it. You can
 adjust this tolerance by setting a different value in the show
-variable `:color-wheel-hue-tolerance`.
+variable `:color-wheel-hue-tolerance`. The color being assigned must
+also have a saturation of at least 40% for the color wheel to be
+considered (this minimum saturation can be adjusted by setting a
+different value in the show variable `:color-wheel-min-saturation`).
 
 [[pan-tilt-assigners]]
 === Pan/Tilt Assigners

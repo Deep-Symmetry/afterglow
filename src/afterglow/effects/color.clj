@@ -81,7 +81,10 @@
 ;; find the closest matching hue on the wheel, as long as it is within
 ;; tolerance. The default tolerance is 60 degrees around the hue wheel,
 ;; which is very lenient. If you want to tighten that up, you can set a
-;; lower value in the show variable :color-wheel-hue-tolerance
+;; lower value in the show variable :color-wheel-hue-tolerance. The
+;; saturation must also be at least 40% for the color wheel to be
+;; considered; that minimum can be adjusted by setting a value in the
+;; show variable :color-wheel-min-saturation.
 (defmethod fx/resolve-assignment :color [assignment show snapshot buffers]
   ;; Resolve in case assignment is still frame dynamic
   (let [target (:target assignment)
@@ -108,7 +111,8 @@
       (let [as-if-red (colors/adjust-hue resolved (- (:hue c)))]
         (chan-fx/apply-channel-value buffers c (colors/red as-if-red))))
     ;; Finally, see if there is a color wheel color close enough to select
-    (when (seq (:color-wheel-hue-map target))
+    (when (and (seq (:color-wheel-hue-map target))
+               (>= (colors/saturation resolved) (:color-wheel-min-saturation @(:variables show) 40)))
       (let [found (util/find-closest-key (:color-wheel-hue-map target) (colors/hue resolved))
             [channel function-spec] (get (:color-wheel-hue-map target) found)]
         (when (< (math/abs (- (colors/hue resolved) found)) (:color-wheel-hue-tolerance @(:variables show) 60))
