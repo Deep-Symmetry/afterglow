@@ -629,6 +629,17 @@
         (set-pad-color controller x y color)
         (aset (:last-grid-pads controller) index color)))))
 
+(defn- cue-vars-for-encoders
+  "Find the correct cue variables that correspond to each of the two
+  encoders within a cue's display region, given the cue's variable
+  list and the offset by which the user has shifted the cue
+  variables."
+  [cue-vars var-offset]
+  (case (count cue-vars)
+    0 nil ; No variables to adjust
+    1 (vec (repeat 2 (first cue-vars)))
+    (vec (take 2 (drop var-offset (apply concat (repeat cue-vars)))))))
+
 (defn- fit-cue-variable-name
   "Picks the best version of a cue variable name to fit in the specified
   number of characters, then truncates it if necessary."
@@ -643,13 +654,14 @@
 (defn- cue-variable-names
   "Determines the names of adjustable variables to display under an
   active cue."
-  [cue]
-  (if (seq (:variables cue))
-    (if (= (count (:variables cue)) 1)
-      (fit-cue-variable-name (first (:variables cue)) 17)
-      (str (fit-cue-variable-name (first (:variables cue)) 8) " "
-           (fit-cue-variable-name (second (:variables cue)) 8)))
-    ""))
+  [controller cue effect-id]
+  (let [cue-vars (cue-vars-for-encoders (:variables cue) (get @(:cue-var-offsets controller) effect-id 0))]
+    (if (seq cue-vars)
+      (if (= (count (:variables cue)) 1)
+        (fit-cue-variable-name (first cue-vars) 17)
+        (str (fit-cue-variable-name (first cue-vars) 8) " "
+             (fit-cue-variable-name (second cue-vars) 8)))
+      "")))
 
 (defn- fit-cue-variable-value
   "Truncates the current value of a cue variable to fit available
@@ -680,12 +692,13 @@
   "Formats the current values of the adjustable variables to display
   under an active cue."
   [controller cue effect-id]
-  (if (seq (:variables cue))
-    (if (= (count (:variables cue)) 1)
-      (fit-cue-variable-value controller cue (first (:variables cue)) 17 effect-id)
-      (str (fit-cue-variable-value controller cue (first (:variables cue)) 8 effect-id) " "
-           (fit-cue-variable-value controller cue (second (:variables cue)) 8 effect-id)))
-    ""))
+  (let [cue-vars (cue-vars-for-encoders (:variables cue) (get @(:cue-var-offsets controller) effect-id 0))]
+    (if (seq cue-vars)
+      (if (= (count (:variables cue)) 1)
+        (fit-cue-variable-value controller cue (first cue-vars) 17 effect-id)
+        (str (fit-cue-variable-value controller cue (first cue-vars) 8 effect-id) " "
+             (fit-cue-variable-value controller cue (second cue-vars) 8 effect-id)))
+      "")))
 
 (defn- room-for-effects
   "Determine how many display cells are available for displaying
@@ -697,6 +710,10 @@
   "Display information about the four most recently activated
   effects (or three, if the metronome is taking up a slot)."
   [controller]
+
+  ;; First clean up any cue variable scroll offsets for effects that have ended
+  (swap! (:cue-var-offsets controller) select-keys (map :id (:meta @(:active-effects (:show controller)))))
+
   (let [room (room-for-effects controller)
         first-cell (- 4 room)
         fx-info @(:active-effects (:show controller))
@@ -710,12 +727,16 @@
             (let [effect (:effect (first fx))
                   info (first fx-meta)
                   ending ((:key info) (:ending fx-info))
-                  cue (:cue info)]
-              (write-display-cell controller 0 x (cue-variable-names cue))
+                  cue (:cue info)
+                  end-label (if ending " Ending  " "  End    ")
+                  scroll-vars (> (count (:variables cue)) 2)
+                  more-label (when scroll-vars (concat " More " [(:right-arrow special-symbols)]))]
+              (write-display-cell controller 0 x (cue-variable-names controller cue (:id info)))
               (write-display-cell controller 1 x (cue-variable-values controller cue (:id info)))
               (write-display-cell controller 2 x (or (:name cue) (:name (first fx))))
-              (write-display-cell controller 3 x (if ending " Ending" "  End"))
+              (write-display-cell controller 3 x (concat end-label more-label))
               (aset (:next-top-pads controller) (* 2 x) (top-pad-state :dim :red))
+              (when scroll-vars (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :dim :amber)))
               (when (seq (rest fx))
                 (recur (rest fx) (rest fx-meta) (inc x)))))
           ;; Draw indicators if there are effects hidden from view in either direction
@@ -1145,6 +1166,38 @@
                                    (handle-note-off [this message])
                                    (handle-aftertouch [this message])))))))
 
+(defn- handle-scroll-cue-vars
+  "Process a tap on one of the pads which indicate the user wants to
+  scroll forward in the list of cue variables."
+  [controller note]
+  (let [room (room-for-effects controller)
+        fx-info @(:active-effects (:show controller))
+        fx (vec (drop (- (count (:effects fx-info)) room) (:effects fx-info)))
+        fx-meta (vec (drop (- (count (:meta fx-info)) room) (:meta fx-info)))
+        offset (- 4 room)
+        x (quot (- note 21) 2)
+        index (- x offset)]
+    (when (and (seq fx) (< index (count fx)))
+      (let [effect (get fx index)
+            info (get fx-meta index)
+            cue (:cue info)
+            var-count (count (:variables cue))]
+        (when (> var-count 2)
+          (swap! (:cue-var-offsets controller) update-in [(:id info)] #(mod (+ 2 (or % 0)) var-count))
+          (controllers/add-overlay (:overlays controller)
+                                   (reify controllers/IOverlay
+                                     (captured-controls [this] #{note})
+                                     (captured-notes [this] #{})
+                                     (adjust-interface [this _]
+                                       (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :bright :amber))
+                                       true)
+                                     (handle-control-change [this message]
+                                       (when (and (= (:note message) note) (zero? (:velocity message)))
+                                         :done))
+                                     (handle-note-on [this message])
+                                     (handle-note-off [this message])
+                                     (handle-aftertouch [this message]))))))))
+
 (defn- move-origin
   "Changes the origin of the controller, notifying any registered
   listeners."
@@ -1170,6 +1223,10 @@
     (20 22 24 26) ; Effect end pads
     (when (pos? (:velocity message))
       (handle-end-effect controller (:note message)))
+
+    (21 23 25 27) ; Effect cue variable scroll pads
+    (when (pos? (:velocity message))
+      (handle-scroll-cue-vars controller (:note message)))
     
     ;; 28 ; Master button
 
@@ -1362,25 +1419,29 @@
 (defn- build-boolean-adjustment-overlay
   "Create an overlay for adjusting a boolean cue parameter. `note`
   identifies the encoder that was touched to bring up this overlay,
-  `cue` is the cue whose variable is being adjusted, `effect` is the
-  effect which that cue is running, and `info` is the metadata about
-  that effect."
-  [controller note cue effect info]
+  `cue` is the cue whose variable is being adjusted, `v` is the map
+  identifying the variable itself, `effect` is the effect which that
+  cue is running, and `info` is the metadata about that effect.
+
+  Also suppresses the ability to scroll through the cue variables
+  while the encoder is being held."
+  [controller note cue v effect info]
   (let [x (quot note 2)
         var-index (rem note 2)]
     (if (> (count (:variables cue)) 1)
       ;; More than one variable, adjust whichever's encoder was touched
       (reify controllers/IOverlay
-        (captured-controls [this] #{(control-for-top-encoder-note note)})
+        (captured-controls [this] #{(control-for-top-encoder-note note) (+ 21 (* 2 x))})
         (captured-notes [this] #{note})
         (adjust-interface [this _]
           (when (same-effect-active controller cue (:id info))
-            (draw-boolean-gauge controller x 8 (* 9 var-index)
-                                 cue (get (:variables cue) var-index) (:id info))
+            (draw-boolean-gauge controller x 8 (* 9 var-index) cue v (:id info))
+            (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
             true))
         (handle-control-change [this message]
-          (adjust-boolean-value controller message cue
-                                (get (:variables cue) var-index) (:id info)))
+          (when (= (:note message) (control-for-top-encoder-note note))
+            (adjust-boolean-value controller message cue v (:id info)))
+          true)
         (handle-note-on [this message])
         (handle-note-off [this message]
           :done)
@@ -1390,16 +1451,17 @@
       ;; suppress the other one.
       (let [paired-note (if (odd? note) (dec note) (inc note))]
         (reify controllers/IOverlay
-          (captured-controls [this] #{(control-for-top-encoder-note note)})
+          (captured-controls [this] #{(control-for-top-encoder-note note) (+ 21 (* 2 x))})
           (captured-notes [this] #{note paired-note})
           (adjust-interface [this _]
             (when (same-effect-active controller cue (:id info))
-              (draw-boolean-gauge controller x 17 0 cue
-                                   (first (:variables cue)) (:id info))
-              true))
+              (draw-boolean-gauge controller x 17 0 cue v (:id info)))
+            (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
+            true)
           (handle-control-change [this message]
-            (adjust-boolean-value controller message cue
-                                  (first (:variables cue)) (:id info)))
+            (when (= (:note message) (control-for-top-encoder-note note))
+              (adjust-boolean-value controller message cue v (:id info)))
+            true)
           (handle-note-on [this message]
             true)
           (handle-note-off [this message]
@@ -1410,25 +1472,29 @@
 (defn- build-numeric-adjustment-overlay
   "Create an overlay for adjusting a numeric cue parameter. `note`
   identifies the encoder that was touched to bring up this overlay,
-  `cue` is the cue whose variable is being adjusted, `effect` is the
-  effect which that cue is running, and `info` is the metadata about
-  that effect."
-  [controller note cue effect info]
+  `cue` is the cue whose variable is being adjusted, `v` is the map
+  identifying the variable itself, `effect` is the effect which that
+  cue is running, and `info` is the metadata about that effect.
+
+  Also suppresses the ability to scroll through the cue variables
+  while the encoder is being held."
+  [controller note cue v effect info]
   (let [x (quot note 2)
         var-index (rem note 2)]
     (if (> (count (:variables cue)) 1)
       ;; More than one variable, adjust whichever's encoder was touched
       (reify controllers/IOverlay
-        (captured-controls [this] #{(control-for-top-encoder-note note)})
+        (captured-controls [this] #{(control-for-top-encoder-note note) (+ 21 (* 2 x))})
         (captured-notes [this] #{note})
         (adjust-interface [this _]
           (when (same-effect-active controller cue (:id info))
-            (draw-variable-gauge controller x 8 (* 9 var-index)
-                                 cue (get (:variables cue) var-index) (:id info))
+            (draw-variable-gauge controller x 8 (* 9 var-index) cue v (:id info))
+            (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
             true))
         (handle-control-change [this message]
-          (adjust-variable-value controller message cue
-                                 (get (:variables cue) var-index) (:id info)))
+          (when (= (:note message) (control-for-top-encoder-note note))
+            (adjust-variable-value controller message cue v (:id info)))
+          true)
         (handle-note-on [this message])
         (handle-note-off [this message]
           :done)
@@ -1438,16 +1504,17 @@
       ;; suppress the other one.
       (let [paired-note (if (odd? note) (dec note) (inc note))]
         (reify controllers/IOverlay
-          (captured-controls [this] #{(control-for-top-encoder-note note)})
+          (captured-controls [this] #{(control-for-top-encoder-note note) (+ 21 (* 2 x))})
           (captured-notes [this] #{note paired-note})
           (adjust-interface [this _]
             (when (same-effect-active controller cue (:id info))
-              (draw-variable-gauge controller x 17 0 cue
-                                   (first (:variables cue)) (:id info))
+              (draw-variable-gauge controller x 17 0 cue v (:id info))
+              (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
               true))
           (handle-control-change [this message]
-            (adjust-variable-value controller message cue
-                                   (first (:variables cue)) (:id info)))
+            (when (= (:note message) (control-for-top-encoder-note note))
+              (adjust-variable-value controller message cue v (:id info)))
+            true)
           (handle-note-on [this message]
             true)
           (handle-note-off [this message]
@@ -1475,26 +1542,27 @@
 (defn- build-color-adjustment-overlay
   "Create an overlay for adjusting a color cue parameter. `note`
   identifies the encoder that was touched to bring up this overlay,
-  `cue` is the cue whose variable is being adjusted, `effect` is the
-  effect which that cue is running, and `info` is the metadata about
-  that effect."
-  [controller note cue effect info]
+  `cue` is the cue whose variable is being adjusted, `v` is the map
+  identifying the variable itself, `effect` is the effect which that
+  cue is running, and `info` is the metadata about that effect.
+
+  Also suppresses the ability to scroll through the cue variables
+  while the encoder is being held."
+  [controller note cue v effect info]
   (let [anchors (atom #{note})  ; Track which encoders are keeping the overlay active
         x (quot note 2)
-        var-index (min (rem note 2) (dec (count (:variables cue))))
-        cue-var (get (:variables cue) var-index)
         effect-id (:id info)]
     ;; Take full cell, using both encoders to adjust hue and saturation.
     (let [[hue-note sat-note] (if (odd? note) [(dec note) note] [note (inc note)])
           [hue-control sat-control] (map control-for-top-encoder-note [hue-note sat-note])]
       (reify controllers/IOverlay
-        (captured-controls [this] #{hue-control sat-control})
+        (captured-controls [this] #{hue-control sat-control (+ 21 (* 2 x))})
         (captured-notes [this] (clojure.set/union #{hue-note sat-note} (set (drop 36 (range 100)))))
         (adjust-interface [this _]
           (when (same-effect-active controller cue (:id info))
             ;; Draw the color picker grid
             (System/arraycopy color-picker-grid 0 (:next-grid-pads controller) 0 64)
-            (let [current-color (or (cues/get-cue-variable cue cue-var :show (:show controller) :when-id effect-id)
+            (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
                                     (aget color-picker-grid 6))]
               ;; Show the preview color at the bottom right
               (aset (:next-grid-pads controller) 7 current-color)
@@ -1513,17 +1581,20 @@
                 (write-display-cell controller 0 x (str "H: " hue-str " S: " sat-str))
                 (write-display-text controller 1 (* x 17) hue-gauge)
                 (write-display-text controller 1 (+ 9 (* x 17)) sat-gauge))
+              ;; Darken the cue var scroll button if it was going to be lit
+              (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
               true)))
         (handle-control-change [this message]
-          ;; Adjust hue or saturation depending on controller
-          (let [current-color (or (cues/get-cue-variable cue cue-var :show (:show controller) :when-id effect-id)
-                                  (aget color-picker-grid 6))
-                delta (* (sign-velocity (:velocity message)) 0.5)]
-            (cues/set-cue-variable! cue cue-var
-                                    (if (= (:note message) hue-control)
-                                      (colors/adjust-hue current-color delta)
-                                      (colors/saturate current-color delta))
-                                    :show (:show controller) :when-id effect-id))
+          ;; Adjust hue or saturation depending on controller; ignore if it was the cue var scroll button
+          (when (#{hue-control sat-control} (:note message))
+            (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
+                                    (aget color-picker-grid 6))
+                  delta (* (sign-velocity (:velocity message)) 0.5)]
+              (cues/set-cue-variable! cue v
+                                      (if (= (:note message) hue-control)
+                                        (colors/adjust-hue current-color delta)
+                                        (colors/saturate current-color delta))
+                                      :show (:show controller) :when-id effect-id)))
           true)
         (handle-note-on [this message]
           (let [note (:note message)]
@@ -1534,7 +1605,7 @@
               ;; It's a grid pad. Set the color based on the selected note, unless it's the preview pad.
               (when-not (= note 43)
                 (let [chosen-color (aget color-picker-grid (- note 36))]
-                  (cues/set-cue-variable! cue cue-var chosen-color :show (:show controller) :when-id effect-id)))))
+                  (cues/set-cue-variable! cue v chosen-color :show (:show controller) :when-id effect-id)))))
           true)
         (handle-note-off [this message]
           (swap! anchors disj (:note message))
@@ -1560,24 +1631,22 @@
       (let [effect (get fx index)
             info (get fx-meta index)
             cue (:cue info)
-            cue-var (case (count (:variables cue))
-                      0 nil ; No variables to adjust
-                      1 (first (:variables cue))
-                      (get (:variables cue) var-index))]
+            cue-vars (cue-vars-for-encoders (:variables cue) (get @(:cue-var-offsets controller) (:id info) 0))
+            cue-var (get cue-vars var-index)]
         (when cue-var
           (let [cur-val (cues/get-cue-variable cue cue-var :show (:show controller) :when-id (:id info))]
             (cond
               (or (number? cur-val) (#{:integer :float} (:type cue-var :float)))
               (controllers/add-overlay (:overlays controller)
-                                       (build-numeric-adjustment-overlay controller note cue effect info))
+                                       (build-numeric-adjustment-overlay controller note cue cue-var effect info))
 
               (or (= (type cur-val) :com.evocomputing.colors/color) (= (:type cue-var) :color))
               (controllers/add-overlay (:overlays controller)
-                                       (build-color-adjustment-overlay controller note cue effect info))
+                                       (build-color-adjustment-overlay controller note cue cue-var effect info))
 
               (or (= (type cur-val) Boolean) (= (:type cue-var) :boolean))
               (controllers/add-overlay (:overlays controller)
-                                       (build-boolean-adjustment-overlay controller note cue effect info))
+                                       (build-boolean-adjustment-overlay controller note cue cue-var effect info))
 
               :else  ; Something we don't know how to adjust
               nil)))))))
@@ -1729,6 +1798,7 @@
                :show                 show
                :origin               (atom [0 0])
                :effect-offset        (atom 0)
+               :cue-var-offsets      (atom {})
                :refresh-interval     refresh-interval
                :port-in              port-in
                :port-out             port-out
@@ -1849,4 +1919,3 @@
          :device-filter device-filter
          :cancel cancel-handler}
         {:type :push-watcher}))))
-
