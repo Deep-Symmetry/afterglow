@@ -826,10 +826,10 @@ way to monitor and control the cues and other aspects of the show.
 The text area at the top of the Push displays the effects currently
 running, and can optionally display
 <<mapping_sync#metronome-control,metronome>> information as well. If a
-cue was defined with adjustable parameters for its effect, they will
+cue was defined with adjustable variables for its effect, they will
 also be displayed in the text area, and you will be able to
 <<mapping_sync#effect-control,adjust>> them by turning the encoder
-above the parameter.
+above the variable.
 
 The rightmost encoder, past the text area, adjusts the show Grand
 Master, which controls the maximum brightness that any dimmer cue can
@@ -872,7 +872,7 @@ light up, and darken again when they end. The effects which cues
 create will also appear in the text area above the cue pad, from left
 to right, with the most recent effect on the right. In the photo
 below, &ldquo;Sparkle&rdquo; is the most recent effect, and it has two
-parameters, `chance` and `Fade`, which can be adjusted by turning the
+variables, `chance` and `Fade`, which can be adjusted by turning the
 encoders above them. The `chance` value is changing rapidly because it
 is configured to also be adjusted through the pressure sensitive cue
 pad that was used to launch it.
@@ -903,13 +903,13 @@ second time.
 As noted above, cues can also be configured to take advantage of the
 pressure sensitivity of the Push cue pads, so that as you vary the
 pressure with which you are holding down the pad, some visible
-parameter of the cue is altered. The strobe and sparkle cues in
+variable of the cue is altered. The strobe and sparkle cues in
 created by
 {api-doc}afterglow.examples.html#var-make-cues[`afterglow.examples/make-cues`]
 for the sample show work this way: the intensity and lightness of the
 strobe are increased by pressure, and so is the chance that a sparkle
 will be assigned to a light on each frame. You can see these
-parameters change in the text area above the cue's effect name while
+variables change in the text area above the cue's effect name while
 you are adjusting them, as shown in the photo above.
 
 [[exclusivity]]Cues may be mutually exclusive by nature, and if they
@@ -954,19 +954,19 @@ corresponding red kbd:[End] pad which appears underneath them.
 
 ==== Numeric Cue Variables
 
-If the cue that created an effect has numeric parameters assigned to
-it, the parameter names and values will appear above the effect name,
-and they can be adjusted using the encoder knob above the parameter.
-For example, in addition to varying the sparkle `chance` parameter
-using the pad pressure, as was done above, its `Fade` parameter can be
-adjusted using the effect parameter encoder above it. As soon as you
-touch the encode knob associated with a parameter, a graphical
+If the cue that created an effect has numeric variables assigned to
+it, the variable names and values will appear above the effect name,
+and they can be adjusted using the encoder knob above the variable.
+For example, in addition to varying the sparkle `chance` variable
+using the pad pressure, as was done above, its `Fade` variable can be
+adjusted using the effect variable encoder above it. As soon as you
+touch the encode knob associated with a variable, a graphical
 representation of the current value replaces its name, and updates as
 you turn the encoder to change the value.
 
-image::assets/AdjustingFade.jpg[Adjusting Fade parameter]
+image::assets/AdjustingFade.jpg[Adjusting Fade variable]
 
-If an effect has only one adjustable parameter, it will take up the
+If an effect has only one adjustable variable, it will take up the
 entire effect area, and you can use either encoder to adjust it, as
 when adjusting a Focus <<cues#creating-function-cues,function cue>>
 for the Torrent moving head spot:
@@ -974,7 +974,7 @@ for the Torrent moving head spot:
 image::assets/AdjustingFocus.jpg[Adjusting Focus cue]
 
 When you release the encoder knob, the adjustment graph disappears,
-and the parameter name reappears.
+and the variable name reappears.
 
 The <- indicator at the left of the text area in the above photo is an
 indicator that there are older effects which have been scrolled to the
@@ -998,7 +998,7 @@ image::assets/GoboCues.png[Gobo cues]
 
 ==== Boolean Cue Variables
 
-If a cue has Boolean parameters assigned to it, they will also appear
+If a cue has Boolean variables assigned to it, they will also appear
 above the effect name, with the current value showing as `Yes` or
 `No`. To adjust them you also start by grabbing the closest encoder,
 at which point you will see the two options with an arrow pointing at
@@ -1008,18 +1008,18 @@ want to choose and the variable will be updated:
 image::assets/AdjustingDown.jpg[Adjusting a Down? cue variable]
 
 When you release the encoder knob, the choices disappear and the
-parameter name reappears.
+variable name reappears.
 
 ==== Color Cue Variables
 
-If a cue has color parameters assigned to it, they will also appear
+If a cue has color variables assigned to it, they will also appear
 above the effect name. The currently assigned color value will be
 displayed as a six digit hexadecimal number, representing the eight
 bit red, green, and blue representation of the color value, #rrggbb.
-In this photo, a cue with a color parameter that starts out white has
+In this photo, a cue with a color variable that starts out white has
 just been launched:
 
-image::assets/ColorParam.jpg[Cue with color parameter]
+image::assets/ColorParam.jpg[Cue with color variable]
 
 When an effect is displaying a color cue variable, touching the
 associated encoder will open up a special color selection interface,
@@ -1264,7 +1264,7 @@ space.
 
 You can activate any cue shown by pressing its pad; running cues will
 light up, and darken again when they end. If the cues are configured
-to respond to velocity, you can adjust the corresponding parameters by
+to respond to velocity, you can adjust the corresponding variables by
 how hard you are pressing on the pad while the cue is running.
 
 To stop a running cue, press its pad again. Some cues will end
@@ -1288,7 +1288,7 @@ second time.
 As noted above, cues can also be configured to take advantage of the
 pressure sensitivity of the Launchpad Pro cue pads, so that as you
 vary the pressure with which you are holding down the pad, some
-visible parameter of the cue is altered. The strobe and sparkle cues
+visible variable of the cue is altered. The strobe and sparkle cues
 in created by
 {api-doc}afterglow.examples.html#var-make-cues[`afterglow.examples/make-cues`]
 for the sample show work this way: the intensity and lightness of the
