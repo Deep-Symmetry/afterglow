@@ -97,7 +97,10 @@
     If not supplied, 100 is assumed.
 
   * `:start` specifies the value to assign to the variable at the
-    start of the cue, if any.
+    start of the cue, if any. It can be a simple value, a keyword which
+    will be replaced by the current value of a show variable by the same
+    name when the cue begins, or a function which will be called to
+    obtain a value for the variable.
 
   * `:type` identifies the type of the variable, to help formatting
     its display. Supported values are `:integer`, `:float`, and

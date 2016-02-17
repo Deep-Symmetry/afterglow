@@ -404,7 +404,9 @@ controller>>.
 
 If the value of `:start` is a keyword, this cue variable will be
 initialized with the value held in the show variable by that name when
-the cue begins.
+the cue begins. If it is a function, that function will be called when
+the cue starts to determine the starting value of the variable.
+Otherwise, the value is simply copied to the variable.
 
 |`:name`
 |variable name
@@ -440,10 +442,10 @@ the cue begins.
 |`:float`
 
 |Provides a hint for how the variable should be formatted in
- adjustment interfaces. Supported values are `:integer`, `:float` and
- `:color`. Others may be added in the future. If not provided (or an
- unrecognized value is provided), the variable is assumed to hold
- floating-point values.
+ adjustment interfaces. Supported values are `:integer`, `:float`,
+ `:boolean`, and `:color`. Others may be added in the future. If not
+ provided (or an unrecognized value is provided), the variable is
+ assumed to hold floating-point values.
 
 |`:centered`
 |`false`

@@ -920,6 +920,21 @@
   (doseq [k (map :key (:meta @(:active-effects *show*)))]
     (end-effect! k :force true)))
 
+(defn- resolve-initial-value
+  "Determines how to interpret an initial value assigned to a cue
+  variable. If it is a keyword, looks up the value of the show
+  variable with the same name. If it is a function, calls it to obtain
+  the value. Otherwise returns the value unchanged."
+  [initial-value]
+  (cond (keyword? initial-value)
+        (get-variable initial-value)
+
+        (fn? initial-value)
+        (initial-value)
+
+        :else
+        initial-value))
+
 (defn- introduce-cue-variables
   "Creates any temporary variable parameters specified by the cue
   variable list, and returns the var-map that the effect creation
@@ -931,20 +946,17 @@
   `var-overrides` as described in <<add-effect-from-cue-grid!>>."
   [var-map x y var-overrides]
   (reduce (fn [result v]
-            (let [initial-value (or ((keyword (:key v)) var-overrides) (:start v))]
+            (let [initial-value (or ((keyword (:key v)) var-overrides) (resolve-initial-value (:start v)))]
               (if (string? (:key v))
-                ;; Needs to be introduced as a temp variable
+                ;; Needs to be introduced as a temp variable; set it and accumulate into result.
                 (let [temp-var (keyword (str "cue-temp-" x "-" y "-" (:key v)))]
                   (when initial-value
-                    (if (keyword? initial-value)
-                      (set-variable! temp-var (get-variable initial-value))
-                      (set-variable! temp-var initial-value)))
+                    (set-variable! temp-var initial-value))
                   (assoc result (keyword (:key v)) temp-var))
-                ;; Not a temp variable, just set starting value if needed
+                ;; Not a temp variable, just set starting value if needed, leave result unchanged.
                 (do
-                  (when initial-value (if (keyword? initial-value)
-                                        (set-variable! (:key v) (get-variable initial-value))
-                                        (set-variable! (:key v) initial-value)))
+                  (when initial-value
+                    (set-variable! (:key v) initial-value))
                   result)))) {} var-map))
 
 (defn add-effect-from-cue-grid!
