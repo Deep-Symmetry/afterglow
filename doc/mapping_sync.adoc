@@ -952,7 +952,7 @@ As described above, the effects created by cues appear in the text
 display area, and can be scrolled through and ended by pressing the
 corresponding red kbd:[End] pad which appears underneath them.
 
-==== Numeric Cue Parameters
+==== Numeric Cue Variables
 
 If the cue that created an effect has numeric parameters assigned to
 it, the parameter names and values will appear above the effect name,
@@ -971,7 +971,6 @@ entire effect area, and you can use either encoder to adjust it, as
 when adjusting a Focus <<cues#creating-function-cues,function cue>>
 for the Torrent moving head spot:
 
-[[gobo-photo]]
 image::assets/AdjustingFocus.jpg[Adjusting Focus cue]
 
 When you release the encoder knob, the adjustment graph disappears,
@@ -994,9 +993,24 @@ dimmed to hint that pressing them would replace the active cue.
 
 This dimming can also be seen in the web interface view of the cue grid:
 
+[[gobo-photo]]
 image::assets/GoboCues.png[Gobo cues]
 
-==== Color Cue Parameters
+==== Boolean Cue Variables
+
+If a cue has Boolean parameters assigned to it, they will also appear
+above the effect name, with the current value showing as `Yes` or
+`No`. To adjust them you also start by grabbing the closest encoder,
+at which point you will see the two options with an arrow pointing at
+the currently-chosen one. Rotate the encoder towards the option you
+want to choose and the variable will be updated:
+
+image::assets/AdjustingDown.jpg[Adjusting a Down? cue variable]
+
+When you release the encoder knob, the choices disappear and the
+parameter name reappears.
+
+==== Color Cue Variables
 
 If a cue has color parameters assigned to it, they will also appear
 above the effect name. The currently assigned color value will be
@@ -1007,7 +1021,7 @@ just been launched:
 
 image::assets/ColorParam.jpg[Cue with color parameter]
 
-When an effect is displaying a color cue parameter, touching the
+When an effect is displaying a color cue variable, touching the
 associated encoder will open up a special color selection interface,
 which takes over the entire cue grid, as well as the effect cell:
 
@@ -1027,6 +1041,23 @@ pressing the pad or by turning the encoders).
 
 As soon as you let go of both the hue and saturation encoders, the
 palette disappears and the normal cue grid returns.
+
+==== Scrolling Through Cue Variables
+
+If a cue has more than two variables, even though you can only see two
+at a time on the Push, you can still check and adjust all of them.
+Whenever there are too many to fit, the rightmost pad just below the
+effect display will be lit with an amber color and labeled kbd:[More
+->] as shown below:
+
+image::assets/MoreVars.jpg[More than Two Cue Variables]
+
+Each time you press the kbd:[More ->] button, you will see the next
+two variables assigned to the cue. Once you reach the end of the list,
+it wraps back to the beginning. Grabbing an encoder above the
+variables will adjust whichever variable is currently displayed
+beneath it. (While you are holding encoders to adjust an effect's
+variables, its kbd:[More ->] button will be blacked out and disabled.)
 
 === Metronome Control
 
@@ -1265,7 +1296,7 @@ strobe are increased by pressure, and so is the chance that a sparkle
 will be assigned to a light on each frame.
 
 NOTE: In order for aftertouch to work with your cues--in other words,
-for you to be able to adjust cue parameters by varing pressure on the
+for you to be able to adjust cue variables by varing pressure on the
 pad after you have launched it--you need to set your Launchpad Pro's
 *Aftertouch* mode to *Polyphonic*, as described in the *Setup Button*
 section of the

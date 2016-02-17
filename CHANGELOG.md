@@ -20,6 +20,8 @@ This change log follows the conventions of
   response.
 - Cue variables can now be Booleans, to support cues which want to be
   able to adjust the direction of a sawtooth oscillator while running.
+- The Ableton Push mapping now lets you scroll through all variables
+  assigned to a cue so you can see and adjust more than the first two.
 
 ### Fixed
 

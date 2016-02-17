@@ -342,10 +342,11 @@ through velocity-sensitive grid controllers like the Push or
 <<mapping_sync#mapping-cues-to-a-controller,any velocity-sensitive
 MIDI controller>>.
 
-Cue Variables can either be numeric, and adjusted by sliders in the
-web UI, or rotary encoders and faders on MIDI controllers, or they can
-store colors, in which case both the web UI and
-<<mapping_sync#color-cue-parameters,Push mapping>> provide a powerful
+Cue Variables can either be numeric (adjusted by sliders in the web
+UI, or rotary encoders and faders on MIDI controllers), boolean (with
+corresponding simple Web and Push interfaces) or they can store
+colors, in which case both the web UI and
+<<mapping_sync#color-cue-variables,Push mapping>> provide a powerful
 interface for picking and adjusting the color.
 
 They can also be temporary, lasting only the duration of the cue, or
