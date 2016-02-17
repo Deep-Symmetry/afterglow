@@ -428,31 +428,22 @@
   group of fixtures, with cue parameters to adjust the beat ratio,
   starting with default values established by show parameters."
   [group x y color]
-  (when-not (= (type (show/get-variable :sawtooth-down?)) Boolean)
-    ;; If the default sawtooth direction has not yet been set, establish it as down
-    (show/set-variable! :sawtooth-down? true))
-  (when-not (= (type (show/get-variable :starting-beats)) Long)
-    ;; If the default beat ratio numerator has not yet been set, establish it as 2
-    (show/set-variable! :starting-beats 2))
-  (when-not (= (type (show/get-variable :starting-cycles)) Long)
-    ;; If the default beat ratio denominator has not yet been set, establish it as 1
-    (show/set-variable! :starting-cycles 1))
-  
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "saw")]
     (ct/set-cue! (:cue-grid *show*) x y
                  (cues/cue effect-key
                            (fn [var-map] (dimmer-effect
                                           (oscillators/build-oscillated-param
-                                           (oscillators/sawtooth :down? (params/bind-keyword-param (:down var-map)
-                                                                                                   Boolean true)
-                                                                 :interval-ratio (build-ratio-param var-map)))
+                                           (oscillators/sawtooth :down? (:down var-map)
+                                                                 :interval-ratio (build-ratio-param var-map)
+                                                                 :phase (:phase var-map)))
                                           fixtures
                                           :effect-name effect-name))
                            :color color
                            :variables [{:key "beats" :min 1 :max 32 :type :integer :start :starting-beats :name "Beats"}
                                        {:key "down" :type :boolean :start :sawtooth-down? :name "Down?"}
                                        {:key "cycles" :min 1 :max 10 :type :integer :start :starting-cycles
-                                        :name "Cycles"}]
+                                        :name "Cycles"}
+                                       {:key "phase" :min 0 :max 1 :start :starting-phase :name "Phase"}]
                            :end-keys end-keys))))
 
 (defn make-triangle-cue
@@ -460,25 +451,20 @@
   set of fixtures, with cue parameters to adjust the beat ratio,
   starting with default values established by show parameters."
   [group x y color]
-  (when-not (= (type (show/get-variable :starting-beats)) Long)
-    ;; If the default beat ratio numerator has not yet been set, establish it as 2
-    (show/set-variable! :starting-beats 2))
-  (when-not (= (type (show/get-variable :starting-cycles)) Long)
-    ;; If the default beat ratio denominator has not yet been set, establish it as 1
-    (show/set-variable! :starting-cycles 1))
-  
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "triangle")]
     (ct/set-cue! (:cue-grid *show*) x y
                (cues/cue effect-key
                          (fn [var-map] (dimmer-effect
                                         (oscillators/build-oscillated-param
-                                         (oscillators/triangle :interval-ratio (build-ratio-param var-map)))
+                                         (oscillators/triangle :interval-ratio (build-ratio-param var-map)
+                                                               :phase (:phase var-map)))
                                         fixtures
                                         :effect-name effect-name))
                          :color color
                          :variables [{:key "beats" :min 1 :max 32 :type :integer :start :starting-beats :name "Beats"}
                                      {:key "cycles" :min 1 :max 10 :type :integer :start :starting-cycles
-                                      :name "Cycles"}]
+                                      :name "Cycles"}
+                                     {:key "phase" :min 0 :max 1 :start :starting-phase :name "Phase"}]
                          :end-keys end-keys))))
 
 (defn make-sine-cue
@@ -486,25 +472,21 @@
   set of fixtures, with cue parameters to adjust the beat ratio,
   starting with default values established by show parameters."
   [group x y color]
-  (when-not (= (type (show/get-variable :starting-beats)) Long)
-    ;; If the default beat ratio numerator has not yet been set, establish it as 2
-    (show/set-variable! :starting-beats 2))
-  (when-not (= (type (show/get-variable :starting-cycles)) Long)
-    ;; If the default beat ratio denominator has not yet been set, establish it as 1
-    (show/set-variable! :starting-cycles 1))
-  
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "sine")]
     (ct/set-cue! (:cue-grid *show*) x y
                  (cues/cue effect-key
                            (fn [var-map] (dimmer-effect
                                           (oscillators/build-oscillated-param
-                                           (oscillators/sine :interval-ratio (build-ratio-param var-map)) :min 1)
+                                           (oscillators/sine :interval-ratio (build-ratio-param var-map)
+                                                             :phase (:phase var-map))
+                                           :min 1)
                                           fixtures
                                           :effect-name effect-name))
                            :color color
                            :variables [{:key "beats" :min 1 :max 32 :type :integer :start :starting-beats :name "Beats"}
-                                     {:key "cycles" :min 1 :max 10 :type :integer :start :starting-cycles
-                                      :name "Cycles"}]
+                                       {:key "cycles" :min 1 :max 10 :type :integer :start :starting-cycles
+                                        :name "Cycles"}
+                                       {:key "phase" :min 0 :max 1 :start :starting-phase :name "Phase"}]
                          :end-keys end-keys))))
 
 (defn make-square-cue
@@ -512,35 +494,22 @@
   of fixtures, with cue parameters to adjust the beat ratio and pulse
   width, starting with default values established by show parameters."
   [group x y color]
-  (when-not (= (type (show/get-variable :starting-beats)) Long)
-    ;; If the default beat ratio numerator has not yet been set, establish it as 2
-    (show/set-variable! :starting-beats 2))
-  (when-not (= (type (show/get-variable :starting-cycles)) Long)
-    ;; If the default beat ratio denominator has not yet been set, establish it as 1
-    (show/set-variable! :starting-cycles 1))
-  (when-not (= (type (show/get-variable :starting-width)) Double)
-    ;; If the default pulse width has not yet been set, establish it as 0.5
-    (show/set-variable! :starting-width 0.5))
-  (when-not (= (type (show/get-variable :starting-phase)) Double)
-    ;; If the default pulse phase has not yet been set, establish it as 0.0
-    (show/set-variable! :starting-phase 0.0))
-  
-  ;; TODO: Make width and phase adjustable params. Is blowing up in oscillators/square right now
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "square")]
     (ct/set-cue! (:cue-grid *show*) x y
                (cues/cue effect-key
                          (fn [var-map] (dimmer-effect
                                         (oscillators/build-oscillated-param
                                          (oscillators/square :interval-ratio (build-ratio-param var-map)
-                                                             :width (params/bind-keyword-param (:width var-map)
-                                                                                                   Number 0.5)))
+                                                             :width (:width var-map)
+                                                             :phase (:phase var-map)))
                                         fixtures
                                         :effect-name effect-name))
                          :color color
                          :variables [{:key "beats" :min 1 :max 32 :type :integer :start :starting-beats :name "Beats"}
                                      {:key "width" :min 0 :max 1 :start :starting-width :name "Width"}
                                      {:key "cycles" :min 1 :max 10 :type :integer :start :starting-cycles
-                                      :name "Cycles"}]
+                                      :name "Cycles"}
+                                     {:key "phase" :min 0 :max 1 :start :starting-phase :name "Phase"}]
                          :end-keys end-keys))))
 
 (defn x-phase
@@ -674,6 +643,23 @@
                            :variables [{:key "chance" :min 0.0 :max 0.4 :start 0.05 :velocity true}
                                        {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
 
+
+    ;; Set up default starting values for oscillators driving dimmer cues
+    (when-not (= (type (show/get-variable :starting-beats)) Long)
+      ;; If the default beat ratio numerator has not yet been set, establish it as 2
+      (show/set-variable! :starting-beats 2))
+    (when-not (= (type (show/get-variable :starting-cycles)) Long)
+      ;; If the default beat ratio denominator has not yet been set, establish it as 1
+      (show/set-variable! :starting-cycles 1))
+    (when-not (= (type (show/get-variable :starting-phase)) Double)
+      ;; If the default pulse phase has not yet been set, establish it as 0.0
+      (show/set-variable! :starting-phase 0.0))
+    (when-not (= (type (show/get-variable :sawtooth-down?)) Boolean)
+      ;; If the default sawtooth direction has not yet been set, establish it as down
+      (show/set-variable! :sawtooth-down? true))
+    (when-not (= (type (show/get-variable :starting-width)) Double)
+      ;; If the default pulse width has not yet been set, establish it as 0.5
+      (show/set-variable! :starting-width 0.5))
 
     ;; Dimmer oscillator cues: Sawtooth
     (make-sawtooth-cue nil 0 3 :yellow)
