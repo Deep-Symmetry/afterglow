@@ -97,8 +97,8 @@
   "Make a color effect which affects all lights in the sample show.
   This became vastly more useful once I implemented dynamic color
   parameters. Can include only a specific set of lights by passing
-  them with :lights"
-  [color & {:keys [include-color-wheels? lights effect-name] :or {lights (show/all-fixtures)}}]
+  them with :fixtures"
+  [color & {:keys [include-color-wheels? fixtures effect-name] :or {fixtures (show/all-fixtures)}}]
   (try
     (let [[c desc] (cond (= (type color) :com.evocomputing.colors/color)
                        [color (color-name color)]
@@ -107,7 +107,7 @@
                        [color "variable"]
                        :else
                        [(create-color color) color])]
-      (color-fx/color-effect (or effect-name (str "Global " desc)) c lights
+      (color-fx/color-effect (or effect-name (str "Global " desc)) c fixtures
                              :include-color-wheels? include-color-wheels?))
     (catch Exception e
       (throw (Exception. (str "Can't figure out how to create color from " color) e)))))
@@ -126,7 +126,7 @@
 (defn fiat-lux
   "Start simple with a cool blue color from all the lights."
   []
-  (show/add-effect! :color (global-color-effect "slateblue" :include-color-wheels? true))
+  (show/add-effect! :all-color (global-color-effect "slateblue" :include-color-wheels? true))
   (show/add-effect! :dimmers (global-dimmer-effect 255))
   (show/add-effect! :torrent-shutter
                     (afterglow.effects.channel/function-effect
@@ -145,7 +145,7 @@
   effect mixing."
   []
   (let [hue-param (oscillators/build-oscillated-param (oscillators/sawtooth :interval :phrase) :max 360)]
-    (show/add-effect! :color
+    (show/add-effect! :all-color
                       (global-color-effect
                        (params/build-color-param :s 100 :l 50 :h hue-param)))
     (show/add-effect! :sparkle
@@ -161,7 +161,7 @@
   (show/add-midi-control-to-var-mapping  "Slider" 0 1 :sparkle-chance :max 0.3)
   (let [hue-param (oscillators/build-oscillated-param (oscillators/sawtooth :interval :phrase) :max 360)
         sparkle-color-param (params/build-color-param :s 100 :l :sparkle-lightness :h :sparkle-hue)]
-    (show/add-effect! :color
+    (show/add-effect! :all-color
                       (global-color-effect
                        (params/build-color-param :s 100 :l 50 :h hue-param)))
     (show/add-effect! :sparkle
@@ -235,23 +235,33 @@
   []
   (core/stop-osc-server))
 
-(defn global-color-cue
+(defn make-color-cue
   "Create a cue-grid entry which establishes a global color effect,
-  given a named color. Also set up a cue color parameter so the color
-  can be tweaked in the Web UI or on the Ableton Push."
-  [color-name x y & {:keys [include-color-wheels? held]}]
-  (let [color (create-color color-name)
-        color-var {:key "color" :start color :type :color}
-        cue (cues/cue :color (fn [var-map]
-                               (global-color-effect (params/bind-keyword-param (:color var-map color)
-                                                                               :com.evocomputing.colors/color
-                                                                               color)
-                                                    :effect-name (str "Global " color-name)
-                                                    :include-color-wheels? include-color-wheels?))
-                      :held held
-                      :color color
-                      :color-fn (cues/color-fn-from-cue-var color-var)
-                      :variables [color-var])]
+  given a named color. Also set up a cue color parameter which gets
+  bound to a show variable with the same name as the effect key, so
+  the color can be tweaked in the Web UI or on the Ableton Push, and
+  changes persist between invocations."
+  [color-name x y & {:keys [include-color-wheels? held fixtures effect-key effect-name priority]
+                     :or   {fixtures    (show/all-fixtures)
+                            effect-key  :color
+                            effect-name (str "Color " color-name)
+                            priority    0}}]
+  (let [color     (create-color color-name)
+        color-var {:key effect-key :type :color :name "Color"}
+        cue       (cues/cue effect-key
+                            (fn [var-map]
+                              (global-color-effect (params/bind-keyword-param (:key color-var)
+                                                                              :com.evocomputing.colors/color
+                                                                              color)
+                                                   :effect-name effect-name
+                                                   :fixtures fixtures
+                                                   :include-color-wheels? include-color-wheels?))
+                            :priority priority
+                            :held held
+                            :color color
+                            :color-fn (cues/color-fn-from-cue-var color-var)
+                            :variables [color-var])]
+    (show/set-variable! effect-key color)
     (ct/set-cue! (:cue-grid *show*) x y cue)))
 
 (defn- name-torrent-gobo-cue
@@ -530,8 +540,8 @@
                  (oscillators/sawtooth :interval :bar) :max 360)
         hue-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-bar)]
     (ct/set-cue! (:cue-grid *show*) 0 1
-                 (cues/cue :color (fn [_] (fx/scene "Rainbow with laser" (global-color-effect hue-param)
-                                                    (beyond/laser-color-effect server hue-param)))
+                 (cues/cue :all-color (fn [_] (fx/scene "Rainbow with laser" (global-color-effect hue-param)
+                                                        (beyond/laser-color-effect server hue-param)))
                            :short-name "Rainbow Bar Fade"
                            :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
                                         :type :integer}])))
@@ -563,33 +573,39 @@
         hue-z-gradient (params/build-spatial-param  ; Spread a rainbow across the light grid front to back
                         (show/all-fixtures)
                         (fn [head] (- (:z head) (:min-z @(:dimensions *show*)))) :max 360)]
-    (global-color-cue "red" 0 0 :include-color-wheels? true)
-    (global-color-cue "orange" 1 0 :include-color-wheels? true)
-    (global-color-cue "yellow" 2 0 :include-color-wheels? true)
-    (global-color-cue "green" 3 0 :include-color-wheels? true)
-    (global-color-cue "blue" 4 0 :include-color-wheels? true)
-    (global-color-cue "purple" 5 0 :include-color-wheels? true)
-    (global-color-cue "white" 6 0 :include-color-wheels? true)
 
+    ;; Bottom row assigns colors, first to all fixtures, and then (at a higher priority, so they can
+    ;; run a the same time as the first, and locally override it) individual fixture groups.
+    (make-color-cue "white" 0 0 :include-color-wheels? true
+                    :fixtures (show/all-fixtures) :effect-key :all-color :effect-name "Color All")
+    (doall (map-indexed (fn [i group]
+                          (make-color-cue "white" (inc i) 0 :include-color-wheels? true
+                                          :fixtures (show/fixtures-named group)
+                                          :effect-key (keyword (str (name group) "-color"))
+                                          :effect-name (str "Color " (name group))
+                                          :priority 1))
+                        light-groups))
+
+    ;; Some special/fun cues
     (show/set-variable! :rainbow-saturation 100)
     (ct/set-cue! (:cue-grid *show*) 0 1
                  (let [color-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-bar)]
-                   (cues/cue :color (fn [_] (global-color-effect color-param))
+                   (cues/cue :all-color (fn [_] (global-color-effect color-param))
                              :color-fn (cues/color-fn-from-param color-param)
                              :short-name "Rainbow Bar Fade"
                              :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
                                           :type :integer}])))
     (ct/set-cue! (:cue-grid *show*) 1 1
-                 (cues/cue :color (fn [_] (global-color-effect
-                                           (params/build-color-param :s :rainbow-saturation :l 50 :h hue-gradient)
-                                           :include-color-wheels? true))
+                 (cues/cue :all-color (fn [_] (global-color-effect
+                                               (params/build-color-param :s :rainbow-saturation :l 50 :h hue-gradient)
+                                               :include-color-wheels? true))
                            :short-name "Rainbow Grid"
                            :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
                                         :type :integer}]))
     (ct/set-cue! (:cue-grid *show*) 2 1
                  (let [color-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-gradient
                                                              :adjust-hue hue-bar)]
-                   (cues/cue :color (fn [_] (global-color-effect color-param))
+                   (cues/cue :all-color (fn [_] (global-color-effect color-param))
                              :color-fn (cues/color-fn-from-param color-param)
                              :short-name "Rainbow Grid+Bar"
                              :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
@@ -597,7 +613,7 @@
     (ct/set-cue! (:cue-grid *show*) 3 1  ; Desaturate the rainbow as each beat progresses
                  (let [color-param (params/build-color-param :s desat-beat :l 50 :h hue-gradient
                                                              :adjust-hue hue-bar)]
-                   (cues/cue :color (fn [_] (global-color-effect color-param))
+                   (cues/cue :all-color (fn [_] (global-color-effect color-param))
                              :color-fn (cues/color-fn-from-param color-param)
                              :short-name "Rainbow Pulse")))
 
@@ -606,22 +622,22 @@
                            :priority 1000))
 
     (ct/set-cue! (:cue-grid *show*) 5 1
-                 (cues/cue :color (fn [_] (global-color-effect
-                                           (params/build-color-param :s 100 :l 50 :h hue-z-gradient)
-                                           :include-color-wheels? true))
+                 (cues/cue :all-color (fn [_] (global-color-effect
+                                               (params/build-color-param :s 100 :l 50 :h hue-z-gradient)
+                                               :include-color-wheels? true))
                            :short-name "Z Rainbow Grid"))
     (ct/set-cue! (:cue-grid *show*) 6 1
                  (let [color-param (params/build-color-param :s 100 :l 50 :h hue-z-gradient
                                                              :adjust-hue hue-bar)]
-                   (cues/cue :color (fn [_] (global-color-effect color-param))
+                   (cues/cue :all-color (fn [_] (global-color-effect color-param))
                              :color-fn (cues/color-fn-from-param color-param)
                              :short-name "Z Rainbow Grid+Bar")))
 
     (ct/set-cue! (:cue-grid *show*) 7 1
                  (let [color-param (params/build-color-param :s 100 :l 50 :h hue-gradient
                                                              :adjust-hue hue-bar)]
-                   (cues/cue :color (fn [_] (global-color-effect color-param
-                                                                 :lights (show/fixtures-named "blade")))
+                   (cues/cue :all-color (fn [_] (global-color-effect color-param
+                                                                     :fixtures (show/fixtures-named "blade")))
                              :color-fn (cues/color-fn-from-param color-param)
                              :short-name "Rainbow Blades")))
 
@@ -886,7 +902,7 @@
      (cues/cue :chase (fn [var-map]
                         (fx/chase "Chase Test"
                                   [(global-color-effect :red :include-color-wheels? true)
-                                   (global-color-effect :green :lights (show/fixtures-named "hex"))
+                                   (global-color-effect :green :fixtures (show/fixtures-named "hex"))
                                    (global-color-effect :blue :include-color-wheels? true)]
                                   (params/bind-keyword-param (:position var-map 0) Number 0)
                                   :beyond :bounce)
@@ -901,10 +917,10 @@
      (:cue-grid *show*) 1 13
      (cues/cue :chase (fn [var-map]
                         (fx/chase "Chase Test 2"
-                                  [(global-color-effect :red :lights (show/fixtures-named "hex"))
-                                   (global-color-effect :green :lights (show/fixtures-named "blade"))
-                                   (global-color-effect :blue :lights (show/fixtures-named "hex"))
-                                   (global-color-effect :white :lights (show/all-fixtures))]
+                                  [(global-color-effect :red :fixtures (show/fixtures-named "hex"))
+                                   (global-color-effect :green :fixtures (show/fixtures-named "blade"))
+                                   (global-color-effect :blue :fixtures (show/fixtures-named "hex"))
+                                   (global-color-effect :white :fixtures (show/all-fixtures))]
                                   @step-param :beyond :loop))
                :color :magenta))
 
@@ -917,16 +933,16 @@
                                                                      [6 8 {:level 25}]]))))
     ;; Some color cycle chases
     (ct/set-cue! (:cue-grid *show*) 8 1
-                 (cues/cue :color (fn [_] (fun/iris-out-color-cycle-chase (show/all-fixtures)))))
+                 (cues/cue :all-color (fn [_] (fun/iris-out-color-cycle-chase (show/all-fixtures)))))
     (ct/set-cue! (:cue-grid *show*) 9 1
-                 (cues/cue :color (fn [_] (fun/wipe-right-color-cycle-chase
+                 (cues/cue :all-color (fn [_] (fun/wipe-right-color-cycle-chase
                                            (show/all-fixtures) :transition-phase-function rhythm/snapshot-bar-phase))))
     (ct/set-cue! (:cue-grid *show*) 10 1
-                 (cues/cue :color (fn [_] (fun/wipe-right-color-cycle-chase
-                                           (show/all-fixtures)
-                                           :color-index-function rhythm/snapshot-beat-within-phrase
-                                           :transition-phase-function rhythm/snapshot-beat-phase
-                                           :effect-name "Wipe Right Beat"))))
+                 (cues/cue :all-color (fn [_] (fun/wipe-right-color-cycle-chase
+                                               (show/all-fixtures)
+                                               :color-index-function rhythm/snapshot-beat-within-phrase
+                                               :transition-phase-function rhythm/snapshot-beat-phase
+                                               :effect-name "Wipe Right Beat"))))
 
     ;; Some cues to show the Hypnotic RGB Laser
     (ct/set-cue! (:cue-grid *show*) 8 3

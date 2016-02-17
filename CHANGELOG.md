@@ -25,6 +25,9 @@ This change log follows the conventions of
 
 ### Fixed
 
+- The color wheel is only applied when a color has sufficient
+  saturation for it to make sense. The threshold can be adjusted by
+  setting the show variable `:color-wheel-min-saturation`.
 - The documentation link in the web interface now takes you to the
   proper version-specific tag of the documentation if it is a release
   build. Snapshot builds take you to `master`.
@@ -41,6 +44,9 @@ This change log follows the conventions of
   MIDI device was added, and the controller mapping implementations
   were updated to take advantage of this, so they no longer need to
   receive and filter out all the events from other devices.
+- The sample show is becoming a much more practical example of how to
+  layer flexible color and dimmer cues, with good cue variables to add
+  even more dimensions.
 - A lot of repetitive code in the examples namespace was consolitated
   using helper functions.
 
