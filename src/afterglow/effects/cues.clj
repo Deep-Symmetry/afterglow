@@ -398,7 +398,7 @@
     (with-show show
       (snapshot-cue-variables cue when-id))
     (let [result (map (fn [v]
-                        [(:key v) (get-cue-variable cue v :when-id when-id)])
+                        [(keyword (:key v)) (get-cue-variable cue v :when-id when-id)])
                       (:variables cue))]
       (when (= when-id (:id (show/find-effect (:key cue))))
         (into {} result)))))

@@ -289,9 +289,10 @@
   (dosync
    (when-let [cue (cue-at grid x y)]
      (let [former-id (:active-id cue)]
-       (set-cue! grid x y (if (some? id)
-                            (assoc cue :active-id id)
-                            (dissoc cue :active-id)))
+       (dosync  ;; Update the active-id value in the cue
+        (alter (:cues grid) assoc [x y] (if (some? id)
+                                          (assoc cue :active-id id)
+                                          (dissoc cue :active-id))))
        (doseq [[[_ channel note kind] feedback] (get @(:midi-feedback grid) [x y])]
          (let [[on-feedback off-feedback device] feedback
                velocity (if (some? id) on-feedback off-feedback)]
@@ -369,8 +370,12 @@
   is released, and adds it to the controller. The overlay will end
   when a control-change message with value 0 is sent to the specified
   control number. Other than that, all it does is call the supplied
-  function every time the interface is being updated. As
-  with [[add-overlay]], `state` must be a value created
+  function every time the interface is being updated, passing it the
+  metronome snapshot which represents the moment at which the
+  interface is being drawn. If the function returns a falsey value,
+  the overlay will be ended.
+
+  As with [[add-overlay]], `state` must be a value created
   by [[create-overlay-state]] and tracked by the controller."
   [state control-num f]
   (add-overlay state

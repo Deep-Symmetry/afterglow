@@ -684,7 +684,7 @@
                          (move-view page-info (+ left width) bottom))
           "cues-left" (when (pos? left)
                         (move-view page-info (- left (min left width)) bottom))
-          nil) ;; We did not recognize the direction
+          nil)  ; We did not recognize the direction
       {:moved kind}
       {:error (str "Unable to move cue grid in direction: " kind)})))
 

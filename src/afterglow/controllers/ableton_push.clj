@@ -714,28 +714,43 @@
   ;; First clean up any cue variable scroll offsets for effects that have ended
   (swap! (:cue-var-offsets controller) select-keys (map :id (:meta @(:active-effects (:show controller)))))
 
-  (let [room (room-for-effects controller)
-        first-cell (- 4 room)
-        fx-info @(:active-effects (:show controller))
-        fx (:effects fx-info)
-        fx-meta (:meta fx-info)
+  (let [room        (room-for-effects controller)
+        first-cell  (- 4 room)
+        fx-info     @(:active-effects (:show controller))
+        fx          (:effects fx-info)
+        fx-meta     (:meta fx-info)
         num-skipped (- (count fx-meta) room @(:effect-offset controller))]
     (if (seq fx)
-      (do (loop [fx (take room (drop num-skipped fx))
+      (do (loop [fx      (take room (drop num-skipped fx))
                  fx-meta (take room (drop num-skipped fx-meta))
-                 x first-cell]
-            (let [effect (:effect (first fx))
-                  info (first fx-meta)
-                  ending ((:key info) (:ending fx-info))
-                  cue (:cue info)
-                  end-label (if ending " Ending  " "  End    ")
+                 x       first-cell]
+            (let [effect      (:effect (first fx))
+                  info        (first fx-meta)
+                  ending      ((:key info) (:ending fx-info))
+                  cue         (:cue info)
+                  end-label   (if ending " Ending  " "  End    ")
                   scroll-vars (> (count (:variables cue)) 2)
-                  more-label (when scroll-vars (concat " More " [(:right-arrow special-symbols)]))]
+                  more-label  (when scroll-vars (concat " More " [(:right-arrow special-symbols)]))
+                  cur-vals    (cues/snapshot-cue-variables cue (:id info) :show (:show controller))
+                  saved-vals  (controllers/cue-vars-saved-at (:cue-grid (:show controller)) (:x info) (:y info))
+                  save-action (when (seq cur-vals)
+                                (if (= cur-vals saved-vals) :clear :save))
+                  save-label  (case save-action
+                                :save  "  Save   "
+                                :clear " Clear   "
+                                "         ")]
               (write-display-cell controller 0 x (cue-variable-names controller cue (:id info)))
               (write-display-cell controller 1 x (cue-variable-values controller cue (:id info)))
               (write-display-cell controller 2 x (or (:name cue) (:name (first fx))))
-              (write-display-cell controller 3 x (concat end-label more-label))
-              (aset (:next-top-pads controller) (* 2 x) (top-pad-state :dim :red))
+              (write-display-cell controller 3 x (concat (if @(:record-mode controller) save-label end-label)
+                                                         more-label))
+              (if @(:record-mode controller)
+                (when save-action
+                  (aset (:next-top-pads controller) (* 2 x)
+                        (top-pad-state :dim (case save-action
+                                              :save :green
+                                              :clear :amber))))
+                (aset (:next-top-pads controller) (* 2 x) (top-pad-state :dim :red)))
               (when scroll-vars (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :dim :amber)))
               (when (seq (rest fx))
                 (recur (rest fx) (rest fx-meta) (inc x)))))
@@ -831,6 +846,12 @@
              assoc (:shift control-buttons)
              (button-state (:shift control-buttons)
                            (if @(:shift-mode controller) :bright :dim)))
+
+      ;; Reflect the record button state
+      (swap! (:next-text-buttons controller)
+             assoc (:record control-buttons)
+             (button-state (:record control-buttons)
+                           (if @(:record-mode controller) :bright :dim)))
 
       (render-cue-grid controller snapshot)
       (update-scroll-arrows controller)
@@ -1131,6 +1152,41 @@
                                                  (fn [_] (swap! (:next-text-buttons controller)
                                                                 assoc button (button-state button :bright)))))
 
+(defn- handle-save-effect
+  "Process a tap on one of the pads which indicate the user wants to
+  save or clear the variables for the associated effect."
+  [controller note]
+  (let [room    (room-for-effects controller)
+        fx-info @(:active-effects (:show controller))
+        fx      (vec (drop (- (count (:effects fx-info)) room) (:effects fx-info)))
+        fx-meta (vec (drop (- (count (:meta fx-info)) room) (:meta fx-info)))
+        offset  (- 4 room)
+        x       (quot (- note 20) 2)
+        index   (- x offset)]
+    (when (and (seq fx) (< index (count fx)))
+      (let [effect      (get fx index)
+            info        (get fx-meta index)
+            cue         (:cue info)
+            cur-vals    (cues/snapshot-cue-variables cue (:id info) :show (:show controller))
+            saved-vals  (controllers/cue-vars-saved-at (:cue-grid (:show controller)) (:x info) (:y info))
+            save-action (when (seq cur-vals)
+                          (if (= cur-vals saved-vals) :clear :save))]
+        (when save-action
+          (case save-action
+            :save  (controllers/save-cue-vars! (:cue-grid (:show controller)) (:x info) (:y info) cur-vals)
+            :clear (controllers/clear-saved-cue-vars! (:cue-grid (:show controller)) (:x info) (:y info)))
+          (controllers/add-control-held-feedback-overlay (:overlays controller) note
+                                                         (fn [_]
+                                                           (aset (:next-top-pads controller) (* 2 x)
+                                                                 (top-pad-state :bright (case save-action
+                                                                                          :save  :green
+                                                                                          :clear :amber)))
+                                                           (write-display-cell controller 3 x
+                                                                               (case save-action
+                                                                                 :save  "  Saved  "
+                                                                                 :clear "Cleared  "))
+                                                           true)))))))
+
 (defn- handle-end-effect
   "Process a tap on one of the pads which indicate the user wants to
   end the associated effect."
@@ -1220,9 +1276,11 @@
     (when (pos? (:velocity message))
       (enter-metronome-showing controller))
 
-    (20 22 24 26) ; Effect end pads
+    (20 22 24 26) ; Effect end/save pads
     (when (pos? (:velocity message))
-      (handle-end-effect controller (:note message)))
+      (if @(:record-mode controller)
+        (handle-save-effect controller (:note message))
+        (handle-end-effect controller (:note message))))
 
     (21 23 25 27) ; Effect cue variable scroll pads
     (when (pos? (:velocity message))
@@ -1236,6 +1294,9 @@
 
     49 ; Shift button
     (reset! (:shift-mode controller) (pos? (:velocity message)))
+
+    86 ; Record button
+    (reset! (:record-mode controller) (pos? (:velocity message)))
 
     44 ; Left arrow
     (when (pos? (:velocity message))
@@ -1669,13 +1730,13 @@
           (case note
             8 ; Master encoder
             (master-encoder-touched controller)
-            
+
             9 ; BPM encoder
             (bpm-encoder-touched controller)
-            
+
             10 ; Beat encoder
             (beat-encoder-touched controller)
-            
+
             ;; Something we don't care about
             nil))))
 
@@ -1817,6 +1878,7 @@
                :last-marker          (atom nil)
                :shift-mode           shift-mode
                :stop-mode            (atom false)
+               :record-mode          (atom false)
                :midi-handler         (atom nil)
                :deactivate-handler   (atom nil)
                :tempo-tap-handler    (tempo/create-show-tempo-tap-handler show :shift-fn (fn [] @shift-mode))

@@ -855,7 +855,7 @@
   [cue var-map]
   (when (seq (:variables cue))
     (into {} (map (fn [v]
-                    [(:key v) (cue-variable-val v var-map)])
+                    [(keyword (:key v)) (cue-variable-val v var-map)])
                   (:variables cue)))))
 
 (defn- add-effect-internal
@@ -1012,8 +1012,9 @@
   (when-let [cue (controllers/cue-at (:cue-grid *show*) x y)]
     (doseq [k (:end-keys cue)]
       (end-effect! k))
-    (let [velocity-vars (controllers/starting-vars-for-velocity cue velocity)
-          var-map (introduce-cue-variables (:variables cue) x y (merge velocity-vars var-overrides))
+    (let [saved-vars (controllers/cue-vars-saved-at (:cue-grid *show*) x y)
+          velocity-vars (controllers/starting-vars-for-velocity cue velocity)
+          var-map (introduce-cue-variables (:variables cue) x y (merge saved-vars velocity-vars var-overrides))
           id (add-effect! (:key cue) ((:effect cue) var-map)
                           :priority (:priority cue) :from-cue cue :x x :y y :var-map var-map)]
       (controllers/activate-cue! (:cue-grid *show*) x y id)
