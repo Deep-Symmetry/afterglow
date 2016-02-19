@@ -8,8 +8,11 @@ This change log follows the conventions of
 
 ### Added
 
+- The web and Push interfaces now offer a way to save adjusted cue
+  variable values, so the next time the cue is launched the saved
+  values are used.
 - Support for other members of the Novation Launchpad family of grid
-  controllers:
+  controllers has been implemented:
   - Launchpad Mini
   - Launchpad S (untested, but the Mini, which works, is based on the S)
   - Launchpad Mk2
