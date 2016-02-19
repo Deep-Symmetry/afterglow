@@ -33,6 +33,7 @@
             [afterglow.show-context :refer [*show* with-show]]
             [afterglow.transform :as transform]
             [afterglow.version :as version]
+            [afterglow.util :as util]
             [amalloy.ring-buffer :refer [ring-buffer]]
             [clojure.math.numeric-tower :as math]
             [clojure.stacktrace :refer [root-cause]]
@@ -833,6 +834,30 @@
   (assoc (into {} (for [[k v] m] [k (if (>= v index) (inc v) v)]))
          key index))
 
+(defn- cue-variable-keyword
+  "Finds the keyword by which a cue variable is accessed given
+  its var-map."
+  [var-spec var-map]
+  (if (keyword? (:key var-spec))
+    (:key var-spec)
+    ((keyword (:key var-spec)) var-map)))
+
+(defn- cue-variable-val
+  "Looks up the value of a cue variable so its starting value can be
+  recorded for the editing interface."
+  [var-spec var-map]
+  (when-let [k (cue-variable-keyword var-spec var-map)]
+    (util/normalize-cue-variable-value var-spec (get-variable k))))
+
+(defn- starting-variable-values
+  "Record the cue variable values at the start of the effect, so
+  editing interfaces can offer a save button if they change."
+  [cue var-map]
+  (when (seq (:variables cue))
+    (into {} (map (fn [v]
+                    [(:key v) (cue-variable-val v var-map)])
+                  (:variables cue)))))
+
 (defn- add-effect-internal
   "Helper function which adds an effect with a specified key and priority to the priority
   list structure maintained for the show, replacing any existing effect with the same key.
@@ -846,7 +871,9 @@
                                                   :started (rhythm/metro-snapshot (:metronome *show*))}
                                                  (when from-cue {:cue from-cue})
                                                  (when x {:x x}) (when y {:y y})
-                                                 (when var-map {:variables var-map})))
+                                                 (when var-map {:variables var-map})
+                                                 (when-let [starting-vars (starting-variable-values from-cue var-map)]
+                                                   {:starting-vars starting-vars})))
      :ending (:ending base)}))
 
 (defn add-effect!

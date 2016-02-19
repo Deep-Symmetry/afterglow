@@ -5,7 +5,8 @@
             [overtone.midi :as midi]
             [afterglow.midi :as amidi]
             [afterglow.rhythm :as rhythm]
-            [taoensso.timbre :as timbre]))
+            [taoensso.timbre :as timbre]
+            [taoensso.truss :as truss :refer [have have! have?]]))
 
 (defonce
   ^{:doc "Provides thread scheduling for all controller user interface updates."}
@@ -102,10 +103,12 @@
   []
   (with-meta
     {:dimensions (ref [0 0])
+
      ;; For now using a sparse grid in the form of a map whose keys are
      ;; the cue coordinates, and whose values are the cues. If performance
      ;; dictates, can change to nested vectors or something else later.
      :cues (ref {})
+
      ;; Also track any non-grid controllers which have bound controls or
      ;; notes to cues and want feedback as they activate and deactivate.
      ;; A nested set of maps: The first key is a tuple of the grid coordinates.
@@ -118,9 +121,16 @@
      ;; that was registered to clear the feedback in case the device ever got
      ;; disconnected. It is included so that it can be unregistered if the user
      ;; explicitly cancels the feedback.
+
      :midi-feedback (ref {})
+
      ;; Also allow arbitrary functions to be called when cues change state.
      :fn-feedback (ref {})
+
+     ;; Track saved cue variables to be reapplied the next time the cue is run.
+     ;; A map indexed in the same way as :cues, whose values are the map of
+     ;; variable keys and values.
+     :saved-vars (ref {})
      }
     {:type :cue-grid}))
 
@@ -146,29 +156,56 @@
 
 (defn clear-cue!
   "Removes any cue which existed at the specified coordinates in the
-  cue grid. If one was there, updates the grid dimensions if needed."
+  cue grid. If one was there, updates the grid dimensions if needed.
+  Also clears any variables that were saved for that cue."
   [grid x y]
-  {:pre [(integer? x) (integer? y) (not (neg? x)) (not (neg? y)) (= (type grid) :cue-grid)]}
+  {:pre [(have? integer? x) (have? integer? y) (have? #(not (neg? %)) x) (have? #(not (neg? %)) y)
+         (have? #(= (type %) :cue-grid) grid)]}
   (dosync
    (when (some? (get @(:cues grid) [x y]))
      (alter (:cues grid) dissoc [x y])
      (when (or (= x (grid-width grid)) (= y (grid-height grid)))
        (ref-set (:dimensions grid) (reduce (fn [[width height] [x y]]
                                              [(max width x) (max height y)])
-                                           [0 0] (keys @(:cues grid))))))))
+                                           [0 0] (keys @(:cues grid)))))
+     (alter (:saved-vars grid) dissoc [x y]))))
 
 (defn set-cue!
   "Puts the supplied cue at the specified coordinates in the cue grid.
-  Replaces any cue which formerly existed at that location. If cue is
-  nil, delegates to clear-cue!"
+  Replaces any cue which formerly existed at that location, and clears
+  any variables that might have been saved for it. If `cue` is nil,
+  delegates to clear-cue!"
   [grid x y cue]
-  {:pre [(integer? x) (integer? y) (not (neg? x)) (not (neg? y)) (= (type grid) :cue-grid)]}
+  {:pre [(have? integer? x) (have? integer? y) (have? #(not (neg? %)) x) (have? #(not (neg? %)) y)
+         (have? #(= (type %) :cue-grid) grid)]}
+  (if (nil? cue)
+    (clear-cue! grid x y)
+    (dosync
+     (alter (:cues grid) assoc [x y] cue)
+     (alter (:saved-vars grid) dissoc [x y])
+     (ref-set (:dimensions grid) [(max x (grid-width grid)) (max y (grid-height grid))]))))
+
+(defn save-cue-vars!
+  "Save a set of variable starting values to be applied when launching
+  a cue. If there is no cue at the specified grid location, nothing
+  will be saved."
+  [grid x y vars]
   (dosync
-   (if (nil? cue)
-     (clear-cue! grid x y)
-     (do
-       (alter (:cues grid) assoc [x y] cue)
-       (ref-set (:dimensions grid) [(max x (grid-width grid)) (max y (grid-height grid))])))))
+   (when (some? (get (ensure (:cues grid)) [x y]))
+         (alter (:saved-vars grid) assoc [x y] vars))))
+
+(defn clear-saved-cue-vars!
+  "Remove any saved starting values assigned to the cue at the
+  specified grid location."
+  [grid x y]
+  (dosync
+   (alter (:saved-vars grid) dissoc [x y])))
+
+(defn cue-vars-saved-at
+  "Return the saved starting values, if any, assigned to the cue at
+  the specified grid location."
+  [grid x y]
+  (get @(:saved-vars grid) [x y]))
 
 (defn clear-cue-feedback!
   "Ceases sending the specified non-grid MIDI controller feedback
@@ -176,9 +213,9 @@
   returning the feedback values that had been in place if there were
   any."
   [grid x y device channel kind note]
-  {:pre [(integer? x) (integer? y) (not (neg? x)) (not (neg? y))
-         (= (type device) :midi-device) (= (type grid) :cue-grid)
-         (#{:control :note} kind)]}
+  {:pre [(have? integer? x) (have? integer? y) (have? #(not (neg? %)) x) (have? #(not (neg? %)) y)
+         (have? #(= (type %) :midi-device) device) (have? #(= (type %) :cue-grid) grid)
+         (have? #{:control :note} kind)]}
   (dosync
    (let [entry (get (ensure (:midi-feedback grid)) [x y])
          former (get entry [(:device device) channel note kind])
@@ -193,9 +230,10 @@
   feedback events when the cue grid location activates or
   deactivates."
   [grid x y device channel kind note & {:keys [on off] :or {on 127 off 0}}]
-  {:pre [(integer? x) (integer? y) (not (neg? x)) (not (neg? y))
-         (= (type device) :midi-device) (= (type grid) :cue-grid)
-         (#{:control :note} kind) (integer? on) (integer? off) (<= 0 on 127) (<= 0 off 127)]}
+  {:pre [(have? integer? x) (have? integer? y) (have? #(not (neg? %)) x) (have? #(not (neg? %)) y)
+         (have? #(= (type %) :midi-device) device) (have? #(= (type %) :cue-grid))
+         (have? #{:control :note} kind) (have? integer? on) (have? integer? off)
+         (have? #(<= 0 % 127) on) (have? #(<= 0 % 127) off)]}
   (letfn [(disconnect-handler []
             (clear-cue-feedback! grid x y device channel kind note))]
     (amidi/add-disconnected-device-handler! device disconnect-handler)
@@ -214,7 +252,8 @@
   last two argumetnts can be used with [[end-effect!]] and its
   `:when-id` argument to avoid accidentally ending a different cue."
   [grid x y f]
-  {:pre [(integer? x) (integer? y) (not (neg? x)) (not (neg? y)) (fn? f) (= (type grid) :cue-grid)]}
+  {:pre [(have? integer? x) (have? integer? y) (have? #(not (neg? %)) x) (have? #(not (neg? %)) y)
+         (have? fn? f) (have? #(= (type %) :cue-grid) grid)]}
   (dosync
    ;; Consider putting the actual cue as the value, and logging a warning and ending the feedback
    ;; if a different cue gets stored there? Probabyl not.
@@ -225,7 +264,8 @@
   "Ceases calling the supplied function when the cue grid location
   activates or deactivates."
   [grid x y f]
-  {:pre [(integer? x) (integer? y) (not (neg? x)) (not (neg? y)) (fn? f) (= (type grid) :cue-grid)]}
+  {:pre [(have? integer? x) (have? integer? y) (have? #(not (neg? %)) x) (have? #(not (neg? %)) y)
+         (have? #(fn? %) f) (have? #(= (type %) :cue-grid) grid)]}
   (dosync
    (let [entry (get (ensure (:fn-feedback grid)) [x y])]
      (alter (:fn-feedback grid) assoc [x y] (dissoc entry f))))
@@ -244,7 +284,8 @@
   its effect keyword, and the `id` of the effect that was created
   or ended."
   [grid x y id]
-  {:pre [(integer? x) (integer? y) (not (neg? x)) (not (neg? y)) (= (type grid) :cue-grid)]}
+  {:pre [(have? integer? x) (have? integer? y) (have? #(not (neg? %)) x) (have? #(not (neg? %)) y)
+         (have? #(= (type %) :cue-grid) grid)]}
   (dosync
    (when-let [cue (cue-at grid x y)]
      (let [former-id (:active-id cue)]
@@ -272,7 +313,8 @@
   state to inform them it has begun to gracefully end, its effect
   keyword, and the `id` of the effect that is ending."
   [grid x y id]
-  {:pre [(integer? x) (integer? y) (not (neg? x)) (not (neg? y)) (= (type grid) :cue-grid)]}
+  {:pre [(have? integer? x) (have? integer? y) (have? #(not (neg? %)) x) (have? #(not (neg? %)) y)
+         (have? #(= (type %) :cue-grid) grid)]}
   (when-let [cue (cue-at grid x y)]
     (doseq [[f _] (get @(:fn-feedback grid) [x y])]
       (f :ending (:key cue) id))))
@@ -450,7 +492,8 @@
   "Ceases flashing the specified non-grid MIDI controller element
   on beats of the specified metronome."
   [metronome device channel kind note]
-  {:pre [(satisfies? rhythm/IMetronome metronome) (= (type device) :midi-device) (#{:control :note} kind)]}
+  {:pre [(have? #(satisfies? rhythm/IMetronome %) metronome)
+         (have? #(= (type %) :midi-device) device) (have? #{:control :note} kind)]}
   (let [entry [(:device device) channel note kind]
         [_ _ off _ disconnect-handler] (get @beat-feedback entry)]
     (swap! beat-feedback dissoc entry)
@@ -468,8 +511,10 @@
   feedback events to make a particular LED flash on each beat of
   the specified metronome."
   [metronome device channel kind note & {:keys [on off] :or {on 127 off 0}}]
-  {:pre [(satisfies? rhythm/IMetronome metronome) (= (type device) :midi-device)
-         (#{:control :note} kind) (integer? on) (integer? off) (<= 0 on 127) (<= 0 off 127)]}
+  {:pre [(have? #(satisfies? rhythm/IMetronome %) metronome)
+         (have? #(= (type %) :midi-device) device)
+         (have? #{:control :note} kind) (have? integer? on) (have? integer? off)
+         (have? #(<= 0 % 127) on) (have? #(<= 0 % 127) off)]}
   (clear-beat-feedback! metronome device channel kind note)  ; In case there was an already in effect
   (letfn [(disconnect-handler []
             (clear-beat-feedback! metronome device channel kind note))]
@@ -509,7 +554,7 @@
   argument is a function that will be called with no arguments when
   the binding should be deactivated."
   [f]
-  {:pre [(fn? f)]}
+  {:pre [(have? fn? f)]}
   (swap! active-bindings conj f))
 
 (defn remove-active-binding
@@ -518,7 +563,7 @@
   is shutting down. The single argument is a function that was
   registered with [[add-active-binding]]."
   [f]
-  {:pre [(fn? f)]}
+  {:pre [(have? fn? f)]}
   (swap! active-bindings disj f))
 
 (defn deactivate-all

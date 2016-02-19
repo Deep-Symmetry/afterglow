@@ -15,6 +15,7 @@
             [afterglow.midi :as midi]
             [afterglow.show :as show]
             [afterglow.show-context :refer [*show* with-show]]
+            [afterglow.util :as util]
             [taoensso.timbre :as timbre])
   (:import (afterglow.effects Effect)))
 
@@ -353,7 +354,7 @@
     (with-show show
       (get-cue-variable cue var-spec :when-id when-id))
     (when-let [k (find-cue-variable-keyword cue var-spec :when-id when-id)]
-      (show/get-variable k))))
+      (util/normalize-cue-variable-value var-spec (show/get-variable k)))))
 
 (defn set-cue-variable!
   "Sets the current value of the supplied cue variable, which may be
@@ -379,6 +380,28 @@
       (set-cue-variable! cue var-spec value :when-id when-id))
     (when-let [k (find-cue-variable-keyword cue var-spec :when-id when-id)]
       (show/set-variable! k value))))
+
+(defn snapshot-cue-variables
+  "Returns a map containing the keys and current values of all
+  variables used by the specified cue, which is suitable for saving via
+  [[save-cue-vars!]]. The id of the effect currently running the cue
+  must be passed as `when-id` to ensure that the cue is still running.
+  If it is not running (or ends while the variable values are being
+  looked up), `nil` is returned.
+
+  If a show is passed with the `:show` optional keyword argument, the
+  effect is looked up in that show. Otherwise, it is looked up in the
+  default show."
+  [cue when-id & {:keys [show]}]
+  {:pre [(some? when-id)]}
+  (if show
+    (with-show show
+      (snapshot-cue-variables cue when-id))
+    (let [result (map (fn [v]
+                        [(:key v) (get-cue-variable cue v :when-id when-id)])
+                      (:variables cue))]
+      (when (= when-id (:id (show/find-effect (:key cue))))
+        (into {} result)))))
 
 (defn add-midi-to-cue-mapping
   "Cause the specified cue from the [[*show*]] cue grid to be

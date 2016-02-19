@@ -516,7 +516,7 @@
                      (when (pos? (:velocity message))
                        ((:tempo-tap-handler controller))
                        true)
-                     
+
                      9 ; Metronome button
                      (when (pos? (:velocity message))
                        (swap! (:metronome-mode controller) dissoc :showing)
@@ -890,11 +890,11 @@
 
       (= @counter 15)
       (show-labels controller :bright :amber)
-      
+
       (= @counter 16)
       (doseq [x (range 0 8)]
         (set-top-pad-state controller x :bright :amber))
-      
+
       (= @counter 17)
       (doseq [x (range 0 8)]
         (set-second-pad-color controller x
@@ -908,7 +908,7 @@
               color (colors/create-color
                      :h (+ 60 (* 40 (- @counter 18))) :s 100 :l lightness)]
           (set-pad-color controller x (- 25 @counter) color)))
-      
+
       (= @counter 26)
       (do
         (show-labels controller :dim :amber)
@@ -1227,7 +1227,7 @@
     (21 23 25 27) ; Effect cue variable scroll pads
     (when (pos? (:velocity message))
       (handle-scroll-cue-vars controller (:note message)))
-    
+
     ;; 28 ; Master button
 
     29 ; Stop button
@@ -1390,8 +1390,10 @@
         resolution (or (:resolution v) (if (= :integer (:type v))
                                          (max 1 (Math/round (float raw-resolution)))
                                          raw-resolution))
-        delta (* (sign-velocity (:velocity message)) resolution)]
-    (cues/set-cue-variable! cue v (max low (min high (+ value delta))) :show (:show controller) :when-id effect-id)))
+        delta (* (sign-velocity (:velocity message)) resolution)
+        adjusted (+ value delta)
+        normalized (if (= :integer (:type v)) (Math/round (float adjusted)) (float adjusted))]
+    (cues/set-cue-variable! cue v (max low (min high normalized)) :show (:show controller) :when-id effect-id)))
 
 (defn- draw-boolean-gauge
   "Display the value of a boolean variable being adjusted in the effect list."

@@ -22,12 +22,12 @@ function buildFraction( n ) {
 }
 
 function buildEffectRow( data ) {
-    var row = $('<tr></tr>', {
-        "id": "effect-" + data.id
-    });
+    var row = $('<tr></tr>', { id: "effect-" + data.id });
 
     $('<td></td>')
-        .text(data.name)
+        .append($('<h5></h5>')
+                .text(data.name)
+               )
         .appendTo(row);
 
     var timeFrac = $('<span></span>', { "class": "time-fraction" })
@@ -44,9 +44,7 @@ function buildEffectRow( data ) {
         .append(buildFraction(data["start-beat-frac"]))
         .appendTo(row);
 
-    $('<td></td>', { style: "text-align: right" }).appendTo(row);  // Space for cue variables, if any
-
-    var endCell = $('<td></td>', { "style": "text-align: right" });
+    var endCell = $('<td></td>');
     $('<button/>', { type: "button", id: "effect-" + data.id + "-end", "class": "btn btn-warning" })
         .text("End")
         .click(function ( eventObject ) {
@@ -59,8 +57,41 @@ function buildEffectRow( data ) {
                 });
         })
         .appendTo(endCell);
-
     endCell.appendTo(row);
+
+    // Space for cue variables, if any
+    $('<td>')
+        .append($('<table>', { id: "effect-" + data.id + "-vars", "class": "effect-var-table"}))
+        .appendTo(row);
+
+    $('<td></td>')
+        .append($('<button/>', { type: "button", id: "effect-" + data.id + "-save", "class": "btn btn-success",
+                                 style: "display: none" })
+                .text("Save")
+                .click(function ( eventObject ) {
+                    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/save-effect"),
+                                        { "effect-id": data.id,
+                                          "effect-key": data.key,
+                                          "__anti-forgery-token": csrf_token } )
+                        .fail(function() {
+                            console.log("Problem saving effect with id " + data.id + ".");
+                        });
+                })
+               )
+        .append($('<button/>', { type: "button", id: "effect-" + data.id + "-clear", "class": "btn btn-default",
+                                 style: "display: none" })
+                .text("Clear")
+                .click(function ( eventObject ) {
+                    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/clear-effect"),
+                                        { "effect-id": data.id,
+                                          "effect-key": data.key,
+                                          "__anti-forgery-token": csrf_token } )
+                        .fail(function() {
+                            console.log("Problem saving effect with id " + data.id + ".");
+                        });
+                })
+               )
+        .appendTo(row);
 
     return row;
 }
@@ -80,18 +111,25 @@ function sendCueVarUpdate( effectKey, id, varKey, value ) {
     //console.log("effectKey " + effectKey + " (id " + id + ") varKey " + varKey + " set to " + value);
 }
 
+function createCueVarRow( data, varSpec, element ) {
+    var body = $('#effect-' + data.id + '-vars');
+    var cueVarRow = $('<tr></tr>')
+        .append($('<td></td>', { style: "text-align: right" })
+                .text(varSpec.name)
+                .append("&nbsp;")
+               )
+        .append($('<td></td>')
+                .append(element)
+               );
+
+    body.append(cueVarRow);
+}
+
 function findOrCreateCueVarSlider( data, varSpec ) {
     var idBase = 'cue-var-' + data.id + '-' + varSpec.key;
     var sliderId = idBase + '-slider';
     var result = $('#' + sliderId);
     if (result.length < 1) {
-        var cell = $('#effect-' + data.id + ' td:nth-child(3)');
-        if (cell.text() != "") {
-            $('<br>').appendTo(cell);
-        }
-        $('<span></span>')
-            .text(varSpec.name + " ")
-            .appendTo(cell);
         var sliderProps = { value: data.value,
                             min: varSpec.min,
                             max: varSpec.max,
@@ -107,7 +145,7 @@ function findOrCreateCueVarSlider( data, varSpec ) {
         }
 
         var sliderInput = $("<input>", { id: sliderId });
-        sliderInput.appendTo(cell);
+        createCueVarRow(data, varSpec, sliderInput);
         sliderInput.slider(sliderProps)
             .on("slideStart", function( e ) {
                 cueSlidersBeingDragged[sliderId] = true;
@@ -131,13 +169,6 @@ function findOrCreateCheckbox (data, varSpec ) {
     var boxId = idBase + '-checkbox';
     var result = $('#' + boxId);
     if (result.length < 1) {
-        var cell = $('#effect-' + data.id + ' td:nth-child(3)');
-        if (cell.text() != "") {
-            $('<br>').appendTo(cell);
-        }
-        var label = $('<label></label>', { class: "checkbox-inline" })
-            .text(varSpec.name)
-            .append('&nbsp;&nbsp;');
         var switchProps = { state: data.value,
                             size: "mini",
                             onText: "Yes",
@@ -148,8 +179,7 @@ function findOrCreateCheckbox (data, varSpec ) {
         var box = $('<input>', { id: boxId,
                                  type: "checkbox",
                                  value: data.value });
-        box.appendTo(label);
-        label.appendTo(cell);
+        createCueVarRow(data, varSpec, box);
 
         result = $('#' + boxId);
         result.bootstrapSwitch(switchProps);
@@ -163,19 +193,12 @@ function findOrCreateColorPicker( data, varSpec ) {
     var pickerId = idBase + '-slider';
     var result = $('#' + pickerId);
     if (result.length < 1) {
-        var cell = $('#effect-' + data.id + ' td:nth-child(3)');
-        if (cell.text() != "") {
-            $('<br>').appendTo(cell);
-        }
-        $('<span></span>')
-            .text(varSpec.name + " ")
-            .appendTo(cell);
         var pickerProps = {  };
 
         var pickerInput = $('<input>', { id: pickerId,
                                          type: "hidden",
                                          value: data.value });
-        pickerInput.appendTo(cell);
+        createCueVarRow(data, varSpec, pickerInput);
         pickerInput.minicolors({ changeDelay: 33,
                                  position: "top right",
                                  change: function( value, opacity ) {
@@ -237,12 +260,28 @@ function processEffectUpdate( data ) {
             if (val.after > 0) {
                 $("#effect-" + val.after).after(buildEffectRow(val));
             } else {
-                $("#effects-table tbody").prepend(buildEffectRow(val));
+                $("#effects-table > tbody").prepend(buildEffectRow(val));
             }
             break;
 
         case "cue-var-change":
             processCueVarChange(val);
+            break;
+
+        case "add-save-button":
+            $("#effect-" + val + "-save").show();
+            break;
+
+        case "add-clear-button":
+            $("#effect-" + val + "-clear").show();
+            break;
+
+        case "remove-save-button":
+            $("#effect-" + val + "-save").hide();
+            break;
+
+        case "remove-clear-button":
+            $("#effect-" + val + "-clear").hide();
             break;
         }
     });
@@ -476,7 +515,7 @@ function updateShow() {
                 console.log("Reloading page since Afterglow does not recognize our page ID.");
                 location.reload(true);
                 break;
-                
+
             default:
                 console.log("Unknown show update response:" + key + ":" + val);
             }

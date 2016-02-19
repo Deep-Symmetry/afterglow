@@ -113,3 +113,10 @@ table.metronome {
     border-top-color: slategray;
 }
 
+#effects-table td {
+    vertical-align: middle;
+}
+
+.effect-var-table td {
+    padding: 1px;
+}

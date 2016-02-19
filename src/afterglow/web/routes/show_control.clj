@@ -319,6 +319,44 @@
         (recur remainder
                (concat result (new-effect-info last-ids (first left) remainder)))))))
 
+(defn effect-save-button-states
+  "Returns a set describing all effects which should have a save or
+  clear button visible based on the state of their cue variables. Set
+  elements are a tuple of the effect ID and either `:save` or
+  `:clear`, depending on which button should be visible."
+  [show current]
+  (into #{}
+        (for [effect current]
+          (when (and (:x effect) (:y effect) (:cue effect))
+            (let [cur-vals (cues/snapshot-cue-variables (:cue effect) (:id effect) :show show)]
+              (when (seq cur-vals)
+                (let [saved-vals (controllers/cue-vars-saved-at (:cue-grid show) (:x effect) (:y effect))]
+                  (if (seq saved-vals)
+                    [(:id effect) (if (= cur-vals saved-vals) :clear :save)]
+                    (when (not= cur-vals (:starting-vars effect))
+                      [(:id effect) :save])))))))))
+
+(defn effect-save-button-changes
+  "Returns the changes which need to be sent to a page to update its
+  effect save/clear button states since it was last rendered, and
+  updates the record."
+  [page-id current]
+  (let [last-info (get @clients page-id)
+        show (:show last-info)
+        last-states (:save-button-states last-info)
+        states (effect-save-button-states show current)]
+    (swap! clients update-in [page-id] assoc :save-button-states states)
+    (concat (map (fn [[id kind]]
+                        (if (= kind :save)
+                          {:remove-save-button id}
+                          {:remove-clear-button id}))
+                 (clojure.set/difference last-states states))
+            (map (fn [[id kind]]
+                        (if (= kind :save)
+                          {:add-save-button id}
+                          {:add-clear-button id}))
+                 (clojure.set/difference states last-states)))))
+
 (defn- effect-changes
   "Returns the changes which need to be sent to a page to update its
   effect display since it was last rendered, and updates the record."
@@ -332,7 +370,8 @@
         ending (set (filter identity (map #(when (:ending %) (:id %)) current)))
         endings (map (fn [id] {:ending id}) (clojure.set/difference ending (:effects-ending last-info)))
         deletions (map (fn [id] {:ended id}) (clojure.set/difference last-ids current-ids))
-        changes (concat deletions (new-effects last-ids current) endings (cue-var-changes page-id current))]
+        changes (concat deletions (new-effects last-ids current) endings (cue-var-changes page-id current)
+                        (effect-save-button-changes page-id current))]
     (swap! clients update-in [page-id] assoc :effects current :effects-ending ending)
     (when (seq changes) {:effect-changes changes})))
 
@@ -595,8 +634,31 @@
         (let [value (case (:type var-spec)
                       :color (colors/create-color value)
                       :boolean (Boolean/valueOf value)
+                      :integer (Integer/valueOf value)
                       (Float/valueOf value))]
           (cues/set-cue-variable! cue var-spec value :when-id (Integer/valueOf effect-id)))))))
+
+(defn- handle-save-effect-event
+  "Process a request to save the current state of an effect's cue
+  variables."
+  [page-info req]
+  (with-show (:show page-info)
+    (let [{:keys [effect-key effect-id]} (:params req)
+          effect (show/find-effect effect-key)
+          cue (:cue effect)]
+      (when (some? cue)
+        (controllers/save-cue-vars! (:cue-grid (:show page-info)) (:x effect) (:y effect)
+                                    (cues/snapshot-cue-variables cue (Integer/valueOf effect-id)))))))
+
+(defn- handle-clear-effect-event
+  "Process a request to clear an effect's saved cue variables."
+  [page-info req]
+    (with-show (:show page-info)
+    (let [{:keys [effect-key effect-id]} (:params req)
+          effect (show/find-effect effect-key)
+          cue (:cue effect)]
+      (when (and (= (Integer/valueOf effect-id) (:id effect)) (some? cue))
+        (controllers/clear-saved-cue-vars! (:cue-grid (:show page-info)) (:x effect) (:y effect))))))
 
 (defn- move-view
   "Updates the origin of our view rectangle, and if it actually
@@ -637,7 +699,7 @@
       (move-view page-info (controllers/current-left controller) (controllers/current-bottom controller))
       ;; Page is no longer active, remove our listener so we can be garbage collected.
       (controllers/remove-move-listener controller (:move-handler old-page-info)))
-    
+
     :deactivated
     (when-let [page-info (get @clients (:id old-page-info))]
       (swap! clients update-in [(:id page-info)] dissoc :move-handler :linked-controller))))
@@ -757,10 +819,10 @@
            (response
             (cond (.startsWith kind "cue-")
                   (handle-cue-click-event page-info kind req)
-                  
+
                   (.startsWith kind "release-")
                   (handle-cue-release-event page-info kind)
-                  
+
                   (.startsWith kind "cues-")
                   (handle-cue-move-event page-info kind)
 
@@ -810,6 +872,12 @@
                     (Thread/sleep (:refresh-interval (:show page-info)))
                     (show/blackout-show)
                     {:running false})
+
+                  (= kind "save-effect")
+                  (handle-save-effect-event page-info req)
+
+                  (= kind "clear-effect")
+                  (handle-clear-effect-event page-info req)
 
                   ;; We do no recognize this kind of request
                   :else

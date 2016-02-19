@@ -89,3 +89,15 @@
   if not provided."
   ([x y] (not (float< x y)))
   ([x y epsilon] (not (float< x y epsilon))))
+
+(defn normalize-cue-variable-value
+  "Given a raw value that has been looked up for a cue variable,
+  convert it to the appropriate type based on the variable
+  specification."
+  [var-spec raw]
+  (when raw
+    (case (:type var-spec)
+      :boolean (boolean raw)
+      :integer (Math/round (float raw))
+      :color raw
+      (float raw))))
