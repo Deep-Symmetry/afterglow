@@ -1,0 +1,125 @@
+td.cue-cell {
+    width: 90px;
+    max-width: 100px;
+    height: 50px;
+    max-height: 60px;
+    text-align: center;
+    overflow: hidden;
+    -ms-text-overflow: ellipsis;
+    -o-text-overflow: ellipsis;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+    -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+    -moz-user-select: none; /* mozilla browsers */
+    -khtml-user-select: none; /* webkit (konqueror) browsers */
+    -ms-user-select: none; /* IE10+ */
+}
+
+.btn-mini {
+    padding: 2px 6px;
+    font-size: 11px;
+    line-height: 13px;
+}
+
+table.metronome {
+    text-align: center;
+}
+
+.table tbody>tr>th.division {
+    text-align: center;
+}
+
+.table>tbody>tr>td.metronome {
+    padding: 0px;
+    -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+    -moz-user-select: none; /* mozilla browsers */
+    -khtml-user-select: none; /* webkit (konqueror) browsers */
+    -ms-user-select: none; /* IE10+ */
+}
+
+.table>tbody>tr>th.metronome {
+    padding: 0px;
+    -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+    -moz-user-select: none; /* mozilla browsers */
+    -khtml-user-select: none; /* webkit (konqueror) browsers */
+    -ms-user-select: none; /* IE10+ */
+}
+.table tbody>tr>td.metronome-sync {
+    text-align: left;
+    vertical-align: middle;
+}
+
+.table tbody>tr>td.metronome-sync .metronome-active {
+    background-color: lightblue;
+}
+
+.table tbody>tr>td.metronome-sync .metronome-blink {
+    color: yellow;
+}
+
+.table tbody>tr>td.metronome-adjust .metronome-active {
+    color: lightblue;
+}
+
+.table tbody>tr>td.metronome-reset {
+    color: red;
+}
+
+.table tbody>tr>td.metronome-reset .metronome-active {
+    color: #f77;
+}
+
+.time-fraction {
+    color: #aaa;
+}
+
+.slider-track {
+    background-color: slategray;
+}
+.slider-track-high {
+    background-color: darkslategray;
+}
+.slider-track-low {
+    background-color: slategray;
+}
+.slider-selection {
+    background: slategray;
+}
+
+/*
+#slider-in-bpm .slider-track-high {
+    background: darkslategray;
+}
+
+#slider-in-bpm .slider-selection {
+    background: slategray;
+}
+*/
+
+#slider-in-grand-master .tooltip-inner {
+    background-color: slategray;
+}
+
+#slider-in-grand-master .tooltip.bottom .tooltip-arrow {
+    border-bottom-color: slategray;
+}
+
+#loadBar {
+    vertical-align: text-top;
+}
+
+#effects-table .tooltip-inner {
+    background-color: gray;
+}
+
+#effects-table .tooltip.top .tooltip-arrow {
+    border-top-color: gray;
+}
+
+#effects-table td {
+    vertical-align: middle;
+}
+
+.effect-var-table td {
+    padding: 1px;
+}

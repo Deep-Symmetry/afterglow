@@ -37,7 +37,7 @@
         </tr>
         <tr>
           <td rowspan="2" class="metronome metronome-sync">
-            <button type="button" class="btn btn-sm metronome-tap-target" id="tap-tempo">Tap Tempo</button>
+            <button type="button" class="btn btn-sm btn-default metronome-tap-target" id="tap-tempo">Tap Tempo</button>
           </td>
           <td class="metronome metronome-adjust">
             <span id="bpm-up" class="glyphicon glyphicon-plus-sign metronome-adjust-target"></span>
@@ -129,20 +129,26 @@
       <div id="no-effects">
         <p>No effects are active.</p>
       </div>
-      <table id="effects-table" class="table table-striped effects">
-        <thead>
-          <tr>
-            <th class="col-md-4">Effect Name</th>
-            <th class="col-md-2" style="text-align: right">Started</th>
-            <th class="col-md-1"></th>
-            <th class="col-md-4" style="text-align: center">Cue Variables</th>
-            <th class="col-md-1">
-              <button class="btn btn-default" style="visibility: hidden">Clear</button>
-            </th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div id="some-effects">
+        <table id="effects-table" class="table table-striped effects">
+          <thead>
+            <tr>
+              <th class="col-md-4">Effect Name</th>
+              <th class="col-md-2" style="text-align: right">Started</th>
+              <th class="col-md-1"></th>
+              <th class="col-md-4" style="text-align: center">Cue Variables</th>
+              <th class="col-md-1">
+                <button class="btn btn-default" style="visibility: hidden">Clear</button>
+              </th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <button type="button" class="btn btn-default btn-sm" id="makeMacro">Make Macro</button>
+        <span class="macro-definition">
+          &nbsp;<input type="text" id="macroName">&nbsp;
+          Pick a name, check the effects to include, then click an empty cue cell.
+      </div>
     </div>
  </div>
 
@@ -197,8 +203,11 @@
     {% style "/css/bootstrap-switch.css" %}
     {% script "/js/bootstrap-switch.min.js" %}
     {% comment %}{% script "/js/jquery.websocket-0.0.1.js" %}{% endcomment %}
+    {% style "/css/show.css" %}
     <script type="text/javascript">
       var page_id = "{{page-id}}";
+      var makingMacro = false;
+      var macroCounter = 1;
     </script>
     {% script "/js/show_updates.js" %}
-{% endblock %}  
+{% endblock %}

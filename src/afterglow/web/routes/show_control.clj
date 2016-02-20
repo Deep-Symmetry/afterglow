@@ -302,6 +302,8 @@
     [{:started (merge (select-keys effect [:key :id :priority :start-time :start-time-frac
                                            :start-beat :start-beat-frac])
                       {:name (:name (:effect effect))}
+                      (when (and (:x effect) (:y effect) (:cue effect))
+                        {:macro true})  ; Indicate that it can be used in macros
                       (when-let [after (some last-ids (map :id other-effects))]
                         {:after after}))}]))
 
@@ -596,7 +598,10 @@
                 (swap! clients assoc-in [(:id page-info) :holding] [x y id])
                 {:holding {:x x :y y :id id}})
               {:started id}))))
-      {:error (str "No cue found for cell: " kind)})))
+      (let [macro-name (get-in req [:params :macroName])
+            macro-ids (get-in req [:params :macroEffectIds])]
+        (timbre/info "Macro" macro-name macro-ids)
+        {:error (str "No cue found for cell: " kind)}))))
 
 (defn- handle-cue-release-event
   "Process a mouse up after clicking a momentary cue grid cell."

@@ -9,10 +9,10 @@ function updateCueGrid( data ) {
 function updateEffectState() {
     if ($("#effects-table tbody tr").length > 0) {
         $("#no-effects").hide();
-        $("#effects-table").show();
+        $("#some-effects").show();
     } else {
         $("#no-effects").show();
-        $("#effects-table").hide();
+        $("#some-effects").hide();
     }
 }
 
@@ -23,10 +23,22 @@ function buildFraction( n ) {
 
 function buildEffectRow( data ) {
     var row = $('<tr></tr>', { id: "effect-" + data.id });
+    var macroBox = "";
+
+    if (data.macro) {
+        macroBox = $('<input>', { id: "effect-selected-" + data.id,
+                                  type: "checkbox",
+                                  "class": "macro-checkbox"
+                                }
+                    );
+    }
 
     $('<td></td>')
         .append($('<h5></h5>')
-                .text(data.name)
+                .append(macroBox)
+                .append($('<span></span>')
+                        .text(" " + data.name)
+                       )
                )
         .appendTo(row);
 
@@ -45,7 +57,7 @@ function buildEffectRow( data ) {
         .appendTo(row);
 
     var endCell = $('<td></td>');
-    $('<button/>', { type: "button", id: "effect-" + data.id + "-end", "class": "btn btn-warning" })
+    $('<button/>', { type: "button", id: "effect-" + data.id + "-end", "class": "btn btn-sm btn-warning" })
         .text("End")
         .click(function ( eventObject ) {
             var jqxhr = $.post( (context + "/ui-event/" + page_id + "/end-effect"),
@@ -65,7 +77,7 @@ function buildEffectRow( data ) {
         .appendTo(row);
 
     $('<td></td>')
-        .append($('<button/>', { type: "button", id: "effect-" + data.id + "-save", "class": "btn btn-success",
+        .append($('<button/>', { type: "button", id: "effect-" + data.id + "-save", "class": "btn btn-sm btn-success",
                                  style: "display: none" })
                 .text("Save")
                 .click(function ( eventObject ) {
@@ -261,6 +273,9 @@ function processEffectUpdate( data ) {
                 $("#effect-" + val.after).after(buildEffectRow(val));
             } else {
                 $("#effects-table > tbody").prepend(buildEffectRow(val));
+            }
+            if (!makingMacro) {
+                $(".macro-checkbox").hide();
             }
             break;
 
@@ -550,9 +565,19 @@ var $doc = $(document);
 
 function cueCellClicked( eventObject ) {
     var cell = this.id;
-    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + cell),
-                        { "__anti-forgery-token": csrf_token,
-                          "shift": eventObject.shiftKey }, function(data) {
+    var props = { "__anti-forgery-token": csrf_token,
+                  "shift": eventObject.shiftKey };
+    if (makingMacro) {
+        var selectedEffectIds = [];
+        var selectedBoxes = $(".macro-checkbox:checked");
+        for (var i = 0; i < selectedBoxes.length; i++) {
+            selectedEffectIds.push(selectedBoxes[i].id.split("-")[2]);
+        }
+        $.extend(props, { macroName: $("#macroName").val(),
+                          macroEffectIds: selectedEffectIds
+                        });
+    }
+    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + cell), props, function(data) {
                             if ('holding' in data) {
                                 var id = data['holding']['id'];
                                 var x = data['holding']['x'];
@@ -587,6 +612,22 @@ function syncMenuChosen( eventObject ) {
                               "__anti-forgery-token": csrf_token } ).fail(function() {
                                   console.log("Problem requesting metronome sync change.");
                               });
+    }
+}
+
+function makeMacroChosen (eventObject) {
+    if (makingMacro) {
+        $(".macro-definition").hide();
+        $(".macro-checkbox").hide();
+        $("#makeMacro").text("Make Macro").addClass('btn-default').removeClass('btn-danger');
+        makingMacro = false;
+    } else {
+        $(".macro-definition").show();
+        $(".macro-checkbox").attr('checked', false);
+        $(".macro-checkbox").show();
+        $("#makeMacro").text("Cancel").removeClass('btn-default').addClass('btn-danger');
+        $("#macroName").val("Macro " + macroCounter).focus().select();
+        makingMacro = true
     }
 }
 
@@ -656,7 +697,9 @@ $( document ).ready(function() {
             $("#sync-menu").html(syncSave);
         }
     });
-    
+    $("#makeMacro").click(makeMacroChosen);
+    $(".macro-definition").hide();
+
     // Set up to keep track of the shift key and update the tap tempo label accordingly
     $( document ).on("keyup keydown", function(e) {
         checkShiftKey(e);
