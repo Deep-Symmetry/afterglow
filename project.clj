@@ -36,9 +36,9 @@
                                                  clj-time]]
                  [ring/ring-defaults "0.1.5"]
                  [ring/ring-session-timeout "0.1.0"]
-                 [metosin/ring-middleware-format "0.6.0" :exclusions [ring/ring-jetty-adapter
-                                                                      org.clojure/tools.reader
-                                                                      org.clojure/java.classpath]]
+                 [ring-middleware-format "0.7.0" :exclusions [ring/ring-jetty-adapter
+                                                              org.clojure/tools.reader
+                                                              org.clojure/java.classpath]]
                  [metosin/ring-http-response "0.6.5"]
                  [prone "1.0.2"]
                  [buddy "0.9.0"]
