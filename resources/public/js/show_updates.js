@@ -26,7 +26,7 @@ function buildEffectRow( data ) {
     var macroBox = "";
 
     if (data.macro) {
-        macroBox = $('<input>', { id: "effect-selected-" + data.id,
+        macroBox = $('<input>', { id: "effect-selected-" + data.x + "-" + data.y + "-" + data.id,
                                   type: "checkbox",
                                   "class": "macro-checkbox"
                                 }
@@ -565,35 +565,43 @@ var $doc = $(document);
 
 function cueCellClicked( eventObject ) {
     var cell = this.id;
-    var props = { "__anti-forgery-token": csrf_token,
-                  "shift": eventObject.shiftKey };
+    var props = { "shift": eventObject.shiftKey };
     if (makingMacro) {
-        var selectedEffectIds = [];
+        var selectedEffects = [];
         var selectedBoxes = $(".macro-checkbox:checked");
         for (var i = 0; i < selectedBoxes.length; i++) {
-            selectedEffectIds.push(selectedBoxes[i].id.split("-")[2]);
+            var elems = selectedBoxes[i].id.split("-");
+            selectedEffects = selectedEffects.concat([{x: elems[2], y: elems[3], id: elems[4]}]);
         }
         $.extend(props, { macroName: $("#macroName").val(),
-                          macroEffectIds: selectedEffectIds
+                          macroEffects: selectedEffects
                         });
     }
-    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + cell), props, function(data) {
-                            if ('holding' in data) {
-                                var id = data['holding']['id'];
-                                var x = data['holding']['x'];
-                                var y = data['holding']['y'];
-                                $doc.mouseup(function() {
-                                    var jqxhr2 = $.post( (context + "/ui-event/" + page_id +
-                                                          "/release-" + x + "-" + y + "-" + id),
-                                                         { "__anti-forgery-token": csrf_token } ).fail(function() {
-                                                             console.log("Problem reporting held cue release.");
-                                                         });
-                                    $doc.unbind('mouseup');
-                                });
-                            }
-                        }).fail(function() {
-                            console.log("Problem requesting cue toggle.");
-                        });
+    var jqxhr = $.ajax({
+        url: (context + "/ui-event/" + page_id + "/" + cell),
+        headers: { 'X-CSRF-Token': csrf_token },
+        type: 'POST',
+        contentType: 'application/json',
+        data: $.toJSON(props),
+        success: function(data) {
+            if ('holding' in data) {
+                var id = data['holding']['id'];
+                var x = data['holding']['x'];
+                var y = data['holding']['y'];
+                $doc.mouseup(function() {
+                    var jqxhr2 = $.post( (context + "/ui-event/" + page_id +
+                                          "/release-" + x + "-" + y + "-" + id),
+                                         { "__anti-forgery-token": csrf_token } ).fail(function() {
+                                             console.log("Problem reporting held cue release.");
+                                         });
+                    $doc.unbind('mouseup');
+                });
+            }
+        },
+        error: function() {
+            console.log("Problem requesting cue toggle.");
+        }
+    });
 }
 
 function linkMenuChanged( eventObject ) {

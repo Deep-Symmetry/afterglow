@@ -300,7 +300,7 @@
   [last-ids effect other-effects]
   (when-not (last-ids (:id effect))
     [{:started (merge (select-keys effect [:key :id :priority :start-time :start-time-frac
-                                           :start-beat :start-beat-frac])
+                                           :start-beat :start-beat-frac :x :y])
                       {:name (:name (:effect effect))}
                       (when (and (:x effect) (:y effect) (:cue effect))
                         {:macro true})  ; Indicate that it can be used in macros
@@ -585,7 +585,7 @@
         [_ column row] (clojure.string/split kind #"-")
         [x y] (map + (map #(Integer/valueOf %) [column row]) [left bottom])
         [cue active] (show/find-cue-grid-active-effect (:show page-info) x y)
-        shift (= (get-in req [:params :shift]) "true")]
+        shift (get-in req [:params :shift])]
     (if cue
       (with-show (:show page-info)
         (if (and active (not (:held cue)))
@@ -599,8 +599,8 @@
                 {:holding {:x x :y y :id id}})
               {:started id}))))
       (let [macro-name (get-in req [:params :macroName])
-            macro-ids (get-in req [:params :macroEffectIds])]
-        (timbre/info "Macro" macro-name macro-ids)
+            macro-effects (get-in req [:params :macroEffects])]
+        (timbre/info "Macro" macro-name macro-effects)
         {:error (str "No cue found for cell: " kind)}))))
 
 (defn- handle-cue-release-event
