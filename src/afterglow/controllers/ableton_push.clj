@@ -313,12 +313,22 @@
   ;; And record the new state for next time
   (reset! (:last-text-buttons controller) @(:next-text-buttons controller)))
 
+(defn get-safe-text-byte
+  "Converts a character to be displayed to a byte, but if it is
+  outside the range that can be displayed by the Push, like Unicode,
+  then change it to a byte representing an ellipsis."
+  [c]
+  (let [i (int c)]
+    (if (> i 127)
+      (:ellipsis special-symbols)
+      i)))
+
 (defn write-display-text
   "Update a batch of characters within the display to be rendered on
   the next update."
   [controller row start text]
   {:pre [(<= 0 row 3) (<= 0 start 67)]}
-  (let [bytes (take (- 68 start) (map int text))]
+  (let [bytes (map get-safe-text-byte text)]
     (doseq [[i val] (map-indexed vector bytes)]
       (aset (get (:next-display controller) row) (+ start i) (util/ubyte val)))))
 
@@ -327,7 +337,7 @@
   display to be rendered on the next update."
   [controller row cell text]
   {:pre [(<= 0 row 3) (<= 0 cell 3)]}
-  (let [bytes (take 17 (concat (map int text) (repeat 32)))]
+  (let [bytes (take 17 (concat (map get-safe-text-byte text) (repeat 32)))]
     (doseq [[i val] (map-indexed vector bytes)]
       (aset (get (:next-display controller) row) (+ (* cell 17) i) (util/ubyte val)))))
 
