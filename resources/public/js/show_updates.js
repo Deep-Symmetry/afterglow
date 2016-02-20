@@ -571,7 +571,8 @@ function cueCellClicked( eventObject ) {
         var selectedBoxes = $(".macro-checkbox:checked");
         for (var i = 0; i < selectedBoxes.length; i++) {
             var elems = selectedBoxes[i].id.split("-");
-            selectedEffects = selectedEffects.concat([{x: elems[2], y: elems[3], id: elems[4]}]);
+            selectedEffects = selectedEffects.concat([{x: parseInt(elems[2]), y: parseInt(elems[3]),
+                                                       id: parseInt(elems[4])}]);
         }
         $.extend(props, { macroName: $("#macroName").val(),
                           macroEffects: selectedEffects
@@ -584,6 +585,12 @@ function cueCellClicked( eventObject ) {
         contentType: 'application/json',
         data: $.toJSON(props),
         success: function(data) {
+            //console.log(data);
+            if ('macro-created' in data) {
+                if (makingMacro) {
+                    makeMacroChosen(null);
+                }
+            }
             if ('holding' in data) {
                 var id = data['holding']['id'];
                 var x = data['holding']['x'];

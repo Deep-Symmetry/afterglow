@@ -11,6 +11,13 @@ This change log follows the conventions of
 - The web and Push interfaces now offer a way to save adjusted cue
   variable values, so the next time the cue is launched the saved
   values are used.
+- Show operators can also create "Macros" by selecting a group of
+  running cues and choosing an unused cue grid cell. This will create
+  a new compound cue in the cell which will re-run all of the cues
+  they specified, with the same parameters they had when the macro was
+  created, whenever it is run. The compound cue will end all of its
+  component cues when you end it, and will end itself if they end
+  independently.
 - Support for other members of the Novation Launchpad family of grid
   controllers has been implemented:
   - Launchpad Mini
@@ -31,6 +38,11 @@ This change log follows the conventions of
 - The color wheel is only applied when a color has sufficient
   saturation for it to make sense. The threshold can be adjusted by
   setting the show variable `:color-wheel-min-saturation`.
+- Effects with Unicode characters in them were crashing the Ableton
+  Push display code, since it only handles single byte ASCII plus a
+  handful of special symbols used for drawing interface elements. Now
+  unprintable characters are substituted with an ellipsis symbol
+  rather than crashing.
 - The documentation link in the web interface now takes you to the
   proper version-specific tag of the documentation if it is a release
   build. Snapshot builds take you to `master`.

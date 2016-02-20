@@ -313,7 +313,7 @@
   ;; And record the new state for next time
   (reset! (:last-text-buttons controller) @(:next-text-buttons controller)))
 
-(defn get-safe-text-byte
+(defn- get-safe-text-byte
   "Converts a character to be displayed to a byte, but if it is
   outside the range that can be displayed by the Push, like Unicode,
   then change it to a byte representing an ellipsis."
