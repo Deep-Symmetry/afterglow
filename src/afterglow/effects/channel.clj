@@ -170,7 +170,7 @@
   fixture will be calculated by treating `level` as a percentage of
   the way between the lowest and highest DMX values assigned to that
   named function for the fixture. The name displayed for the effect in
-  user interfaces is determined by `name`.
+  user interfaces is determined by `effect-name`.
 
   If `:htp?` is passed with a `true` value, applies
   highest-takes-precedence (i.e. compares the value to the previous
@@ -181,8 +181,8 @@
   which use the same channel, you are unlikely to get the results you
   want. Hopefully the fixture designers chose how to share channels
   wisely, avoiding this pitfall."
-  [name function level fixtures & {:keys [htp?]}]
-  {:pre [(some? *show*) (some? name) (some? function) (sequential? fixtures)]}
+  [effect-name function level fixtures & {:keys [htp?]}]
+  {:pre [(some? *show*) (some? effect-name) (some? function) (sequential? fixtures)]}
   (params/validate-param-type level Number)
   (let [function (keyword function)
         heads (find-heads-with-function function fixtures)
@@ -196,7 +196,7 @@
             (fn [show snapshot target previous-assignment]
               level))
         assigners (build-head-function-assigners function heads f)]
-    (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
+    (Effect. effect-name always-active (fn [show snapshot] assigners) end-immediately)))
 
 (defn function-value-scaler
   "Converts a named function value from an arbitrary range to a
