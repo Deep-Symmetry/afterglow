@@ -241,20 +241,19 @@
 
 (defn make-color-cue
   "Create a cue-grid entry which establishes a global color effect,
-  given a named color. Also set up a cue color parameter which gets
-  bound to a show variable with the same name as the effect key, so
-  the color can be tweaked in the Web UI or on the Ableton Push, and
-  changes persist between invocations."
+  given a named color. Also set up a cue color parameter so the color
+  can be tweaked in the Web UI or on the Ableton Push, and changes
+  can be saved to persist between invocations."
   [color-name x y & {:keys [include-color-wheels? held fixtures effect-key effect-name priority]
                      :or   {fixtures    (show/all-fixtures)
                             effect-key  :color
                             effect-name (str "Color " color-name)
                             priority    0}}]
   (let [color     (create-color color-name)
-        color-var {:key effect-key :type :color :name "Color"}
+        color-var {:key "color" :type :color :start color :name "Color"}
         cue       (cues/cue effect-key
                             (fn [var-map]
-                              (global-color-effect (params/bind-keyword-param (:key color-var)
+                              (global-color-effect (params/bind-keyword-param (:color var-map)
                                                                               :com.evocomputing.colors/color
                                                                               color)
                                                    :effect-name effect-name
@@ -263,9 +262,8 @@
                             :priority priority
                             :held held
                             :color color
-                            :color-fn (cues/color-fn-from-cue-var color-var)
+                            :color-fn (cues/color-fn-from-cue-var color-var x y)
                             :variables [color-var])]
-    (show/set-variable! effect-key color)
     (ct/set-cue! (:cue-grid *show*) x y cue)))
 
 (defn- name-torrent-gobo-cue
@@ -796,7 +794,12 @@
 
 (defn make-ambient-cues
   "Create a page of cues for controlling lasers, and ambient effects
-  like the H2O LED and black light."
+  like the H2O LED and black light.
+
+  Also holds cues for turning on sound active mode when the show
+  operator wants to let things take care of themselves for a while,
+  and doesn't mind losing the ability to control show brightness via
+  dimmer masters."
   [page-x page-y]
   (let [x-base (* page-x 8)
         y-base (* page-y 8)]
@@ -853,7 +856,21 @@
                                     :color :cyan :effect-name "Hypnotic Rotate CCW" :level 50))
     (ct/set-cue! (:cue-grid *show*) (+ x-base 7) (+ y-base 4)
                  (cues/function-cue :hypnotic-spin :beams-cw (show/fixtures-named "hyp-rgb")
-                                    :color :cyan :effect-name "Hypnotic Rotate Clockwise" :level 50))))
+                                    :color :cyan :effect-name "Hypnotic Rotate Clockwise" :level 50))
+
+    ;; Sound active mode for groups of lights
+    (ct/set-cue! (:cue-grid *show*) (+ x-base 2) (+ y-base 7)
+                 (cues/function-cue :blade-sound :sound-active (show/fixtures-named "blade")
+                                    :color :orange :effect-name "Blade Sound"))
+    (ct/set-cue! (:cue-grid *show*) (+ x-base 4) (+ y-base 7)
+                 (cues/function-cue :hex-sound :sound-active (show/fixtures-named "hex")
+                                    :color :orange :effect-name "Hex Sound"))
+    (ct/set-cue! (:cue-grid *show*) (+ x-base 5) (+ y-base 7)
+                 (cues/function-cue :puck-sound :sound-active (show/fixtures-named "puck")
+                                    :color :orange :effect-name "Puck Sound"))
+    (ct/set-cue! (:cue-grid *show*) (+ x-base 6) (+ y-base 7)
+                 (cues/function-cue :snowball-sound :sound-active (show/fixtures-named "snowball")
+                                    :color :orange :effect-name "Snowball Sound"))))
 
 (defn make-cues
   "Create a bunch of example cues for experimentation."

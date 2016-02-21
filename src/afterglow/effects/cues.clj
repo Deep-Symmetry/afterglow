@@ -562,17 +562,32 @@
 (defn color-fn-from-cue-var
   "Builds a dynamic cue color function which reports the color of a
   cue based on the content of a cue variable, given the cue variable
-  map. If the cue variable is temporary, when the cue is not running,
-  the function returns non-dynamic cue color. When running, or if the
-  variable is not temporary, it looks up the value of the specified
-  cue variable, and returns that. If the variable is `nil`, the
-  non-dynamic cue color is returned."
-  [var-spec]
-  (fn [cue active show _]
-    (if (or active (keyword? (:key var-spec)))
-      (or (get-cue-variable cue var-spec :show show :when-id (:id active))
-          (:color cue))
-      (:color cue))))
+  map.
+
+  When the cue is running, we look up the value of the specified cue
+  variable, and return that. If the variable is `nil`, the non-dynamic
+  cue color is returned.
+
+  When the cue is not running, we try to look up the saved value for
+  the variable if the cue's `x` and `y` grid coordinates were
+  supplied. If a saved value can be found for the variable, that color
+  is returned. Failing that, we check whether the variable is a
+  permanent show variable, which we can look up even when the cue is
+  not running. If so, and the variable has a non-`nil` value, we
+  return that color. Again, if all else fails, we return the
+  non-dynamic cue color."
+  ([var-spec]
+   (color-fn-from-cue-var var-spec nil nil))
+  ([var-spec x y]
+   (fn [cue active show _]
+     (let [candidates (if active
+                        [(get-cue-variable cue var-spec :show show :when-id (:id active)) (:color cue)]
+                        (let [saved (when (every? some? [x y])
+                                      ((keyword (:key var-spec)) (controllers/cue-vars-saved-at (:cue-grid show) x y)))
+                              permanent (when (and (nil? saved) (keyword? (:key var-spec)))
+                                          (get-cue-variable cue var-spec :show show :when-id (:id active)))]
+                          [saved permanent (:color cue)]))]
+       (some #(when (some? %) %) candidates)))))
 
 (defn color-fn-from-param
   "Builds a dynamic cue color function which reports the color of a
