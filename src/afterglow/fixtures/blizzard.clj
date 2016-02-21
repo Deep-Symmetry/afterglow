@@ -164,6 +164,16 @@
   ![Blade
   axes](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/Blade.png)
 
+  If you are hanging the light at an odd angle, or for any reason it
+  is harder to measure the exact axis location than the location of
+  where you are hanging it, you can supply an optional argument
+  `:hung` containing the distance in meters from the origin in the
+  photo to the point at which it was hung (the center of the bar it is
+  clamped to), and Afterglow will calculate where the head is based on
+  that distance and the orientation at which you reported it hung.
+  With the standard clamp mount and a standard O-clamp that distance
+  seems to be twelve inches.
+
   The center pan value (aimed straight at the audience when hung in
   the default orientation described above), is defined as 84, a half
   revolution around from that, so that it has room to move in both
@@ -190,14 +200,12 @@
   using optional keyword arguments following the `mode` value."
   ([]
    (blade-rgbw :15-channel))
-  ([mode & {:keys [pan-center pan-half-circle tilt-center tilt-half-circle]
-            :or {pan-center 84 pan-half-circle 84 tilt-center 8 tilt-half-circle -214}}]
+  ([mode & {:keys [hung pan-center pan-half-circle tilt-center tilt-half-circle]
+            :or {hung 0 pan-center 84 pan-half-circle 84 tilt-center 8 tilt-half-circle -214}}]
    (assoc (case mode
             :15-channel {:channels [(chan/pan 1 3) (chan/tilt 2 4)
                                     (chan/fine-channel :movement-speed 5
                                                        :function-name "Movement Speed (fast->slow)")
-                                    (chan/color 6 :red) (chan/color 7 :green)
-                                    (chan/color 8 :blue) (chan/color 9 :white)
                                     (chan/fine-channel :custom-color 10)
                                     (chan/functions :strobe 11 0 nil
                                                     1 {:type :strobe
@@ -209,13 +217,17 @@
                                                     0 :linear-dimming 26 :fade-step-increase
                                                     51 :color-macros 91 :color-fade-in-out
                                                     131 :color-snap 171 :color-fade
-                                                    211 :auto 251 :sound-active)]}
+                                                    211 :auto 251 :sound-active)]
+                         :heads [{:channels [(chan/color 6 :red) (chan/color 7 :green)
+                                              (chan/color 8 :blue) (chan/color 9 :white)]
+                                   :y hung}]}
             :11-channel {:channels [(chan/pan 1 3) (chan/tilt 2 4)
                                     (chan/fine-channel :movement-speed 5
                                                        :function-name "Movement Speed (fast->slow)")
-                                    (chan/color 6 :red) (chan/color 7 :green)
-                                    (chan/color 8 :blue) (chan/color 9 :white)
-                                    (chan/dimmer 10) (chan/fine-channel :custom-color 11)]})
+                                    (chan/dimmer 10) (chan/fine-channel :custom-color 11)]
+                         :heads [{:channels [(chan/color 6 :red) (chan/color 7 :green)
+                                              (chan/color 8 :blue) (chan/color 9 :white)]
+                                   :y hung}]})
           :name "Blizzard Blade RGBW"
           :mode mode
           :pan-center pan-center :pan-half-circle pan-half-circle
@@ -226,18 +238,6 @@
 ;;       motions. Also unimplemented is the whole concept of Fiture ID, but that would require
 ;;       major support throughout Afterglow. Wait until people using overpopulated DMX networks
 ;;       ask for it...
-
-(def ^:private ws-head-offsets
-  "The X-axis positions of the eight weather system heads"
-  [-0.406 -0.305 -0.191 -0.083 0.083 0.191 0.305 0.406])
-
-(defn- ws-head
-  "Creates a head definition for one head of the Weather System"
-  [index]
-  {:channels [(chan/color (+ 2 (* 3 index)) :red)
-              (chan/color (+ 3 (* 3 index)) :green)
-              (chan/color (+ 4 (* 3 index)) :blue)]
-   :x (get ws-head-offsets index)})
 
 (defn puck-fab5
   "[Puck
@@ -297,6 +297,18 @@
                                                          :range :variable})]})
           :name "Blizzard Puck Fab5"
           :mode mode)))
+
+(def ^:private ws-head-offsets
+  "The X-axis positions of the eight weather system heads"
+  [-0.406 -0.305 -0.191 -0.083 0.083 0.191 0.305 0.406])
+
+(defn- ws-head
+  "Creates a head definition for one head of the Weather System"
+  [index]
+  {:channels [(chan/color (+ 2 (* 3 index)) :red)
+              (chan/color (+ 3 (* 3 index)) :green)
+              (chan/color (+ 4 (* 3 index)) :blue)]
+   :x (get ws-head-offsets index)})
 
 (defn weather-system
   "[Weather
