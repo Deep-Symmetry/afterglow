@@ -78,6 +78,10 @@
   [deg]
   (* (/ deg 180) Math/PI))
 
+;; TODO: Today we are considering the heads to be in a fixed location relative to
+;;       the fixture. Someday this needs to be generalized to cope with fixtures
+;;       with multiple heads where the base fixture can pan and tilt, moving the
+;;       heads themselves, which can then individually pan and tilt.
 (defn- transform-head
   "Determine the position and orientation of a fixture's head."
   [fixture head]
