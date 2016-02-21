@@ -198,7 +198,7 @@
                            :short-name "Rainbow Grid+Bar"
                            :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
                                         :type :integer}]))
-    ;; TODO: Make this a high-priroity cue which desaturates whatever else is going on.
+
     (ct/set-cue! (:cue-grid *show*) 7 1  ; Desaturate the rainbow as each beat progresses
                  (cues/cue :color (fn [_] (global-color-effect
                                            (params/build-color-param :s desat-beat :l 50 :h hue-gradient
@@ -241,7 +241,7 @@
     (ct/set-cue! (:cue-grid *show*) 7 7
                  (cues/function-cue :hex-uv :uv (show/all-fixtures)
                                     :level 100 :color :blue :short-name "All UV"))
-    
+
     ;; Dimmer cues to turn on and set brightness of groups of lights
     (ct/set-cue! (:cue-grid *show*) 0 2
                  (cues/cue :dimmers (fn [var-map] (global-dimmer-effect
