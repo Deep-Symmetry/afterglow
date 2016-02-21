@@ -36,6 +36,92 @@
   sample-show
   (atom nil))
 
+(defn patch-lighting-rig
+  "An example of how to patch a whole group of lights with a
+  parameterized location. We mount our lights on our lighting rig in
+  standard positions, so knowing the position of the rig and the
+  height to which it has been adjusted allows us to figure out where
+  all the lights are on it.
+
+  The origin of the rig is the center of the lower bar on the
+  horizontal truss, and the default orientation is, as usual, facing
+  towards the audience.
+
+We try to hang blades 1-4 at an angle of 72.5 degrees leaning towards
+  the audience, and blade 5 sags to about 101 degrees but if any angle
+  ends up being off and difficult to correct, it can be passed in with
+  `:blade-1-angle` through `:blade-5-angle` The actual mounting height
+  of blade 5, if it differs from 4 inches can be passed with
+  `:blade-5-height`."
+  [& {:keys [universe x y z x-rotation y-rotation z-rotation
+             blade-1-angle blade-2-angle blade-3-angle blade-4-angle blade-5-angle blade-5-height]
+      :or {universe 1 x 0 y (tf/inches 62.5) z 0
+           x-rotation 0 y-rotation 0 z-rotation 0
+           blade-1-angle (tf/degrees 72.5) blade-2-angle (tf/degrees 72.5)
+           blade-3-angle (tf/degrees 72.5) blade-4-angle (tf/degrees 72.5)
+           blade-5-angle (tf/degrees 101) blade-5-height (tf/inches 4)}}]
+
+  ;; Torrent F3 moving head effect spots
+  (show/patch-fixture! :torrent-1 (blizzard/torrent-f3) universe 1
+                       :x (+ x (tf/inches 50)) :y (+ y (tf/inches -14)) :z z
+                       :x-rotation (+ x-rotation (tf/degrees 180))
+                       :y-rotation (+ y-rotation (tf/degrees 90))
+                       :z-rotation z-rotation)
+  (show/patch-fixture! :torrent-2 (blizzard/torrent-f3) universe 17
+                       :x (+ x (tf/inches -50)) :y (+ y (tf/inches -14)) :z z
+                       :x-rotation (+ x-rotation (tf/degrees 180))
+                       :y-rotation (+ y-rotation (tf/degrees 90))
+                       :z-rotation z-rotation)
+
+  ;; Hex IRC mini RGBAW+UV pars
+  (show/patch-fixture! :hex-1 (chauvet/slimpar-hex3-irc) universe 129
+                       :x (+ x (tf/inches 51.5)) :y (+ y (tf/inches 15)) :z z)
+  (show/patch-fixture! :hex-2 (chauvet/slimpar-hex3-irc) universe 145
+                       :x (tf/inches -51.5) :y (tf/inches 15) :z z)
+
+  ;; Blade moving-head RGBA pinspots
+  (show/patch-fixture! :blade-1 (blizzard/blade-rgbw) universe 225
+                       :x (+ x (tf/inches -21)) :y (+ y (tf/inches 9)) :z z
+                       :x-rotation (+ x-rotation blade-1-angle)
+                       :y-rotation (+ y-rotation (tf/degrees 90))
+                       :z-rotation z-rotation)
+  (show/patch-fixture! :blade-2 (blizzard/blade-rgbw) universe 240
+                       :x (+ x (tf/inches 20.5)) :y (+ y (tf/inches 9)) :z z
+                       :x-rotation (+ x-rotation blade-2-angle)
+                       :y-rotation (+ y-rotation (tf/degrees 90))
+                       :z-rotation z-rotation)
+  (show/patch-fixture! :blade-3 (blizzard/blade-rgbw) universe 255
+                       :x (+ x (tf/inches -37)) :y y :z z
+                       :x-rotation (+ x-rotation blade-3-angle)
+                       :y-rotation (+ y-rotation (tf/degrees 90))
+                       :z-rotation z-rotation)
+  (show/patch-fixture! :blade-4 (blizzard/blade-rgbw) universe 270
+                       :x (+ x (tf/inches 37)) :y y :z z
+                       :x-rotation (+ x-rotation blade-4-angle)
+                       :y-rotation (+ y-rotation (tf/degrees 90))
+                       :z-rotation z-rotation)
+  (show/patch-fixture! :blade-5 (blizzard/blade-rgbw :15-channel :tilt-center 25 :tilt-half-circle -230) universe 285
+                       :x x :y (+ y blade-5-height) :z z
+                       :x-rotation (+ x-rotation blade-5-angle)
+                       :y-rotation (+ y-rotation (tf/degrees 90))
+                       :z-rotation z-rotation)
+
+  ;; Snowball RGBA moonflower effect
+  (show/patch-fixture! :snowball (blizzard/snowball) universe 33
+                       :x (+ x (tf/inches 6.5)) :y (+ y (tf/inches 15)) :z z)
+
+  ;; Hypnotic RGB web effect diffraction pattern laser
+  (show/patch-fixture! :hyp-rgb (adj/hypnotic-rgb) universe 45
+                       :x x :y (+ y (tf/inches -5)) :z z)
+
+  ;; These last two can be patched as generic switches instead if you don't want them to respond to dimmer cues:
+
+  ;; LED UV bar
+  (show/patch-fixture! :eco-uv (afterglow.fixtures/generic-dimmmer) universe 61)
+
+  ;; LED colored water effect
+  (show/patch-fixture! :h2o-led (afterglow.fixtures/generic-dimmmer) universe 62))
+
 (defn use-sample-show
   "Set up a sample show for experimenting with Afterglow. By default
   it will create the show to use universe 1, but if you want to use a
@@ -58,41 +144,13 @@
 
   ;; Throw a couple of fixtures in there to play with. For better fun, use
   ;; fixtures and addresses that correspond to your actual hardware.
-  (show/patch-fixture! :torrent-1 (blizzard/torrent-f3) universe 1
-                       :x (tf/inches 44) :y (tf/inches 51.75) :z (tf/inches -4.75)
-                       :y-rotation (tf/degrees 0))
-  (show/patch-fixture! :torrent-2 (blizzard/torrent-f3) universe 17
-                       :x (tf/inches -44) :y (tf/inches 51.75) :z (tf/inches -4.75)
-                       :y-rotation (tf/degrees 0))
-  (show/patch-fixture! :hex-1 (chauvet/slimpar-hex3-irc) universe 129 :x (tf/inches 14) :y (tf/inches 44)
-                       :z (tf/inches -4.75)
-                       :x-rotation (tf/degrees 90))
-  (show/patch-fixture! :hex-2 (chauvet/slimpar-hex3-irc) universe 145 :x (tf/inches -14) :y (tf/inches 44)
-                       :z (tf/inches -4.75)
-                       :x-rotation (tf/degrees 90))
-  (show/patch-fixture! :blade-1 (blizzard/blade-rgbw) universe 225
-                       :x (tf/inches 16) :y (tf/inches 12) :z (tf/inches 0)
-                       :y-rotation (tf/degrees 0))
-  (show/patch-fixture! :blade-2 (blizzard/blade-rgbw) universe 240
-                       :x (tf/inches -26.5) :y (tf/inches 48.5) :z (tf/inches -4.75)
-                       :y-rotation (tf/degrees 45))
-  (show/patch-fixture! :blade-3 (blizzard/blade-rgbw :15-channel :tilt-center 25 :tilt-half-circle -230)
-                       universe 255 :x (tf/inches 0) :y (tf/inches 12) :z (tf/inches 0)
-                       :y-rotation (tf/degrees 0))
-  (show/patch-fixture! :blade-4 (blizzard/blade-rgbw) universe 270 :y (tf/inches 48.5) :z (tf/inches -4.75))
-  (show/patch-fixture! :ws-1 (blizzard/weather-system) universe 161
+  (patch-lighting-rig :universe universe :blade-3-angle (tf/degrees 71.2))
+  #_(show/patch-fixture! :ws-1 (blizzard/weather-system) universe 161
                        :x (tf/inches 55) :y (tf/inches 71) :z (tf/inches 261) :y-rotation (tf/degrees 225))
-  (show/patch-fixture! :ws-2 (blizzard/weather-system) universe 187
+  #_(show/patch-fixture! :ws-2 (blizzard/weather-system) universe 187
                        :x (tf/inches -55) :y (tf/inches 71) :z (tf/inches 261) :y-rotation (tf/degrees 135))
-  (show/patch-fixture! :puck-1 (blizzard/puck-fab5) universe 97 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 52))
-  (show/patch-fixture! :puck-2 (blizzard/puck-fab5) universe 113 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 40))
-  (show/patch-fixture! :snowball (blizzard/snowball) universe 33 :x (tf/inches -76) :y (tf/inches 32)
-                       :z (tf/inches 164.5))
-  (show/patch-fixture! :hyp-rgb (adj/hypnotic-rgb) universe 45)
-
-  ;; These two can be patched as generic switches instead if you don't want them to respond to dimmer cues.
-  (show/patch-fixture! :eco-uv (afterglow.fixtures/generic-dimmmer) universe 61)
-  (show/patch-fixture! :h2o-led (afterglow.fixtures/generic-dimmmer) universe 62)
+  #_(show/patch-fixture! :puck-1 (blizzard/puck-fab5) universe 97 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 52))
+  #_(show/patch-fixture! :puck-2 (blizzard/puck-fab5) universe 113 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 40))
 
   (reset! var-binder (var-fx/create-for-show *show*))
   '*show*)
