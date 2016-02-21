@@ -339,7 +339,7 @@
   (See the
   [documentation](https://github.com/brunchboy/afterglow/blob/master/doc/oscillators.adoc#sine-oscillators)
   for an expanded explanation illustrated with graphs.)
-  
+
   All the arguments can be [dynamic
   parameters](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters)."
   [& {:keys [interval interval-ratio phase] :or {interval :beat interval-ratio 1 phase 0.0}}]
@@ -354,13 +354,9 @@
   values for at least one of min and max."
   [show params-snapshot head min max osc osc-snapshot]
   (let [min (params/resolve-param min show params-snapshot head)
-        max (params/resolve-param max show params-snapshot head)
+        max (clojure.core/max min (params/resolve-param max show params-snapshot head))  ; Avoid impossible case
         range (- max min)]
-    (if (neg? range)
-      (do
-        (timbre/error "Oscillator dynamic parameters min > max, returning max.")
-        max)
-      (+ min (* range (evaluate osc show osc-snapshot head))))))
+    (+ min (* range (evaluate osc show osc-snapshot head)))))
 
 (defn build-oscillated-param
   "Returns a number parameter that is driven by
@@ -371,7 +367,14 @@
   generator with the oscillator's range. If you don't specify a
   `:metronome` to use, the
   main [metronome](https://github.com/brunchboy/afterglow/blob/master/doc/metronomes.adoc#metronomes)
-  in [[*show*]] will be used."
+  in [[*show*]] will be used.
+
+  The values returned by the oscillator will be mapped onto the range
+  from 0 to 255. If you would like to use a different range, you can
+  pass in alternate numbers with the optional keyword arguments `:min`
+  and `:max`. If the values you supply result in a maximum that is
+  less than or equal to the minimum, the oscillated parameter will be
+  stuck at the value you gave with `:min`."
   [osc & {:keys [min max metronome frame-dynamic] :or {min 0 max 255 frame-dynamic true}}]
   {:pre [(some? *show*) (satisfies? IOscillator osc)]}
   (let [min (params/bind-keyword-param min Number 0)
@@ -379,7 +382,8 @@
         metronome (params/bind-keyword-param metronome Metronome (:metronome *show*))]
     (if (not-any? params/param? [min max metronome])
       ;; Optimize the simple case of all constant parameters
-      (let [range (- max min)
+      (let [max (clojure.core/max min max)  ; Handle case where min > max
+            range (- max min)
             dyn (boolean frame-dynamic)
             eval-fn (if (some? metronome)
                       (fn [show snapshot head]
@@ -389,10 +393,11 @@
             resolve-fn (fn [show snapshot head]
                          (with-show show
                            (build-oscillated-param (resolve-non-frame-dynamic-elements osc show snapshot head)
-                                                   :min min :max max :metronome metronome
+                                                   :min (params/resolve-unless-frame-dynamic min show snapshot head)
+                                                   :max (params/resolve-unless-frame-dynamic max show snapshot head)
+                                                   :metronome (params/resolve-unless-frame-dynamic metronome show
+                                                                                                   snapshot head)
                                                    :frame-dynamic frame-dynamic)))]
-        (when-not (pos? range)
-          (throw (IllegalArgumentException. "min must be less than max")))
         (reify
           params/IParam
           (params/evaluate [this show snapshot head]

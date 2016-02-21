@@ -163,6 +163,9 @@ variable was created. The frame-dynamic setting of such variable
 bindings will be controlled by the frame-dynamic setting of the
 oscillated parameter being created.
 
+NOTE: If `:min` ever evaluates greater than or equal to `:max`, the
+oscillator will be pinned to the value of `:min`.
+
 == Step Parameters
 
 Like oscillated parameters (above), step parameters vary over time, at
