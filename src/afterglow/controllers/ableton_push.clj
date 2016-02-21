@@ -845,6 +845,16 @@
                assoc (:up-arrow control-buttons)
                (button-state (:up-arrow control-buttons) :dim))))))
 
+(defn- update-mode-buttons
+  "Illuminate the buttons which activate modes while they are held
+  down. Make them dim when not held, and bright when held."
+  [controller mode-buttons]
+  (doseq [button mode-buttons]
+    (swap! (:next-text-buttons controller)
+           assoc (button control-buttons)
+           (button-state (button control-buttons)
+                         (if (in-mode? controller button) :bright :dim)))))
+
 (defn- update-interface
   "Determine the desired current state of the interface, and send any
   changes needed to get it to that state."
@@ -865,18 +875,7 @@
         (when-not (or (show/running?) (in-mode? controller :stop))
           (enter-stop-mode controller :already-stopped true)))
 
-      ;; Reflect the shift button state
-      (swap! (:next-text-buttons controller)
-             assoc (:shift control-buttons)
-             (button-state (:shift control-buttons)
-                           (if (in-mode? controller :shift) :bright :dim)))
-
-      ;; Reflect the record button state
-      (swap! (:next-text-buttons controller)
-             assoc (:record control-buttons)
-             (button-state (:record control-buttons)
-                           (if (in-mode? controller :record) :bright :dim)))
-
+      (update-mode-buttons controller [:shift :record])
       (render-cue-grid controller snapshot)
       (update-scroll-arrows controller)
 
@@ -967,7 +966,7 @@
       (< @counter 36)
       (doseq [x (range 0 8)]
         (set-pad-color controller x (- 35 @counter) off-color))
-      
+
       :else
       (do
         (clear-interface controller)
