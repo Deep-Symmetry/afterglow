@@ -95,7 +95,7 @@
   convert it to the appropriate type based on the variable
   specification."
   [var-spec raw]
-  (when raw
+  (when (some? raw)
     (case (:type var-spec)
       :boolean (boolean raw)
       :integer (Math/round (float raw))
