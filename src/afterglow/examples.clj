@@ -424,11 +424,10 @@
         cycles-param (params/bind-keyword-param (:cycles var-map) Number 1)]
     (params/build-param-formula Number #(/ %1 %2) beats-param cycles-param)))
 
-(defn make-sawtooth-cue
+(defn make-sawtooth-dimmer-cue
   "Create a cue which applies a sawtooth oscillator to the dimmers of
-  the specified group of fixtures, with cue parameters to adjust the
-  beat ratio, starting with default values established by show
-  parameters."
+  the specified group of fixtures, with cue variables to adjust the
+  oscillator parameters."
   [group x y color]
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "saw")]
     (ct/set-cue! (:cue-grid *show*) x y
@@ -441,18 +440,16 @@
                                           fixtures
                                           :effect-name effect-name))
                            :color color
-                           :variables [{:key "beats" :min 1 :max 32 :type :integer :start :starting-beats :name "Beats"}
-                                       {:key "down" :type :boolean :start :sawtooth-down? :name "Down?"}
-                                       {:key "cycles" :min 1 :max 10 :type :integer :start :starting-cycles
-                                        :name "Cycles"}
-                                       {:key "phase" :min 0 :max 1 :start :starting-phase :name "Phase"}]
+                           :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
+                                       {:key "down" :type :boolean :start true :name "Down?"}
+                                       {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
+                                       {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}]
                            :end-keys end-keys))))
 
-(defn make-triangle-cue
+(defn make-triangle-dimmer-cue
   "Create a cue which applies a triangle oscillator to the dimmers of
-  the specified set of fixtures, with cue parameters to adjust the
-  beat ratio, starting with default values established by show
-  parameters."
+  the specified set of fixtures, with cue variables to adjust the
+  oscillator parameters."
   [group x y color]
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "triangle")]
     (ct/set-cue! (:cue-grid *show*) x y
@@ -464,16 +461,15 @@
                                         fixtures
                                         :effect-name effect-name))
                          :color color
-                         :variables [{:key "beats" :min 1 :max 32 :type :integer :start :starting-beats :name "Beats"}
-                                     {:key "cycles" :min 1 :max 10 :type :integer :start :starting-cycles
-                                      :name "Cycles"}
-                                     {:key "phase" :min 0 :max 1 :start :starting-phase :name "Phase"}]
+                         :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
+                                     {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
+                                     {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}]
                          :end-keys end-keys))))
 
-(defn make-sine-cue
+(defn make-sine-dimmer-cue
   "Create a cue which applies a sine oscillator to the dimmers of the
-  specified set of fixtures, with cue parameters to adjust the beat
-  ratio, starting with default values established by show parameters."
+  specified set of fixtures, with cue variables to adjust the
+  oscillator parameters."
   [group x y color]
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "sine")]
     (ct/set-cue! (:cue-grid *show*) x y
@@ -486,17 +482,15 @@
                                           fixtures
                                           :effect-name effect-name))
                            :color color
-                           :variables [{:key "beats" :min 1 :max 32 :type :integer :start :starting-beats :name "Beats"}
-                                       {:key "cycles" :min 1 :max 10 :type :integer :start :starting-cycles
-                                        :name "Cycles"}
-                                       {:key "phase" :min 0 :max 1 :start :starting-phase :name "Phase"}]
-                         :end-keys end-keys))))
+                           :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
+                                       {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
+                                       {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}]
+                           :end-keys end-keys))))
 
-(defn make-square-cue
+(defn make-square-dimmer-cue
   "Create a cue which applies a square oscillator to the dimmers of
-  the specified set of fixtures, with cue parameters to adjust the
-  beat ratio and pulse width, starting with default values established
-  by show parameters."
+  the specified set of fixtures, with cue variables to adjust the
+  oscillator parameters."
   [group x y color]
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "square")]
     (ct/set-cue! (:cue-grid *show*) x y
@@ -509,11 +503,10 @@
                                         fixtures
                                         :effect-name effect-name))
                          :color color
-                         :variables [{:key "beats" :min 1 :max 32 :type :integer :start :starting-beats :name "Beats"}
-                                     {:key "width" :min 0 :max 1 :start :starting-width :name "Width"}
-                                     {:key "cycles" :min 1 :max 10 :type :integer :start :starting-cycles
-                                      :name "Cycles"}
-                                     {:key "phase" :min 0 :max 1 :start :starting-phase :name "Phase"}]
+                         :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
+                                     {:key "width" :min 0 :max 1 :start 0.5 :name "Width"}
+                                     {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
+                                     {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}]
                          :end-keys end-keys))))
 
 (defn x-phase
@@ -555,7 +548,7 @@
   (atom nil))
 
 (defn- build-focus-oscillator
-  "Creates a cue which oscillates a fixture's focus between a minimum
+  "Returns a cue which oscillates a fixture's focus between a minimum
   and minimum value using a sine oscillator with cue variables to
   adjust the range and the oscillator's parameters."
   [effect-key effect-name fixtures]
@@ -673,55 +666,21 @@
                            :variables [{:key "chance" :min 0.0 :max 0.4 :start 0.05 :velocity true}
                                        {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
 
-
-    ;; Set up default starting values for oscillators driving dimmer cues
-    (when-not (= (type (show/get-variable :starting-beats)) Long)
-      ;; If the default beat ratio numerator has not yet been set, establish it as 2
-      (show/set-variable! :starting-beats 2))
-    (when-not (= (type (show/get-variable :starting-cycles)) Long)
-      ;; If the default beat ratio denominator has not yet been set, establish it as 1
-      (show/set-variable! :starting-cycles 1))
-    (when-not (= (type (show/get-variable :starting-phase)) Double)
-      ;; If the default pulse phase has not yet been set, establish it as 0.0
-      (show/set-variable! :starting-phase 0.0))
-    (when-not (= (type (show/get-variable :sawtooth-down?)) Boolean)
-      ;; If the default sawtooth direction has not yet been set, establish it as down
-      (show/set-variable! :sawtooth-down? true))
-    (when-not (= (type (show/get-variable :starting-width)) Double)
-      ;; If the default pulse width has not yet been set, establish it as 0.5
-      (show/set-variable! :starting-width 0.5))
-
     ;; Dimmer oscillator cues: Sawtooth
-    (make-sawtooth-cue nil 0 3 :yellow)
-    (doall (map-indexed (fn [i group] (make-sawtooth-cue group (inc i) 3 :orange)) light-groups))
-
-    (ct/set-cue! (:cue-grid *show*) 7 3
-                 (cues/cue :sawtooth-down? (fn [_] (var-fx/variable-effect @var-binder :sawtooth-down? false))
-                           :color :red :short-name "Saw Up"))
+    (make-sawtooth-dimmer-cue nil 0 3 :yellow)
+    (doall (map-indexed (fn [i group] (make-sawtooth-dimmer-cue group (inc i) 3 :orange)) light-groups))
 
     ;; Dimmer oscillator cues: Triangle
-    (make-triangle-cue nil 0 4 :orange)
-    (doall (map-indexed (fn [i group] (make-triangle-cue group (inc i) 4 :red)) light-groups))
+    (make-triangle-dimmer-cue nil 0 4 :orange)
+    (doall (map-indexed (fn [i group] (make-triangle-dimmer-cue group (inc i) 4 :red)) light-groups))
 
     ;; Dimmer oscillator cues: Sine
-    (make-sine-cue nil 0 5 :cyan)
-    (doall (map-indexed (fn [i group] (make-sine-cue group (inc i) 5 :blue)) light-groups))
-
-    (ct/set-cue! (:cue-grid *show*) 7 5
-                 (cues/cue :beat-ratio
-                           (fn [_] (fx/blank "Starting Ratio"))
-                           :variables [{:key :starting-beats :min 1 :max 32 :type :integer :name "Beats"}
-                                       {:key :starting-cycles :min 1 :max 10 :type :integer :name "Cycles"}]))
+    (make-sine-dimmer-cue nil 0 5 :cyan)
+    (doall (map-indexed (fn [i group] (make-sine-dimmer-cue group (inc i) 5 :blue)) light-groups))
 
     ;; Dimmer oscillator cues: Square
-    (make-square-cue nil 0 6 :cyan)
-    (doall (map-indexed (fn [i group] (make-square-cue group (inc i) 6 :green)) light-groups))
-
-    (ct/set-cue! (:cue-grid *show*) 7 6
-                 (cues/cue :beat-ratio
-                           (fn [_] (fx/blank "Starting Shape"))
-                           :variables [{:key :starting-width :min 0 :max 1 :name "Width"}
-                                     {:key :starting-phase :min 0 :max 1 :name "Phase"}]))
+    (make-square-dimmer-cue nil 0 6 :cyan)
+    (doall (map-indexed (fn [i group] (make-square-dimmer-cue group (inc i) 6 :green)) light-groups))
 
     ;; Strobe cues
     (make-strobe-cue-2 "All" (show/all-fixtures) 0 7)
