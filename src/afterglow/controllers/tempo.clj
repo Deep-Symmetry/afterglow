@@ -16,8 +16,10 @@
   based on the sync mode of the show metronome. Call the returned
   function whenever the user has tapped your tempo button.
 
-  * If the show's sync mode is manual, this will invoke a low-level metronome
-  tap-tempo handler to adjust the metronome tempo.
+  * If the show's sync mode is manual, this will invoke a low-level
+  metronome tap-tempo handler to align the beat to the tap, and (if
+  three or more taps occur within two seconds of each other) adjust
+  the metronome tempo.
 
   * If the show's sync mode is MIDI, calling the returned function will
   align the current beat to the tap.
@@ -31,10 +33,9 @@
   a function with `:shift-fn` that returns `true` when that the shift
   button is held down. Whenever that function returns `true` for a
   tempo tap, the returned tap handler function will synchronize at the
-  next higher level. (In other words, if it was going to be a tempo
-  tap, it would be treated as a beat tap; what would normally be a
-  beat tap would be treated as a bar tap, and a bar tap would be
-  promoted to start a phrase.)
+  next higher level. (In other words, if it was going to be a tempo or
+  beat tap, it would be treated as a bar tap, and what would normally
+  be a bar tap would be promoted to start a phrase.)
 
   Returns a map describing the result of the current tempo tap."
   [show & {:keys [shift-fn] :or {shift-fn (constantly false)}}]
@@ -45,7 +46,7 @@
         (let [base-level (:level (show/sync-status))
               level      (if (shift-fn)
                            (case base-level
-                             nil   :bpm
+                             nil   :bar
                              :bpm  :beat
                              :beat :bar
                              :bar  :phrase

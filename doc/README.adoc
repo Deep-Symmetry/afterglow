@@ -394,23 +394,36 @@ phrase, and beat within that bar which has been reached.
 image:assets/Metronome.png[Metronome]
 
 The most basic way of synchronizing the metronome is to click the `Tap
-Tempo` button at each beat of the music. After a few clicks, the
-metronome will be approximately synchronized to the music. You can
-also adjust the BPM by dragging the slider along the bottom, or
-fine-tune it with the `+` and `-` buttons around the current BPM
+Tempo` button at each beat of the music. Tapping the button aligns the
+metronome to a beat, and if you tap it three or more times within two
+seconds of each preceding tap, sets the metronome's BPM. Tap it as you
+hear each beat of the music, and after three or more taps, the speed
+of the metronome will be approximately synchronized with the music.
+You can also adjust the BPM by dragging the slider along the bottom,
+or fine-tune it with the `+` and `-` buttons around the current BPM
 value.
+
+Once the tempo is correct, you can tell Afterglow which beat is the
+down beat by holding down kbd:[Shift] while pressing kbd:[Tap Tempo].
+(The label of the button will change to kbd:[Tap Bar] while
+kbd:[Shift] is down). This combination does not change the tempo, but
+tells Afterglow that the closest beat to when you tapped the button is
+the down beat (the first beat of a bar).
 
 In order to make longer chases and effects line up properly with the
 music, you will also want to make sure the count is right, that the
 beat number shows `1` on the down beat, and that the bar numbers are
 right as well, so that the start of a phrase is reflected as bar
-number `1`. You can adjust those with the `+` and `-` buttons around
-the Bar and Beat numbers. A shortcut that you can use right as a
-phrase begins is to click the red `x` button above the phrase number,
-which resets the metronome to Phrase 1, Bar 1, Beat 1.
+number `1`. In addition to using kbd:[Shift] with kbd:[Tap Tempo] to
+set the down beat, you can adjust the count using the `+` and `-`
+buttons around the Bar and Beat numbers.
 
-Trying to keep up with tempo changes during dynamic shows can be very
-difficult, so you will hopefully be able to take advantage of
+A shortcut that you can use right as a phrase begins is to click the
+red `x` button above the phrase number, which resets the metronome to
+Phrase 1, Bar 1, Beat 1.
+
+Trying to keep up with tempo changes during dynamic shows can be
+tedious, so you will hopefully be able to take advantage of
 Afterglow's metronome synchronization features. If you can get the DJ
 to feed you <<mapping_sync#syncing-to-midi-clock,MIDI clock pulses>>
 or <<mapping_sync#syncing-to-traktor-beat-phase,Traktor Beat Phase>>,
@@ -452,7 +465,9 @@ down beat (start) of a bar. Similarly, if you press the metronome
 Reset button (the red x above the phrase counter) while synced to a
 Pro DJ Link or Traktor Beat Phase beat grid, the beat itself will not
 move, but the beat closest to when you pressed the pad will be
-identified as Beat 1.
+identified as Beat 1. In these sync modes you can also use the
+kbd:[Shift] key to align at the next bigger boundary: If tapping
+would normally move the bar, shift-tapping will move the phrase.
 
 image:assets/MetronomeSynced.png[Metronome synced]
 

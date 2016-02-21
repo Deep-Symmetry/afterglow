@@ -364,7 +364,7 @@ function updateTapLabel( ) {
         break;
 
     default:
-        $("#tap-tempo").text(shifted ? "Tap Beat" : "Tap Tempo");
+        $("#tap-tempo").text(shifted ? "Tap Bar" : "Tap Tempo");
     }
 }
 

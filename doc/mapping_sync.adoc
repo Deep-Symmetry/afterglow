@@ -378,34 +378,38 @@ for details about all the arguments.
 From that point on, the kbd:[Record] button blinks on each beat of the
 show metronome, and when you press the button, it adjusts the tempo of
 the show. Assuming you have no metronone synchronization established
-for the show, tapping the button sets the metronome's BPM. Tap it as
-you hear each beat of the music, and after a few taps, the speed of
-the metronome will be approximately synchronized with the music.
+for the show, tapping the button aligns the metronome to a beat, and
+if you tap it three or more times within two seconds of each preceding
+tap, sets the metronome's BPM. Tap it as you hear each beat of the
+music, and after three or more taps, the speed of the metronome will be
+approximately synchronized with the music.
 
-NOTE: To synchronize the actual beats themselves, see the discussion
-about how to pair this mapping with a shift button, coming up shortly.
+NOTE: To synchronize bars, see the discussion about how to pair this
+mapping with a shift button, coming up shortly. Also, because of the
+two second threshold, you can't tap tempos that are 30 BPM or less.
 
 If the metronome's BPM is already being synced automatically, via MIDI
 clock messages as described in the <<syncing-to-midi-clock,next
 section>>, then tapping the button will not change the BPM. Instead,
-it acts as a Tap Beat button, moving the start of the current beat to
-match when you tapped the button.
+it acts as a Tap Beat button, always moving the start of the current
+beat to match when you tapped the button.
 
 If the metronome's BPM and beat positions are both being synced
 automatically, either via the <<syncing-to-traktor-beat-phase,Traktor
 beat phase mapping>> or <<syncing-to-pro-dj-link,Pioneer Pro DJ Link>>
 (as described further below) then tapping the button acts as a Tap Bar
 button, telling Afterglow that the closest beat to when you tapped the
-button is the down beat, the start of the current bar.
+button is the down beat (the first beat of the current bar).
 
 In addition to Tap Tempo buttons, the grid controllers have Shift
 buttons which modify the behavior of other buttons, including the Tap
 Tempo button. That can be very convenient, especially when you are not
-using any kind of automatic BPM sync, so you want to be able to set
-both the tempo and the beat location. You can set up another button on
-your controller to act this way and work with your Tap Tempo button,
-but you need to map it before mapping the Tap Tempo button, so you can
-make use of it in setting up the Tap Tempo mapping.
+synced to a beat grid from Pioneer DJ Link Pro or Traktor, so you want
+to be able to set the tempo, the beat location, and the down beat. You
+can set up another button on your controller to act this way and work
+with your Tap Tempo button, but you need to map it before mapping the
+Tap Tempo button, so you can make use of it in setting up the Tap
+Tempo mapping.
 
 To set up a Shift button on any MIDI controller you happen to have,
 start by <<finding-mapping-details,identifying the mapping>> you need
@@ -446,18 +450,14 @@ _is_ being held down, tempo taps act differently, synchronizing at one
 level higher.
 
 So if your show metronome is unsynchronized, and the Tap Tempo button
-would normally set the BPM, then tapping it while holding down your
-Shift key makes it act as a Tap Beat button, moving the start of the
-current beat to match when you tapped the button.
+would normally align the beat or set the BPM, or if it is synchronized
+to MIDI clock and the button always simply aligns the beat, then
+tapping it while holding down your Shift key makes it act as a Tap Bar
+button, telling Afterglow that the closest beat to when you tapped the
+button is the down beat (the first beat of a bar).
 
-If the metronome's BPM is already being synced automatically so the
-button would normally act as a Tap Beat button, then with Shift down
-it acts as a Tap Bar button, telling Afterglow that the closest beat
-to when you tapped the button is the down beat, the start of the
-current bar.
-
-And if the BPM and beat positions are already being synced
-automatically so the button would normally act as a Tap Bar button,
+If the BPM and beat positions are both already being synced
+automatically, so the button would normally act as a Tap Bar button,
 then with Shift down it acts as a Tap Phrase button, telling Afterglow
 that the closest beat to when you tapped the button is the start of an
 entire phrase.
@@ -1082,14 +1082,18 @@ that bar which has been reached.
 image:assets/PushMetronome.jpg[Metronome section]
 
 The most basic way of synchronizing the metronome is to tap the
-kbd:[Tap Tempo] button at each beat of the music. After a few taps,
-the metronome will be approximately synchronized to the music. Once
-the tempo is correct, you can tell Afterglow exactly when the beats
-are actually hitting by holding down the kbd:[Shift] button while
-pressing kbd:[Tap Tempo]. This combination does not change the tempo,
-but tells Afterglow that a beat is occurring right when you hit the
-kbd:[Tap Tempo] button. After doing that, you should see the flashes
-taking place at the same time as the beats.
+kbd:[Tap Tempo] button at each beat of the music. Tapping the button
+aligns the metronome to a beat, and if you tap it three or more times
+within two seconds of each preceding tap, sets the metronome's BPM.
+Tap it as you hear each beat of the music, and after three or more
+taps, the speed of the metronome will be approximately synchronized
+with the music.
+
+Once the tempo is correct, you can tell Afterglow which beat is the
+down beat by holding down the kbd:[Shift] button while pressing
+kbd:[Tap Tempo]. This combination does not change the tempo, but tells
+Afterglow that the closest beat to when you tapped the button is the
+down beat (the first beat of a bar).
 
 You can also adjust the BPM by turning the BPM encoder, which is the
 rightmost encoder below the Metronome button:
@@ -1117,8 +1121,9 @@ In order to make longer chases and effects line up properly with the
 music, you will also want to make sure the count is right, that the
 beat number shows `1` on the down beat, and that the bar numbers are
 right as well, so that the start of a phrase is reflected as bar
-number `1`. You can adjust those with the beat encoder, the leftmost
-encoder below the metronome button:
+number `1`. In addition to using kbd:[Shift] with kbd:[Tap Tempo] to
+set the down beat, you can adjust the current beat number using the
+beat encoder, the leftmost encoder below the metronome button:
 
 image:assets/PushBeat.jpg[Beat encoder]
 
@@ -1149,8 +1154,8 @@ If you know a phrase is about to begin, you can press the red Reset
 pad in the metronome section right as it does. This will reset the
 count to Phrase 1, Bar 1, Beat 1.
 
-Trying to keep up with tempo changes during dynamic shows can be very
-difficult, so you will hopefully be able to take advantage of
+Trying to keep up with tempo changes during dynamic shows can be
+tedious, so you will hopefully be able to take advantage of
 Afterglow's metronome synchronization features. If the DJ can send you
 <<mapping_sync#syncing-to-midi-clock,MIDI clock pulses>>, or you can
 connect via a Local Area Network to Pioneer professional DJ gear to
@@ -1182,9 +1187,7 @@ a Pro DJ Link beat grid or Traktor beat phase, the beat itself will
 not move, but the beat closest to when you pressed the pad will be
 identified as Beat 1.) In these sync modes you can also use the
 kbd:[Shift] button to align at the next bigger boundary: If tapping
-would normally move the beat, shift-tapping will move the bar; if
-tapping would normally move the bar, shift-tapping will move the
-phrase.
+would normally move the bar, shift-tapping will move the phrase.
 
 If you try to adjust the BPM encoder while sync is active, it will
 have no effect, and Afterglow will point at the sync mode to explain
@@ -1340,17 +1343,21 @@ Pro. If the button is red, it means that Afterglow was configured to
 sync to some external source, but has lost contact with it.
 
 The most basic way of synchronizing the metronome is to tap the
-kbd:[Click] button at each beat of the music. After a few taps, the
-metronome will be approximately synchronized to the music. Once the
-tempo is correct, you can tell Afterglow exactly when the beats are
-actually hitting by holding down the kbd:[Shift] button while pressing
-kbd:[Click]. This combination does not change the tempo, but tells
-Afterglow that a beat is occurring right when you hit the kbd:[Click]
-button. After doing that, you should see the flashes taking place at
-the same time as the beats.
+kbd:[Click] button at each beat of the music. Tapping the button
+aligns the metronome to a beat, and if you tap it three or more times
+within two seconds of each preceding tap, sets the metronome's BPM.
+Tap it as you hear each beat of the music, and after three or more
+taps, the speed of the metronome will be approximately synchronized
+with the music.
 
-Trying to keep up with tempo changes during dynamic shows can be very
-difficult, so you will hopefully be able to take advantage of
+Once the tempo is correct, you can tell Afterglow which beat is the
+down beat by holding down the kbd:[Shift] button while pressing
+kbd:[Click]. This combination does not change the tempo, but tells
+Afterglow that the closest beat to when you tapped the button is the
+down beat (the first beat of a bar).
+
+Trying to keep up with tempo changes during dynamic shows can be
+tedious, so you will hopefully be able to take advantage of
 Afterglow's metronome synchronization features. If the DJ can send you
 <<mapping_sync#syncing-to-midi-clock,MIDI clock pulses>>, or you can
 connect via a Local Area Network to Pioneer professional DJ gear to
@@ -1370,9 +1377,8 @@ beat phase mapping, the beats are automatically aligned for you so, it
 becomes a kbd:[Tap Bar] button which, when pressed, indicates that the
 current beat is the down beat (start) of a bar. In these sync modes
 you can also use the kbd:[Shift] button to align at the next bigger
-boundary: If tapping kbd:[Click] would normally move the beat,
-shift-tapping will move the bar; if tapping would normally move the
-bar, shift-tapping will move the phrase.
+boundary: If tapping kbd:[Click] would normally move the bar,
+shift-tapping will move the phrase.
 
 === Sharing the Launchpad Pro
 
