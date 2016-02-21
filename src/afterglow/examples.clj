@@ -554,6 +554,26 @@
   step-param
   (atom nil))
 
+(defn- build-focus-oscillator
+  "Creates a cue which oscillates a fixture's focus between a minimum
+  and minimum value using a sine oscillator with cue variables to
+  adjust the range and the oscillator's parameters."
+  [effect-key effect-name fixtures]
+  (cues/cue effect-key
+            (fn [var-map] (afterglow.effects.channel/function-effect
+                           effect-name :focus
+                           (oscillators/build-oscillated-param
+                            (oscillators/sine :interval-ratio (build-ratio-param var-map) :phase (:phase var-map))
+                            :min (:min var-map) :max (:max var-map))
+                           fixtures))
+            :color (create-color :yellow)
+            :variables [{:key "min" :min 0 :max 100 :start 0 :name "Min"}
+                        {:key "max" :min 0 :max 100 :start 100 :name "Max"}
+                        {:key "beats" :min 1 :max 32 :type :integer :start 4 :name "Beats"}
+                        {:key "cycles" :min 1 :max 10 :type :integer :start :starting-cycles
+                         :name "Cycles"}
+                        {:key "phase" :min 0 :max 1 :start :starting-phase :name "Phase"}]))
+
 (defn make-cues
   "Create a bunch of example cues for experimentation."
   []
@@ -740,6 +760,10 @@
     (ct/set-cue! (:cue-grid *show*) 7 15
                  (cues/function-cue :t2-focus :focus (show/fixtures-named "torrent-2") :effect-name "Torrent 2 Focus"
                                     :color (create-color :yellow)))
+    (ct/set-cue! (:cue-grid *show*) 4 15
+                 (build-focus-oscillator :t1-focus "Torrent 1 Focus Sine" (show/fixtures-named "torrent-1")))
+    (ct/set-cue! (:cue-grid *show*) 5 15
+                 (build-focus-oscillator :t2-focus "Torrent 2 Focus Sine" (show/fixtures-named "torrent-2")))
     (ct/set-cue! (:cue-grid *show*) 6 14
                  (cues/function-cue :t1-prism :prism-clockwise (show/fixtures-named "torrent-1") :level 100
                                     :effect-name "T1 Prism Spin CW" :color (create-color :orange)))
