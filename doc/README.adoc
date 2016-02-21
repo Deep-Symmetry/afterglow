@@ -407,8 +407,8 @@ Once the tempo is correct, you can tell Afterglow which beat is the
 down beat by holding down kbd:[Shift] while pressing kbd:[Tap Tempo].
 (The label of the button will change to kbd:[Tap Bar] while
 kbd:[Shift] is down). This combination does not change the tempo, but
-tells Afterglow that the closest beat to when you tapped the button is
-the down beat (the first beat of a bar).
+tells Afterglow that the moment when you tapped the button is the down
+beat (the first beat of a bar).
 
 In order to make longer chases and effects line up properly with the
 music, you will also want to make sure the count is right, that the

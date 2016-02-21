@@ -35,6 +35,12 @@ This change log follows the conventions of
 
 ### Fixed
 
+- The low-level tempo tap handler was already more useful than I was
+  giving it credit for, suitable for both aligning to the current beat
+  as well as adjusting the tempo if you hit it three or more times, so
+  the shift key can be used to adjust the down beat even on
+  unsynchronized shows. This makes it much easier to keep the lights
+  in sync manually!
 - The color wheel is only applied when a color has sufficient
   saturation for it to make sense. The threshold can be adjusted by
   setting the show variable `:color-wheel-min-saturation`.

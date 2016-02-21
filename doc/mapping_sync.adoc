@@ -398,8 +398,8 @@ If the metronome's BPM and beat positions are both being synced
 automatically, either via the <<syncing-to-traktor-beat-phase,Traktor
 beat phase mapping>> or <<syncing-to-pro-dj-link,Pioneer Pro DJ Link>>
 (as described further below) then tapping the button acts as a Tap Bar
-button, telling Afterglow that the closest beat to when you tapped the
-button is the down beat (the first beat of the current bar).
+button, telling Afterglow that the moment when you tapped the button
+is the down beat (the first beat of the current bar).
 
 In addition to Tap Tempo buttons, the grid controllers have Shift
 buttons which modify the behavior of other buttons, including the Tap
@@ -453,8 +453,8 @@ So if your show metronome is unsynchronized, and the Tap Tempo button
 would normally align the beat or set the BPM, or if it is synchronized
 to MIDI clock and the button always simply aligns the beat, then
 tapping it while holding down your Shift key makes it act as a Tap Bar
-button, telling Afterglow that the closest beat to when you tapped the
-button is the down beat (the first beat of a bar).
+button, telling Afterglow that the moment when you tapped the button
+is the down beat (the first beat of a bar).
 
 If the BPM and beat positions are both already being synced
 automatically, so the button would normally act as a Tap Bar button,
@@ -1092,8 +1092,8 @@ with the music.
 Once the tempo is correct, you can tell Afterglow which beat is the
 down beat by holding down the kbd:[Shift] button while pressing
 kbd:[Tap Tempo]. This combination does not change the tempo, but tells
-Afterglow that the closest beat to when you tapped the button is the
-down beat (the first beat of a bar).
+Afterglow that the moment when you tapped the button is the down beat
+(the first beat of a bar).
 
 You can also adjust the BPM by turning the BPM encoder, which is the
 rightmost encoder below the Metronome button:
@@ -1353,8 +1353,8 @@ with the music.
 Once the tempo is correct, you can tell Afterglow which beat is the
 down beat by holding down the kbd:[Shift] button while pressing
 kbd:[Click]. This combination does not change the tempo, but tells
-Afterglow that the closest beat to when you tapped the button is the
-down beat (the first beat of a bar).
+Afterglow that the moment when you tapped the button is the down beat
+(the first beat of a bar).
 
 Trying to keep up with tempo changes during dynamic shows can be
 tedious, so you will hopefully be able to take advantage of

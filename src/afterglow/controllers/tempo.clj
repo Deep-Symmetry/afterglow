@@ -35,32 +35,36 @@
   tempo tap, the returned tap handler function will synchronize at the
   next higher level. (In other words, if it was going to be a tempo or
   beat tap, it would be treated as a bar tap, and what would normally
-  be a bar tap would be promoted to start a phrase.)
+  be a bar tap would be promoted to start a phrase.) If the metronome
+  is not locked into a beat grid, when you set the position of a bar
+  by shift-tapping, the beat is also aligned with the tap.
 
   Returns a map describing the result of the current tempo tap."
   [show & {:keys [shift-fn] :or {shift-fn (constantly false)}}]
-  (let [metronome  (:metronome show)
+  (let [metronome     (:metronome show)
         tempo-handler (amidi/create-tempo-tap-handler metronome)]
     (fn []
       (with-show show
-        (let [base-level (:level (show/sync-status))
-              level      (if (shift-fn)
-                           (case base-level
-                             nil   :bar
-                             :bpm  :beat
-                             :beat :bar
-                             :bar  :phrase
-                             base-level)
-                           base-level)]
+        (let [base-level     (:level (show/sync-status))
+              also-move-beat (or (nil? base-level) (= :bpm base-level))
+              level          (if (shift-fn)
+                               (case base-level
+                                 nil   :beat
+                                 :bpm  :beat
+                                 :beat :bar
+                                 :bar  :phrase
+                                 base-level)
+                               base-level)]
           (case level
-            nil (do (tempo-handler)
-                    {:tempo "adjusting"})
-            :bpm (do (rhythm/metro-beat-phase metronome 0)
-                     {:started "beat"})
+            nil   (do (tempo-handler)
+                      {:tempo "adjusting"})
+            :bpm  (do (rhythm/metro-beat-phase metronome 0)
+                      {:started "beat"})
             :beat (do (rhythm/metro-bar-start metronome (rhythm/metro-bar metronome))
+                      (when also-move-beat (rhythm/metro-beat-phase metronome 0))
                       {:started "bar"})
-            :bar (do (rhythm/metro-phrase-start metronome (rhythm/metro-phrase metronome))
-                     {:started "phrase"})
+            :bar  (do (rhythm/metro-phrase-start metronome (rhythm/metro-phrase metronome))
+                      {:started "phrase"})
             (let [warning (str "Don't know how to tap tempo for sync type" level)]
               (timbre/warn warning)
               {:error warning})))))))
