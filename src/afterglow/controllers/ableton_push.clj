@@ -397,12 +397,26 @@
         :green
         :red))))
 
+(defn- update-mode!
+  "Turn a controller mode on or off, identified by the associated
+  control button number or keyword."
+  [controller button state]
+  (let [button (if (keyword? button) (get-in control-buttons [button :control]) button)]
+    (swap! (:modes controller) #(if state (conj % button) (disj % button)))))
+
+(defn in-mode?
+  "Check whether the controller is in a particular mode, identified by
+  a control button number or keyword."
+  [controller button]
+  (let [button (if (keyword? button) (get-in control-buttons [button :control]) button)]
+    (get @(:modes controller) button)))
+
 (defn- bpm-adjusting-interface
   "Add an arrow showing the BPM is being adjusted, or point out that
   it is being externally synced."
   [controller]
   (if (= (:type (show/sync-status)) :manual)
-    (let [arrow-pos (if @(:shift-mode controller) 14 16)]
+    (let [arrow-pos (if (in-mode? controller :shift) 14 16)]
       (aset (get (:next-display controller) 2) arrow-pos (:up-arrow special-symbols)))
     (do
       (aset (get (:next-display controller) 2) 9 (:down-arrow special-symbols))
@@ -425,7 +439,7 @@
   [controller message]
   (with-show (:show controller)
     (when (= (:type (show/sync-status)) :manual)
-      (let [scale (if @(:shift-mode controller) 1 10)
+      (let [scale (if (in-mode? controller :shift) 1 10)
             delta (/ (sign-velocity (:velocity message)) scale)
             bpm (rhythm/metro-bpm (:metronome (:show controller)))]
         (rhythm/metro-bpm (:metronome (:show controller)) (min controllers/maximum-bpm
@@ -459,7 +473,7 @@
   "Add an arrow showing the beat is being adjusted."
   [controller]
   (let [marker (rhythm/metro-marker (:metronome (:show controller)))
-                         arrow-pos (if @(:shift-mode controller)
+                         arrow-pos (if (in-mode? controller :shift)
                                      (dec (.indexOf marker "." (inc (.indexOf marker "."))))
                                      (dec (count marker)))]
     (aset (get (:next-display controller) 2) arrow-pos (:up-arrow special-symbols))))
@@ -469,7 +483,7 @@
   [controller message]
   (let [delta (sign-velocity (:velocity message))
         metronome (:metronome (:show controller))
-        units (if @(:shift-mode controller)
+        units (if (in-mode? controller :shift)
                 ;; User is adjusting the current bar
                 (rhythm/metro-tock metronome)
                 ;; User is adjusting the current beat
@@ -752,9 +766,9 @@
               (write-display-cell controller 0 x (cue-variable-names controller cue (:id info)))
               (write-display-cell controller 1 x (cue-variable-values controller cue (:id info)))
               (write-display-cell controller 2 x (or (:name cue) (:name (first fx))))
-              (write-display-cell controller 3 x (concat (if @(:record-mode controller) save-label end-label)
+              (write-display-cell controller 3 x (concat (if (in-mode? controller :record) save-label end-label)
                                                          more-label))
-              (if @(:record-mode controller)
+              (if (in-mode? controller :record)
                 (when save-action
                   (aset (:next-top-pads controller) (* 2 x)
                         (top-pad-state :dim (case save-action
@@ -792,7 +806,7 @@
   "Activate the arrow buttons for directions in which scrolling is
   possible."
   [controller]
-  (if @(:shift-mode controller)
+  (if (in-mode? controller :shift)
     ;; In shift mode, scroll through the effects list
     (let [[offset max-offset] (find-effect-offset-range controller)]
       ;; If there is an offset, user can scroll to the right
@@ -848,20 +862,20 @@
 
       ;; If the show has stopped without us noticing, enter stop mode
       (with-show (:show controller)
-        (when-not (or (show/running?) @(:stop-mode controller))
+        (when-not (or (show/running?) (in-mode? controller :stop))
           (enter-stop-mode controller :already-stopped true)))
 
       ;; Reflect the shift button state
       (swap! (:next-text-buttons controller)
              assoc (:shift control-buttons)
              (button-state (:shift control-buttons)
-                           (if @(:shift-mode controller) :bright :dim)))
+                           (if (in-mode? controller :shift) :bright :dim)))
 
       ;; Reflect the record button state
       (swap! (:next-text-buttons controller)
              assoc (:record control-buttons)
              (button-state (:record control-buttons)
-                           (if @(:record-mode controller) :bright :dim)))
+                           (if (in-mode? controller :record) :bright :dim)))
 
       (render-cue-grid controller snapshot)
       (update-scroll-arrows controller)
@@ -1116,7 +1130,7 @@
   and black it out until the stop button is pressed again."
   [controller & {:keys [already-stopped]}]
 
-  (reset! (:stop-mode controller) true)
+  (update-mode! controller :stop true)
   (when-not already-stopped
     (with-show (:show controller)
       (show/stop!)
@@ -1141,14 +1155,14 @@
                                       (button-state (:stop control-buttons) :bright))
                                (with-show (:show controller)
                                  (when (show/running?)
-                                   (reset! (:stop-mode controller) false))
-                                 @(:stop-mode controller)))
+                                   (update-mode! controller :stop false))
+                                 (in-mode? controller :stop)))
                              (handle-control-change [this message]
                                (when (pos? (:velocity message))
                                  ;; End stop mode
                                  (with-show (:show controller)
                                    (show/start!))
-                                 (reset! (:stop-mode controller) false)
+                                 (update-mode! controller :stop false)
                                  :done))
                              (handle-note-on [this message])
                              (handle-note-off [this message])
@@ -1288,7 +1302,7 @@
 
     (20 22 24 26) ; Effect end/save pads
     (when (pos? (:velocity message))
-      (if @(:record-mode controller)
+      (if (in-mode? controller :record)
         (handle-save-effect controller (:note message))
         (handle-end-effect controller (:note message))))
 
@@ -1302,15 +1316,12 @@
     (when (pos? (:velocity message))
       (enter-stop-mode controller))
 
-    49 ; Shift button
-    (reset! (:shift-mode controller) (pos? (:velocity message)))
-
-    86 ; Record button
-    (reset! (:record-mode controller) (pos? (:velocity message)))
+    (49 86) ; Shift or Record button
+    (update-mode! controller (:note message) (pos? (:velocity message)))
 
     44 ; Left arrow
     (when (pos? (:velocity message))
-      (if @(:shift-mode controller)
+      (if (in-mode? controller :shift)
         ;; Trying to scroll back to older effects
         (let [[offset max-offset room] (find-effect-offset-range controller)
               new-offset (min max-offset (+ offset room))]
@@ -1326,7 +1337,7 @@
 
     45 ; Right arrow
     (when (pos? (:velocity message))
-      (if @(:shift-mode controller)
+      (if (in-mode? controller :shift)
         ;; Trying to scroll forward to newer effects
         (let [[offset max-offset room] (find-effect-offset-range controller)
               new-offset (max 0 (- offset room))]
@@ -1342,7 +1353,7 @@
 
     46 ; Up arrow
     (when (pos? (:velocity message))
-      (if @(:shift-mode controller)
+      (if (in-mode? controller :shift)
         ;; Jump back to oldest effect
         (let [[offset max-offset] (find-effect-offset-range controller)]
           (when (not= offset max-offset)
@@ -1357,7 +1368,7 @@
 
     47 ; Down arrow
     (when (pos? (:velocity message))
-      (if @(:shift-mode controller)
+      (if (in-mode? controller :shift)
         ;; Jump forward to newest effect
         (when (pos? @(:effect-offset controller))
           (reset! (:effect-offset controller) 0)
@@ -1398,7 +1409,7 @@
               (if (and active (not (:held cue)))
                 (show/end-effect! (:key cue))
                 (let [id (show/add-effect-from-cue-grid! cue-x cue-y :velocity velocity)
-                      holding (and (:held cue) (not @(:shift-mode controller)))]
+                      holding (and (:held cue) (not (in-mode? controller :shift)))]
                   (controllers/add-overlay
                    (:overlays controller)
                    (reify controllers/IOverlay
@@ -1863,7 +1874,7 @@
         port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))
         device   (when (every? some? [port-in port-out]) (valid-identity port-in port-out))]
     (if device
-      (let [shift-mode (atom false)
+      (let [modes (atom #{})
             controller
             (with-meta
               {:display-name         display-name
@@ -1886,12 +1897,11 @@
                :next-grid-pads       (make-array clojure.lang.IPersistentMap 64)
                :metronome-mode       (atom {})
                :last-marker          (atom nil)
-               :shift-mode           shift-mode
-               :stop-mode            (atom false)
-               :record-mode          (atom false)
+               :modes                modes
                :midi-handler         (atom nil)
                :deactivate-handler   (atom nil)
-               :tempo-tap-handler    (tempo/create-show-tempo-tap-handler show :shift-fn (fn [] @shift-mode))
+               :tempo-tap-handler    (tempo/create-show-tempo-tap-handler
+                                      show :shift-fn (fn [] (get @modes (get-in control-buttons [:shift :control]))))
                :overlays             (controllers/create-overlay-state)
                :move-listeners       (atom #{})
                :grid-controller-impl (atom nil)}
