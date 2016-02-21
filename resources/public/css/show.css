@@ -120,6 +120,10 @@ table.metronome {
     vertical-align: middle;
 }
 
+.effect-var-table {
+    background: transparent;
+}
 .effect-var-table td {
     padding: 1px;
+    background: transparent;
 }
