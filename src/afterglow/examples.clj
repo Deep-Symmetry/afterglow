@@ -425,9 +425,10 @@
     (params/build-param-formula Number #(/ %1 %2) beats-param cycles-param)))
 
 (defn make-sawtooth-cue
-  "Create a cue which applies a sawtooth oscillator to the specified
-  group of fixtures, with cue parameters to adjust the beat ratio,
-  starting with default values established by show parameters."
+  "Create a cue which applies a sawtooth oscillator to the dimmers of
+  the specified group of fixtures, with cue parameters to adjust the
+  beat ratio, starting with default values established by show
+  parameters."
   [group x y color]
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "saw")]
     (ct/set-cue! (:cue-grid *show*) x y
@@ -448,9 +449,10 @@
                            :end-keys end-keys))))
 
 (defn make-triangle-cue
-  "Create a cue which applies a triangle oscillator to the specified
-  set of fixtures, with cue parameters to adjust the beat ratio,
-  starting with default values established by show parameters."
+  "Create a cue which applies a triangle oscillator to the dimmers of
+  the specified set of fixtures, with cue parameters to adjust the
+  beat ratio, starting with default values established by show
+  parameters."
   [group x y color]
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "triangle")]
     (ct/set-cue! (:cue-grid *show*) x y
@@ -469,9 +471,9 @@
                          :end-keys end-keys))))
 
 (defn make-sine-cue
-  "Create a cue which applies a sine oscillator to the specified
-  set of fixtures, with cue parameters to adjust the beat ratio,
-  starting with default values established by show parameters."
+  "Create a cue which applies a sine oscillator to the dimmers of the
+  specified set of fixtures, with cue parameters to adjust the beat
+  ratio, starting with default values established by show parameters."
   [group x y color]
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "sine")]
     (ct/set-cue! (:cue-grid *show*) x y
@@ -491,9 +493,10 @@
                          :end-keys end-keys))))
 
 (defn make-square-cue
-  "Create a cue which applies a square oscillator to the specified set
-  of fixtures, with cue parameters to adjust the beat ratio and pulse
-  width, starting with default values established by show parameters."
+  "Create a cue which applies a square oscillator to the dimmers of
+  the specified set of fixtures, with cue parameters to adjust the
+  beat ratio and pulse width, starting with default values established
+  by show parameters."
   [group x y color]
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "square")]
     (ct/set-cue! (:cue-grid *show*) x y
