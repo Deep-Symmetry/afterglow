@@ -912,4 +912,28 @@
         (resolve-non-frame-dynamic-elements [this show snapshot head]
           (resolve-fn show snapshot head))))))
 
+(defn build-param-formula
+  "A helper function to create a dynamic parameter that involves some
+  sort of calculation based on the values of another group of dynamic
+  parameters. The result type reported by the resulting parameter will
+  be `param-type`.
+
+  Whenever the parameter's value is needed, it will evaluate all of
+  the parameters passed as `input-params`, and call `calc-fn` with
+  their current values, returning its result, which must have the type
+  specified by `param-type`.
+
+  The compound dynamic parameter will be frame dynamic if any of its
+  input parameters are."
+  [param-type calc-fn & input-params]
+  (reify IParam
+    (evaluate [this show snapshot head]
+      (apply calc-fn (map #(resolve-param % show snapshot head) input-params)))
+    (frame-dynamic? [this] (some frame-dynamic-param? input-params))
+    (result-type [this]
+      param-type)
+    (resolve-non-frame-dynamic-elements [this show snapshot head]
+      (build-param-formula param-type calc-fn
+                           (map #(resolve-unless-frame-dynamic % show snapshot head) input-params)))))
+
 ;; TODO: some kind of random parameter?

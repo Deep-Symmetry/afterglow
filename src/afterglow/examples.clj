@@ -422,16 +422,7 @@
   [var-map]
   (let [beats-param (params/bind-keyword-param (:beats var-map) Number 1)
         cycles-param (params/bind-keyword-param (:cycles var-map) Number 1)]
-    (reify params/IParam
-      (evaluate [this show snapshot head]
-        (/ (params/resolve-param beats-param show snapshot head)
-           (params/resolve-param cycles-param show snapshot head)))
-      (frame-dynamic? [this]
-        true)
-      (result-type [this]
-        Number)
-      (resolve-non-frame-dynamic-elements [this _ _ _]
-        this))))
+    (params/build-param-formula Number #(/ %1 %2) beats-param cycles-param)))
 
 (defn make-sawtooth-cue
   "Create a cue which applies a sawtooth oscillator to the specified
