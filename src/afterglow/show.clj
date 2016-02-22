@@ -1164,12 +1164,20 @@
   use [[transform/inches]], [[transform/feet]]
   and [[transform/degrees]] to convert those units for you if
   desired."
-  [key fixture universe start-address & {:keys [x y z x-rotation y-rotation z-rotation]
+  [key fixture universe start-address & {:keys [x y z x-rotation y-rotation z-rotation
+                                                relative-rotations rotation-matrix]
                                          :or {x 0.0 y 0.0 z 0.0 x-rotation 0.0 y-rotation 0.0 z-rotation 0.0}}]
   {:pre [(some? *show*) (some? fixture) (some? universe) (integer? start-address) (<= 1 start-address 512)]}
   (when-not (contains? (:universes *show*) universe)
     (throw (IllegalArgumentException. (str "Show does not contain universe " universe))))
-  (let [positioned (transform/transform-fixture fixture x y z x-rotation y-rotation z-rotation)]
+  (let [positioned (cond (= (type rotation-matrix) javax.media.j3d.Transform3D)
+                         (transform/transform-fixture-rotation-matrix fixture x y z rotation-matrix)
+
+                         (seq relative-rotations)
+                         (transform/transform-fixture-relative fixture x y z relative-rotations)
+
+                         :default
+                         (transform/transform-fixture-euler fixture x y z x-rotation y-rotation z-rotation))]
     (swap! (:fixtures *show*) #(patch-fixture-internal *show* % (keyword key)
                                                        (chan/patch-fixture positioned universe start-address next-id))))
   (swap! (:dimensions *show*) (constantly (calculate-dimensions *show*))))

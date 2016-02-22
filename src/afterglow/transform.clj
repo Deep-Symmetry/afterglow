@@ -78,6 +78,31 @@
   [deg]
   (* (/ deg 180) Math/PI))
 
+(defn interpret-rotation
+  "Given a fixture definition or head, checks whether it has been
+  assigned extrinsic (Euler) angle rotations, or a list of intrinsic
+  rotations. Either way, construct and return the appropriate rotation
+  matrix to represent its orientation."
+  [head]
+  (let [rotation (Transform3D.)]
+    (if-let [rotations (seq (:relative-rotations head))]
+      (if (every? zero? (select-keys head [:x-rotation :y-rotation :z-rotation]))
+        (doseq [[axis angle] rotations]
+          (let [rotation-step (Transform3D.)]
+            (case axis
+              :x-rotation (.rotX rotation-step angle)
+              :y-rotation (.rotY rotation-step angle)
+              :z-rotation (.rotZ rotation-step angle)
+              (throw (IllegalArgumentException. (str "Unknown intrinsic rotation: " axis
+                                                     " (must be :x-rotation, :y-rotation, or :z-rotation) "
+                                                     " for head: " head))))
+            (.mul rotation rotation-step)))
+        (throw (IllegalArgumentException.
+                (str "Head cannot have both extrinsic and intrinsic rotations: ") head)))
+      (let [euler-angles (Vector3d. (:x-rotation head 0.0) (:y-rotation head 0.0) (:z-rotation head 0.0))]
+        (.setEuler rotation euler-angles)))
+    rotation))
+
 ;; TODO: Today we are considering the heads to be in a fixed location relative to
 ;;       the fixture. Someday this needs to be generalized to cope with fixtures
 ;;       with multiple heads where the base fixture can pan and tilt, moving the
@@ -86,17 +111,13 @@
   "Determine the position and orientation of a fixture's head."
   [fixture head]
   (let [rotation (Transform3D. (:rotation fixture)) ; Not immutable, so copy!
-        point (Point3d. (:x head 0.0) (:y head 0.0) (:z head 0.0))
-        head-euler-angles (Vector3d. (:x-rotation head 0.0) (:y-rotation head 0.0) (:z-rotation head 0.0))
-        base-head-rotation (Transform3D.)
-        axis (Transform3D.)]
+        point (Point3d. (:x head 0.0) (:y head 0.0) (:z head 0.0))]
 
     ;; Transform the location of the head based on the fixture rotation
     (.transform rotation point)
 
     ;; Calculate the compound rotation applied to the head
-    (.setEuler base-head-rotation head-euler-angles)
-    (.mul rotation base-head-rotation)
+    (.mul rotation (interpret-rotation head))
     ;; fixture-rotation now holds the result of both rotations: First the rotation
     ;; from hanging the fixture, then the rotation of the individual head with
     ;; respect to the fixture itself, if any.
@@ -115,21 +136,58 @@
   (let [transformer (partial transform-head fixture)]
     (update-in fixture [:heads] #(map transformer %))))
 
-(defn transform-fixture
+(defn transform-fixture-euler
   "Determine the positions and orientations of the fixture and its
-  heads when it is patched into a show. X, Y, and Z are the position
-  of the fixture's origin point with respect to the show's origin, and
-  x-rotation, y-rotation, and z-rotation are the counter-clockwise
-  rotations around those axes, in that order, needed to get the
-  fixture from its reference orientation to the orientation in which
-  it was actually hung."
+  heads when it is patched into a show. `x`, `y`, and `z` are the
+  position of the fixture's origin point with respect to the show's
+  origin.
+
+  The fixture rotation is expressed as Euler angles in `x-rotation`,
+  `y-rotation`, and `z-rotation`. These are interpreted as the
+  counter-clockwise extrinsic rotations around the show space axes, in
+  that order, needed to get the fixture from its reference orientation
+  to the orientation in which it was actually hung. Extrinsic means
+  that the axes are always the fixed axes of show space, they do not
+  change as you rotate the fixture."
   [fixture x y z x-rotation y-rotation z-rotation]
-  (let [euler (Vector3d. x-rotation y-rotation z-rotation)
-        rotation (Transform3D.)]
-    ;; Calculate the compound rotation applied to the fixture
-    (.setEuler rotation euler)
-    (transform-heads (assoc fixture :x x :y y :z z :rotation rotation
-                            :x-rotation x-rotation :y-rotation y-rotation :z-rotation z-rotation))))
+  (let [fixture (assoc fixture :x x :y y :z z
+                       :x-rotation x-rotation :y-rotation y-rotation :z-rotation z-rotation)]
+    (transform-heads (assoc fixture :rotation (interpret-rotation fixture)))))
+
+(defn transform-fixture-relative
+  "Determine the positions and orientations of the fixture and its
+  heads when it is patched into a show. `x`, `y`, and `z` are the
+  position of the fixture's origin point with respect to the show's
+  origin.
+
+  The fixture rotation is expressed as a list of `relative-rotations`
+  in any order. Each list element is a tuple of the rotation
+  type (`:x-rotation`, `:y-rotation`, or `:z-rotation`) and the
+  counter-clockwise angle in radians around that axis which the
+  fixture should be rotated. The fixtue starts at its reference
+  orientation, and these intrinsic rotations are applied, in order,
+  always from the frame of reference of the fixture, including any
+  accumulated previous rotations."
+  [fixture x y z relative-rotations]
+  (let [fixture (assoc fixture :x x :y y :z z
+                       :relative-rotations relative-rotations)]
+    (transform-heads (assoc fixture :rotation (interpret-rotation fixture)))))
+
+(defn transform-fixture-rotation-matrix
+  "Determine the positions and orientations of the fixture and its
+  heads when it is patched into a show. `x`, `y`, and `z` are the
+  position of the fixture's origin point with respect to the show's
+  origin.
+
+  The fixture rotation is expressed as a `javax.media.j3d.Transform3D`
+  matrix containing only rotational components which represents the
+  transformation needed to get the fixture from its reference
+  orientation to the orientation at which it was actually hung.
+
+  This function is useful when you are precomupting a set of rotations
+  based on groups of fixtures that are being patched as an assembly."
+  [fixture x y z rotation]
+  (transform-heads (assoc fixture :x x :y y :z z :rotation rotation)))
 
 (defn show-head-positions
   "To help sanity-check fixtures' position and orientation after
@@ -145,7 +203,7 @@
 (def ^:private two-pi (* 2 Math/PI))
 
 (defn invert-direction
-  "Transform a direction vector in show coordinate space to the way it 
+  "Transform a direction vector in show coordinate space to the way it
   appears to a head or fixture that has been rotated when hanging."
   [fixture direction]
   (let [rotation (Transform3D. (:rotation fixture))
