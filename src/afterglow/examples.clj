@@ -119,13 +119,14 @@
   (show/patch-fixture! :hyp-rgb (adj/hypnotic-rgb) universe 45
                        :y (+ y (tf/inches -5)))
 
-  ;; These last two can be patched as generic switches instead if you don't want them to respond to dimmer cues:
+  ;; These last two can be patched as generic dimmers instead if you want them to respond to dimmer cues,
+  ;; although they can only be on or off:
 
   ;; LED UV bar
-  (show/patch-fixture! :eco-uv (afterglow.fixtures/generic-dimmmer) universe 61)
+  (show/patch-fixture! :eco-uv (afterglow.fixtures/generic-switch) universe 61)
 
   ;; LED colored water effect
-  (show/patch-fixture! :h2o-led (afterglow.fixtures/generic-dimmmer) universe 62))
+  (show/patch-fixture! :h2o-led (afterglow.fixtures/generic-switch) universe 62))
 
 (defn use-sample-show
   "Set up a sample show for experimenting with Afterglow. By default
@@ -867,27 +868,31 @@
   (let [x-base (* page-x 8)
         y-base (* page-y 8)]
 
-    ;; Various ultraviolet options
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 0) (+ y-base 0)
-                 (cues/cue :uv (fn [_]
-                                 (fx/scene "All UV"
-                                           (dimmer-effect 255 (show/fixtures-named :eco-uv))
-                                           (chan-fx/function-effect "Hex UV" :uv 100 (show/fixtures-named "hex"))))
-                           :color :purple))
+    ;; Various ultraviolet options. Start by defining the pair of effects needed to turn the hex fixtures on
+    ;; in full UV mode.
+    (let [hex-uv-fx [(chan-fx/function-effect "Hex UV" :uv 100 (show/fixtures-named "hex"))
+                     (dimmer-effect 255 (show/fixtures-named "hex")
+                                    :effect-name "Hex Dimmers for UV")]]
+      (ct/set-cue! (:cue-grid *show*) (+ x-base 2) (+ y-base 0)
+                   (cues/cue :hex-uv (fn [_] (apply fx/scene "Hex UV" hex-uv-fx))
+                             :color :purple :end-keys [:uv]))
 
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 1) (+ y-base 0)
-                 (cues/cue :eco-uv (fn [_] (dimmer-effect 255 (show/fixtures-named :eco-uv) :effect-name "Eco UV Bar"))
-                           :color :purple :end-keys [:uv]))1
+      (ct/set-cue! (:cue-grid *show*) (+ x-base 1) (+ y-base 0)
+                   (cues/function-cue :eco-uv :on (show/fixtures-named :eco-uv)
+                                      :color :purple :effect-name "Eco UV Bar" :end-keys [:uv]))
 
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 2) (+ y-base 0)
-                 (cues/function-cue :hex-uv :uv (show/fixtures-named "hex")
-                                    :level 100 :color :Purple :effect-name "Hex UV"
-                                    :end-keys [:uv]))
+      (ct/set-cue! (:cue-grid *show*) (+ x-base 0) (+ y-base 0)
+                   (cues/cue :uv (fn [_]
+                                   (apply fx/scene "All UV"
+                                          (conj hex-uv-fx
+                                                (chan-fx/function-effect "Eco UV Bar" :on 100
+                                                                         (show/fixtures-named :eco-uv)))))
+                             :color :purple :end-keys [:eco-uv :hex-uv])))
 
     ;; Turn on the H2O LED
     (ct/set-cue! (:cue-grid *show*) (+ x-base 7) (+ y-base 0)
-                 (cues/cue :h2o-led (fn [_] (dimmer-effect 255 (show/fixtures-named :h2o-led)
-                                                           :effect-name "H2O LED"))))
+                 (cues/function-cue :h2o-led :on (show/fixtures-named :h2o-led)
+                                    :effect-name "H2O LED"))
 
     ;; Control the Hypnotic RGB Laser
     (ct/set-cue! (:cue-grid *show*) (+ x-base 0) (+ y-base 3)
