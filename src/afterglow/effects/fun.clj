@@ -7,6 +7,8 @@
             [afterglow.effects.channel :as chan-fx]
             [afterglow.effects.color :as color-fx]
             [afterglow.effects.dimmer :as dimmer-fx]
+            [afterglow.effects.movement :as movement]
+            [afterglow.effects.oscillators :as osc]
             [afterglow.effects.params :as params]
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
@@ -19,7 +21,8 @@
   (:import (afterglow.effects Effect)
            (afterglow.effects.dimmer Master)
            (afterglow.rhythm Metronome)
-           (javax.vecmath Point3d)))
+           (javax.vecmath Point3d Vector3d)
+           (javax.media.j3d Transform3D)))
 
 (def default-down-beat-color
   "The default color for [[metronome-effect]] to flash on the down
@@ -608,3 +611,59 @@
                                         :max (params/resolve-unless-frame-dynamic max show snapshot head)
                                         :min-change (params/resolve-unless-frame-dynamic
                                                      min-change show snapshot head)))))))))
+
+(defn- build-twirl-vector
+  "Create a dynamic parameter which computes the aim vector for a
+  fixture in a [[twirl]] effect."
+  [x y z radius osc]
+  (reify params/IParam
+    (evaluate [this show snapshot head]
+      (let [reference-point (Point3d. (params/resolve-param x show snapshot head)
+                                      (params/resolve-param y show snapshot head)
+                                      (params/resolve-param z show snapshot head))
+            head-point (Point3d. (:x head) (:y head) (:z head))
+            displacement (Point3d. 0.0 (params/resolve-param radius show snapshot head) 0.0)
+            angle (* transform/two-pi (osc/evaluate osc show snapshot head))
+            rotation (Transform3D.)]
+        (.rotZ rotation angle)
+        (.transform rotation displacement)
+        (.add head-point displacement)
+        (.sub head-point reference-point)
+        (timbre/info "head-point" head-point "reference-point" reference-point)
+        (Vector3d. head-point)))
+    (frame-dynamic? [this]
+      true)
+    (result-type [this] Vector3d)
+    (resolve-non-frame-dynamic-elements [this show snapshot head]
+      (let [x (params/resolve-unless-frame-dynamic x show snapshot head)
+            y (params/resolve-unless-frame-dynamic y show snapshot head)
+            z (params/resolve-unless-frame-dynamic z show snapshot head)
+            radius (params/resolve-unless-frame-dynamic radius show snapshot head)
+            osc (params/resolve-unless-frame-dynamic osc show snapshot head)]
+        (build-twirl-vector x y z radius osc)))))
+
+(defn twirl
+  "Creates a movement effect which aims the lights outward from a
+  point specified by `:x`, `:y`, and `:z`, which defaults to `(0, 0,
+  -2)`, then displaces the front of that vector by a distance of
+  `:radius` in the _x-y_ plane (defaulting to `0.25`) in a direction
+  which rotates around the plane driven by a sawtooth oscillator which
+  defaults to a complete revolution every four beats, but whose beat
+  ratio can be adjusted by the parameters `:beats` and `:cycles`, and
+  whose phase is spread across the _x_ axis as a spatial parameter
+  over all fixtures. All parameters other than `fixtures` can be
+  dynamic or keywords, which will be bound to show variables.
+
+  You can override the default effect name of Twirl by passing in
+  another with `:effect-name`."
+  [fixtures & {:keys [x y z radius beats cycles effect-name]
+               :or {x 0 y 0 z -2 radius 0.25 beats 4 cycles 1 effect-name "Twirl"}}]
+  (let [x (params/bind-keyword-param x Number 0.0)
+        y (params/bind-keyword-param y Number 0.0)
+        z (params/bind-keyword-param z Number -1.0)
+        radius (params/bind-keyword-param radius Number 0.1)
+        beats (params/bind-keyword-param beats Number 4)
+        cycles (params/bind-keyword-param cycles Number 1)
+        osc (osc/sawtooth :interval-ratio (params/build-param-formula Number #(/ %1 %2) beats cycles)
+                          :phase (params/build-spatial-param fixtures (fn [head] (:x head)) :max 1.0))]
+    (movement/direction-effect effect-name (build-twirl-vector x y z radius osc) fixtures)))

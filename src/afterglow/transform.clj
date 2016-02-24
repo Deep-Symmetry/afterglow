@@ -200,7 +200,9 @@
   (map #(select-keys % [:key :x :y :z]) (chan/expand-heads fixtures)))
 
 
-(def ^:private two-pi (* 2 Math/PI))
+(def two-pi
+  "The angle which represents a full rotation around a circle."
+  (* 2 Math/PI))
 
 (defn invert-direction
   "Transform a direction vector in show coordinate space to the way it

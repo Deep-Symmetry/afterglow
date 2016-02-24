@@ -50,7 +50,7 @@
 
   Because the height of the rig can be adjusted, you can pass in a
   value with `:y` to set the height of the center of the lower bar on
-  the horizontal truss. If omitted a default height of 62 inches is
+  the horizontal truss. If omitted a default height of 62.5 inches is
   used, which is approximately the height of the bar when the
   extension poles are collapsed for load-in and strike.
 
@@ -128,6 +128,11 @@
   ;; LED colored water effect
   (show/patch-fixture! :h2o-led (afterglow.fixtures/generic-switch) universe 62))
 
+(def rig-height
+  "The height of the center of the bottom horizontal truss bar of the
+  main lighting rig as set up in the current venue."
+  (tf/inches 62.5))
+
 (defn use-sample-show
   "Set up a sample show for experimenting with Afterglow. By default
   it will create the show to use universe 1, but if you want to use a
@@ -150,7 +155,7 @@
 
   ;; Throw a couple of fixtures in there to play with. For better fun, use
   ;; fixtures and addresses that correspond to your actual hardware.
-  (patch-lighting-rig :universe universe :blade-3-angle (tf/degrees 71.2))
+  (patch-lighting-rig :universe universe :y rig-height :blade-3-angle (tf/degrees 71.2))
   #_(show/patch-fixture! :ws-1 (blizzard/weather-system) universe 161
                        :x (tf/inches 55) :y (tf/inches 71) :z (tf/inches 261) :y-rotation (tf/degrees 225))
   #_(show/patch-fixture! :ws-2 (blizzard/weather-system) universe 187
