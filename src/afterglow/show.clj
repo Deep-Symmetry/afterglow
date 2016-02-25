@@ -1051,6 +1051,22 @@
                          nil)))]
       [cue active])))
 
+(defn clear-cue!
+  "Removes any cue which existed at the specified coordinates in the
+  default show's cue grid, by delegating
+  to [[afterglow.controllers/clear-cue!]]. See that function for more
+  details."
+  [x y]
+  (controllers/clear-cue! (:cue-grid *show*) x y))
+
+(defn set-cue!
+  "Puts the supplied cue at the specified coordinates in the default
+  show's cue grid, by delegating
+  to [[afterglow.controllers/set-cue!]]. See that function for more
+  details."
+  [x y cue]
+  (controllers/set-cue! (:cue-grid *show*) x y cue))
+
 (defn- address-map-internal
   "Helper function which returns a sorted map whose keys are all
   addresses in use in a given universe within a fixture map, and whose
