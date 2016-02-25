@@ -627,9 +627,8 @@
             :variables [{:key "min" :min 0 :max 100 :start 0 :name "Min"}
                         {:key "max" :min 0 :max 100 :start 100 :name "Max"}
                         {:key "beats" :min 1 :max 32 :type :integer :start 4 :name "Beats"}
-                        {:key "cycles" :min 1 :max 10 :type :integer :start :starting-cycles
-                         :name "Cycles"}
-                        {:key "phase" :min 0 :max 1 :start :starting-phase :name "Phase"}]))
+                        {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
+                        {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}]))
 
 (defn make-main-color-dimmer-cues
   "Creates a page of cues that assign dimmers and colors to the
@@ -969,7 +968,16 @@
   (show/set-cue! 2 9
                  (cues/cue :movement (fn [var-map]
                                        (fun/twirl (concat (show/fixtures-named "blade")
-                                                          (show/fixtures-named "torrent"))))
+                                                          (show/fixtures-named "torrent"))
+                                                  :x (:x var-map) :y (:y var-map) :z (:z var-map)
+                                                  :radius (:radius var-map)
+                                                  :beats (:beats var-map) :cycles (:cycles var-map)))
+                           :variables [{:key "beats" :min 1 :max 32 :type :integer :start 4 :name "Beats"}
+                                       {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
+                                       {:key "radius" :min 0 :max 10 :start 0.25 :name "Radius"}
+                                       {:key "z" :min -10 :max 10 :start -1.0}
+                                       {:key "y" :min -10 :max 10 :start rig-height}
+                                       {:key "x" :min -10 :max 10 :start 0.0}]
                            :color :green))
 
   ;; A couple snowball cues

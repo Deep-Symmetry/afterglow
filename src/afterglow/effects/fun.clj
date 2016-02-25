@@ -302,7 +302,7 @@
         saved-saturation (show/get-variable :strobe-saturation)]
     (when-not saved-saturation (show/set-variable! :strobe-saturation 100))
     (when-not saved-hue (show/set-variable! :strobe-hue 277))
-    
+
     (Effect. "Strobe Adjust" fx/always-active
             (fn [show snapshot] nil)
             (fn [show snapshot]
@@ -384,7 +384,7 @@
   distance measure to determine when each light starts to participate.
   By default the transition occurs over the down beat (first beat)
   of the bar. See below for how these defaults can be changed.
-  
+
   The distance measure supplied as the second argument is a function
   which accepts a fixture or head and returns a nonnegative value
   which controls the point during the transition when that head will
@@ -629,7 +629,7 @@
         (.transform rotation displacement)
         (.add head-point displacement)
         (.sub head-point reference-point)
-        (timbre/info "head-point" head-point "reference-point" reference-point)
+        #_(timbre/info "head-point" head-point "reference-point" reference-point)
         (Vector3d. head-point)))
     (frame-dynamic? [this]
       true)
