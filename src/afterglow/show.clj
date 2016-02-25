@@ -1054,16 +1054,16 @@
 (defn clear-cue!
   "Removes any cue which existed at the specified coordinates in the
   default show's cue grid, by delegating
-  to [[afterglow.controllers/clear-cue!]]. See that function for more
-  details."
+  to [[afterglow.controllers/clear-cue!]] (see that function for
+  details)."
   [x y]
   (controllers/clear-cue! (:cue-grid *show*) x y))
 
 (defn set-cue!
   "Puts the supplied cue at the specified coordinates in the default
   show's cue grid, by delegating
-  to [[afterglow.controllers/set-cue!]]. See that function for more
-  details."
+  to [[afterglow.controllers/set-cue!]] (see that function for
+  details)."
   [x y cue]
   (controllers/set-cue! (:cue-grid *show*) x y cue))
 
