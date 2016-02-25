@@ -333,7 +333,7 @@
                             :color color
                             :color-fn (cues/color-fn-from-cue-var color-var x y)
                             :variables [color-var])]
-    (ct/set-cue! (:cue-grid *show*) x y cue)))
+    (show/set-cue! x y cue)))
 
 (defn- name-torrent-gobo-cue
   "Come up with a summary name for one of the gobo cues we are
@@ -355,13 +355,12 @@
                                  x (if (< i 8) left (+ left 2))
                                  y (if (< i 8) (- top i) (- top i -1))
                                  cue-key (keyword (str (name prefix) "-gobo-fixed"))]
-                             (ct/set-cue! (:cue-grid *show*) x y
-                                          (cues/function-cue cue-key (keyword v) fixtures :color blue
-                                                             :short-name (name-torrent-gobo-cue prefix v)))
+                             (show/set-cue! x y (cues/function-cue cue-key (keyword v) fixtures :color blue
+                                                                   :short-name (name-torrent-gobo-cue prefix v)))
                              (let [function (keyword (str (name v) "-shake"))]
-                               (ct/set-cue! (:cue-grid *show*) (inc x) y
-                                            (cues/function-cue cue-key function fixtures :color blue
-                                                               :short-name (name-torrent-gobo-cue prefix function))))))
+                               (show/set-cue! (inc x) y (cues/function-cue
+                                                         cue-key function fixtures :color blue
+                                                         :short-name (name-torrent-gobo-cue prefix function))))))
                          ["gobo-fixed-mortar" "gobo-fixed-4-rings" "gobo-fixed-atom" "gobo-fixed-jacks"
                           "gobo-fixed-saw" "gobo-fixed-sunflower" "gobo-fixed-45-adapter"
                           "gobo-fixed-star" "gobo-fixed-rose-fingerprint"])])
@@ -369,13 +368,14 @@
   (doseq [_ (map-indexed (fn [i v]
                            (let [green (create-color :green)
                                  cue-key (keyword (str (name prefix) "-gobo-moving"))]
-                             (ct/set-cue! (:cue-grid *show*) (+ left 2) (- top i)
-                                          (cues/function-cue cue-key (keyword v) fixtures :color green
-                                                             :short-name (name-torrent-gobo-cue prefix v)))
+                             (show/set-cue! (+ left 2) (- top i)
+                                            (cues/function-cue cue-key (keyword v) fixtures :color green
+                                                               :short-name (name-torrent-gobo-cue prefix v)))
                              (let [function (keyword (str (name v) "-shake"))]
-                               (ct/set-cue! (:cue-grid *show*) (+ left 3) (- top i)
-                                            (cues/function-cue cue-key function fixtures :color green
-                                                               :short-name (name-torrent-gobo-cue prefix function))))))
+                               (show/set-cue! (+ left 3) (- top i)
+                                              (cues/function-cue
+                                               cue-key function fixtures :color green
+                                               :short-name (name-torrent-gobo-cue prefix function))))))
                          ["gobo-moving-rings" "gobo-moving-color-swirl" "gobo-moving-stars"
                           "gobo-moving-optical-tube" "gobo-moving-magenta-bundt"
                           "gobo-moving-blue-mega-hazard" "gobo-moving-turbine"])]))
@@ -393,15 +393,15 @@
   sensitivity, and having the base strobe color depend on a set of
   shared numeric show variable."
   [name fixtures x y]
-  (ct/set-cue! (:cue-grid *show*) x y	
-               (cues/cue (keyword (str "strobe-" (clojure.string/replace (clojure.string/lower-case name) " " "-")))
-                         (fn [var-map] (fun/strobe (str "Strobe " name) fixtures
-                                                   (:level var-map 50) (:lightness var-map 100)))
-                         :color :purple
-                         :held true
-                         :priority 100
-                         :variables [{:key "level" :min 0 :max 100 :start 100 :name "Level"}
-                                     {:key "lightness" :min 0 :max 100 :name "Lightness" :velocity true}])))
+  (show/set-cue! x y
+                 (cues/cue (keyword (str "strobe-" (clojure.string/replace (clojure.string/lower-case name) " " "-")))
+                           (fn [var-map] (fun/strobe (str "Strobe " name) fixtures
+                                                     (:level var-map 50) (:lightness var-map 100)))
+                           :color :purple
+                           :held true
+                           :priority 100
+                           :variables [{:key "level" :min 0 :max 100 :start 100 :name "Level"}
+                                       {:key "lightness" :min 0 :max 100 :name "Lightness" :velocity true}])))
 
 (def white
   "The color to flash strobe cues to identify them as such."
@@ -421,21 +421,21 @@
     ;; If the default strobe color has not yet been established, set it to purple.
     (show/set-variable! :strobe-color (create-color :purple)))
   (let [color-var {:key :strobe-color :type :color :name "Strobe Color"}]
-    (ct/set-cue! (:cue-grid *show*) x y
-                 (cues/cue (keyword (str "strobe-" (clojure.string/replace (clojure.string/lower-case name) " " "-")))
-                           (fn [var-map] (fun/strobe-2 (str "Strobe " name) fixtures
-                                                       (:level var-map 50) (:lightness var-map 100)))
-                           :color :purple
-                           :color-fn (fn [cue active show snapshot]
-                                       (if (> (rhythm/snapshot-beat-phase snapshot 0.5) 0.7)
-                                         white
-                                         (or (show/get-variable :strobe-color)
-                                             (:color cue))))
-                           :held true
-                           :priority 100
-                           :variables [{:key "level" :min 0 :max 100 :start 100 :name "Level"}
-                                       {:key "lightness" :min 0 :max 100 :name "Lightness" :velocity true}
-                                       color-var]))))
+    (show/set-cue! x y
+                   (cues/cue (keyword (str "strobe-" (clojure.string/replace (clojure.string/lower-case name) " " "-")))
+                             (fn [var-map] (fun/strobe-2 (str "Strobe " name) fixtures
+                                                         (:level var-map 50) (:lightness var-map 100)))
+                             :color :purple
+                             :color-fn (fn [cue active show snapshot]
+                                         (if (> (rhythm/snapshot-beat-phase snapshot 0.5) 0.7)
+                                           white
+                                           (or (show/get-variable :strobe-color)
+                                               (:color cue))))
+                             :held true
+                             :priority 100
+                             :variables [{:key "level" :min 0 :max 100 :start 100 :name "Level"}
+                                         {:key "lightness" :min 0 :max 100 :name "Lightness" :velocity true}
+                                         color-var]))))
 
 (def light-groups
   "The named groupings of lights to build rows of effects in the cue grid."
@@ -470,14 +470,13 @@
   in [[light-groups]], or `nil` if the cue should affect all lights."
   [group x y color]
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "dimmers")]
-    (ct/set-cue! (:cue-grid *show*) x y
-                 (cues/cue effect-key
-                           (fn [var-map] (dimmer-effect
-                                          (params/bind-keyword-param (:level var-map 255) Number 255)
-                                          fixtures
-                                          :effect-name effect-name))
-                           :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
-                           :color color :end-keys end-keys))))
+    (show/set-cue! x y
+                   (cues/cue effect-key
+                             (fn [var-map] (dimmer-effect
+                                            (params/bind-keyword-param (:level var-map 255) Number 255)
+                                            fixtures :effect-name effect-name))
+                             :variables [{:key "level" :min 0 :max 255 :start 255 :name "Level"}]
+                             :color color :end-keys end-keys))))
 
 (defn build-ratio-param
   "Creates a dynamic parameter for setting the beat ratio of one of
@@ -501,21 +500,21 @@
   oscillator parameters."
   [group x y color]
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "saw")]
-    (ct/set-cue! (:cue-grid *show*) x y
-                 (cues/cue effect-key
-                           (fn [var-map] (dimmer-effect
-                                          (oscillators/build-oscillated-param
-                                           (oscillators/sawtooth :down? (:down var-map)
-                                                                 :interval-ratio (build-ratio-param var-map)
-                                                                 :phase (:phase var-map)))
-                                          fixtures
-                                          :effect-name effect-name))
-                           :color color
-                           :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
-                                       {:key "down" :type :boolean :start true :name "Down?"}
-                                       {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
-                                       {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}]
-                           :end-keys end-keys))))
+    (show/set-cue! x y
+                   (cues/cue effect-key
+                             (fn [var-map] (dimmer-effect
+                                            (oscillators/build-oscillated-param
+                                             (oscillators/sawtooth :down? (:down var-map)
+                                                                   :interval-ratio (build-ratio-param var-map)
+                                                                   :phase (:phase var-map)))
+                                            fixtures
+                                            :effect-name effect-name))
+                             :color color
+                             :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
+                                         {:key "down" :type :boolean :start true :name "Down?"}
+                                         {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
+                                         {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}]
+                             :end-keys end-keys))))
 
 (defn make-triangle-dimmer-cue
   "Create a cue which applies a triangle oscillator to the dimmers of
@@ -523,19 +522,19 @@
   oscillator parameters."
   [group x y color]
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "triangle")]
-    (ct/set-cue! (:cue-grid *show*) x y
-               (cues/cue effect-key
-                         (fn [var-map] (dimmer-effect
-                                        (oscillators/build-oscillated-param
-                                         (oscillators/triangle :interval-ratio (build-ratio-param var-map)
-                                                               :phase (:phase var-map)))
-                                        fixtures
-                                        :effect-name effect-name))
-                         :color color
-                         :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
-                                     {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
-                                     {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}]
-                         :end-keys end-keys))))
+    (show/set-cue! x y
+                   (cues/cue effect-key
+                             (fn [var-map] (dimmer-effect
+                                            (oscillators/build-oscillated-param
+                                             (oscillators/triangle :interval-ratio (build-ratio-param var-map)
+                                                                   :phase (:phase var-map)))
+                                            fixtures
+                                            :effect-name effect-name))
+                             :color color
+                             :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
+                                         {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
+                                         {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}]
+                             :end-keys end-keys))))
 
 (defn make-sine-dimmer-cue
   "Create a cue which applies a sine oscillator to the dimmers of the
@@ -543,20 +542,20 @@
   oscillator parameters."
   [group x y color]
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "sine")]
-    (ct/set-cue! (:cue-grid *show*) x y
-                 (cues/cue effect-key
-                           (fn [var-map] (dimmer-effect
-                                          (oscillators/build-oscillated-param
-                                           (oscillators/sine :interval-ratio (build-ratio-param var-map)
-                                                             :phase (:phase var-map))
-                                           :min 1)
-                                          fixtures
-                                          :effect-name effect-name))
-                           :color color
-                           :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
-                                       {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
-                                       {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}]
-                           :end-keys end-keys))))
+    (show/set-cue! x y
+                   (cues/cue effect-key
+                             (fn [var-map] (dimmer-effect
+                                            (oscillators/build-oscillated-param
+                                             (oscillators/sine :interval-ratio (build-ratio-param var-map)
+                                                               :phase (:phase var-map))
+                                             :min 1)
+                                            fixtures
+                                            :effect-name effect-name))
+                             :color color
+                             :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
+                                         {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
+                                         {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}]
+                             :end-keys end-keys))))
 
 (defn make-square-dimmer-cue
   "Create a cue which applies a square oscillator to the dimmers of
@@ -564,21 +563,21 @@
   oscillator parameters."
   [group x y color]
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "square")]
-    (ct/set-cue! (:cue-grid *show*) x y
-               (cues/cue effect-key
-                         (fn [var-map] (dimmer-effect
-                                        (oscillators/build-oscillated-param
-                                         (oscillators/square :interval-ratio (build-ratio-param var-map)
-                                                             :width (:width var-map)
-                                                             :phase (:phase var-map)))
-                                        fixtures
-                                        :effect-name effect-name))
-                         :color color
-                         :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
-                                     {:key "width" :min 0 :max 1 :start 0.5 :name "Width"}
-                                     {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
-                                     {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}]
-                         :end-keys end-keys))))
+    (show/set-cue! x y
+                   (cues/cue effect-key
+                             (fn [var-map] (dimmer-effect
+                                            (oscillators/build-oscillated-param
+                                             (oscillators/square :interval-ratio (build-ratio-param var-map)
+                                                                 :width (:width var-map)
+                                                                 :phase (:phase var-map)))
+                                            fixtures
+                                            :effect-name effect-name))
+                             :color color
+                             :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
+                                         {:key "width" :min 0 :max 1 :start 0.5 :name "Width"}
+                                         {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
+                                         {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}]
+                             :end-keys end-keys))))
 
 (defn x-phase
   "Return a value that ranges from zero for the leftmost fixture in a
@@ -597,21 +596,15 @@
   (let [hue-bar (oscillators/build-oscillated-param  ; Spread a rainbow across a bar of music
                  (oscillators/sawtooth :interval :bar) :max 360)
         hue-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-bar)]
-    (ct/set-cue! (:cue-grid *show*) 0 1
-                 (cues/cue :all-color (fn [_] (fx/scene "Rainbow with laser" (global-color-effect hue-param)
-                                                        (beyond/laser-color-effect server hue-param)))
-                           :short-name "Rainbow Bar Fade"
-                           :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
-                                        :type :integer}])))
-  (ct/set-cue! (:cue-grid *show*) 2 7
-               (cues/cue :beyond-cue-1-1 (fn [_] (beyond/cue-effect server 1 1))
-                         :short-name "Beyond 1 1"))
-  (ct/set-cue! (:cue-grid *show*) 3 7
-               (cues/cue :beyond-cue-1-2 (fn [_] (beyond/cue-effect server 1 2))
-                         :short-name "Beyond 1 2"))
-  (afterglow.controllers/set-cue! (:cue-grid *show*) 6 7
-                                  (cues/function-cue :snowball-sound :sound-active (show/fixtures-named "snowball")
-                                                     :color :cyan)))
+    (show/set-cue! 0 1
+                   (cues/cue :all-color (fn [_] (fx/scene "Rainbow with laser" (global-color-effect hue-param)
+                                                          (beyond/laser-color-effect server hue-param)))
+                             :short-name "Rainbow Bar Fade"
+                             :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
+                                          :type :integer}])))
+  (show/set-cue! 2 7 (cues/cue :beyond-cue-1-1 (fn [_] (beyond/cue-effect server 1 1)) :short-name "Beyond 1 1"))
+  (show/set-cue! 3 7 (cues/cue :beyond-cue-1-2 (fn [_] (beyond/cue-effect server 1 2)) :short-name "Beyond 1 2"))
+  (show/set-cue! 6 7 (cues/function-cue :snowball-sound :sound-active (show/fixtures-named "snowball") :color :cyan)))
 
 (defonce ^{:doc "A step parameter for controlling example chase cues.
   Change it to experiment with other kinds of timing and fades."}
@@ -670,61 +663,61 @@
 
     ;; Some special/fun cues
     (show/set-variable! :rainbow-saturation 100)
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 0) (+ y-base 1)
-                 (let [color-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-bar)]
-                   (cues/cue :all-color (fn [_] (global-color-effect color-param))
-                             :color-fn (cues/color-fn-from-param color-param)
-                             :short-name "Rainbow Bar Fade"
+    (show/set-cue! (+ x-base 0) (+ y-base 1)
+                   (let [color-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-bar)]
+                     (cues/cue :all-color (fn [_] (global-color-effect color-param))
+                               :color-fn (cues/color-fn-from-param color-param)
+                               :short-name "Rainbow Bar Fade"
+                               :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
+                                            :type :integer}])))
+    (show/set-cue! (+ x-base 1) (+ y-base 1)
+                   (cues/cue :all-color (fn [_] (global-color-effect
+                                                 (params/build-color-param :s :rainbow-saturation :l 50 :h hue-gradient)
+                                                 :include-color-wheels? true))
+                             :short-name "Rainbow Grid"
                              :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
-                                          :type :integer}])))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 1) (+ y-base 1)
-                 (cues/cue :all-color (fn [_] (global-color-effect
-                                               (params/build-color-param :s :rainbow-saturation :l 50 :h hue-gradient)
-                                               :include-color-wheels? true))
-                           :short-name "Rainbow Grid"
-                           :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
-                                        :type :integer}]))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 2) (+ y-base 1)
-                 (let [color-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-gradient
-                                                             :adjust-hue hue-bar)]
-                   (cues/cue :all-color (fn [_] (global-color-effect color-param))
-                             :color-fn (cues/color-fn-from-param color-param)
-                             :short-name "Rainbow Grid+Bar"
-                             :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
-                                          :type :integer}])))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 3) (+ y-base 1) ; Desaturate the rainbow as each beat progresses
-                 (let [color-param (params/build-color-param :s desat-beat :l 50 :h hue-gradient
-                                                             :adjust-hue hue-bar)]
-                   (cues/cue :all-color (fn [_] (global-color-effect color-param))
-                             :color-fn (cues/color-fn-from-param color-param)
-                             :short-name "Rainbow Pulse")))
+                                          :type :integer}]))
+    (show/set-cue! (+ x-base 2) (+ y-base 1)
+                   (let [color-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-gradient
+                                                               :adjust-hue hue-bar)]
+                     (cues/cue :all-color (fn [_] (global-color-effect color-param))
+                               :color-fn (cues/color-fn-from-param color-param)
+                               :short-name "Rainbow Grid+Bar"
+                               :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
+                                            :type :integer}])))
+    (show/set-cue! (+ x-base 3) (+ y-base 1) ; Desaturate the rainbow as each beat progresses
+                   (let [color-param (params/build-color-param :s desat-beat :l 50 :h hue-gradient
+                                                               :adjust-hue hue-bar)]
+                     (cues/cue :all-color (fn [_] (global-color-effect color-param))
+                               :color-fn (cues/color-fn-from-param color-param)
+                               :short-name "Rainbow Pulse")))
 
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 4) (+ y-base 1)
-                 (cues/cue :transform-colors (fn [_] (color-fx/transform-colors (show/all-fixtures)))
-                           :priority 1000))
+    (show/set-cue! (+ x-base 4) (+ y-base 1)
+                   (cues/cue :transform-colors (fn [_] (color-fx/transform-colors (show/all-fixtures)))
+                             :priority 1000))
 
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 5) (+ y-base 1)
-                 (cues/cue :all-color (fn [_] (global-color-effect
-                                               (params/build-color-param :s 100 :l 50 :h hue-z-gradient)
-                                               :include-color-wheels? true))
-                           :short-name "Z Rainbow Grid"))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 6) (+ y-base 1)
-                 (let [color-param (params/build-color-param :s 100 :l 50 :h hue-z-gradient
-                                                             :adjust-hue hue-bar)]
-                   (cues/cue :all-color (fn [_] (global-color-effect color-param))
-                             :color-fn (cues/color-fn-from-param color-param)
-                             :short-name "Z Rainbow Grid+Bar")))
+    (show/set-cue! (+ x-base 5) (+ y-base 1)
+                   (cues/cue :all-color (fn [_] (global-color-effect
+                                                 (params/build-color-param :s 100 :l 50 :h hue-z-gradient)
+                                                 :include-color-wheels? true))
+                             :short-name "Z Rainbow Grid"))
+    (show/set-cue! (+ x-base 6) (+ y-base 1)
+                   (let [color-param (params/build-color-param :s 100 :l 50 :h hue-z-gradient
+                                                               :adjust-hue hue-bar)]
+                     (cues/cue :all-color (fn [_] (global-color-effect color-param))
+                               :color-fn (cues/color-fn-from-param color-param)
+                               :short-name "Z Rainbow Grid+Bar")))
 
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 7) (+ y-base 1)
-                 (let [color-param (params/build-color-param :s 100 :l 50 :h hue-gradient
-                                                             :adjust-hue hue-bar)]
-                   (cues/cue :all-color (fn [_] (global-color-effect color-param
-                                                                     :fixtures (show/fixtures-named "blade")))
-                             :color-fn (cues/color-fn-from-param color-param)
-                             :short-name "Rainbow Blades")))
+    (show/set-cue! (+ x-base 7) (+ y-base 1)
+                   (let [color-param (params/build-color-param :s 100 :l 50 :h hue-gradient
+                                                               :adjust-hue hue-bar)]
+                     (cues/cue :all-color (fn [_] (global-color-effect color-param
+                                                                       :fixtures (show/fixtures-named "blade")))
+                               :color-fn (cues/color-fn-from-param color-param)
+                               :short-name "Rainbow Blades")))
 
-    #_(ct/set-cue! (:cue-grid *show*) (+ x-base 7) (+ y-base 7)
-                 (cues/function-cue :strobe-all :strobe (show/all-fixtures) :effect-name "Raw Strobe"))
+    #_(show/set-cue! (+ x-base 7) (+ y-base 7)
+                     (cues/function-cue :strobe-all :strobe (show/all-fixtures) :effect-name "Raw Strobe"))
 
 
     ;; Dimmer cues to turn on and set brightness of groups of lights
@@ -732,14 +725,14 @@
     (doall (map-indexed (fn [i group] (make-dimmer-cue group (+ x-base (inc i)) (+ y-base 2) :yellow)) light-groups))
 
     ;; TODO: Write a macro to make it easier to bind cue variables?
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 7) (+ y-base 2)
-                 (cues/cue :sparkle (fn [var-map] (fun/sparkle (show/all-fixtures)
-                                                               :chance (:chance var-map 0.05)
-                                                               :fade-time (:fade-time var-map 50)))
-                           :held true
-                           :priority 100
-                           :variables [{:key "chance" :min 0.0 :max 0.4 :start 0.05 :velocity true}
-                                       {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
+    (show/set-cue! (+ x-base 7) (+ y-base 2)
+                   (cues/cue :sparkle (fn [var-map] (fun/sparkle (show/all-fixtures)
+                                                                 :chance (:chance var-map 0.05)
+                                                                 :fade-time (:fade-time var-map 50)))
+                             :held true
+                             :priority 100
+                             :variables [{:key "chance" :min 0.0 :max 0.4 :start 0.05 :velocity true}
+                                         {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
 
     ;; Dimmer oscillator cues: Sawtooth
     (make-sawtooth-dimmer-cue nil (+ x-base 0) (+ y-base 3) :yellow)
@@ -771,19 +764,18 @@
     (make-strobe-cue-2 "Snowball" (show/fixtures-named "snowball") (+ x-base 6) (+ y-base 7))
 
     (let [color-var {:key :strobe-color :type :color :name "Strobe Color"}]
-      (ct/set-cue! (:cue-grid *show*) (+ x-base 7) (+ y-base 7)
-                   (cues/cue :strobe-color (fn [_] (fx/blank "Strobe Color"))
-                             :color :purple
-                             :color-fn (cues/color-fn-from-cue-var color-var)
-                             :variables [color-var])))
+      (show/set-cue! (+ x-base 7) (+ y-base 7) (cues/cue :strobe-color (fn [_] (fx/blank "Strobe Color"))
+                                                         :color :purple
+                                                         :color-fn (cues/color-fn-from-cue-var color-var)
+                                                         :variables [color-var])))
 
     ;; This was the old way of adjusting strobe cues with only numeric parameters. The above
     ;; cue shows how to do it with the newer color parameter approach.
-    #_(ct/set-cue! (:cue-grid *show*) (+ x-base 7) (+ y-base 6)
-                 (cues/cue :adjust-strobe (fn [_] (fun/adjust-strobe))
-                           :color :purple
-                           :variables [{:key :strobe-hue :min 0 :max 360 :name "Hue" :centered true}
-                                       {:key :strobe-saturation :min 0 :max 100 :name "Saturatn"}]))))
+    #_(show/set-cue! (+ x-base 7) (+ y-base 6)
+                     (cues/cue :adjust-strobe (fn [_] (fun/adjust-strobe))
+                               :color :purple
+                               :variables [{:key :strobe-hue :min 0 :max 360 :name "Hue" :centered true}
+                                           {:key :strobe-saturation :min 0 :max 100 :name "Saturatn"}]))))
 
 (defn make-torrent-cues
   "Create a page of cues for configuring aspects of the Torrent F3s
@@ -791,72 +783,74 @@
   [page-x page-y]
   (let [x-base (* page-x 8)
         y-base (* page-y 8)]
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 0) (+ y-base 7)
-                 (cues/function-cue :torrent-shutter :shutter-open (show/fixtures-named "torrent")))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 1) (+ y-base 7)
-                 (cues/function-cue :torrent-reset :motor-reset (show/fixtures-named "torrent")
-                                    :color (create-color :red) :held true))
+    (show/set-cue! (+ x-base 0) (+ y-base 7)
+                   (cues/function-cue :torrent-shutter :shutter-open (show/fixtures-named "torrent")))
+    (show/set-cue! (+ x-base 1) (+ y-base 7)
+                   (cues/function-cue :torrent-reset :motor-reset (show/fixtures-named "torrent")
+                                      :color (create-color :red) :held true))
 
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 6) (+ y-base 7)
-                 (cues/function-cue :t1-focus :focus (show/fixtures-named "torrent-1") :effect-name "Torrent 1 Focus"
-                                    :color (create-color :yellow)))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 7) (+ y-base 7)
-                 (cues/function-cue :t2-focus :focus (show/fixtures-named "torrent-2") :effect-name "Torrent 2 Focus"
-                                    :color (create-color :yellow)))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 4) (+ y-base 7)
-                 (build-focus-oscillator :t1-focus "Torrent 1 Focus Sine" (show/fixtures-named "torrent-1")))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 5) (+ y-base 7)
-                 (build-focus-oscillator :t2-focus "Torrent 2 Focus Sine" (show/fixtures-named "torrent-2")))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 6) (+ y-base 6)
-                 (cues/function-cue :t1-prism :prism-clockwise (show/fixtures-named "torrent-1") :level 100
-                                    :effect-name "T1 Prism Spin CW" :color (create-color :orange)))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 7) (+ y-base 6)
-                 (cues/function-cue :t2-prism :prism-clockwise (show/fixtures-named "torrent-2") :level 100
-                                    :effect-name "T2 Prism Spin CW" :color (create-color :orange)))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 6) (+ y-base 5)
-                 (cues/function-cue :t1-prism :prism-in (show/fixtures-named "torrent-1")
-                                    :effect-name "T1 Prism In" :color (create-color :orange)))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 7) (+ y-base 5)
-                 (cues/function-cue :t2-prism :prism-in (show/fixtures-named "torrent-2")
-                                    :effect-name "T2 Prism In" :color (create-color :orange)))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 6) (+ y-base 4)
-                 (cues/function-cue :t1-prism :prism-counterclockwise (show/fixtures-named "torrent-1")
-                                    :effect-name "T1 Prism Spin CCW" :color (create-color :orange)))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 7) (+ y-base 4)
-                 (cues/function-cue :t2-prism :prism-counterclockwise (show/fixtures-named "torrent-2")
-                                    :effect-name "T2 Prism Spin CCW" :color (create-color :orange)))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 6) (+ y-base 3)
-                 (cues/function-cue :t1-gobo-fixed :gobo-fixed-clockwise (show/fixtures-named "torrent-1")
-                                    :effect-name "T1 Fixed Gobos Swap CW" :color (create-color :blue)))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 7) (+ y-base 3)
-                 (cues/function-cue :t2-gobo-fixed :gobo-fixed-clockwise (show/fixtures-named "torrent-2")
-                                    :effect-name "T2 Fixed Gobos Swap CW" :color (create-color :blue)))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 6) (+ y-base 2)
-                 (cues/function-cue :t1-gobo-moving :gobo-moving-clockwise (show/fixtures-named "torrent-1")
-                                    :effect-name "T1 Moving Gobos Swap CW" :color (create-color :green)))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 7) (+ y-base 2)
-                 (cues/function-cue :t2-gobo-moving :gobo-moving-clockwise (show/fixtures-named "torrent-2")
-                                    :effect-name "T2 Moving Gobos Swap CW" :color (create-color :green)))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 6) (+ y-base 1)
-                 (cues/function-cue :t1-gobo-rotation :gobo-rotation-clockwise (show/fixtures-named "torrent-1")
-                                    :effect-name "T1 Spin Gobo CW" :color (create-color :cyan) :level 100))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 7) (+ y-base 1)
-                 (cues/function-cue :t2-gobo-rotation :gobo-rotation-clockwise (show/fixtures-named "torrent-2")
-                                    :effect-name "T2 Spin Gobo CW" :color (create-color :cyan) :level 100))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 6) (+ y-base 0)
-                 (cues/function-cue :t1-gobo-rotation :gobo-rotation-counterclockwise (show/fixtures-named "torrent-1")
-                                    :effect-name "T1 Spin Gobo CCW" :color (create-color :cyan)))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 7) (+ y-base 0)
-                 (cues/function-cue :t2-gobo-rotation :gobo-rotation-counterclockwise (show/fixtures-named "torrent-2")
-                                    :effect-name "T2 Spin Gobo CCW" :color (create-color :cyan)))
+    (show/set-cue! (+ x-base 6) (+ y-base 7)
+                   (cues/function-cue :t1-focus :focus (show/fixtures-named "torrent-1") :effect-name "Torrent 1 Focus"
+                                      :color (create-color :yellow)))
+    (show/set-cue! (+ x-base 7) (+ y-base 7)
+                   (cues/function-cue :t2-focus :focus (show/fixtures-named "torrent-2") :effect-name "Torrent 2 Focus"
+                                      :color (create-color :yellow)))
+    (show/set-cue! (+ x-base 4) (+ y-base 7)
+                   (build-focus-oscillator :t1-focus "Torrent 1 Focus Sine" (show/fixtures-named "torrent-1")))
+    (show/set-cue! (+ x-base 5) (+ y-base 7)
+                   (build-focus-oscillator :t2-focus "Torrent 2 Focus Sine" (show/fixtures-named "torrent-2")))
+    (show/set-cue! (+ x-base 6) (+ y-base 6)
+                   (cues/function-cue :t1-prism :prism-clockwise (show/fixtures-named "torrent-1") :level 100
+                                      :effect-name "T1 Prism Spin CW" :color (create-color :orange)))
+    (show/set-cue! (+ x-base 7) (+ y-base 6)
+                   (cues/function-cue :t2-prism :prism-clockwise (show/fixtures-named "torrent-2") :level 100
+                                      :effect-name "T2 Prism Spin CW" :color (create-color :orange)))
+    (show/set-cue! (+ x-base 6) (+ y-base 5)
+                   (cues/function-cue :t1-prism :prism-in (show/fixtures-named "torrent-1")
+                                      :effect-name "T1 Prism In" :color (create-color :orange)))
+    (show/set-cue! (+ x-base 7) (+ y-base 5)
+                   (cues/function-cue :t2-prism :prism-in (show/fixtures-named "torrent-2")
+                                      :effect-name "T2 Prism In" :color (create-color :orange)))
+    (show/set-cue! (+ x-base 6) (+ y-base 4)
+                   (cues/function-cue :t1-prism :prism-counterclockwise (show/fixtures-named "torrent-1")
+                                      :effect-name "T1 Prism Spin CCW" :color (create-color :orange)))
+    (show/set-cue! (+ x-base 7) (+ y-base 4)
+                   (cues/function-cue :t2-prism :prism-counterclockwise (show/fixtures-named "torrent-2")
+                                      :effect-name "T2 Prism Spin CCW" :color (create-color :orange)))
+    (show/set-cue! (+ x-base 6) (+ y-base 3)
+                   (cues/function-cue :t1-gobo-fixed :gobo-fixed-clockwise (show/fixtures-named "torrent-1")
+                                      :effect-name "T1 Fixed Gobos Swap CW" :color (create-color :blue)))
+    (show/set-cue! (+ x-base 7) (+ y-base 3)
+                   (cues/function-cue :t2-gobo-fixed :gobo-fixed-clockwise (show/fixtures-named "torrent-2")
+                                      :effect-name "T2 Fixed Gobos Swap CW" :color (create-color :blue)))
+    (show/set-cue! (+ x-base 6) (+ y-base 2)
+                   (cues/function-cue :t1-gobo-moving :gobo-moving-clockwise (show/fixtures-named "torrent-1")
+                                      :effect-name "T1 Moving Gobos Swap CW" :color (create-color :green)))
+    (show/set-cue! (+ x-base 7) (+ y-base 2)
+                   (cues/function-cue :t2-gobo-moving :gobo-moving-clockwise (show/fixtures-named "torrent-2")
+                                      :effect-name "T2 Moving Gobos Swap CW" :color (create-color :green)))
+    (show/set-cue! (+ x-base 6) (+ y-base 1)
+                   (cues/function-cue :t1-gobo-rotation :gobo-rotation-clockwise (show/fixtures-named "torrent-1")
+                                      :effect-name "T1 Spin Gobo CW" :color (create-color :cyan) :level 100))
+    (show/set-cue! (+ x-base 7) (+ y-base 1)
+                   (cues/function-cue :t2-gobo-rotation :gobo-rotation-clockwise (show/fixtures-named "torrent-2")
+                                      :effect-name "T2 Spin Gobo CW" :color (create-color :cyan) :level 100))
+    (show/set-cue! (+ x-base 6) (+ y-base 0)
+                   (cues/function-cue :t1-gobo-rotation :gobo-rotation-counterclockwise
+                                      (show/fixtures-named "torrent-1")
+                                      :effect-name "T1 Spin Gobo CCW" :color (create-color :cyan)))
+    (show/set-cue! (+ x-base 7) (+ y-base 0)
+                   (cues/function-cue :t2-gobo-rotation :gobo-rotation-counterclockwise
+                                      (show/fixtures-named "torrent-2")
+                                      :effect-name "T2 Spin Gobo CCW" :color (create-color :cyan)))
 
     ;; Some compound cues
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 0) (+ y-base 0)
-                 (cues/cue :star-swirl (fn [_] (cues/compound-cues-effect
-                                                "Star Swirl" *show* [[8 12]
-                                                                     [10 9]
-                                                                     [6 15 {:level 60}]
-                                                                     [6 8 {:level 25}]]))))
+    (show/set-cue! (+ x-base 0) (+ y-base 0)
+                   (cues/cue :star-swirl (fn [_] (cues/compound-cues-effect
+                                                  "Star Swirl" *show* [[(+ x-base 8) (+ y-base 4)]
+                                                                       [(+ x-base 10) (+ y-base 1)]
+                                                                       [(+ x-base 6) (+ y-base 7) {:level 60}]
+                                                                       [(+ x-base 6) y-base {:level 25}]]))))
 
     (make-torrent-gobo-cues :t1 (show/fixtures-named "torrent-1") (+ y-base 7) (+ x-base 8))
     (make-torrent-gobo-cues :t2 (show/fixtures-named "torrent-2") (+ y-base 7) (+ x-base 12))))
@@ -878,72 +872,71 @@
     (let [hex-uv-fx [(chan-fx/function-effect "Hex UV" :uv 100 (show/fixtures-named "hex"))
                      (dimmer-effect 255 (show/fixtures-named "hex")
                                     :effect-name "Hex Dimmers for UV")]]
-      (ct/set-cue! (:cue-grid *show*) (+ x-base 2) (+ y-base 0)
-                   (cues/cue :hex-uv (fn [_] (apply fx/scene "Hex UV" hex-uv-fx))
-                             :color :purple :end-keys [:uv]))
+      (show/set-cue! (+ x-base 2) (+ y-base 0)
+                     (cues/cue :hex-uv (fn [_] (apply fx/scene "Hex UV" hex-uv-fx))
+                               :color :purple :end-keys [:uv]))
 
-      (ct/set-cue! (:cue-grid *show*) (+ x-base 1) (+ y-base 0)
-                   (cues/function-cue :eco-uv :on (show/fixtures-named :eco-uv)
-                                      :color :purple :effect-name "Eco UV Bar" :end-keys [:uv]))
+      (show/set-cue! (+ x-base 1) (+ y-base 0)
+                     (cues/function-cue :eco-uv :on (show/fixtures-named :eco-uv)
+                                        :color :purple :effect-name "Eco UV Bar" :end-keys [:uv]))
 
-      (ct/set-cue! (:cue-grid *show*) (+ x-base 0) (+ y-base 0)
-                   (cues/cue :uv (fn [_]
-                                   (apply fx/scene "All UV"
-                                          (conj hex-uv-fx
-                                                (chan-fx/function-effect "Eco UV Bar" :on 100
-                                                                         (show/fixtures-named :eco-uv)))))
-                             :color :purple :end-keys [:eco-uv :hex-uv])))
+      (show/set-cue! (+ x-base 0) (+ y-base 0)
+                     (cues/cue :uv (fn [_]
+                                     (apply fx/scene "All UV"
+                                            (conj hex-uv-fx
+                                                  (chan-fx/function-effect "Eco UV Bar" :on 100
+                                                                           (show/fixtures-named :eco-uv)))))
+                               :color :purple :end-keys [:eco-uv :hex-uv])))
 
     ;; Turn on the H2O LED
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 7) (+ y-base 0)
-                 (cues/function-cue :h2o-led :on (show/fixtures-named :h2o-led)
-                                    :effect-name "H2O LED"))
+    (show/set-cue! (+ x-base 7) (+ y-base 0)
+                   (cues/function-cue :h2o-led :on (show/fixtures-named :h2o-led) :effect-name "H2O LED"))
 
     ;; Control the Hypnotic RGB Laser
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 0) (+ y-base 3)
-                 (cues/function-cue :hypnotic-beam :beam-red (show/fixtures-named "hyp-rgb")
-                                    :color :red :effect-name "Hypnotic Red"))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 1) (+ y-base 3)
-                 (cues/function-cue :hypnotic-beam :beam-green (show/fixtures-named "hyp-rgb")
-                                    :color :green :effect-name "Hypnotic Green"))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 2) (+ y-base 3)
-                 (cues/function-cue :hypnotic-beam :beam-blue (show/fixtures-named "hyp-rgb")
-                                    :color :blue :effect-name "Hypnotic Blue"))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 3) (+ y-base 3)
-                 (cues/function-cue :hypnotic-beam :beam-red-green (show/fixtures-named "hyp-rgb")
-                                    :color :yellow :effect-name "Hypnotic Red Green"))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 4) (+ y-base 3)
-                 (cues/function-cue :hypnotic-beam :beam-red-blue (show/fixtures-named "hyp-rgb")
-                                    :color :purple :effect-name "Hypnotic Red Blue"))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 5) (+ y-base 3)
-                 (cues/function-cue :hypnotic-beam :beam-green-blue (show/fixtures-named "hyp-rgb")
-                                    :color :cyan :effect-name "Hypnotic Green Blue"))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 6) (+ y-base 3)
-                 (cues/function-cue :hypnotic-beam :beam-red-green-blue (show/fixtures-named "hyp-rgb")
-                                    :color :white :effect-name "Hypnotic Red Green Blue"))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 7) (+ y-base 3)
-                 (cues/function-cue :hypnotic-beam :beam-all-random (show/fixtures-named "hyp-rgb")
-                                    :color :white :effect-name "Hypnotic Random"))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 6) (+ y-base 4)
-                 (cues/function-cue :hypnotic-spin :beams-ccw (show/fixtures-named "hyp-rgb")
-                                    :color :cyan :effect-name "Hypnotic Rotate CCW" :level 50))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 7) (+ y-base 4)
-                 (cues/function-cue :hypnotic-spin :beams-cw (show/fixtures-named "hyp-rgb")
-                                    :color :cyan :effect-name "Hypnotic Rotate Clockwise" :level 50))
+    (show/set-cue! (+ x-base 0) (+ y-base 3)
+                   (cues/function-cue :hypnotic-beam :beam-red (show/fixtures-named "hyp-rgb")
+                                      :color :red :effect-name "Hypnotic Red"))
+    (show/set-cue! (+ x-base 1) (+ y-base 3)
+                   (cues/function-cue :hypnotic-beam :beam-green (show/fixtures-named "hyp-rgb")
+                                      :color :green :effect-name "Hypnotic Green"))
+    (show/set-cue! (+ x-base 2) (+ y-base 3)
+                   (cues/function-cue :hypnotic-beam :beam-blue (show/fixtures-named "hyp-rgb")
+                                      :color :blue :effect-name "Hypnotic Blue"))
+    (show/set-cue! (+ x-base 3) (+ y-base 3)
+                   (cues/function-cue :hypnotic-beam :beam-red-green (show/fixtures-named "hyp-rgb")
+                                      :color :yellow :effect-name "Hypnotic Red Green"))
+    (show/set-cue! (+ x-base 4) (+ y-base 3)
+                   (cues/function-cue :hypnotic-beam :beam-red-blue (show/fixtures-named "hyp-rgb")
+                                      :color :purple :effect-name "Hypnotic Red Blue"))
+    (show/set-cue! (+ x-base 5) (+ y-base 3)
+                   (cues/function-cue :hypnotic-beam :beam-green-blue (show/fixtures-named "hyp-rgb")
+                                      :color :cyan :effect-name "Hypnotic Green Blue"))
+    (show/set-cue! (+ x-base 6) (+ y-base 3)
+                   (cues/function-cue :hypnotic-beam :beam-red-green-blue (show/fixtures-named "hyp-rgb")
+                                      :color :white :effect-name "Hypnotic Red Green Blue"))
+    (show/set-cue! (+ x-base 7) (+ y-base 3)
+                   (cues/function-cue :hypnotic-beam :beam-all-random (show/fixtures-named "hyp-rgb")
+                                      :color :white :effect-name "Hypnotic Random"))
+    (show/set-cue! (+ x-base 6) (+ y-base 4)
+                   (cues/function-cue :hypnotic-spin :beams-ccw (show/fixtures-named "hyp-rgb")
+                                      :color :cyan :effect-name "Hypnotic Rotate CCW" :level 50))
+    (show/set-cue! (+ x-base 7) (+ y-base 4)
+                   (cues/function-cue :hypnotic-spin :beams-cw (show/fixtures-named "hyp-rgb")
+                                      :color :cyan :effect-name "Hypnotic Rotate Clockwise" :level 50))
 
     ;; Sound active mode for groups of lights
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 2) (+ y-base 7)
-                 (cues/function-cue :blade-sound :sound-active (show/fixtures-named "blade")
-                                    :color :orange :effect-name "Blade Sound"))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 4) (+ y-base 7)
-                 (cues/function-cue :hex-sound :sound-active (show/fixtures-named "hex")
-                                    :color :orange :effect-name "Hex Sound"))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 5) (+ y-base 7)
-                 (cues/function-cue :puck-sound :sound-active (show/fixtures-named "puck")
-                                    :color :orange :effect-name "Puck Sound"))
-    (ct/set-cue! (:cue-grid *show*) (+ x-base 6) (+ y-base 7)
-                 (cues/function-cue :snowball-sound :sound-active (show/fixtures-named "snowball")
-                                    :color :orange :effect-name "Snowball Sound"))))
+    (show/set-cue! (+ x-base 2) (+ y-base 7)
+                   (cues/function-cue :blade-sound :sound-active (show/fixtures-named "blade")
+                                      :color :orange :effect-name "Blade Sound"))
+    (show/set-cue! (+ x-base 4) (+ y-base 7)
+                   (cues/function-cue :hex-sound :sound-active (show/fixtures-named "hex")
+                                      :color :orange :effect-name "Hex Sound"))
+    (show/set-cue! (+ x-base 5) (+ y-base 7)
+                   (cues/function-cue :puck-sound :sound-active (show/fixtures-named "puck")
+                                      :color :orange :effect-name "Puck Sound"))
+    (show/set-cue! (+ x-base 6) (+ y-base 7)
+                   (cues/function-cue :snowball-sound :sound-active (show/fixtures-named "snowball")
+                                      :color :orange :effect-name "Snowball Sound"))))
 
 (defn make-cues
   "Create a bunch of example cues for experimentation."
@@ -966,138 +959,132 @@
                                    :min -90 :max 0)))
         can-can-dir (params/build-direction-param-from-pan-tilt :pan triangle-phrase :tilt staggered-triangle-bar)
         can-can-p-t (params/build-pan-tilt-param :pan triangle-phrase :tilt staggered-triangle-bar)]
-    (ct/set-cue! (:cue-grid *show*) 0 9
+    (show/set-cue! 0 9
+                   (cues/cue :movement (fn [var-map]
+                                         (move/direction-effect "Can Can" can-can-dir (show/all-fixtures)))))
+    (show/set-cue! 1 9
+                   (cues/cue :movement (fn [var-map]
+                                         (move/pan-tilt-effect "P/T Can Can" can-can-p-t (show/all-fixtures))))))
+
+  (show/set-cue! 2 9
                  (cues/cue :movement (fn [var-map]
-                                       (move/direction-effect "Can Can" can-can-dir (show/all-fixtures)))))
-    (ct/set-cue! (:cue-grid *show*) 1 9
-                 (cues/cue :movement (fn [var-map]
-                                       (move/pan-tilt-effect "P/T Can Can" can-can-p-t (show/all-fixtures))))))
+                                       (fun/twirl (concat (show/fixtures-named "blade")
+                                                          (show/fixtures-named "torrent"))))
+                           :color :green))
 
   ;; A couple snowball cues
-  (ct/set-cue! (:cue-grid *show*) 0 10 (cues/function-cue :sb-pos :beams-fixed (show/fixtures-named "snowball")
-                                                          :effect-name "Snowball Fixed"))
-  (ct/set-cue! (:cue-grid *show*) 1 10 (cues/function-cue :sb-pos :beams-moving (show/fixtures-named "snowball")
-                                                          :effect-name "Snowball Moving"))
+  (show/set-cue! 0 10 (cues/function-cue :sb-pos :beams-fixed (show/fixtures-named "snowball")
+                                         :effect-name "Snowball Fixed"))
+  (show/set-cue! 1 10 (cues/function-cue :sb-pos :beams-moving (show/fixtures-named "snowball")
+                                         :effect-name "Snowball Moving"))
 
   ;; TODO: Write a function to create direction cues, like function cues? Unless macro solves.
-  (ct/set-cue! (:cue-grid *show*) 0 8
-               (cues/cue :torrent-dir (fn [var-map]
-                                        (move/direction-effect
-                                         "Pan/Tilt"
-                                         (params/build-direction-param-from-pan-tilt :pan (:pan var-map 0.0)
-                                                                                     :tilt (:tilt var-map 0.0)
-                                                                                     :degrees true)
-                                         (show/all-fixtures)))
-                         :variables [{:key "pan" :name "Pan"
-                                      :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}
-                                     {:key "tilt" :name "Tilt"
-                                      :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}]))
-  (ct/set-cue! (:cue-grid *show*) 1 8
-               (cues/cue :torrent-dir (fn [var-map]
-                                        (move/aim-effect
-                                         "Aim"
-                                         (params/build-aim-param :x (:x var-map 0.0)
-                                                                 :y (:y var-map 0.0)
-                                                                 :z (:z var-map 1.0))
-                                         (show/all-fixtures)))
-                         :variables [{:key "x" :name "X"
-                                      :min -20.0 :max 20.0 :start 0.0 :centered true :resolution 0.05}
-                                     {:key "z" :name "Z"
-                                      :min -20.0 :max 20.0 :start 0.0 :centered true :resolution 0.05}
-                                     {:key "y" :name "Y"
-                                      :min 0.0 :max 20.0 :start 0.0 :centered false :resolution 0.05}]))
-  (ct/set-cue! (:cue-grid *show*) 3 8
-               (cues/function-cue :blade-speed :movement-speed (show/fixtures-named "blade")
-                                  :color :purple :effect-name "Slow Blades"))
+  (show/set-cue! 0 8
+                 (cues/cue :torrent-dir (fn [var-map]
+                                          (move/direction-effect
+                                           "Pan/Tilt"
+                                           (params/build-direction-param-from-pan-tilt :pan (:pan var-map 0.0)
+                                                                                       :tilt (:tilt var-map 0.0)
+                                                                                       :degrees true)
+                                           (show/all-fixtures)))
+                           :variables [{:key "pan" :name "Pan"
+                                        :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}
+                                       {:key "tilt" :name "Tilt"
+                                        :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}]))
+  (show/set-cue! 1 8 (cues/cue :torrent-dir (fn [var-map]
+                                              (move/aim-effect
+                                               "Aim"
+                                               (params/build-aim-param :x (:x var-map 0.0)
+                                                                       :y (:y var-map 0.0)
+                                                                       :z (:z var-map 1.0))
+                                               (show/all-fixtures)))
+                               :variables [{:key "x" :name "X"
+                                            :min -20.0 :max 20.0 :start 0.0 :centered true :resolution 0.05}
+                                           {:key "z" :name "Z"
+                                            :min -20.0 :max 20.0 :start 0.0 :centered true :resolution 0.05}
+                                           {:key "y" :name "Y"
+                                            :min 0.0 :max 20.0 :start 0.0 :centered false :resolution 0.05}]))
+  (show/set-cue! 3 8 (cues/function-cue :blade-speed :movement-speed (show/fixtures-named "blade")
+                                        :color :purple :effect-name "Slow Blades"))
 
   ;; Some fades
-  (ct/set-cue! (:cue-grid *show*) 0 12
-               (cues/cue :color-fade (fn [var-map]
-                                       (fx/fade "Color Fade"
-                                                (global-color-effect :red :include-color-wheels? true)
-                                                (global-color-effect :green :include-color-wheels? true)
-                                                (params/bind-keyword-param (:phase var-map 0) Number 0)))
-                         :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
-                         :color :yellow))
+  (show/set-cue! 0 12 (cues/cue :color-fade (fn [var-map]
+                                              (fx/fade "Color Fade"
+                                                       (global-color-effect :red :include-color-wheels? true)
+                                                       (global-color-effect :green :include-color-wheels? true)
+                                                       (params/bind-keyword-param (:phase var-map 0) Number 0)))
+                                :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
+                                :color :yellow))
 
-  (ct/set-cue!
-   (:cue-grid *show*) 1 12
-   (cues/cue :fade-test (fn [var-map]
-                          (fx/fade "Fade Test"
-                                   (fx/blank)
-                                   (global-color-effect :blue :include-color-wheels? true)
-                                   (params/bind-keyword-param (:phase var-map 0) Number 0)))
-             :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
-             :color :cyan))
+  (show/set-cue! 1 12 (cues/cue :fade-test (fn [var-map]
+                                             (fx/fade "Fade Test"
+                                                      (fx/blank)
+                                                      (global-color-effect :blue :include-color-wheels? true)
+                                                      (params/bind-keyword-param (:phase var-map 0) Number 0)))
+                                :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
+                                :color :cyan))
 
-  (ct/set-cue!
-   (:cue-grid *show*) 2 12
-   (cues/cue :fade-test-2 (fn [var-map]
-                            (fx/fade "Fade Test 2"
-                                     (move/direction-effect
-                                      "p/t" (params/build-direction-param-from-pan-tilt :pan 0 :tilt 0)
-                                      (show/fixtures-named "torrent"))
-                                     (move/direction-effect
-                                      "p/t" (params/build-direction-param-from-pan-tilt :pan 0 :tilt 0)
-                                      (show/fixtures-named "blade"))
-                                     (params/bind-keyword-param (:phase var-map 0) Number 0)))
-             :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
-             :color :red))
+  (show/set-cue! 2 12
+                 (cues/cue :fade-test-2 (fn [var-map]
+                                          (fx/fade "Fade Test 2"
+                                                   (move/direction-effect
+                                                    "p/t" (params/build-direction-param-from-pan-tilt :pan 0 :tilt 0)
+                                                    (show/fixtures-named "torrent"))
+                                                   (move/direction-effect
+                                                    "p/t" (params/build-direction-param-from-pan-tilt :pan 0 :tilt 0)
+                                                    (show/fixtures-named "blade"))
+                                                   (params/bind-keyword-param (:phase var-map 0) Number 0)))
+                           :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
+                           :color :red))
 
-  (ct/set-cue!
-   (:cue-grid *show*) 3 12
-   (cues/cue :fade-test-3 (fn [var-map]
-                            (fx/fade "Fade Test P/T"
-                                     (move/pan-tilt-effect
-                                      "p/t" (params/build-pan-tilt-param :pan 0 :tilt 0)
-                                      (show/fixtures-named "torrent"))
-                                     (move/pan-tilt-effect
-                                      "p/t" (params/build-pan-tilt-param :pan 0 :tilt 0)
-                                      (show/fixtures-named "blade"))
-                                     (params/bind-keyword-param (:phase var-map 0) Number 0)))
-             :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
-             :color :orange))
+  (show/set-cue! 3 12 (cues/cue :fade-test-3 (fn [var-map]
+                                               (fx/fade "Fade Test P/T"
+                                                        (move/pan-tilt-effect
+                                                         "p/t" (params/build-pan-tilt-param :pan 0 :tilt 0)
+                                                         (show/fixtures-named "torrent"))
+                                                        (move/pan-tilt-effect
+                                                         "p/t" (params/build-pan-tilt-param :pan 0 :tilt 0)
+                                                         (show/fixtures-named "blade"))
+                                                        (params/bind-keyword-param (:phase var-map 0) Number 0)))
+                                :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
+                                :color :orange))
 
   ;; Some chases
-  (ct/set-cue!
-   (:cue-grid *show*) 0 13
-   (cues/cue :chase (fn [var-map]
-                      (fx/chase "Chase Test"
-                                [(global-color-effect :red :include-color-wheels? true)
-                                 (global-color-effect :green :fixtures (show/fixtures-named "hex"))
-                                 (global-color-effect :blue :include-color-wheels? true)]
-                                (params/bind-keyword-param (:position var-map 0) Number 0)
-                                :beyond :bounce)
-                      )
-             :variables [{:key "position" :min -0.5 :max 10.5 :start 0.0 :name "Position"}]
-             :color :purple))
+  (show/set-cue! 0 13
+                 (cues/cue :chase (fn [var-map]
+                                    (fx/chase "Chase Test"
+                                              [(global-color-effect :red :include-color-wheels? true)
+                                               (global-color-effect :green :fixtures (show/fixtures-named "hex"))
+                                               (global-color-effect :blue :include-color-wheels? true)]
+                                              (params/bind-keyword-param (:position var-map 0) Number 0)
+                                              :beyond :bounce))
+                           :variables [{:key "position" :min -0.5 :max 10.5 :start 0.0 :name "Position"}]
+                           :color :purple))
 
   ;; Set up an initial value for our step parameter
   (reset! step-param (params/build-step-param :fade-fraction 0.3 :fade-curve :sine))
 
-  (ct/set-cue!
-   (:cue-grid *show*) 1 13
-   (cues/cue :chase (fn [var-map]
-                      (fx/chase "Chase Test 2"
-                                [(global-color-effect :red :fixtures (show/fixtures-named "hex"))
-                                 (global-color-effect :green :fixtures (show/fixtures-named "blade"))
-                                 (global-color-effect :blue :fixtures (show/fixtures-named "hex"))
-                                 (global-color-effect :white :fixtures (show/all-fixtures))]
-                                @step-param :beyond :loop))
-             :color :magenta))
+  (show/set-cue! 1 13
+                 (cues/cue :chase (fn [var-map]
+                                    (fx/chase "Chase Test 2"
+                                              [(global-color-effect :red :fixtures (show/fixtures-named "hex"))
+                                               (global-color-effect :green :fixtures (show/fixtures-named "blade"))
+                                               (global-color-effect :blue :fixtures (show/fixtures-named "hex"))
+                                               (global-color-effect :white :fixtures (show/all-fixtures))]
+                                              @step-param :beyond :loop))
+                           :color :magenta))
 
   ;; Some color cycle chases
-  (ct/set-cue! (:cue-grid *show*) 0 15
-               (cues/cue :all-color (fn [_] (fun/iris-out-color-cycle-chase (show/all-fixtures)))))
-  (ct/set-cue! (:cue-grid *show*) 1 15
-               (cues/cue :all-color (fn [_] (fun/wipe-right-color-cycle-chase (show/all-fixtures)
-                                             :transition-phase-function rhythm/snapshot-bar-phase))))
-  (ct/set-cue! (:cue-grid *show*) 2 15
-               (cues/cue :all-color (fn [_] (fun/wipe-right-color-cycle-chase
-                                             (show/all-fixtures)
-                                             :color-index-function rhythm/snapshot-beat-within-phrase
-                                             :transition-phase-function rhythm/snapshot-beat-phase
-                                             :effect-name "Wipe Right Beat")))))
+  (show/set-cue! 0 15 (cues/cue :all-color (fn [_] (fun/iris-out-color-cycle-chase (show/all-fixtures)))))
+  (show/set-cue! 1 15 (cues/cue :all-color
+                                (fn [_] (fun/wipe-right-color-cycle-chase
+                                         (show/all-fixtures)
+                                         :transition-phase-function rhythm/snapshot-bar-phase))))
+  (show/set-cue! 2 15 (cues/cue :all-color (fn [_] (fun/wipe-right-color-cycle-chase
+                                                    (show/all-fixtures)
+                                                    :color-index-function rhythm/snapshot-beat-within-phrase
+                                                    :transition-phase-function rhythm/snapshot-beat-phase
+                                                    :effect-name "Wipe Right Beat")))))
 
 (defn use-push
   "A trivial reminder of how to connect the Ableton Push to run the
