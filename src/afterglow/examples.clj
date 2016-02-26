@@ -723,11 +723,9 @@
     (make-dimmer-cue nil (+ x-base 0) (+ y-base 2) :yellow)
     (doall (map-indexed (fn [i group] (make-dimmer-cue group (+ x-base (inc i)) (+ y-base 2) :yellow)) light-groups))
 
-    ;; TODO: Write a macro to make it easier to bind cue variables?
     (show/set-cue! (+ x-base 7) (+ y-base 2)
-                   (cues/cue :sparkle (fn [var-map] (fun/sparkle (show/all-fixtures)
-                                                                 :chance (:chance var-map 0.05)
-                                                                 :fade-time (:fade-time var-map 50)))
+                   (cues/cue :sparkle (fn [var-map]
+                                        (cues/apply-merging-var-map var-map fun/sparkle (show/all-fixtures)))
                              :held true
                              :priority 100
                              :variables [{:key "chance" :min 0.0 :max 0.4 :start 0.05 :velocity true}
@@ -967,12 +965,10 @@
 
   (show/set-cue! 2 9
                  (cues/cue :movement (fn [var-map]
-                                       (fun/twirl (concat (show/fixtures-named "blade")
-                                                          (show/fixtures-named "torrent"))
-                                                  :x (:x var-map) :y (:y var-map) :z (:z var-map)
-                                                  :radius (:radius var-map)
-                                                  :beats (:beats var-map) :cycles (:cycles var-map)))
-                           :variables [{:key "beats" :min 1 :max 32 :type :integer :start 4 :name "Beats"}
+                                       (cues/apply-merging-var-map var-map fun/twirl
+                                                                   (concat (show/fixtures-named "blade")
+                                                                           (show/fixtures-named "torrent"))))
+                           :variables [{:key "beats" :min 1 :max 32 :type :integer :start 8 :name "Beats"}
                                        {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
                                        {:key "radius" :min 0 :max 10 :start 0.25 :name "Radius"}
                                        {:key "z" :min -10 :max 10 :start -1.0}
@@ -986,26 +982,23 @@
   (show/set-cue! 1 10 (cues/function-cue :sb-pos :beams-moving (show/fixtures-named "snowball")
                                          :effect-name "Snowball Moving"))
 
-  ;; TODO: Write a function to create direction cues, like function cues? Unless macro solves.
   (show/set-cue! 0 8
-                 (cues/cue :torrent-dir (fn [var-map]
-                                          (move/direction-effect
-                                           "Pan/Tilt"
-                                           (params/build-direction-param-from-pan-tilt :pan (:pan var-map 0.0)
-                                                                                       :tilt (:tilt var-map 0.0)
-                                                                                       :degrees true)
-                                           (show/all-fixtures)))
+                 (cues/cue :movement (fn [var-map]
+                                       (move/direction-effect
+                                        "Pan/Tilt"
+                                        (cues/apply-merging-var-map var-map
+                                                                    params/build-direction-param-from-pan-tilt
+                                                                    :degrees true)
+                                        (show/all-fixtures)))
                            :variables [{:key "pan" :name "Pan"
                                         :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}
                                        {:key "tilt" :name "Tilt"
                                         :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}]))
-  (show/set-cue! 1 8 (cues/cue :torrent-dir (fn [var-map]
-                                              (move/aim-effect
-                                               "Aim"
-                                               (params/build-aim-param :x (:x var-map 0.0)
-                                                                       :y (:y var-map 0.0)
-                                                                       :z (:z var-map 1.0))
-                                               (show/all-fixtures)))
+  (show/set-cue! 1 8 (cues/cue :movement (fn [var-map]
+                                           (move/aim-effect
+                                            "Aim"
+                                            (cues/apply-merging-var-map var-map params/build-aim-param)
+                                            (show/all-fixtures)))
                                :variables [{:key "x" :name "X"
                                             :min -20.0 :max 20.0 :start 0.0 :centered true :resolution 0.05}
                                            {:key "z" :name "Z"

@@ -598,3 +598,10 @@
   (fn [cue active show snapshot]
     (or (params/evaluate param show snapshot nil) (:color cue))))
 
+(defmacro apply-merging-var-map
+  "Call the specified function merging all keys and values from the
+  supplied cue variable map to the end of the provided argument list.
+  Useful when creating an effect with optional keyword arguments whose
+  values are being set by cue variables bound to the appropriate
+  keys."
+  [var-map f & args] `(apply ~f ~@args (flatten (seq ~var-map))))

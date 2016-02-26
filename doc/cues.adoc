@@ -383,10 +383,12 @@ controller>>.
  source of the
  {api-doc}afterglow.examples.html#var-make-strobe-cue[`make-strobe-cue`]
  example, for the variable `level`. That cue also makes use of the
- independent show variable `:strobe-lightness` which is set by a
- separate `adjust-strobe` cue running the effect
- {api-doc}afterglow.effects.fun.html#var-adjust-strobe[`afterglow.fun/adjust-strobe`],
- forming an interesting demonstration of interacting cues.
+ independent show variable `:strobe-color`, so that changing it in any
+ strobe effect changes it for all of them. The color can also be set
+ by a separate `:strobe-color` cue running a
+ {api-doc}afterglow.effects.html#var-blank[`blank`] effect, so you can
+ preconfigure the color while no strobes are running. These are
+ intended to be a demonstration of interacting cues.
 
 |`:start`
 |`nil`
