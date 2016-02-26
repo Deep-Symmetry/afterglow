@@ -33,12 +33,18 @@ function buildEffectRow( data ) {
                     );
     }
 
-    $('<td></td>')
+    var priority = "";
+    if (data.priority != 0) {
+        priority = $('<span></span>', { class: "small" })
+            .text(" (Priority " + data.priority + ")")
+    }
+    effectName = $('<td></td>')
         .append($('<h5></h5>')
                 .append(macroBox)
                 .append($('<span></span>')
                         .text(" " + data.name)
                        )
+                .append(priority)
                )
         .appendTo(row);
 
