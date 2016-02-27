@@ -612,9 +612,57 @@
                                         :min-change (params/resolve-unless-frame-dynamic
                                                      min-change show snapshot head)))))))))
 
+(defn- build-aim-fan-point
+  "Create a dynamic parameter which computes the aim point for a
+  fixture in an [[aim-fan]] effect."
+  [x y z x-scale y-scale]
+  (reify params/IParam
+    (evaluate [this show snapshot head]
+      (let [x (params/resolve-param x show snapshot head)
+            y (params/resolve-param y show snapshot head)
+            z (params/resolve-param z show snapshot head)
+            dx (- (:x head) x)
+            dy (- (:y head) y)
+            x-scale (params/resolve-param x-scale show snapshot head)
+            y-scale (params/resolve-param y-scale show snapshot head)]
+        (Point3d. (+ (:x head) (* dx x-scale)) (+ (:y head) (* dy y-scale)) z)))
+    (frame-dynamic? [this]
+      (boolean (some params/frame-dynamic-param? [x y z x-scale y-scale])))
+    (result-type [this] Point3d)
+    (resolve-non-frame-dynamic-elements [this show snapshot head]
+      (let [x (params/resolve-unless-frame-dynamic x show snapshot head)
+            y (params/resolve-unless-frame-dynamic y show snapshot head)
+            z (params/resolve-unless-frame-dynamic z show snapshot head)
+            x-scale (params/resolve-unless-frame-dynamic x-scale show snapshot head)
+            y-scale (params/resolve-unless-frame-dynamic y-scale show snapshot head)]
+        (build-aim-fan-point x y z x-scale y-scale)))))
+
+(defn aim-fan
+  "Creates an aim effect which aims the lights outward around a
+  reference point specified by `:x`, `:y`, and `:z`, which defaults
+  to `(0, 0, 5)`, by first aiming the lights at the reference point,
+  and then adding on the distance within the x-y plane from the
+  fixture to that point, multiplied by `:x-scale` and `:y-scale`,
+  which each default to `1`. A scale of `0` would aim the lights
+  straight forward. Positive values fan them out, while negative
+  values overshoot the reference point in the other direction, fanning
+  them in. All parameters other than `fixtures` can be dynamic or
+  keywords, which will be bound to show variables.
+
+  You can override the default effect name of Aim Fan by passing in
+  another with `:effect-name`."
+  [fixtures & {:keys [x y z x-scale y-scale effect-name]
+               :or {x 0.0 y 0.0 z 5.0 x-scale 1.0 y-scale 1.0 effect-name "Aim Fan"}}]
+  (let [x (params/bind-keyword-param x Number 0.0)
+        y (params/bind-keyword-param y Number 0.0)
+        z (params/bind-keyword-param z Number 5.0)
+        x-scale (params/bind-keyword-param x-scale Number 1.0)
+        y-scale (params/bind-keyword-param y-scale Number 1.0)]
+    (movement/aim-effect effect-name (build-aim-fan-point x y z x-scale y-scale) fixtures)))
+
 (defn- build-twirl-vector
-  "Create a dynamic parameter which computes the aim vector for a
-  fixture in a [[twirl]] effect."
+  "Create a dynamic parameter which computes the direction vector for
+  a fixture in a [[twirl]] effect."
   [x y z radius osc]
   (reify params/IParam
     (evaluate [this show snapshot head]
@@ -643,25 +691,26 @@
         (build-twirl-vector x y z radius osc)))))
 
 (defn twirl
-  "Creates a movement effect which aims the lights outward from a
-  point specified by `:x`, `:y`, and `:z`, which defaults to `(0, 0,
-  -2)`, then displaces the front of that vector by a distance of
-  `:radius` in the _x-y_ plane (defaulting to `0.25`) in a direction
-  which rotates around the plane driven by a sawtooth oscillator which
-  defaults to a complete revolution every four beats, but whose beat
-  ratio can be adjusted by the parameters `:beats` and `:cycles`, and
-  whose phase is spread across the _x_ axis as a spatial parameter
-  over all fixtures. All parameters other than `fixtures` can be
-  dynamic or keywords, which will be bound to show variables.
+  "Creates a direction movement effect which aims the lights outward
+  from a point specified by `:x`, `:y`, and `:z`, which defaults
+  to `(0, 0, -2)`, then displaces the front of that vector by a
+  distance of `:radius` in the _x-y_ plane (defaulting to `0.25`) in a
+  direction which rotates around the plane driven by a sawtooth
+  oscillator which defaults to a complete revolution every four beats,
+  but whose beat ratio can be adjusted by the parameters `:beats` and
+  `:cycles`, and whose phase is spread across the _x_ axis as a
+  spatial parameter over all fixtures. All parameters other than
+  `fixtures` can be dynamic or keywords, which will be bound to show
+  variables.
 
   You can override the default effect name of Twirl by passing in
   another with `:effect-name`."
   [fixtures & {:keys [x y z radius beats cycles effect-name]
-               :or {x 0 y 0 z -2 radius 0.25 beats 4 cycles 1 effect-name "Twirl"}}]
+               :or {x 0.0 y 0.0 z -2.0 radius 0.25 beats 4 cycles 1 effect-name "Twirl"}}]
   (let [x (params/bind-keyword-param x Number 0.0)
         y (params/bind-keyword-param y Number 0.0)
-        z (params/bind-keyword-param z Number -1.0)
-        radius (params/bind-keyword-param radius Number 0.1)
+        z (params/bind-keyword-param z Number -2.0)
+        radius (params/bind-keyword-param radius Number 0.25)
         beats (params/bind-keyword-param beats Number 4)
         cycles (params/bind-keyword-param cycles Number 1)
         osc (osc/sawtooth :interval-ratio (params/build-param-formula Number #(/ %1 %2) beats cycles)

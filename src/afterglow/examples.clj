@@ -976,6 +976,17 @@
                                        {:key "y" :min -10 :max 10 :start rig-height}
                                        {:key "x" :min -10 :max 10 :start 0.0}]
                            :color :green))
+    (show/set-cue! 2 10
+                 (cues/cue :movement (fn [var-map]
+                                       (cues/apply-merging-var-map var-map fun/aim-fan
+                                                                   (concat (show/fixtures-named "blade")
+                                                                           (show/fixtures-named "torrent"))))
+                           :variables [{:key "x-scale" :min -5 :max 5 :start 1 :name "X Scale"}
+                                       {:key "y-scale" :min -10 :max 10 :start 5 :name "Y Scale"}
+                                       {:key "z" :min 0 :max 20 :start 4}
+                                       {:key "y" :min -10 :max 10 :start rig-height}
+                                       {:key "x" :min -10 :max 10 :start 0.0}]
+                           :color :blue))
 
   ;; A couple snowball cues
   (show/set-cue! 0 10 (cues/function-cue :sb-pos :beams-fixed (show/fixtures-named "snowball")
