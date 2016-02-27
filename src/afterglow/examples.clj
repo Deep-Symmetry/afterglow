@@ -90,23 +90,23 @@
                        :x (tf/inches -51.5) :y (+ y (tf/inches 15)))
 
   ;; Blade moving-head RGBA pinspots
-  (show/patch-fixture! :blade-1 (blizzard/blade-rgbw) universe 225
+  (show/patch-fixture! :blade-1 (blizzard/blade-rgbw :15-channel :hung (tf/inches 12)) universe 225
                        :x (tf/inches -21) :y (+ y (tf/inches 9))
                        :relative-rotations [[:y-rotation (tf/degrees 90)]
                                             [:z-rotation blade-1-angle]])
-  (show/patch-fixture! :blade-2 (blizzard/blade-rgbw) universe 240
+  (show/patch-fixture! :blade-2 (blizzard/blade-rgbw :15-channel :hung (tf/inches 12)) universe 240
                        :x (tf/inches 20.5) :y (+ y (tf/inches 9))
                        :relative-rotations [[:y-rotation (tf/degrees 90)]
                                             [:z-rotation blade-2-angle]])
-  (show/patch-fixture! :blade-3 (blizzard/blade-rgbw) universe 255
+  (show/patch-fixture! :blade-3 (blizzard/blade-rgbw :15-channel :hung (tf/inches 12)) universe 255
                        :x (tf/inches -37) :y y
                        :relative-rotations [[:y-rotation (tf/degrees 90)]
                                             [:z-rotation blade-3-angle]])
-  (show/patch-fixture! :blade-4 (blizzard/blade-rgbw) universe 270
+  (show/patch-fixture! :blade-4 (blizzard/blade-rgbw :15-channel :version-2 true :hung (tf/inches 12)) universe 270
                        :x (tf/inches 37) :y y
                        :relative-rotations [[:y-rotation (tf/degrees 90)]
                                             [:z-rotation blade-4-angle]])
-  (show/patch-fixture! :blade-5 (blizzard/blade-rgbw :15-channel :tilt-center 25 :tilt-half-circle -230) universe 285
+  (show/patch-fixture! :blade-5 (blizzard/blade-rgbw :15-channel :version-2 true :hung (tf/inches 12)) universe 285
                        :y (+ y blade-5-height)
                        :relative-rotations [[:y-rotation (tf/degrees 90)]
                                             [:z-rotation blade-5-angle]])
@@ -155,7 +155,8 @@
 
   ;; Throw a couple of fixtures in there to play with. For better fun, use
   ;; fixtures and addresses that correspond to your actual hardware.
-  (patch-lighting-rig :universe universe :y rig-height :blade-3-angle (tf/degrees 71.2))
+  (patch-lighting-rig :universe universe :y rig-height
+                      :blade-3-angle (tf/degrees 71.2) :blade-4-angle (tf/degrees 78.7))
   #_(show/patch-fixture! :ws-1 (blizzard/weather-system) universe 161
                        :x (tf/inches 55) :y (tf/inches 71) :z (tf/inches 261) :y-rotation (tf/degrees 225))
   #_(show/patch-fixture! :ws-2 (blizzard/weather-system) universe 187

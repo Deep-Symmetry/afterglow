@@ -165,14 +165,14 @@
   axes](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/Blade.png)
 
   If you are hanging the light at an odd angle, or for any reason it
-  is harder to measure the exact axis location than the location of
-  where you are hanging it, you can supply an optional argument
-  `:hung` containing the distance in meters from the origin in the
-  photo to the point at which it was hung (the center of the bar it is
-  clamped to), and Afterglow will calculate where the head is based on
-  that distance and the orientation at which you reported it hung.
-  With the standard clamp mount and a standard O-clamp that distance
-  seems to be twelve inches.
+  is harder to measure the exact axis location given where where you
+  are hanging it, you can supply an optional argument `:hung` after
+  the `mode` argument, containing the distance in meters from the
+  origin in the photo to the point at which it was hung (the center of
+  the bar it is clamped to), and Afterglow will calculate where the
+  head is based on that distance and the orientation at which you
+  reported it hung. With the standard clamp mount and a standard
+  O-clamp that distance seems to be twelve inches.
 
   The center pan value (aimed straight at the audience when hung in
   the default orientation described above), is defined as 84, a half
@@ -193,45 +193,46 @@
   using it that way.
 
   The way these fixtures respond to pan and tilt values seems to have
-  changed recently. In order to be able to get consistent results with
-  a mixed group of fixtures, you can override the values of
-  `:pan-center`, `:pan-half-circle`, `:tilt-center` and
-  `:tilt-half-circle` which used to work by passing in new values
-  using optional keyword arguments following the `mode` value."
+  changed in a major revision in 2015. If you have a more recent
+  model, you can pass a `true` value with the optional keyword
+  argument `:version-2` after `mode`, in which case the center pan
+  value is 82, the center tilt value is 25, and it takes a change of
+  -230 in the tilt channel to rotate half a circle counterclockwise
+  around the Y axis."
   ([]
    (blade-rgbw :15-channel))
-  ([mode & {:keys [hung pan-center pan-half-circle tilt-center tilt-half-circle]
-            :or {hung 0 pan-center 84 pan-half-circle 84 tilt-center 8 tilt-half-circle -214}}]
-   (assoc (case mode
-            :15-channel {:channels [(chan/pan 1 3) (chan/tilt 2 4)
-                                    (chan/fine-channel :movement-speed 5
-                                                       :function-name "Movement Speed (fast->slow)")
-                                    (chan/fine-channel :custom-color 10)
-                                    (chan/functions :strobe 11 0 nil
-                                                    1 {:type :strobe
-                                                       :scale-fn (partial chan-fx/function-value-scaler 18 100)
-                                                       :label "Strobe (1.8Hz->10Hz)"
-                                                       :range :variable})
-                                    (chan/dimmer 12)
-                                    (chan/functions :control 13
-                                                    0 :linear-dimming 26 :fade-step-increase
-                                                    51 :color-macros 91 :color-fade-in-out
-                                                    131 :color-snap 171 :color-fade
-                                                    211 :auto 251 :sound-active)]
-                         :heads [{:channels [(chan/color 6 :red) (chan/color 7 :green)
-                                              (chan/color 8 :blue) (chan/color 9 :white)]
-                                   :y hung}]}
-            :11-channel {:channels [(chan/pan 1 3) (chan/tilt 2 4)
-                                    (chan/fine-channel :movement-speed 5
-                                                       :function-name "Movement Speed (fast->slow)")
-                                    (chan/dimmer 10) (chan/fine-channel :custom-color 11)]
-                         :heads [{:channels [(chan/color 6 :red) (chan/color 7 :green)
-                                              (chan/color 8 :blue) (chan/color 9 :white)]
-                                   :y hung}]})
-          :name "Blizzard Blade RGBW"
-          :mode mode
-          :pan-center pan-center :pan-half-circle pan-half-circle
-          :tilt-center tilt-center :tilt-half-circle tilt-half-circle)))
+  ([mode & {:keys [hung version-2] :or {hung 0}}]
+   (let [[pan-center pan-half-circle tilt-center tilt-half-circle] (if version-2 [82 84 25 -230] [84 84 8 -214])]
+     (assoc (case mode
+              :15-channel {:channels [(chan/pan 1 3) (chan/tilt 2 4)
+                                      (chan/fine-channel :movement-speed 5
+                                                         :function-name "Movement Speed (fast->slow)")
+                                      (chan/fine-channel :custom-color 10)
+                                      (chan/functions :strobe 11 0 nil
+                                                      1 {:type :strobe
+                                                         :scale-fn (partial chan-fx/function-value-scaler 18 100)
+                                                         :label "Strobe (1.8Hz->10Hz)"
+                                                         :range :variable})
+                                      (chan/dimmer 12)
+                                      (chan/functions :control 13
+                                                      0 :linear-dimming 26 :fade-step-increase
+                                                      51 :color-macros 91 :color-fade-in-out
+                                                      131 :color-snap 171 :color-fade
+                                                      211 :auto 251 :sound-active)]
+                           :heads [{:channels [(chan/color 6 :red) (chan/color 7 :green)
+                                               (chan/color 8 :blue) (chan/color 9 :white)]
+                                    :y hung}]}
+              :11-channel {:channels [(chan/pan 1 3) (chan/tilt 2 4)
+                                      (chan/fine-channel :movement-speed 5
+                                                         :function-name "Movement Speed (fast->slow)")
+                                      (chan/dimmer 10) (chan/fine-channel :custom-color 11)]
+                           :heads [{:channels [(chan/color 6 :red) (chan/color 7 :green)
+                                               (chan/color 8 :blue) (chan/color 9 :white)]
+                                    :y hung}]})
+            :name "Blizzard Blade RGBW"
+            :mode mode
+            :pan-center pan-center :pan-half-circle pan-half-circle
+            :tilt-center tilt-center :tilt-half-circle tilt-half-circle))))
 
 ;; TODO: Someday play with channels 13 and 14 more to see if there is anything worth modeling.
 ;;       Not urgent, though, the main point of Afterglow is custom effects using raw colors and
