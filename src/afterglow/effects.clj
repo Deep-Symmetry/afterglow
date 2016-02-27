@@ -152,7 +152,7 @@
     (Effect. scene-name
              (fn [show snapshot]
                (swap! active (fn [fx] (filterv #(still-active? % show snapshot) fx)))
-               (seq @active))
+               (boolean (seq @active)))
              (fn [show snapshot] (mapcat #(generate % show snapshot) @active))
              (fn [show snapshot]
                (swap! active (fn [fx] (filterv #(not (end % show snapshot)) fx)))
@@ -366,7 +366,7 @@
   ended."
   [active-vec effects show snapshot]
   (vec (map (fn [previously-active effect]
-              (and previously-active (still-active? effect show snapshot)))
+              (and previously-active (boolean (still-active? effect show snapshot))))
             active-vec effects)))
 
 (defn- end-still-active
