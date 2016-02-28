@@ -47,7 +47,7 @@
    :row-5        69
    :row-6        79
    :row-7        89
-   
+
    :up-arrow     91
    :down-arrow   92
    :left-arrow   93
@@ -325,9 +325,9 @@
     (swap! (:next-text-buttons controller)
            assoc (:shift control-buttons)
            (if @(:shift-mode controller) button-active-color button-available-color))
-    
+
     (update-scroll-arrows controller)
-    
+
     ;; Flash the tap tempo button on beats
     (let [snapshot (rhythm/metro-snapshot (get-in controller [:show :metronome]))
           marker (rhythm/snapshot-marker snapshot)
@@ -576,7 +576,7 @@
 
       (= @counter 15)
       (show-labels controller (colors/create-color :cyan))
-      
+
       (< @counter 24)
       (doseq [x (range 0 8)]
         (let [lightness-index (if (> x 3) (- 7 x) x)
@@ -584,14 +584,14 @@
               color (colors/create-color
                      :h (+ 60 (* 40 (- @counter 18))) :s 100 :l lightness)]
           (set-pad-color controller x (- 23 @counter) color)))
-      
+
       (= @counter 24)
       (show-labels controller (colors/create-color :blue))
 
       (< @counter 33)
       (doseq [x (range 0 8)]
         (set-pad-color controller x (- 32 @counter) button-off-color))
-      
+
       :else
       (do
         (start-interface controller)
@@ -621,8 +621,8 @@
   by the watcher, if it is currently connected, and cancel the
   watcher itself. In such cases, `:disconnected` is meaningless."
   [controller & {:keys [disconnected] :or {disconnected false}}]
-  {:pre [(#{:launchpad-pro :launchpad-pro-watcher} (type controller))]}
-  (if (= (type controller) :launchpad-pro-watcher)
+  {:pre [(#{::controller ::watcher} (type controller))]}
+  (if (= (type controller) ::watcher)
     (do ((:cancel controller))  ; Shut down the watcher
         (when-let [watched-controller @(:controller controller)]
           (deactivate watched-controller)))  ; And deactivate the controller it was watching for
@@ -728,7 +728,7 @@
                :overlays             (controllers/create-overlay-state)
                :move-listeners       (atom #{})
                :grid-controller-impl (atom nil)}
-              {:type :launchpad-pro})]
+              {:type ::controller})]
         (reset! (:midi-handler controller) (partial midi-received controller))
         (reset! (:deactivate-handler controller) #(deactivate controller))
         (reset! (:grid-controller-impl controller)
@@ -817,7 +817,7 @@
       ;; See if our Launchpad seems to already be connected, and if so, bind to it right away.
       (when-let [found (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))]
         (connection-handler found false))
-      
+
       ;; Set up to bind when connected in future.
       (amidi/add-new-device-handler! connection-handler)
 
@@ -826,4 +826,4 @@
         {:controller controller
          :device-filter device-filter
          :cancel cancel-handler}
-        {:type :launchpad-pro-watcher}))))
+        {:type ::watcher}))))

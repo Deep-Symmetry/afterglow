@@ -1795,8 +1795,8 @@
   by the watcher, if it is currently connected, and cancel the
   watcher itself. In such cases, `:disconnected` is meaningless."
   [controller & {:keys [disconnected] :or {disconnected false}}]
-  {:pre [(#{:ableton-push :push-watcher} (type controller))]}
-  (if (= (type controller) :push-watcher)
+  {:pre [(#{::controller ::watcher} (type controller))]}
+  (if (= (type controller) ::watcher)
     (do ((:cancel controller))  ; Shut down the watcher
         (when-let [watched-controller @(:controller controller)]
           (deactivate watched-controller)))  ; And deactivate the controller it was watching for
@@ -1905,7 +1905,7 @@
                :overlays             (controllers/create-overlay-state)
                :move-listeners       (atom #{})
                :grid-controller-impl (atom nil)}
-              {:type :ableton-push})]
+              {:type ::controller})]
         (reset! (:midi-handler controller) (partial midi-received controller))
         (reset! (:deactivate-handler controller) #(deactivate controller))
         (reset! (:grid-controller-impl controller)
@@ -2002,4 +2002,4 @@
         {:controller controller
          :device-filter device-filter
          :cancel cancel-handler}
-        {:type :push-watcher}))))
+        {:type ::watcher}))))

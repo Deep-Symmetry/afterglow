@@ -565,8 +565,8 @@
   by the watcher, if it is currently connected, and cancel the
   watcher itself. In such cases, `:disconnected` is meaningless."
   [controller & {:keys [disconnected] :or {disconnected false}}]
-  {:pre [(have? #{:launchpad-mk2 :launchpad-mk2-watcher} (type controller))]}
-  (if (= (type controller) :launchpad-mk2-watcher)
+  {:pre [(have? #{::controller ::watcher} (type controller))]}
+  (if (= (type controller) ::watcher)
     (do ((:cancel controller))  ; Shut down the watcher
         (when-let [watched-controller @(:controller controller)]
           (deactivate watched-controller)))  ; And deactivate the controller it was watching for
@@ -672,7 +672,7 @@
                :overlays             (controllers/create-overlay-state)
                :move-listeners       (atom #{})
                :grid-controller-impl (atom nil)}
-              {:type :launchpad-mk2})]
+              {:type ::controller})]
         (reset! (:midi-handler controller) (partial midi-received controller))
         (reset! (:deactivate-handler controller) #(deactivate controller))
         (reset! (:grid-controller-impl controller)
@@ -770,4 +770,4 @@
         {:controller controller
          :device-filter device-filter
          :cancel cancel-handler}
-        {:type :launchpad-mk2-watcher}))))
+        {:type ::watcher}))))
