@@ -18,6 +18,10 @@ This change log follows the conventions of
   created, whenever it is run. The compound cue will end all of its
   component cues when you end it, and will end itself if they end
   independently.
+- You can now right-click on cues in the web interface to bring up a
+  menu of actions. The menu so far offers just the ability to delete
+  the cue if there is one there (this can clean up macros you no
+  longer want, for example).
 - Support for other members of the Novation Launchpad family of grid
   controllers has been implemented:
   - Launchpad Mini

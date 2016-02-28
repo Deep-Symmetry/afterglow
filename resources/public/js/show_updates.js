@@ -570,6 +570,9 @@ function metronomeAdjustClicked( eventObject ) {
 var $doc = $(document);
 
 function cueCellClicked( eventObject ) {
+    if (event.which != 1) {
+        return;  // Only respond to ordinary, left-button clicks.
+    }
     var cell = this.id;
     var props = { "shift": eventObject.shiftKey };
     if (makingMacro) {
@@ -613,6 +616,20 @@ function cueCellClicked( eventObject ) {
         },
         error: function() {
             console.log("Problem requesting cue toggle.");
+        }
+    });
+}
+
+function deleteCue( cell ) {
+    var jqxhr = $.ajax({
+        url: (context + "/ui-event/" + page_id + "/delete-" + cell.attr('id')),
+        headers: { 'X-CSRF-Token': csrf_token },
+        type: 'POST',
+        success: function(data) {
+            //console.log(data);
+        },
+        error: function() {
+            console.log("Problem requesting cue deletion.");
         }
     });
 }
@@ -696,6 +713,8 @@ function checkShiftKey( eventObject ) {
     }
 }
 
+var cueCellMenu;
+
 $( document ).ready(function() {
     $("#startButton").click(uiButtonClicked);
     $("#stopButton").click(uiButtonClicked);
@@ -746,6 +765,28 @@ $( document ).ready(function() {
         .on("slideStart", grandMasterSlideStart)
         .on("slide", grandMasterSlide)
         .on("slideStop", grandMasterSlideStop);
+
+    cueCellMenu = new BootstrapMenu('.cue-cell', {
+        fetchElementData: function($rowElem) {
+            return $rowElem;
+        },
+        actions: {
+            /*
+            renameCue: {
+                name: 'Rename',
+                iconClass: 'fa-pencil',
+                onClick: function(row) { console.log($(row).text()); },
+                isEnabled: function(row) { return !!$(row).text().trim(); }
+            },
+            */
+            deleteCue: {
+                name: 'Delete',
+                iconClass: 'fa-trash-o',
+                onClick: function(row) { deleteCue($(row)); },
+                isEnabled: function(row) { return !!$(row).text().trim(); }
+            }
+        }
+    });
 
     updateEffectState();
     updateShow();

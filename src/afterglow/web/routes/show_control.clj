@@ -647,6 +647,15 @@
           {:error (str "Cue was not held for cell: " kind)}))
       {:error (str "No cue found for cell: " kind)})))
 
+(defn- handle-cue-delete-event
+  "Process a request to delete a cue in a grid cell."
+  [page-info kind]
+  (let [[left bottom] (:view page-info)
+        [_ _ column row] (clojure.string/split kind #"-")
+        [x y] (map + (map #(Integer/valueOf %) [column row]) [left bottom])]
+    (controllers/clear-cue! (get-in page-info [:show :cue-grid]) x y)
+    {:deleted [x y]}))
+
 (defn- handle-end-effect-event
   "Process a mouse down on an event's end button."
   [page-info req]
@@ -855,6 +864,9 @@
 
                   (.startsWith kind "release-")
                   (handle-cue-release-event page-info kind)
+
+                  (.startsWith kind "delete-cue-")
+                  (handle-cue-delete-event page-info kind)
 
                   (.startsWith kind "cues-")
                   (handle-cue-move-event page-info kind)
