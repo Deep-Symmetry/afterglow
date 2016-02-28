@@ -1016,12 +1016,15 @@
                                           (str " (Group " (clojure.string/upper-case shared-prefix)
                                                (when transform? " flip") ")")))
                                    aim-param (show/fixtures-named fixture-key))))
-              :variables [{:key (aim-cue-var-key "x" shared-prefix) :name "X" :min -20.0 :max 20.0
-                           :centered true :resolution 0.05}
-                          {:key (aim-cue-var-key "y" shared-prefix) :name "Y" :min -20.0 :max 20.0
-                           :centered true :resolution 0.05}
-                          {:key (aim-cue-var-key "z" shared-prefix) :name "Z" :min -20.0 :max 20.0
-                           :centered true :resolution 0.05}]
+              :variables [(merge {:key (aim-cue-var-key "x" shared-prefix) :name "X" :min -20.0 :max 20.0
+                                  :centered true :resolution 0.05}
+                                 (when isolated? {:start 0.0}))
+                          (merge {:key (aim-cue-var-key "y" shared-prefix) :name "Y" :min -20.0 :max 20.0
+                                  :centered true :resolution 0.05}
+                                 (when isolated? {:start 0.0}))
+                          (merge {:key (aim-cue-var-key "z" shared-prefix) :name "Z" :min -20.0 :max 20.0
+                                  :centered true :resolution 0.05}
+                                 (when isolated? {:start 2.0}))]
               :color color)))
 
 (defn- make-main-aim-cues
@@ -1032,6 +1035,14 @@
         y-base (* page-y 8)
         fixtures [:torrent-1 :torrent-2 :blade-1 :blade-2 :blade-3 :blade-4 :blade-5]
         transform (Transform3D.)]
+
+    ;; Set up default shared aiming coordinates
+    (show/set-variable! :aim-group-a-x 0.0)
+    (show/set-variable! :aim-group-a-y 0.0)
+    (show/set-variable! :aim-group-a-z 2.0)
+    (show/set-variable! :aim-group-b-x 0.0)
+    (show/set-variable! :aim-group-b-y 0.0)
+    (show/set-variable! :aim-group-b-z 2.0)
 
     ;; Set up default transformation of a reflection over the Y axis
     (.setScale transform (Vector3d. -1.0 1.0 1.0))
