@@ -403,9 +403,11 @@
   with :ignore-x, :ignore-y, or :ignore-z."
   [x y z & {:keys [ignore-x ignore-y ignore-z]}]
   (let [reference (Point3d. (if ignore-x 0 x) (if ignore-y 0 y) (if ignore-z 0 z))]
-    (fn [head]
-      (let [location (Point3d. (if ignore-x 0 (:x head)) (if ignore-y 0 (:y head)) (if ignore-z 0 (:z head)))]
-        (.distance reference location)))))
+    (with-meta
+      (fn [head]
+        (let [location (Point3d. (if ignore-x 0 (:x head)) (if ignore-y 0 (:y head)) (if ignore-z 0 (:z head)))]
+          (.distance reference location)))
+      {:type ::distance-measure})))
 
 (defn max-distance
   "Calculates the maximum distance that will ever be returned by a

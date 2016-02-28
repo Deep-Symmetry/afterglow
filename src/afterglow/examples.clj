@@ -1236,12 +1236,19 @@
                                    :min -90 :max 0)))
         can-can-dir (params/build-direction-param-from-pan-tilt :pan triangle-phrase :tilt staggered-triangle-bar)
         can-can-p-t (params/build-pan-tilt-param :pan triangle-phrase :tilt staggered-triangle-bar)]
-    (show/set-cue! 0 9
-                   (cues/cue :movement (fn [var-map]
-                                         (move/direction-effect "Can Can" can-can-dir (show/all-fixtures)))))
-    (show/set-cue! 1 9
-                   (cues/cue :movement (fn [var-map]
-                                         (move/pan-tilt-effect "P/T Can Can" can-can-p-t (show/all-fixtures))))))
+    (show/set-cue! 0 9 (cues/cue :movement (fn [_]
+                                             (move/direction-effect "Can Can" can-can-dir (show/all-fixtures)))))
+    (show/set-cue! 1 9 (cues/cue :movement (fn [_]
+                                             (move/pan-tilt-effect "P/T Can Can" can-can-p-t (show/all-fixtures))))))
+
+  (show/set-cue! 0 10 (cues/cue :bloom (fn [var-map]
+                                         (cues/apply-merging-var-map
+                                          var-map fun/bloom (show/all-fixtures)
+                                          :measure (tf/build-distance-measure 0 rig-height 0 :ignore-z true)))
+                                :variables [{:key "color" :type :color :start (colors/create-color :white)
+                                             :name "Color"}
+                                            {:key "fraction" :min 0 :max 1 :start 0 :velocity true}]
+                                :priority 1000 :color :purple))
 
   #_(show/set-cue! 3 8 (cues/function-cue :blade-speed :movement-speed (show/fixtures-named "blade")
                                         :color :purple :effect-name "Slow Blades"))

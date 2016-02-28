@@ -716,3 +716,31 @@
         osc (osc/sawtooth :interval-ratio (params/build-param-formula Number #(/ %1 %2) beats cycles)
                           :phase (params/build-spatial-param fixtures (fn [head] (:x head)) :max 1.0))]
     (movement/direction-effect effect-name (build-twirl-vector x y z radius osc) fixtures)))
+
+(defn bloom
+  "An effect which causes a color (which defaults to white) to spread
+  from a point across a set of lights, controlled by a fraction from 0
+  to 1. The spread is defined by a distance measure (as created
+  by [[build-distance-measure]]), which defaults to a sphere starting
+  at the origin. For efficiency, the measure cannot be frame dynamic,
+  and is evaluated when the effect is created."
+  [fixtures & {:keys [color fraction measure]
+               :or {:color (colors/create-color :white)
+                    :fraction 0
+                    :measure (transform/build-distance-measure 0 0 0)}}]
+    (let [color (params/bind-keyword-param color :com.evocomputing.colors/color (colors/create-color :white))
+          fraction (params/bind-keyword-param fraction Number 0)
+          measure (params/resolve-param (params/bind-keyword-param measure :afterglow.transform/distance-measure
+                                                                   (transform/build-distance-measure 0 0 0))
+                                        *show* (rhythm/metro-snapshot (:metronome *show*)))
+          heads (channels/find-rgb-heads fixtures)
+          furthest (transform/max-distance measure heads)
+          f (fn [show snapshot target previous-assignment]
+              (let [fraction (params/resolve-param fraction show snapshot target)
+                    level (/ fraction (/ (measure target) furthest))]
+                (color-fx/fade-colors previous-assignment color level show snapshot target)))
+          assigners (fx/build-head-assigners :color heads f)]
+      (Effect. "Bloom"
+               fx/always-active
+               (fn [show snapshot] assigners)
+               fx/end-immediately)))
