@@ -891,7 +891,7 @@
               (concat (for [i (range 1 (inc (count cross-elements)))]
                         (apply fx/scene (str "Crossover Scene " i) (take i cross-elements)))
                       [(fx/scene "Crossover End"
-                                 (move/aim-effect "Cross End Point" (Point3d. 0.0 0.0 10.0)
+                                 (move/aim-effect "Cross End Point" (Point3d. 0.0 0.0 2.5)
                                                   (concat (show/fixtures-named "blade")
                                                           (show/fixtures-named "torrent")))
                                  (color-fx/color-effect "Cross End color" end-color
