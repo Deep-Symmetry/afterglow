@@ -137,23 +137,23 @@
   (params/validate-param-type master Master)
   (let [full-f (if htp?  ; Assignment function for dedicated dimmer channels
                  (fn [show snapshot target previous-assignment]
-                   (clamp-rgb-int (max (master-scale master (params/resolve-param level show snapshot))
-                                       (or (params/resolve-param previous-assignment show snapshot) 0))))
+                   (clamp-rgb-int (max (master-scale master (params/resolve-param level show snapshot target))
+                                       (or (params/resolve-param previous-assignment show snapshot target) 0))))
                  (fn [show snapshot target previous-assignment]
-                   (clamp-rgb-int (master-scale master (params/resolve-param level show snapshot)))))
+                   (clamp-rgb-int (master-scale master (params/resolve-param level show snapshot target)))))
         full-assigners (chan-fx/build-raw-channel-assigners full-channels full-f)
         func-f (if htp?  ; Assignment function for dimmer functions on multipurpose channels
                  ;; We must scale dimmer level from 0-255 to 0-100, since function effects use percentages.
                  (fn [show snapshot target previous-assignment]
-                   (max (/ (master-scale master (params/resolve-param level show snapshot)) 2.55)
-                        (or (params/resolve-param previous-assignment show snapshot) 0)))
+                   (max (/ (master-scale master (params/resolve-param level show snapshot target)) 2.55)
+                        (or (params/resolve-param previous-assignment show snapshot target) 0)))
                  (fn [show snapshot target previous-assignment]
-                   (/ (master-scale master (params/resolve-param level show snapshot)) 2.55)))
+                   (/ (master-scale master (params/resolve-param level show snapshot target)) 2.55)))
         func-assigners (chan-fx/build-head-function-assigners :dimmer function-heads func-f)
         virtual-f (fn [show snapshot target previous-assignment]
                     (when previous-assignment
                       (let [resolved (params/resolve-param previous-assignment show snapshot target)
-                            fraction (/ (master-scale master (params/resolve-param level show snapshot)) 255)]
+                            fraction (/ (master-scale master (params/resolve-param level show snapshot target)) 255)]
                         (colors/create-color :h (colors/hue resolved)
                                              :s (colors/saturation resolved)
                                              :l (clamp-percent-float (* (colors/lightness resolved) fraction))
