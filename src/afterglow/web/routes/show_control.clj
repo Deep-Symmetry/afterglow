@@ -634,8 +634,9 @@
   "Process a mouse up after clicking a momentary cue grid cell."
   [page-info kind]
   (let [[left bottom] (:view page-info)
-        [_ x y id] (clojure.string/split kind #"-")
-        [x y id] (map #(Integer/valueOf %) [x y id])
+        [_ column row id] (clojure.string/split kind #"-")
+        [x y] (map + (map #(Integer/valueOf %) [column row]) [left bottom])
+        id (Integer/valueOf id)
         [cue active] (show/find-cue-grid-active-effect (:show page-info) x y)]
     (swap! clients update-in [(:id page-info)] dissoc :holding)
     (if cue

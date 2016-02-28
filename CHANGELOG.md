@@ -35,6 +35,13 @@ This change log follows the conventions of
 
 ### Fixed
 
+- Chases containing only scenes would end instantly rather than
+  running, because of some assumptions they were making about how the
+  effect protocol was implemented, which scenes violated. Chases are
+  now more robust.
+- The calculation of coordinates when releasing the mouse over held
+  cues in the web interface was not correct for any page of cues
+  beyond the bottom left one.
 - The low-level tempo tap handler was already more useful than I was
   giving it credit for, suitable for both aligning to the current beat
   as well as adjusting the tempo if you hit it three or more times, so
