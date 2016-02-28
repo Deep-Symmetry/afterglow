@@ -939,34 +939,34 @@
                    (cues/function-cue :h2o-led :on (show/fixtures-named :h2o-led) :effect-name "H2O LED"))
 
     ;; Control the Hypnotic RGB Laser
-    (show/set-cue! (+ x-base 0) (+ y-base 3)
+    (show/set-cue! (+ x-base 0) (+ y-base 2)
                    (cues/function-cue :hypnotic-beam :beam-red (show/fixtures-named "hyp-rgb")
                                       :color :red :effect-name "Hypnotic Red"))
-    (show/set-cue! (+ x-base 1) (+ y-base 3)
+    (show/set-cue! (+ x-base 1) (+ y-base 2)
                    (cues/function-cue :hypnotic-beam :beam-green (show/fixtures-named "hyp-rgb")
                                       :color :green :effect-name "Hypnotic Green"))
-    (show/set-cue! (+ x-base 2) (+ y-base 3)
+    (show/set-cue! (+ x-base 2) (+ y-base 2)
                    (cues/function-cue :hypnotic-beam :beam-blue (show/fixtures-named "hyp-rgb")
                                       :color :blue :effect-name "Hypnotic Blue"))
-    (show/set-cue! (+ x-base 3) (+ y-base 3)
+    (show/set-cue! (+ x-base 3) (+ y-base 2)
                    (cues/function-cue :hypnotic-beam :beam-red-green (show/fixtures-named "hyp-rgb")
                                       :color :yellow :effect-name "Hypnotic Red Green"))
-    (show/set-cue! (+ x-base 4) (+ y-base 3)
+    (show/set-cue! (+ x-base 4) (+ y-base 2)
                    (cues/function-cue :hypnotic-beam :beam-red-blue (show/fixtures-named "hyp-rgb")
                                       :color :purple :effect-name "Hypnotic Red Blue"))
-    (show/set-cue! (+ x-base 5) (+ y-base 3)
+    (show/set-cue! (+ x-base 5) (+ y-base 2)
                    (cues/function-cue :hypnotic-beam :beam-green-blue (show/fixtures-named "hyp-rgb")
                                       :color :cyan :effect-name "Hypnotic Green Blue"))
-    (show/set-cue! (+ x-base 6) (+ y-base 3)
+    (show/set-cue! (+ x-base 6) (+ y-base 2)
                    (cues/function-cue :hypnotic-beam :beam-red-green-blue (show/fixtures-named "hyp-rgb")
                                       :color :white :effect-name "Hypnotic Red Green Blue"))
-    (show/set-cue! (+ x-base 7) (+ y-base 3)
+    (show/set-cue! (+ x-base 7) (+ y-base 2)
                    (cues/function-cue :hypnotic-beam :beam-all-random (show/fixtures-named "hyp-rgb")
                                       :color :white :effect-name "Hypnotic Random"))
-    (show/set-cue! (+ x-base 6) (+ y-base 4)
+    (show/set-cue! (+ x-base 6) (+ y-base 3)
                    (cues/function-cue :hypnotic-spin :beams-ccw (show/fixtures-named "hyp-rgb")
                                       :color :cyan :effect-name "Hypnotic Rotate CCW" :level 50))
-    (show/set-cue! (+ x-base 7) (+ y-base 4)
+    (show/set-cue! (+ x-base 7) (+ y-base 3)
                    (cues/function-cue :hypnotic-spin :beams-cw (show/fixtures-named "hyp-rgb")
                                       :color :cyan :effect-name "Hypnotic Rotate Clockwise" :level 50))
 
@@ -982,7 +982,15 @@
                                       :color :orange :effect-name "Puck Sound"))
     (show/set-cue! (+ x-base 6) (+ y-base 7)
                    (cues/function-cue :snowball-sound :sound-active (show/fixtures-named "snowball")
-                                      :color :orange :effect-name "Snowball Sound"))))
+                                      :color :orange :effect-name "Snowball Sound" :end-keys [:snowball-pos]))
+
+    ;; A couple other snowball cues
+    (show/set-cue! (+ x-base 6) (+ y-base 6)
+                   (cues/function-cue :snowball-pos :beams-moving (show/fixtures-named "snowball")
+                                      :effect-name "Snowball Moving" :color :yellow :end-keys [:snowball-sound]))
+    (show/set-cue! (+ x-base 6) (+ y-base 5)
+                   (cues/function-cue :snowball-pos :beams-fixed (show/fixtures-named "snowball")
+                                      :effect-name "Snowball Fixed" :end-keys [:snowball-sound]))))
 
 (defn- aim-cue-var-key
   "Determine the cue variable key value to use for a variable being
@@ -1126,35 +1134,6 @@
                    (cues/cue :movement (fn [var-map]
                                          (move/pan-tilt-effect "P/T Can Can" can-can-p-t (show/all-fixtures))))))
 
-  ;; A couple snowball cues
-  (show/set-cue! 0 10 (cues/function-cue :sb-pos :beams-fixed (show/fixtures-named "snowball")
-                                         :effect-name "Snowball Fixed"))
-  (show/set-cue! 1 10 (cues/function-cue :sb-pos :beams-moving (show/fixtures-named "snowball")
-                                         :effect-name "Snowball Moving"))
-
-  (show/set-cue! 0 8
-                 (cues/cue :movement (fn [var-map]
-                                       (move/direction-effect
-                                        "Pan/Tilt"
-                                        (cues/apply-merging-var-map var-map
-                                                                    params/build-direction-param-from-pan-tilt
-                                                                    :degrees true)
-                                        (show/all-fixtures)))
-                           :variables [{:key "pan" :name "Pan"
-                                        :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}
-                                       {:key "tilt" :name "Tilt"
-                                        :min -180.0 :max 180.0 :start 0.0 :centered true :resolution 0.5}]))
-  (show/set-cue! 1 8 (cues/cue :movement (fn [var-map]
-                                           (move/aim-effect
-                                            "Aim"
-                                            (cues/apply-merging-var-map var-map params/build-aim-param)
-                                            (show/all-fixtures)))
-                               :variables [{:key "x" :name "X"
-                                            :min -20.0 :max 20.0 :start 0.0 :centered true :resolution 0.05}
-                                           {:key "z" :name "Z"
-                                            :min -20.0 :max 20.0 :start 0.0 :centered true :resolution 0.05}
-                                           {:key "y" :name "Y"
-                                            :min 0.0 :max 20.0 :start 0.0 :centered false :resolution 0.05}]))
   #_(show/set-cue! 3 8 (cues/function-cue :blade-speed :movement-speed (show/fixtures-named "blade")
                                         :color :purple :effect-name "Slow Blades"))
 
