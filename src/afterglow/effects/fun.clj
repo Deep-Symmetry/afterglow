@@ -454,7 +454,7 @@
                             transition-phase-function transition-during-down-beat
                             effect-name "Phrase Color Cycle"}}]
   {:pre [(some? *show*)]}
-  (let [max-distance (transform/max-distance measure fixtures)
+  (let [max-distance (transform/max-distance measure (channels/find-rgb-heads fixtures))
         previous-color (atom nil)
         current-index (atom nil)
         current-color (atom nil)
