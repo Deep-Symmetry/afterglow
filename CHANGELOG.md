@@ -27,6 +27,9 @@ This change log follows the conventions of
   - Launchpad Mini
   - Launchpad S (untested, but the Mini, which works, is based on the S)
   - Launchpad Mk2
+- Direction and aim parameters can now be transformed by a dynamic
+  Java3D `Transform3D` parameter to create kaleidoscopic looks with
+  groups of lights.
 - Incoming MIDI System Exclusive messages can now be received and
   delivered to handlers.
 - The identity of grid controllers is verified before binding to them,
@@ -43,9 +46,8 @@ This change log follows the conventions of
   running, because of some assumptions they were making about how the
   effect protocol was implemented, which scenes violated. Chases are
   now more robust.
-- The calculation of coordinates when releasing the mouse over held
-  cues in the web interface was not correct for any page of cues
-  beyond the bottom left one.
+- Releasing the mouse over a held cue in the web interface now works
+  properly for pages of cues beyond the bottom left one.
 - The low-level tempo tap handler was already more useful than I was
   giving it credit for, suitable for both aligning to the current beat
   as well as adjusting the tempo if you hit it three or more times, so
@@ -55,6 +57,8 @@ This change log follows the conventions of
 - The color wheel is only applied when a color has sufficient
   saturation for it to make sense. The threshold can be adjusted by
   setting the show variable `:color-wheel-min-saturation`.
+- Floating-point cue variables now stay rounded to the specified
+  resolution when adjusting them on the Push.
 - Effects with Unicode characters in them were crashing the Ableton
   Push display code, since it only handles single byte ASCII plus a
   handful of special symbols used for drawing interface elements. Now

@@ -1025,7 +1025,7 @@
                           (merge {:key (aim-cue-var-key "z" shared-prefix) :name "Z" :min -20.0 :max 20.0
                                   :centered true :resolution 0.05}
                                  (when isolated? {:start 2.0}))]
-              :color color)))
+              :color color :priority 1)))
 
 (defn- make-main-aim-cues
   "Create a page of cues for aiming lights in particular directions,
