@@ -984,12 +984,115 @@
                    (cues/function-cue :snowball-sound :sound-active (show/fixtures-named "snowball")
                                       :color :orange :effect-name "Snowball Sound"))))
 
+(defn- aim-cue-var-key
+  "Determine the cue variable key value to use for a variable being
+  created for an aim cue page cue. `base-name` is the name that will
+  be used for the variable if it is not part of a group of cues
+  sharing variables; if `shared-prefix` is not blank then the variable
+  key will refer to a show variable with that prefix identifying which
+  group it belongs to."
+  [base-name shared-prefix]
+  (if (clojure.string/blank? shared-prefix)
+    (name base-name)
+    (keyword (str "aim-group-" shared-prefix "-" (name base-name)))))
+
+(defn- build-aim-cue
+  "Build an aim cue."
+  [fixture-key shared-prefix transform? color]
+  (let [isolated? (clojure.string/blank? shared-prefix)]
+    (cues/cue (keyword (str "aim" (name fixture-key)))
+              (fn [var-map]
+                (let [base-aim (if isolated?
+                                 (cues/apply-merging-var-map var-map params/build-aim-param)
+                                 (params/build-aim-param :x (aim-cue-var-key "x" shared-prefix)
+                                                         :y (aim-cue-var-key "y" shared-prefix)
+                                                         :z (aim-cue-var-key "z" shared-prefix)))
+                      aim-param (if transform?
+                                  (params/build-aim-transformer base-aim
+                                                                (keyword (str "aim-group-" shared-prefix "-transform")))
+                                  base-aim)]
+                  (move/aim-effect (str "Aim " (name fixture-key)
+                                        (when-not isolated?
+                                          (str " (Group " (clojure.string/upper-case shared-prefix)
+                                               (when transform? " flip") ")")))
+                                   aim-param (show/fixtures-named fixture-key))))
+              :variables [{:key (aim-cue-var-key "x" shared-prefix) :name "X" :min -20.0 :max 20.0
+                           :centered true :resolution 0.05}
+                          {:key (aim-cue-var-key "y" shared-prefix) :name "Y" :min -20.0 :max 20.0
+                           :centered true :resolution 0.05}
+                          {:key (aim-cue-var-key "z" shared-prefix) :name "Z" :min -20.0 :max 20.0
+                           :centered true :resolution 0.05}]
+              :color color)))
+
+(defn- make-main-aim-cues
+  "Create a page of cues for aiming lights in particular directions,
+  individually and in groups."
+  [page-x page-y]
+  (let [x-base (* page-x 8)
+        y-base (* page-y 8)
+        fixtures [:torrent-1 :torrent-2 :blade-1 :blade-2 :blade-3 :blade-4 :blade-5]
+        transform (Transform3D.)]
+
+    ;; Set up default transformation of a reflection over the Y axis
+    (.setScale transform (Vector3d. -1.0 1.0 1.0))
+    (show/set-variable! :aim-group-a-transform transform)
+    (show/set-variable! :aim-group-b-transform transform)
+
+    (loop [fixtures fixtures
+           index 0]
+      (when (seq fixtures)
+        (let [fixture (first fixtures)]
+          ;; Disconnected individual aim cues
+          (show/set-cue! (+ x-base index) y-base (build-aim-cue fixture nil false :white))
+          ;; Group A untransformed aim cues
+          (show/set-cue! (+ x-base index) (inc y-base) (build-aim-cue fixture "a" false :blue))
+          ;; Group A transformed aim cues
+          (show/set-cue! (+ x-base index) (+ y-base 2) (build-aim-cue fixture "a" true :cyan))
+          ;; Group B untransformed aim cues
+          (show/set-cue! (+ x-base index) (+ y-base 3) (build-aim-cue fixture "b" false :red))
+          ;; Group B transformed aim cues
+          (show/set-cue! (+ x-base index) (+ y-base 4) (build-aim-cue fixture "b" true :orange)))
+        (recur (rest fixtures) (inc index))))
+
+    ;; Transformation modifiers for group A
+    (show/set-cue! (+ x-base 7) (inc y-base)
+                   (cues/cue :aim-group-a-transform
+                             (fn [_]
+                               (let [transform (Transform3D.)]
+                                 (.setScale transform (Vector3d. 1.0 -1.0 1.0))
+                                 (var-fx/variable-effect @var-binder :aim-group-a-transform transform)))
+                             :color :cyan :short-name "Group B flip Y"))
+    (show/set-cue! (+ x-base 7) (+ y-base 2)
+                   (cues/cue :aim-group-a-transform
+                             (fn [_]
+                               (let [transform (Transform3D.)]
+                                 (.setScale transform (Vector3d. -1.0 -1.0 1.0))
+                                 (var-fx/variable-effect @var-binder :aim-group-a-transform transform)))
+                             :color :cyan :short-name "Group B flip XY"))
+
+    ;; Transformation modifiers for group B
+    (show/set-cue! (+ x-base 7) (+ y-base 3)
+                   (cues/cue :aim-group-b-transform
+                             (fn [_]
+                               (let [transform (Transform3D.)]
+                                 (.setScale transform (Vector3d. 1.0 -1.0 1.0))
+                                 (var-fx/variable-effect @var-binder :aim-group-b-transform transform)))
+                             :color :orange :short-name "Group B flip Y"))
+    (show/set-cue! (+ x-base 7) (+ y-base 4)
+                   (cues/cue :aim-group-b-transform
+                             (fn [_]
+                               (let [transform (Transform3D.)]
+                                 (.setScale transform (Vector3d. -1.0 -1.0 1.0))
+                                 (var-fx/variable-effect @var-binder :aim-group-b-transform transform)))
+                             :color :orange :short-name "Group B flip XY"))))
+
 (defn make-cues
   "Create a bunch of example cues for experimentation."
   []
   (make-main-color-dimmer-cues 0 0)  ; Creates a sigle 8x8 page at the origin
   (make-torrent-cues 0 2)  ; Creates 2 8x8 pages: two pages up from the origin, and the next page to the right
   (make-ambient-cues 1 0)  ; Creates a single 8x8 page to the right of the origin
+  (make-main-aim-cues 1 1)  ; Creates an 8x8 page above the ambient cues
 
   ;; Not sure what to do with the rest of this yet! Move or discard...
   ;; For now they are hardcoded to appear on the page above the origin.
