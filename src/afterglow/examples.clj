@@ -1005,10 +1005,10 @@
     (keyword (str "aim-group-" shared-prefix "-" (name base-name)))))
 
 (defn- build-aim-cue
-  "Build an aim cue."
+  "Build an aim cue for the mutiplexable fixture aiming page."
   [fixture-key shared-prefix transform? color]
   (let [isolated? (clojure.string/blank? shared-prefix)]
-    (cues/cue (keyword (str "aim" (name fixture-key)))
+    (cues/cue (keyword (str "aim-" (name fixture-key)))
               (fn [var-map]
                 (let [base-aim (if isolated?
                                  (cues/apply-merging-var-map var-map params/build-aim-param)
@@ -1036,7 +1036,7 @@
               :color color :priority 1)))
 
 (defn- make-main-aim-cues
-  "Create a page of cues for aiming lights in particular directions,
+  "Create a page of cues for aiming lights in particular points,
   individually and in groups."
   [page-x page-y]
   (let [x-base (* page-x 8)
@@ -1105,6 +1105,114 @@
                                  (var-fx/variable-effect @var-binder :aim-group-b-transform transform)))
                              :color :orange :short-name "Group B flip XY"))))
 
+(defn- direction-cue-var-key
+  "Determine the cue variable key value to use for a variable being
+  created for an direction cue page cue. `base-name` is the name that
+  will be used for the variable if it is not part of a group of cues
+  sharing variables; if `shared-prefix` is not blank then the variable
+  key will refer to a show variable with that prefix identifying which
+  group it belongs to."
+  [base-name shared-prefix]
+  (if (clojure.string/blank? shared-prefix)
+    (name base-name)
+    (keyword (str "direction-group-" shared-prefix "-" (name base-name)))))
+
+(defn- build-direction-cue
+  "Build a direction cue for the mutiplexable fixture direction page."
+  [fixture-key shared-prefix transform? color]
+  (let [isolated? (clojure.string/blank? shared-prefix)]
+    (cues/cue (keyword (str "dir-" (name fixture-key)))
+              (fn [var-map]
+                (let [base-direction (if isolated?
+                                       (cues/apply-merging-var-map var-map params/build-direction-param-from-pan-tilt)
+                                       (params/build-direction-param-from-pan-tilt
+                                        :pan (direction-cue-var-key "pan" shared-prefix)
+                                        :tilt (direction-cue-var-key "tilt" shared-prefix)))
+                      direction-param (if transform?
+                                        (params/build-direction-transformer
+                                         base-direction (keyword (str "direction-group-" shared-prefix "-transform")))
+                                        base-direction)]
+                  (move/direction-effect (str "P/T " (name fixture-key)
+                                              (when-not isolated?
+                                                (str " (Group " (clojure.string/upper-case shared-prefix)
+                                                     (when transform? " flip") ")")))
+                                         direction-param (show/fixtures-named fixture-key))))
+              :variables [(merge {:key (direction-cue-var-key "pan" shared-prefix) :name "Pan" :min -180.0 :max 180.0
+                                  :centered true :resolution 0.5}
+                                 (when isolated? {:start 0.0}))
+                          (merge {:key (direction-cue-var-key "tilt" shared-prefix) :name "Tilt" :min -180.0 :max 180.0
+                                  :centered true :resolution 0.5}
+                                 (when isolated? {:start 0.0}))]
+              :color color :priority 1)))
+
+(defn- make-main-direction-cues
+  "Create a page of cues for aiming lights in particular directions,
+  individually and in groups."
+  [page-x page-y]
+  (let [x-base (* page-x 8)
+        y-base (* page-y 8)
+        fixtures [:torrent-1 :torrent-2 :blade-1 :blade-2 :blade-3 :blade-4 :blade-5]
+        transform (Transform3D.)]
+
+    ;; Set up default shared direction coordinates
+    (show/set-variable! :direction-group-a-pan 0.0)
+    (show/set-variable! :direction-group-a-tilt 0.0)
+    (show/set-variable! :direction-group-b-pan 0.0)
+    (show/set-variable! :direction-group-b-tilt 0.0)
+
+    ;; Set up default transformation of a reflection over the Y axis
+    (.setScale transform (Vector3d. -1.0 1.0 1.0))
+    (show/set-variable! :direction-group-a-transform transform)
+    (show/set-variable! :direction-group-b-transform transform)
+
+    (loop [fixtures fixtures
+           index 0]
+      (when (seq fixtures)
+        (let [fixture (first fixtures)]
+          ;; Disconnected individual direction cues
+          (show/set-cue! (+ x-base index) y-base (build-direction-cue fixture nil false :white))
+          ;; Group A untransformed direction cues
+          (show/set-cue! (+ x-base index) (inc y-base) (build-direction-cue fixture "a" false :blue))
+          ;; Group A transformed direction cues
+          (show/set-cue! (+ x-base index) (+ y-base 2) (build-direction-cue fixture "a" true :cyan))
+          ;; Group B untransformed direction cues
+          (show/set-cue! (+ x-base index) (+ y-base 3) (build-direction-cue fixture "b" false :red))
+          ;; Group B transformed direction cues
+          (show/set-cue! (+ x-base index) (+ y-base 4) (build-direction-cue fixture "b" true :orange)))
+        (recur (rest fixtures) (inc index))))
+
+    ;; Transformation modifiers for group A
+    (show/set-cue! (+ x-base 7) (inc y-base)
+                   (cues/cue :direction-group-a-transform
+                             (fn [_]
+                               (let [transform (Transform3D.)]
+                                 (.setScale transform (Vector3d. 1.0 -1.0 1.0))
+                                 (var-fx/variable-effect @var-binder :direction-group-a-transform transform)))
+                             :color :cyan :short-name "Group B flip Y"))
+    (show/set-cue! (+ x-base 7) (+ y-base 2)
+                   (cues/cue :direction-group-a-transform
+                             (fn [_]
+                               (let [transform (Transform3D.)]
+                                 (.setScale transform (Vector3d. -1.0 -1.0 1.0))
+                                 (var-fx/variable-effect @var-binder :direction-group-a-transform transform)))
+                             :color :cyan :short-name "Group B flip XY"))
+
+    ;; Transformation modifiers for group B
+    (show/set-cue! (+ x-base 7) (+ y-base 3)
+                   (cues/cue :direction-group-b-transform
+                             (fn [_]
+                               (let [transform (Transform3D.)]
+                                 (.setScale transform (Vector3d. 1.0 -1.0 1.0))
+                                 (var-fx/variable-effect @var-binder :direction-group-b-transform transform)))
+                             :color :orange :short-name "Group B flip Y"))
+    (show/set-cue! (+ x-base 7) (+ y-base 4)
+                   (cues/cue :direction-group-b-transform
+                             (fn [_]
+                               (let [transform (Transform3D.)]
+                                 (.setScale transform (Vector3d. -1.0 -1.0 1.0))
+                                 (var-fx/variable-effect @var-binder :direction-group-b-transform transform)))
+                             :color :orange :short-name "Group B flip XY"))))
+
 (defn make-cues
   "Create a bunch of example cues for experimentation."
   []
@@ -1112,6 +1220,7 @@
   (make-torrent-cues 0 2)  ; Creates 2 8x8 pages: two pages up from the origin, and the next page to the right
   (make-ambient-cues 1 0)  ; Creates a single 8x8 page to the right of the origin
   (make-main-aim-cues 1 1)  ; Creates an 8x8 page above the ambient cues
+  (make-main-direction-cues 2 1)  ; Creates an 8x8 page to the right of that
 
   ;; Not sure what to do with the rest of this yet! Move or discard...
   ;; For now they are hardcoded to appear on the page above the origin.
