@@ -1224,7 +1224,7 @@
                                         :name "X Color"}
                                        {:key "end-color" :type :color :start (colors/create-color :yellow)
                                         :name "End Color"}]
-                           :color :cyan))
+                           :color :cyan :priority 5))
 
 
   #_(show/set-cue! 0 13
