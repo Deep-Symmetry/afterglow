@@ -1473,7 +1473,8 @@
                                          raw-resolution))
         delta (* (sign-velocity (:velocity message)) resolution)
         adjusted (+ value delta)
-        normalized (if (= :integer (:type v)) (Math/round (float adjusted)) (float adjusted))]
+        normalized (if (= :integer (:type v)) (Math/round (float adjusted))
+                       (float (* (Math/round (/ adjusted resolution)) resolution)))]
     (cues/set-cue-variable! cue v (max low (min high normalized)) :show (:show controller) :when-id effect-id)))
 
 (defn- draw-boolean-gauge
