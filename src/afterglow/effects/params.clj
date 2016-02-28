@@ -1016,7 +1016,7 @@
     (result-type [this]
       param-type)
     (resolve-non-frame-dynamic-elements [this show snapshot head]
-      (build-param-formula param-type calc-fn
-                           (map #(resolve-unless-frame-dynamic % show snapshot head) input-params)))))
+      (apply build-param-formula param-type calc-fn
+             (map #(resolve-unless-frame-dynamic % show snapshot head) input-params)))))
 
 ;; TODO: some kind of random parameter?
