@@ -602,6 +602,49 @@
           (resolve-non-frame-dynamic-elements [this show snapshot head]
             (resolve-fn show snapshot head)))))))
 
+(defn build-direction-transformer
+  "Returns a dynamic direction parameter for use
+  with [[direction-effect]] which evaluates an incoming direction
+  parameter and transforms it according to a `Transform3D`
+  parameter.
+
+  All incoming parameter values may be literal or dynamic, and may be
+  keywords, which will be dynamically bound to variables
+  in [[*show*]].
+
+  If you do not specify an explicit value for `:frame-dynamic`, this
+  direction parameter will be frame dynamic if it has any incoming
+  parameters which themselves are."
+  [direction transform & {:keys [frame-dynamic] :or {frame-dynamic :default}}]
+  {:pre [(some? *show*)]}
+  (let [direction (bind-keyword-param direction Vector3d (Vector3d. 0 0 1))
+        transform (bind-keyword-param transform Transform3D (Transform3D.))]
+    (let [dyn (if (= :default frame-dynamic)
+                ;; Default means incoming args control how dynamic we should be
+                (boolean (some frame-dynamic-param? [direction transform]))
+                ;; We were given an explicit value for frame-dynamic
+                (boolean frame-dynamic))
+          eval-fn (fn [show snapshot head]
+                    (let [result (Vector3d. (resolve-param direction show snapshot head))]
+                      (.transform (resolve-param transform show snapshot head) result)
+                      result))
+          resolve-fn (fn [show snapshot head]
+                       (with-show show
+                         (build-direction-transformer :aim (resolve-unless-frame-dynamic direction show snapshot head)
+                                                      :transform (resolve-unless-frame-dynamic transform
+                                                                                               show snapshot head)
+                                                      :frame-dynamic dyn)))]
+      (reify
+        IParam
+        (evaluate [this show snapshot head]
+          (eval-fn show snapshot head))
+        (frame-dynamic? [this]
+          dyn)
+        (result-type [this]
+          Vector3d)
+        (resolve-non-frame-dynamic-elements [this show snapshot head]
+          (resolve-fn show snapshot head))))))
+
 (defn- make-radians
   "If an angle was not already radians, convert it from degrees to
   radians."
@@ -792,6 +835,47 @@
             Point3d)
           (resolve-non-frame-dynamic-elements [this show snapshot head]
             (resolve-fn show snapshot head)))))))
+
+(defn build-aim-transformer
+  "Returns a dynamic aiming parameter for use with [[aim-effect]]
+  which evaluates an incoming aiming parameter and transforms it
+  according to a `Transform3D` parameter.
+
+  All incoming parameter values may be literal or dynamic, and may be
+  keywords, which will be dynamically bound to variables
+  in [[*show*]].
+
+  If you do not specify an explicit value for `:frame-dynamic`, this
+  aim parameter will be frame dynamic if it has any incoming
+  parameters which themselves are."
+  [aim transform & {:keys [frame-dynamic] :or {frame-dynamic :default}}]
+  {:pre [(some? *show*)]}
+  (let [aim (bind-keyword-param aim Point3d (Point3d. 0 0 2))
+        transform (bind-keyword-param transform Transform3D (Transform3D.))]
+    (let [dyn (if (= :default frame-dynamic)
+                ;; Default means incoming args control how dynamic we should be
+                (boolean (some frame-dynamic-param? [aim transform]))
+                ;; We were given an explicit value for frame-dynamic
+                (boolean frame-dynamic))
+          eval-fn (fn [show snapshot head]
+                    (let [result (Point3d. (resolve-param aim show snapshot head))]
+                      (.transform (resolve-param transform show snapshot head) result)
+                      result))
+          resolve-fn (fn [show snapshot head]
+                       (with-show show
+                         (build-aim-transformer (resolve-unless-frame-dynamic aim show snapshot head)
+                                                (resolve-unless-frame-dynamic transform show snapshot head)
+                                                :frame-dynamic dyn)))]
+      (reify
+        IParam
+        (evaluate [this show snapshot head]
+          (eval-fn show snapshot head))
+        (frame-dynamic? [this]
+          dyn)
+        (result-type [this]
+          Point3d)
+        (resolve-non-frame-dynamic-elements [this show snapshot head]
+          (resolve-fn show snapshot head))))))
 
 (defn- scale-spatial-result
   "Map an individual spatial parameter function result into the range

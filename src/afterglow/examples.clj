@@ -25,7 +25,9 @@
             [afterglow.transform :as tf]
             [com.evocomputing.colors :as colors :refer [color-name create-color hue adjust-hue]]
             [overtone.osc :as osc]
-            [taoensso.timbre :as timbre]))
+            [taoensso.timbre :as timbre])
+    (:import [javax.media.j3d Transform3D]
+             [javax.vecmath Point3d Vector3d]))
 
 (defonce ^{:doc "Allows effects to set variables in the running show."}
   var-binder
@@ -652,7 +654,7 @@
     ;; Bottom row assigns colors, first to all fixtures, and then (at a higher priority, so they can
     ;; run a the same time as the first, and locally override it) individual fixture groups.
     (make-color-cue "white" (+ x-base 0) (+ y-base 0) :include-color-wheels? true
-                    :fixtures (show/all-fixtures) :effect-key :all-color :effect-name "Color All")
+                    :fixtures (show/all-fixtures) :effect-key :all-color :effect-name "Color all")
     (doall (map-indexed (fn [i group]
                           (make-color-cue "white" (+ x-base (inc i)) (+ y-base 0) :include-color-wheels? true
                                           :fixtures (show/fixtures-named group)
@@ -853,6 +855,52 @@
     (make-torrent-gobo-cues :t1 (show/fixtures-named "torrent-1") (+ y-base 7) (+ x-base 8))
     (make-torrent-gobo-cues :t2 (show/fixtures-named "torrent-2") (+ y-base 7) (+ x-base 12))))
 
+(defn build-cross-scene
+  "Create a scene which sets the color of one light, and aims it just
+  below and in front of another."
+  [move-key reference-key color]
+  (fx/scene "Cross scene"
+            (move/aim-effect "Cross" (javax.vecmath.Point3d. (:x (first (show/fixtures-named reference-key))) 0.0 0.2)
+                             (show/fixtures-named move-key))
+            (color-fx/color-effect "Cross color" color (show/fixtures-named move-key) :include-color-wheels? true)))
+
+(defn crossover-chase
+  "Create a sequential chase which gradually takes over all the moving
+  heads from whatever they were doing, changes their colors, and makes
+  them cross in an interesting pattern. By default, stages of the
+  chase advance on every beat, but you can adjust that by passing in a
+  different value for with the optional keyword argument `:beats`. To
+  add a fade between stages, pass a non-zero value (up to 1, which
+  means continually fade) with `:fade-fraction`.
+
+  The color used during the crossover stages defaults to red, but you
+  can pass a different color object to use with `:cross-color`."
+  [& {:keys [beats fade-fraction cross-color end-color]
+      :or {beats 1 fade-fraction 0 cross-color (colors/create-color :red) end-color (colors/create-color :yellow)}}]
+  (let [beats (params/bind-keyword-param beats Number 1)
+        fade-fraction (params/bind-keyword-param fade-fraction Number 0)
+        cross-color (params/bind-keyword-param cross-color :com.evocomputing.colors/color (colors/create-color :red))
+        end-color (params/bind-keyword-param end-color :com.evocomputing.colors/color (colors/create-color :yellow))
+        cross-elements [(build-cross-scene :blade-1 :blade-2 cross-color)
+                        (build-cross-scene :blade-2 :blade-1 cross-color)
+                        (build-cross-scene :blade-3 :blade-4 cross-color)
+                        (build-cross-scene :blade-4 :blade-3 cross-color)
+                        (build-cross-scene :torrent-1 :torrent-2 cross-color)
+                        (build-cross-scene :torrent-2 :torrent-1 cross-color)]]
+    (fx/chase "Crossover"
+              (concat (for [i (range 1 (inc (count cross-elements)))]
+                        (apply fx/scene (str "Crossover Scene " i) (take i cross-elements)))
+                      [(fx/scene "Crossover End"
+                                 (move/aim-effect "Cross End Point" (Point3d. 0.0 0.0 10.0)
+                                                  (concat (show/fixtures-named "blade")
+                                                          (show/fixtures-named "torrent")))
+                                 (color-fx/color-effect "Cross End color" end-color
+                                                        (concat (show/fixtures-named "blade")
+                                                                (show/fixtures-named "torrent"))
+                                                        :include-color-wheels? true))
+                       (fx/blank)])
+              (params/build-step-param :interval-ratio beats :fade-fraction fade-fraction) :beyond :loop)))
+
 (defn make-ambient-cues
   "Create a page of cues for controlling lasers, and ambient effects
   like the H2O LED and black light.
@@ -964,30 +1012,6 @@
                    (cues/cue :movement (fn [var-map]
                                          (move/pan-tilt-effect "P/T Can Can" can-can-p-t (show/all-fixtures))))))
 
-  (show/set-cue! 2 9
-                 (cues/cue :movement (fn [var-map]
-                                       (cues/apply-merging-var-map var-map fun/twirl
-                                                                   (concat (show/fixtures-named "blade")
-                                                                           (show/fixtures-named "torrent"))))
-                           :variables [{:key "beats" :min 1 :max 32 :type :integer :start 8 :name "Beats"}
-                                       {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
-                                       {:key "radius" :min 0 :max 10 :start 0.25 :name "Radius"}
-                                       {:key "z" :min -10 :max 10 :start -1.0}
-                                       {:key "y" :min -10 :max 10 :start rig-height}
-                                       {:key "x" :min -10 :max 10 :start 0.0}]
-                           :color :green))
-    (show/set-cue! 2 10
-                 (cues/cue :movement (fn [var-map]
-                                       (cues/apply-merging-var-map var-map fun/aim-fan
-                                                                   (concat (show/fixtures-named "blade")
-                                                                           (show/fixtures-named "torrent"))))
-                           :variables [{:key "x-scale" :min -5 :max 5 :start 1 :name "X Scale"}
-                                       {:key "y-scale" :min -10 :max 10 :start 5 :name "Y Scale"}
-                                       {:key "z" :min 0 :max 20 :start 4}
-                                       {:key "y" :min -10 :max 10 :start rig-height}
-                                       {:key "x" :min -10 :max 10 :start 0.0}]
-                           :color :blue))
-
   ;; A couple snowball cues
   (show/set-cue! 0 10 (cues/function-cue :sb-pos :beams-fixed (show/fixtures-named "snowball")
                                          :effect-name "Snowball Fixed"))
@@ -1017,11 +1041,11 @@
                                             :min -20.0 :max 20.0 :start 0.0 :centered true :resolution 0.05}
                                            {:key "y" :name "Y"
                                             :min 0.0 :max 20.0 :start 0.0 :centered false :resolution 0.05}]))
-  (show/set-cue! 3 8 (cues/function-cue :blade-speed :movement-speed (show/fixtures-named "blade")
+  #_(show/set-cue! 3 8 (cues/function-cue :blade-speed :movement-speed (show/fixtures-named "blade")
                                         :color :purple :effect-name "Slow Blades"))
 
   ;; Some fades
-  (show/set-cue! 0 12 (cues/cue :color-fade (fn [var-map]
+  #_(show/set-cue! 0 12 (cues/cue :color-fade (fn [var-map]
                                               (fx/fade "Color Fade"
                                                        (global-color-effect :red :include-color-wheels? true)
                                                        (global-color-effect :green :include-color-wheels? true)
@@ -1029,7 +1053,7 @@
                                 :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
                                 :color :yellow))
 
-  (show/set-cue! 1 12 (cues/cue :fade-test (fn [var-map]
+  #_(show/set-cue! 1 12 (cues/cue :fade-test (fn [var-map]
                                              (fx/fade "Fade Test"
                                                       (fx/blank)
                                                       (global-color-effect :blue :include-color-wheels? true)
@@ -1037,7 +1061,7 @@
                                 :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
                                 :color :cyan))
 
-  (show/set-cue! 2 12
+  #_(show/set-cue! 2 12
                  (cues/cue :fade-test-2 (fn [var-map]
                                           (fx/fade "Fade Test 2"
                                                    (move/direction-effect
@@ -1050,7 +1074,7 @@
                            :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
                            :color :red))
 
-  (show/set-cue! 3 12 (cues/cue :fade-test-3 (fn [var-map]
+  #_(show/set-cue! 3 12 (cues/cue :fade-test-3 (fn [var-map]
                                                (fx/fade "Fade Test P/T"
                                                         (move/pan-tilt-effect
                                                          "p/t" (params/build-pan-tilt-param :pan 0 :tilt 0)
@@ -1063,7 +1087,44 @@
                                 :color :orange))
 
   ;; Some chases
-  (show/set-cue! 0 13
+
+  (show/set-cue! 2 9
+                 (cues/cue :movement (fn [var-map]
+                                       (cues/apply-merging-var-map var-map fun/twirl
+                                                                   (concat (show/fixtures-named "blade")
+                                                                           (show/fixtures-named "torrent"))))
+                           :variables [{:key "beats" :min 1 :max 32 :type :integer :start 8 :name "Beats"}
+                                       {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
+                                       {:key "radius" :min 0 :max 10 :start 0.25 :name "Radius"}
+                                       {:key "z" :min -10 :max 10 :start -1.0}
+                                       {:key "y" :min -10 :max 10 :start rig-height}
+                                       {:key "x" :min -10 :max 10 :start 0.0}]
+                           :color :green))
+  (show/set-cue! 2 10
+                 (cues/cue :movement (fn [var-map]
+                                       (cues/apply-merging-var-map var-map fun/aim-fan
+                                                                   (concat (show/fixtures-named "blade")
+                                                                           (show/fixtures-named "torrent"))))
+                           :variables [{:key "x-scale" :min -5 :max 5 :start 1 :name "X Scale"}
+                                       {:key "y-scale" :min -10 :max 10 :start 5 :name "Y Scale"}
+                                       {:key "z" :min 0 :max 20 :start 4}
+                                       {:key "y" :min -10 :max 10 :start rig-height}
+                                       {:key "x" :min -10 :max 10 :start 0.0}]
+                           :color :blue))
+
+  ;; A chase which overlays on other movement cues, gradually taking over the lights
+  (show/set-cue! 2 11
+                 (cues/cue :crossover (fn [var-map] (cues/apply-merging-var-map var-map crossover-chase))
+                           :variables [{:key "beats" :min 1 :max 8 :start 2 :type :integer :name "Beats"}
+                                       {:key "fade-fraction" :min 0 :max 1 :start 0 :name "Fade"}
+                                       {:key "cross-color" :type :color :start (colors/create-color :red)
+                                        :name "X Color"}
+                                       {:key "end-color" :type :color :start (colors/create-color :yellow)
+                                        :name "End Color"}]
+                           :color :cyan))
+
+
+  #_(show/set-cue! 0 13
                  (cues/cue :chase (fn [var-map]
                                     (fx/chase "Chase Test"
                                               [(global-color-effect :red :include-color-wheels? true)
@@ -1075,9 +1136,9 @@
                            :color :purple))
 
   ;; Set up an initial value for our step parameter
-  (reset! step-param (params/build-step-param :fade-fraction 0.3 :fade-curve :sine))
+  #_(reset! step-param (params/build-step-param :fade-fraction 0.3 :fade-curve :sine))
 
-  (show/set-cue! 1 13
+  #_(show/set-cue! 1 13
                  (cues/cue :chase (fn [var-map]
                                     (fx/chase "Chase Test 2"
                                               [(global-color-effect :red :fixtures (show/fixtures-named "hex"))
