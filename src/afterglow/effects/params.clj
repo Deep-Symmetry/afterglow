@@ -630,9 +630,8 @@
                       result))
           resolve-fn (fn [show snapshot head]
                        (with-show show
-                         (build-direction-transformer :aim (resolve-unless-frame-dynamic direction show snapshot head)
-                                                      :transform (resolve-unless-frame-dynamic transform
-                                                                                               show snapshot head)
+                         (build-direction-transformer (resolve-unless-frame-dynamic direction show snapshot head)
+                                                      (resolve-unless-frame-dynamic transform show snapshot head)
                                                       :frame-dynamic dyn)))]
       (reify
         IParam
