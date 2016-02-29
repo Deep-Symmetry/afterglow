@@ -1149,6 +1149,44 @@
                                  (when isolated? {:start 0.0}))]
               :color color :priority 1)))
 
+(defn- build-pan-tilt-osc-cue
+  "Build a raw pan/tilt oscillator cue."
+  [fixture-key]
+  (cues/cue (keyword (str "p-t-" (name fixture-key)))
+              (fn [var-map]
+                (let [pan-osc (oscillators/sine :interval :bar :interval-ratio (:pan-bars var-map)
+                                                :phase (:pan-phase var-map))
+                      pan-param (oscillators/build-oscillated-param pan-osc :min (:pan-min var-map)
+                                                                    :max (:pan-max var-map))
+                      tilt-osc (oscillators/sine :interval :bar :interval-ratio (:tilt-bars var-map)
+                                                :phase (:tilt-phase var-map))
+                      tilt-param (oscillators/build-oscillated-param tilt-osc :min (:tilt-min var-map)
+                                                                    :max (:tilt-max var-map))]
+                  (fx/scene (str "P/T " (name fixture-key))
+                            (chan-fx/channel-effect
+                             "pan" pan-param
+                             (afterglow.channels/extract-channels (show/fixtures-named fixture-key)
+                                                                  #(= (:type %) :pan)))
+                            (chan-fx/channel-effect
+                             "tilt" tilt-param
+                             (afterglow.channels/extract-channels (show/fixtures-named fixture-key)
+                                                                  #(= (:type %) :tilt))))))
+              :variables [{:key "pan-min" :name "Pan min" :min 0 :max 255
+                           :centered true :resolution 0.5 :start 0}
+                          {:key "pan-max" :name "Pan max" :min 0 :max 255
+                           :centered true :resolution 0.5 :start 255}
+                          {:key "pan-bars" :name "Pan bars" :min 1 :max 16
+                           :type :integer :start 1}
+                          {:key "pan-phase" :name "Pan phase" :min 0.0 :max 1.0 :start 0.0}
+                          {:key "tilt-min" :name "Tilt min" :min 0 :max 255
+                           :centered true :resolution 0.5 :start 0}
+                          {:key "tilt-max" :name "Tilt max" :min 0 :max 255
+                           :centered true :resolution 0.5 :start 255}
+                          {:key "tilt-bars" :name "Tilt bars" :min 1 :max 16
+                           :type :integer :start 1}
+                          {:key "tilt-phase" :name "Tilt phase" :min 0.0 :max 1.0 :start 0.0}]
+              :color :green :priority 1))
+
 (defn- make-main-direction-cues
   "Create a page of cues for aiming lights in particular directions,
   individually and in groups."
@@ -1175,14 +1213,19 @@
         (let [fixture (first fixtures)]
           ;; Disconnected individual direction cues
           (show/set-cue! (+ x-base index) y-base (build-direction-cue fixture nil false :white))
+
           ;; Group A untransformed direction cues
           (show/set-cue! (+ x-base index) (inc y-base) (build-direction-cue fixture "a" false :blue))
           ;; Group A transformed direction cues
           (show/set-cue! (+ x-base index) (+ y-base 2) (build-direction-cue fixture "a" true :cyan))
+
           ;; Group B untransformed direction cues
           (show/set-cue! (+ x-base index) (+ y-base 3) (build-direction-cue fixture "b" false :red))
           ;; Group B transformed direction cues
-          (show/set-cue! (+ x-base index) (+ y-base 4) (build-direction-cue fixture "b" true :orange)))
+          (show/set-cue! (+ x-base index) (+ y-base 4) (build-direction-cue fixture "b" true :orange))
+
+          ;; Raw pan/tilt oscillated cues
+          (show/set-cue! (+ x-base index) (+ y-base 7) (build-pan-tilt-osc-cue fixture)))
         (recur (rest fixtures) (inc index))))
 
     ;; Transformation modifiers for group A
