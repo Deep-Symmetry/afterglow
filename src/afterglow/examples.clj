@@ -63,6 +63,10 @@
   of blade 5, if it differs from 4 inches can be passed with
   `:blade-5-height`.
 
+  Fixture numbers are assigned stage left to stage right (looking at
+  the lights from behind the rig), except for blade 5, which is an
+  extra which is sometimes placed in the middle.
+
   It would be possible to extend this function to support positioning
   and rotating the truss within show space, now that `patch-fixture`
   allows you to pass in a transformation matrix. But until that
@@ -92,22 +96,22 @@
                        :x (tf/inches -51.5) :y (+ y (tf/inches 15)))
 
   ;; Blade moving-head RGBA pinspots
-  (show/patch-fixture! :blade-1 (blizzard/blade-rgbw :15-channel :hung (tf/inches 12)) universe 225
-                       :x (tf/inches -21) :y (+ y (tf/inches 9))
+  (show/patch-fixture! :blade-1 (blizzard/blade-rgbw :15-channel :version-2 true :hung (tf/inches 12)) universe 270
+                       :x (tf/inches 37) :y y
                        :relative-rotations [[:y-rotation (tf/degrees 90)]
-                                            [:z-rotation blade-1-angle]])
+                                            [:z-rotation blade-4-angle]])
   (show/patch-fixture! :blade-2 (blizzard/blade-rgbw :15-channel :hung (tf/inches 12)) universe 240
                        :x (tf/inches 20.5) :y (+ y (tf/inches 9))
                        :relative-rotations [[:y-rotation (tf/degrees 90)]
                                             [:z-rotation blade-2-angle]])
-  (show/patch-fixture! :blade-3 (blizzard/blade-rgbw :15-channel :hung (tf/inches 12)) universe 255
+  (show/patch-fixture! :blade-3 (blizzard/blade-rgbw :15-channel :hung (tf/inches 12)) universe 225
+                       :x (tf/inches -21) :y (+ y (tf/inches 9))
+                       :relative-rotations [[:y-rotation (tf/degrees 90)]
+                                            [:z-rotation blade-1-angle]])
+  (show/patch-fixture! :blade-4 (blizzard/blade-rgbw :15-channel :hung (tf/inches 12)) universe 255
                        :x (tf/inches -37) :y y
                        :relative-rotations [[:y-rotation (tf/degrees 90)]
                                             [:z-rotation blade-3-angle]])
-  (show/patch-fixture! :blade-4 (blizzard/blade-rgbw :15-channel :version-2 true :hung (tf/inches 12)) universe 270
-                       :x (tf/inches 37) :y y
-                       :relative-rotations [[:y-rotation (tf/degrees 90)]
-                                            [:z-rotation blade-4-angle]])
   (show/patch-fixture! :blade-5 (blizzard/blade-rgbw :15-channel :version-2 true :hung (tf/inches 12)) universe 285
                        :y (+ y blade-5-height)
                        :relative-rotations [[:y-rotation (tf/degrees 90)]
@@ -253,12 +257,12 @@
   (show/add-effect!
    :pan-torrent (afterglow.effects.channel/channel-effect
                  "Pan Torrent"
-                 (params/build-variable-param :pan)
+                 :pan
                  (afterglow.channels/extract-channels (show/fixtures-named :torrent) #(= (:type %) :pan))))
   (show/add-effect!
    :tilt-torrent (afterglow.effects.channel/channel-effect
                   "Tilt Torrent"
-                  (params/build-variable-param :tilt)
+                  :tilt
                   (afterglow.channels/extract-channels (show/fixtures-named :torrent) #(= (:type %) :tilt)))))
 
 (defn add-xyz-controls
@@ -881,12 +885,12 @@
         fade-fraction (params/bind-keyword-param fade-fraction Number 0)
         cross-color (params/bind-keyword-param cross-color :com.evocomputing.colors/color (colors/create-color :red))
         end-color (params/bind-keyword-param end-color :com.evocomputing.colors/color (colors/create-color :yellow))
-        cross-elements [(build-cross-scene :blade-1 :blade-2 cross-color)
-                        (build-cross-scene :blade-2 :blade-1 cross-color)
-                        (build-cross-scene :blade-3 :blade-4 cross-color)
-                        (build-cross-scene :blade-4 :blade-3 cross-color)
-                        (build-cross-scene :torrent-1 :torrent-2 cross-color)
-                        (build-cross-scene :torrent-2 :torrent-1 cross-color)]]
+        cross-elements [(build-cross-scene :blade-3 :blade-2 cross-color)
+                        (build-cross-scene :blade-2 :blade-3 cross-color)
+                        (build-cross-scene :blade-4 :blade-1 cross-color)
+                        (build-cross-scene :blade-1 :blade-4 cross-color)
+                        (build-cross-scene :torrent-2 :torrent-1 cross-color)
+                        (build-cross-scene :torrent-1 :torrent-2 cross-color)]]
     (fx/chase "Crossover"
               (concat (for [i (range 1 (inc (count cross-elements)))]
                         (apply fx/scene (str "Crossover Scene " i) (take i cross-elements)))
