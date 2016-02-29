@@ -734,7 +734,7 @@
                                                                    (transform/build-distance-measure 0 0 0))
                                         *show* (rhythm/metro-snapshot (:metronome *show*)))
           heads (channels/find-rgb-heads fixtures)
-          furthest (transform/max-distance measure heads)
+          furthest (* 2 (transform/max-distance measure heads))
           f (fn [show snapshot target previous-assignment]
               (let [fraction (params/resolve-param fraction show snapshot target)
                     level (if (zero? furthest)
