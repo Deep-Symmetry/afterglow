@@ -66,13 +66,14 @@
 
 (defn channel-effect
   "Returns an effect which assigns a dynamic value to all the supplied
-  channels. If htp? is true, applies highest-takes-precedence (i.e.
+  channels. If `level is a keyword, it will be looked up as a show
+  variable. If `htp?` is true, applies highest-takes-precedence (i.e.
   compares the value to the previous assignment for the channel, and
   lets the highest value remain)."
-  [name level channels & {:keys [htp?]}]
-  {:pre [(some? name) (some? *show*) (sequential? channels)]}
-  (params/validate-param-type level Number)
-  (let [f (if htp?
+  [effect-name level channels & {:keys [htp?]}]
+  {:pre [(some? effect-name) (some? *show*) (sequential? channels)]}
+  (let [level (params/bind-keyword-param level Number 0)
+        f (if htp?
             ;; We need to resolve any dynamic parameters at this point so we can apply the
             ;; highest-take-precedence rule.
             (fn [show snapshot target previous-assignment]
@@ -82,16 +83,16 @@
             (fn [show snapshot target previous-assignment]
               level))
         assigners (build-raw-channel-assigners channels f)]
-    (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
+    (Effect. effect-name always-active (fn [show snapshot] assigners) end-immediately)))
 
 (defn raw-channel-effect
   "Returns an effect which simply calls a function to obtain the
   current level for all the supplied channels, runs forever, and ends
   immediately when requested."
-  [name f channels]
-  {:pre [(some? name) (fn? f) (sequential? channels)]}
+  [effect-name f channels]
+  {:pre [(some? effect-name) (fn? f) (sequential? channels)]}
   (let [assigners (build-raw-channel-assigners channels f)]
-    (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
+    (Effect. effect-name always-active (fn [show snapshot] assigners) end-immediately)))
 
 ;; Resolves the assignment of a level to a single DMX channel.
 (defmethod fx/resolve-assignment :channel [assignment show snapshot buffers]
