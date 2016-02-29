@@ -737,10 +737,26 @@
           furthest (transform/max-distance measure heads)
           f (fn [show snapshot target previous-assignment]
               (let [fraction (params/resolve-param fraction show snapshot target)
-                    level (/ fraction (/ (measure target) furthest))]
+                    level (if (zero? furthest)
+                            1
+                            (let [distance (measure target)]
+                              (if (zero? distance)
+                                1
+                                (/ fraction (/ distance furthest)))))]
                 (color-fx/fade-colors previous-assignment color level show snapshot target)))
           assigners (fx/build-head-assigners :color heads f)]
-      (Effect. "Bloom"
-               fx/always-active
-               (fn [show snapshot] assigners)
-               fx/end-immediately)))
+      (apply fx/scene "Bloom"
+             (concat [(Effect. "Bloom color"
+                               fx/always-active
+                               (fn [show snapshot] assigners)
+                               fx/end-immediately)]
+                     (for [fixture fixtures]
+                       (let [distance (measure fixture)
+                             level (if (or (zero? furthest) (zero? distance))
+                                     255
+                                     (params/build-param-formula
+                                      Number
+                                      (fn [fraction]
+                                        (* 255 (/ fraction (/ distance furthest))))
+                                      fraction))]
+                         (dimmer-fx/dimmer-effect level [fixture])))))))
