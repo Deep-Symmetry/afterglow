@@ -14,18 +14,18 @@
         </div>
         <div class="navbar-collapse collapse ">
           <ul class="nav navbar-nav">
-            <li{% ifequal page "home.html" %} class="active"{%endifequal%}>
+            <li{% ifequal page "home.html" %} class="active"{% endifequal %}>
               <a href="{{servlet-context}}/">Home</a>
-            </li>
-            <li {% ifequal page "console.html" %} class="active"{%endifequal%}>
+            </li>{% ifunequal page "show.html" %}
+            <li {% ifequal page "console.html" %} class="active"{% endifequal %}>
               <a href="{{servlet-context}}/console">Console</a>
             </li>
             {% if show %}<li {% ifequal page "visualizer.html" %} class="active"{% endifequal %}>
               <a href="{{servlet-context}}/visualizer/{{show.id}}">Visualizer</a>
             </li>{% endif %}
-            <li {% ifequal page "about.html" %} class="active"{%endifequal%}>
+            <li {% ifequal page "about.html" %} class="active"{% endifequal %}>
               <a href="{{servlet-context}}/about">About</a>
-            </li>
+            </li>{% endifunequal %}
             {% block page-nav-items %}
             {% endblock %}
           </ul>
