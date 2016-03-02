@@ -665,6 +665,7 @@ function makeMacroChosen (eventObject) {
         $(".macro-checkbox").show();
         $("#makeMacro").text("Cancel").removeClass('btn-default').addClass('btn-danger');
         $("#macroName").val("Macro " + macroCounter).focus().select();
+        ++macroCounter;
         makingMacro = true
     }
 }
