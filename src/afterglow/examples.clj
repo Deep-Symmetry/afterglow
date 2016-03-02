@@ -284,18 +284,32 @@
   grids, and the like."
   []
   (when (nil? @core/osc-server) (core/start-osc-server 16010))
-  (show/set-variable! :y (tf/inches 118))
-  (osc/osc-handle @core/osc-server "/aim" (fn [msg]
-                                            (let [left (tf/inches -88)
-                                                  right (tf/inches 86)
-                                                  width (- right left)
-                                                  front (tf/inches -21)
-                                                  rear (tf/inches 295)
-                                                  depth (- rear front)]
-                                              (show/set-variable! :x (+ left (* width (first (:args msg)))))
-                                              (show/set-variable! :z (+ front (* depth (second (:args msg))))))
-                                            #_(timbre/info msg)))
-  (osc/osc-handle @core/osc-server "/sparkle" (fn [msg]
+  (let [left (tf/inches -88)
+        right (tf/inches 86)
+        width (- right left)
+        front (tf/inches -21)
+        rear (tf/inches 295)
+        depth (- rear front)
+        height 3]
+    (osc/osc-handle @core/osc-server "/1/aim-a"
+                    (fn [msg]
+                      (show/set-variable! :aim-group-a-x (+ left (* width (first (:args msg)))))
+                      (show/set-variable! :aim-group-a-z (+ front (* depth (second (:args msg)))))
+                      #_(timbre/info msg)))
+    (osc/osc-handle @core/osc-server "/1/aim-a-y"
+                    (fn [msg]
+                      (show/set-variable! :aim-group-a-y (* height (first (:args msg))))
+                      #_(timbre/info msg)))
+    (osc/osc-handle @core/osc-server "/1/aim-b"
+                    (fn [msg]
+                      (show/set-variable! :aim-group-b-x (+ left (* width (first (:args msg)))))
+                      (show/set-variable! :aim-group-b-z (+ front (* depth (second (:args msg)))))
+                      #_(timbre/info msg)))
+    (osc/osc-handle @core/osc-server "/1/aim-b-y"
+                    (fn [msg]
+                      (show/set-variable! :aim-group-b-y (* height (first (:args msg))))
+                      #_(timbre/info msg))))
+  (osc/osc-handle @core/osc-server "/1/sparkle" (fn [msg]
                                                 (if (pos? (first (:args msg)))
                                                   (show/add-effect! :sparkle (fun/sparkle (show/all-fixtures)
                                                                                           :chance 0.1
