@@ -578,9 +578,28 @@
            (warn t "Problem building web UI updates.")
            (response {:error (str "Unable to build updates:" (.getMessage t))}))))
 
+;; TODO: Move this macro recording facility into a separate namespace so that the
+;;       Ableton Push can use it too.
+
 (defonce ^:private ^{:doc "Used to assign unique keywords to cues created as macros."}
   macro-counter
   (atom 0))
+
+(defonce macro-record-file ^{:doc "When not nil, any macros defined
+  will have the code that can re-create them appended to the named
+  file."}
+  (atom nil))
+
+(defn- reformat-colors-for-saving
+  "Rewrite the cue variables of a macro being saved for later use in a
+  form where the color objects will get properly recreated."
+  [cues-with-vars]
+  (mapv (fn [[x y vars]]
+          [x y (reduce (fn [r [k v]]
+                         (assoc r k (if (= (type v) :com.evocomputing.colors/color)
+                                      (list 'colors/create-color (str \" (colors/rgb-hexstr v) \"))
+                                      v))) {} vars)])
+        cues-with-vars))
 
 (defn- handle-create-macro
   "Process a request to create a macro from running effects."
@@ -598,6 +617,15 @@
       (if (seq errors)
         {:error (clojure.string/join " " errors)}
         (let [macro-key (keyword (str "macro-" (swap! macro-counter inc)))]
+          (when-let [file @macro-record-file]
+            (spit file (with-out-str
+                          (println)
+                          (println "(show/set-cue!" x  y)
+                          (println "  (cues/cue" macro-key)
+                          (println (str "    (fn [_] (cues/compound-cues-effect \"" macro-name "\" *show*"))
+                          (print "           " (reformat-colors-for-saving cues-with-vars))
+                         (println "))))"))
+                  :append true))
           (controllers/set-cue! (:cue-grid (:show page-info)) x y
                                 (cues/cue macro-key
                                           (fn [_] (cues/compound-cues-effect macro-name (:show page-info)

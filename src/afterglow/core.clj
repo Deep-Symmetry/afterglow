@@ -56,13 +56,13 @@
     ;; logging in noisy libraries, etc.:
     :ns-whitelist  [] #_["my-app.foo-ns"]
     :ns-blacklist  [] #_["taoensso.*"]
-    
+
     :middleware [] ; (fns [data]) -> ?data, applied left->right
-    
+
     :timestamp-opts {:pattern "yyyy-MMM-dd HH:mm:ss"
                      :locale :jvm-default
                      :timezone (java.util.TimeZone/getDefault)}
-    
+
     :output-fn timbre/default-output-fn ; (fn [data]) -> string
     })
 
@@ -269,7 +269,7 @@
       errors (exit 1 (str (error-msg errors) "\n\n" (usage summary)))
       (:convert-qxf options) (let [[status message] (qxf/convert-qxf (:convert-qxf options))]
                                (exit status message)))
- 
+
     ;; Set up the logging environment
     (reset! appenders (create-appenders (:log-file options)))
     (init-logging)
