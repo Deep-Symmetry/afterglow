@@ -1010,6 +1010,176 @@
                    (cues/function-cue :snowball-pos :beams-fixed (show/fixtures-named "snowball")
                                       :effect-name "Snowball Fixed" :end-keys [:snowball-sound]))))
 
+(defn make-movement-cues
+  "Create a page of with some large scale and layered movement
+  effects. And miscellany which I'm not totally sure what to do with
+  yet."
+  [page-x page-y]
+  (let [x-base (* page-x 8)
+        y-base (* page-y 8)]
+
+    (show/set-cue! x-base (+ y-base 2)
+                   (cues/cue :bloom (fn [var-map]
+                                      (cues/apply-merging-var-map
+                                       var-map fun/bloom (show/all-fixtures)
+                                       :measure (tf/build-distance-measure 0 rig-height 0 :ignore-z true)))
+                             :variables [{:key "color" :type :color :start (colors/create-color :white)
+                                          :name "Color"}
+                                         {:key "fraction" :min 0 :max 1 :start 0 :velocity true}]
+                             :priority 1000 :color :purple))
+
+    (show/set-cue! (+ x-base 2) (+ y-base 1)
+                   (cues/cue :movement (fn [var-map]
+                                         (cues/apply-merging-var-map var-map fun/twirl
+                                                                     (concat (show/fixtures-named "blade")
+                                                                             (show/fixtures-named "torrent"))))
+                             :variables [{:key "beats" :min 1 :max 32 :type :integer :start 8 :name "Beats"}
+                                         {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
+                                         {:key "radius" :min 0 :max 10 :start 0.25 :name "Radius"}
+                                         {:key "z" :min -10 :max 10 :start -1.0}
+                                         {:key "y" :min -10 :max 10 :start rig-height}
+                                         {:key "x" :min -10 :max 10 :start 0.0}]
+                             :color :green))
+
+    (show/set-cue! (+ x-base 2) (+ y-base 2)
+                   (cues/cue :movement (fn [var-map]
+                                         (cues/apply-merging-var-map var-map fun/aim-fan
+                                                                     (concat (show/fixtures-named "blade")
+                                                                             (show/fixtures-named "torrent"))))
+                             :variables [{:key "x-scale" :min -5 :max 5 :start 1 :name "X Scale"}
+                                         {:key "y-scale" :min -10 :max 10 :start 5 :name "Y Scale"}
+                                         {:key "z" :min 0 :max 20 :start 4}
+                                       {:key "y" :min -10 :max 10 :start rig-height}
+                                       {:key "x" :min -10 :max 10 :start 0.0}]
+                           :color :blue))
+
+    ;; A chase which overlays on other movement cues, gradually taking over the lights
+    (show/set-cue! (+ x-base 2) (+ y-base 3)
+                   (cues/cue :crossover (fn [var-map] (cues/apply-merging-var-map var-map crossover-chase))
+                             :variables [{:key "beats" :min 1 :max 8 :start 2 :type :integer :name "Beats"}
+                                         {:key "fade-fraction" :min 0 :max 1 :start 0 :name "Fade"}
+                                         {:key "cross-color" :type :color :start (colors/create-color :red)
+                                          :name "X Color"}
+                                         {:key "end-color" :type :color :start (colors/create-color :yellow)
+                                          :name "End Color"}]
+                             :color :cyan :priority 5))
+
+    ;; Some color cycle chases
+    (show/set-cue! (+ x-base 0) (+ y-base 7)
+                   (cues/cue :all-color (fn [_] (fun/iris-out-color-cycle-chase (show/all-fixtures)))))
+    (show/set-cue! (+ x-base 1) (+ y-base 7)
+                   (cues/cue :all-color
+                             (fn [_] (fun/wipe-right-color-cycle-chase
+                                      (show/all-fixtures)
+                                      :transition-phase-function rhythm/snapshot-bar-phase))))
+    (show/set-cue! (+ x-base 2) (+ y-base 7)
+                   (cues/cue :all-color (fn [_] (fun/wipe-right-color-cycle-chase
+                                                 (show/all-fixtures)
+                                                 :color-index-function rhythm/snapshot-beat-within-phrase
+                                                 :transition-phase-function rhythm/snapshot-beat-phase
+                                                 :effect-name "Wipe Right Beat"))))
+
+    ;; Some macro-based chases
+    (show/set-cue! (+ x-base 7) (+ y-base 1)
+                   (cues/cue :move-torrents
+                             (fn [_] (cues/compound-cues-effect
+                                      "Torrent Nod" *show*
+                                      [[17 15 {:pan-min 90.0 :pan-max 179.0 :pan-bars 2 :pan-phase 0.0
+                                               :tilt-min 148.0 :tilt-max 255.0 :tilt-bars 1, :tilt-phase 0.0}]
+                                       [16 15 {:pan-min 77.0 :pan-max 164.0 :pan-bars 2 :pan-phase 0.0
+                                               :tilt-min 148.0 :tilt-max 255.0, :tilt-bars 1, :tilt-phase 0.0}]]))))
+
+    (show/set-cue! (+ x-base 7) (+ y-base 2)
+                   (cues/cue :move-torrents
+                             (fn [_] (cues/compound-cues-effect
+                                      "Torrent Cross Nod" *show*
+                                      [[16 15 {:pan-min 77.0, :pan-max 164.0, :pan-bars 2, :pan-phase 0.5,
+                                               :tilt-min 148.0, :tilt-max 255.0, :tilt-bars 1, :tilt-phase 0.25}]
+                                       [17 15 {:pan-min 90.0, :pan-max 179.0, :pan-bars 2, :pan-phase 0.0,
+                                               :tilt-min 148.0, :tilt-max 255.0, :tilt-bars 1, :tilt-phase 0.0}]]))))
+
+    (show/set-cue! (+ x-base 6) (+ y-base 1)
+                   (cues/cue :move-blades
+                             (fn [_] (cues/compound-cues-effect
+                                      "Sync Can Can" *show*
+                                      [[22 15 {:pan-min 39.0, :pan-max 39.0, :pan-bars 1, :pan-phase 0.0,
+                                               :tilt-min 73.0, :tilt-max 248.0, :tilt-bars 1, :tilt-phase 0.0}]
+                                       [21 15 {:pan-min 42.0, :pan-max 42.0, :pan-bars 1, :pan-phase 0.0,
+                                               :tilt-min 0.0, :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.0}]
+                                       [20 15 {:pan-min 42.0, :pan-max 42.0, :pan-bars 1, :pan-phase 0.0,
+                                               :tilt-min 0.0, :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.0}]
+                                       [19 15 {:pan-min 42.0, :pan-max 42.0, :pan-bars 1, :pan-phase 0.0,
+                                               :tilt-min 0.0, :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.0}]
+                                       [18 15 {:pan-min 42.0, :pan-max 42.0, :pan-bars 1, :pan-phase 0.0,
+                                               :tilt-min 0.0, :tilt-max 216.0, :tilt-bars 1, :tilt-phase 0.0}]]))))
+
+    (show/set-cue! (+ x-base 6) (+ y-base 2)
+                   (cues/cue :move-blades
+                             (fn [_] (cues/compound-cues-effect
+                                      "Spread Can Can" *show*
+                                      [[18 15 {:pan-min 42.0, :pan-max 42.0, :pan-bars 1, :pan-phase 0.0,
+                                               :tilt-min 0.0, :tilt-max 216.0, :tilt-bars 1, :tilt-phase 0.0}]
+                                       [19 15 {:pan-min 42.0, :pan-max 42.0, :pan-bars 1, :pan-phase 0.0,
+                                               :tilt-min 0.0, :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.2}]
+                                       [20 15 {:pan-min 42.0, :pan-max 42.0, :pan-bars 1, :pan-phase 0.0,
+                                               :tilt-min 0.0, :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.4}]
+                                       [21 15 {:pan-min 42.0, :pan-max 42.0, :pan-bars 1, :pan-phase 0.0,
+                                               :tilt-min 0.0, :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.6}]
+                                       [22 15 {:pan-min 39.0, :pan-max 39.0, :pan-bars 1, :pan-phase 0.0,
+                                               :tilt-min 73.0, :tilt-max 248.0, :tilt-bars 1, :tilt-phase 0.8}]]))))
+
+    (show/set-cue! (+ x-base 6) (+ y-base 3)
+                   (cues/cue :move-blades
+                             (fn [_] (cues/compound-cues-effect
+                                      "Swing Can Can" *show*
+                                      [[22 15 {:pan-min 24.0, :pan-max 64.0, :pan-bars 4, :pan-phase 0.0,
+                                               :tilt-min 73.0, :tilt-max 248.0, :tilt-bars 1, :tilt-phase 0.8}]
+                                       [21 15 {:pan-min 24.0, :pan-max 64.0, :pan-bars 4, :pan-phase 0.0,
+                                               :tilt-min 0.0, :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.6}]
+                                       [20 15 {:pan-min 23.0, :pan-max 64.0, :pan-bars 4, :pan-phase 0.0,
+                                               :tilt-min 0.0, :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.4}]
+                                       [19 15 {:pan-min 23.0, :pan-max 64.0, :pan-bars 4, :pan-phase 0.0,
+                                               :tilt-min 0.0, :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.2}]
+                                       [18 15 {:pan-min 23.0, :pan-max 64.0, :pan-bars 4, :pan-phase 0.0,
+                                               :tilt-min 0.0, :tilt-max 216.0, :tilt-bars 1, :tilt-phase 0.0}]]))))
+
+    (show/set-cue! (+ x-base 6) (+ y-base 7)
+                   (cues/cue :center-rebel
+                             (fn [_] (cues/compound-cues-effect
+                                      "Center Rebel" *show*
+                                      [[22 15 {:pan-min 12.0, :pan-max 64.0, :pan-bars 4, :pan-phase 0.0,
+                                               :tilt-min 56.0, :tilt-max 182.0, :tilt-bars 1, :tilt-phase 0.8}]]))))
+
+    (show/set-cue! (+ x-base 6) (+ y-base 6)
+                   (cues/cue :move-blades
+                             (fn [_] (cues/compound-cues-effect
+                                      "Slow Ceiling LR" *show*
+                                      [[18 15 {:pan-min 12.0, :pan-max 66.0, :pan-bars 4, :pan-phase 0.0,
+                                               :tilt-min 170.0, :tilt-max 170.0, :tilt-bars 1, :tilt-phase 0.0}]
+                                       [19 15 {:pan-min 12.0, :pan-max 66.0, :pan-bars 4, :pan-phase 0.0,
+                                               :tilt-min 170.0, :tilt-max 170.0, :tilt-bars 1, :tilt-phase 0.2}]
+                                       [20 15 {:pan-min 12.0, :pan-max 66.0, :pan-bars 4, :pan-phase 0.0,
+                                               :tilt-min 170.0, :tilt-max 170.0, :tilt-bars 1, :tilt-phase 0.4}]
+                                       [21 15 {:pan-min 12.0, :pan-max 66.0, :pan-bars 4, :pan-phase 0.0,
+                                               :tilt-min 170.0, :tilt-max 170.0, :tilt-bars 1, :tilt-phase 0.6}]
+                                       [22 15 {:pan-min 12.0, :pan-max 66.0, :pan-bars 4, :pan-phase 0.0,
+                                               :tilt-min 230.0, :tilt-max 230.0, :tilt-bars 1, :tilt-phase 0.8}]]))))
+
+    (show/set-cue! (+ x-base 6) (+ y-base 5)
+                   (cues/cue :move-blades
+                             (fn [_] (cues/compound-cues-effect
+                                      "Slow Scan LR" *show*
+                                      [[22 15 {:pan-min 12.0, :pan-max 66.0, :pan-bars 4, :pan-phase 0.0,
+                                               :tilt-min 182.0, :tilt-max 182.0, :tilt-bars 1, :tilt-phase 0.8}]
+                                       [21 15 {:pan-min 12.0, :pan-max 66.0, :pan-bars 4, :pan-phase 0.4,
+                                               :tilt-min 130.0, :tilt-max 130.0, :tilt-bars 1, :tilt-phase 0.6}]
+                                       [20 15 {:pan-min 12.0, :pan-max 66.0, :pan-bars 4, :pan-phase 0.8,
+                                               :tilt-min 130.0, :tilt-max 130.0, :tilt-bars 1, :tilt-phase 0.4}]
+                                       [19 15 {:pan-min 12.0, :pan-max 66.0, :pan-bars 4, :pan-phase 0.2,
+                                               :tilt-min 130.0, :tilt-max 130.0, :tilt-bars 1, :tilt-phase 0.2}]
+                                       [18 15 {:pan-min 12.0, :pan-max 66.0, :pan-bars 4, :pan-phase 0.6,
+                                               :tilt-min 162.0, :tilt-max 162.0, :tilt-bars 1, :tilt-phase 0.0}]]))))))
+
 (defn- aim-cue-var-key
   "Determine the cue variable key value to use for a variable being
   created for an aim cue page cue. `base-name` is the name that will
@@ -1280,6 +1450,7 @@
   (make-main-color-dimmer-cues 0 0)  ; Creates a sigle 8x8 page at the origin
   (make-torrent-cues 0 2)  ; Creates 2 8x8 pages: two pages up from the origin, and the next page to the right
   (make-ambient-cues 1 0)  ; Creates a single 8x8 page to the right of the origin
+  (make-movement-cues 0 1)  ; Creates an 8x8 page above the origin
   (make-main-aim-cues 1 1)  ; Creates an 8x8 page above the ambient cues
   (make-main-direction-cues 2 1)  ; Creates an 8x8 page to the right of that
 
@@ -1287,7 +1458,7 @@
   ;; For now they are hardcoded to appear on the page above the origin.
 
   ;; Some basic moving head chases
-  (let [triangle-phrase (oscillators/build-oscillated-param ; Move back and forth over a phrase
+  #_(let [triangle-phrase (oscillators/build-oscillated-param ; Move back and forth over a phrase
                          (oscillators/triangle :interval :phrase) :min -90 :max 90)
         staggered-triangle-bar (params/build-spatial-param ; Bounce over a bar, staggered across grid x
                                 (show/all-fixtures)
@@ -1301,15 +1472,6 @@
                                              (move/direction-effect "Can Can" can-can-dir (show/all-fixtures)))))
     (show/set-cue! 1 9 (cues/cue :movement (fn [_]
                                              (move/pan-tilt-effect "P/T Can Can" can-can-p-t (show/all-fixtures))))))
-
-  (show/set-cue! 0 10 (cues/cue :bloom (fn [var-map]
-                                         (cues/apply-merging-var-map
-                                          var-map fun/bloom (show/all-fixtures)
-                                          :measure (tf/build-distance-measure 0 rig-height 0 :ignore-z true)))
-                                :variables [{:key "color" :type :color :start (colors/create-color :white)
-                                             :name "Color"}
-                                            {:key "fraction" :min 0 :max 1 :start 0 :velocity true}]
-                                :priority 1000 :color :purple))
 
   #_(show/set-cue! 3 8 (cues/function-cue :blade-speed :movement-speed (show/fixtures-named "blade")
                                         :color :purple :effect-name "Slow Blades"))
@@ -1356,44 +1518,6 @@
                                 :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]
                                 :color :orange))
 
-  ;; Some chases
-
-  (show/set-cue! 2 9
-                 (cues/cue :movement (fn [var-map]
-                                       (cues/apply-merging-var-map var-map fun/twirl
-                                                                   (concat (show/fixtures-named "blade")
-                                                                           (show/fixtures-named "torrent"))))
-                           :variables [{:key "beats" :min 1 :max 32 :type :integer :start 8 :name "Beats"}
-                                       {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
-                                       {:key "radius" :min 0 :max 10 :start 0.25 :name "Radius"}
-                                       {:key "z" :min -10 :max 10 :start -1.0}
-                                       {:key "y" :min -10 :max 10 :start rig-height}
-                                       {:key "x" :min -10 :max 10 :start 0.0}]
-                           :color :green))
-  (show/set-cue! 2 10
-                 (cues/cue :movement (fn [var-map]
-                                       (cues/apply-merging-var-map var-map fun/aim-fan
-                                                                   (concat (show/fixtures-named "blade")
-                                                                           (show/fixtures-named "torrent"))))
-                           :variables [{:key "x-scale" :min -5 :max 5 :start 1 :name "X Scale"}
-                                       {:key "y-scale" :min -10 :max 10 :start 5 :name "Y Scale"}
-                                       {:key "z" :min 0 :max 20 :start 4}
-                                       {:key "y" :min -10 :max 10 :start rig-height}
-                                       {:key "x" :min -10 :max 10 :start 0.0}]
-                           :color :blue))
-
-  ;; A chase which overlays on other movement cues, gradually taking over the lights
-  (show/set-cue! 2 11
-                 (cues/cue :crossover (fn [var-map] (cues/apply-merging-var-map var-map crossover-chase))
-                           :variables [{:key "beats" :min 1 :max 8 :start 2 :type :integer :name "Beats"}
-                                       {:key "fade-fraction" :min 0 :max 1 :start 0 :name "Fade"}
-                                       {:key "cross-color" :type :color :start (colors/create-color :red)
-                                        :name "X Color"}
-                                       {:key "end-color" :type :color :start (colors/create-color :yellow)
-                                        :name "End Color"}]
-                           :color :cyan :priority 5))
-
-
   #_(show/set-cue! 0 13
                  (cues/cue :chase (fn [var-map]
                                     (fx/chase "Chase Test"
@@ -1417,18 +1541,7 @@
                                                (global-color-effect :white :fixtures (show/all-fixtures))]
                                               @step-param :beyond :loop))
                            :color :magenta))
-
-  ;; Some color cycle chases
-  (show/set-cue! 0 15 (cues/cue :all-color (fn [_] (fun/iris-out-color-cycle-chase (show/all-fixtures)))))
-  (show/set-cue! 1 15 (cues/cue :all-color
-                                (fn [_] (fun/wipe-right-color-cycle-chase
-                                         (show/all-fixtures)
-                                         :transition-phase-function rhythm/snapshot-bar-phase))))
-  (show/set-cue! 2 15 (cues/cue :all-color (fn [_] (fun/wipe-right-color-cycle-chase
-                                                    (show/all-fixtures)
-                                                    :color-index-function rhythm/snapshot-beat-within-phrase
-                                                    :transition-phase-function rhythm/snapshot-beat-phase
-                                                    :effect-name "Wipe Right Beat")))))
+)
 
 (defn use-push
   "A trivial reminder of how to connect the Ableton Push to run the
