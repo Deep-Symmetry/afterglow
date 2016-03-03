@@ -1011,6 +1011,42 @@
                    (cues/function-cue :snowball-pos :beams-fixed (show/fixtures-named "snowball")
                                       :effect-name "Snowball Fixed" :end-keys [:snowball-sound]))))
 
+(defn can-can
+  "A effect that moves the blades like they are in a kick line."
+  [& {:keys [bars cycles stagger spread pan-min pan-max tilt-min tilt-max]
+      :or {bars 1 cycles 1 stagger 0 spread 0 pan-min 0 pan-max 0 tilt-min -100 tilt-max 100}}]
+  (let [bars (params/bind-keyword-param bars Number 1)
+        cycles (params/bind-keyword-param cycles Number 1)
+        stagger (params/bind-keyword-param stagger Number 0)
+        spread (params/bind-keyword-param spread Number 0)
+        pan-min (params/bind-keyword-param pan-min Number 0)
+        pan-max (params/bind-keyword-param pan-max Number 0)
+        tilt-min (params/bind-keyword-param tilt-min Number -30)
+        tilt-max (params/bind-keyword-param pan-max Number 30)
+        pan-ratio (params/build-param-formula Number #(/ (* 4 %1) %2) bars cycles)
+        tilt-ratio (params/build-param-formula Number #(/ %1 %2) bars cycles)
+        fx (for [head [{:key :blade-1 :phase 0.0 :pan-offset 2}
+                       {:key :blade-2 :phase 0.2 :pan-offset 1}
+                       {:key :blade-3 :phase 0.6 :pan-offset -1}
+                       {:key :blade-4 :phase 0.8 :pan-offset -2}
+                       {:key :blade-5 :phase 0.4 :tilt-offset 45}]]
+             (let [head-phase (params/build-param-formula Number #(* % (:phase head 0)) stagger)
+                   tilt-osc (oscillators/sine :interval :bar :interval-ratio tilt-ratio :phase head-phase)
+                   head-tilt-min (params/build-param-formula Number #(+ % (:tilt-offset head 0)) tilt-min)
+                   head-tilt-max (params/build-param-formula Number #(+ % (:tilt-offset head 0)) tilt-max)
+                   tilt-param (oscillators/build-oscillated-param tilt-osc :min head-tilt-min
+                                                                  :max head-tilt-max)
+                   pan-osc (oscillators/sine :interval :bar :interval-ratio pan-ratio :phase head-phase)
+                   head-pan-min (params/build-param-formula Number #(+ %1 (* (:pan-offset head 0) %2))
+                                                            pan-min spread)
+                   head-pan-max (params/build-param-formula Number #(+ %1 (* (:pan-offset head 0) %2))
+                                                            pan-max spread)
+                   pan-param (oscillators/build-oscillated-param pan-osc :min head-pan-min
+                                                                 :max head-pan-max)
+                   direction (params/build-pan-tilt-param :pan pan-param :tilt tilt-param)]
+               (move/pan-tilt-effect "can can element" direction (show/fixtures-named (:key head)))))]
+    (apply fx/scene "Can Can" fx)))
+
 (defn make-movement-cues
   "Create a page of with some large scale and layered movement
   effects. And miscellany which I'm not totally sure what to do with
@@ -1040,7 +1076,7 @@
                                          {:key "z" :min -10 :max 10 :start -1.0}
                                          {:key "y" :min -10 :max 10 :start rig-height}
                                          {:key "x" :min -10 :max 10 :start 0.0}]
-                             :color :green))
+                             :color :green :end-keys [:move-blades :move-torrents]))
 
     (show/set-cue! (+ x-base 2) (+ y-base 2)
                    (cues/cue :movement (fn [var-map]
@@ -1052,10 +1088,10 @@
                                          {:key "z" :min 0 :max 20 :start 4}
                                        {:key "y" :min -10 :max 10 :start rig-height}
                                        {:key "x" :min -10 :max 10 :start 0.0}]
-                           :color :blue))
+                           :color :blue :end-keys [:move-blades :move-torrents]))
 
     ;; A chase which overlays on other movement cues, gradually taking over the lights
-    (show/set-cue! (+ x-base 2) (+ y-base 3)
+    (show/set-cue! (+ x-base 2) (+ y-base 6)
                    (cues/cue :crossover (fn [var-map] (cues/apply-merging-var-map var-map crossover-chase))
                              :variables [{:key "beats" :min 1 :max 8 :start 2 :type :integer :name "Beats"}
                                          {:key "fade-fraction" :min 0 :max 1 :start 0 :name "Fade"}
@@ -1125,7 +1161,8 @@
                                       [[17 15 {:pan-min 90.0 :pan-max 179.0 :pan-bars 2 :pan-phase 0.0
                                                :tilt-min 148.0 :tilt-max 255.0 :tilt-bars 1, :tilt-phase 0.0}]
                                        [16 15 {:pan-min 77.0 :pan-max 164.0 :pan-bars 2 :pan-phase 0.0
-                                               :tilt-min 148.0 :tilt-max 255.0, :tilt-bars 1, :tilt-phase 0.0}]]))))
+                                               :tilt-min 148.0 :tilt-max 255.0, :tilt-bars 1, :tilt-phase 0.0}]]))
+                             :end-keys [:movement]))
 
     (show/set-cue! (+ x-base 7) (+ y-base 2)
                    (cues/cue :move-torrents
@@ -1134,7 +1171,26 @@
                                       [[16 15 {:pan-min 77.0, :pan-max 164.0, :pan-bars 2, :pan-phase 0.5,
                                                :tilt-min 148.0, :tilt-max 255.0, :tilt-bars 1, :tilt-phase 0.25}]
                                        [17 15 {:pan-min 90.0, :pan-max 179.0, :pan-bars 2, :pan-phase 0.0,
-                                               :tilt-min 148.0, :tilt-max 255.0, :tilt-bars 1, :tilt-phase 0.0}]]))))
+                                               :tilt-min 148.0, :tilt-max 255.0, :tilt-bars 1, :tilt-phase 0.0}]]))
+                             :end-keys [:movement]))
+
+    (show/set-cue! (+ x-base 5) y-base
+                   (cues/cue :move-blades
+                             (fn [var-map] (cues/apply-merging-var-map var-map can-can))
+                             :variables [{:key "bars" :name "Bars" :min 1 :max 8 :type :integer :start 1}
+                                         {:key "cycles" :name "Cycles" :min 1 :max 8 :type :integer :start 1}
+                                         {:key "stagger" :name "Stagger" :min 0 :max 4 :start 0}
+                                         {:key "spread" :name "Spread" :min -45 :max 45
+                                          :centered true :resolution 0.25 :start 0}
+                                         {:key "pan-min" :name "Pan min" :min -180 :max 180
+                                          :centered true :resolution 0.5 :start 0}
+                                         {:key "pan-max" :name "Pan max" :min -180 :max 180
+                                          :centered true :resolution 0.5 :start 0}
+                                         {:key "tilt-min" :name "Tilt min" :min -180 :max 180
+                                          :centered true :resolution 0.5 :start -100}
+                                         {:key "tilt-max" :name "Tilt max" :min -180 :max 180
+                                          :centered true :resolution 0.5 :start 100}]
+                             :end-keys [:movement]))
 
     (show/set-cue! (+ x-base 6) (+ y-base 1)
                    (cues/cue :move-blades
@@ -1149,7 +1205,8 @@
                                        [19 15 {:pan-min 42.0, :pan-max 42.0, :pan-bars 1, :pan-phase 0.0,
                                                :tilt-min 0.0, :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.0}]
                                        [18 15 {:pan-min 42.0, :pan-max 42.0, :pan-bars 1, :pan-phase 0.0,
-                                               :tilt-min 0.0, :tilt-max 216.0, :tilt-bars 1, :tilt-phase 0.0}]]))))
+                                               :tilt-min 0.0, :tilt-max 216.0, :tilt-bars 1, :tilt-phase 0.0}]]))
+                             :end-keys [:movement]))
 
     (show/set-cue! (+ x-base 6) (+ y-base 2)
                    (cues/cue :move-blades
@@ -1164,7 +1221,8 @@
                                        [21 15 {:pan-min 42.0, :pan-max 42.0, :pan-bars 1, :pan-phase 0.0,
                                                :tilt-min 0.0, :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.6}]
                                        [22 15 {:pan-min 39.0, :pan-max 39.0, :pan-bars 1, :pan-phase 0.0,
-                                               :tilt-min 73.0, :tilt-max 248.0, :tilt-bars 1, :tilt-phase 0.8}]]))))
+                                               :tilt-min 73.0, :tilt-max 248.0, :tilt-bars 1, :tilt-phase 0.8}]]))
+                             :end-keys [:movement]))
 
     (show/set-cue! (+ x-base 6) (+ y-base 3)
                    (cues/cue :move-blades
@@ -1179,7 +1237,8 @@
                                        [19 15 {:pan-min 23.0, :pan-max 64.0, :pan-bars 4, :pan-phase 0.0,
                                                :tilt-min 0.0, :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.2}]
                                        [18 15 {:pan-min 23.0, :pan-max 64.0, :pan-bars 4, :pan-phase 0.0,
-                                               :tilt-min 0.0, :tilt-max 216.0, :tilt-bars 1, :tilt-phase 0.0}]]))))
+                                               :tilt-min 0.0, :tilt-max 216.0, :tilt-bars 1, :tilt-phase 0.0}]]))
+                             :end-keys [:movement]))
 
     (show/set-cue! (+ x-base 6) (+ y-base 7)
                    (cues/cue :center-rebel
@@ -1201,7 +1260,8 @@
                                        [21 15 {:pan-min 12.0, :pan-max 66.0, :pan-bars 4, :pan-phase 0.0,
                                                :tilt-min 170.0, :tilt-max 170.0, :tilt-bars 1, :tilt-phase 0.6}]
                                        [22 15 {:pan-min 12.0, :pan-max 66.0, :pan-bars 4, :pan-phase 0.0,
-                                               :tilt-min 230.0, :tilt-max 230.0, :tilt-bars 1, :tilt-phase 0.8}]]))))
+                                               :tilt-min 230.0, :tilt-max 230.0, :tilt-bars 1, :tilt-phase 0.8}]]))
+                             :end-keys [:movement]))
 
     (show/set-cue! (+ x-base 6) (+ y-base 5)
                    (cues/cue :move-blades
@@ -1216,7 +1276,8 @@
                                        [19 15 {:pan-min 12.0, :pan-max 66.0, :pan-bars 4, :pan-phase 0.2,
                                                :tilt-min 130.0, :tilt-max 130.0, :tilt-bars 1, :tilt-phase 0.2}]
                                        [18 15 {:pan-min 12.0, :pan-max 66.0, :pan-bars 4, :pan-phase 0.6,
-                                               :tilt-min 162.0, :tilt-max 162.0, :tilt-bars 1, :tilt-phase 0.0}]]))))))
+                                               :tilt-min 162.0, :tilt-max 162.0, :tilt-bars 1, :tilt-phase 0.0}]]))
+                             :end-keys [:movement]))))
 
 (defn- aim-cue-var-key
   "Determine the cue variable key value to use for a variable being
@@ -1375,39 +1436,40 @@
   "Build a raw pan/tilt oscillator cue."
   [fixture-key]
   (cues/cue (keyword (str "p-t-" (name fixture-key)))
-              (fn [var-map]
-                (let [pan-osc (oscillators/sine :interval :bar :interval-ratio (:pan-bars var-map)
-                                                :phase (:pan-phase var-map))
-                      pan-param (oscillators/build-oscillated-param pan-osc :min (:pan-min var-map)
-                                                                    :max (:pan-max var-map))
-                      tilt-osc (oscillators/sine :interval :bar :interval-ratio (:tilt-bars var-map)
-                                                :phase (:tilt-phase var-map))
+            (fn [var-map]
+              (let [pan-osc (oscillators/sine :interval :bar :interval-ratio (:pan-bars var-map)
+                                              :phase (:pan-phase var-map))
+                    pan-param (oscillators/build-oscillated-param pan-osc :min (:pan-min var-map)
+                                                                  :max (:pan-max var-map))
+                    tilt-osc (oscillators/sine :interval :bar :interval-ratio (:tilt-bars var-map)
+                                               :phase (:tilt-phase var-map))
                       tilt-param (oscillators/build-oscillated-param tilt-osc :min (:tilt-min var-map)
-                                                                    :max (:tilt-max var-map))]
-                  (fx/scene (str "P/T " (name fixture-key))
-                            (chan-fx/channel-effect
-                             "pan" pan-param
-                             (afterglow.channels/extract-channels (show/fixtures-named fixture-key)
-                                                                  #(= (:type %) :pan)))
-                            (chan-fx/channel-effect
-                             "tilt" tilt-param
-                             (afterglow.channels/extract-channels (show/fixtures-named fixture-key)
-                                                                  #(= (:type %) :tilt))))))
-              :variables [{:key "pan-min" :name "Pan min" :min 0 :max 255
-                           :centered true :resolution 0.5 :start 0}
-                          {:key "pan-max" :name "Pan max" :min 0 :max 255
-                           :centered true :resolution 0.5 :start 255}
-                          {:key "pan-bars" :name "Pan bars" :min 1 :max 16
-                           :type :integer :start 1}
-                          {:key "pan-phase" :name "Pan phase" :min 0.0 :max 1.0 :start 0.0}
-                          {:key "tilt-min" :name "Tilt min" :min 0 :max 255
-                           :centered true :resolution 0.5 :start 0}
-                          {:key "tilt-max" :name "Tilt max" :min 0 :max 255
-                           :centered true :resolution 0.5 :start 255}
-                          {:key "tilt-bars" :name "Tilt bars" :min 1 :max 16
-                           :type :integer :start 1}
-                          {:key "tilt-phase" :name "Tilt phase" :min 0.0 :max 1.0 :start 0.0}]
-              :color :green :priority 1))
+                                                                     :max (:tilt-max var-map))]
+                (fx/scene (str "P/T " (name fixture-key))
+                          (chan-fx/channel-effect
+                           "pan" pan-param
+                           (chan/extract-channels (chan/expand-heads
+                                                   (show/fixtures-named fixture-key))
+                                                  #(= (:type %) :pan)))
+                          (chan-fx/channel-effect
+                           "tilt" tilt-param
+                           (chan/extract-channels (chan/expand-heads (show/fixtures-named fixture-key))
+                                                  #(= (:type %) :tilt))))))
+            :variables [{:key "pan-min" :name "Pan min" :min 0 :max 255
+                         :centered true :resolution 0.5 :start 0}
+                        {:key "pan-max" :name "Pan max" :min 0 :max 255
+                         :centered true :resolution 0.5 :start 255}
+                        {:key "pan-bars" :name "Pan bars" :min 1 :max 16
+                         :type :integer :start 1}
+                        {:key "pan-phase" :name "Pan phase" :min 0.0 :max 1.0 :start 0.0}
+                        {:key "tilt-min" :name "Tilt min" :min 0 :max 255
+                         :centered true :resolution 0.5 :start 0}
+                        {:key "tilt-max" :name "Tilt max" :min 0 :max 255
+                         :centered true :resolution 0.5 :start 255}
+                        {:key "tilt-bars" :name "Tilt bars" :min 1 :max 16
+                         :type :integer :start 1}
+                        {:key "tilt-phase" :name "Tilt phase" :min 0.0 :max 1.0 :start 0.0}]
+            :color :green :priority 1))
 
 (defn- make-main-direction-cues
   "Create a page of cues for aiming lights in particular directions,
