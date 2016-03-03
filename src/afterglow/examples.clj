@@ -2,6 +2,7 @@
   "Show some simple ways to use Afterglow, and hopefully inspire
   exploration." {:author "James Elliott"}
   (:require [afterglow.beyond :as beyond]
+            [afterglow.channels :as chan]
             [afterglow.controllers.ableton-push :as push]
             [afterglow.controllers :as ct]
             [afterglow.controllers.tempo]
@@ -258,12 +259,12 @@
    :pan-torrent (afterglow.effects.channel/channel-effect
                  "Pan Torrent"
                  :pan
-                 (afterglow.channels/extract-channels (show/fixtures-named :torrent) #(= (:type %) :pan))))
+                 (chan/extract-channels (chan/expand-heads (show/fixtures-named :torrent)) #(= (:type %) :pan))))
   (show/add-effect!
    :tilt-torrent (afterglow.effects.channel/channel-effect
                   "Tilt Torrent"
                   :tilt
-                  (afterglow.channels/extract-channels (show/fixtures-named :torrent) #(= (:type %) :tilt)))))
+                  (chan/extract-channels (chan/expand-heads (show/fixtures-named :torrent)) #(= (:type %) :tilt)))))
 
 (defn add-xyz-controls
   []

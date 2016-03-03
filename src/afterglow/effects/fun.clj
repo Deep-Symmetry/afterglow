@@ -852,14 +852,14 @@
   [fixtures & {:keys [step min-added max-added min-duration max-duration min-saturation
                       aim? min-x max-x min-y max-y min-z max-z]
                :or {step (params/build-step-param)
-                    min-added 1 max-added 4 min-duration 4 max-duration 8 min-saturation 100.0
+                    min-added 1 max-added 4 min-duration 2 max-duration 4 min-saturation 100.0
                     aim? false min-x -5.0 max-x 5.0 min-y 0.0 max-y 0.0 min-z 0.5 max-z 5.0}}]
   {:pre [(some? *show*)]}
   (let [step (params/bind-keyword-param step Number (params/build-step-param))
         min-added (params/bind-keyword-param min-added Number 1)
         max-added (params/bind-keyword-param max-added Number 4)
-        min-duration (params/bind-keyword-param min-duration Number 4)
-        max-duration (params/bind-keyword-param max-duration Number 8)
+        min-duration (params/bind-keyword-param min-duration Number 2)
+        max-duration (params/bind-keyword-param max-duration Number 4)
         min-saturation (params/bind-keyword-param min-saturation Number 100.0)
         min-x (params/bind-keyword-param min-x Number -5.0)
         max-x (params/bind-keyword-param max-x Number 5.0)
