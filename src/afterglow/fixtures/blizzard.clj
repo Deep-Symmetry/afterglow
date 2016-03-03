@@ -204,8 +204,7 @@
   ([mode & {:keys [hung version-2] :or {hung 0}}]
    (let [[pan-center pan-half-circle tilt-center tilt-half-circle] (if version-2 [82 84 25 -230] [84 84 8 -214])]
      (assoc (case mode
-              :15-channel {:channels [(chan/pan 1 3) (chan/tilt 2 4)
-                                      (chan/fine-channel :movement-speed 5
+              :15-channel {:channels [(chan/fine-channel :movement-speed 5
                                                          :function-name "Movement Speed (fast->slow)")
                                       (chan/fine-channel :custom-color 10)
                                       (chan/functions :strobe 11 0 nil
@@ -219,20 +218,23 @@
                                                       51 :color-macros 91 :color-fade-in-out
                                                       131 :color-snap 171 :color-fade
                                                       211 :auto 251 :sound-active)]
-                           :heads [{:channels [(chan/color 6 :red) (chan/color 7 :green)
+                           :heads [{:channels [(chan/pan 1 3) (chan/tilt 2 4)
+                                               (chan/color 6 :red) (chan/color 7 :green)
                                                (chan/color 8 :blue) (chan/color 9 :white)]
-                                    :y hung}]}
-              :11-channel {:channels [(chan/pan 1 3) (chan/tilt 2 4)
-                                      (chan/fine-channel :movement-speed 5
+                                    :y hung
+                                    :pan-center pan-center :pan-half-circle pan-half-circle
+                                    :tilt-center tilt-center :tilt-half-circle tilt-half-circle}]}
+              :11-channel {:channels [(chan/fine-channel :movement-speed 5
                                                          :function-name "Movement Speed (fast->slow)")
                                       (chan/dimmer 10) (chan/fine-channel :custom-color 11)]
-                           :heads [{:channels [(chan/color 6 :red) (chan/color 7 :green)
+                           :heads [{:channels [(chan/pan 1 3) (chan/tilt 2 4)
+                                               (chan/color 6 :red) (chan/color 7 :green)
                                                (chan/color 8 :blue) (chan/color 9 :white)]
-                                    :y hung}]})
+                                    :y hung
+                                    :pan-center pan-center :pan-half-circle pan-half-circle
+                                    :tilt-center tilt-center :tilt-half-circle tilt-half-circle}]})
             :name "Blizzard Blade RGBW"
-            :mode mode
-            :pan-center pan-center :pan-half-circle pan-half-circle
-            :tilt-center tilt-center :tilt-half-circle tilt-half-circle))))
+            :mode mode))))
 
 ;; TODO: Someday play with channels 13 and 14 more to see if there is anything worth modeling.
 ;;       Not urgent, though, the main point of Afterglow is custom effects using raw colors and
