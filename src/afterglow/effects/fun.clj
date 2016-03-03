@@ -95,17 +95,18 @@
   (colors/create-color "white"))
 
 (defn- remove-finished-sparkles
-  "Filters out any sparkles that were created longer ago than the fade time.
-  sparkles is a map from head to the timestamp at which the sparkle was created."
+  "Filters out any sparkles that were created longer ago than the fade
+  time. `sparkles` is a map from head to the timestamp at which the
+  sparkle was created."
   [sparkles show snapshot fade-time]
   (pspy :remove-finished-sparkles
-        (let [now (:instant snapshot)]
+        (let [now (:instant snapshot)
+              fade-time (params/resolve-param fade-time show snapshot)]
           (reduce
            (fn [result [where creation-time]]
-             (let [fade-time (params/resolve-param fade-time show snapshot)]
-               (if (< (- now creation-time) fade-time)
-                 (assoc result where creation-time)
-                 result)))
+             (if (< (- now creation-time) fade-time)
+               (assoc result where creation-time)
+               result))
            {}
            sparkles))))
 
