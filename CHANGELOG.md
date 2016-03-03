@@ -30,6 +30,8 @@ This change log follows the conventions of
 - Direction and aim parameters can now be transformed by a dynamic
   Java3D `Transform3D` parameter to create kaleidoscopic looks with
   groups of lights.
+- A new `confetti` effect which assigns random colors (and optionally
+  aim points) to groups of lights at intervals.
 - Incoming MIDI System Exclusive messages can now be received and
   delivered to handlers.
 - The identity of grid controllers is verified before binding to them,
@@ -67,6 +69,8 @@ This change log follows the conventions of
 - The documentation link in the web interface now takes you to the
   proper version-specific tag of the documentation if it is a release
   build. Snapshot builds take you to `master`.
+- The nav bar in the show control web page is now compressed to better
+  fit mobile devices, since it can be used on the iPad Pro.
 - All MIDI event handler functions are now called in a context which
   properly recovers from exceptions at the level of that individual
   handler, so other handlers will not be affected.

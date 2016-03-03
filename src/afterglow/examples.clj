@@ -1079,6 +1079,43 @@
                                                  :transition-phase-function rhythm/snapshot-beat-phase
                                                  :effect-name "Wipe Right Beat"))))
 
+    (show/set-cue! (+ x-base 0) (+ y-base 6)
+                   (cues/cue :confetti
+                             (fn [var-map]
+                               (let [beats (params/bind-keyword-param (:beats var-map) Number 2)
+                                     cycles (params/bind-keyword-param (:cycles var-map ) Number 1)
+                                     step-ratio (params/build-param-formula Number #(/ %1 %2) beats cycles)
+                                     step (params/build-step-param :interval-ratio step-ratio)]
+                                 (cues/apply-merging-var-map var-map
+                                                             fun/confetti (show/all-fixtures)
+                                                             :step step)))
+                             :variables [{:key "beats" :min 1 :max 8 :start 2 :type :integer :name "Beats"}
+                                         {:key "cycles" :min 1 :max 8 :start 1 :type :integer :name "Cycles"}
+                                         {:key "min-added" :min 0 :max 20 :start 1 :type :integer :name "Min Add"}
+                                         {:key "max-added" :min 1 :max 20 :start 4 :type :integer :name "Max Add"}
+                                         {:key "min-duration" :min 1 :max 16 :start 1 :type :integer :name "Min Last"}
+                                         {:key "max-duration" :min 1 :max 16 :start 4 :type :integer :name "Max Last"}
+                                         {:key "min-saturation" :min 0 :max 100 :start 100 :name "Min Sat"}]
+                             :color :orange :priority 5))
+    (show/set-cue! (+ x-base 1) (+ y-base 6)
+                   (cues/cue :confetti
+                             (fn [var-map]
+                               (let [beats (params/bind-keyword-param (:beats var-map) Number 2)
+                                     cycles (params/bind-keyword-param (:cycles var-map ) Number 1)
+                                     step-ratio (params/build-param-formula Number #(/ %1 %2) beats cycles)
+                                     step (params/build-step-param :interval-ratio step-ratio)]
+                                 (cues/apply-merging-var-map var-map
+                                                             fun/confetti (show/all-fixtures)
+                                                             :step step :aim? true)))
+                             :variables [{:key "beats" :min 1 :max 8 :start 2 :type :integer :name "Beats"}
+                                         {:key "cycles" :min 1 :max 8 :start 1 :type :integer :name "Cycles"}
+                                         {:key "min-added" :min 0 :max 20 :start 1 :type :integer :name "Min Add"}
+                                         {:key "max-added" :min 1 :max 20 :start 4 :type :integer :name "Max Add"}
+                                         {:key "min-duration" :min 1 :max 16 :start 1 :type :integer :name "Min Last"}
+                                         {:key "max-duration" :min 1 :max 16 :start 4 :type :integer :name "Max Last"}
+                                         {:key "min-saturation" :min 0 :max 100 :start 100 :name "Min Sat"}]
+                             :color :orange :priority 5 :short-name "Confetti Dance"))
+
     ;; Some macro-based chases
     (show/set-cue! (+ x-base 7) (+ y-base 1)
                    (cues/cue :move-torrents

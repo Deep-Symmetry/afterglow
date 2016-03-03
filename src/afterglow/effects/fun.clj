@@ -761,3 +761,164 @@
                                         (* 255 (/ fraction (/ distance furthest))))
                                       fraction))]
                          (dimmer-fx/dimmer-effect level [fixture])))))))
+
+(defn- remove-finished-flakes
+  "Filters out any flakes that were created longer ago than the
+  configured duration. `flakes` is a map from head to a tuple
+  containing the step value after which the flake will end, followed
+  by color and potentially aim information."
+  [flakes show snapshot step]
+  (pspy :remove-finished-flakes
+        (let [now (math/round (params/resolve-param step show snapshot))]
+          (reduce
+           (fn [result [where info]]
+             (let [final-step (first info)]
+               (if (<= now final-step)
+                 (assoc result where info)
+                 result)))
+           {}
+           flakes))))
+
+(defn- add-flakes
+  "Create new flakes of a shared random color and individual random
+  durations for each of the supplied heads."
+  [heads show snapshot current-step min-duration max-duration min-saturation]
+  (let [hue (rand 360)]
+    (into {}
+          (map (fn [head]
+                 (let [min-duration (max 0 (math/round (params/resolve-param min-duration show snapshot head)))
+                       max-duration (max min-duration
+                                         (math/round (params/resolve-param max-duration show snapshot head)))
+                       duration (+ min-duration (rand-int (inc (- max-duration min-duration))))
+                       min-saturation (colors/clamp-percent-float
+                                       (params/resolve-param min-saturation show snapshot head))
+                       saturation (colors/clamp-percent-float (+ min-saturation (rand (- 100.0001 min-saturation))))]
+                   [head [(+ current-step duration) (colors/create-color :h hue :s saturation :l 50)]]))
+               heads))))
+
+(defn- aim-flakes
+  "Chooses a random point at which the newly-created flakes shoule be
+  aimed."
+  [flakes show snapshot min-x max-x min-y max-y min-z max-z]
+  (let [min-x (params/resolve-param min-x show snapshot)
+        max-x (params/resolve-param max-x show snapshot)
+        x (+ min-x (rand (- max-x min-x)))
+        min-y (params/resolve-param min-y show snapshot)
+        max-y (params/resolve-param max-y show snapshot)
+        y (+ min-y (rand (- max-y min-y)))
+        min-z (params/resolve-param min-z show snapshot)
+        max-z (params/resolve-param max-z show snapshot)
+        z (+ min-z (rand (- max-z min-z)))
+        point (Point3d. x y z)]
+    (into {} (for [[head info] flakes]
+               [head (conj info point)]))))
+
+;; TODO: add ability to fade out over a configurable number of beats.
+(defn confetti
+  "A random color effect, which assigns a new random color to a random
+  selection of the supplied fixture heads each time a step parameter
+  changes value. That color lasts a random number of steps.
+
+  The step parameter defaults to one which changes each beat, buy you
+  can supply your own with the optional keyword argument `:step`. Its
+  value will be rounded to the nearest integer when checking for
+  changes, so fades are ignored.
+
+  The minimum and maximum number of heads to assign colors on each
+  step default to 1 and 4, and can be adjusted with `:min-added` and
+  `:max-added`. The minimum and maximum number of steps that each
+  assignment will last default to 4 and 8, and can be adjusted with
+  `:min-duration` and `:max-duration`.
+
+  By default, colors chosen are always fully saturated, but you can
+  pass a percentage with `:min-saturation` and a random saturation
+  value between that and 100% will be chosen for each head.
+
+  When generating a new set of confetti flakes, if more than one head
+  is chosen, they will all be assigned a color of the same hue, but
+  may each get individual random saturations. The duration of the
+  flake on each head will also be individually randomly assigned.
+
+  In addition to assigning colors, flakes can also aim the lights at a
+  particular point. To activate this, pass a `true` value with
+  `:aim?`. By default the aiming points will be randomly generated to
+  be on the floor from half a meter to five meters in front of the
+  rig, and with _x_ values ranging from -5 to 5 meters, but you can
+  adjust the space from which they are chosen by passing values with
+  `:min-x`, `:max-x`, `:min-y`, `:max-y`, `:min-z`, and `max-z`.
+
+  All parameters may be dynamic, including show variables with the
+  standard shorthand of passing the variable name as a keyword. Since
+  `step`, `:min-added`, `:max-added`, `aim?`, and the boundaries of
+  the aiming space are not associated with a specific head, they
+  cannot be spatial parameters. The other parameters can be, however,
+  so saturations and durations can vary over the ligthing rig."
+  [fixtures & {:keys [step min-added max-added min-duration max-duration min-saturation
+                      aim? min-x max-x min-y max-y min-z max-z]
+               :or {step (params/build-step-param)
+                    min-added 1 max-added 4 min-duration 4 max-duration 8 min-saturation 100.0
+                    aim? false min-x -5.0 max-x 5.0 min-y 0.0 max-y 0.0 min-z 0.5 max-z 5.0}}]
+  {:pre [(some? *show*)]}
+  (let [step (params/bind-keyword-param step Number (params/build-step-param))
+        min-added (params/bind-keyword-param min-added Number 1)
+        max-added (params/bind-keyword-param max-added Number 4)
+        min-duration (params/bind-keyword-param min-duration Number 4)
+        max-duration (params/bind-keyword-param max-duration Number 8)
+        min-saturation (params/bind-keyword-param min-saturation Number 100.0)
+        min-x (params/bind-keyword-param min-x Number -5.0)
+        max-x (params/bind-keyword-param max-x Number 5.0)
+        min-y (params/bind-keyword-param min-y Number 0.0)
+        max-y (params/bind-keyword-param max-y Number 0.0)
+        min-z (params/bind-keyword-param min-z Number 0.5)
+        max-z (params/bind-keyword-param max-z Number 5.0)]
+    (let [heads (channels/find-rgb-heads fixtures true)
+          running (ref true)
+          current-step (ref nil)
+          flakes (ref {}) ; A map from head to [creation-step color] for active flakes
+          snapshot (rhythm/metro-snapshot (:metronome *show*))
+          min-added (params/resolve-unless-frame-dynamic min-added *show* snapshot)
+          max-added (params/resolve-unless-frame-dynamic max-added *show* snapshot)
+          min-x (params/resolve-unless-frame-dynamic min-x *show* snapshot)
+          max-x (params/resolve-unless-frame-dynamic max-x *show* snapshot)
+          min-y (params/resolve-unless-frame-dynamic min-y *show* snapshot)
+          max-y (params/resolve-unless-frame-dynamic max-y *show* snapshot)
+          min-z (params/resolve-unless-frame-dynamic min-z *show* snapshot)
+          max-z (params/resolve-unless-frame-dynamic max-z *show* snapshot)]
+      (Effect. "Confetti"
+               (fn [show snapshot]
+                 ;; Continue running until all existing flakes fade
+                 (dosync
+                  (alter flakes remove-finished-flakes show snapshot step)
+                  (or @running (seq @flakes))))
+               (fn [show snapshot]
+                 (pspy :confetti
+                       ;; See how many flakes to create (unless we've been asked to end).
+                       (dosync
+                        (when @running
+                          (let [now (math/round (params/resolve-param step show snapshot))]
+                            (when (not= now @current-step)
+                              (ref-set current-step now)
+                              (let [min-added (max 0 (math/round (params/resolve-param min-added show snapshot)))
+                                    max-added (max min-added (math/round
+                                                              (params/resolve-param max-added show snapshot)))
+                                    add (+ min-added (rand-int (inc (- max-added min-added))))
+                                    new-flakes (add-flakes (take add (shuffle heads)) show snapshot
+                                                           now min-duration max-duration min-saturation)
+                                    aimed-flakes (if aim?
+                                                   (aim-flakes new-flakes show snapshot
+                                                               min-x max-x min-y max-y min-z max-z)
+                                                   new-flakes)]
+                                (alter flakes merge aimed-flakes)))))
+                        ;; Build assigners for all active flakes.
+                        (concat (for [[head [_ color]] @flakes]
+                                  (fx/build-head-assigner :color head (fn [_ _ _ _] color)))
+                                (when aim?
+                                  (filter identity
+                                          (for [[head [_ _ point]] @flakes]
+                                            (when (seq (movement/find-moving-heads [head]))
+                                              (fx/build-head-assigner :aim head (fn [_ _ _ _] point))))))))))
+               (fn [show snapshot]
+                 ;; Arrange to shut down once all existing sparkles fade out.
+                 (dosync (ref-set running false)))))))
+
+
