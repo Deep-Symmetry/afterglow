@@ -1018,7 +1018,7 @@
   (let [x-base (* page-x 8)
         y-base (* page-y 8)]
 
-    (show/set-cue! x-base (+ y-base 2)
+    (show/set-cue! x-base (+ y-base 1)
                    (cues/cue :bloom (fn [var-map]
                                       (cues/apply-merging-var-map
                                        var-map fun/bloom (show/all-fixtures)
@@ -1026,7 +1026,7 @@
                              :variables [{:key "color" :type :color :start (colors/create-color :white)
                                           :name "Color"}
                                          {:key "fraction" :min 0 :max 1 :start 0 :velocity true}]
-                             :priority 1000 :color :purple))
+                             :held true :priority 1000 :color :purple))
 
     (show/set-cue! (+ x-base 2) (+ y-base 1)
                    (cues/cue :movement (fn [var-map]

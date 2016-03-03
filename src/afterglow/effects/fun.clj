@@ -735,16 +735,13 @@
                                                                    (transform/build-distance-measure 0 0 0))
                                         *show* (rhythm/metro-snapshot (:metronome *show*)))
           heads (channels/find-rgb-heads fixtures)
-          furthest (* 2 (transform/max-distance measure heads))
+          furthest (transform/max-distance measure heads)
           f (fn [show snapshot target previous-assignment]
               (let [fraction (params/resolve-param fraction show snapshot target)
-                    level (if (zero? furthest)
-                            1
-                            (let [distance (measure target)]
-                              (if (zero? distance)
-                                1
-                                (/ fraction (/ distance furthest)))))]
-                (color-fx/fade-colors previous-assignment color level show snapshot target)))
+                    distance (measure target)]
+                (if (<= distance (* furthest fraction))
+                  color
+                  previous-assignment)))
           assigners (fx/build-head-assigners :color heads f)]
       (apply fx/scene "Bloom"
              (concat [(Effect. "Bloom color"
@@ -753,13 +750,12 @@
                                fx/end-immediately)]
                      (for [fixture fixtures]
                        (let [distance (measure fixture)
-                             level (if (or (zero? furthest) (zero? distance))
-                                     255
-                                     (params/build-param-formula
-                                      Number
-                                      (fn [fraction]
-                                        (* 255 (/ fraction (/ distance furthest))))
-                                      fraction))]
+                             level (params/build-param-formula Number
+                                                               (fn [fraction]
+                                                                 (if (<= distance (* furthest fraction))
+                                                                   255
+                                                                   0))
+                                    fraction)]
                          (dimmer-fx/dimmer-effect level [fixture])))))))
 
 (defn- remove-finished-flakes
