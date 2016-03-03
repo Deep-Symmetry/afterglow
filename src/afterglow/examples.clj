@@ -1029,7 +1029,7 @@
                        {:key :blade-2 :phase 0.2 :pan-offset 1}
                        {:key :blade-3 :phase 0.6 :pan-offset -1}
                        {:key :blade-4 :phase 0.8 :pan-offset -2}
-                       {:key :blade-5 :phase 0.4 :tilt-offset 45}]]
+                       {:key :blade-5 :phase 0.4 :tilt-offset 20}]]
              (let [head-phase (params/build-param-formula Number #(* % (:phase head 0)) stagger)
                    tilt-osc (oscillators/sine :interval :bar :interval-ratio tilt-ratio :phase head-phase)
                    head-tilt-min (params/build-param-formula Number #(+ % (:tilt-offset head 0)) tilt-min)
@@ -1067,6 +1067,18 @@
 
     (show/set-cue! (+ x-base 2) (+ y-base 1)
                    (cues/cue :movement (fn [var-map]
+                                         (cues/apply-merging-var-map var-map fun/aim-fan
+                                                                     (concat (show/fixtures-named "blade")
+                                                                             (show/fixtures-named "torrent"))))
+                             :variables [{:key "x-scale" :min -5 :max 5 :start 1 :name "X Scale"}
+                                         {:key "y-scale" :min -10 :max 10 :start 5 :name "Y Scale"}
+                                         {:key "z" :min 0 :max 20 :start 4}
+                                       {:key "y" :min -10 :max 10 :start rig-height}
+                                       {:key "x" :min -10 :max 10 :start 0.0}]
+                           :color :blue :end-keys [:move-blades :move-torrents]))
+
+    (show/set-cue! (+ x-base 2) (+ y-base 2)
+                   (cues/cue :movement (fn [var-map]
                                          (cues/apply-merging-var-map var-map fun/twirl
                                                                      (concat (show/fixtures-named "blade")
                                                                              (show/fixtures-named "torrent"))))
@@ -1078,17 +1090,23 @@
                                          {:key "x" :min -10 :max 10 :start 0.0}]
                              :color :green :end-keys [:move-blades :move-torrents]))
 
-    (show/set-cue! (+ x-base 2) (+ y-base 2)
-                   (cues/cue :movement (fn [var-map]
-                                         (cues/apply-merging-var-map var-map fun/aim-fan
-                                                                     (concat (show/fixtures-named "blade")
-                                                                             (show/fixtures-named "torrent"))))
-                             :variables [{:key "x-scale" :min -5 :max 5 :start 1 :name "X Scale"}
-                                         {:key "y-scale" :min -10 :max 10 :start 5 :name "Y Scale"}
-                                         {:key "z" :min 0 :max 20 :start 4}
-                                       {:key "y" :min -10 :max 10 :start rig-height}
-                                       {:key "x" :min -10 :max 10 :start 0.0}]
-                           :color :blue :end-keys [:move-blades :move-torrents]))
+    (show/set-cue! (+ x-base 2) (+ y-base 3)
+                   (cues/cue :move-blades
+                             (fn [var-map] (cues/apply-merging-var-map var-map can-can))
+                             :variables [{:key "bars" :name "Bars" :min 1 :max 8 :type :integer :start 1}
+                                         {:key "cycles" :name "Cycles" :min 1 :max 8 :type :integer :start 1}
+                                         {:key "stagger" :name "Stagger" :min 0 :max 4 :start 0}
+                                         {:key "spread" :name "Spread" :min -45 :max 45
+                                          :centered true :resolution 0.25 :start 0}
+                                         {:key "pan-min" :name "Pan min" :min -180 :max 180
+                                          :centered true :resolution 0.5 :start 0}
+                                         {:key "pan-max" :name "Pan max" :min -180 :max 180
+                                          :centered true :resolution 0.5 :start 0}
+                                         {:key "tilt-min" :name "Tilt min" :min -180 :max 180
+                                          :centered true :resolution 0.5 :start -100}
+                                         {:key "tilt-max" :name "Tilt max" :min -180 :max 180
+                                          :centered true :resolution 0.5 :start 100}]
+                             :color :yellow :end-keys [:movement]))
 
     ;; A chase which overlays on other movement cues, gradually taking over the lights
     (show/set-cue! (+ x-base 2) (+ y-base 6)
@@ -1172,24 +1190,6 @@
                                                :tilt-min 148.0, :tilt-max 255.0, :tilt-bars 1, :tilt-phase 0.25}]
                                        [17 15 {:pan-min 90.0, :pan-max 179.0, :pan-bars 2, :pan-phase 0.0,
                                                :tilt-min 148.0, :tilt-max 255.0, :tilt-bars 1, :tilt-phase 0.0}]]))
-                             :end-keys [:movement]))
-
-    (show/set-cue! (+ x-base 5) y-base
-                   (cues/cue :move-blades
-                             (fn [var-map] (cues/apply-merging-var-map var-map can-can))
-                             :variables [{:key "bars" :name "Bars" :min 1 :max 8 :type :integer :start 1}
-                                         {:key "cycles" :name "Cycles" :min 1 :max 8 :type :integer :start 1}
-                                         {:key "stagger" :name "Stagger" :min 0 :max 4 :start 0}
-                                         {:key "spread" :name "Spread" :min -45 :max 45
-                                          :centered true :resolution 0.25 :start 0}
-                                         {:key "pan-min" :name "Pan min" :min -180 :max 180
-                                          :centered true :resolution 0.5 :start 0}
-                                         {:key "pan-max" :name "Pan max" :min -180 :max 180
-                                          :centered true :resolution 0.5 :start 0}
-                                         {:key "tilt-min" :name "Tilt min" :min -180 :max 180
-                                          :centered true :resolution 0.5 :start -100}
-                                         {:key "tilt-max" :name "Tilt max" :min -180 :max 180
-                                          :centered true :resolution 0.5 :start 100}]
                              :end-keys [:movement]))
 
     (show/set-cue! (+ x-base 6) (+ y-base 1)
