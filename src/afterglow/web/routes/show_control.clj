@@ -637,7 +637,7 @@
   [page-info kind req]
   (let [[left bottom] (:view page-info)
         [_ column row] (clojure.string/split kind #"-")
-        [x y] (map + (map #(Integer/valueOf %) [column row]) [left bottom])
+        [x y] (map + (map #(Integer/valueOf %) [column row]) [left bottom])  ; Translate relative page coordinates
         [cue active] (show/find-cue-grid-active-effect (:show page-info) x y)
         shift (get-in req [:params :shift])]
     (if cue
@@ -661,9 +661,8 @@
 (defn- handle-cue-release-event
   "Process a mouse up after clicking a momentary cue grid cell."
   [page-info kind]
-  (let [[left bottom] (:view page-info)
-        [_ column row id] (clojure.string/split kind #"-")
-        [x y] (map + (map #(Integer/valueOf %) [column row]) [left bottom])
+  (let [[_ column row id] (clojure.string/split kind #"-")
+        [x y] (map #(Integer/valueOf %) [column row])  ; The actual cue coordinates are sent
         id (Integer/valueOf id)
         [cue active] (show/find-cue-grid-active-effect (:show page-info) x y)]
     (swap! clients update-in [(:id page-info)] dissoc :holding)
