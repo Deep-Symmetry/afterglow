@@ -146,13 +146,14 @@ function createCueVarRow( data, varSpec, element ) {
 function findOrCreateCueVarSlider( data, varSpec ) {
     var idBase = 'cue-var-' + data.id + '-' + varSpec.key;
     var sliderId = idBase + '-slider';
+    var valueId = idBase + '-value';
     var result = $('#' + sliderId);
     if (result.length < 1) {
         var sliderProps = { value: data.value,
                             min: varSpec.min,
                             max: varSpec.max,
                             handle: "triangle",
-                            tooltip: "show" };
+                            tooltip: "hide" };
         if (varSpec.resolution) {
             sliderProps.step = resolution;
         } else if (varSpec.type != "integer") {
@@ -162,8 +163,12 @@ function findOrCreateCueVarSlider( data, varSpec ) {
             }
         }
 
+        var sliderSpan = $('<span></span>');
         var sliderInput = $("<input>", { id: sliderId });
-        createCueVarRow(data, varSpec, sliderInput);
+        sliderSpan.append(sliderInput);
+        var valueSpan = $('<span></span>', { id: valueId });
+        sliderSpan.append(valueSpan);
+        createCueVarRow(data, varSpec, sliderSpan);
         sliderInput.slider(sliderProps)
             .on("slideStart", function( e ) {
                 cueSlidersBeingDragged[sliderId] = true;
@@ -256,6 +261,7 @@ function processCueVarChange( data ) {
         if (!cueSlidersBeingDragged[varSlider.attr("id")]) {
             varSlider.slider('setValue', Number(data.value));
         }
+        $('#cue-var-' + data.id + '-' + varSpec.key + '-value').text(' ' + varSlider.slider('getValue'));
         break;
     }
 }
