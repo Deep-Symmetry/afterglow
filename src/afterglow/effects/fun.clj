@@ -964,22 +964,16 @@
   effect is created, so the number of colors and the color parameters
   themselves are fixed at that time.
 
-  If there are more than two colors, the deault behavior is to repeat
-  them in the same order, but you can also cause them to be repeated
-  in alternately forwards and backwards order by passign a `true`
-  value with `:bounce?`.
-
   The `:step`, `:tolerance`, and `:colors` parameters may be dynamic,
   (and may be bound to show variables using the standard shorthand of
   passing the variable name as a keyword). Since `:step` and
   `:tolerance` are not associated with a specific head, they cannot be
   a spatial parameters. The colors can be, however, so for example
   saturations can vary over the rig."
-  [fixtures & {:keys [step tolerance colors bounce?]
+  [fixtures & {:keys [step tolerance colors]
                :or {step (params/build-step-param)
                     tolerance 0
-                    colors default-pinstripe-colors
-                    bounce? false}}]
+                    colors default-pinstripe-colors}}]
   {:pre [(some? *show*)]}
   (let [step (params/bind-keyword-param step Number (params/build-step-param))
         tolerance (params/bind-keyword-param tolerance Number 0)
@@ -996,7 +990,7 @@
                                              (color-fx/color-effect "pin color" color stripe-heads))
                                            colors)
                               pin-step (params/build-param-formula Number #(- % i) step)]
-                          (fx/chase "Pinstripe" effects pin-step :beyond (if bounce? :bounce :loop))))
+                          (fx/chase "Pinstripe" effects pin-step :beyond :loop)))
                       (range) stripes)]
       (apply fx/scene "Pinstripes" chases))))
 
