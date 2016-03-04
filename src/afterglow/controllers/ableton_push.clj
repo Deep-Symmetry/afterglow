@@ -724,6 +724,12 @@
              (fit-cue-variable-value controller cue (second cue-vars) 8 effect-id)))
       "")))
 
+(defn- room-for-effects
+  "Determine how many display cells are available for displaying
+  effect information."
+  [controller]
+  (if (seq @(:metronome-mode controller)) 3 4))
+
 (defn- find-effect-offset-range
   "Determine the valid offset range for scrolling through the effect
   list, based on how many effects are running, and how many currently
@@ -737,12 +743,6 @@
         ;; If we are offset more than now makes sense, fix that.
         offset (swap! (:effect-offset controller) min max-offset)]
     [offset max-offset room]))
-
-(defn- room-for-effects
-  "Determine how many display cells are available for displaying
-  effect information."
-  [controller]
-  (if (seq @(:metronome-mode controller)) 3 4))
 
 (defn- update-effect-list
   "Display information about the four most recently activated
