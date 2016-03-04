@@ -142,27 +142,31 @@
 
 (def stage-wall
   "The location of the wall behind the rig on the show Z axis."
-  (tf/inches -20))
+  -1.572)
 
 (def house-rear-wall
-  "The location of the wall behind the audience onthe show Z axis."
-  (tf/inches 300))
+  "The location of the wall behind the audience on the show Z axis."
+  7.963)
 
 (def left-wall
   "The location of the house left wall on the show X axis."
-  (tf/inches -88))
+  -3)
 
 (def right-wall
   "The location of the house right wall on the show X axis."
-  (tf/inches 88))
+  4.5)
 
 (def ceiling
   "The location of the ceiling on the show Y axis."
-  (tf/inches 120))
+  2.7)
 
 (defonce ^{:doc "Allow us to send messages to an OSC interface like TouchOSC."}
   osc-client
   (atom nil))
+
+(def ipad-address
+  "The IP address of the iPad that will be used with OSC."
+  "172.16.1.55")
 
 ;; TODO: This kind of binding and tracking should be moved into an osc support namespace.
 (defonce ^{:doc "Keep track of any OSC cue bindings we have set up,
@@ -257,7 +261,7 @@
   different universe (for example, a dummy universe on ID 0, because
   your DMX interface isn't handy right now), you can override that by
   supplying a different ID after :universe."
-  [& {:keys [universe] :or {universe 1}}]
+  [& {:keys [universe extra-universe] :or {universe 1 extra-universe universe}}]
   ;; Since this class is an entry point for interactive REPL usage,
   ;; make sure a sane logging environment is established.
   (core/init-logging)
@@ -269,16 +273,19 @@
                                           (when s
                                             (show/unregister-show s)
                                             (with-show s (show/stop!)))
-                                          (show/show :universes [universe] :description "Sample Show"))))
+                                          (show/show :universes (distinct [universe extra-universe])
+                                                     :description "Sample Show"))))
 
   ;; Throw a couple of fixtures in there to play with. For better fun, use
-  ;; fixtures and addresses that correspond to your actual hardware.
+  ;; fixtures and addresses that correspond to your actual hardware. We always
+  ;; have a main universe for our main rig, and sometimes attach the other
+  ;; fixtures to their own universe if that turns out to be easier to wire.
   (patch-lighting-rig :universe universe :y rig-height
                       :blade-3-angle (tf/degrees 71.2) :blade-4-angle (tf/degrees 78.7))
-  #_(show/patch-fixture! :ws-1 (blizzard/weather-system) universe 161
-                       :x (tf/inches 55) :y (tf/inches 71) :z (tf/inches 261) :y-rotation (tf/degrees 225))
-  #_(show/patch-fixture! :ws-2 (blizzard/weather-system) universe 187
-                       :x (tf/inches -55) :y (tf/inches 71) :z (tf/inches 261) :y-rotation (tf/degrees 135))
+  (show/patch-fixture! :ws-1 (blizzard/weather-system) extra-universe 161
+                       :x 2.2 :y 1.33 :z -1.1 :y-rotation 0.0)
+  (show/patch-fixture! :ws-2 (blizzard/weather-system) extra-universe 187
+                       :x -2.2 :y 1.33 :z -1.1 :y-rotation 0.0)
   #_(show/patch-fixture! :puck-1 (blizzard/puck-fab5) universe 97 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 52))
   #_(show/patch-fixture! :puck-2 (blizzard/puck-fab5) universe 113 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 40))
 
@@ -454,7 +461,8 @@
   []
   (clear-osc-var-bindings)
   (clear-osc-cue-bindings)
-  (core/stop-osc-server))
+  (core/stop-osc-server)
+  (swap! osc-client #(when % (osc/osc-close %) nil)))
 
 (defn make-color-cue
   "Create a cue-grid entry which establishes a global color effect,
@@ -1370,9 +1378,9 @@
                                  (fun/pinstripes (clojure.set/difference
                                                   (set (show/all-fixtures))
                                                   (set (show/fixtures-named :snowball)))
-                                                 :step step :colors colors :tolerance 1)))
+                                                 :step step :colors colors)))
                              :variables [{:key "beats" :name "Beats" :min 1 :max 32 :type :integer :start 1}
-                                         {:key "cycles" :name "Cycles" :min 1 :max 8 :type :integer :start 1}
+                                         {:key "cycles" :name "Cycles" :min 1 :max 16 :type :integer :start 1}
                                          {:key "color-1" :type :color :start (colors/create-color :red)
                                           :name "Color 1"}
                                          {:key "color-2" :type :color :start (colors/create-color :white)
@@ -1819,7 +1827,7 @@
   []
   ;; Create an OSC client that so cues can send their state to TouchOSC.
   (when (nil? @osc-client)
-    (reset! osc-client (osc/osc-client "172.30.246.46" 9000)))
+    (reset! osc-client (osc/osc-client ipad-address 9000)))
 
   ;; Clean up any OSC cue bindings which previously existed.
   (clear-osc-cue-bindings)

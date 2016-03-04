@@ -927,7 +927,7 @@
   "Gathers heads into the groups that will be assigned particular
   colors by the pinstripes effect."
   [heads group-fn num-colors]
-  (let [head-groups (partition-all num-colors (vals (group-by group-fn (sort-by :x heads))))
+  (let [head-groups (partition-all num-colors (sort-by #(:x (first %)) (vals (group-by group-fn (sort-by :x heads)))))
         stripe-groups (for [i (range num-colors)] [])]
     (loop [remaining-groups head-groups
            result stripe-groups]
