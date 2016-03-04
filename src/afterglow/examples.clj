@@ -198,7 +198,7 @@
   "Clear out any OSC cue bindings which have been established."
   []
   (doseq [[x y f path] @osc-cue-bindings]
-    (ct/clear-cue-fn! x y f)
+    (ct/clear-cue-fn! (:cue-grid *show*) x y f)
     (osc/osc-handle @core/osc-server path
                     (fn [msg] :done)))
   (reset! osc-cue-bindings #{}))
