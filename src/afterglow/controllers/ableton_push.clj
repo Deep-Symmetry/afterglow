@@ -772,7 +772,7 @@
                   end-label   (if ending " Ending  " "  End    ")
                   scroll-vars (> (count (:variables cue)) 2)
                   more-label  (when scroll-vars (concat " More " [(:right-arrow special-symbols)]))
-                  cur-vals    (cues/snapshot-cue-variables cue (:id info) :show (:show controller))
+                  cur-vals    (when cue (cues/snapshot-cue-variables cue (:id info) :show (:show controller)))
                   saved-vals  (controllers/cue-vars-saved-at (:cue-grid (:show controller)) (:x info) (:y info))
                   save-action (when (seq cur-vals)
                                 (if (seq saved-vals)
