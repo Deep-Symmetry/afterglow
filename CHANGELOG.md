@@ -48,8 +48,6 @@ This change log follows the conventions of
   running, because of some assumptions they were making about how the
   effect protocol was implemented, which scenes violated. Chases are
   now more robust.
-- Releasing the mouse over a held cue in the web interface now works
-  properly for pages of cues beyond the bottom left one.
 - The low-level tempo tap handler was already more useful than I was
   giving it credit for, suitable for both aligning to the current beat
   as well as adjusting the tempo if you hit it three or more times, so
@@ -66,11 +64,19 @@ This change log follows the conventions of
   handful of special symbols used for drawing interface elements. Now
   unprintable characters are substituted with an ellipsis symbol
   rather than crashing.
+- The slider tooltips for cue variables in the web UI were getting in
+  the way of adjusting the sliders because they would appear when the
+  mouse was over the tooltip, not just the slider track. They could
+  also not be seen on mobile devices. So they have been turned off
+  entirely in favor of always-visible value labels.
 - The documentation link in the web interface now takes you to the
   proper version-specific tag of the documentation if it is a release
   build. Snapshot builds take you to `master`.
 - The nav bar in the show control web page is now compressed to better
   fit mobile devices, since it can be used on the iPad Pro.
+- Extraneous errors were being logged in the browser console because
+  we were sometimes returning spurious error responses for cue
+  variable updates, saves, and clears.
 - All MIDI event handler functions are now called in a context which
   properly recovers from exceptions at the level of that individual
   handler, so other handlers will not be affected.
