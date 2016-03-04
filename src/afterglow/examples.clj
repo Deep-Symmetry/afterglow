@@ -1175,6 +1175,42 @@
                (move/pan-tilt-effect "can can element" direction (show/fixtures-named (:key head)))))]
     (apply fx/scene "Can Can" fx)))
 
+;; TODO: It looks like this and the can-can chase are just lissajous genrators with different
+;;       values for A and B and delta. So consider pulling that part into a function both can
+;;       use.
+(defn torrent-8
+  "A effect that moves the torrents in a figure 8."
+  [& {:keys [bars cycles stagger spread pan-min pan-max tilt-min tilt-max]
+      :or {bars 1 cycles 1 stagger 0 spread 0 pan-min -45 pan-max 45 tilt-min 0 tilt-max 45}}]
+  (let [bars (params/bind-keyword-param bars Number 1)
+        cycles (params/bind-keyword-param cycles Number 1)
+        stagger (params/bind-keyword-param stagger Number 0)
+        spread (params/bind-keyword-param spread Number 0)
+        pan-min (params/bind-keyword-param pan-min Number -45)
+        pan-max (params/bind-keyword-param pan-max Number 45)
+        tilt-min (params/bind-keyword-param tilt-min Number 0)
+        tilt-max (params/bind-keyword-param tilt-max Number 45)
+        pan-ratio (params/build-param-formula Number #(/ (* 2 %1) %2) bars cycles)
+        tilt-ratio (params/build-param-formula Number #(/ %1 %2) bars cycles)
+        fx (for [head [{:key :torrent-1 :phase 0.0 :pan-offset 1}
+                       {:key :torrent-2 :phase 0.5 :pan-offset -1}]]
+             (let [head-phase (params/build-param-formula Number #(+ 0.25 (* % (:phase head 0))) stagger)
+                   tilt-osc (oscillators/sine :interval :bar :interval-ratio tilt-ratio :phase head-phase)
+                   tilt-param (oscillators/build-oscillated-param tilt-osc :min tilt-min :max tilt-max)
+                   pan-osc (oscillators/sine :interval :bar :interval-ratio pan-ratio :phase head-phase)
+                   head-pan-min (params/build-param-formula Number #(+ (if (zero? (:phase head)) %1 (- %2))
+                                                                       (* (:pan-offset head 0) %3))
+                                                            pan-min pan-max spread)
+                   head-pan-max (params/build-param-formula Number #(+ (if (zero? (:phase head)) %1 (- %2))
+                                                                       (* (:pan-offset head 0) %3))
+                                                            pan-max pan-min spread)
+                   pan-param (oscillators/build-oscillated-param pan-osc
+                                                                 :min head-pan-min
+                                                                 :max head-pan-max)
+                   direction (params/build-pan-tilt-param :pan pan-param :tilt tilt-param)]
+               (move/pan-tilt-effect "t8 element" direction (show/fixtures-named (:key head)))))]
+    (apply fx/scene "Torrent 8" fx)))
+
 (defn make-movement-cues
   "Create a page of with some large scale and layered movement
   effects. And miscellany which I'm not totally sure what to do with
@@ -1231,9 +1267,27 @@
                                          {:key "pan-max" :name "Pan max" :min -180 :max 180
                                           :centered true :resolution 0.5 :start 0}
                                          {:key "tilt-min" :name "Tilt min" :min -180 :max 180
-                                          :centered true :resolution 0.5 :start -100}
+                                          :centered true :resolution 0.5 :start -60}
                                          {:key "tilt-max" :name "Tilt max" :min -180 :max 180
                                           :centered true :resolution 0.5 :start 100}]
+                             :color :yellow :end-keys [:movement]))
+
+    (show/set-cue! (+ x-base 3) (+ y-base 3)
+                   (cues/cue :move-torrents
+                             (fn [var-map] (cues/apply-merging-var-map var-map torrent-8))
+                             :variables [{:key "bars" :name "Bars" :min 1 :max 8 :type :integer :start 2}
+                                         {:key "cycles" :name "Cycles" :min 1 :max 8 :type :integer :start 1}
+                                         {:key "stagger" :name "Stagger" :min 0 :max 4 :start 0}
+                                         {:key "spread" :name "Spread" :min -45 :max 45
+                                          :centered true :resolution 0.25 :start 0}
+                                         {:key "pan-min" :name "Pan min" :min -180 :max 180
+                                          :centered true :resolution 0.5 :start -75}
+                                         {:key "pan-max" :name "Pan max" :min -180 :max 180
+                                          :centered true :resolution 0.5 :start 90}
+                                         {:key "tilt-min" :name "Tilt min" :min -180 :max 180
+                                          :centered true :resolution 0.5 :start -10}
+                                         {:key "tilt-max" :name "Tilt max" :min -180 :max 180
+                                          :centered true :resolution 0.5 :start 75}]
                              :color :yellow :end-keys [:movement]))
 
     ;; A chase which overlays on other movement cues, gradually taking over the lights
