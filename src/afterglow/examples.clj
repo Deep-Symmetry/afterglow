@@ -1388,6 +1388,53 @@
                                          {:key "fade-fraction" :min 0 :max 1 :start 0 :name "Fade"}]
                              :color :yellow))
 
+    (show/set-cue! (+ x-base 5) (inc y-base)
+                   (cues/cue :pinstripes
+                             (fn [var-map]
+                               (let [step-ratio (build-ratio-param var-map)
+                                     step (params/build-step-param :interval-ratio step-ratio
+                                                                   :fade-fraction (:fade-fraction var-map))
+                                     colors [(:color-1 var-map) (:color-2 var-map) (:color-3 var-map)]]
+                                 (fun/pinstripes (clojure.set/difference
+                                                  (set (show/all-fixtures))
+                                                  (set (show/fixtures-named :snowball)))
+                                                 :step step :colors colors)))
+                             :variables [{:key "beats" :name "Beats" :min 1 :max 32 :type :integer :start 1}
+                                         {:key "cycles" :name "Cycles" :min 1 :max 16 :type :integer :start 1}
+                                         {:key "color-1" :type :color :start (colors/create-color :red)
+                                          :name "Color 1"}
+                                         {:key "color-2" :type :color :start (colors/create-color :white)
+                                          :name "Color 2"}
+                                         {:key "color-3" :type :color :start (colors/create-color :blue)
+                                          :name "Color 3"}
+                                         {:key "fade-fraction" :min 0 :max 1 :start 0 :name "Fade"}]
+                             :color :orange :short-name "Pin 3"))
+
+    (show/set-cue! (+ x-base 5) (+ 2 y-base)
+                   (cues/cue :pinstripes
+                             (fn [var-map]
+                               (let [step-ratio (build-ratio-param var-map)
+                                     step (params/build-step-param :interval-ratio step-ratio
+                                                                   :fade-fraction (:fade-fraction var-map))
+                                     colors [(:color-1 var-map) (:color-2 var-map)
+                                             (:color-3 var-map) (:color-4 var-map)]]
+                                 (fun/pinstripes (clojure.set/difference
+                                                  (set (show/all-fixtures))
+                                                  (set (show/fixtures-named :snowball)))
+                                                 :step step :colors colors)))
+                             :variables [{:key "beats" :name "Beats" :min 1 :max 32 :type :integer :start 1}
+                                         {:key "cycles" :name "Cycles" :min 1 :max 16 :type :integer :start 1}
+                                         {:key "color-1" :type :color :start (colors/create-color :yellow)
+                                          :name "Color 1"}
+                                         {:key "color-2" :type :color :start (colors/create-color :purple)
+                                          :name "Color 2"}
+                                         {:key "color-3" :type :color :start (colors/create-color :white)
+                                          :name "Color 3"}
+                                         {:key "color-4" :type :color :start (colors/create-color :cyan)
+                                          :name "Color 4"}
+                                         {:key "fade-fraction" :min 0 :max 1 :start 0 :name "Fade"}]
+                             :color :orange :short-name "Pin 4"))
+
     ;; Some macro-based chases
     (show/set-cue! (+ x-base 7) (+ y-base 1)
                    (cues/cue :move-torrents
