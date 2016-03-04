@@ -140,6 +140,117 @@
   main lighting rig as set up in the current venue."
   (tf/inches 62.5))
 
+(def stage-wall
+  "The location of the wall behind the rig on the show Z axis."
+  (tf/inches -20))
+
+(def house-rear-wall
+  "The location of the wall behind the audience onthe show Z axis."
+  (tf/inches 300))
+
+(def left-wall
+  "The location of the house left wall on the show X axis."
+  (tf/inches -88))
+
+(def right-wall
+  "The location of the house right wall on the show X axis."
+  (tf/inches 88))
+
+(def ceiling
+  "The location of the ceiling on the show Y axis."
+  (tf/inches 120))
+
+(defonce ^{:doc "Allow us to send messages to an OSC interface like TouchOSC."}
+  osc-client
+  (atom nil))
+
+;; TODO: This kind of binding and tracking should be moved into an osc support namespace.
+(defonce ^{:doc "Keep track of any OSC cue bindings we have set up,
+  so we can clear them out before re-creating the show."}
+  osc-cue-bindings
+  (atom #{}))
+
+(defn add-osc-cue-binding
+  "Set up a binding so the state of a cue gets communicated via OSC,
+  and record that we did that so it can be cleaned up later. Then set
+  up so that incoming OSC messages can start and end that cue."
+  [x y path]
+  (let [binding (fn [state _ _]
+                  (case state
+                    :started (osc/osc-send @osc-client path 1)
+                    :ended (osc/osc-send @osc-client path 0)
+                    nil))]
+    (swap! osc-cue-bindings conj [x y binding path])
+    (ct/add-cue-fn! (:cue-grid *show*) x y binding))
+
+  (osc/osc-handle @core/osc-server path
+                  (fn [msg]
+                    (let [[cue active] (show/find-cue-grid-active-effect *show* x y)]
+                      (when cue
+                        (if (pos? (first (:args msg)))
+                          (if (and active (not (:held cue)))
+                            (show/end-effect! (:key cue))
+                            (show/add-effect-from-cue-grid! x y))
+                          (when (and active (:held cue))
+                            (show/end-effect! (:key cue)))))))))
+
+(defn- clear-osc-cue-bindings
+  "Clear out any OSC cue bindings which have been established."
+  []
+  (doseq [[x y f path] @osc-cue-bindings]
+    (ct/clear-cue-fn! x y f)
+    (osc/osc-handle @core/osc-server path
+                    (fn [msg] :done)))
+  (reset! osc-cue-bindings #{}))
+
+(defonce ^{:doc "Keep track of any OSC var bindings we have set up,
+  so we can clear them out before re-creating the show."}
+  osc-var-bindings
+  (atom #{}))
+
+(defn add-osc-var-binding
+  "Arrange to send an OSC message whenever the value of a show
+  variable changes, and record that we did that so it can be cleaned
+  up later. The set up so incoming OSC messages update the value of that variable.
+
+  If you need to do anything more complicated than send a message with
+  the raw value of the variable, or update the variable with the raw
+  first value from the incoming OSC message, you can pass your own
+  functions with the optional keyword arguments `:send-fn` and
+  `:receive-fn`. `:send-fn` will be called with the keyword
+  identifying the variable that has changed, and its new value.
+  `:receive-fn` will be called with the incoming OSC message.
+
+  If you want this binding to not affect reception of messages on the
+  OSC path (for example because you have another variable binding set
+  up which processes these messages, since they contain values for
+  multiple show variables), then pass `:none` as the value for
+  `:receive-fn`."
+  [var-key path & {:keys [send-fn receive-fn]}]
+  (let [have-receiver (not= receive-fn :none)
+        binding (or send-fn
+                    (fn [_ v]
+                      (osc/osc-send @osc-client path v)))]
+    (swap! osc-var-bindings conj [var-key binding path have-receiver])
+    (show/add-variable-set-fn! var-key binding)
+
+    (when have-receiver
+      (osc/osc-handle @core/osc-server path
+                      (or receive-fn
+                          (fn [msg]
+                            (show/set-variable! var-key (first (:args msg)))))))))
+
+(defn- clear-osc-var-bindings
+  "Clear out any OSC var bindings which have been established."
+  []
+  (doseq [[k f path have-receiver] @osc-var-bindings]
+    (show/clear-variable-set-fn! k f)
+    (when have-receiver (osc/osc-handle @core/osc-server path
+                                        (fn [msg] :done))))
+  (reset! osc-var-bindings #{}))
+
+(declare make-cues)
+
 (defn use-sample-show
   "Set up a sample show for experimenting with Afterglow. By default
   it will create the show to use universe 1, but if you want to use a
@@ -171,7 +282,19 @@
   #_(show/patch-fixture! :puck-1 (blizzard/puck-fab5) universe 97 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 52))
   #_(show/patch-fixture! :puck-2 (blizzard/puck-fab5) universe 113 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 40))
 
+  ;; Turn on the OSC server, and clear any variable bindings that might have been around from previous runs.
+  (when (nil? @core/osc-server)
+    (core/start-osc-server 16010))
+  (clear-osc-var-bindings)
+
+  ;; Enable cues whose purpose is to set show variable values while they run.
   (reset! var-binder (var-fx/create-for-show *show*))
+
+  ;; Create a bunch of example cues
+  (make-cues)
+
+  ;; Return the symbol through which the show can be accessed, rather than the value itself,
+  ;; which is huge and causes issues for some REPL environments.
   '*show*)
 
 (defn global-color-effect
@@ -285,6 +408,7 @@
   grids, and the like."
   []
   (when (nil? @core/osc-server) (core/start-osc-server 16010))
+
   (let [left (tf/inches -88)
         right (tf/inches 86)
         width (- right left)
@@ -328,6 +452,8 @@
 (defn osc-shutdown
   "Shut down osc server and clean up."
   []
+  (clear-osc-var-bindings)
+  (clear-osc-cue-bindings)
   (core/stop-osc-server))
 
 (defn make-color-cue
@@ -741,10 +867,7 @@
                      (cues/function-cue :strobe-all :strobe (show/all-fixtures) :effect-name "Raw Strobe"))
 
 
-    ;; Dimmer cues to turn on and set brightness of groups of lights
-    (make-dimmer-cue nil (+ x-base 0) (+ y-base 2) :yellow)
-    (doall (map-indexed (fn [i group] (make-dimmer-cue group (+ x-base (inc i)) (+ y-base 2) :yellow)) light-groups))
-
+    ;; The fun sparkle cue, and a binding so TouchOSC can control it and show its state
     (show/set-cue! (+ x-base 7) (+ y-base 2)
                    (cues/cue :sparkle (fn [var-map]
                                         (cues/apply-merging-var-map var-map fun/sparkle (show/all-fixtures)))
@@ -752,6 +875,11 @@
                              :priority 100
                              :variables [{:key "chance" :min 0.0 :max 0.4 :start 0.05 :velocity true}
                                          {:key "fade-time" :name "Fade" :min 1 :max 2000 :start 50 :type :integer}]))
+    (add-osc-cue-binding (+ x-base 7) (+ y-base 2) "/1/sparkle")
+
+    ;; Dimmer cues to turn on and set brightness of groups of lights
+    (make-dimmer-cue nil (+ x-base 0) (+ y-base 2) :yellow)
+    (doall (map-indexed (fn [i group] (make-dimmer-cue group (+ x-base (inc i)) (+ y-base 2) :yellow)) light-groups))
 
     ;; Dimmer oscillator cues: Sawtooth
     (make-sawtooth-dimmer-cue nil (+ x-base 0) (+ y-base 3) :yellow)
@@ -1329,7 +1457,9 @@
   (let [x-base (* page-x 8)
         y-base (* page-y 8)
         fixtures [:torrent-1 :torrent-2 :blade-1 :blade-2 :blade-3 :blade-4 :blade-5]
-        transform (Transform3D.)]
+        transform (Transform3D.)
+        width (- right-wall left-wall)
+        depth (- house-rear-wall stage-wall)]
 
     ;; Set up default shared aiming coordinates
     (show/set-variable! :aim-group-a-x 0.0)
@@ -1338,6 +1468,53 @@
     (show/set-variable! :aim-group-b-x 0.0)
     (show/set-variable! :aim-group-b-y 0.0)
     (show/set-variable! :aim-group-b-z 2.0)
+
+    ;; Set up OSC bindings so Touch OSC can control these cues in a powerful way with XY pads.
+    (add-osc-var-binding :aim-group-a-x "/1/aim-a"
+                         :send-fn (fn [_ v]
+                                    (osc/osc-send @osc-client "/1/aim-a"
+                                                  (/ (- v left-wall) width)
+                                                  (/ (- (show/get-variable :aim-group-a-z) stage-wall) depth)))
+                         :receive-fn (fn [msg]
+                                       (show/set-variable! :aim-group-a-x
+                                                           (+ left-wall (* width (first (:args msg)))))
+                                       (show/set-variable! :aim-group-a-z
+                                                           (+ stage-wall (* depth (second (:args msg)))))))
+    (add-osc-var-binding :aim-group-a-z "/1/aim-a"
+                         :send-fn (fn [_ v]
+                                    (osc/osc-send @osc-client "/1/aim-a"
+                                                  (/ (- (show/get-variable :aim-group-a-x) left-wall) width)
+                                                  (/ (- v stage-wall) depth)))
+                         :receive-fn :none)
+
+    (add-osc-var-binding :aim-group-a-y "/1/aim-a-y"
+                         :send-fn (fn [_ v]
+                                    (osc/osc-send @osc-client "/1/aim-a-y" (/ v ceiling)))
+                         :receive-fn (fn [msg]
+                                       (show/set-variable! :aim-group-a-y (* ceiling (first (:args msg))))))
+
+    (add-osc-var-binding :aim-group-b-x "/1/aim-b"
+                         :send-fn (fn [_ v]
+                                    (osc/osc-send @osc-client "/1/aim-b"
+                                                  (/ (- v left-wall) width)
+                                                  (/ (- (show/get-variable :aim-group-b-z) stage-wall) depth)))
+                         :receive-fn (fn [msg]
+                                       (show/set-variable! :aim-group-b-x
+                                                           (+ left-wall (* width (first (:args msg)))))
+                                       (show/set-variable! :aim-group-b-z
+                                                           (+ stage-wall (* depth (second (:args msg)))))))
+    (add-osc-var-binding :aim-group-b-z "/1/aim-b"
+                         :send-fn (fn [_ v]
+                                    (osc/osc-send @osc-client "/1/aim-b"
+                                                  (/ (- (show/get-variable :aim-group-b-x) left-wall) width)
+                                                  (/ (- v stage-wall) depth)))
+                         :receive-fn :none)
+
+    (add-osc-var-binding :aim-group-b-y "/1/aim-b-y"
+                         :send-fn (fn [_ v]
+                                    (osc/osc-send @osc-client "/1/aim-b-y" (/ v ceiling)))
+                         :receive-fn (fn [msg]
+                                       (show/set-variable! :aim-group-b-y (* ceiling (first (:args msg))))))
 
     ;; Set up default transformation of a reflection over the Y axis
     (.setScale transform (Vector3d. -1.0 1.0 1.0))
@@ -1350,14 +1527,22 @@
         (let [fixture (first fixtures)]
           ;; Disconnected individual aim cues
           (show/set-cue! (+ x-base index) y-base (build-aim-cue fixture nil false :white))
+
           ;; Group A untransformed aim cues
-          (show/set-cue! (+ x-base index) (inc y-base) (build-aim-cue fixture "a" false :blue))
+          (show/set-cue! (+ x-base index) (inc y-base) (build-aim-cue fixture "a" false :red))
+          (add-osc-cue-binding (+ x-base index) (inc y-base) (str "/1/aim-" (name fixture) "-a"))
+
           ;; Group A transformed aim cues
-          (show/set-cue! (+ x-base index) (+ y-base 2) (build-aim-cue fixture "a" true :cyan))
+          (show/set-cue! (+ x-base index) (+ y-base 2) (build-aim-cue fixture "a" true :orange))
+          (add-osc-cue-binding (+ x-base index) (+ y-base 2) (str "/1/flip-" (name fixture) "-a"))
+
           ;; Group B untransformed aim cues
-          (show/set-cue! (+ x-base index) (+ y-base 3) (build-aim-cue fixture "b" false :red))
+          (show/set-cue! (+ x-base index) (+ y-base 3) (build-aim-cue fixture "b" false :blue))
+          (add-osc-cue-binding (+ x-base index) (+ y-base 3) (str "/1/aim-" (name fixture) "-b"))
+
           ;; Group B transformed aim cues
-          (show/set-cue! (+ x-base index) (+ y-base 4) (build-aim-cue fixture "b" true :orange)))
+          (show/set-cue! (+ x-base index) (+ y-base 4) (build-aim-cue fixture "b" true :cyan))
+          (add-osc-cue-binding (+ x-base index) (+ y-base 4) (str "/1/flip-" (name fixture) "-b")))
         (recur (rest fixtures) (inc index))))
 
     ;; Transformation modifiers for group A
@@ -1367,14 +1552,16 @@
                                (let [transform (Transform3D.)]
                                  (.setScale transform (Vector3d. 1.0 -1.0 1.0))
                                  (var-fx/variable-effect @var-binder :aim-group-a-transform transform)))
-                             :color :cyan :short-name "Group B flip Y"))
+                             :color :cyan :short-name "Group A flip Y"))
+    (add-osc-cue-binding (+ x-base 7) (inc y-base) "/1/flip-a-y")
     (show/set-cue! (+ x-base 7) (+ y-base 2)
                    (cues/cue :aim-group-a-transform
                              (fn [_]
                                (let [transform (Transform3D.)]
                                  (.setScale transform (Vector3d. -1.0 -1.0 1.0))
                                  (var-fx/variable-effect @var-binder :aim-group-a-transform transform)))
-                             :color :cyan :short-name "Group B flip XY"))
+                             :color :cyan :short-name "Group A flip XY"))
+    (add-osc-cue-binding (+ x-base 7) (+ y-base 2) "/1/flip-a-xy")
 
     ;; Transformation modifiers for group B
     (show/set-cue! (+ x-base 7) (+ y-base 3)
@@ -1384,13 +1571,15 @@
                                  (.setScale transform (Vector3d. 1.0 -1.0 1.0))
                                  (var-fx/variable-effect @var-binder :aim-group-b-transform transform)))
                              :color :orange :short-name "Group B flip Y"))
+    (add-osc-cue-binding (+ x-base 7) (+ y-base 3) "/1/flip-b-y")
     (show/set-cue! (+ x-base 7) (+ y-base 4)
                    (cues/cue :aim-group-b-transform
                              (fn [_]
                                (let [transform (Transform3D.)]
                                  (.setScale transform (Vector3d. -1.0 -1.0 1.0))
                                  (var-fx/variable-effect @var-binder :aim-group-b-transform transform)))
-                             :color :orange :short-name "Group B flip XY"))))
+                             :color :orange :short-name "Group B flip XY"))
+    (add-osc-cue-binding (+ x-base 7) (+ y-base 4) "/1/flip-b-xy")))
 
 (defn- direction-cue-var-key
   "Determine the cue variable key value to use for a variable being
@@ -1547,6 +1736,14 @@
 (defn make-cues
   "Create a bunch of example cues for experimentation."
   []
+  ;; Create an OSC client that so cues can send their state to TouchOSC.
+  (when (nil? @osc-client)
+    (reset! osc-client (osc/osc-client "172.30.246.46" 9000)))
+
+  ;; Clean up any OSC cue bindings which previously existed.
+  (clear-osc-cue-bindings)
+
+  ;; Fill in some cue pages
   (make-main-color-dimmer-cues 0 0)  ; Creates a sigle 8x8 page at the origin
   (make-torrent-cues 0 2)  ; Creates 2 8x8 pages: two pages up from the origin, and the next page to the right
   (make-ambient-cues 1 0)  ; Creates a single 8x8 page to the right of the origin
