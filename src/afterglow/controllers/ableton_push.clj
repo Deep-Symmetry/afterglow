@@ -758,7 +758,10 @@
                   cur-vals    (cues/snapshot-cue-variables cue (:id info) :show (:show controller))
                   saved-vals  (controllers/cue-vars-saved-at (:cue-grid (:show controller)) (:x info) (:y info))
                   save-action (when (seq cur-vals)
-                                (if (= cur-vals saved-vals) :clear :save))
+                                (if (seq saved-vals)
+                                  (if (= cur-vals saved-vals) :clear :save)
+                                  (when (not= cur-vals (:starting-vars info))
+                                    :save)))
                   save-label  (case save-action
                                 :save  "  Save   "
                                 :clear " Clear   "
