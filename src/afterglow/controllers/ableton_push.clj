@@ -724,6 +724,20 @@
              (fit-cue-variable-value controller cue (second cue-vars) 8 effect-id)))
       "")))
 
+(defn- find-effect-offset-range
+  "Determine the valid offset range for scrolling through the effect
+  list, based on how many effects are running, and how many currently
+  fit on the display. If we are currently scrolled beyond the sensible
+  range, correct that. Returns a tuple of the current offset, the
+  maximum sensible offset, and the number of effects displayed."
+  [controller]
+  (let [room (room-for-effects controller)
+        size (count (:effects @(:active-effects (:show controller))))
+        max-offset (max 0 (- size room))
+        ;; If we are offset more than now makes sense, fix that.
+        offset (swap! (:effect-offset controller) min max-offset)]
+    [offset max-offset room]))
+
 (defn- room-for-effects
   "Determine how many display cells are available for displaying
   effect information."
@@ -737,6 +751,9 @@
 
   ;; First clean up any cue variable scroll offsets for effects that have ended
   (swap! (:cue-var-offsets controller) select-keys (map :id (:meta @(:active-effects (:show controller)))))
+
+  ;; Then adjust our scroll offset if it no longer makes sense
+  (find-effect-offset-range controller)
 
   (let [room        (room-for-effects controller)
         first-cell  (- 4 room)
@@ -790,20 +807,6 @@
           (write-display-cell controller 2 2 "are active.")))))
 
 (declare enter-stop-mode)
-
-(defn- find-effect-offset-range
-  "Determine the valid offset range for scrolling through the effect
-  list, based on how many effects are running, and how many currently
-  fit on the display. If we are currently scrolled beyond the sensible
-  range, correct that. Returns a tuple of the current offset, the
-  maximum sensible offset, and the number of effects displayed."
-  [controller]
-  (let [room (room-for-effects controller)
-        size (count (:effects @(:active-effects (:show controller))))
-        max-offset (max 0 (- size room))
-        ;; If we are offset more than now makes sense, fix that.
-        offset (swap! (:effect-offset controller) min max-offset)]
-    [offset max-offset room]))
 
 (defn- update-scroll-arrows
   "Activate the arrow buttons for directions in which scrolling is
