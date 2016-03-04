@@ -785,6 +785,9 @@
   [page-x page-y]
   (let [x-base (* page-x 8)
         y-base (* page-y 8)
+        rig-left (:x (first (show/fixtures-named :hex-2)))
+        rig-right (:x (first (show/fixtures-named :hex-1)))
+        rig-width (- rig-right rig-left)
         hue-bar (oscillators/build-oscillated-param  ; Spread a rainbow across a bar of music
                  (oscillators/sawtooth :interval :bar) :max 360)
         desat-beat (oscillators/build-oscillated-param  ; Desaturate a color as a beat progresses
@@ -792,6 +795,9 @@
         hue-gradient (params/build-spatial-param  ; Spread a rainbow across the light grid
                       (show/all-fixtures)
                       (fn [head] (- (:x head) (:min-x @(:dimensions *show*)))) :max 360)
+        rig-hue-gradient (params/build-spatial-param  ; Spread a rainbow across just the main rig, repeating
+                          (show/all-fixtures)         ; beyond that, irrespective of other lights' positions.
+                          (fn [head] (colors/clamp-hue (* 360 (/ (- (:x head) rig-left) rig-width)))))
         hue-z-gradient (params/build-spatial-param  ; Spread a rainbow across the light grid front to back
                         (show/all-fixtures)
                         (fn [head] (- (:z head) (:min-z @(:dimensions *show*)))) :max 360)]
@@ -819,9 +825,10 @@
                                             :type :integer}])))
     (show/set-cue! (+ x-base 1) (+ y-base 1)
                    (cues/cue :all-color (fn [_] (global-color-effect
-                                                 (params/build-color-param :s :rainbow-saturation :l 50 :h hue-gradient)
+                                                 (params/build-color-param :s :rainbow-saturation :l 50
+                                                                           :h rig-hue-gradient)
                                                  :include-color-wheels? true))
-                             :short-name "Rainbow Grid"
+                             :short-name "Rainbow Rig"
                              :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
                                           :type :integer}]))
     (show/set-cue! (+ x-base 2) (+ y-base 1)
