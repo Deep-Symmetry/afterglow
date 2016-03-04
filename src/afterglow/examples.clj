@@ -1266,7 +1266,7 @@
                              (fn [var-map] (cues/apply-merging-var-map var-map can-can))
                              :variables [{:key "bars" :name "Bars" :min 1 :max 8 :type :integer :start 1}
                                          {:key "cycles" :name "Cycles" :min 1 :max 8 :type :integer :start 1}
-                                         {:key "stagger" :name "Stagger" :min 0 :max 4 :start 0}
+                                         {:key "stagger" :name "Stagger" :min 0 :max 4 :start 0.5}
                                          {:key "spread" :name "Spread" :min -45 :max 45
                                           :centered true :resolution 0.25 :start 0}
                                          {:key "pan-min" :name "Pan min" :min -180 :max 180
