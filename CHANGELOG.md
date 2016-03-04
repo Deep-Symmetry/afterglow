@@ -80,6 +80,9 @@ This change log follows the conventions of
 - The end effect buttons and cue variable save/scroll buttons under
   the text area on the Ableton Push were not affecting the proper
   effects when the effect view was scrolled back from the most recent.
+- The cue variable save button now only appears under the text area on
+  the Push for effects whose cue variables have been changed from
+  their default values, as happened already in the web UI.
 - All MIDI event handler functions are now called in a context which
   properly recovers from exceptions at the level of that individual
   handler, so other handlers will not be affected.
