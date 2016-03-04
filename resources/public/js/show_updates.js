@@ -115,8 +115,10 @@ function buildEffectRow( data ) {
 }
 
 var cueSlidersBeingDragged = { };
+var cuePickersSentValues = { };
 
 function sendCueVarUpdate( effectKey, id, varKey, value ) {
+    //console.log("setting effectKey " + effectKey + " (id " + id + ") varKey " + varKey + " to " + value);
     var jqxhr = $.post( (context + "/ui-event/" + page_id + "/set-cue-var"),
                         { "effect-key": effectKey,
                           "effect-id": id,
@@ -126,7 +128,6 @@ function sendCueVarUpdate( effectKey, id, varKey, value ) {
         .fail(function() {
             console.log("Problem setting cue variable for effect with id " + id + ".");
         });
-    //console.log("effectKey " + effectKey + " (id " + id + ") varKey " + varKey + " set to " + value);
 }
 
 function createCueVarRow( data, varSpec, element ) {
@@ -221,12 +222,13 @@ function findOrCreateColorPicker( data, varSpec ) {
         var pickerInput = $('<input>', { id: pickerId,
                                          type: "hidden",
                                          value: data.value });
+        cuePickersSentValues[pickerId] = data.value;
         createCueVarRow(data, varSpec, pickerInput);
         pickerInput.minicolors({ changeDelay: 33,
                                  position: "top right",
                                  change: function( value, opacity ) {
-                                     if (cueSlidersBeingDragged[pickerId] != value) {
-                                         cueSlidersBeingDragged[pickerId] = value;
+                                     if (cuePickersSentValues[pickerId] != value) {
+                                         cuePickersSentValues[pickerId] = value;
                                          sendCueVarUpdate(data.effect, data.id, varSpec.key, value);
                                      }
                                  }});
@@ -245,8 +247,8 @@ function processCueVarChange( data ) {
 
     case "color":
         var colorPicker = findOrCreateColorPicker(data, varSpec);
-        if (data.value != cueSlidersBeingDragged[colorPicker.attr("id")]) {
-            cueSlidersBeingDragged[colorPicker.attr("id")] = data.value;
+        if (data.value != cuePickersSentValues[colorPicker.attr("id")]) {
+            cuePickersSentValues[colorPicker.attr("id")] = data.value;
             colorPicker.minicolors('value', data.value);
         }
         break;
