@@ -995,7 +995,7 @@
                         (let [effects (map (fn [color]
                                              (color-fx/color-effect "pin color" color stripe-heads))
                                            colors)
-                              pin-step (params/build-param-formula Number #(+ % i) step)]
+                              pin-step (params/build-param-formula Number #(- % i) step)]
                           (fx/chase "Pinstripe" effects pin-step :beyond (if bounce? :bounce :loop))))
                       (range) stripes)]
       (apply fx/scene "Pinstripes" chases))))
