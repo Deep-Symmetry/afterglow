@@ -1362,9 +1362,23 @@
 
     (show/set-cue! (+ x-base 5) y-base
                    (cues/cue :pinstripes
-                             (fn [var-map] (fun/pinstripes (clojure.set/difference
-                                                            (set (show/all-fixtures))
-                                                            (set (show/fixtures-named :snowball)))))))
+                             (fn [var-map]
+                               (let [step-ratio (build-ratio-param var-map)
+                                     step (params/build-step-param :interval-ratio step-ratio
+                                                                   :fade-fraction (:fade-fraction var-map))
+                                     colors [(:color-1 var-map) (:color-2 var-map)]]
+                                 (fun/pinstripes (clojure.set/difference
+                                                  (set (show/all-fixtures))
+                                                  (set (show/fixtures-named :snowball)))
+                                                 :step step :colors colors :tolerance 1)))
+                             :variables [{:key "beats" :name "Beats" :min 1 :max 32 :type :integer :start 1}
+                                         {:key "cycles" :name "Cycles" :min 1 :max 8 :type :integer :start 1}
+                                         {:key "color-1" :type :color :start (colors/create-color :red)
+                                          :name "Color 1"}
+                                         {:key "color-2" :type :color :start (colors/create-color :white)
+                                          :name "Color 2"}
+                                         {:key "fade-fraction" :min 0 :max 1 :start 0 :name "Fade"}]
+                             :color :yellow))
 
     ;; Some macro-based chases
     (show/set-cue! (+ x-base 7) (+ y-base 1)

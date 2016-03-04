@@ -987,7 +987,8 @@
     (let [heads (channels/find-rgb-heads fixtures false)
           snapshot (rhythm/metro-snapshot (:metronome *show*))
           tolerance (params/resolve-param tolerance *show* snapshot)
-          colors (params/resolve-param colors *show* snapshot)
+          colors (map #(params/bind-keyword-param % :com.evocomputing.colors/color (colors/create-color :white))
+                      (params/resolve-param colors *show* snapshot))
           group-fn (if (< tolerance 0.00001) :x #(math/round (/ (:x %) tolerance)))
           stripes (gather-stripes heads group-fn (count colors))
           chases (map (fn [i stripe-heads]
