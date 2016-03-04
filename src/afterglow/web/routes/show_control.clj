@@ -706,7 +706,8 @@
                       :boolean (Boolean/valueOf value)
                       :integer (Integer/valueOf value)
                       (Float/valueOf value))]
-          (cues/set-cue-variable! cue var-spec value :when-id (Integer/valueOf effect-id)))))))
+          (cues/set-cue-variable! cue var-spec value :when-id (Integer/valueOf effect-id))))
+      {:set effect-key})))
 
 (defn- handle-save-effect-event
   "Process a request to save the current state of an effect's cue
@@ -718,7 +719,8 @@
           cue (:cue effect)]
       (when (some? cue)
         (controllers/save-cue-vars! (:cue-grid (:show page-info)) (:x effect) (:y effect)
-                                    (cues/snapshot-cue-variables cue (Integer/valueOf effect-id)))))))
+                                    (cues/snapshot-cue-variables cue (Integer/valueOf effect-id))))
+      {:saved effect-key})))
 
 (defn- handle-clear-effect-event
   "Process a request to clear an effect's saved cue variables."
@@ -728,7 +730,8 @@
           effect (show/find-effect effect-key)
           cue (:cue effect)]
       (when (and (= (Integer/valueOf effect-id) (:id effect)) (some? cue))
-        (controllers/clear-saved-cue-vars! (:cue-grid (:show page-info)) (:x effect) (:y effect))))))
+        (controllers/clear-saved-cue-vars! (:cue-grid (:show page-info)) (:x effect) (:y effect)))
+      {:cleared effect-key})))
 
 (defn- move-view
   "Updates the origin of our view rectangle, and if it actually
