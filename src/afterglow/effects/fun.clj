@@ -843,12 +843,13 @@
   adjust the space from which they are chosen by passing values with
   `:min-x`, `:max-x`, `:min-y`, `:max-y`, `:min-z`, and `max-z`.
 
-  All parameters may be dynamic, including show variables with the
-  standard shorthand of passing the variable name as a keyword. Since
-  `step`, `:min-added`, `:max-added`, `aim?`, and the boundaries of
-  the aiming space are not associated with a specific head, they
-  cannot be spatial parameters. The other parameters can be, however,
-  so saturations and durations can vary over the ligthing rig."
+  All parameters after `fixtures` may be dynamic, including show
+  variables with the standard shorthand of passing the variable name
+  as a keyword. Since `step`, `:min-added`, `:max-added`, `aim?`, and
+  the boundaries of the aiming space are not associated with a
+  specific head, they cannot be spatial parameters. The other
+  parameters can be, however, so saturations and durations can vary
+  over the ligthing rig."
   [fixtures & {:keys [step min-added max-added min-duration max-duration min-saturation
                       aim? min-x max-x min-y max-y min-z max-z]
                :or {step (params/build-step-param)
@@ -916,5 +917,86 @@
                (fn [show snapshot]
                  ;; Arrange to shut down once all existing sparkles fade out.
                  (dosync (ref-set running false)))))))
+
+(def default-pinstripe-colors
+  "The set of colors that will be used by a pinstripe effect if no
+  `:colors` parameter is supplied."
+  [(colors/create-color :red) (colors/create-color :white)])
+
+(defn- gather-stripes
+  "Gathers heads into the groups that will be assigned particular
+  colors by the pinstripes effect."
+  [heads group-fn num-colors]
+  (let [head-groups (partition-all num-colors (vals (group-by group-fn (sort-by :x heads))))
+        stripe-groups (for [i (range num-colors)] [])]
+    (loop [remaining-groups head-groups
+           result stripe-groups]
+      (let [current-group (first remaining-groups)
+            remaining-groups (rest remaining-groups)
+            result (map concat result (concat current-group (repeat [])))]
+        (if (empty? remaining-groups)
+          result
+          (recur remaining-groups result))))))
+
+;; TODO: Consider :include-color-wheels? arg, but they lag so definitely default to no.
+(defn pinstripes
+  "A color effect which divides the lights into alternating columns by
+  their _x_ positions (with configurable tolerance, defaulting to
+  requiring exact equality), and assigns a color to each column. The
+  colors rotate according to a step parameter.
+
+  The step parameter defaults to one which changes abruptly on each
+  beat, but you can supply your own with the optional keyword argument
+  `:step`. Fades between colors can be achieved by passing a step
+  parameter that fades.
+
+  The tolerance used when grouping the heads into stripes is
+  controlled by the optional parameter `:tolerance`, which defaults to
+  zero, meaning the heads must have the exact same _x_ value to get
+  assigned to the same stripe. The assignment of heads into stripes is
+  done when the effect is created, so if the tolerance changes after
+  that, it will have no effect.
+
+  The colors themselves are passed as a sequence with `:colors` and
+  default to red and white. The list of colors you supply can be of
+  any length. Although the colors within the list themselves can be
+  dynamic parameters, the conntent of the list is evaluated when the
+  effect is created, so the number of colors and the color parameters
+  themselves are fixed at that time.
+
+  If there are more than two colors, the deault behavior is to repeat
+  them in the same order, but you can also cause them to be repeated
+  in alternately forwards and backwards order by passign a `true`
+  value with `:bounce?`.
+
+  The `:step`, `:tolerance`, and `:colors` parameters may be dynamic,
+  (and may be bound to show variables using the standard shorthand of
+  passing the variable name as a keyword). Since `:step` and
+  `:tolerance` are not associated with a specific head, they cannot be
+  a spatial parameters. The colors can be, however, so for example
+  saturations can vary over the rig."
+  [fixtures & {:keys [step tolerance colors bounce?]
+               :or {step (params/build-step-param)
+                    tolerance 0
+                    colors default-pinstripe-colors
+                    bounce? false}}]
+  {:pre [(some? *show*)]}
+  (let [step (params/bind-keyword-param step Number (params/build-step-param))
+        tolerance (params/bind-keyword-param tolerance Number 0)
+        colors (params/bind-keyword-param colors java.util.List default-pinstripe-colors)]
+    (let [heads (channels/find-rgb-heads fixtures false)
+          snapshot (rhythm/metro-snapshot (:metronome *show*))
+          tolerance (params/resolve-param tolerance *show* snapshot)
+          colors (params/resolve-param colors *show* snapshot)
+          group-fn (if (< tolerance 0.00001) :x #(math/round (/ (:x %) tolerance)))
+          stripes (gather-stripes heads group-fn (count colors))
+          chases (map (fn [i stripe-heads]
+                        (let [effects (map (fn [color]
+                                             (color-fx/color-effect "pin color" color stripe-heads))
+                                           colors)
+                              pin-step (params/build-param-formula Number #(+ % i) step)]
+                          (fx/chase "Pinstripe" effects pin-step :beyond (if bounce? :bounce :loop))))
+                      (range) stripes)]
+      (apply fx/scene "Pinstripes" chases))))
 
 

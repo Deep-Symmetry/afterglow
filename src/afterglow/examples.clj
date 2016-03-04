@@ -1360,6 +1360,12 @@
                                          {:key "min-saturation" :min 0 :max 100 :start 100 :name "Min Sat"}]
                              :color :orange :priority 5 :short-name "Confetti Dance"))
 
+    (show/set-cue! (+ x-base 5) y-base
+                   (cues/cue :pinstripes
+                             (fn [var-map] (fun/pinstripes (clojure.set/difference
+                                                            (set (show/all-fixtures))
+                                                            (set (show/fixtures-named :snowball)))))))
+
     ;; Some macro-based chases
     (show/set-cue! (+ x-base 7) (+ y-base 1)
                    (cues/cue :move-torrents
@@ -1903,10 +1909,9 @@
 
 (defn use-push
   "A trivial reminder of how to connect the Ableton Push to run the
-  show. But also sets up the cues, if you haven't yet."
+  show."
   [& {:keys [device-filter refresh-interval display-name]
            :or {device-filter "User Port"
                 refresh-interval (/ 1000 15)
                 display-name "Ableton Push"}}]
-  (make-cues)
   (push/auto-bind *show* :device-filter device-filter :refresh-interval refresh-interval :display-name display-name))
