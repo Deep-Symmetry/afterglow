@@ -1150,14 +1150,14 @@
         pan-min (params/bind-keyword-param pan-min Number 0)
         pan-max (params/bind-keyword-param pan-max Number 0)
         tilt-min (params/bind-keyword-param tilt-min Number -30)
-        tilt-max (params/bind-keyword-param pan-max Number 30)
+        tilt-max (params/bind-keyword-param tilt-max Number 30)
         pan-ratio (params/build-param-formula Number #(/ (* 4 %1) %2) bars cycles)
         tilt-ratio (params/build-param-formula Number #(/ %1 %2) bars cycles)
         fx (for [head [{:key :blade-1 :phase 0.0 :pan-offset 2}
                        {:key :blade-2 :phase 0.2 :pan-offset 1}
                        {:key :blade-3 :phase 0.6 :pan-offset -1}
                        {:key :blade-4 :phase 0.8 :pan-offset -2}
-                       {:key :blade-5 :phase 0.4 :tilt-offset 20}]]
+                       {:key :blade-5 :phase 0.4 :tilt-offset 10}]]
              (let [head-phase (params/build-param-formula Number #(* % (:phase head 0)) stagger)
                    tilt-osc (oscillators/sine :interval :bar :interval-ratio tilt-ratio :phase head-phase)
                    head-tilt-min (params/build-param-formula Number #(+ % (:tilt-offset head 0)) tilt-min)
