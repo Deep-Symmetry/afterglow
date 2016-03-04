@@ -77,6 +77,9 @@ This change log follows the conventions of
 - Extraneous errors were being logged in the browser console because
   we were sometimes returning spurious error responses for cue
   variable updates, saves, and clears.
+- The end effect buttons and cue variable save/scroll buttons under
+  the text area on the Ableton Push were not affecting the proper
+  effects when the effect view was scrolled back from the most recent.
 - All MIDI event handler functions are now called in a context which
   properly recovers from exceptions at the level of that individual
   handler, so other handlers will not be affected.

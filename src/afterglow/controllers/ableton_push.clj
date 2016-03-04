@@ -1181,8 +1181,11 @@
   [controller note]
   (let [room    (room-for-effects controller)
         fx-info @(:active-effects (:show controller))
-        fx      (vec (drop (- (count (:effects fx-info)) room) (:effects fx-info)))
-        fx-meta (vec (drop (- (count (:meta fx-info)) room) (:meta fx-info)))
+        fx      (:effects fx-info)
+        fx-meta (:meta fx-info)
+        num-skipped (- (count fx-meta) room @(:effect-offset controller))
+        fx (vec (drop num-skipped fx))
+        fx-meta (vec (drop num-skipped fx-meta))
         offset  (- 4 room)
         x       (quot (- note 20) 2)
         index   (- x offset)]
@@ -1216,8 +1219,11 @@
   [controller note]
   (let [room (room-for-effects controller)
         fx-info @(:active-effects (:show controller))
-        fx (vec (drop (- (count (:effects fx-info)) room) (:effects fx-info)))
-        fx-meta (vec (drop (- (count (:meta fx-info)) room) (:meta fx-info)))
+        fx (:effects fx-info)
+        fx-meta (:meta fx-info)
+        num-skipped (- (count fx-meta) room @(:effect-offset controller))
+        fx (vec (drop num-skipped fx))
+        fx-meta (vec (drop num-skipped fx-meta))
         offset (- 4 room)
         x (quot (- note 20) 2)
         index (- x offset)]
@@ -1251,8 +1257,11 @@
   [controller note]
   (let [room (room-for-effects controller)
         fx-info @(:active-effects (:show controller))
-        fx (vec (drop (- (count (:effects fx-info)) room) (:effects fx-info)))
-        fx-meta (vec (drop (- (count (:meta fx-info)) room) (:meta fx-info)))
+        fx (vec (:effects fx-info))
+        fx-meta (vec (:meta fx-info))
+        num-skipped (- (count fx-meta) room @(:effect-offset controller))
+        fx (vec (drop num-skipped fx))
+        fx-meta (vec (drop num-skipped fx-meta))
         offset (- 4 room)
         x (quot (- note 21) 2)
         index (- x offset)]
