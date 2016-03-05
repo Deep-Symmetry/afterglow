@@ -43,6 +43,10 @@ This change log follows the conventions of
   able to adjust the direction of a sawtooth oscillator while running.
 - The Ableton Push mapping now lets you scroll through all variables
   assigned to a cue so you can see and adjust more than the first two.
+- You can use the keyboard arrow keys to navigate around the cue grid
+  when using the web UI, as long as no input element is focused.
+- You can use the space bar to tap tempo when using the web UI, as
+  long as no input element is focused.
 
 ### Fixed
 

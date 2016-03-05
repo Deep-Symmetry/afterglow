@@ -724,6 +724,23 @@ function checkShiftKey( eventObject ) {
 
 var cueCellMenu;
 
+function fakeScrollClick ( direction ) {
+    if (!$('#cues-' + direction).attr("disabled")) {
+        var jqxhr = $.post( (context + "/ui-event/" + page_id + "/cues-" + direction),
+                            { "__anti-forgery-token": csrf_token } ).fail(function() {
+                                console.log("Problem reporting UI button press.");
+                            });
+    }
+}
+
+function fakeTempoTap( eventObject ) {
+    var jqxhr = $.post( (context + "/ui-event/" + page_id + "/tap-tempo"),
+                        { "__anti-forgery-token": csrf_token,
+                          "shift": eventObject.shiftKey } ).fail(function() {
+        console.log("Problem requesting metronome adjustment.");
+    });
+}
+
 $( document ).ready(function() {
     $("#startButton").click(uiButtonClicked);
     $("#stopButton").click(uiButtonClicked);
@@ -797,6 +814,43 @@ $( document ).ready(function() {
         }
     });
 
+    // Respond to arrow keys when nothing is focused by acting as if the scroll buttons had been
+    // pressed.
+    $('html').keydown(function(e){
+        // console.log("got keydown " + e.which + " for " + $(':focus').prop("tagName"));
+        if (!$(':focus').prop("tagName")) {
+            switch (e.which) {
+
+            case 38:
+                fakeScrollClick("up");
+                e.preventDefault();
+                break;
+
+            case 40:
+                fakeScrollClick("down");
+                e.preventDefault();
+                break;
+
+            case 39:
+                fakeScrollClick("right");
+                e.preventDefault();
+                break;
+
+            case 37:
+                fakeScrollClick("left");
+                e.preventDefault();
+                break;
+
+            case 32:
+                fakeTempoTap(e);
+                e.preventDefault();
+                break;
+
+            default:
+            }
+        }
+    });
+    // Render the current effect state, and start the thread which updates the show state.
     updateEffectState();
     updateShow();
 });
