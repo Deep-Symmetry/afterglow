@@ -1300,6 +1300,33 @@
                (move/pan-tilt-effect "t8 element" direction (show/fixtures-named (:key head)))))]
     (apply fx/scene "Torrent 8" fx)))
 
+(defn dimmer-sweep
+  "An effect which uses an oscillator to move a bar of light across a
+  group of fixtures. The width of the bar, maximum dimmer level, and
+  whether the level should fade from the center of the bar to the
+  edge, can be controlled with optional keyword arguments."
+  [fixtures osc & {:keys [width level fade] :or {width 0.1 level 255 fade false}}]
+  (let [width (params/bind-keyword-param width Number 0.1)
+        level (params/bind-keyword-param level Number 255)
+        fade (params/bind-keyword-param fade Boolean false)
+        min-x (apply min (map :x fixtures))
+        max-x (apply max (map :x fixtures))
+        position (oscillators/build-oscillated-param osc :min min-x :max max-x)]
+    (apply fx/scene "Dimmer Sweep"
+           (for [fixture fixtures]
+             (let [fixture-level (params/build-param-formula
+                                  Number
+                                  (fn [position width level fade]
+                                    (let [range (/ width 2)
+                                          distance (math/abs (- position (:x fixture)))]
+                                      (if (> distance range)
+                                        0
+                                        (if fade
+                                          (* level (/ (- range distance) range))
+                                          level))))
+                                  position width level fade)]
+               (dimmer-effect fixture-level [fixture]))))))
+
 (defn make-movement-cues
   "Create a page of with some large scale and layered movement
   effects. And miscellany which I'm not totally sure what to do with
@@ -1308,7 +1335,78 @@
   (let [x-base (* page-x 8)
         y-base (* page-y 8)]
 
-    (show/set-cue! x-base (+ y-base 1)
+    ;; Some dimmer sweeps
+    (let [dimmer-sweep-fixtures (concat (show/fixtures-named :torrent) (show/fixtures-named :blade)
+                                        (show/fixtures-named :hex))]
+      (show/set-cue! x-base y-base
+                     (cues/cue :dimmers
+                               (fn [var-map] (cues/apply-merging-var-map
+                                              var-map dimmer-sweep  dimmer-sweep-fixtures
+                                              (oscillators/sawtooth :down? (:down var-map)
+                                                                    :interval-ratio (build-ratio-param var-map))))
+                               :color :red :short-name "Sawtooth Sweep"
+                               :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
+                                           {:key "down" :type :boolean :start true :name "Down?"}
+                                           {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
+                                           {:key "width" :min 0 :max 1 :start 0.1 :name "Width"}
+                                           {:key "level" :min 0 :max 255 :start 255 :name "Level"}
+                                           {:key "fade" :type :boolean :start false :name "Fade?"}]))
+
+      (show/set-cue! x-base (inc y-base)
+                     (cues/cue :dimmers
+                               (fn [var-map] (cues/apply-merging-var-map
+                                              var-map dimmer-sweep dimmer-sweep-fixtures
+                                              (oscillators/triangle :interval-ratio (build-ratio-param var-map))))
+                               :color :red :short-name "Triangle Sweep"
+                               :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
+                                           {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
+                                           {:key "width" :min 0 :max 1 :start 0.25 :name "Width"}
+                                           {:key "level" :min 0 :max 255 :start 255 :name "Level"}
+                                           {:key "fade" :type :boolean :start false :name "Fade?"}])))
+
+    (show/set-cue! (inc x-base) y-base
+                   (cues/cue :blade-dimmers
+                             (fn [var-map] (cues/apply-merging-var-map
+                                            var-map dimmer-sweep  (show/fixtures-named :blade)
+                                            (oscillators/sawtooth :down? (:down var-map)
+                                                                  :interval-ratio (build-ratio-param var-map))))
+                             :color :red :short-name "Blade Saw Sweep"
+                             :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
+                                         {:key "down" :type :boolean :start true :name "Down?"}
+                                         {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
+                                         {:key "width" :min 0 :max 1 :start 0.1 :name "Width"}
+                                         {:key "level" :min 0 :max 255 :start 255 :name "Level"}
+                                         {:key "fade" :type :boolean :start false :name "Fade?"}]))
+
+    (show/set-cue! (inc x-base) (inc y-base)
+                   (cues/cue :blade-dimmers
+                             (fn [var-map] (cues/apply-merging-var-map
+                                            var-map dimmer-sweep (show/fixtures-named :blade)
+                                            (oscillators/triangle :interval-ratio (build-ratio-param var-map))))
+                               :color :red :short-name "Blade Triangle Sweep"
+                               :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
+                                           {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
+                                           {:key "width" :min 0 :max 1 :start 0.25 :name "Width"}
+                                           {:key "level" :min 0 :max 255 :start 255 :name "Level"}
+                                           {:key "fade" :type :boolean :start false :name "Fade?"}]))
+
+    (show/set-cue! (inc x-base) (+ 2 y-base)
+                   (cues/cue :blade-dimmers
+                             (fn [var-map]
+                               (let [step (params/build-step-param :interval-ratio (build-ratio-param var-map)
+                                                                   :fade-fraction (:fade-fraction var-map))]
+                                 (fx/chase "Blade Cross"
+                                           (map #(dimmer-effect (:level var-map) (show/fixtures-named %))
+                                                [:blade-1 :blade-3 :blade-2 :blade-4])
+                                           step :beyond :loop)))
+                               :color :red :short-name "Blade Cross"
+                               :variables [{:key "beats" :min 1 :max 32 :type :integer :start 1 :name "Beats"}
+                                           {:key "cycles" :min 1 :max 10 :type :integer :start 4 :name "Cycles"}
+                                           {:key "level" :min 0 :max 255 :start 255 :name "Level"}
+                                           {:key "fade-fraction" :min 0 :max 1 :start 0 :name "Fade"}]))
+
+    ;; A fun pressure-sensitive dimmer spread effect
+    (show/set-cue! x-base (+ y-base 2)
                    (cues/cue :bloom (fn [var-map]
                                       (cues/apply-merging-var-map
                                        var-map fun/bloom (show/all-fixtures)
