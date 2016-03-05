@@ -1478,7 +1478,7 @@
                              :color :yellow :end-keys [:movement]))
 
     (show/set-cue! (+ x-base 3) (+ y-base 4)
-                   (cues/cue :move-blades
+                   (cues/cue :blade-circles
                              (fn [var-map] (cues/apply-merging-var-map var-map circle-chain
                                                                        (show/fixtures-named :blade) true))
                              :variables [{:key "bars" :name "Bars" :min 1 :max 8 :type :integer :start 2}
@@ -1486,10 +1486,10 @@
                                           :resolution 0.1 :start 1.0}
                                          {:key "stagger" :name "Stagger" :min 0 :max 2 :start 0
                                           :resolution 0.1}]
-                             :short-name "Blade Circles" :color :green :end-keys [:movement]))
+                             :short-name "Blade Circles" :color :green :priority 4))
 
     (show/set-cue! (+ x-base 1) (+ y-base 4)
-                   (cues/cue :move-torrents
+                   (cues/cue :torrent-circles
                              (fn [var-map] (cues/apply-merging-var-map var-map circle-chain
                                                                        (show/fixtures-named :torrent) false))
                              :variables [{:key "bars" :name "Bars" :min 1 :max 8 :type :integer :start 2}
@@ -1497,10 +1497,10 @@
                                           :resolution 0.1 :start 1.0}
                                          {:key "stagger" :name "Stagger" :min 0 :max 2 :start 0
                                           :resolution 0.1}]
-                             :short-name "Torrent Circles" :color :green :end-keys [:movement]))
+                             :short-name "Torrent Circles" :color :green :priority 4))
 
     ;; A chase which overlays on other movement cues, gradually taking over the lights
-    (show/set-cue! (+ x-base 2) (+ y-base 6)
+    (show/set-cue! (+ x-base 2) (+ y-base 5)
                    (cues/cue :crossover (fn [var-map] (cues/apply-merging-var-map var-map crossover-chase))
                              :variables [{:key "beats" :min 1 :max 8 :start 2 :type :integer :name "Beats"}
                                          {:key "fade-fraction" :min 0 :max 1 :start 0 :name "Fade"}
