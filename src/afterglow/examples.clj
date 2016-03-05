@@ -24,15 +24,24 @@
             [afterglow.show :as show]
             [afterglow.show-context :refer [*show* with-show set-default-show!]]
             [afterglow.transform :as tf]
+            [amalloy.ring-buffer :refer [ring-buffer]]
+            [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors :refer [color-name create-color hue adjust-hue]]
             [overtone.osc :as osc]
             [taoensso.timbre :as timbre])
-    (:import [javax.media.j3d Transform3D]
-             [javax.vecmath Point3d Vector3d]))
+  (:import [afterglow.effects Effect]
+           [javax.media.j3d Transform3D]
+           [javax.vecmath Point3d Vector3d]))
 
 (defonce ^{:doc "Allows effects to set variables in the running show."}
   var-binder
   (atom nil))
+
+(defonce ^{:doc "Allows commands to be sent to the instance of
+  Pangolin Beyond running alongside this light show, in order to
+  affect laser cues."}
+  laser-show
+  (afterglow.beyond/beyond-server "192.168.212.128" 16062))
 
 (defonce ^{:doc "Holds the sample show if it has been created,
   so it can be unregistered if it is being re-created."}
@@ -296,6 +305,9 @@
 
   ;; Enable cues whose purpose is to set show variable values while they run.
   (reset! var-binder (var-fx/create-for-show *show*))
+
+  ;; Enable communication with the Beyond laser show
+  (beyond/bind-to-show laser-show *show*)
 
   ;; Create a bunch of example cues
   (make-cues)
@@ -864,12 +876,13 @@
                                                  :include-color-wheels? true))
                              :short-name "Z Rainbow Grid"))
     (show/set-cue! (+ x-base 6) (+ y-base 1)
-                   (let [color-param (params/build-color-param :s 100 :l 50 :h hue-z-gradient
-                                                               :adjust-hue hue-bar)]
-                     (cues/cue :all-color (fn [_] (global-color-effect color-param))
+                   (let [color-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-bar)]
+                     (cues/cue :all-color (fn [_] (fx/scene "Rainbow with laser" (global-color-effect color-param)
+                                                          (beyond/laser-color-effect laser-show color-param)))
                                :color-fn (cues/color-fn-from-param color-param)
-                               :short-name "Z Rainbow Grid+Bar")))
-
+                               :short-name "Rainbow with Laser"
+                               :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
+                                            :type :integer}])))
     (show/set-cue! (+ x-base 7) (+ y-base 1)
                    (let [color-param (params/build-color-param :s 100 :l 50 :h hue-gradient
                                                                :adjust-hue hue-bar)]
@@ -1062,6 +1075,67 @@
                                                         :include-color-wheels? true))
                        (fx/blank)])
               (params/build-step-param :interval-ratio beats :fade-fraction fade-fraction) :beyond :loop)))
+
+(defn circle-chain
+  "Create a chase that generates a series of circles on either the
+  floor or the ceiling, causing a single head to trace out each, and
+  passing them along from head to head.
+
+  The number of bars taken to trace out each circle defaults to 2 and
+  can be adjusted by passing a different value with the optional
+  keyword argument `:bars`. The radius of each circle defaults to one
+  meter, and can be adjusted with `:radius`. If you want each head to
+  be tracing a different position in its circle, you can pass a value
+  between zero and one with `:stagger`."
+  [fixtures ceiling? & {:keys [bars radius stagger] :or {bars 2 radius 1.0 stagger 0.0}}]
+  (let [bars (params/bind-keyword-param bars Number 2)
+        radius (params/bind-keyword-param radius Number 1.0)
+        stagger (params/bind-keyword-param stagger Number 0.0)
+        snapshot (rhythm/metro-snapshot (:metronome *show*))
+        bars (params/resolve-unless-frame-dynamic bars *show* snapshot)
+        radius (params/resolve-unless-frame-dynamic radius *show* snapshot)
+        stagger (params/resolve-unless-frame-dynamic stagger *show* snapshot)
+        step (params/build-step-param :interval :bar :interval-ratio bars)
+        phase-osc (oscillators/sawtooth :interval :bar :interval-ratio bars)
+        width (- right-wall left-wall)
+        front (if ceiling? 0.5 stage-wall)  ; The blades can't reach behind the rig
+        depth (- house-rear-wall front)
+        y (if ceiling? ceiling 0.0)
+        heads (sort-by :x (move/find-moving-heads fixtures))
+        points (ref (ring-buffer (count heads)))
+        running (ref true)
+        current-step (ref nil)]
+    ;; It would also be possible to build this using a scene with fomula parameters to create
+    ;; the aiming points, but it is slightly more concise and direct to drop to implementing
+    ;; the lower-level effect interface. If this is too deep for your current stage of Afterglow
+    ;; learning, ignore it until you are ready to dig deeper into the rendering pipeline.
+    (Effect. "Circle Chain"
+             (fn [show snapshot]
+               ;; Continue running until all circles are finished
+               (dosync
+                (or @running (seq @points))))
+             (fn [show snapshot]
+               (dosync
+                (let [now (math/round (params/resolve-param step show snapshot))
+                      phase (oscillators/evaluate phase-osc show snapshot nil)
+                      stagger (params/resolve-param stagger show show snapshot)
+                      head-phases (map #(* stagger %) (range))]
+                  (when (not= now @current-step)
+                    (ref-set current-step now)
+                    (if @running  ;; Either add a new circle, or just drop the oldest
+                      (alter points conj (Point3d. (+ left-wall (rand width)) y (+ front (rand depth))))
+                      (alter points pop)))
+                  (map (fn [head point head-phase]
+                         (let [radius (params/resolve-param radius show snapshot head)
+                               theta (* 2.0 Math/PI (+ phase head-phase))
+                               head-point (Point3d. (+ (.x point) (* radius (Math/cos theta)))
+                                                    (.y point)
+                                                    (+ (.z point) (* radius (Math/sin theta))))]
+                           (fx/build-head-parameter-assigner :aim head head-point show snapshot)))
+                       heads @points head-phases))))
+             (fn [show snapshot]
+                 ;; Stop making new circles, and shut down once all exiting ones have ended.
+                 (dosync (ref-set running false))))))
 
 (defn make-ambient-cues
   "Create a page of cues for controlling lasers, and ambient effects
@@ -1269,7 +1343,25 @@
                                          {:key "x" :min -10 :max 10 :start 0.0}]
                              :color :green :end-keys [:move-blades :move-torrents]))
 
-    (show/set-cue! (+ x-base 2) (+ y-base 3)
+    (show/set-cue! (+ x-base 1) (+ y-base 3)
+                   (cues/cue :move-torrents
+                             (fn [var-map] (cues/apply-merging-var-map var-map torrent-8))
+                             :variables [{:key "bars" :name "Bars" :min 1 :max 8 :type :integer :start 2}
+                                         {:key "cycles" :name "Cycles" :min 1 :max 8 :type :integer :start 1}
+                                         {:key "stagger" :name "Stagger" :min 0 :max 4 :start 0}
+                                         {:key "spread" :name "Spread" :min -45 :max 45
+                                          :centered true :resolution 0.25 :start 0}
+                                         {:key "pan-min" :name "Pan min" :min -180 :max 180
+                                          :centered true :resolution 0.5 :start -75}
+                                         {:key "pan-max" :name "Pan max" :min -180 :max 180
+                                          :centered true :resolution 0.5 :start 90}
+                                         {:key "tilt-min" :name "Tilt min" :min -180 :max 180
+                                          :centered true :resolution 0.5 :start -10}
+                                         {:key "tilt-max" :name "Tilt max" :min -180 :max 180
+                                          :centered true :resolution 0.5 :start 75}]
+                             :color :yellow :end-keys [:movement]))
+
+    (show/set-cue! (+ x-base 3) (+ y-base 3)
                    (cues/cue :move-blades
                              (fn [var-map] (cues/apply-merging-var-map var-map can-can))
                              :variables [{:key "bars" :name "Bars" :min 1 :max 8 :type :integer :start 1}
@@ -1287,23 +1379,27 @@
                                           :centered true :resolution 0.5 :start 100}]
                              :color :yellow :end-keys [:movement]))
 
-    (show/set-cue! (+ x-base 3) (+ y-base 3)
-                   (cues/cue :move-torrents
-                             (fn [var-map] (cues/apply-merging-var-map var-map torrent-8))
+    (show/set-cue! (+ x-base 3) (+ y-base 4)
+                   (cues/cue :move-blades
+                             (fn [var-map] (cues/apply-merging-var-map var-map circle-chain
+                                                                       (show/fixtures-named :blade) true))
                              :variables [{:key "bars" :name "Bars" :min 1 :max 8 :type :integer :start 2}
-                                         {:key "cycles" :name "Cycles" :min 1 :max 8 :type :integer :start 1}
-                                         {:key "stagger" :name "Stagger" :min 0 :max 4 :start 0}
-                                         {:key "spread" :name "Spread" :min -45 :max 45
-                                          :centered true :resolution 0.25 :start 0}
-                                         {:key "pan-min" :name "Pan min" :min -180 :max 180
-                                          :centered true :resolution 0.5 :start -75}
-                                         {:key "pan-max" :name "Pan max" :min -180 :max 180
-                                          :centered true :resolution 0.5 :start 90}
-                                         {:key "tilt-min" :name "Tilt min" :min -180 :max 180
-                                          :centered true :resolution 0.5 :start -10}
-                                         {:key "tilt-max" :name "Tilt max" :min -180 :max 180
-                                          :centered true :resolution 0.5 :start 75}]
-                             :color :yellow :end-keys [:movement]))
+                                         {:key "radius" :name "Radius" :min 0.1 :max 2
+                                          :resolution 0.1 :start 1.0}
+                                         {:key "stagger" :name "Stagger" :min 0 :max 2 :start 0
+                                          :resolution 0.1}]
+                             :short-name "Blade Circles" :color :green :end-keys [:movement]))
+
+    (show/set-cue! (+ x-base 1) (+ y-base 4)
+                   (cues/cue :move-torrents
+                             (fn [var-map] (cues/apply-merging-var-map var-map circle-chain
+                                                                       (show/fixtures-named :torrent) false))
+                             :variables [{:key "bars" :name "Bars" :min 1 :max 8 :type :integer :start 2}
+                                         {:key "radius" :name "Radius" :min 0.1 :max 2
+                                          :resolution 0.1 :start 1.0}
+                                         {:key "stagger" :name "Stagger" :min 0 :max 2 :start 0
+                                          :resolution 0.1}]
+                             :short-name "Torrent Circles" :color :green :end-keys [:movement]))
 
     ;; A chase which overlays on other movement cues, gradually taking over the lights
     (show/set-cue! (+ x-base 2) (+ y-base 6)

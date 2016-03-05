@@ -915,7 +915,7 @@
                                             (when (seq (movement/find-moving-heads [head]))
                                               (fx/build-head-assigner :aim head (fn [_ _ _ _] point))))))))))
                (fn [show snapshot]
-                 ;; Arrange to shut down once all existing sparkles fade out.
+                 ;; Stop making new sparkles and arrange to shut down once all existing ones fade out.
                  (dosync (ref-set running false)))))))
 
 (def default-pinstripe-colors
