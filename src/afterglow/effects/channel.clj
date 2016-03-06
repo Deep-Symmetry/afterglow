@@ -184,8 +184,8 @@
   wisely, avoiding this pitfall."
   [effect-name function level fixtures & {:keys [htp?]}]
   {:pre [(some? *show*) (some? effect-name) (some? function) (sequential? fixtures)]}
-  (params/validate-param-type level Number)
-  (let [function (keyword function)
+  (let [level (params/bind-keyword-param level Number 50)
+        function (keyword function)
         heads (find-heads-with-function function fixtures)
         f (if htp?
             ;; We need to resolve any dynamic parameters at this point so we can apply the
