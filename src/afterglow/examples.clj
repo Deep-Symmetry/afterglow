@@ -175,7 +175,7 @@
 
 (def ipad-address
   "The IP address of the iPad that will be used with OSC."
-  "172.16.1.55")
+  "172.16.42.3")
 
 ;; TODO: This kind of binding and tracking should be moved into an osc support namespace.
 (defonce ^{:doc "Keep track of any OSC cue bindings we have set up,
@@ -1208,11 +1208,25 @@
 
     ;; Sound active mode for groups of lights
     (show/set-cue! (+ x-base 2) (+ y-base 7)
-                   (cues/function-cue :blade-sound :sound-active (show/fixtures-named "blade")
-                                      :color :orange :effect-name "Blade Sound"))
+                   (cues/cue :blade-sound
+                             (fn [var-map]
+                               (fx/scene "Blade Sound"
+                                         (chan-fx/function-effect
+                                          "sound on" :sound-active (:level var-map) (show/fixtures-named "blade"))
+                                         (dimmer-effect (:dimmer var-map) (show/fixtures-named "blade"))))
+                             :color :orange
+                             :variables [{:key "level" :min 1 :max 100 :type :integer :start 50 :name "Level"}
+                                         {:key "dimmer" :min 0 :max 255 :type :integer :start 255 :name "Dimmer"}]))
     (show/set-cue! (+ x-base 4) (+ y-base 7)
-                   (cues/function-cue :hex-sound :sound-active (show/fixtures-named "hex")
-                                      :color :orange :effect-name "Hex Sound"))
+                   (cues/cue :hex-sound
+                             (fn [var-map]
+                               (fx/scene "Hex Sound"
+                                         (chan-fx/function-effect
+                                          "sound on" :sound-active (:level var-map) (show/fixtures-named "hex"))
+                                         (dimmer-effect (:dimmer var-map) (show/fixtures-named "hex"))))
+                             :color :orange
+                             :variables [{:key "level" :min 1 :max 100 :type :integer :start 50 :name "Level"}
+                                         {:key "dimmer" :min 0 :max 255 :type :integer :start 255 :name "Dimmer"}]))
     (show/set-cue! (+ x-base 5) (+ y-base 7)
                    (cues/function-cue :puck-sound :sound-active (show/fixtures-named "puck")
                                       :color :orange :effect-name "Puck Sound"))
