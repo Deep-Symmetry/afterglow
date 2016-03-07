@@ -85,9 +85,9 @@
   origin makes sense."
   [& {:keys [universe y blade-1-angle blade-2-angle blade-3-angle blade-4-angle blade-5-angle blade-5-height]
       :or {universe 1 y (tf/inches 62.5)
-           blade-1-angle (tf/degrees 72.5) blade-2-angle (tf/degrees 72.5)
-           blade-3-angle (tf/degrees 72.5) blade-4-angle (tf/degrees 72.5)
-           blade-5-angle (tf/degrees 101) blade-5-height (tf/inches 4)}}]
+           blade-1-angle (tf/degrees 80.7) blade-2-angle (tf/degrees 76.4)
+           blade-3-angle (tf/degrees 77.6) blade-4-angle (tf/degrees 76.5)
+           blade-5-angle (tf/degrees 99) blade-5-height (tf/inches 4)}}]
 
   ;; Torrent F3 moving head effect spots
   (show/patch-fixture! :torrent-1 (blizzard/torrent-f3) universe 1
@@ -147,27 +147,27 @@
 (def rig-height
   "The height of the center of the bottom horizontal truss bar of the
   main lighting rig as set up in the current venue."
-  (tf/inches 62.5))
+  2.18)
 
 (def stage-wall
   "The location of the wall behind the rig on the show Z axis."
-  -1.572)
+  -0.42)
 
 (def house-rear-wall
   "The location of the wall behind the audience on the show Z axis."
-  7.963)
+  12.9)
 
 (def left-wall
   "The location of the house left wall on the show X axis."
-  -3)
+  -5.89)
 
 (def right-wall
   "The location of the house right wall on the show X axis."
-  4.5)
+  5.67)
 
 (def ceiling
   "The location of the ceiling on the show Y axis."
-  2.7)
+  3.6)
 
 (defonce ^{:doc "Allow us to send messages to an OSC interface like TouchOSC."}
   osc-client
