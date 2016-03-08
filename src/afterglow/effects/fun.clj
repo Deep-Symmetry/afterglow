@@ -715,7 +715,7 @@
         beats (params/bind-keyword-param beats Number 4)
         cycles (params/bind-keyword-param cycles Number 1)
         osc (osc/sawtooth :interval-ratio (params/build-param-formula Number #(/ %1 %2) beats cycles)
-                          :phase (params/build-spatial-param fixtures (fn [head] (:x head)) :max 1.0))]
+                          :phase (params/build-spatial-param fixtures :x :max 1.0))]
     (movement/direction-effect effect-name (build-twirl-vector x y z radius osc) fixtures)))
 
 (defn bloom

@@ -824,10 +824,10 @@
 
     ;; Bottom row assigns colors, first to all fixtures, and then (at a higher priority, so they can
     ;; run a the same time as the first, and locally override it) individual fixture groups.
-    (make-color-cue "white" (+ x-base 0) (+ y-base 0) :include-color-wheels? true
+    (make-color-cue "white" x-base y-base :include-color-wheels? true
                     :fixtures (show/all-fixtures) :effect-key :all-color :effect-name "Color all")
     (doall (map-indexed (fn [i group]
-                          (make-color-cue "white" (+ x-base (inc i)) (+ y-base 0) :include-color-wheels? true
+                          (make-color-cue "white" (+ x-base (inc i)) y-base :include-color-wheels? true
                                           :fixtures (show/fixtures-named group)
                                           :effect-key (keyword (str (name group) "-color"))
                                           :effect-name (str "Color " (name group))
@@ -836,14 +836,14 @@
 
     ;; Some special/fun cues
     (show/set-variable! :rainbow-saturation 100)
-    (show/set-cue! (+ x-base 0) (+ y-base 1)
+    (show/set-cue! x-base (inc y-base)
                    (let [color-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-bar)]
                      (cues/cue :all-color (fn [_] (global-color-effect color-param))
                                :color-fn (cues/color-fn-from-param color-param)
                                :short-name "Rainbow Bar Fade"
                                :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
                                             :type :integer}])))
-    (show/set-cue! (+ x-base 1) (+ y-base 1)
+    (show/set-cue! (inc x-base) (inc y-base)
                    (cues/cue :all-color (fn [_] (global-color-effect
                                                  (params/build-color-param :s :rainbow-saturation :l 50
                                                                            :h rig-hue-gradient)
@@ -851,7 +851,7 @@
                              :short-name "Rainbow Rig"
                              :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
                                           :type :integer}]))
-    (show/set-cue! (+ x-base 2) (+ y-base 1)
+    (show/set-cue! (+ x-base 2) (inc y-base)
                    (let [color-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-gradient
                                                                :adjust-hue hue-bar)]
                      (cues/cue :all-color (fn [_] (global-color-effect color-param))
@@ -859,23 +859,23 @@
                                :short-name "Rainbow Grid+Bar"
                                :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
                                             :type :integer}])))
-    (show/set-cue! (+ x-base 3) (+ y-base 1) ; Desaturate the rainbow as each beat progresses
+    (show/set-cue! (+ x-base 3) (inc y-base) ; Desaturate the rainbow as each beat progresses
                    (let [color-param (params/build-color-param :s desat-beat :l 50 :h hue-gradient
                                                                :adjust-hue hue-bar)]
                      (cues/cue :all-color (fn [_] (global-color-effect color-param))
                                :color-fn (cues/color-fn-from-param color-param)
                                :short-name "Rainbow Pulse")))
 
-    (show/set-cue! (+ x-base 4) (+ y-base 1)
+    (show/set-cue! (+ x-base 4) (inc y-base)
                    (cues/cue :transform-colors (fn [_] (color-fx/transform-colors (show/all-fixtures)))
                              :priority 1000))
 
-    (show/set-cue! (+ x-base 5) (+ y-base 1)
+    (show/set-cue! (+ x-base 5) (inc y-base)
                    (cues/cue :all-color (fn [_] (global-color-effect
                                                  (params/build-color-param :s 100 :l 50 :h hue-z-gradient)
                                                  :include-color-wheels? true))
                              :short-name "Z Rainbow Grid"))
-    (show/set-cue! (+ x-base 6) (+ y-base 1)
+    (show/set-cue! (+ x-base 6) (inc y-base)
                    (let [color-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-bar)]
                      (cues/cue :all-color (fn [_] (fx/scene "Rainbow with laser" (global-color-effect color-param)
                                                           (beyond/laser-color-effect laser-show color-param)))
@@ -883,7 +883,7 @@
                                :short-name "Rainbow with Laser"
                                :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
                                             :type :integer}])))
-    (show/set-cue! (+ x-base 7) (+ y-base 1)
+    (show/set-cue! (+ x-base 7) (inc y-base)
                    (let [color-param (params/build-color-param :s 100 :l 50 :h hue-gradient
                                                                :adjust-hue hue-bar)]
                      (cues/cue :all-color (fn [_] (global-color-effect color-param
@@ -906,32 +906,32 @@
     (add-osc-cue-binding (+ x-base 7) (+ y-base 2) "/1/sparkle")
 
     ;; Dimmer cues to turn on and set brightness of groups of lights
-    (make-dimmer-cue nil (+ x-base 0) (+ y-base 2) :yellow)
+    (make-dimmer-cue nil x-base (+ y-base 2) :yellow)
     (doall (map-indexed (fn [i group] (make-dimmer-cue group (+ x-base (inc i)) (+ y-base 2) :yellow)) light-groups))
 
     ;; Dimmer oscillator cues: Sawtooth
-    (make-sawtooth-dimmer-cue nil (+ x-base 0) (+ y-base 3) :yellow)
+    (make-sawtooth-dimmer-cue nil x-base (+ y-base 3) :yellow)
     (doall (map-indexed (fn [i group]
                           (make-sawtooth-dimmer-cue group (+ x-base (inc i)) (+ y-base 3) :orange)) light-groups))
 
     ;; Dimmer oscillator cues: Triangle
-    (make-triangle-dimmer-cue nil (+ x-base 0) (+ y-base 4) :orange)
+    (make-triangle-dimmer-cue nil x-base (+ y-base 4) :orange)
     (doall (map-indexed (fn [i group]
                           (make-triangle-dimmer-cue group (+ x-base (inc i)) (+ y-base 4) :red)) light-groups))
 
     ;; Dimmer oscillator cues: Sine
-    (make-sine-dimmer-cue nil (+ x-base 0) (+ y-base 5) :cyan)
+    (make-sine-dimmer-cue nil x-base (+ y-base 5) :cyan)
     (doall (map-indexed (fn [i group]
                           (make-sine-dimmer-cue group (+ x-base (inc i)) (+ y-base 5) :blue)) light-groups))
 
     ;; Dimmer oscillator cues: Square
-    (make-square-dimmer-cue nil (+ x-base 0) (+ y-base 6) :cyan)
+    (make-square-dimmer-cue nil x-base (+ y-base 6) :cyan)
     (doall (map-indexed (fn [i group]
                           (make-square-dimmer-cue group (+ x-base (inc i)) (+ y-base 6) :green)) light-groups))
 
     ;; Strobe cues
-    (make-strobe-cue-2 "All" (show/all-fixtures) (+ x-base 0) (+ y-base 7))
-    (make-strobe-cue-2 "Torrents" (show/fixtures-named "torrent") (+ x-base 1) (+ y-base 7))
+    (make-strobe-cue-2 "All" (show/all-fixtures) x-base (+ y-base 7))
+    (make-strobe-cue-2 "Torrents" (show/fixtures-named "torrent") (inc x-base) (+ y-base 7))
     (make-strobe-cue-2 "Blades" (show/fixtures-named "blade") (+ x-base 2) (+ y-base 7))
     (make-strobe-cue-2 "Weather Systems" (show/fixtures-named "ws") (+ x-base 3) (+ y-base 7))
     (make-strobe-cue-2 "Hexes" (show/fixtures-named "hex") (+ x-base 4) (+ y-base 7))
@@ -958,9 +958,9 @@
   [page-x page-y]
   (let [x-base (* page-x 8)
         y-base (* page-y 8)]
-    (show/set-cue! (+ x-base 0) (+ y-base 7)
+    (show/set-cue! x-base (+ y-base 7)
                    (cues/function-cue :torrent-shutter :shutter-open (show/fixtures-named "torrent")))
-    (show/set-cue! (+ x-base 1) (+ y-base 7)
+    (show/set-cue! (inc x-base) (+ y-base 7)
                    (cues/function-cue :torrent-reset :motor-reset (show/fixtures-named "torrent")
                                       :color (create-color :red) :held true))
 
@@ -1004,26 +1004,26 @@
     (show/set-cue! (+ x-base 7) (+ y-base 2)
                    (cues/function-cue :t2-gobo-moving :gobo-moving-clockwise (show/fixtures-named "torrent-2")
                                       :effect-name "T2 Moving Gobos Swap CW" :color (create-color :green)))
-    (show/set-cue! (+ x-base 6) (+ y-base 1)
+    (show/set-cue! (+ x-base 6) (inc y-base)
                    (cues/function-cue :t1-gobo-rotation :gobo-rotation-clockwise (show/fixtures-named "torrent-1")
                                       :effect-name "T1 Spin Gobo CW" :color (create-color :cyan) :level 100))
-    (show/set-cue! (+ x-base 7) (+ y-base 1)
+    (show/set-cue! (+ x-base 7) (inc y-base)
                    (cues/function-cue :t2-gobo-rotation :gobo-rotation-clockwise (show/fixtures-named "torrent-2")
                                       :effect-name "T2 Spin Gobo CW" :color (create-color :cyan) :level 100))
-    (show/set-cue! (+ x-base 6) (+ y-base 0)
+    (show/set-cue! (+ x-base 6) y-base
                    (cues/function-cue :t1-gobo-rotation :gobo-rotation-counterclockwise
                                       (show/fixtures-named "torrent-1")
                                       :effect-name "T1 Spin Gobo CCW" :color (create-color :cyan)))
-    (show/set-cue! (+ x-base 7) (+ y-base 0)
+    (show/set-cue! (+ x-base 7) y-base
                    (cues/function-cue :t2-gobo-rotation :gobo-rotation-counterclockwise
                                       (show/fixtures-named "torrent-2")
                                       :effect-name "T2 Spin Gobo CCW" :color (create-color :cyan)))
 
     ;; Some compound cues
-    (show/set-cue! (+ x-base 0) (+ y-base 0)
+    (show/set-cue! x-base y-base
                    (cues/cue :star-swirl (fn [_] (cues/compound-cues-effect
                                                   "Star Swirl" *show* [[(+ x-base 8) (+ y-base 4)]
-                                                                       [(+ x-base 10) (+ y-base 1)]
+                                                                       [(+ x-base 10) (inc y-base)]
                                                                        [(+ x-base 6) (+ y-base 7) {:level 60}]
                                                                        [(+ x-base 6) y-base {:level 25}]]))))
 
@@ -1154,15 +1154,15 @@
     (let [hex-uv-fx [(chan-fx/function-effect "Hex UV" :uv 100 (show/fixtures-named "hex"))
                      (dimmer-effect 255 (show/fixtures-named "hex")
                                     :effect-name "Hex Dimmers for UV")]]
-      (show/set-cue! (+ x-base 2) (+ y-base 0)
+      (show/set-cue! (+ x-base 2) y-base
                      (cues/cue :hex-uv (fn [_] (apply fx/scene "Hex UV" hex-uv-fx))
                                :color :purple :end-keys [:uv]))
 
-      (show/set-cue! (+ x-base 1) (+ y-base 0)
+      (show/set-cue! (inc x-base) y-base
                      (cues/function-cue :eco-uv :on (show/fixtures-named :eco-uv)
                                         :color :purple :effect-name "Eco UV Bar" :end-keys [:uv]))
 
-      (show/set-cue! (+ x-base 0) (+ y-base 0)
+      (show/set-cue! x-base y-base
                      (cues/cue :uv (fn [_]
                                      (apply fx/scene "All UV"
                                             (conj hex-uv-fx
@@ -1171,14 +1171,14 @@
                                :color :purple :end-keys [:eco-uv :hex-uv])))
 
     ;; Turn on the H2O LED
-    (show/set-cue! (+ x-base 7) (+ y-base 0)
+    (show/set-cue! (+ x-base 7) y-base
                    (cues/function-cue :h2o-led :on (show/fixtures-named :h2o-led) :effect-name "H2O LED"))
 
     ;; Control the Hypnotic RGB Laser
-    (show/set-cue! (+ x-base 0) (+ y-base 2)
+    (show/set-cue! x-base (+ y-base 2)
                    (cues/function-cue :hypnotic-beam :beam-red (show/fixtures-named "hyp-rgb")
                                       :color :red :effect-name "Hypnotic Red"))
-    (show/set-cue! (+ x-base 1) (+ y-base 2)
+    (show/set-cue! (inc x-base) (+ y-base 2)
                    (cues/function-cue :hypnotic-beam :beam-green (show/fixtures-named "hyp-rgb")
                                       :color :green :effect-name "Hypnotic Green"))
     (show/set-cue! (+ x-base 2) (+ y-base 2)
@@ -1430,7 +1430,7 @@
                                          {:key "fraction" :min 0 :max 1 :start 0 :velocity true}]
                              :held true :priority 1000 :color :purple))
 
-    (show/set-cue! (+ x-base 2) (+ y-base 1)
+    (show/set-cue! (+ x-base 2) (inc y-base)
                    (cues/cue :movement (fn [var-map]
                                          (cues/apply-merging-var-map var-map fun/aim-fan
                                                                      (concat (show/fixtures-named "blade")
@@ -1455,7 +1455,7 @@
                                          {:key "x" :min -10 :max 10 :start 0.0}]
                              :color :green :end-keys [:move-blades :move-torrents]))
 
-    (show/set-cue! (+ x-base 1) (+ y-base 3)
+    (show/set-cue! (inc x-base) (+ y-base 3)
                    (cues/cue :move-torrents
                              (fn [var-map] (cues/apply-merging-var-map var-map torrent-8))
                              :variables [{:key "bars" :name "Bars" :min 1 :max 8 :type :integer :start 2}
@@ -1502,7 +1502,7 @@
                                           :resolution 0.1}]
                              :short-name "Blade Circles" :color :green :priority 4))
 
-    (show/set-cue! (+ x-base 1) (+ y-base 4)
+    (show/set-cue! (inc x-base) (+ y-base 4)
                    (cues/cue :torrent-circles
                              (fn [var-map] (cues/apply-merging-var-map var-map circle-chain
                                                                        (show/fixtures-named :torrent) false))
@@ -1525,9 +1525,9 @@
                              :color :cyan :priority 5))
 
     ;; Some color cycle chases
-    (show/set-cue! (+ x-base 0) (+ y-base 7)
+    (show/set-cue! x-base (+ y-base 7)
                    (cues/cue :all-color (fn [_] (fun/iris-out-color-cycle-chase (show/all-fixtures)))))
-    (show/set-cue! (+ x-base 1) (+ y-base 7)
+    (show/set-cue! (inc x-base) (+ y-base 7)
                    (cues/cue :all-color
                              (fn [_] (fun/wipe-right-color-cycle-chase
                                       (show/all-fixtures)
@@ -1539,7 +1539,7 @@
                                                  :transition-phase-function rhythm/snapshot-beat-phase
                                                  :effect-name "Wipe Right Beat"))))
 
-    (show/set-cue! (+ x-base 0) (+ y-base 6)
+    (show/set-cue! x-base (+ y-base 6)
                    (cues/cue :confetti
                              (fn [var-map]
                                (let [beats (params/bind-keyword-param (:beats var-map) Number 2)
@@ -1557,7 +1557,7 @@
                                          {:key "max-duration" :min 1 :max 16 :start 4 :type :integer :name "Max Last"}
                                          {:key "min-saturation" :min 0 :max 100 :start 100 :name "Min Sat"}]
                              :color :orange :priority 5))
-    (show/set-cue! (+ x-base 1) (+ y-base 6)
+    (show/set-cue! (inc x-base) (+ y-base 6)
                    (cues/cue :confetti
                              (fn [var-map]
                                (let [beats (params/bind-keyword-param (:beats var-map) Number 2)
@@ -1644,7 +1644,7 @@
                              :color :orange :short-name "Pin 4"))
 
     ;; Some macro-based chases
-    (show/set-cue! (+ x-base 7) (+ y-base 1)
+    (show/set-cue! (+ x-base 7) (inc y-base)
                    (cues/cue :move-torrents
                              (fn [_] (cues/compound-cues-effect
                                       "Torrent Nod" *show*
@@ -1664,7 +1664,7 @@
                                                :tilt-min 148.0, :tilt-max 255.0, :tilt-bars 1, :tilt-phase 0.0}]]))
                              :end-keys [:movement]))
 
-    (show/set-cue! (+ x-base 6) (+ y-base 1)
+    (show/set-cue! (+ x-base 6) (inc y-base)
                    (cues/cue :move-blades
                              (fn [_] (cues/compound-cues-effect
                                       "Sync Can Can" *show*

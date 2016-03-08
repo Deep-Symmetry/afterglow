@@ -327,16 +327,22 @@
   elements are a tuple of the effect ID and either `:save` or
   `:clear`, depending on which button should be visible."
   [show current]
-  (into #{}
-        (for [effect current]
-          (when (and (:x effect) (:y effect) (:cue effect))
-            (let [cur-vals (cues/snapshot-cue-variables (:cue effect) (:id effect) :show show)]
-              (when (seq cur-vals)
-                (let [saved-vals (controllers/cue-vars-saved-at (:cue-grid show) (:x effect) (:y effect))]
-                  (if (seq saved-vals)
-                    [(:id effect) (if (= cur-vals saved-vals) :clear :save)]
-                    (when (not= cur-vals (:starting-vars effect))
-                      [(:id effect) :save])))))))))
+  (set (for [effect current]
+         (when (and (:x effect) (:y effect) (:cue effect))
+           (let [cur-vals (cues/snapshot-cue-variables
+                           (:cue effect)
+                           (:id effect)
+                           :show
+                           show)]
+             (when (seq cur-vals)
+               (let [saved-vals (controllers/cue-vars-saved-at
+                                 (:cue-grid show)
+                                 (:x effect)
+                                 (:y effect))]
+                 (if (seq saved-vals)
+                   [(:id effect) (if (= cur-vals saved-vals) :clear :save)]
+                   (when (not= cur-vals (:starting-vars effect))
+                     [(:id effect) :save])))))))))
 
 (defn effect-save-button-changes
   "Returns the changes which need to be sent to a page to update its

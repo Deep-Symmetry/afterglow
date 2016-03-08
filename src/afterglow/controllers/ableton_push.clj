@@ -1505,7 +1505,7 @@
   "Handle a control change from turning an encoder associated with a
   boolean variable being adjusted in the effect list."
   [controller message cue v effect-id]
-  (let [new-value (true? (> (sign-velocity (:velocity message)) 0))]
+  (let [new-value (true? (pos? (sign-velocity (:velocity message))))]
     (cues/set-cue-variable! cue v new-value :show (:show controller) :when-id effect-id)))
 
 (defn- same-effect-active
