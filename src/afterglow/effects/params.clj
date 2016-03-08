@@ -951,7 +951,7 @@
   spatial parameter will be frame dynamic if any values returned by
   `f` are dynamic parameters which themselves are frame dynamic."
   [fixtures-or-heads f & {:keys [min max frame-dynamic] :or {frame-dynamic :default}}]
-  {:pre [(some? *show*) (sequential? fixtures-or-heads) (fn? f)
+  {:pre [(some? *show*) (sequential? fixtures-or-heads) (ifn? f)
          (or (nil? min) (number? min)) (or (nil? max) (number? max)) (< (or min 0) (or max 255))]}
   (let [heads (chan/expand-heads fixtures-or-heads)
         results (zipmap (map :id heads)
