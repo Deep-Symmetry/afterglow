@@ -398,8 +398,7 @@
                                                    :metronome (params/resolve-unless-frame-dynamic metronome show
                                                                                                    snapshot head)
                                                    :frame-dynamic frame-dynamic)))]
-        (reify
-          params/IParam
+        (reify params/IParam
           (params/evaluate [this show snapshot head]
             (eval-fn show snapshot head))
           (params/frame-dynamic? [this]
@@ -425,8 +424,7 @@
                                                    :metronome (params/resolve-unless-frame-dynamic
                                                                metronome show snapshot head)
                                                    :frame-dynamic dyn)))]
-        (reify
-          params/IParam
+        (reify params/IParam
           (params/evaluate [this show snapshot head]
             (eval-fn show snapshot head))
           (params/frame-dynamic? [this]

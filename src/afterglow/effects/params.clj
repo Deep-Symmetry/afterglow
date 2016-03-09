@@ -540,8 +540,7 @@
                                               :adjust-lightness (resolve-unless-frame-dynamic
                                                                  adjust-lightness show snapshot head)
                                               :frame-dynamic dyn)))]
-        (reify
-          IParam
+        (reify IParam
           (evaluate [this show snapshot head]
             (eval-fn show snapshot head))
           (frame-dynamic? [this]
@@ -591,8 +590,7 @@
                                                   :y (resolve-unless-frame-dynamic y show snapshot head)
                                                   :z (resolve-unless-frame-dynamic z show snapshot head)
                                                   :frame-dynamic dyn)))]
-        (reify
-          IParam
+        (reify IParam
           (evaluate [this show snapshot head]
             (eval-fn show snapshot head))
           (frame-dynamic? [this]
@@ -633,8 +631,7 @@
                          (build-direction-transformer (resolve-unless-frame-dynamic direction show snapshot head)
                                                       (resolve-unless-frame-dynamic transform show snapshot head)
                                                       :frame-dynamic dyn)))]
-      (reify
-        IParam
+      (reify IParam
         (evaluate [this show snapshot head]
           (eval-fn show snapshot head))
         (frame-dynamic? [this]
@@ -715,8 +712,7 @@
                             :tilt (resolve-unless-frame-dynamic tilt show snapshot head)
                             :radians radians
                             :frame-dynamic dyn)))]
-        (reify
-          IParam
+        (reify IParam
           (evaluate [this show snapshot head]
             (eval-fn show snapshot head))
           (frame-dynamic? [this]
@@ -773,8 +769,7 @@
                                                  :tilt (resolve-unless-frame-dynamic tilt show snapshot head)
                                                  :radians radians
                                                  :frame-dynamic dyn)))]
-        (reify
-          IParam
+        (reify IParam
           (evaluate [this show snapshot head]
             (eval-fn show snapshot head))
           (frame-dynamic? [this]
@@ -824,8 +819,7 @@
                                             :y (resolve-unless-frame-dynamic y show snapshot head)
                                             :z (resolve-unless-frame-dynamic z show snapshot head)
                                             :frame-dynamic dyn)))]
-        (reify
-          IParam
+        (reify IParam
           (evaluate [this show snapshot head]
             (eval-fn show snapshot head))
           (frame-dynamic? [this]
@@ -865,8 +859,7 @@
                          (build-aim-transformer (resolve-unless-frame-dynamic aim show snapshot head)
                                                 (resolve-unless-frame-dynamic transform show snapshot head)
                                                 :frame-dynamic dyn)))]
-      (reify
-        IParam
+      (reify IParam
         (evaluate [this show snapshot head]
           (eval-fn show snapshot head))
         (frame-dynamic? [this]
@@ -974,8 +967,7 @@
                                                                         v show snapshot head)))
                                                 {} results)
                                resolved-eval-fn (build-spatial-eval-fn resolved scaling min target-range)]
-                           (reify
-                             IParam
+                           (reify IParam
                              (evaluate [this show snapshot head]
                                (resolved-eval-fn show snapshot head))
                              (frame-dynamic? [this]
@@ -984,8 +976,7 @@
                                Number)
                              (resolve-non-frame-dynamic-elements [this _ _ _]
                                this)))))] ; Already resolved
-      (reify
-        IParam
+      (reify IParam
         (evaluate [this show snapshot head]
           (eval-fn show snapshot head))
         (frame-dynamic? [this]
