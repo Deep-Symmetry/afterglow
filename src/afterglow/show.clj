@@ -956,7 +956,7 @@
   (cond (keyword? initial-value)
         (get-variable initial-value)
 
-        (ifn? initial-value)
+        (fn? initial-value)
         (initial-value)
 
         :else
