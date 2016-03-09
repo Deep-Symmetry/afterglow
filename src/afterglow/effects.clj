@@ -200,7 +200,7 @@
   doesn't do anyting more after calling the function once when it
   starts."
   [f]
-  {:pre [(fn? f)]}
+  {:pre [(ifn? f)]}
   (let [ran (atom false)]
     (Effect. "Code"
              (fn [show snapshot]

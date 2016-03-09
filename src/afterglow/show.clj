@@ -252,14 +252,14 @@
   patchers to set show variables for the next frame, since they cannot
   be queried directly during the rendering process."
   [f]
-  {:pre [(some? *show*) (fn? f)]}
+  {:pre [(some? *show*) (ifn? f)]}
   (swap! (:frame-fns *show*) conj f)
   nil)
 
 (defn clear-frame-fn!
   "Ceases calling the supplied function from the rendering loop."
   [f]
-  {:pre [(some? *show*) (fn? f)]}
+  {:pre [(some? *show*) (ifn? f)]}
   (swap! (:frame-fns *show*) disj f)
   nil)
 
@@ -273,7 +273,7 @@
   register their extension functions to participate in the rendering
   loop."
   [f]
-  {:pre [(some? *show*) (fn? f)]}
+  {:pre [(some? *show*) (ifn? f)]}
   (swap! (:empty-buffer-fns *show*) conj f)
   nil)
 
@@ -281,7 +281,7 @@
   "Ceases calling the supplied function during the buffer clearing
   phase of the rendering loop."
   [f]
-  {:pre [(some? *show*) (fn? f)]}
+  {:pre [(some? *show*) (ifn? f)]}
   (swap! (:empty-buffer-fns *show*) disj f)
   nil)
 
@@ -295,7 +295,7 @@
   register their extension functions to participate in the rendering
   loop."
   [f]
-  {:pre [(some? *show*) (fn? f)]}
+  {:pre [(some? *show*) (ifn? f)]}
   (swap! (:send-buffer-fns *show*) conj f)
   nil)
 
@@ -303,7 +303,7 @@
   "Ceases calling the supplied function during the data sending phase
   of the rendering loop."
   [f]
-  {:pre [(some? *show*) (fn? f)]}
+  {:pre [(some? *show*) (ifn? f)]}
   (swap! (:send-buffer-fns *show*) disj f)
   nil)
 
@@ -528,7 +528,7 @@
   called with two arguments: the keyword, and the new value which is
   being set."
   [key f]
-  {:pre [(some? *show*) (fn? f)]}
+  {:pre [(some? *show*) (ifn? f)]}
   (swap! (:variables *show*) assoc-in ["set-fn" (keyword key) f] true)
   nil)
 
@@ -536,7 +536,7 @@
   "Ceases calling the supplied function when the show variable with
   the specified keyword is set."
   [key f]
-  {:pre [(some? *show*) (fn? f)]}
+  {:pre [(some? *show*) (ifn? f)]}
   (swap! (:variables *show*) (fn [vars]
                                (let [key (keyword key)
                                      entry (dissoc (get-in vars ["set-fn" key]) f)]
@@ -584,7 +584,7 @@
   [device-filter channel control-number variable & {:keys [min max transform-fn] :or {min 0 max 127}}]
   {:pre [(some? *show*) (some? device-filter) (integer? channel) (<= 0 channel 15)
          (integer? control-number) (<= 0 control-number 127) (some? variable)
-         (number? min) (number? max) (not= min max) (or (nil? transform-fn) (fn? transform-fn))]}
+         (number? min) (number? max) (not= min max) (or (nil? transform-fn) (ifn? transform-fn))]}
   (let [show *show*  ; Bind so we can pass it to update function running on another thread
         scale-fn (cond
                    (and (zero? min) (= max 127))
@@ -678,7 +678,7 @@
   metronome from being affected by these MIDI messages."
   [device-filter channel control-number metronome mapped-fn]
   {:pre [(some? *show*) (some? device-filter) (integer? channel) (<= 0 channel 15)
-         (integer? control-number) (<= 0 control-number 127) (fn? mapped-fn)]}
+         (integer? control-number) (<= 0 control-number 127) (ifn? mapped-fn)]}
   (let [bound (bind-keyword-param metronome Metronome (:metronome *show*))
         metronome (resolve-param bound *show* (rhythm/metro-snapshot (:metronome *show*)))
         update-fn (fn [msg] (when (pos? (:velocity msg)) (mapped-fn metronome)))]
@@ -956,7 +956,7 @@
   (cond (keyword? initial-value)
         (get-variable initial-value)
 
-        (fn? initial-value)
+        (ifn? initial-value)
         (initial-value)
 
         :else

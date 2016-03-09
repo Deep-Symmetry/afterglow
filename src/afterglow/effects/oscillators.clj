@@ -130,7 +130,7 @@
         (value-for-phase shape-fn (adjusted-phase-fn snapshot) show snapshot head)))
     (resolve-non-frame-dynamic-elements [this show snapshot head]
       (let [shape-fn (simplify-unless-frame-dynamic shape-fn show snapshot head)]
-        (if (fn? shape-fn)  ; The function simplified and no longer depends on dynamic parameters; we can optimize
+        (if (ifn? shape-fn)  ; The function simplified and no longer depends on dynamic parameters; we can optimize
           (if (not-any? params/frame-dynamic-param? [interval interval-ratio phase])
             ;; No parameters are frame-dynamic, can resolve and optimize all the way to a fixed oscillator
             (let [interval (params/resolve-param interval show snapshot head)
@@ -188,14 +188,14 @@
   The arguments after `shape-fn` can be [dynamic
   parameters](https://github.com/brunchboy/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters)."
   [shape-fn & {:keys [interval interval-ratio phase] :or {interval :beat interval-ratio 1 phase 0.0}}]
-  {:pre [(or (fn? shape-fn) (satisfies? IVariableShape shape-fn))]}
+  {:pre [(or (ifn? shape-fn) (satisfies? IVariableShape shape-fn))]}
   (params/validate-param-type interval clojure.lang.Keyword)
   (let [interval-ratio (params/bind-keyword-param interval-ratio Number 1)
         phase (params/bind-keyword-param phase Number 0)]
-    (if (and (not-any? params/param? [interval interval-ratio phase]) (fn? shape-fn))
+    (if (and (not-any? params/param? [interval interval-ratio phase]) (ifn? shape-fn))
       (fixed-oscillator shape-fn interval interval-ratio phase)  ; Optimized case with no dynamic inputs
       ;; We have a variable parameter or variable shape function; need to do a bit more work
-      (if (fn? shape-fn)
+      (if (ifn? shape-fn)
         (simple-oscillator shape-fn interval interval-ratio phase)
         (variable-oscillator shape-fn interval interval-ratio phase)))))
 

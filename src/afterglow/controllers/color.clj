@@ -44,7 +44,7 @@
          (have? some? variable) (have? #(= (type (show/get-variable %)) :com.evocomputing.colors/color) variable)
          (have? #{:red :green :blue :hue :saturation :lightness} component)
          (have? #(or (not %) (number? %)) max) (have? #(or (not %) (number? %)) min)
-         (have? #(or (not %) (fn? %)) transform-fn)]}
+         (have? #(or (not %) (ifn? %)) transform-fn)]}
   (let [min (or min 0)
         max (or max (case component
                       (:red :green :blue) 255

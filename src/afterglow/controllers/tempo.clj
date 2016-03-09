@@ -120,7 +120,7 @@
          (have? integer? channel) (have? #(<= 0 % 15) channel) (have? integer? note) (have? #(<= 0 % 127) note)
          (have? #(or (not %) (and (integer? %) (<= 0 % 127))) feedback-on)
          (have? integer? feedback-off) (have? #(<= 0 % 127) feedback-off)
-         (have? fn? shift-fn)]}
+         (have? ifn? shift-fn)]}
   (let [feedback-device (when feedback-on (amidi/find-midi-out device-filter))
         tap-handler (create-show-tempo-tap-handler *show* :shift-fn shift-fn)
         midi-handler (fn [message]
@@ -141,7 +141,7 @@
   [device-filter channel kind note f]
   {:pre [(have? some? *show*) (have? #{:control :note} kind) (have? some? device-filter)
          (have? integer? channel) (have? #(<= 0 % 15) channel) (have? integer? note) (have? #(<= 0 % 127) note)
-         (have? fn? f)]}
+         (have? ifn? f)]}
   (let [feedback-device (amidi/find-midi-out device-filter)]
     (when feedback-device
       (controllers/clear-beat-feedback! (:metronome *show*) feedback-device channel kind note))

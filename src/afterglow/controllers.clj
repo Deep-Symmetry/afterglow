@@ -253,7 +253,7 @@
   `:when-id` argument to avoid accidentally ending a different cue."
   [grid x y f]
   {:pre [(have? integer? x) (have? integer? y) (have? #(not (neg? %)) x) (have? #(not (neg? %)) y)
-         (have? fn? f) (have? #(= (type %) :cue-grid) grid)]}
+         (have? ifn? f) (have? #(= (type %) :cue-grid) grid)]}
   (dosync
    ;; Consider putting the actual cue as the value, and logging a warning and ending the feedback
    ;; if a different cue gets stored there? Probabyl not.
@@ -265,7 +265,7 @@
   activates or deactivates."
   [grid x y f]
   {:pre [(have? integer? x) (have? integer? y) (have? #(not (neg? %)) x) (have? #(not (neg? %)) y)
-         (have? #(fn? %) f) (have? #(= (type %) :cue-grid) grid)]}
+         (have? #(ifn? %) f) (have? #(= (type %) :cue-grid) grid)]}
   (dosync
    (let [entry (get (ensure (:fn-feedback grid)) [x y])]
      (alter (:fn-feedback grid) assoc [x y] (dissoc entry f))))
@@ -559,7 +559,7 @@
   argument is a function that will be called with no arguments when
   the binding should be deactivated."
   [f]
-  {:pre [(have? fn? f)]}
+  {:pre [(have? ifn? f)]}
   (swap! active-bindings conj f))
 
 (defn remove-active-binding
@@ -568,7 +568,7 @@
   is shutting down. The single argument is a function that was
   registered with [[add-active-binding]]."
   [f]
-  {:pre [(have? fn? f)]}
+  {:pre [(have? ifn? f)]}
   (swap! active-bindings disj f))
 
 (defn deactivate-all

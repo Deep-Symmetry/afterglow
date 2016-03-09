@@ -131,8 +131,8 @@
      Otherwise the standard `:min` and `:max` values will be used."
   [show-key effect-fn & {:keys [variables short-name color color-fn end-keys priority held]
                          :or {short-name (:name (show/get-cue-effect effect-fn variables)) color :white priority 0}}]
-  {:pre [(some? show-key) (fn? effect-fn) (satisfies? fx/IEffect (show/get-cue-effect effect-fn variables))
-         (or (nil? color-fn) (fn? color-fn))]}
+  {:pre [(some? show-key) (ifn? effect-fn) (satisfies? fx/IEffect (show/get-cue-effect effect-fn variables))
+         (or (nil? color-fn) (ifn? color-fn))]}
   (merge {:name (name short-name)
           :key (keyword show-key)
           :effect effect-fn
@@ -305,7 +305,7 @@
   any) colors. The color is passed to [[interpret-color]], so it can
   be specified in a variety of ways."
   [code label & {:keys [color] :or {color :white}}]
-  {:pre [(fn? code) (string? label)]}
+  {:pre [(ifn? code) (string? label)]}
   (cue ::code-cue (fn [_] (fx/code code)) :short-name label :color color :held true))
 
 (defn find-cue-variable-keyword
@@ -526,7 +526,7 @@
   established."
   [device-filter channel kind note x y f]
   {:pre [(some? *show*) (#{:control :note} kind) (some? device-filter) (integer? channel) (<= 0 channel 15)
-         (integer? note) (<= 0 note 127) (integer? x) (<= 0 x) (integer? y) (<= 0 y) (fn? f)]}
+         (integer? note) (<= 0 note 127) (integer? x) (<= 0 x) (integer? y) (<= 0 y) (ifn? f)]}
   (let [feedback-device (first (midi/filter-devices device-filter (midi/open-outputs-if-needed!)))
         feedback (when feedback-device
                    (controllers/clear-cue-feedback! (:cue-grid *show*) x y feedback-device channel kind note))]

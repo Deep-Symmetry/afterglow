@@ -86,14 +86,14 @@
   It must return quickly so as not to stall the delay of other MIDI
   events; lengthy operations must be performed on another thread."
   [f]
-  {:pre [(fn? f)]}
+  {:pre [(ifn? f)]}
   (swap! new-device-handlers conj f))
 
 (defn remove-new-device-handler!
   "Stop calling the specified function to be called whenever a new
   device appears in the MIDI environment."
   [f]
-  {:pre [(fn? f)]}
+  {:pre [(ifn? f)]}
   (swap! new-device-handlers disj f))
 
 (defonce ^{:private true
@@ -112,7 +112,7 @@
   to stall the delay of other MIDI events; lengthy operations must be
   performed on another thread."
   [device f]
-  {:pre [(= (type device) :midi-device) (fn? f)]}
+  {:pre [(= (type device) :midi-device) (ifn? f)]}
   (swap! disconnected-device-handlers #(update-in % [(@midi-device-key device)] clojure.set/union #{f})))
 
 (defn remove-disconnected-device-handler!
@@ -121,7 +121,7 @@
   `:midi-device` map from `overtone.midi` representing device whose
   removal is no longer of interest."
   [device f]
-  {:pre [(= (type device) :midi-device) (fn? f)]}
+  {:pre [(= (type device) :midi-device) (ifn? f)]}
   (swap! disconnected-device-handlers #(update-in % [(@midi-device-key device)] disj f)))
 
 (defonce ^:private ^{:doc "The queue used to hand MIDI events from the
@@ -199,7 +199,7 @@
   The function will be called with the message, and must return
   quickly, so as to not block delivery to other recipients."
   [f]
-  {:pre [(fn? f)]}
+  {:pre [(ifn? f)]}
   (swap! global-handlers conj f))
 
 (defn remove-global-handler!
@@ -778,7 +778,7 @@
 
 (defn- add-synced-metronome
   [midi-clock-source metronome f]
-  {:pre [(= (type midi-clock-source) :midi-device) (satisfies? rhythm/IMetronome metronome) (fn? f)]}
+  {:pre [(= (type midi-clock-source) :midi-device) (satisfies? rhythm/IMetronome metronome) (ifn? f)]}
   (swap! synced-metronomes #(assoc-in % [(@midi-device-key midi-clock-source) metronome] f)))
 
 (defn- remove-synced-metronome
@@ -843,7 +843,7 @@
     (= (type device-filter) :midi-device)
     (describe-device-filter (@midi-device-key device-filter))
 
-    (fn? device-filter)
+    (ifn? device-filter)
     (format "returning true when passed to %s " device-filter)
 
     :else
@@ -893,7 +893,7 @@
     (= (type device-filter) :midi-device)
     (filter #(= (@midi-device-key %) (@midi-device-key device-filter)) devices)
 
-    (fn? device-filter)
+    (ifn? device-filter)
     (filter device-filter devices)
 
     :else
@@ -985,7 +985,7 @@
   The first MIDI input source whose device matches the
   `device-filter` (using [[filter-devices]]) will be chosen."
   [device-filter f]
-  {:pre [(fn? f)]}
+  {:pre [(ifn? f)]}
   (let [result (filter-devices device-filter (open-inputs-if-needed!))]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
@@ -1012,7 +1012,7 @@
   The first MIDI input source whose device matches the
   `device-filter` (using [[filter-devices]]) will be chosen."
   [device-filter channel control-number f]
-  {:pre [(fn? f)]}
+  {:pre [(ifn? f)]}
   (let [result (filter-devices device-filter (open-inputs-if-needed!))]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
@@ -1041,7 +1041,7 @@
   The first MIDI input source whose device matches the
   `device-filter` (using [[filter-devices]]) will be chosen."
   [device-filter channel note f]
-  {:pre [(fn? f)]}
+  {:pre [(ifn? f)]}
   (let [result (filter-devices device-filter (open-inputs-if-needed!))]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
@@ -1070,7 +1070,7 @@
   The first MIDI input source whose device matches the
   `device-filter` (using [[filter-devices]]) will be chosen."
   [device-filter channel note f]
-  {:pre [(fn? f)]}
+  {:pre [(ifn? f)]}
   (let [result (filter-devices device-filter (open-inputs-if-needed!))]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
@@ -1098,7 +1098,7 @@
   The first MIDI input source whose device matches the
   `device-filter` (using [[filter-devices]]) will be chosen."
   [device-filter f]
-  {:pre [(fn? f)]}
+  {:pre [(ifn? f)]}
   (let [result (filter-devices device-filter (open-inputs-if-needed!))]
     (when (empty? result)
       (throw (IllegalArgumentException. (str "No MIDI sources " (describe-device-filter device-filter) "were found."))))
@@ -1146,7 +1146,7 @@
   The return value of `watch-for` is a function that you can call to
   cancel the watcher if you no longer need it."
   [device-filter found-fn & {:keys [lost-fn sleep-time] :or {sleep-time 1000}}]
-  {:pre [(fn? found-fn) (or (nil? lost-fn) (fn? lost-fn)) (number? sleep-time)]}
+  {:pre [(ifn? found-fn) (or (nil? lost-fn) (ifn? lost-fn)) (number? sleep-time)]}
   (let [found (atom false)]
     (letfn [(disconnection-handler []
               (when lost-fn (lost-fn))
