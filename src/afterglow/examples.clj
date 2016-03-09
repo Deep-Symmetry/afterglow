@@ -674,14 +674,17 @@
                                             (oscillators/build-oscillated-param
                                              (oscillators/sawtooth :down? (:down var-map)
                                                                    :interval-ratio (build-ratio-param var-map)
-                                                                   :phase (:phase var-map)))
+                                                                   :phase (:phase var-map))
+                                             :min (:min var-map) :max (:max var-map))
                                             fixtures
                                             :effect-name effect-name))
                              :color color
                              :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
                                          {:key "down" :type :boolean :start true :name "Down?"}
                                          {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
-                                         {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}]
+                                         {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}
+                                         {:key "min" :min 0 :max 255 :start 0 :name "Min"}
+                                         {:key "max" :min 0 :max 255 :start 255 :name "Max"}]
                              :end-keys end-keys))))
 
 (defn make-triangle-dimmer-cue
@@ -695,13 +698,16 @@
                              (fn [var-map] (dimmer-effect
                                             (oscillators/build-oscillated-param
                                              (oscillators/triangle :interval-ratio (build-ratio-param var-map)
-                                                                   :phase (:phase var-map)))
+                                                                   :phase (:phase var-map))
+                                             :min (:min var-map) :max (:max var-map))
                                             fixtures
                                             :effect-name effect-name))
                              :color color
                              :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
                                          {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
-                                         {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}]
+                                         {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}
+                                         {:key "min" :min 0 :max 255 :start 0 :name "Min"}
+                                         {:key "max" :min 0 :max 255 :start 255 :name "Max"}]
                              :end-keys end-keys))))
 
 (defn make-sine-dimmer-cue
@@ -716,13 +722,15 @@
                                             (oscillators/build-oscillated-param
                                              (oscillators/sine :interval-ratio (build-ratio-param var-map)
                                                                :phase (:phase var-map))
-                                             :min 1)
+                                             :min (:min var-map) :max (:max var-map))
                                             fixtures
                                             :effect-name effect-name))
                              :color color
                              :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
                                          {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
-                                         {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}]
+                                         {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}
+                                         {:key "min" :min 0 :max 255 :start 1 :name "Min"}
+                                         {:key "max" :min 0 :max 255 :start 255 :name "Max"}]
                              :end-keys end-keys))))
 
 (defn make-square-dimmer-cue
@@ -737,14 +745,17 @@
                                             (oscillators/build-oscillated-param
                                              (oscillators/square :interval-ratio (build-ratio-param var-map)
                                                                  :width (:width var-map)
-                                                                 :phase (:phase var-map)))
+                                                                 :phase (:phase var-map))
+                                             :min (:min var-map) :max (:max var-map))
                                             fixtures
                                             :effect-name effect-name))
                              :color color
                              :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
                                          {:key "width" :min 0 :max 1 :start 0.5 :name "Width"}
                                          {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
-                                         {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}]
+                                         {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}
+                                         {:key "min" :min 0 :max 255 :start 0 :name "Min"}
+                                         {:key "max" :min 0 :max 255 :start 255 :name "Max"}]
                              :end-keys end-keys))))
 
 (defn x-phase
