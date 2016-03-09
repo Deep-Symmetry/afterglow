@@ -41,6 +41,9 @@ This change log follows the conventions of
   response.
 - Cue variables can now be Booleans, to support cues which want to be
   able to adjust the direction of a sawtooth oscillator while running.
+- The dimmer oscillator cues created in the sample show now include
+  Min and Max variables so the range over which the dimmer oscillates
+  can be adjusted.
 - The Ableton Push mapping now lets you scroll through all variables
   assigned to a cue so you can see and adjust more than the first two.
 - You can use the keyboard arrow keys to navigate around the cue grid
@@ -94,6 +97,13 @@ This change log follows the conventions of
 - All MIDI event handler functions are now called in a context which
   properly recovers from exceptions at the level of that individual
   handler, so other handlers will not be affected.
+- Everywhere that Afterglow was checking whether an argument was
+  callable as a function has been fixed to use the `ifn?` predicate
+  rather than `fn?` since the latter is too restrictive, and only
+  returns `true` for functions explicitly created using `(fn ...)`.
+  That precluded, for example, the idiomatic Clojure approach of using
+  `:x` as a function to extract the _x_ coordinate of a head when
+  defining a spatial parameter.
 
 ### Changed
 
