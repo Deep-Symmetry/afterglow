@@ -24,7 +24,7 @@
                  [com.climate/claypoole "1.1.2"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
                  [ola-clojure "0.1.4"]
-                 [selmer "1.0.0"]
+                 [selmer "1.0.2"]
                  [com.evocomputing/colors "1.0.3"]
                  [environ "1.0.2"]
                  [camel-snake-kebab "0.3.2"]
