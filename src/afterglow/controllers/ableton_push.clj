@@ -467,7 +467,8 @@
                    (when (= (:note message) 1)
                      ;; They released us, end the overlay.
                      :done))
-                 (handle-aftertouch [this message]))))
+                 (handle-aftertouch [this message])
+                 (handle-pitch-bend [this message]))))
 
 (defn- beat-adjusting-interface
   "Add an arrow showing the beat is being adjusted."
@@ -512,7 +513,8 @@
                    (when (zero? (:note message))
                      ;; They released us, end the overlay.
                      :done))
-                 (handle-aftertouch [this message]))))
+                 (handle-aftertouch [this message])
+                 (handle-pitch-bend [this message]))))
 
 (defn- enter-metronome-showing
   "Activate the persistent metronome display, with sync and reset pads
@@ -570,7 +572,8 @@
                    true)
                  (handle-note-off [this message]
                    false)
-                 (handle-aftertouch [this message]))))
+                 (handle-aftertouch [this message])
+                 (handle-pitch-bend [this message]))))
 
 (defn- new-beat?
   "Returns true if the metronome is reporting a different marker
@@ -1043,7 +1046,8 @@
                              (handle-note-off [this message]
                                ;; Exit the overlay
                                :done)
-                             (handle-aftertouch [this message]))))
+                             (handle-aftertouch [this message])
+                             (handle-pitch-bend [this message]))))
 
 (defn- bpm-encoder-touched
   "Add a user interface overlay to give feedback when turning the BPM
@@ -1070,7 +1074,8 @@
                                  ;; They released us, end the overlay
                                  (swap! (:metronome-mode controller) dissoc :adjusting-bpm)
                                  :done))
-                             (handle-aftertouch [this message]))))
+                             (handle-aftertouch [this message])
+                             (handle-pitch-bend [this message]))))
 
 (defn- beat-encoder-touched
   "Add a user interface overlay to give feedback when turning the beat
@@ -1096,7 +1101,8 @@
                                  ;; They released us, exit the overlay
                                  (swap! (:metronome-mode controller) dissoc :adjusting-beat)
                                  :done))
-                             (handle-aftertouch [this message]))))
+                             (handle-aftertouch [this message])
+                             (handle-pitch-bend [this message]))))
 
 (defn- leave-user-mode
   "The user has asked to exit user mode, so suspend our display
@@ -1128,7 +1134,8 @@
                                  :done))
                              (handle-note-on [this message])
                              (handle-note-off [this message])
-                             (handle-aftertouch [this message]))))
+                             (handle-aftertouch [this message])
+                             (handle-pitch-bend [this message]))))
 
 (defn- enter-stop-mode
   "The user has asked to stop the show. Suspend its update task
@@ -1171,7 +1178,8 @@
                                  :done))
                              (handle-note-on [this message])
                              (handle-note-off [this message])
-                             (handle-aftertouch [this message]))))
+                             (handle-aftertouch [this message])
+                             (handle-pitch-bend [this message]))))
 
 (defn add-button-held-feedback-overlay
   "Adds a simple overlay which keeps a control button bright as long
@@ -1255,7 +1263,8 @@
                                        :done))
                                    (handle-note-on [this message])
                                    (handle-note-off [this message])
-                                   (handle-aftertouch [this message])))))))
+                                   (handle-aftertouch [this message])
+                                   (handle-pitch-bend [this message])))))))
 
 (defn- handle-scroll-cue-vars
   "Process a tap on one of the pads which indicate the user wants to
@@ -1290,7 +1299,8 @@
                                          :done))
                                      (handle-note-on [this message])
                                      (handle-note-off [this message])
-                                     (handle-aftertouch [this message]))))))))
+                                     (handle-aftertouch [this message])
+                                     (handle-pitch-bend [this message]))))))))
 
 (defn- move-origin
   "Changes the origin of the controller, notifying any registered
@@ -1456,7 +1466,8 @@
                            (when (:velocity v)
                              (cues/set-cue-variable! cue v
                                                      (controllers/value-for-velocity v (:velocity message))
-                                                     :show (:show controller) :when-id id)))))))))))))
+                                                     :show (:show controller) :when-id id)))))
+                     (handle-pitch-bend [this message])))))))))
 
 (defn- control-for-top-encoder-note
   "Return the control number on which rotation of the encoder whose
@@ -1544,7 +1555,8 @@
         (handle-note-on [this message])
         (handle-note-off [this message]
           :done)
-        (handle-aftertouch [this message]))
+        (handle-aftertouch [this message])
+        (handle-pitch-bend [this message]))
 
       ;; Just one variable, take full cell, using either encoder,
       ;; suppress the other one.
@@ -1566,7 +1578,8 @@
           (handle-note-off [this message]
             (when (= (:note message) note)
               :done))
-          (handle-aftertouch [this message]))))))
+          (handle-aftertouch [this message])
+          (handle-pitch-bend [this message]))))))
 
 (defn- build-numeric-adjustment-overlay
   "Create an overlay for adjusting a numeric cue parameter. `note`
@@ -1597,7 +1610,8 @@
         (handle-note-on [this message])
         (handle-note-off [this message]
           :done)
-        (handle-aftertouch [this message]))
+        (handle-aftertouch [this message])
+        (handle-pitch-bend [this message]))
 
       ;; Just one variable, take full cell, using either encoder,
       ;; suppress the other one.
@@ -1619,7 +1633,8 @@
           (handle-note-off [this message]
             (when (= (:note message) note)
               :done))
-          (handle-aftertouch [this message]))))))
+          (handle-aftertouch [this message])
+          (handle-pitch-bend [this message]))))))
 
 (def ^:private color-picker-grid
   (let [result (make-array clojure.lang.IPersistentMap 64)]
@@ -1710,7 +1725,8 @@
           (swap! anchors disj (:note message))
           (when (empty? @anchors)
             :done))
-        (handle-aftertouch [this message])))))
+        (handle-aftertouch [this message])
+        (handle-pitch-bend [this message])))))
 
 (defn- display-encoder-touched
   "One of the eight encoders above the text display was touched."

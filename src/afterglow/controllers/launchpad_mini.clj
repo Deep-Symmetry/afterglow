@@ -259,7 +259,8 @@
                                  (reset! (:stop-mode controller) false)
                                  :done))
                              (handle-note-off [this message])
-                             (handle-aftertouch [this message]))))
+                             (handle-aftertouch [this message])
+                             (handle-pitch-bend [this message]))))
 
 (defn- new-beat?
   "Returns true if the metronome is reporting a different marker
@@ -361,7 +362,8 @@
                                  :done))
                              (handle-note-on [this message])
                              (handle-note-off [this message])
-                             (handle-aftertouch [this message]))))
+                             (handle-aftertouch [this message])
+                             (handle-pitch-bend [this message]))))
 
 (defn- control-change-received
   "Process a control change message which was not handled by an
@@ -442,7 +444,8 @@
                          (with-show (:show controller)
                            (show/end-effect! (:key cue) :when-id id)))
                        :done)
-                     (handle-aftertouch [this message])))))))))
+                     (handle-aftertouch [this message])
+                     (handle-pitch-bend [this message])))))))))
 
 (defn- note-on-received
   "Process a note-on message which was not handled by an interface

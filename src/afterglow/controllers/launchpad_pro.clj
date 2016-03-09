@@ -287,7 +287,8 @@
                                  :done))
                              (handle-note-on [this message])
                              (handle-note-off [this message])
-                             (handle-aftertouch [this message]))))
+                             (handle-aftertouch [this message])
+                             (handle-pitch-bend [this message]))))
 
 (defn- new-beat?
   "Returns true if the metronome is reporting a different marker
@@ -394,7 +395,8 @@
                                  :done))
                              (handle-note-on [this message])
                              (handle-note-off [this message])
-                             (handle-aftertouch [this message]))))
+                             (handle-aftertouch [this message])
+                             (handle-pitch-bend [this message]))))
 
 (defn- control-change-received
   "Process a control change message which was not handled by an
@@ -502,7 +504,8 @@
                            (when (:velocity v)
                              (cues/set-cue-variable! cue v
                                                      (controllers/value-for-velocity v (:velocity message))
-                                                     :show (:show controller) :when-id id)))))))))))))
+                                                     :show (:show controller) :when-id id)))))
+                     (handle-pitch-bend [this message])))))))))
 
 (defn- note-on-received
   "Process a note-on message which was not handled by an interface

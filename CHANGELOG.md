@@ -119,6 +119,9 @@ This change log follows the conventions of
   even more dimensions.
 - A lot of repetitive code in the examples namespace was consolitated
   using helper functions.
+- The `controllers/IOverlay` protocol was expanded to include the
+  ability for an overlay to handle and absorb pitch-bend messages, in
+  preparation for supporting the touch strip on the Ableton Push.
 
 ## [0.2.0] - 2016-02-02
 

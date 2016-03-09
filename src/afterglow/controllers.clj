@@ -92,7 +92,13 @@
   lists has been received. Return a truthy value if the overlay has
   consumed the event, so it should not be processed further. If the
   special value `:done` is returned, it further indicates the overlay
-  is finished and should be removed."))))
+  is finished and should be removed.")
+  (handle-pitch-bend [this message]
+  "Called when a MIDI pitch-bend event has been received. Return a
+  truthy value if the overlay has consumed the event, so it should not
+  be processed further. If the special value `:done` is returned, it
+  further indicates the overlay is finished and should be
+  removed."))))
 
 (defn cue-grid
   "Return a two dimensional arrangement for launching and monitoring
