@@ -439,6 +439,14 @@
                 result)))
           (seq (:overlays @state)))
 
+    :pitch-bend
+    (some (fn [[k overlay]]
+            (let [result (handle-pitch-bend overlay message)]
+              (when (= result :done)
+                (swap! state update-in [:overlays] dissoc k))
+              result))
+          (seq (:overlays @state)))
+
     ;; Nothing we process
     false))
 
