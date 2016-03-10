@@ -1503,6 +1503,23 @@
                        (float (* (Math/round (/ adjusted resolution)) resolution)))]
     (cues/set-cue-variable! cue v (max low (min high normalized)) :show (:show controller) :when-id effect-id)))
 
+(defn- bend-variable-value
+  "Handle a pitch bend change while an encoder associated with a
+  variable is being adjusted in the effect list."
+  [controller message cue v effect-id]
+  (let [value (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id) 0)
+        full-range (- (:max v) (:min v))
+        fraction (/ (+ (* (:data2 message) 128) (:data1 message)) 16383)
+        adjusted (float (+ (:min v) (* fraction full-range)))
+        raw-resolution (/ full-range 200)
+        resolution (or (:resolution v) (if (= :integer (:type v))
+                                         1
+                                         raw-resolution))
+        normalized (if (= :integer (:type v)) (Math/round (float adjusted))
+                       (float (* (Math/round (/ adjusted resolution)) resolution)))]
+    (cues/set-cue-variable! cue v (max (:min v) (min (:max v) normalized)) :show (:show controller)
+                            :when-id effect-id)))
+
 (defn- draw-boolean-gauge
   "Display the value of a boolean variable being adjusted in the effect list."
   [controller cell width offset cue v effect-id]
@@ -1611,7 +1628,9 @@
         (handle-note-off [this message]
           :done)
         (handle-aftertouch [this message])
-        (handle-pitch-bend [this message]))
+        (handle-pitch-bend [this message]
+          (bend-variable-value controller message cue v (:id info))
+          true))
 
       ;; Just one variable, take full cell, using either encoder,
       ;; suppress the other one.
@@ -1634,7 +1653,9 @@
             (when (= (:note message) note)
               :done))
           (handle-aftertouch [this message])
-          (handle-pitch-bend [this message]))))))
+          (handle-pitch-bend [this message]
+            (bend-variable-value controller message cue v (:id info))
+            true))))))
 
 (def ^:private color-picker-grid
   (let [result (make-array clojure.lang.IPersistentMap 64)]
@@ -1703,6 +1724,8 @@
           (when (#{hue-control sat-control} (:note message))
             (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
                                     (aget color-picker-grid 6))
+                  current-color (colors/create-color :h (colors/hue current-color) :s (colors/saturation current-color)
+                                                     :l 50)
                   delta (* (sign-velocity (:velocity message)) 0.5)]
               (cues/set-cue-variable! cue v
                                       (if (= (:note message) hue-control)
@@ -1726,7 +1749,14 @@
           (when (empty? @anchors)
             :done))
         (handle-aftertouch [this message])
-        (handle-pitch-bend [this message])))))
+        (handle-pitch-bend [this message]
+          (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
+                                  (aget color-picker-grid 6))
+                fraction (double (/ (+ (* (:data2 message) 128) (:data1 message)) 16383))
+                new-hue (if (@anchors hue-note) (* fraction 360) (colors/hue current-color))
+                new-sat (if (@anchors sat-note) (* fraction 100) (colors/saturation current-color))]
+            (cues/set-cue-variable! cue v (colors/create-color :h new-hue :s new-sat :l 50)
+                                    :when-id effect-id)))))))
 
 (defn- display-encoder-touched
   "One of the eight encoders above the text display was touched."
