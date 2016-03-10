@@ -31,7 +31,7 @@
                  [com.taoensso/timbre "4.2.1"]
                  [com.taoensso/tower "3.0.2"]
                  [com.taoensso/truss "1.1.2"]
-                 [markdown-clj "0.9.85"]
+                 [markdown-clj "0.9.86"]
                  [compojure "1.4.0" :exclusions [org.eclipse.jetty/jetty-server
                                                  clj-time]]
                  [ring/ring-defaults "0.1.5"]
