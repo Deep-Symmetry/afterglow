@@ -78,6 +78,12 @@ This change log follows the conventions of
   handful of special symbols used for drawing interface elements. Now
   unprintable characters are substituted with an ellipsis symbol
   rather than crashing.
+- The entire Push display was being redrawn on each frame of
+  user-interface updates, and all text-labeled button states were
+  being set, even if they had not changed from the previous frame.
+  These redundant messages are no longer sent, and MIDI messages are
+  sent to the Push only when text and button states actually need to
+  change.
 - The slider tooltips for cue variables in the web UI were getting in
   the way of adjusting the sliders because they would appear when the
   mouse was over the tooltip, not just the slider track. They could

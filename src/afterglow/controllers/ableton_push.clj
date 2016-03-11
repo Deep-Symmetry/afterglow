@@ -255,7 +255,7 @@
                         (take 68 (concat (map int bytes) (repeat 32)))
                         [247])]
     (midi/midi-sysex (:port-out controller) message)))
- 
+
 (defn clear-display-line
   "Clears a line of the text display."
   [controller line]
@@ -278,8 +278,8 @@
   to update it on the Push."
   [controller]
   (doseq [row (range 4)]
-    (when-not (.equals (get (:next-display controller) row)
-                       (get (:last-display controller) row))
+    (when-not (Arrays/equals (get (:next-display controller) row)
+                             (get (:last-display controller) row))
       (set-display-line controller row (get (:next-display controller) row))
       (System/arraycopy (get (:next-display controller) row) 0
                         (get (:last-display controller) row) 0 68))))
@@ -331,13 +331,14 @@
   [controller]
   ;; First turn off any which were on before but no longer are
   (doseq [[button old-state] @(:last-text-buttons controller)]
-    (when-not (button @(:next-text-buttons controller))
+    (when-not (get @(:next-text-buttons controller) button)
       (when-not (#{0 :off} old-state)
         (set-button-state controller button :off))))
 
   ;; Then, set any currently requested states
   (doseq [[button state] @(:next-text-buttons controller)]
-    (set-button-state controller button state))
+    (when-not (= (get @(:last-text-buttons controller) button) state)
+      (set-button-state controller button state)))
 
   ;; And record the new state for next time
   (reset! (:last-text-buttons controller) @(:next-text-buttons controller)))
