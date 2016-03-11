@@ -133,6 +133,11 @@ This change log follows the conventions of
 - The `controllers/IOverlay` protocol was expanded to include the
   ability for an overlay to handle and absorb pitch-bend messages, in
   preparation for supporting the touch strip on the Ableton Push.
+- The floating-point format for cue variables was changed from `float`
+  to `double` since that is what Clojure actually natively uses.
+- All other `float` values which were created throughout Afterglow
+  were changed to `double` values, since that is what Clojure actually
+  natively uses, and they were getting promoted when used anyway.
 
 ## [0.2.0] - 2016-02-02
 

@@ -623,7 +623,7 @@
     ;; Is the first cell reserved for metronome information?
     (if (seq metronome-mode)
       ;; Draw the beat and BPM information
-      (let [bpm (format "%.1f" (float (:bpm snapshot)))
+      (let [bpm (format "%.1f" (double (:bpm snapshot)))
             chars (+ (count marker) (count bpm))
             padding (clojure.string/join (take (- 17 chars) (repeat " ")))]
         (write-display-cell controller 1 0 (str marker padding bpm))
@@ -736,9 +736,9 @@
                       (or (= (type val) Boolean) (= (:type v) :boolean))
                       (if val "Yes" "No")
 
-                      ;; If we don't know what else to do, at least turn ratios to floats
+                      ;; If we don't know what else to do, at least turn ratios to doubles
                       :else
-                      (float val))
+                      (double val))
 
                     ;; We got no value, display an ellipsis
                     "...")
@@ -1542,12 +1542,12 @@
         high (max value (:max v))
         raw-resolution (/ (- high low) 200)
         resolution (or (:resolution v) (if (= :integer (:type v))
-                                         (max 1 (Math/round (float raw-resolution)))
+                                         (max 1 (Math/round (double raw-resolution)))
                                          raw-resolution))
         delta (* (sign-velocity (:velocity message)) resolution)
         adjusted (+ value delta)
-        normalized (if (= :integer (:type v)) (Math/round (float adjusted))
-                       (float (* (Math/round (/ adjusted resolution)) resolution)))]
+        normalized (if (= :integer (:type v)) (Math/round (double adjusted))
+                       (double (* (Math/round (/ adjusted resolution)) resolution)))]
     (cues/set-cue-variable! cue v (max low (min high normalized)) :show (:show controller) :when-id effect-id)))
 
 (defn- bend-variable-value
@@ -1557,13 +1557,13 @@
   (let [value (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id) 0)
         full-range (- (:max v) (:min v))
         fraction (/ (+ (* (:data2 message) 128) (:data1 message)) 16383)
-        adjusted (float (+ (:min v) (* fraction full-range)))
+        adjusted (double (+ (:min v) (* fraction full-range)))
         raw-resolution (/ full-range 200)
         resolution (or (:resolution v) (if (= :integer (:type v))
                                          1
                                          raw-resolution))
-        normalized (if (= :integer (:type v)) (Math/round (float adjusted))
-                       (float (* (Math/round (/ adjusted resolution)) resolution)))]
+        normalized (if (= :integer (:type v)) (Math/round (double adjusted))
+                       (double (* (Math/round (/ adjusted resolution)) resolution)))]
     (cues/set-cue-variable! cue v (max (:min v) (min (:max v) normalized)) :show (:show controller)
                             :when-id effect-id)))
 
@@ -1762,8 +1762,8 @@
                                                            (colors/lighten current-color 20))))))
 
               ;; Display the hue and saturation numbers and gauges
-              (let [hue-str (clojure.string/join (take 5 (str (float hue) "     ")))
-                    sat-str (clojure.string/join (take 5 (str (float sat))))
+              (let [hue-str (clojure.string/join (take 5 (str (double hue) "     ")))
+                    sat-str (clojure.string/join (take 5 (str (double sat))))
                     hue-gauge (make-pan-gauge hue :highest 360 :width 8)
                     sat-gauge (make-gauge sat :width 8)]
                 (write-display-cell controller 0 x (str "H: " hue-str " S: " sat-str))
@@ -1841,7 +1841,7 @@
         (when cue-var
           (let [cur-val (cues/get-cue-variable cue cue-var :show (:show controller) :when-id (:id info))]
             (cond
-              (or (number? cur-val) (#{:integer :float} (:type cue-var :float)))
+              (or (number? cur-val) (#{:integer :double} (:type cue-var :double)))
               (controllers/add-overlay (:overlays controller)
                                        (build-numeric-adjustment-overlay controller note cue cue-var effect info))
 

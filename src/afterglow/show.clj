@@ -137,12 +137,12 @@
   (let [duration (- (at-at/now) scheduled)
         total-time (+ duration (:total-time stats 0))
         frames-sent (inc (:frames-sent stats 0))
-        average-duration (float (/ total-time frames-sent))
+        average-duration (double (/ total-time frames-sent))
         recent (:recent stats (ring-buffer 30))
         discarding (if (< (count recent) frame-count-for-load) 0 (- (peek recent)))
         recent (conj recent duration)
         recent-total (+ (:recent-total stats 0) duration discarding)
-        recent-average (float (/ recent-total (count recent)))]
+        recent-average (double (/ recent-total (count recent)))]
     (when (> duration refresh-interval)
       (taoensso.timbre/warn "Frame took" duration "ms to generate, refresh interval is" refresh-interval "ms."))
     (assoc stats :total-time total-time :frames-sent frames-sent :average-duration average-duration
@@ -592,11 +592,11 @@
 
                    (< min max)
                    (let [range (- max min)]
-                     (fn [midi-val] (float (+ min (/ (* midi-val range) 127)))))
+                     (fn [midi-val] (double (+ min (/ (* midi-val range) 127)))))
 
                    :else
                    (let [range (- min max)]
-                     (fn [midi-val] (float (+ max (/ (* midi-val range) 127))))))
+                     (fn [midi-val] (double (+ max (/ (* midi-val range) 127))))))
         calc-fn (apply comp (filter identity [transform-fn scale-fn]))
         update-fn (fn [msg]
                     (with-show show
@@ -644,9 +644,9 @@
         master (resolve-param bound *show* (rhythm/metro-snapshot (:metronome *show*)))
         calc-fn (if (< min max)
                   (let [range (- max min)]
-                    (fn [midi-val] (float (+ min (/ (* midi-val range) 127)))))
+                    (fn [midi-val] (double (+ min (/ (* midi-val range) 127)))))
                   (let [range (- min max)]
-                    (fn [midi-val] (float (+ max (/ (* midi-val range) 127))))))
+                    (fn [midi-val] (double (+ max (/ (* midi-val range) 127))))))
         update-fn (fn [msg] (master-set-level master (calc-fn (:velocity msg))))]
     (midi/add-control-mapping device-filter channel control-number update-fn)
     update-fn))

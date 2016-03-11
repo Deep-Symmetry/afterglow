@@ -87,8 +87,8 @@
   attached to the same source as the packet."
   [packet data]
   (let [source (:source (get (:sources-seen @state) (.getAddress packet)))
-        bpm (float (/ (+ (* 256 (unsign (aget data 90)))
-                         (unsign (aget data 91))) 100))
+        bpm (double (/ (+ (* 256 (unsign (aget data 90)))
+                          (unsign (aget data 91))) 100))
         beat (aget data 92)]
     (doseq [listener (:synced-metronomes @state)]
       (when (= (:source listener) source)

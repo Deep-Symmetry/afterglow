@@ -472,18 +472,18 @@
                                                        :b (or blue (colors/blue %))
                                                        :a (colors/alpha %)}))))
         (if (seq (filter identity [h s l]))
-          (let [hue (when h (colors/clamp-hue (float h)))
-                saturation (when s (colors/clamp-percent-float (float s)))
-                lightness (when l (colors/clamp-percent-float (float l)))]
+          (let [hue (when h (colors/clamp-hue (double h)))
+                saturation (when s (colors/clamp-percent-float (double s)))
+                lightness (when l (colors/clamp-percent-float (double l)))]
             (swap! result-color #(colors/create-color {:h (or hue (colors/hue %))
                                                        :s (or saturation (colors/saturation %))
                                                        :l (or lightness (colors/lightness %))}))))
         (when adjust-hue
-          (swap! result-color #(colors/adjust-hue % (float adjust-hue))))
+          (swap! result-color #(colors/adjust-hue % (double adjust-hue))))
         (when adjust-saturation
-          (swap! result-color #(colors/saturate % (float adjust-saturation))))
+          (swap! result-color #(colors/saturate % (double adjust-saturation))))
         (when adjust-lightness
-          (swap! result-color #(colors/lighten % (float adjust-lightness))))
+          (swap! result-color #(colors/lighten % (double adjust-lightness))))
         @result-color)
       ;; Handle the general case of some dynamic parameters
       (let [dyn (if (= :default frame-dynamic)
@@ -506,24 +506,24 @@
                                                                        :b (or blue (colors/blue %))
                                                                        :a (colors/alpha %)}))))
                         (if (seq (filter identity [h s l]))
-                          (let [hue (when h (colors/clamp-hue (float (resolve-param h show snapshot head))))
+                          (let [hue (when h (colors/clamp-hue (double (resolve-param h show snapshot head))))
                                 saturation (when s (colors/clamp-percent-float
-                                                    (float (resolve-param s show snapshot head))))
+                                                    (double (resolve-param s show snapshot head))))
                                 lightness (when l (colors/clamp-percent-float
-                                                   (float (resolve-param l show snapshot head))))]
+                                                   (double (resolve-param l show snapshot head))))]
                             (swap! result-color #(colors/create-color {:h (or hue (colors/hue %))
                                                                        :s (or saturation (colors/saturation %))
                                                                        :l (or lightness (colors/lightness %))}))))
                                 (when adjust-hue
                                   (swap! result-color
-                                         #(colors/adjust-hue % (float (resolve-param adjust-hue show snapshot head)))))
+                                         #(colors/adjust-hue % (double (resolve-param adjust-hue show snapshot head)))))
                                 (when adjust-saturation
-                                  (swap! result-color #(colors/saturate % (float (resolve-param adjust-saturation
-                                                                                   show snapshot head)))))
+                                  (swap! result-color #(colors/saturate % (double (resolve-param adjust-saturation
+                                                                                                 show snapshot head)))))
                                 (when adjust-lightness
                                   (swap! result-color
-                                         #(colors/lighten % (float (resolve-param
-                                                                    adjust-lightness show snapshot head)))))
+                                         #(colors/lighten % (double (resolve-param
+                                                                     adjust-lightness show snapshot head)))))
                                 @result-color))
             resolve-fn (fn [show snapshot head]
                          (with-show show

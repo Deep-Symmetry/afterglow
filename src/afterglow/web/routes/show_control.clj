@@ -443,7 +443,7 @@
     (let [position {:phrase (:phrase snap)
                     :bar (rhythm/snapshot-bar-within-phrase snap)
                     :beat (rhythm/snapshot-beat-within-bar snap)}]
-      (merge {:bpm (format "%.1f" (float (:bpm snap)))
+      (merge {:bpm (format "%.1f" (double (:bpm snap)))
               :blink (or (not= position (select-keys last-states [:phrase :bar :beat]))
                          (< (rhythm/snapshot-beat-phase snap) 0.2))
               :sync (dissoc (show/sync-status) :status :source)}
@@ -710,7 +710,7 @@
                       :color (colors/create-color value)
                       :boolean (Boolean/valueOf value)
                       :integer (Integer/valueOf value)
-                      (Float/valueOf value))]
+                      (Double/valueOf value))]
           (cues/set-cue-variable! cue var-spec value :when-id (Integer/valueOf effect-id))))
       {:set effect-key})))
 
@@ -929,11 +929,11 @@
 
                   (= kind "bpm-slider")
                   (rhythm/metro-bpm (:metronome (:show page-info))
-                                    (Float/valueOf (get-in req [:params :value])))
+                                    (Double/valueOf (get-in req [:params :value])))
 
                   (= kind "grand-master-slider")
                   (dimmer/master-set-level (:grand-master (:show page-info))
-                                           (Float/valueOf (get-in req [:params :value])))
+                                           (Double/valueOf (get-in req [:params :value])))
 
                   (= kind "phrase-reset")
                   (do (rhythm/metro-phrase-start (:metronome (:show page-info)) 1)

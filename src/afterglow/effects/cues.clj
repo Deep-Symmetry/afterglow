@@ -104,9 +104,9 @@
     obtain a value for the variable.
 
   * `:type` identifies the type of the variable, to help formatting
-    its display. Supported values are `:integer`, `:float`, and
+    its display. Supported values are `:integer`, `:double`, and
     `:color`. Other types may be supported in the future. If omitted or
-    unrecognized, `:float` is assumed.
+    unrecognized, `:double` is assumed.
 
   * `:centered` supplied with a true value requests that the gauge
     displayed when adjusting this variable's value be like a pan

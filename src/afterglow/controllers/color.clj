@@ -53,9 +53,9 @@
         show *show*  ; Bind so we can pass it to update function running on another thread
         scale-fn (if (< min max)
                    (let [range (- max min)]
-                     (fn [midi-val] (float (+ min (/ (* midi-val range) 127)))))
+                     (fn [midi-val] (double (+ min (/ (* midi-val range) 127)))))
                    (let [range (- min max)]
-                     (fn [midi-val] (float (+ max (/ (* midi-val range) 127))))))
+                     (fn [midi-val] (double (+ max (/ (* midi-val range) 127))))))
         calc-fn (apply comp (filter identity [transform-fn scale-fn]))
         update-fn (fn [msg]
                     (with-show show

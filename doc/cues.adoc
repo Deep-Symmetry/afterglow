@@ -441,13 +441,13 @@ Otherwise, the value is simply copied to the variable.
  running. If not supplied, the maximum value will be one hundred.
 
 |`:type`
-|`:float`
+|`:double`
 
 |Provides a hint for how the variable should be formatted in
- adjustment interfaces. Supported values are `:integer`, `:float`,
+ adjustment interfaces. Supported values are `:integer`, `:double`,
  `:boolean`, and `:color`. Others may be added in the future. If not
  provided (or an unrecognized value is provided), the variable is
- assumed to hold floating-point values.
+ assumed to hold double-precision floating-point values.
 
 |`:centered`
 |`false`

@@ -98,6 +98,6 @@
   (when (some? raw)
     (case (:type var-spec)
       :boolean (boolean raw)
-      :integer (Math/round (float raw))
+      :integer (Math/round (double raw))
       :color raw
-      (float raw))))
+      (double raw))))

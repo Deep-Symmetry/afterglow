@@ -132,7 +132,7 @@
     (let [[pan tilt] ((keyword (str "pan-tilt-" id)) (:previous @(:movement show)) [0 0])]
       (visualizer-pan-tilt head pan tilt))))
 
-(defn byte-to-float
+(defn byte-to-double
   "Convert a one-byte color component, as used in Afterglow, to a
   floating point color component as used in OpenGL, where 255 becomes
   1.0."
@@ -145,8 +145,8 @@
   [lights show]
   (for [[id head] lights]
     (let [color ((keyword (str "color-" id)) (:previous @(:movement show)))]
-      [(byte-to-float (colors/red color)) (byte-to-float (colors/green color))
-       (byte-to-float (colors/blue color)) (byte-to-float (colors/alpha color))])))
+      [(byte-to-double (colors/red color)) (byte-to-double (colors/green color))
+       (byte-to-double (colors/blue color)) (byte-to-double (colors/alpha color))])))
 
 (defn page
   "Render the real-time show preview."
