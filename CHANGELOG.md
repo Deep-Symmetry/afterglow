@@ -46,9 +46,11 @@ This change log follows the conventions of
   can be adjusted.
 - The Ableton Push mapping now lets you scroll through all variables
   assigned to a cue so you can see and adjust more than the first two.
-- You can now use the pitch bend strip on the Ableton Push to
-  immediately jump to any part of the legal value range when adjusting
-  a cue variable.
+- You can now use the touch strip on the Ableton Push to immediately
+  jump to any part of the legal value range when adjusting a numeric
+  or color cue variable, or the Dimmer Grand Master. The LEDs on the
+  touch strip also reflect the current value of the variable being
+  adjusted.
 - You can use the keyboard arrow keys to navigate around the cue grid
   when using the web UI, as long as no input element is focused.
 - You can use the space bar to tap tempo when using the web UI, as

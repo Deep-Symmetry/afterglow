@@ -18,7 +18,8 @@
             [overtone.at-at :as at-at]
             [overtone.midi :as midi]
             [taoensso.timbre :as timbre :refer [warn]])
-  (:import [java.util Arrays]))
+  (:import [java.util Arrays]
+           [javax.sound.midi ShortMessage]))
 
 (defn velocity-for-color
   "Given a target color, calculate the MIDI note velocity which will
@@ -294,6 +295,34 @@
                   (aget (:last-top-pads controller) x))
         (set-top-pad-state controller x next-state)
         (aset (:last-top-pads controller) x next-state)))))
+
+(defn- set-touch-strip-mode
+  "Set the touch strip operating mode."
+  [controller mode]
+  (midi/midi-sysex (:port-out controller) [240 71 127 21 99 0 1 mode 247]))
+
+(defn- update-touch-strip
+  "Sees if the state of the touch strip has changed since the
+  interface was updated, and if so, sends the necessary MIDI control
+  values to update it on the Push."
+  [controller]
+  (let [next-strip @(:next-touch-strip controller)
+        [_ last-mode] @(:last-touch-strip controller)]
+    (when (not= next-strip @(:last-touch-strip controller))
+      (if next-strip
+        (let [[value mode] next-strip
+              message (ShortMessage.)]
+          (if (not= mode last-mode)
+            (do  ; When changing mode, we have to wait until the next frame to update the value.
+              (set-touch-strip-mode controller mode)
+              (reset! (:last-touch-strip controller) [nil mode]))
+            (do
+              (.setMessage message ShortMessage/PITCH_BEND 0 (rem value 128) (quot value 128))
+              (midi/midi-send-msg (get-in controller [:port-out :receiver]) message -1)
+              (reset! (:last-touch-strip controller) next-strip))))
+        (do
+          (set-touch-strip-mode controller 5)
+          (reset! (:last-touch-strip controller) nil))))))
 
 (defn- update-text-buttons
   "Sees if any labeled buttons have changed state since the last time
@@ -874,6 +903,7 @@
       (Arrays/fill (get (:next-display controller) row) (byte 32)))
     (reset! (:next-text-buttons controller) {})
     (Arrays/fill (:next-top-pads controller) 0)
+    (reset! (:next-touch-strip controller) nil)
 
     (let [snapshot (rhythm/metro-snapshot (get-in controller [:show :metronome]))]
       (update-effect-list controller)
@@ -906,6 +936,7 @@
     (update-text controller)
     (update-top-pads controller)
     (update-text-buttons controller)
+    (update-touch-strip controller)
 
     (catch Throwable t
       (warn t "Problem updating Ableton Push Interface"))))
@@ -1019,7 +1050,19 @@
   (Arrays/fill (:last-grid-pads controller) off-color)
   (doseq [[_ button] control-buttons]
     (set-button-state controller button :off))
-  (reset! (:last-text-buttons controller) {}))
+  (reset! (:last-text-buttons controller) {})
+  (set-touch-strip-mode controller 5)
+  (reset! (:last-touch-strip controller) nil))
+
+(defn- calculate-touch-strip-value
+  "Display the value of a variable being adjusted in the touch strip."
+  [controller cue v effect-id]
+  (let [value (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id) 0)
+        low (min value (:min v))  ; In case user set "out of bounds".
+        high (max value (:max v))
+        full-range (- high low)]
+    (reset! (:next-touch-strip controller) [(math/round (* 16383 (/ (- value low) full-range)))
+                                            (if (:centered v) 3 1)])))
 
 (defn- master-encoder-touched
   "Add a user interface overlay to give feedback when turning the
@@ -1033,7 +1076,8 @@
                                (let [level (master-get-level (get-in controller [:show :grand-master]))]
                                  (write-display-cell controller 0 3 (make-gauge level))
                                  (write-display-cell controller 1 3
-                                                     (str "GrandMaster " (format "%5.1f" level))))
+                                                     (str "GrandMaster " (format "%5.1f" level)))
+                                 (reset! (:next-touch-strip controller) [(math/round (* 16383 (/ level 100))) 1]))
                                true)
                              (handle-control-change [this message]
                                ;; Adjust the BPM based on how the encoder was twisted
@@ -1047,7 +1091,9 @@
                                ;; Exit the overlay
                                :done)
                              (handle-aftertouch [this message])
-                             (handle-pitch-bend [this message]))))
+                             (handle-pitch-bend [this message]
+                               (master-set-level (get-in controller [:show :grand-master])
+                                                 (* 100.0 (/ (+ (* (:data2 message) 128) (:data1 message)) 16383)))))))
 
 (defn- bpm-encoder-touched
   "Add a user interface overlay to give feedback when turning the BPM
@@ -1619,6 +1665,7 @@
           (when (same-effect-active controller cue (:id info))
             (draw-variable-gauge controller x 8 (* 9 var-index) cue v (:id info))
             (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
+            (calculate-touch-strip-value controller cue v (:id info))
             true))
         (handle-control-change [this message]
           (when (= (:note message) (control-for-top-encoder-note note))
@@ -1642,6 +1689,7 @@
             (when (same-effect-active controller cue (:id info))
               (draw-variable-gauge controller x 17 0 cue v (:id info))
               (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
+              (calculate-touch-strip-value controller cue v (:id info))
               true))
           (handle-control-change [this message]
             (when (= (:note message) (control-for-top-encoder-note note))
@@ -1698,9 +1746,12 @@
             ;; Draw the color picker grid
             (System/arraycopy color-picker-grid 0 (:next-grid-pads controller) 0 64)
             (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
-                                    (aget color-picker-grid 6))]
+                                    (aget color-picker-grid 6))
+                  hue (colors/hue current-color)
+                  sat (colors/saturation current-color)]
               ;; Show the preview color at the bottom right
               (aset (:next-grid-pads controller) 7 current-color)
+
               ;; Blink any pad which matches the currently selected color
               (when (< (rhythm/metro-beat-phase (:metronome (:show controller))) 0.3)
                 (doseq [i (range 64)]
@@ -1708,14 +1759,22 @@
                     (aset (:next-grid-pads controller) i (if (= i 4)
                                                            (colors/darken current-color 20)
                                                            (colors/lighten current-color 20))))))
+
               ;; Display the hue and saturation numbers and gauges
-              (let [hue-str (clojure.string/join (take 5 (str (float (colors/hue current-color)) "     ")))
-                    sat-str (clojure.string/join (take 5 (str (float (colors/saturation current-color)))))
-                    hue-gauge (make-pan-gauge (colors/hue current-color) :highest 360 :width 8)
-                    sat-gauge (make-gauge (colors/saturation current-color) :width 8)]
+              (let [hue-str (clojure.string/join (take 5 (str (float hue) "     ")))
+                    sat-str (clojure.string/join (take 5 (str (float sat))))
+                    hue-gauge (make-pan-gauge hue :highest 360 :width 8)
+                    sat-gauge (make-gauge sat :width 8)]
                 (write-display-cell controller 0 x (str "H: " hue-str " S: " sat-str))
                 (write-display-text controller 1 (* x 17) hue-gauge)
                 (write-display-text controller 1 (+ 9 (* x 17)) sat-gauge))
+
+              ;; Put the touch pad into the appropriate state
+              (reset! (:next-touch-strip controller)
+                      (if (@anchors hue-note)
+                        [(math/round (* 16383 (/ hue 360))) 3]
+                        [(math/round (* 16383 (/ sat 100))) 1]))
+
               ;; Darken the cue var scroll button if it was going to be lit
               (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
               true)))
@@ -1959,6 +2018,8 @@
                :metronome-mode       (atom {})
                :last-marker          (atom nil)
                :modes                modes
+               :last-touch-strip     (atom nil)
+               :next-touch-strip     (atom nil)
                :midi-handler         (atom nil)
                :deactivate-handler   (atom nil)
                :tempo-tap-handler    (tempo/create-show-tempo-tap-handler

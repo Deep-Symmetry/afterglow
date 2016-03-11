@@ -511,7 +511,7 @@ Moving on, though... we can change the global color to orange:
 ```
 
 > The color channel values change.
-    
+
 Let’s get a little fancy and ramp the dimmers up on a sawtooth curve each beat:
 
 ```clojure
@@ -841,13 +841,15 @@ though.
 - [x] Separate, or at least document clearly, how to use the low-level
   OLA communication tools, for the benefit of people interested in
   their own implementations.
-- [ ] Support Push version 2 if possible. The display will be most
-  difficult since it seems not to use MIDI, but there is a
-  [library](http://sigabort.co/p2d) which can address it; I have
-  reached out to the authors to see if they can help. I don&rsquo;t yet know
-  if there is a SysEx for setting RGB pad colors available, or if we
-  will need to go back to using MIDI notes; if the latter, the colors
-  are all wrong and need to be rediscovered.
+- [ ] Support Push version 2 if possible. As of March, 2016 this is
+  looking possible! Ableton has published
+  [detailed documentation](https://github.com/Ableton/push-interface)
+  of the MIDI and USB interfaces of the Push 2 and display.
+  - [ ] For the display, I will need [Libusb](http://libusb.info/),
+    and there is a promising-looking Java wrapper,
+    [usb4Java](http://usb4java.org). Although there is a start at
+    [Clojure bindings](https://github.com/aamedina/tools.usb), it does
+    not seem to have gotten far.
 - [x] Support the Novation Launchpad series. The Pro has pressure
   sensitivity, so start there. They also provide excellent programmer
   documentation, so it will even be straightforward. For example,
