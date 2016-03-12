@@ -904,7 +904,7 @@
       (Arrays/fill (get (:next-display controller) row) (byte 32)))
     (reset! (:next-text-buttons controller) {})
     (Arrays/fill (:next-top-pads controller) 0)
-    (reset! (:next-touch-strip controller) nil)
+    (reset! (:next-touch-strip controller) [0 1])
 
     (let [snapshot (rhythm/metro-snapshot (get-in controller [:show :metronome]))]
       (update-effect-list controller)
