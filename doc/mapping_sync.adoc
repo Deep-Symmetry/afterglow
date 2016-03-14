@@ -792,8 +792,13 @@ trigger pads at the same time, and they respond to variations in
 pressure.
 
 NOTE: Currently only the original Push hardware is supported. Ableton
-has *just* released detailed documentation of the Push 2 interface, and
-I have ordered one, so I will be working on support for it very soon!
+has *just* released detailed documentation of the Push 2 interface,
+and I am currently working on support for it. I have already
+https://github.com/brunchboy/wayang#wayang[developed] a way to draw on
+the graphical display, and am working on using that to draw Afterglow
+effect and parameter information, and adjusting to the other
+differences in the way the Push 2 behaves. I can already tell that the
+results are going to be delightful.
 
 Assuming you have an Ableton Push connected to the machine running
 Afterglow, you can activate the Push mapping and attach it to the

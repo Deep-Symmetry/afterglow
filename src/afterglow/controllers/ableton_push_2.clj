@@ -1,9 +1,10 @@
-(ns afterglow.controllers.ableton-push
-  "Allows the Ableton Push to be used as a control surface for
+(ns afterglow.controllers.ableton-push-2
+  "Allows the Ableton Push 2 to be used as a control surface for
   Afterglow. Its features are described in the [online
   documentation](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#using-ableton-push)."
   {:author "James Elliott"}
-  (:require [afterglow.controllers :as controllers]
+  (:require [afterglow.controllers.ableton-push :as push :refer [set-pad-velocity]]
+            [afterglow.controllers :as controllers]
             [afterglow.controllers.tempo :as tempo]
             [afterglow.effects.cues :as cues]
             [afterglow.effects.dimmer :refer [master-get-level master-set-level]]
@@ -18,82 +19,47 @@
             [overtone.at-at :as at-at]
             [overtone.midi :as midi]
             [taoensso.timbre :as timbre])
-  (:import [java.util Arrays]
+  (:import #_[org.deepsymmetry Wayang]
+           [java.util Arrays]
            [javax.sound.midi ShortMessage]))
-
-(defn velocity-for-color
-  "Given a target color, calculate the MIDI note velocity which will
-  achieve the closest approximation available on an Ableton Push
-  pad, using the thoughtful hue palette provided by Ableton:
-
-  ![Push pad palette](http://deepsymmetry.org/afterglow/research/PushColors.jpg)"
-  [color]
-  {:pre [(= (type color) :com.evocomputing.colors/color)]}
-  ;; Each hue section starts with a lightened version
-  ;; of the hue, then a bright, medium, and dim version
-  ;; of the fully-saturated hue.
-  (let [brightness-shift (condp < (colors/lightness color)
-                           60 0
-                           37 1
-                           15 2
-                           3)]
-    (cond (< (colors/lightness color) 3)
-          ;; The color is effectively black.
-          0
-
-          ;; The color is effectively gray, so map it to the grayscale
-          ;; section, which ranges from black at zero, through white as
-          ;; three.
-          (< (colors/saturation color) 20)
-          (min 3 (- 4 brightness-shift))
-
-          ;; Find the note value that approximates the hue and lightness.
-          ;; From note 4 to note 59, the pads are in groups of four for
-          ;; a single hue, starting with the lightened version, then
-          ;; the bright, medium, and dim versions.
-          :else
-          (let [base-hue (colors/hue color)
-                ;; Hue to velocity gets a little non-linear at blue; tweak to look right.
-                adjusted-hue (if (> base-hue 230)
-                               (min 360 (* base-hue 1.2))
-                               base-hue)
-                hue-section (+ 4 (* 4 (math/floor (* 13 (/ adjusted-hue 360)))))]
-            (int (+ hue-section brightness-shift))))))
 
 (defonce ^{:doc "The color of buttons that are completely off."}
   off-color (colors/create-color :black))
 
-(defn set-pad-velocity
-  "Set the velocity of one of the 64 touch pads."
-  [controller x y velocity]
-  {:pre [(<= 0 x 7) (<= 0 y 7)]}
-  (let [note (+ 36 x (* y 8))]  ;; Calculate note from grid coordinates
-    (midi/midi-note-on (:port-out controller) note velocity)))
-
-(defn set-pad-color-approximate
-  "*Deprecated in favor of new [[set-pad-color]] implementation.*
-
-  Set the color of one of the 64 touch pads to the closest
-  approximation available for a desired color. This was the first
-  implementation that was discovered, but there is now a much more
-  powerful way to specify an exact color using a SysEx message."
-  {:deprecated "0.1.4"}
-  [controller x y color]
-  (set-pad-velocity controller x y (velocity-for-color color)))
+(defn send-sysex
+  "Send a MIDI System Exclusive command to the Push 2 with the proper
+  prefix. The `command` argument begins with the Command ID of the
+  desired command, as listed in Table 2.4.2 of the Ableton Push 2 MIDI
+  and Display Interface Manual, followed by its parameter bytes. The
+  `SOX` byte, Ableton Sysex ID, device ID, and model ID will be
+  prepended, and the `EOX` byte appended, before sending the command."
+  [controller command]
+  (midi/midi-sysex (:port-out controller)
+                   (concat [0xf0 0x00 0x21 0x1d (:device-id controller) 0x01] command [0xf7])))
 
 (defn set-pad-color
-  "Set the color of one of the 64 touch pads to a specific RGB
-  color."
+  "Set the color of one of the 64 touch pads to a specific RGB color.
+  If the color is black, we send a note off to the pad. Otherwise, we
+  take over the color palette entry whose velocity matches the note
+  number of the pad, and set it to the desired RGB value, then send it
+  a note with the velocity corresponding to the palette entry we just
+  adjusted.
+
+  Since we also have to set a white value, we just set that to the
+  note number as well. It might be better to try and preserve the
+  white palette curve that Ableton uses, but for now we may not need
+  it, and the formula isn't fully documented."
   [controller x y color]
-  (let [pad (+ x (* y 8))
-        r (colors/red color)
+  {:pre [(<= 0 x 7) (<= 0 y 7)]}
+  (let [note (+ 36 x (* y 8))]
+    (if (util/float= (colors/lightness color) 0.0)
+      (midi/midi-note-off (:port-out controller) note)
+      (let [r (colors/red color)
         g (colors/green color)
-        b (colors/blue color)]
-    (midi/midi-sysex (:port-out controller) [240 71 127 21 4 0 8 pad 0
-                                             (quot r 2r10000) (bit-and r 2r1111)
-                                             (quot g 2r10000) (bit-and g 2r1111)
-                                             (quot b 2r10000) (bit-and b 2r1111)
-                                             247])))
+            b (colors/blue color)]
+        (send-sysex controller [0x03 note (bit-and r 0x7f) (quot r 0x80) (bit-and g 0x7f) (quot g 0x80)
+                                (bit-and b 0x7f) (quot b 0x80) (bit-and note 0x7f) (quot note 0x80)])
+        (midi/midi-note-on (:port-out controller) note note)))))
 
 (def monochrome-button-states
   "The control values and modes for a labeled button which does not
@@ -237,15 +203,6 @@
                  state
                  (top-pad-state state color-key))]
      (midi/midi-control (:port-out controller) (+ x 20) state))))
-
-(defn set-second-pad-color
-  "Set the color of one of the 8 second-row touch pads (right above
-  the 8x8 pad of larger, velocity sensitive, pads) to the closest
-  approximation available for a desired color."
-  [controller x color]
-  {:pre [(<= 0 x 7)]}
-  (let [control (+ 102 x)]  ;; Calculate controller number
-    (midi/midi-control (:port-out controller) control (velocity-for-color color))))
 
 (defn set-display-line
   "Sets a line of the text display."
@@ -982,7 +939,7 @@
 
       (= @counter 17)
       (doseq [x (range 0 8)]
-        (set-second-pad-color controller x
+        #_(set-second-pad-color controller x
                                 (colors/create-color :h 45 :s 100 :l 50))
         (set-top-pad-state controller x :bright :red))
 
@@ -1002,7 +959,7 @@
 
       (= @counter 27)
       (doseq [x (range 0 8)]
-          (set-second-pad-color controller x off-color))
+        #_(set-second-pad-color controller x off-color))
 
       (< @counter 36)
       (doseq [x (range 0 8)]
@@ -1044,7 +1001,7 @@
 
   (doseq [x (range 8)]
     (set-top-pad-state controller x :off)
-    (set-second-pad-color controller x off-color)
+    #_(set-second-pad-color controller x off-color)
     (doseq [y (range 8)]
       (set-pad-color controller x y off-color)))
   (Arrays/fill (:last-top-pads controller) 0)
@@ -1916,230 +1873,98 @@
   by the watcher, if it is currently connected, and cancel the
   watcher itself. In such cases, `:disconnected` is meaningless."
   [controller & {:keys [disconnected] :or {disconnected false}}]
-  (case (type controller)
-    ::watcher
-    (do ((:cancel controller))  ; Shut down the watcher
-        (when-let [watched-controller @(:controller controller)]
-          (deactivate watched-controller)))  ; And deactivate the controller it was watching for
+  {:pre [(= ::controller (type controller))]}
+  (swap! (:task controller) (fn [task]
+                              (when task (at-at/kill task))
+                              nil))
+  (show/unregister-grid-controller @(:grid-controller-impl controller))
+  (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :deactivated))
+  (reset! (:move-listeners controller) #{})
+  (amidi/remove-device-mapping (:port-in controller) @(:midi-handler controller))
 
-    ::controller
-    (do ; We were passed an actual controller, not a watcher, so deactivate it.
-      (swap! (:task controller) (fn [task]
-                                  (when task (at-at/kill task))
-                                  nil))
-      (show/unregister-grid-controller @(:grid-controller-impl controller))
-      (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :deactivated))
-      (reset! (:move-listeners controller) #{})
-      (amidi/remove-device-mapping (:port-in controller) @(:midi-handler controller))
+  (when-not disconnected
+    (Thread/sleep 35) ; Give the UI update thread time to shut down
+    (clear-interface controller)
+    ;; Leave the User button bright, in case the user has Live
+    ;; running and wants to be able to see how to return to it.
+    (set-button-state controller (:user-mode control-buttons) :bright))
 
-      (when-not disconnected
-        (Thread/sleep 35) ; Give the UI update thread time to shut down
-        (clear-interface controller)
-        ;; Leave the User button bright, in case the user has Live
-        ;; running and wants to be able to see how to return to it.
-        (set-button-state controller (:user-mode control-buttons) :bright))
+  ;; Cancel any UI overlays which were in effect
+  (reset! (:overlays controller) (controllers/create-overlay-state))
 
-      ;; Cancel any UI overlays which were in effect
-      (reset! (:overlays controller) (controllers/create-overlay-state))
-
-      ;; And finally, note that we are no longer active.
-      (controllers/remove-active-binding @(:deactivate-handler controller)))
-
-    :afterglow.controllers.ableton-push-2/controller
-    (do ; We were passed a Push 2 controller implementation, delegate to its own deactivation function.
-      ((resolve 'afterglow.controllers.ableton-push-2/deactivate) controller))))
-
-(defn- valid-identity
-  "Checks that the device we are trying to bind to reports the proper
-  identity in response to a MIDI Device Inquiry message. This also
-  gives it time to boot if it has just powered on. Returns a tuple of
-  the assigned device ID and model (either `:push` or `:push-2`) if
-  the identity is correct, or logs an error and returns nil if it is
-  not."
-  [port-in port-out]
-  (let [ident (controllers/identify port-in port-out)]
-    (cond (= (take 5 (drop 4 (:data ident))) '(71 21 0 25 0))
-          [(int (aget (:data ident) 1)) :push]
-
-          (= (take 7 (drop 4 (:data ident))) '(0 33 29 103 50 2 0))
-          [(int (aget (:data ident) 1)) :push-2]
-
-          :else
-          (timbre/error "Device does not identify as an Ableton Push:" port-in))))
+  ;; And finally, note that we are no longer active.
+  (controllers/remove-active-binding @(:deactivate-handler controller)))
 
 (defn bind-to-show
-  "Establish a connection to the Ableton Push, for managing the given
-  show.
-
-  Initializes the display, and starts the UI updater thread. Since
-  SysEx messages are required for updating the display, if you are on
-  a Mac, you must
-  install [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J) to
-  provide a working implementation. (If you need to work with Java
-  1.6, you can instead
-  use [mmj](http://www.humatic.de/htools/mmj.htm), but that is no
-  longer developed, and does not support connecting or disconnecting
-  MIDI devices after Java has started.)
-
-  If you have more than one Ableton Push connected, or have renamed
-  how it appears in your list of MIDI devices, you need to supply a
-  value after `:device-filter` which identifies the ports to be used to
-  communicate with the Push you want this function to use. The values
-  returned by [[afterglow.midi/open-inputs-if-needed!]]
-  and [[afterglow.midi/open-outputs-if-needed!]] will be searched, and
-  the first port that matches with [[filter-devices]] will be used.
-
-  The controller will be identified in the user interface (for the
-  purposes of linking it to the web cue grid) as \"Ableton Push\". If
-  you would like to use a different name (for example, if you are
-  lucky enough to have more than one Push), you can pass in a custom
-  value after `:display-name`.
-
-  If you want the user interface to be refreshed at a different rate
-  than the default of fifteen times per second, pass your desired
-  number of milliseconds after `:refresh-interval`."
-  [show & {:keys [device-filter refresh-interval display-name]
-           :or   {device-filter    "User Port"
-                  refresh-interval (/ 1000 15)
-                  display-name     "Ableton Push"}}]
+  "Establish a connection to the Ableton Push 2, for managing the
+  given show. This version is designed to be delegated to by
+  [[afterglow.controllers.ableton-push/bind-to-show]] when that detects
+  that it has found a Push 2 rather than an original Push. It uses the
+  ports and device identifier information that were found in the
+  process of starting the binding. See that function for more
+  information, and for the externally usable configuration
+  parameters."
+  [show port-in port-out device refresh-interval display-name]
   {:pre [(some? show)]}
-  (let [port-in  (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
-        port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))
-        [device model]   (when (every? some? [port-in port-out]) (valid-identity port-in port-out))]
-    (if device
-      (if (= model :push-2)
-        (do ; We found a version 2 push, so load that namespace and let it do the actual binding.
-          (require '[afterglow.controllers.ableton-push-2])
-          ((resolve 'afterglow.controllers.ableton-push-2/bind-to-show) show port-in port-out device
-           refresh-interval display-name))
-        (let [modes (atom #{}) ; We found an original push, so use the implementation in this namespace.
-              controller
-              (with-meta
-                {:display-name         display-name
-                 :device-id            device
-                 :show                 show
-                 :origin               (atom [0 0])
-                 :effect-offset        (atom 0)
-                 :cue-var-offsets      (atom {})
-                 :refresh-interval     refresh-interval
-                 :port-in              port-in
-                 :port-out             port-out
-                 :task                 (atom nil)
-                 :last-display         (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
-                 :next-display         (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
-                 :last-text-buttons    (atom {})
-                 :next-text-buttons    (atom {})
-                 :last-top-pads        (int-array 8)
-                 :next-top-pads        (int-array 8)
-                 :last-grid-pads       (make-array clojure.lang.IPersistentMap 64)
-                 :next-grid-pads       (make-array clojure.lang.IPersistentMap 64)
-                 :metronome-mode       (atom {})
-                 :last-marker          (atom nil)
-                 :modes                modes
-                 :last-touch-strip     (atom nil)
-                 :next-touch-strip     (atom nil)
-                 :midi-handler         (atom nil)
-                 :deactivate-handler   (atom nil)
-                 :tempo-tap-handler    (tempo/create-show-tempo-tap-handler
-                                        show :shift-fn (fn [] (get @modes (get-in control-buttons [:shift :control]))))
-                 :overlays             (controllers/create-overlay-state)
-                 :move-listeners       (atom #{})
-                 :grid-controller-impl (atom nil)}
-                {:type ::controller})]
-          (reset! (:midi-handler controller) (partial midi-received controller))
-          (reset! (:deactivate-handler controller) #(deactivate controller))
-          (reset! (:grid-controller-impl controller)
-                  (reify controllers/IGridController
-                    (display-name [this] (:display-name controller))
-                    (physical-height [this] 8)
-                    (physical-width [this] 8)
-                    (current-bottom [this] (@(:origin controller) 1))
-                    (current-bottom [this y] (move-origin controller (assoc @(:origin controller) 1 y)))
-                    (current-left [this] (@(:origin controller) 0))
-                    (current-left [this x] (move-origin controller (assoc @(:origin controller) 0 x)))
-                    (add-move-listener [this f] (swap! (:move-listeners controller) conj f))
-                    (remove-move-listener [this f] (swap! (:move-listeners controller) disj f))))
-          ;; Set controller in User mode
-          (midi/midi-sysex (:port-out controller) [240 71 127 21 98 0 1 1 247])
-          ;; Put pads in aftertouch (poly) pressure mode
-          (midi/midi-sysex (:port-out controller) [240 71 127 21 92 0 1 0 247])
-          ;; Set pad sensitivity level to 1 to avoid stuck pads
-          (midi/midi-sysex (:port-out controller)
-                           [0xF0 0x47 0x7F 0x15 0x5D 0x00 0x20 0x00 0x00 0x0C 0x07 0x00 0x00 0x0D 0x0C 0x00
-                            0x00 0x00 0x01 0x04 0x0C 0x00 0x08 0x00 0x00 0x00 0x01 0x0D 0x04 0x0C 0x00 0x00
-                            0x00 0x00 0x00 0x0E 0x0A 0x06 0x00 0xF7])
-          (clear-interface controller)
-          (welcome-animation controller)
-          (controllers/add-active-binding @(:deactivate-handler controller))
-          (show/register-grid-controller @(:grid-controller-impl controller))
-          (amidi/add-disconnected-device-handler! port-in #(deactivate controller :disconnected true))
-          controller))
-      (timbre/error "Unable to find Ableton Push" (amidi/describe-device-filter device-filter)))))
+  (let [modes (atom #{})
+        controller
+        (with-meta
+          {:display-name         display-name
+           :device-id            device
+           :show                 show
+           :origin               (atom [0 0])
+           :effect-offset        (atom 0)
+           :cue-var-offsets      (atom {})
+           :refresh-interval     refresh-interval
+           :port-in              port-in
+           :port-out             port-out
+           :task                 (atom nil)
+           :last-display         (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
+           :next-display         (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
+           :last-text-buttons    (atom {})
+           :next-text-buttons    (atom {})
+           :last-top-pads        (int-array 8)
+           :next-top-pads        (int-array 8)
+           :last-grid-pads       (make-array clojure.lang.IPersistentMap 64)
+           :next-grid-pads       (make-array clojure.lang.IPersistentMap 64)
+           :metronome-mode       (atom {})
+           :last-marker          (atom nil)
+           :modes                modes
+           :last-touch-strip     (atom nil)
+           :next-touch-strip     (atom nil)
+           :midi-handler         (atom nil)
+           :deactivate-handler   (atom nil)
+           :tempo-tap-handler    (tempo/create-show-tempo-tap-handler
+                                  show :shift-fn (fn [] (get @modes (get-in control-buttons [:shift :control]))))
+           :overlays             (controllers/create-overlay-state)
+           :move-listeners       (atom #{})
+           :grid-controller-impl (atom nil)}
+          {:type ::controller})]
+    (reset! (:midi-handler controller) (partial midi-received controller))
+    (reset! (:deactivate-handler controller) #(deactivate controller))
+    (reset! (:grid-controller-impl controller)
+            (reify controllers/IGridController
+              (display-name [this] (:display-name controller))
+              (physical-height [this] 8)
+              (physical-width [this] 8)
+              (current-bottom [this] (@(:origin controller) 1))
+              (current-bottom [this y] (move-origin controller (assoc @(:origin controller) 1 y)))
+              (current-left [this] (@(:origin controller) 0))
+              (current-left [this x] (move-origin controller (assoc @(:origin controller) 0 x)))
+              (add-move-listener [this f] (swap! (:move-listeners controller) conj f))
+              (remove-move-listener [this f] (swap! (:move-listeners controller) disj f))))
 
-(defn auto-bind
-  "Watches for an Ableton Push controller to be connected, and as soon
-  as it is, binds it to the specified show using [[bind-to-show]]. If
-  that controller ever gets disconnected, it will be re-bound once it
-  reappears. Returns a watcher structure which can be passed
-  to [[deactivate]] if you would like to stop it watching for
-  reconnections. The underlying controller mapping, once bound, can be
-  accessed through the watcher's `:controller` key.
+    ;; Set controller in User mode
+    (send-sysex controller [0x0a 1])
 
-  If you have more than one Ableton Push that might beconnected, or
-  have renamed how it appears in your list of MIDI devices, you need
-  to supply a value after `:device-filter` which identifies the ports to
-  be used to communicate with the Push you want this function to use.
-  The values returned by [[afterglow.midi/open-inputs-if-needed!]]
-  and [[afterglow.midi/open-outputs-if-needed!]] will be searched, and
-  the first port that matches using [[filter-devices]] will be used.
+    ;; Put pads in aftertouch (poly) pressure mode
+    (send-sysex controller [0x1e 1])
 
-  Once bound, the controller will be identified in the user
-  interface (for the purposes of linking it to the web cue grid) as
-  \"Ableton Push\". If you would like to use a different name (for
-  example, if you are lucky enough to have more than one Push), you
-  can pass in a custom value after `:display-name`.
+    ;; TODO: Set pad sensitivity level to avoid stuck pads? May not be necessary with Push 2
 
-  If you want the user interface to be refreshed at a different rate
-  than the default of fifteen times per second, pass your desired
-  number of milliseconds after `:refresh-interval`."
-  [show & {:keys [device-filter refresh-interval display-name]
-           :or {device-filter "User Port"
-                refresh-interval (/ 1000 15)
-                display-name "Ableton Push"}}]
-  {:pre [(some? show)]}
-  (let [idle (atom true)
-        controller (atom nil)]
-    (letfn [(disconnection-handler []
-              (reset! controller nil)
-              (reset! idle true))
-            (connection-handler [device]
-              (when (compare-and-set! idle true false)
-                (if (and (nil? @controller) (seq (amidi/filter-devices device-filter [device])))
-                    (let [port-in (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
-                          port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))]
-                      (when (every? some? [port-in port-out])  ; We found our Push! Bind to it in the background.
-                        (timbre/info "Auto-binding to Ableton Push" device)
-                        (future
-                          (reset! controller (bind-to-show show :device-filter device-filter
-                                                           :refresh-interval refresh-interval
-                                                           :display-name display-name))
-                          (amidi/add-disconnected-device-handler! (:port-in @controller) disconnection-handler))))
-                    (reset! idle true))))
-            (cancel-handler []
-              (amidi/remove-new-device-handler! connection-handler)
-              (when-let [device (:port-in @controller)]
-                (amidi/remove-disconnected-device-handler! device disconnection-handler)))]
-
-      ;; See if our Push seems to already be connected, and if so, bind to it right away.
-      (when-let [found (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))]
-        (connection-handler found))
-
-      ;; Set up to bind when connected in future.
-      (amidi/add-new-device-handler! connection-handler)
-
-      ;; Return a watcher object which can provide access to the bound controller, and be canceled later.
-      (with-meta
-        {:controller controller
-         :device-filter device-filter
-         :cancel cancel-handler}
-        {:type ::watcher}))))
+    (clear-interface controller)
+    (welcome-animation controller)
+    (controllers/add-active-binding @(:deactivate-handler controller))
+    (show/register-grid-controller @(:grid-controller-impl controller))
+    (amidi/add-disconnected-device-handler! port-in #(deactivate controller :disconnected true))
+    controller))
