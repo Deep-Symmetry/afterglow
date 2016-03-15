@@ -472,9 +472,9 @@ This change log follows the conventions of
 - Fail gracefully when trying to bind to an Ableton Push when none can
   be found.
 - Some small errors in the documentation were corrected.
-  
 
 ## [0.1.3] - 2015-08-16
+
 ### Added
 - Ability to
   [translate](https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#translating-qlc-fixture-definitions)

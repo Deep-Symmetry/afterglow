@@ -541,7 +541,7 @@
             (doseq [handler @global-handlers]
               (when @running
                 (run-message-handler handler msg running)))
-            
+
             ;; Then call any registered port listeners for the port on which it arrived
             (doseq [handler (get-in @device-mappings [(@midi-device-key (:device msg))])]
               (when @running

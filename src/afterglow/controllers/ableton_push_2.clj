@@ -19,7 +19,7 @@
             [overtone.at-at :as at-at]
             [overtone.midi :as midi]
             [taoensso.timbre :as timbre])
-  (:import #_[org.deepsymmetry Wayang]
+  (:import [org.deepsymmetry Wayang]
            [java.util Arrays]
            [javax.sound.midi ShortMessage]))
 
@@ -37,6 +37,76 @@
   (midi/midi-sysex (:port-out controller)
                    (concat [0xf0 0x00 0x21 0x1d (:device-id controller) 0x01] command [0xf7])))
 
+(defn- save-led-palette-entry
+  "Record an LED palette entry we have received in response to our
+  startup query, so we can preserve the white palette when setting RGB
+  colors, and restore all LED palettes when we suspend or exit our
+  mapping."
+  [controller data]
+  (swap! (:led-palettes controller) assoc (first data) (vec (rest data))))
+
+(defn- sysex-received
+  "Process a MIDI System Exclusive reply from the Push 2. The `msg`
+  argument is the raw data we have just received."
+  [controller msg]
+  (if (= (vec (take 5 (:data msg))) [0x00 0x21 0x1d (:device-id controller) 0x01])
+    (let [data (map int (butlast (drop 5 (:data msg))))
+          command (first data)
+          args (rest data)]
+      (case command
+        0x04 (save-led-palette-entry controller args)
+        (timbre/info "Ignoring SysEx message from Push 2 with command ID" command)))
+    (timbre/warn "Received unrecognized SysEx message from Push 2 port." (vec (:data msg)))))
+
+(defn- request-led-palettes
+  "Ask the Push 2 for the LED palettes with indices matching the
+  supplied sequence."
+  [controller indices]
+  (doseq [i indices]
+    (send-sysex controller [0x04 i])
+    (when (zero? (rem i 10))
+      (Thread/sleep 5))))
+
+(defn- startup-midi-received
+  "Called when a MIDI message is received during conroller setup. Used
+  to gather LED palette responses, and ignore other messages."
+  [controller message]
+  ;;(timbre/info message)
+  (if (= 0xf0 (:status message))
+    (sysex-received controller message)
+    (timbre/info "Ignoring non-sysex message received during Push 2 startup.")))
+
+(defn- gather-led-palettes
+  "Ask the Push 2 for all of its LED palettes, wait a bit, and see if
+  we got them all. Try up to two more times to request any missing
+  entries. Return a truthy value to indicate success."
+  [controller]
+  (let [startup-handler (partial startup-midi-received controller)]
+    (try
+      (amidi/add-device-mapping (:port-in controller) startup-handler)
+      (loop [needed (range 128)
+             tries 2]
+        (request-led-palettes controller needed)
+        (Thread/sleep 200)
+        (or (= 128 (count (keys @(:led-palettes controller))))
+            (if (zero? tries)
+              (timbre/error "Unable to gather all 128 LED palette entries for Push 2, giving up.")
+              (recur (clojure.set/difference (set needed) (set (keys @(:led-palettes controller))))
+                     (dec tries)))))
+      (finally (amidi/remove-device-mapping (:port-in controller) startup-handler)))))
+
+(defn- restore-led-palettes
+  "Set the LED palettes back to the way we found them during our
+  initial binding. This is called when clearing the interface when
+  exiting user mode or deactivating the binding, so we can gracefully
+  coexist with Live."
+  [controller]
+  (let [sent (volatile! 0)]
+    (doseq [[index palette] @(:led-palettes controller)]
+      (send-sysex controller (concat [0x03 index] palette))
+      (when (zero? (rem (vswap! sent inc) 10))
+        (Thread/sleep 5)))))
+
 (defn set-pad-color
   "Set the color of one of the 64 touch pads to a specific RGB color.
   If the color is black, we send a note off to the pad. Otherwise, we
@@ -45,20 +115,20 @@
   a note with the velocity corresponding to the palette entry we just
   adjusted.
 
-  Since we also have to set a white value, we just set that to the
-  note number as well. It might be better to try and preserve the
-  white palette curve that Ableton uses, but for now we may not need
-  it, and the formula isn't fully documented."
+  Since we also have to set a white value, we pass along the white
+  value that was present in the palette we found for this velocity
+  when initially binding to the Push 2."
   [controller x y color]
   {:pre [(<= 0 x 7) (<= 0 y 7)]}
-  (let [note (+ 36 x (* y 8))]
+  (let [note (+ 36 x (* y 8))
+        palette (get @(:led-palettes controller) note)]
     (if (util/float= (colors/lightness color) 0.0)
       (midi/midi-note-off (:port-out controller) note)
       (let [r (colors/red color)
         g (colors/green color)
             b (colors/blue color)]
         (send-sysex controller [0x03 note (bit-and r 0x7f) (quot r 0x80) (bit-and g 0x7f) (quot g 0x80)
-                                (bit-and b 0x7f) (quot b 0x80) (bit-and note 0x7f) (quot note 0x80)])
+                                (bit-and b 0x7f) (quot b 0x80) (get palette 6) (get palette 7)])
         (midi/midi-note-on (:port-out controller) note note)))))
 
 (def monochrome-button-states
@@ -1117,6 +1187,8 @@
                               (when task (at-at/kill task))
                               nil))
   (clear-interface controller)
+  (restore-led-palettes controller)
+
   ;; In case Live isn't running, leave the User Mode button dimly lit, to help the user return.
   (set-button-state controller (:user-mode control-buttons)
                     (button-state (:user-mode control-buttons) :dim))
@@ -1854,12 +1926,18 @@
   [controller message]
   ;;(timbre/info message)
   (when-not (controllers/overlay-handled? (:overlays controller) message)
-    (when (= (:command message) :control-change)
-      (control-change-received controller message))
-    (when (= (:command message) :note-on)
-      (note-on-received controller message))
-    (when (= (:command message) :note-off)
-      (note-off-received controller message))))
+    (cond
+      (= (:command message) :control-change)
+      (control-change-received controller message)
+
+      (= (:command message) :note-on)
+      (note-on-received controller message)
+
+      (= (:command message) :note-off)
+      (note-off-received controller message)
+
+      (= 0xf0 (:status message))
+      (sysex-received controller message))))
 
 (defn deactivate
   "Deactivates a controller interface, killing its update thread and
@@ -1885,6 +1963,8 @@
   (when-not disconnected
     (Thread/sleep 35) ; Give the UI update thread time to shut down
     (clear-interface controller)
+    (restore-led-palettes controller)
+
     ;; Leave the User button bright, in case the user has Live
     ;; running and wants to be able to see how to return to it.
     (set-button-state controller (:user-mode control-buttons) :bright))
@@ -1919,6 +1999,7 @@
            :port-in              port-in
            :port-out             port-out
            :task                 (atom nil)
+           :led-palettes         (atom {})
            :last-display         (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
            :next-display         (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
            :last-text-buttons    (atom {})
@@ -1940,31 +2021,32 @@
            :move-listeners       (atom #{})
            :grid-controller-impl (atom nil)}
           {:type ::controller})]
-    (reset! (:midi-handler controller) (partial midi-received controller))
-    (reset! (:deactivate-handler controller) #(deactivate controller))
-    (reset! (:grid-controller-impl controller)
-            (reify controllers/IGridController
-              (display-name [this] (:display-name controller))
-              (physical-height [this] 8)
-              (physical-width [this] 8)
-              (current-bottom [this] (@(:origin controller) 1))
-              (current-bottom [this y] (move-origin controller (assoc @(:origin controller) 1 y)))
-              (current-left [this] (@(:origin controller) 0))
-              (current-left [this x] (move-origin controller (assoc @(:origin controller) 0 x)))
-              (add-move-listener [this f] (swap! (:move-listeners controller) conj f))
-              (remove-move-listener [this f] (swap! (:move-listeners controller) disj f))))
+    (when (gather-led-palettes controller)
+      (reset! (:midi-handler controller) (partial midi-received controller))
+      (reset! (:deactivate-handler controller) #(deactivate controller))
+      (reset! (:grid-controller-impl controller)
+              (reify controllers/IGridController
+                (display-name [this] (:display-name controller))
+                (physical-height [this] 8)
+                (physical-width [this] 8)
+                (current-bottom [this] (@(:origin controller) 1))
+                (current-bottom [this y] (move-origin controller (assoc @(:origin controller) 1 y)))
+                (current-left [this] (@(:origin controller) 0))
+                (current-left [this x] (move-origin controller (assoc @(:origin controller) 0 x)))
+                (add-move-listener [this f] (swap! (:move-listeners controller) conj f))
+                (remove-move-listener [this f] (swap! (:move-listeners controller) disj f))))
 
-    ;; Set controller in User mode
-    (send-sysex controller [0x0a 1])
+      ;; Set controller in User mode
+      (send-sysex controller [0x0a 1])
 
-    ;; Put pads in aftertouch (poly) pressure mode
-    (send-sysex controller [0x1e 1])
+      ;; Put pads in aftertouch (poly) pressure mode
+      (send-sysex controller [0x1e 1])
 
-    ;; TODO: Set pad sensitivity level to avoid stuck pads? May not be necessary with Push 2
+      ;; TODO: Set pad sensitivity level to avoid stuck pads? May not be necessary with Push 2
 
-    (clear-interface controller)
-    (welcome-animation controller)
-    (controllers/add-active-binding @(:deactivate-handler controller))
-    (show/register-grid-controller @(:grid-controller-impl controller))
-    (amidi/add-disconnected-device-handler! port-in #(deactivate controller :disconnected true))
-    controller))
+      (clear-interface controller)
+      (welcome-animation controller)
+      (controllers/add-active-binding @(:deactivate-handler controller))
+      (show/register-grid-controller @(:grid-controller-impl controller))
+      (amidi/add-disconnected-device-handler! port-in #(deactivate controller :disconnected true))
+      controller)))
