@@ -13,7 +13,7 @@
                  [org.clojure/tools.cli "0.3.3"]
                  [org.clojure/tools.nrepl "0.2.12"]
                  [org.clojure/tools.reader "0.10.0"]
-                 [org.deepsymmetry/wayang "0.1.2"]
+                 [org.deepsymmetry/wayang "0.1.3"]
                  [java3d/vecmath "1.3.1"]
                  [java3d/j3d-core "1.3.1"]
                  [java3d/j3d-core-utils "1.3.1"]

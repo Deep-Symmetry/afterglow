@@ -23,8 +23,46 @@
            [java.util Arrays]
            [javax.sound.midi ShortMessage]))
 
-(defonce ^{:doc "The color of buttons that are completely off."}
-  off-color (colors/create-color :black))
+(defn dim
+  "Return a dimmed version of a color."
+  [color]
+  (colors/darken color 35))
+
+(def off-color
+  "The color of buttons that are completely off."
+  (colors/create-color :black))
+
+(def amber-color
+  "The color for bright amber buttons."
+  (colors/create-color :h 45 :s 100 :l 50))
+
+(def dim-amber-color
+  "The color for dim amber buttons."
+  (dim amber-color))
+
+(def red-color
+  "The color for bright red buttons."
+  (colors/create-color :red))
+
+(def dim-red-color
+  "The color for dim red buttons."
+  (dim red-color))
+
+(def green-color
+  "The color for bright green buttons."
+  (colors/create-color :green))
+
+(def dim-green-color
+  "The color for dim green buttons."
+  (dim green-color))
+
+(def white-color
+  "The color for bright white buttons."
+  (colors/create-color :white))
+
+(def dim-white-color
+  "The color for dim white buttons."
+  (colors/darken white-color 90))
 
 (defn send-sysex
   "Send a MIDI System Exclusive command to the Push 2 with the proper
@@ -125,23 +163,11 @@
     (if (util/float= (colors/lightness color) 0.0)
       (midi/midi-note-off (:port-out controller) note)
       (let [r (colors/red color)
-        g (colors/green color)
+            g (colors/green color)
             b (colors/blue color)]
         (send-sysex controller [0x03 note (bit-and r 0x7f) (quot r 0x80) (bit-and g 0x7f) (quot g 0x80)
                                 (bit-and b 0x7f) (quot b 0x80) (get palette 6) (get palette 7)])
         (midi/midi-note-on (:port-out controller) note note)))))
-
-(def monochrome-button-states
-  "The control values and modes for a labeled button which does not
-  change color."
-  {:off 0 :dim 1 :dim-slow-blink 2 :dim-fast-blink 3
-   :bright 4 :bright-slow-blink 5 :bright-fast-blink 6})
-
-(def color-button-colors
-  "The control values and modes for a labeled button which changes
-  color. These are added to the monochrome states (except for off)
-  to obtain the color and brightness/behavior."
-  {:red 0 :amber 6 :yellow 12 :green 18})
 
 (def control-buttons
   "The labeled buttons which send and respond to Control Change
@@ -150,16 +176,15 @@
    :metronome             {:control 9 :kind :monochrome}
 
    :master                {:control 28 :kind :monochrome}
-   :stop                  {:control 29 :kind :monochrome}
 
-   :quarter               {:control 36 :kind :color}
-   :quarter-triplet       {:control 37 :kind :color}
-   :eighth                {:control 38 :kind :color}
-   :eighth-triplet        {:control 39 :kind :color}
-   :sixteenth             {:control 40 :kind :color}
-   :sixteenth-triplet     {:control 41 :kind :color}
-   :thirty-second         {:control 42 :kind :color}
-   :thirty-second-triplet {:control 43 :kind :color}
+   :quarter               {:control 36 :kind :color :index 8}
+   :quarter-triplet       {:control 37 :kind :color :index 9}
+   :eighth                {:control 38 :kind :color :index 10}
+   :eighth-triplet        {:control 39 :kind :color :index 11}
+   :sixteenth             {:control 40 :kind :color :index 12}
+   :sixteenth-triplet     {:control 41 :kind :color :index 13}
+   :thirty-second         {:control 42 :kind :color :index 14}
+   :thirty-second-triplet {:control 43 :kind :color :index 15}
 
    :left-arrow            {:control 44 :kind :monochrome}
    :right-arrow           {:control 45 :kind :monochrome}
@@ -168,111 +193,113 @@
 
    :select                {:control 48 :kind :monochrome}
    :shift                 {:control 49 :kind :monochrome}
+
    :note                  {:control 50 :kind :monochrome}
    :session               {:control 51 :kind :monochrome}
+
    :add-device            {:control 52 :kind :monochrome}
    :add-track             {:control 53 :kind :monochrome}
 
-   :octave-down           {:control 54 :kind :monochrome}
-   :octave-up             {:control 55 :kind :monochrome}
+   :device-mode           {:control 110 :kind :monochrome}
+   :browse-mode           {:control 111 :kind :monochrome}
+   :mix-mode              {:control 112 :kind :monochrome}
+   :clip-mode             {:control 113 :kind :monochrome}
+
    :repeat                {:control 56 :kind :monochrome}
    :accent                {:control 57 :kind :monochrome}
    :scales                {:control 58 :kind :monochrome}
-   :user-mode             {:control 59 :kind :monochrome}
-   :mute                  {:control 60 :kind :monochrome}
-   :solo                  {:control 61 :kind :monochrome}
-   :in                    {:control 62 :kind :monochrome}
-   :out                   {:control 63 :kind :monochrome}
+   :layout                {:control 31 :kind :monochrome}
 
-   :play                  {:control 85 :kind :monochrome}
-   :record                {:control 86 :kind :monochrome}
-   :new                   {:control 87 :kind :monochrome}
-   :duplicate             {:control 88 :kind :monochrome}
-   :automation            {:control 89 :kind :monochrome}
+   :setup                 {:control 30 :kind :monochrome}
+   :user-mode             {:control 59 :kind :monochrome}
+
+   :page-left             {:control 62 :kind :monochrome}
+   :page-right            {:control 63 :kind :monochrome}
+   :octave-down           {:control 54 :kind :monochrome}
+   :octave-up             {:control 55 :kind :monochrome}
+
+   :stop                  {:control 85 :kind :color :index 2}  ; The play button, but stop for stop mode.
+   :record                {:control 86 :kind :color :index 3}
+   :automate              {:control 89 :kind :color :index 4}
    :fixed-length          {:control 90 :kind :monochrome}
 
-   :device-mode           {:control 110 :kind :monochrome}
-   :browse-mode           {:control 111 :kind :monochrome}
-   :track-mode            {:control 112 :kind :monochrome}
-   :clip-mode             {:control 113 :kind :monochrome}
-   :volume-mode           {:control 114 :kind :monochrome}
-   :pan-send-mode         {:control 115 :kind :monochrome}
+   :new                   {:control 87 :kind :monochrome}
+   :duplicate             {:control 88 :kind :monochrome}
 
    :quantize              {:control 116 :kind :monochrome}
    :double                {:control 117 :kind :monochrome}
+   :convert               {:control 35 :kind :monochrome}
+
+   :mute                  {:control 60 :kind :color :index 5}
+   :solo                  {:control 61 :kind :color :index 6}
+   :stop-clip             {:control 29 :kind :color :index 7}
+
    :delete                {:control 118 :kind :monochrome}
-   :undo                  {:control 119 :kind :monochrome}})
+   :undo                  {:control 119 :kind :monochrome}
 
-(def special-symbols
-  "The byte values which draw special-purpose characters on the Push
-  display."
-  {:up-arrow            (byte 0)
-   :down-arrow          (byte 1)
-   :pancake             (byte 2)
-   :fader-left          (byte 3)
-   :fader-right         (byte 4)
-   :fader-center        (byte 5)
-   :fader-empty         (byte 6)
-   :folder              (byte 7)
-   :split-vertical-line (byte 8)
-   :degree              (byte 9)
-   :ellipsis            (byte 28)
-   :solid-block         (byte 29)
-   :right-arrow         (byte 30)
-   :left-arrow          (byte 31)
-   :selected-triangle   (byte 127)})
+   :top-pad-0             {:control 20 :kind :color}
+   :top-pad-1             {:control 21 :kind :color}
+   :top-pad-2             {:control 22 :kind :color}
+   :top-pad-3             {:control 23 :kind :color}
+   :top-pad-4             {:control 24 :kind :color}
+   :top-pad-5             {:control 25 :kind :color}
+   :top-pad-6             {:control 26 :kind :color}
+   :top-pad-7             {:control 27 :kind :color}
 
-(defn button-state
-  "Calculate the numeric value that corresponds to a particular
-  named state for the specified button, and (if supported and
-  supplied), a named color."
-  ([button state]
-   (button-state button state :amber))
-  ([button state color-key]
-   (let [base-value ((keyword state) monochrome-button-states)
-         color-shift (or (when (and (= (:kind button) :color)
-                                    (not= state :off))
-                           ((keyword color-key) color-button-colors))
-                         0)]
-     (+ base-value color-shift))))
+   :encoder-pad-0         {:control 102 :kind :color}
+   :encoder-pad-1         {:control 103 :kind :color}
+   :encoder-pad-2         {:control 104 :kind :color}
+   :encoder-pad-3         {:control 105 :kind :color}
+   :encoder-pad-4         {:control 106 :kind :color}
+   :encoder-pad-5         {:control 107 :kind :color}
+   :encoder-pad-6         {:control 108 :kind :color}
+   :encoder-pad-7         {:control 109 :kind :color}})
 
-(defn set-button-state
-  "Set one of the labeled buttons to a particular state, and, if
-  supported, color. If the state is already a number, it is used
-  as-is, otherwise it is calculated using button-state."
-  ([controller button state]
-   (set-button-state controller button state :amber))
-  ([controller button state color-key]
-   (let [state (if (number? state)
-                 state
-                 (button-state button state color-key))]
-     (midi/midi-control (:port-out controller) (:control button) state))))
+(defn set-cc-led-color
+  "Set one of the color LEDs that respons to control change values to
+  a particular color. If the color is black, we send a control value
+  of zero. Otherwise, we take over the color palette entry assigned to
+  the LED, and set it to the desired RGB value, then send it a control
+  change with the velocity corresponding to the palette entry we just
+  adjusted.
 
-(defn top-pad-state
-  "Calculate the numeric value that corresponds to a particular
-  named state for the specified top-row pad, and (if supplied),
-  named color."
-  ([state]
-   (top-pad-state state :amber))
-  ([state color-key]
-   (let [base-value ((keyword state) monochrome-button-states)
-         color-shift (or (when-not (= state :off)
-                           ((keyword color-key) color-button-colors))
-                         0)]
-     (+ base-value color-shift))))
+  Since we also have to set a white value, we pass along the white
+  value that was present in the palette we found for this entry
+  when initially binding to the Push 2."
+  [controller control palette-index color]
+  (let [palette (get @(:led-palettes controller) palette-index)]
+    (if (util/float= (colors/lightness color) 0.0)
+      (midi/midi-control (:port-out controller) control 0)
+        (let [r (colors/red color)
+              g (colors/green color)
+              b (colors/blue color)]
+          (send-sysex controller [0x03 palette-index (bit-and r 0x7f) (quot r 0x80) (bit-and g 0x7f) (quot g 0x80)
+                                  (bit-and b 0x7f) (quot b 0x80) (get palette 6) (get palette 7)])
+        (midi/midi-control (:port-out controller) control palette-index)))))
 
-(defn set-top-pad-state
-  "Set one of the top-row pads to a particular state and color.
-  If state is already a number, it is used as-is, otherwise it is
-  calculated using top-pad-state."
-  ([controller x state]
-   (set-top-pad-state controller x state :amber))
-  ([controller x state color-key]
-   {:pre [(<= 0 x 7)]}
-   (let [state (if (number? state)
-                 state
-                 (top-pad-state state color-key))]
-     (midi/midi-control (:port-out controller) (+ x 20) state))))
+(defn set-button-color
+  "Set one of the labeled buttons to a particular color (if it is a
+  monochrome button, the lightness of the color is translated to a
+  control value; otherwise, the palette entry assigned to the button
+  is set to the specified color, and the corresponding velocity is
+  sent."
+  [controller button color]
+  (if (= :monochrome (:kind button))
+    (midi/midi-control (:port-out controller) (:control button)
+                       (math/round (* (/ (colors/lightness color) 100) 127)))
+    (set-cc-led-color controller (:control button) (or (:index button) (:control button)) color)))
+
+(defn set-top-pad-color
+  "Set one of the top-row pads (between the grid and the display) to a
+  particular color."
+  [controller x color]
+  (set-button-color controller (get control-buttons (keyword (str "top-pad-" x))) color))
+
+(defn set-encoder-pad-color
+  "Set one of the pads below the row of display encoders to a
+  particular color."
+  [controller x color]
+  (set-button-color controller (get control-buttons (keyword (str "encoder-pad-" x))) color))
 
 (defn set-display-line
   "Sets a line of the text display."
@@ -281,23 +308,21 @@
   (let [message (concat [240 71 127 21 (+ line 24) 0 69 0]
                         (take 68 (concat (map int bytes) (repeat 32)))
                         [247])]
-    (midi/midi-sysex (:port-out controller) message)))
+    #_(midi/midi-sysex (:port-out controller) message)))
 
 (defn clear-display-line
   "Clears a line of the text display."
   [controller line]
   {:pre [(<= 0 line 3)]}
-  (midi/midi-sysex (:port-out controller) [240 71 127 21 (+ line 28) 0 0 247]))
+  #_(midi/midi-sysex (:port-out controller) [240 71 127 21 (+ line 28) 0 0 247]))
 
 (defn show-labels
   "Illuminates all buttons with text labels, for development assistance."
   ([controller]
-   (show-labels controller :bright :amber))
-  ([controller state]
-   (show-labels controller state :amber))
-  ([controller state color]
+   (show-labels controller (colors/create-color :white)))
+  ([controller color]
    (doseq [[_ button] control-buttons]
-     (set-button-state controller button state color))))
+     (set-button-color controller button color))))
 
 (defn- update-text
   "Sees if any text has changed since the last time the display
@@ -314,14 +339,14 @@
 (defn- update-top-pads
   "Sees if any of the top row of pads have changed state since
   the interface was updated, and if so, sends the necessary MIDI
-  control values to update them on the Push."
+  messages to update them on the Push."
   [controller]
   (doseq [x (range 8)]
-    (let [next-state (aget (:next-top-pads controller) x)]
-      (when (not= next-state
-                  (aget (:last-top-pads controller) x))
-        (set-top-pad-state controller x next-state)
-        (aset (:last-top-pads controller) x next-state)))))
+    (let [next-color (get @(:next-top-pads controller) x)]
+      (when (not= next-color
+                  (get @(:last-top-pads controller) x))
+        (set-top-pad-color controller x next-color)
+        (swap! (:last-top-pads controller) assoc x next-color)))))
 
 (defn- set-touch-strip-mode
   "Set the touch strip operating mode."
@@ -354,18 +379,18 @@
 (defn- update-text-buttons
   "Sees if any labeled buttons have changed state since the last time
   the interface was updated, and if so, sends the necessary MIDI
-  control values to update them on the Push."
+  commands to update them on the Push."
   [controller]
   ;; First turn off any which were on before but no longer are
-  (doseq [[button old-state] @(:last-text-buttons controller)]
+  (doseq [[button old-color] @(:last-text-buttons controller)]
     (when-not (get @(:next-text-buttons controller) button)
-      (when-not (#{0 :off} old-state)
-        (set-button-state controller button :off))))
+      (when-not (= off-color old-color)
+        (set-button-color controller button off-color))))
 
   ;; Then, set any currently requested states
-  (doseq [[button state] @(:next-text-buttons controller)]
-    (when-not (= (get @(:last-text-buttons controller) button) state)
-      (set-button-state controller button state)))
+  (doseq [[button color] @(:next-text-buttons controller)]
+    (when-not (= (get @(:last-text-buttons controller) button) color)
+      (set-button-color controller button color)))
 
   ;; And record the new state for next time
   (reset! (:last-text-buttons controller) @(:next-text-buttons controller)))
@@ -377,7 +402,7 @@
   [c]
   (let [i (int c)]
     (if (> i 127)
-      (:ellipsis special-symbols)
+      0
       i)))
 
 (defn write-display-text
@@ -405,12 +430,9 @@
   [value & {:keys [lowest highest width] :or {lowest 0 highest 100 width 17}}]
   (let [range (- highest lowest)
         scaled (int (* 2 width (/ (- value lowest) range)))
-        marker ((if (< (- value lowest) 0.1)
-                  :fader-empty
-                  (if (even? scaled) :fader-left :fader-center))
-                special-symbols)
-        leader (take (int (/ scaled 2)) (repeat (:fader-center special-symbols)))]
-    (take width (concat leader [marker] (repeat (:fader-empty special-symbols))))))
+        marker 0
+        leader (take (int (/ scaled 2)) (repeat 0))]
+    (take width (concat leader [marker] (repeat 0)))))
 
 (defn make-pan-gauge
   "Create a graphical gauge with an indicator that moves along a line.
@@ -420,17 +442,14 @@
   (let [range (* 1.01 (- highest lowest))
         midpoint (/ (- highest lowest) 2)
         scaled (int (* 2 width (/ (- value lowest) range)))
-        filler (repeat (:fader-empty special-symbols))
+        filler (repeat 0)
         centered (< (math/abs (- (- value lowest) midpoint)) (/ range 256))
-        marker ((if (and centered (odd? width))
-                  :fader-center
-                  (if (even? scaled) :fader-left :fader-right))
-                special-symbols)
+        marker 0
         leader (if (and centered (even? width) (even? scaled))
-                 (concat (take (dec (int (/ scaled 2))) filler) [(:fader-right special-symbols)])
+                 (concat (take (dec (int (/ scaled 2))) filler) [0])
                  (take (int (/ scaled 2)) filler))]
     (take width (concat leader [marker]
-                        (when (and centered (even? width) (odd? scaled)) [(:fader-left special-symbols)])
+                        (when (and centered (even? width) (odd? scaled)) [0])
                         filler))))
 
 (defn- metronome-sync-label
@@ -449,10 +468,10 @@
   [controller]
   (with-show (:show controller)
     (if (= (:type (show/sync-status)) :manual)
-      :amber
+      amber-color
       (if (:current (show/sync-status))
-        :green
-        :red))))
+        green-color
+        red-color))))
 
 (defn- update-mode!
   "Turn a controller mode on or off, identified by the associated
@@ -474,9 +493,9 @@
   [controller]
   (if (= (:type (show/sync-status)) :manual)
     (let [arrow-pos (if (in-mode? controller :shift) 14 16)]
-      (aset (get (:next-display controller) 2) arrow-pos (:up-arrow special-symbols)))
+      #_(aset (get (:next-display controller) 2) arrow-pos 0))
     (do
-      (aset (get (:next-display controller) 2) 9 (:down-arrow special-symbols))
+      #_(aset (get (:next-display controller) 2) 9 0)
       (when-not (:showing @(:metronome-mode controller))
         ;; We need to display the sync mode in order to point at it
         (write-display-cell controller 3 0
@@ -534,7 +553,7 @@
                          arrow-pos (if (in-mode? controller :shift)
                                      (dec (.indexOf marker "." (inc (.indexOf marker "."))))
                                      (dec (count marker)))]
-    (aset (get (:next-display controller) 2) arrow-pos (:up-arrow special-symbols))))
+    #_(aset (get (:next-display controller) 2) arrow-pos 0)))
 
 (defn- adjust-beat-from-encoder
   "Adjust the current beat based on how the encoder was twisted."
@@ -586,13 +605,13 @@
                    ;; Make the metronome button bright, since its information is active
                    (swap! (:next-text-buttons controller)
                           assoc (:metronome control-buttons)
-                          (button-state (:metronome control-buttons) :bright))
+                          white-color)
 
                    ;; Add the labels for reset and sync, and light the pads
                    (write-display-cell controller 3 0
                                        (str " Reset   " (metronome-sync-label controller)))
-                   (aset (:next-top-pads controller) 0 (top-pad-state :dim :red))
-                   (aset (:next-top-pads controller) 1 (top-pad-state :dim (metronome-sync-color controller))))
+                   (swap! (:next-top-pads controller) assoc 0 dim-red-color)
+                   (swap! (:next-top-pads controller) assoc 1 (dim (metronome-sync-color controller))))
                  (handle-control-change [this message]
                    (case (:note message)
                      3 ; Tap tempo button
@@ -610,16 +629,15 @@
                      (when (pos? (:velocity message))
                        (rhythm/metro-phrase-start (:metronome (:show controller)) 1)
                        (controllers/add-control-held-feedback-overlay (:overlays controller) 20
-                                                                      (fn [_] (aset (:next-top-pads controller)
-                                                                                    0 (top-pad-state :bright :red))))
+                                                                      (fn [_] (swap! (:next-top-pads controller)
+                                                                                     assoc 0 red-color)))
                        true)
                      21 ; Sync pad
                      (when (pos? (:velocity message))
                        ;; TODO: Actually implement a new overlay
                        (controllers/add-control-held-feedback-overlay
-                        (:overlays controller) 21 (fn [_] (aset (:next-top-pads controller)
-                                                                1 (top-pad-state :bright
-                                                                                 (metronome-sync-color controller)))))
+                        (:overlays controller) 21 (fn [_] (swap! (:next-top-pads controller)
+                                                                 assoc 1 (metronome-sync-color controller))))
                        true)))
                  (handle-note-on [this message]
                    ;; Whoops, user grabbed encoder closest to beat or BPM display
@@ -657,20 +675,16 @@
         (write-display-cell controller 0 0 "Beat        BPM  ")
 
         ;; Make the metronome button bright, since some overlay is present
-        (swap! (:next-text-buttons controller)
-               assoc metronome-button
-               (button-state metronome-button :bright)))
+        (swap! (:next-text-buttons controller) assoc metronome-button white-color))
 
       ;; The metronome section is not active, so make its button dim
-      (swap! (:next-text-buttons controller)
-             assoc metronome-button (button-state metronome-button :dim)))
+      (swap! (:next-text-buttons controller) assoc metronome-button dim-white-color))
 
     ;; Regardless, flash the tap tempo button on beats
     (swap! (:next-text-buttons controller)
            assoc tap-tempo-button
-           (button-state tap-tempo-button
-                         (if (or (new-beat? controller marker) (< (rhythm/snapshot-beat-phase snapshot) 0.15))
-                           :bright :dim)))))
+           (if (or (new-beat? controller marker) (< (rhythm/snapshot-beat-phase snapshot) 0.15))
+             white-color dim-white-color))))
 
 (defn- render-cue-grid
   "Figure out how the cue grid pads should be illuminated, based on the
@@ -699,7 +713,7 @@
                              (if (or (active-keys (:key cue))
                                      (seq (clojure.set/intersection active-keys (set (:end-keys cue))))) 6 22))
                            l-boost)))]
-        (aset (:next-grid-pads controller) (+ x (* y 8)) (or color off-color))))))
+        (swap! (:next-grid-pads controller) assoc (+ x (* y 8)) (or color off-color))))))
 
 (defn- update-cue-grid
   "See if any of the cue grid button states have changed, and send any
@@ -708,10 +722,10 @@
   (doseq [x (range 8)
           y (range 8)]
     (let [index (+ x (* y 8))
-          color (aget (:next-grid-pads controller) index)]
-      (when-not (= color (aget (:last-grid-pads controller) index))
+          color (get @(:next-grid-pads controller) index)]
+      (when-not (= color (get @(:last-grid-pads controller) index))
         (set-pad-color controller x y color)
-        (aset (:last-grid-pads controller) index color)))))
+        (swap! (:last-grid-pads controller) assoc index color)))))
 
 (defn- cue-vars-for-encoders
   "Find the correct cue variables that correspond to each of the two
@@ -831,7 +845,7 @@
                   cue         (:cue info)
                   end-label   (if ending " Ending  " "  End    ")
                   scroll-vars (> (count (:variables cue)) 2)
-                  more-label  (when scroll-vars (concat " More " [(:right-arrow special-symbols)]))
+                  more-label  (when scroll-vars (concat " More " [0]))
                   cur-vals    (when cue (cues/snapshot-cue-variables cue (:id info) :show (:show controller)))
                   saved-vals  (controllers/cue-vars-saved-at (:cue-grid (:show controller)) (:x info) (:y info))
                   save-action (when (seq cur-vals)
@@ -850,19 +864,19 @@
                                                          more-label))
               (if (in-mode? controller :record)
                 (when save-action
-                  (aset (:next-top-pads controller) (* 2 x)
-                        (top-pad-state :dim (case save-action
-                                              :save :green
-                                              :clear :amber))))
-                (aset (:next-top-pads controller) (* 2 x) (top-pad-state :dim :red)))
-              (when scroll-vars (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :dim :amber)))
+                  (swap! (:next-top-pads controller) assoc (* 2 x) (dim (case save-action
+                                                                          :save green-color
+                                                                          :clear amber-color))))
+                (swap! (:next-top-pads controller) assoc (* 2 x) dim-red-color))
+              (when scroll-vars (swap! (:next-top-pads controller) assoc (inc (* 2 x))
+                                       dim-amber-color))
               (when (seq (rest fx))
                 (recur (rest fx) (rest fx-meta) (inc x)))))
           ;; Draw indicators if there are effects hidden from view in either direction
           (when (pos? num-skipped)
-            (aset (get (:next-display controller) 3) (* first-cell 17) (util/ubyte (:left-arrow special-symbols))))
+            (aset (get (:next-display controller) 3) (* first-cell 17) (util/ubyte 0)))
           (when (pos? @(:effect-offset controller))
-            (aset (get (:next-display controller) 3) 67 (util/ubyte (:right-arrow special-symbols)))))
+            (aset (get (:next-display controller) 3) 67 (util/ubyte 0))))
       (do (write-display-cell controller 2 1 "       No effects")
           (write-display-cell controller 2 2 "are active.")))))
 
@@ -872,44 +886,27 @@
   "Activate the arrow buttons for directions in which scrolling is
   possible."
   [controller]
-  (if (in-mode? controller :shift)
-    ;; In shift mode, scroll through the effects list
-    (let [[offset max-offset] (find-effect-offset-range controller)]
-      ;; If there is an offset, user can scroll to the right
-      (when (pos? offset)
-        (swap! (:next-text-buttons controller)
-               assoc (:right-arrow control-buttons)
-               (button-state (:right-arrow control-buttons) :dim))
-        (swap! (:next-text-buttons controller)
-               assoc (:down-arrow control-buttons)
-               (button-state (:down-arrow control-buttons) :dim)))
-      ;; Is there room to scroll to the left?
-      (when (< offset max-offset)
-        (swap! (:next-text-buttons controller)
-               assoc (:left-arrow control-buttons)
-               (button-state (:left-arrow control-buttons) :dim))
-        (swap! (:next-text-buttons controller)
-               assoc (:up-arrow control-buttons)
-               (button-state (:up-arrow control-buttons) :dim))))
+  ;; The page left/right buttons scroll through the effect list
+  (let [[offset max-offset] (find-effect-offset-range controller)]
+    ;; If there is an offset, user can scroll to the right
+    (when (pos? offset)
+      (swap! (:next-text-buttons controller) assoc (:page-right control-buttons) dim-white-color))
+    ;; Is there room to scroll to the left?
+    (when (< offset max-offset)
+      (swap! (:next-text-buttons controller) assoc (:page-left control-buttons) dim-white-color)))
 
-    ;; In unshifted mode, scroll through the cue grid
-    (let [[origin-x origin-y] @(:origin controller)]
-      (when (pos? origin-x)
-        (swap! (:next-text-buttons controller)
-               assoc (:left-arrow control-buttons)
-               (button-state (:left-arrow control-buttons) :dim)))
-      (when (pos? origin-y)
-        (swap! (:next-text-buttons controller)
-               assoc (:down-arrow control-buttons)
-               (button-state (:down-arrow control-buttons) :dim)))
-      (when (> (- (controllers/grid-width (:cue-grid (:show controller))) origin-x) 7)
-        (swap! (:next-text-buttons controller)
-               assoc (:right-arrow control-buttons)
-               (button-state (:right-arrow control-buttons) :dim)))
-      (when (> (- (controllers/grid-height (:cue-grid (:show controller))) origin-y) 7)
-        (swap! (:next-text-buttons controller)
-               assoc (:up-arrow control-buttons)
-               (button-state (:up-arrow control-buttons) :dim))))))
+  ;; The arrow keys scroll through the cue grid
+  (let [[origin-x origin-y] @(:origin controller)]
+    (when (pos? origin-x)
+      (swap! (:next-text-buttons controller) assoc (:left-arrow control-buttons) dim-white-color))
+    (when (pos? origin-y)
+      (swap! (:next-text-buttons controller) assoc (:down-arrow control-buttons) dim-white-color))
+    (when (> (- (controllers/grid-width (:cue-grid (:show controller))) origin-x) 7)
+      (swap! (:next-text-buttons controller)
+             assoc (:right-arrow control-buttons) dim-white-color))
+    (when (> (- (controllers/grid-height (:cue-grid (:show controller))) origin-y) 7)
+      (swap! (:next-text-buttons controller)
+             assoc (:up-arrow control-buttons) dim-white-color))))
 
 (defn- update-mode-buttons
   "Illuminate the buttons which activate modes while they are held
@@ -917,9 +914,19 @@
   [controller mode-buttons]
   (doseq [button mode-buttons]
     (swap! (:next-text-buttons controller)
-           assoc (button control-buttons)
-           (button-state (button control-buttons)
-                         (if (in-mode? controller button) :bright :dim)))))
+           assoc (button control-buttons) (if (in-mode? controller button)
+                                            (or (:bright-color button) white-color)
+                                            (or (:dim-color button) dim-white-color)))))
+
+(def empty-top-pads
+  "A representation of the state when all eight of the top pads are
+  off."
+  (vec (repeat 8 off-color)))
+
+(def empty-grid-pads
+  "A representation of the state when all 64 of the grid pads are
+  off."
+  (vec (repeat 64 off-color)))
 
 (defn- update-interface
   "Determine the desired current state of the interface, and send any
@@ -930,7 +937,7 @@
     (doseq [row (range 4)]
       (Arrays/fill (get (:next-display controller) row) (byte 32)))
     (reset! (:next-text-buttons controller) {})
-    (Arrays/fill (:next-top-pads controller) 0)
+    (reset! (:next-top-pads controller) empty-top-pads)
     (reset! (:next-touch-strip controller) [0 1])
 
     (let [snapshot (rhythm/metro-snapshot (get-in controller [:show :metronome]))]
@@ -947,14 +954,10 @@
       (update-scroll-arrows controller)
 
       ;; Make the User button bright, since we live in User mode
-      (swap! (:next-text-buttons controller)
-             assoc (:user-mode control-buttons)
-             (button-state (:user-mode control-buttons) :bright))
+      (swap! (:next-text-buttons controller) assoc (:user-mode control-buttons) white-color)
 
-      ;; Make the stop button visible, since we support it
-      (swap! (:next-text-buttons controller)
-             assoc (:stop control-buttons)
-             (button-state (:stop control-buttons) :dim))
+      ;; Make the play button red, indicating it will stop the show
+      (swap! (:next-text-buttons controller) assoc (:stop control-buttons) red-color)
 
       ;; Add any contributions from interface overlays, removing them
       ;; if they report being finished.
@@ -1001,17 +1004,16 @@
           (set-pad-color controller (- 14 @counter) y color)))
 
       (= @counter 15)
-      (show-labels controller :bright :amber)
+      (show-labels controller white-color)
 
       (= @counter 16)
       (doseq [x (range 0 8)]
-        (set-top-pad-state controller x :bright :amber))
+        (set-top-pad-color controller x amber-color))
 
       (= @counter 17)
       (doseq [x (range 0 8)]
-        #_(set-second-pad-color controller x
-                                (colors/create-color :h 45 :s 100 :l 50))
-        (set-top-pad-state controller x :bright :red))
+        (set-encoder-pad-color controller x amber-color)
+        (set-top-pad-color controller x red-color))
 
       (< @counter 26)
       (doseq [x (range 0 8)]
@@ -1023,13 +1025,13 @@
 
       (= @counter 26)
       (do
-        (show-labels controller :dim :amber)
+        (show-labels controller dim-white-color)
         (doseq [x (range 0 8)]
-          (set-top-pad-state controller x :off)))
+          (set-top-pad-color controller x off-color)))
 
       (= @counter 27)
       (doseq [x (range 0 8)]
-        #_(set-second-pad-color controller x off-color))
+        (set-encoder-pad-color controller x off-color))
 
       (< @counter 36)
       (doseq [x (range 0 8)]
@@ -1070,14 +1072,14 @@
     (Arrays/fill (get (:last-display controller) line) (byte 32)))
 
   (doseq [x (range 8)]
-    (set-top-pad-state controller x :off)
-    #_(set-second-pad-color controller x off-color)
+    (set-top-pad-color controller x off-color)
+    (set-encoder-pad-color controller x off-color)
     (doseq [y (range 8)]
       (set-pad-color controller x y off-color)))
-  (Arrays/fill (:last-top-pads controller) 0)
-  (Arrays/fill (:last-grid-pads controller) off-color)
+  (reset! (:last-top-pads controller) empty-top-pads)
+  (reset! (:last-grid-pads controller) empty-grid-pads)
   (doseq [[_ button] control-buttons]
-    (set-button-state controller button :off))
+    (set-button-color controller button off-color))
   (reset! (:last-text-buttons controller) {})
   (set-touch-strip-mode controller 5)
   (reset! (:last-touch-strip controller) nil))
@@ -1190,8 +1192,7 @@
   (restore-led-palettes controller)
 
   ;; In case Live isn't running, leave the User Mode button dimly lit, to help the user return.
-  (set-button-state controller (:user-mode control-buttons)
-                    (button-state (:user-mode control-buttons) :dim))
+  (set-button-color controller (:user-mode control-buttons) dim-white-color)
   (controllers/add-overlay (:overlays controller)
                            (reify controllers/IOverlay
                              (captured-controls [this] #{59})
@@ -1227,7 +1228,7 @@
 
   (controllers/add-overlay (:overlays controller)
                            (reify controllers/IOverlay
-                             (captured-controls [this] #{29})
+                             (captured-controls [this] #{85})
                              (captured-notes [this] #{})
                              (adjust-interface [this _]
                                (write-display-cell controller 0 1 "")
@@ -1239,13 +1240,13 @@
                                (write-display-cell controller 3 1 "")
                                (write-display-cell controller 3 2 "")
                                (swap! (:next-text-buttons controller)
-                                      assoc (:stop control-buttons)
-                                      (button-state (:stop control-buttons) :bright))
+                                      assoc (:stop control-buttons) dim-green-color)
                                (with-show (:show controller)
                                  (when (show/running?)
                                    (update-mode! controller :stop false))
                                  (in-mode? controller :stop)))
                              (handle-control-change [this message]
+                               #_(timbre/info "Stop message" message)
                                (when (pos? (:velocity message))
                                  ;; End stop mode
                                  (with-show (:show controller)
@@ -1263,7 +1264,7 @@
   [controller button]
   (controllers/add-control-held-feedback-overlay (:overlays controller) (:control button)
                                                  (fn [_] (swap! (:next-text-buttons controller)
-                                                                assoc button (button-state button :bright)))))
+                                                                assoc button white-color))))
 
 (defn- handle-save-effect
   "Process a tap on one of the pads which indicate the user wants to
@@ -1293,10 +1294,10 @@
             :clear (controllers/clear-saved-cue-vars! (:cue-grid (:show controller)) (:x info) (:y info)))
           (controllers/add-control-held-feedback-overlay (:overlays controller) note
                                                          (fn [_]
-                                                           (aset (:next-top-pads controller) (* 2 x)
-                                                                 (top-pad-state :bright (case save-action
-                                                                                          :save  :green
-                                                                                          :clear :amber)))
+                                                           (swap! (:next-top-pads controller) assoc (* 2 x)
+                                                                  (case save-action
+                                                                    :save  green-color
+                                                                    :clear amber-color))
                                                            (write-display-cell controller 3 x
                                                                                (case save-action
                                                                                  :save  "  Saved  "
@@ -1331,8 +1332,8 @@
                                      (write-display-cell controller 1 x "Ending:")
                                      (write-display-cell controller 2 x (or (:name (:cue info)) (:name effect)))
                                      (write-display-cell controller 3 x "")
-                                     (aset (:next-top-pads controller) (* 2 x) (top-pad-state :bright :red))
-                                     (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
+                                     (swap! (:next-top-pads controller) assoc (* 2 x) red-color)
+                                     (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
                                      true)
                                    (handle-control-change [this message]
                                      (when (and (= (:note message) note) (zero? (:velocity message)))
@@ -1368,7 +1369,7 @@
                                      (captured-controls [this] #{note})
                                      (captured-notes [this] #{})
                                      (adjust-interface [this _]
-                                       (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :bright :amber))
+                                       (swap! (:next-top-pads controller) assoc (inc (* 2 x)) amber-color)
                                        true)
                                      (handle-control-change [this message]
                                        (when (and (= (:note message) note) (zero? (:velocity message)))
@@ -1412,73 +1413,60 @@
 
     ;; 28 ; Master button
 
-    29 ; Stop button
+    85 ; Play button
     (when (pos? (:velocity message))
       (enter-stop-mode controller))
 
     (49 86) ; Shift or Record button
     (update-mode! controller (:note message) (pos? (:velocity message)))
 
-    44 ; Left arrow
+    62 ; Page left, scroll back to older effects
     (when (pos? (:velocity message))
-      (if (in-mode? controller :shift)
-        ;; Trying to scroll back to older effects
         (let [[offset max-offset room] (find-effect-offset-range controller)
-              new-offset (min max-offset (+ offset room))]
+              new-offset (if (in-mode? controller :shift)
+                           max-offset
+                           (min max-offset (+ offset room)))]
           (when (not= offset new-offset)
             (reset! (:effect-offset controller) new-offset)
-            (add-button-held-feedback-overlay controller (:left-arrow control-buttons))))
+            (add-button-held-feedback-overlay controller (:page-left control-buttons)))))
 
-        ;; Trying to scroll left in cue grid
-        (let [[x y] @(:origin controller)]
-          (when (pos? x)
-            (move-origin controller [(max 0 (- x 8)) y])
-            (add-button-held-feedback-overlay controller (:left-arrow control-buttons))))))
-
-    45 ; Right arrow
+    63; Page right, scroll forward to newer effects
     (when (pos? (:velocity message))
-      (if (in-mode? controller :shift)
-        ;; Trying to scroll forward to newer effects
-        (let [[offset max-offset room] (find-effect-offset-range controller)
-              new-offset (max 0 (- offset room))]
-          (when (not= offset new-offset)
-            (reset! (:effect-offset controller) new-offset)
-            (add-button-held-feedback-overlay controller (:right-arrow control-buttons))))
+      (let [[offset max-offset room] (find-effect-offset-range controller)
+            new-offset (if (in-mode? controller :shift) 0 (max 0 (- offset room)))]
+        (when (not= offset new-offset)
+          (reset! (:effect-offset controller) new-offset)
+          (add-button-held-feedback-overlay controller (:page-right control-buttons)))))
 
-        ;; Trying to scroll right in cue grid
-        (let [[x y] @(:origin controller)]
-          (when (> (- (controllers/grid-width (:cue-grid (:show controller))) x) 7)
-            (move-origin controller [(+ x 8) y])
-            (add-button-held-feedback-overlay controller (:right-arrow control-buttons))))))
-
-    46 ; Up arrow
+    44 ; Left arrow, scroll left in cue grid
     (when (pos? (:velocity message))
-      (if (in-mode? controller :shift)
-        ;; Jump back to oldest effect
-        (let [[offset max-offset] (find-effect-offset-range controller)]
-          (when (not= offset max-offset)
-            (reset! (:effect-offset controller) max-offset)
-            (add-button-held-feedback-overlay controller (:up-arrow control-buttons))))
+      (let [[x y] @(:origin controller)]
+        (when (pos? x)
+          (move-origin controller [(if (in-mode? controller :shift) 0 (max 0 (- x 8))) y])
+          (add-button-held-feedback-overlay controller (:left-arrow control-buttons)))))
 
-        ;; Trying to scroll up in cue grid
-        (let [[x y] @(:origin controller)]
-          (when (> (- (controllers/grid-height (:cue-grid (:show controller))) y) 7)
-            (move-origin controller [x (+ y 8)])
-            (add-button-held-feedback-overlay controller (:up-arrow control-buttons))))))
-
-    47 ; Down arrow
+    45 ; Right arrow, scroll right in cue grid
     (when (pos? (:velocity message))
-      (if (in-mode? controller :shift)
-        ;; Jump forward to newest effect
-        (when (pos? @(:effect-offset controller))
-          (reset! (:effect-offset controller) 0)
-          (add-button-held-feedback-overlay controller (:down-arrow control-buttons)))
+      (let [[x y] @(:origin controller)]
+        ;; TODO: Shift to scroll all the way; also add shift support in web UI and other controllers
+        (when (> (- (controllers/grid-width (:cue-grid (:show controller))) x) 7)
+          (move-origin controller [(+ x 8) y])
+          (add-button-held-feedback-overlay controller (:right-arrow control-buttons)))))
 
-        ;; Trying to scroll down in cue grid
-        (let [[x y] @(:origin controller)]
-          (when (pos? y)
-            (move-origin controller [x (max 0 (- y 8))])
-            (add-button-held-feedback-overlay controller (:down-arrow control-buttons))))))
+    46 ; Up arrow, scroll up in cue grid
+    (when (pos? (:velocity message))
+      (let [[x y] @(:origin controller)]
+        ;; TODO: Shift to scroll all the way; also add shift support in web UI and other controllers
+        (when (> (- (controllers/grid-height (:cue-grid (:show controller))) y) 7)
+          (move-origin controller [x (+ y 8)])
+          (add-button-held-feedback-overlay controller (:up-arrow control-buttons)))))
+
+    47 ; Down arrow, scroll down in cue grid
+    (when (pos? (:velocity message))
+      (let [[x y] @(:origin controller)]
+        (when (pos? y)
+          (move-origin controller [x (if (in-mode? controller :shift) 0 (max 0 (- y 8)))])
+          (add-button-held-feedback-overlay controller (:down-arrow control-buttons)))))
 
     59 ; User mode button
     (when (pos? (:velocity message))
@@ -1523,7 +1511,7 @@
                                       :h (colors/hue base-color)
                                       :s (colors/saturation base-color)
                                       :l 75)]
-                           (aset (:next-grid-pads controller) (+ pad-x (* pad-y 8)) color)))
+                           (swap! (:next-grid-pads controller) assoc (+ pad-x (* pad-y 8)) color)))
                        true)
                      (handle-control-change [this message])
                      (handle-note-on [this message])
@@ -1600,9 +1588,9 @@
   "Display the value of a boolean variable being adjusted in the effect list."
   [controller cell width offset cue v effect-id]
   (let [value (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
-        gauge (concat "No" (when-not value [(:left-arrow special-symbols)])
+        gauge (concat "No" (when-not value [0])
                       (repeat (- width 6) \ )
-                      (when value [(:right-arrow special-symbols)]) "Yes")]
+                      (when value [0]) "Yes")]
     (write-display-text controller 0 (+ offset (* cell 17)) gauge)))
 
 (defn- adjust-boolean-value
@@ -1639,7 +1627,7 @@
         (adjust-interface [this _]
           (when (same-effect-active controller cue (:id info))
             (draw-boolean-gauge controller x 8 (* 9 var-index) cue v (:id info))
-            (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
+            (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
             true))
         (handle-control-change [this message]
           (when (= (:note message) (control-for-top-encoder-note note))
@@ -1660,7 +1648,7 @@
           (adjust-interface [this _]
             (when (same-effect-active controller cue (:id info))
               (draw-boolean-gauge controller x 17 0 cue v (:id info)))
-            (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
+            (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
             true)
           (handle-control-change [this message]
             (when (= (:note message) (control-for-top-encoder-note note))
@@ -1694,7 +1682,7 @@
         (adjust-interface [this _]
           (when (same-effect-active controller cue (:id info))
             (draw-variable-gauge controller x 8 (* 9 var-index) cue v (:id info))
-            (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
+            (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
             (calculate-touch-strip-value controller cue v (:id info))
             true))
         (handle-control-change [this message]
@@ -1718,7 +1706,7 @@
           (adjust-interface [this _]
             (when (same-effect-active controller cue (:id info))
               (draw-variable-gauge controller x 17 0 cue v (:id info))
-              (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
+              (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
               (calculate-touch-strip-value controller cue v (:id info))
               true))
           (handle-control-change [this message]
@@ -1736,21 +1724,21 @@
             true))))))
 
 (def ^:private color-picker-grid
-  (let [result (make-array clojure.lang.IPersistentMap 64)]
+  (let [result (transient (vec (repeat 64 nil)))]
     (doseq [i (range 16)]
       (let [x (* 4 (quot i 8))
             y (- 7 (rem i 8))
             origin (+ x (* 8 y))
             hue (* 360 (/ i 15))
             base-color (colors/create-color :hue hue :saturation 100 :lightness 50)]
-        (aset result origin base-color)
-        (aset result (inc origin) (colors/desaturate base-color 25))
-        (aset result (+ origin 2) (colors/desaturate base-color 50))
-        (aset result (+ origin 3) (colors/desaturate base-color 75))))
-    (aset result 4 (colors/create-color :h 0 :s 0 :l 100))
-    (aset result 5 (colors/create-color :h 0 :s 0 :l 50))
-    (aset result 6 (colors/create-color :h 0 :s 0 :l 0))
-    result))
+        (assoc! result origin base-color)
+        (assoc! result (inc origin) (colors/desaturate base-color 25))
+        (assoc! result (+ origin 2) (colors/desaturate base-color 50))
+        (assoc! result (+ origin 3) (colors/desaturate base-color 75))))
+    (assoc! result 4 (colors/create-color :h 0 :s 0 :l 100))
+    (assoc! result 5 (colors/create-color :h 0 :s 0 :l 50))
+    (assoc! result 6 (colors/create-color :h 0 :s 0 :l 0))
+    (persistent! result)))
 
 (defn- build-color-adjustment-overlay
   "Create an overlay for adjusting a color cue parameter. `note`
@@ -1774,21 +1762,21 @@
         (adjust-interface [this _]
           (when (same-effect-active controller cue (:id info))
             ;; Draw the color picker grid
-            (System/arraycopy color-picker-grid 0 (:next-grid-pads controller) 0 64)
+            (reset! (:next-grid-pads controller) color-picker-grid)
             (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
-                                    (aget color-picker-grid 6))
+                                    white-color)
                   hue (colors/hue current-color)
                   sat (colors/saturation current-color)]
               ;; Show the preview color at the bottom right
-              (aset (:next-grid-pads controller) 7 current-color)
+              (swap! (:next-grid-pads controller) assoc 7 current-color)
 
               ;; Blink any pad which matches the currently selected color
               (when (< (rhythm/metro-beat-phase (:metronome (:show controller))) 0.3)
                 (doseq [i (range 64)]
-                  (when (and (not= i 7) (colors/color= current-color (aget (:next-grid-pads controller) i)))
-                    (aset (:next-grid-pads controller) i (if (= i 4)
-                                                           (colors/darken current-color 20)
-                                                           (colors/lighten current-color 20))))))
+                  (when (and (not= i 7) (colors/color= current-color (get @(:next-grid-pads controller) i)))
+                    (swap! (:next-grid-pads controller) assoc i (if (= i 4)
+                                                                  (colors/darken current-color 20)
+                                                                  (colors/lighten current-color 20))))))
 
               ;; Display the hue and saturation numbers and gauges
               (let [hue-str (clojure.string/join (take 5 (str (double hue) "     ")))
@@ -1806,13 +1794,13 @@
                         [(math/round (* 16383 (/ sat 100))) 1]))
 
               ;; Darken the cue var scroll button if it was going to be lit
-              (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
+              (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
               true)))
         (handle-control-change [this message]
           ;; Adjust hue or saturation depending on controller; ignore if it was the cue var scroll button
           (when (#{hue-control sat-control} (:note message))
             (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
-                                    (aget color-picker-grid 6))
+                                    white-color)
                   current-color (colors/create-color :h (colors/hue current-color) :s (colors/saturation current-color)
                                                      :l 50)
                   delta (* (sign-velocity (:velocity message)) 0.5)]
@@ -1830,7 +1818,7 @@
 
               ;; It's a grid pad. Set the color based on the selected note, unless it's the preview pad.
               (when-not (= note 43)
-                (let [chosen-color (aget color-picker-grid (- note 36))]
+                (let [chosen-color (get color-picker-grid (- note 36))]
                   (cues/set-cue-variable! cue v chosen-color :show (:show controller) :when-id effect-id)))))
           true)
         (handle-note-off [this message]
@@ -1840,7 +1828,7 @@
         (handle-aftertouch [this message])
         (handle-pitch-bend [this message]
           (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
-                                  (aget color-picker-grid 6))
+                                  white-color)
                 fraction (double (/ (+ (* (:data2 message) 128) (:data1 message)) 16383))
                 new-hue (if (@anchors hue-note) (* fraction 360) (colors/hue current-color))
                 new-sat (if (@anchors sat-note) (* fraction 100) (colors/saturation current-color))]
@@ -1924,20 +1912,23 @@
   "Called whenever a MIDI message is received from the controller
   while the mapping is active; takes whatever action is appropriate."
   [controller message]
-  ;;(timbre/info message)
-  (when-not (controllers/overlay-handled? (:overlays controller) message)
-    (cond
-      (= (:command message) :control-change)
-      (control-change-received controller message)
+  #_(timbre/info message)
+  (try
+    (when-not (controllers/overlay-handled? (:overlays controller) message)
+      (cond
+        (= (:command message) :control-change)
+        (control-change-received controller message)
 
-      (= (:command message) :note-on)
-      (note-on-received controller message)
+        (= (:command message) :note-on)
+        (note-on-received controller message)
 
-      (= (:command message) :note-off)
-      (note-off-received controller message)
+        (= (:command message) :note-off)
+        (note-off-received controller message)
 
-      (= 0xf0 (:status message))
-      (sysex-received controller message))))
+        (= 0xf0 (:status message))
+        (sysex-received controller message)))
+    (catch Exception e
+      (timbre/error e "Problem processing incoming MIDI message:" message))))
 
 (defn deactivate
   "Deactivates a controller interface, killing its update thread and
@@ -1967,7 +1958,7 @@
 
     ;; Leave the User button bright, in case the user has Live
     ;; running and wants to be able to see how to return to it.
-    (set-button-state controller (:user-mode control-buttons) :bright))
+    (set-button-color controller (:user-mode control-buttons) white-color))
 
   ;; Cancel any UI overlays which were in effect
   (reset! (:overlays controller) (controllers/create-overlay-state))
@@ -2004,10 +1995,10 @@
            :next-display         (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
            :last-text-buttons    (atom {})
            :next-text-buttons    (atom {})
-           :last-top-pads        (int-array 8)
-           :next-top-pads        (int-array 8)
-           :last-grid-pads       (make-array clojure.lang.IPersistentMap 64)
-           :next-grid-pads       (make-array clojure.lang.IPersistentMap 64)
+           :last-top-pads        (atom empty-top-pads)
+           :next-top-pads        (atom empty-top-pads)
+           :last-grid-pads       (atom empty-grid-pads)
+           :next-grid-pads       (atom empty-grid-pads)
            :metronome-mode       (atom {})
            :last-marker          (atom nil)
            :modes                modes

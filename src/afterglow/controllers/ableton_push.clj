@@ -2120,10 +2120,13 @@
                       (when (every? some? [port-in port-out])  ; We found our Push! Bind to it in the background.
                         (timbre/info "Auto-binding to Ableton Push" device)
                         (future
-                          (reset! controller (bind-to-show show :device-filter device-filter
-                                                           :refresh-interval refresh-interval
-                                                           :display-name display-name))
-                          (amidi/add-disconnected-device-handler! (:port-in @controller) disconnection-handler))))
+                          (try
+                            (reset! controller (bind-to-show show :device-filter device-filter
+                                                             :refresh-interval refresh-interval
+                                                             :display-name display-name))
+                            (amidi/add-disconnected-device-handler! (:port-in @controller) disconnection-handler)
+                            (catch Exception e
+                                (timbre/error e "Problem binding to Push"))))))
                     (reset! idle true))))
             (cancel-handler []
               (amidi/remove-new-device-handler! connection-handler)
