@@ -105,7 +105,7 @@
   was received during startup when we are gathering LED palette
   entries, so we should use them to record any palette response."
   ([controller msg]
-   (sysex-received controller msg nil))
+   (sysex-received controller msg nil nil))
   ([controller msg gather-timestamp gather-promise]
    (if (= (vec (take 5 (:data msg))) [0x00 0x21 0x1d (:device-id controller) 0x01])
      (let [data (map int (butlast (drop 5 (:data msg))))
