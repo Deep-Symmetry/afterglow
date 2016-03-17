@@ -75,62 +75,75 @@
   (midi/midi-sysex (:port-out controller)
                    (concat [0xf0 0x00 0x21 0x1d (:device-id controller) 0x01] command [0xf7])))
 
+(defn- request-led-palette-entry
+  "Ask the Push 2 for the LED palette entry with the specified index."
+  [controller index]
+  (send-sysex controller [0x04 index]))
+
 (defn- save-led-palette-entry
   "Record an LED palette entry we have received in response to our
   startup query, so we can preserve the white palette when setting RGB
   colors, and restore all LED palettes when we suspend or exit our
-  mapping."
-  [controller data]
-  (swap! (:led-palettes controller) assoc (first data) (vec (rest data))))
+  mapping.
+
+  Make a note of the fact that we received a palette response at the
+  current moment in time in `gather-timestamp`, and if this was not
+  the final palette entry, request the next one. If it was the final
+  one, deliver a true value to `gather-timestamp`."
+  [controller data gather-timestamp gather-promise]
+  (let [index (first data)]
+    (swap! (:led-palettes controller) assoc index (vec (rest data)))
+    (reset! gather-timestamp (at-at/now))
+    (if (< index 127)  ; Ask for the next entry unless we have received them all
+      (request-led-palette-entry controller (inc index))
+      (deliver gather-promise true))))
 
 (defn- sysex-received
   "Process a MIDI System Exclusive reply from the Push 2. The `msg`
-  argument is the raw data we have just received."
-  [controller msg]
-  (if (= (vec (take 5 (:data msg))) [0x00 0x21 0x1d (:device-id controller) 0x01])
-    (let [data (map int (butlast (drop 5 (:data msg))))
-          command (first data)
-          args (rest data)]
-      (case command
-        0x04 (save-led-palette-entry controller args)
-        (timbre/info "Ignoring SysEx message from Push 2 with command ID" command)))
-    (timbre/warn "Received unrecognized SysEx message from Push 2 port." (vec (:data msg)))))
+  argument is the raw data we have just received. If
+  `gather-timestamp` and `gather-promise` were supplied, this reply
+  was received during startup when we are gathering LED palette
+  entries, so we should use them to record any palette response."
+  ([controller msg]
+   (sysex-received controller msg nil))
+  ([controller msg gather-timestamp gather-promise]
+   (if (= (vec (take 5 (:data msg))) [0x00 0x21 0x1d (:device-id controller) 0x01])
+     (let [data (map int (butlast (drop 5 (:data msg))))
+           command (first data)
+           args (rest data)]
+       (case command
+         0x04 (if (some? gather-timestamp)
+                (save-led-palette-entry controller args gather-timestamp gather-promise)
+                (timbre/warn "Ignoring Push 2 LED palette response when not gathering palette."))
 
-(defn- request-led-palettes
-  "Ask the Push 2 for the LED palettes with indices matching the
-  supplied sequence."
-  [controller indices]
-  (doseq [i indices]
-    (send-sysex controller [0x04 i])
-    (when (zero? (rem i 10))
-      (Thread/sleep 5))))
-
-(defn- startup-midi-received
-  "Called when a MIDI message is received during conroller setup. Used
-  to gather LED palette responses, and ignore other messages."
-  [controller message]
-  ;;(timbre/info message)
-  (if (= 0xf0 (:status message))
-    (sysex-received controller message)
-    (timbre/info "Ignoring non-sysex message received during Push 2 startup.")))
+         (timbre/warn "Ignoring SysEx message from Push 2 with command ID" command)))
+     (timbre/warn "Received unrecognized SysEx message from Push 2 port." (vec (:data msg))))))
 
 (defn- gather-led-palettes
-  "Ask the Push 2 for all of its LED palettes, wait a bit, and see if
-  we got them all. Try up to two more times to request any missing
-  entries. Return a truthy value to indicate success."
+  "Ask the Push 2 for all of its LED palettes. We ask for the first,
+  then when we receive that, ask for the next, until we have got them
+  all, to avoid overflowing its buffers. We will wait for up to half a
+  second for this process to complete. If that elapses, and it has
+  been more than 100ms since we sent our last request, we give up.
+
+  Return a truthy value to indicate success."
   [controller]
-  (let [startup-handler (partial startup-midi-received controller)]
+  (let [gather-timestamp (atom (at-at/now))
+        gather-promise (promise)
+        startup-handler (fn [message]
+                          (if (= 0xf0 (:status message))
+                            (sysex-received controller message gather-timestamp gather-promise)
+                            (timbre/info "Ignoring non-sysex message received during Push 2 startup.")))]
     (try
       (amidi/add-device-mapping (:port-in controller) startup-handler)
-      (loop [needed (range 128)
-             tries 2]
-        (request-led-palettes controller needed)
-        (Thread/sleep 200)
-        (or (= 128 (count (keys @(:led-palettes controller))))
-            (if (zero? tries)
-              (timbre/error "Unable to gather all 128 LED palette entries for Push 2, giving up.")
-              (recur (clojure.set/difference (set needed) (set (keys @(:led-palettes controller))))
-                     (dec tries)))))
+      (loop []
+        (request-led-palette-entry controller 0)
+        (or (deref gather-promise 500 false)
+            (if (> (- (at-at/now) @gather-timestamp) 100)
+              (timbre/error "Failed to gather LED Palette entries for Push 2; giving up.")
+              (do
+                (timbre/warn "Gathering LED Palette entries for Push 2 is taking more than half a second.")
+                (recur)))))
       (finally (amidi/remove-device-mapping (:port-in controller) startup-handler)))))
 
 (defn- restore-led-palettes
