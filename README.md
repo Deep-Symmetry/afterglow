@@ -833,6 +833,10 @@ though.
   https://pcm.peabody.jhu.edu/~gwright/stdmp/docs/writingmaxexternalsinjava.pdf
   https://docs.cycling74.com/max7/tutorials/jitterchapter51
   https://docs.cycling74.com/max7/vignettes/packages
+- [ ] Consider creating a
+  [Processing Library](https://github.com/processing/processing/wiki/Library-Overview)
+  for Afterglow. They are far more invested in the Java ecosystem than
+  Max is, anyway.
 - [x] Provide a way to import QLC+ fixture definitions to help people
   get started.
 - [ ] Consider importing [Avolites](http://personalities.avolites.com)
