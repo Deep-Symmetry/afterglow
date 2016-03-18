@@ -1109,7 +1109,8 @@
   channel collisions."
   [show fixtures ^clojure.lang.Keyword key fixture]
   (let [base (dissoc fixtures key)
-        addrs-in-use (address-map-internal base (:universe (first (:channels fixture))))
+        addrs-in-use (address-map-internal base (:universe (or (first (:channels fixture))
+                                                               (first (:channels (first (:heads fixture)))))))
         addrs-wanted (chan/all-addresses [fixture])
         max-needed (apply max addrs-wanted)
         conflicts (select-keys addrs-in-use addrs-wanted)]

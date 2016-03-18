@@ -58,6 +58,10 @@ This change log follows the conventions of
 
 ### Fixed
 
+- Fixtures which had no channels assigned to the fixture itself, but
+  only to heads (like Blizzard's Pixellicious pixel grids) could not
+  be patched properly to shows, because the code checking for address
+  conflicts was not able to figure out the universe assigned to them.
 - Chases containing only scenes would end instantly rather than
   running, because of some assumptions they were making about how the
   effect protocol was implemented, which scenes violated. Chases are
