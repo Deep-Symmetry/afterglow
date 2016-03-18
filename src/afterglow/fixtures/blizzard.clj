@@ -418,6 +418,20 @@
               (chan/functions :control 9 0 nil
                               128 {:type :sound-active :var-label "Sensitivity" :range :variable})]})
 
+(defn pixellicious
+  "4x40 LED pixel tile in 480 channel mode."
+  []
+  {:name "Blizzard Pixellicious"
+   :channels []
+   :heads (for [i (range 160)]
+            (let [x (+ (* (rem i 40) 0.025) -0.5)
+                  y (+ (* (quot i 40) 0.025) -0.05)
+                  c (+ (* i 3) 1)]
+              {:channels [(chan/color c :red)
+                          (chan/color (inc c) :green)
+                          (chan/color (+ 2 c) :blue)]
+               :x x :y y}))})
+
 (defn pixellicious-2
   "12x12 LED pixel tile in 432 channel mode."
   []
