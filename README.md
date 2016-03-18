@@ -845,11 +845,12 @@ though.
   looking possible! Ableton has published
   [detailed documentation](https://github.com/Ableton/push-interface)
   of the MIDI and USB interfaces of the Push 2 and display.
-  - [ ] For the display, I will need [Libusb](http://libusb.info/),
+  - [x] For the display, I will need [Libusb](http://libusb.info/),
     and there is a promising-looking Java wrapper,
     [usb4Java](http://usb4java.org). Although there is a start at
     [Clojure bindings](https://github.com/aamedina/tools.usb), it does
     not seem to have gotten far.
+  - [x] Embed some [fonts](https://www.google.com/fonts#ReviewPlace:refine/Collection:Roboto|Open+Sans+Condensed:300|Source+Sans+Pro:400,200italic).
 - [x] Support the Novation Launchpad series. The Pro has pressure
   sensitivity, so start there. They also provide excellent programmer
   documentation, so it will even be straightforward. For example,

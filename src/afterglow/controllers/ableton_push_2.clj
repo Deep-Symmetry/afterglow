@@ -19,9 +19,50 @@
             [overtone.at-at :as at-at]
             [overtone.midi :as midi]
             [taoensso.timbre :as timbre])
-  (:import [org.deepsymmetry Wayang]
+  (:import [afterglow.effects Effect]
+           [org.deepsymmetry Wayang]
            [java.util Arrays]
+           [java.awt GraphicsEnvironment Graphics2D Font]
            [javax.sound.midi ShortMessage]))
+
+(defonce fonts-loaded
+  (atom false))
+
+(defn load-fonts
+  "Load and register the fonts we will use to draw on the display, if
+  they have not already been."
+  []
+  (or @fonts-loaded
+      (let [ge (GraphicsEnvironment/getLocalGraphicsEnvironment)]
+        (doseq [font-file ["/public/fonts/Open_Sans_Condensed/OpenSans-CondLight.ttf"
+                           "/public/fonts/Open_Sans_Condensed/OpenSans-CondLightItalic.ttf"
+                           "/public/fonts/Open_Sans_Condensed/OpenSans-CondBold.ttf"
+                           "/public/fonts/Roboto/Roboto-Medium.ttf"
+                           "/public/fonts/Roboto/Roboto-MediumItalic.ttf"
+                           "/public/fonts/Roboto/Roboto-Regular.ttf"
+                           "/public/fonts/Roboto/Roboto-Bold.ttf"
+                           "/public/fonts/Roboto/Roboto-Italic.ttf"
+                           "/public/fonts/Roboto/Roboto-BoldItalic.ttf"]]
+            (.registerFont ge (java.awt.Font/createFont
+                               java.awt.Font/TRUETYPE_FONT
+                               (.getResourceAsStream Effect font-file))))
+        (reset! fonts-loaded true))))
+
+(defn get-display-font
+  "Find one of the fonts configured for use on the display by keyword,
+  which should be one of `:condensed`, `:condensed-light`, `:roboto`,
+  or `:roboto-medium`. The `style` argument is a `java.awt.Font` style
+  constant, and `size` is point size.
+
+  Roboto is available in all style variations, Roboto Medium in plain
+  and italic, Condensed only in bold, and condensed light in plain and
+  italic."
+  [k style size]
+  (case k
+    :condensed       (Font. "Open Sans Condensed" Font/BOLD size)
+    :condensed-light (Font. "Open Sans Condensed Light" style size)
+    :roboto          (Font. "Roboto" style size)
+    :roboto-medium   (Font. "Roboto Medium" style size)))
 
 (defn dim
   "Return a dimmed version of a color."
@@ -323,11 +364,19 @@
                         [247])]
     #_(midi/midi-sysex (:port-out controller) message)))
 
-(defn clear-display-line
-  "Clears a line of the text display."
-  [controller line]
-  {:pre [(<= 0 line 3)]}
-  #_(midi/midi-sysex (:port-out controller) [240 71 127 21 (+ line 28) 0 0 247]))
+(defn- clear-display-buffer
+  "Clear the graphical display buffer in preparation for drawing an
+  interface frame."
+  [controller]
+  (let [graphics (.createGraphics (:display-buffer controller))]
+    (.setPaint graphics java.awt.Color/BLACK)
+    (.fillRect graphics 0 0 Wayang/DISPLAY_WIDTH Wayang/DISPLAY_HEIGHT)))
+
+(defn clear-display
+  "Clear the graphical display."
+  [controller]
+  (clear-display-buffer controller)
+  (Wayang/sendFrame))
 
 (defn show-labels
   "Illuminates all buttons with text labels, for development assistance."
@@ -336,18 +385,6 @@
   ([controller color]
    (doseq [[_ button] control-buttons]
      (set-button-color controller button color))))
-
-(defn- update-text
-  "Sees if any text has changed since the last time the display
-  was updated, and if so, sends the necessary MIDI SysEx values
-  to update it on the Push."
-  [controller]
-  (doseq [row (range 4)]
-    (when-not (Arrays/equals (get (:next-display controller) row)
-                             (get (:last-display controller) row))
-      (set-display-line controller row (get (:next-display controller) row))
-      (System/arraycopy (get (:next-display controller) row) 0
-                        (get (:last-display controller) row) 0 68))))
 
 (defn- update-top-pads
   "Sees if any of the top row of pads have changed state since
@@ -423,7 +460,7 @@
   the next update."
   [controller row start text]
   {:pre [(<= 0 row 3) (<= 0 start 67)]}
-  (let [bytes (map get-safe-text-byte text)]
+  #_(let [bytes (map get-safe-text-byte text)]
     (doseq [[i val] (map-indexed vector bytes)]
       (aset (get (:next-display controller) row) (+ start i) (util/ubyte val)))))
 
@@ -432,7 +469,7 @@
   display to be rendered on the next update."
   [controller row cell text]
   {:pre [(<= 0 row 3) (<= 0 cell 3)]}
-  (let [bytes (take 17 (concat (map get-safe-text-byte text) (repeat 32)))]
+  #_(let [bytes (take 17 (concat (map get-safe-text-byte text) (repeat 32)))]
     (doseq [[i val] (map-indexed vector bytes)]
       (aset (get (:next-display controller) row) (+ (* cell 17) i) (util/ubyte val)))))
 
@@ -887,9 +924,9 @@
                 (recur (rest fx) (rest fx-meta) (inc x)))))
           ;; Draw indicators if there are effects hidden from view in either direction
           (when (pos? num-skipped)
-            (aset (get (:next-display controller) 3) (* first-cell 17) (util/ubyte 0)))
+            #_(aset (get (:next-display controller) 3) (* first-cell 17) (util/ubyte 0)))
           (when (pos? @(:effect-offset controller))
-            (aset (get (:next-display controller) 3) 67 (util/ubyte 0))))
+            #_(aset (get (:next-display controller) 3) 67 (util/ubyte 0))))
       (do (write-display-cell controller 2 1 "       No effects")
           (write-display-cell controller 2 2 "are active.")))))
 
@@ -947,8 +984,6 @@
   [controller]
   (try
     ;; Assume we are starting out with a blank interface.
-    (doseq [row (range 4)]
-      (Arrays/fill (get (:next-display controller) row) (byte 32)))
     (reset! (:next-text-buttons controller) {})
     (reset! (:next-top-pads controller) empty-top-pads)
     (reset! (:next-touch-strip controller) [0 1])
@@ -977,7 +1012,7 @@
       (controllers/run-overlays (:overlays controller) snapshot))
 
     (update-cue-grid controller)
-    (update-text controller)
+    #_(update-text controller)  ;; TODO: Replace with update display
     (update-top-pads controller)
     (update-text-buttons controller)
     (update-touch-strip controller)
@@ -1017,7 +1052,9 @@
           (set-pad-color controller (- 14 @counter) y color)))
 
       (= @counter 15)
-      (show-labels controller white-color)
+      (do
+        (show-labels controller white-color)
+        (Wayang/sendFrame))
 
       (= @counter 16)
       (doseq [x (range 0 8)]
@@ -1066,24 +1103,51 @@
 
   (swap! counter inc))
 
+(defn- show-welcome-text
+  "Draw the welcome message on the display."
+  [controller]
+  (clear-display-buffer controller)
+  (let [welcome (str "Welcome to " (version/title))
+        version (str "version " (version/tag))
+        graphics (.createGraphics (:display-buffer controller))]
+    (.setFont graphics (get-display-font :roboto-medium Font/PLAIN 42))
+    (.setPaint graphics (java.awt.Color/WHITE))
+    (let [metrics (.getFontMetrics graphics)
+          x (int (- (/ Wayang/DISPLAY_WIDTH 2) (/ (.stringWidth metrics welcome) 2)))]
+      (.drawString graphics welcome x 80))
+    (.setFont graphics (get-display-font :condensed-light Font/ITALIC 20))
+    (.setPaint graphics (java.awt.Color/BLUE))
+    (let [metrics (.getFontMetrics graphics)
+          x (int (- (/ Wayang/DISPLAY_WIDTH 2) (/ (.stringWidth metrics version) 2)))]
+      (.drawString graphics version x 110))
+    (let [afterglow-logo (javax.imageio.ImageIO/read
+                          (.getResourceAsStream Effect "/public/img/Afterglow-logo-padded-left.png"))
+          afterglow-scale (/ Wayang/DISPLAY_HEIGHT (.getHeight afterglow-logo))
+          deep-logo (javax.imageio.ImageIO/read
+                     (.getResourceAsStream Effect "/public/img/Deep-Symmetry-logo.png"))
+          deep-scale 0.4
+          deep-width (math/round (* (.getWidth deep-logo) deep-scale))
+          deep-height (math/round (* (.getHeight deep-logo) deep-scale))]
+      (.drawImage graphics afterglow-logo 20 0
+                  (math/round (* (.getWidth afterglow-logo) afterglow-scale)) Wayang/DISPLAY_HEIGHT nil)
+      (.drawImage graphics deep-logo
+                  (- Wayang/DISPLAY_WIDTH deep-width 20) (- (/ Wayang/DISPLAY_HEIGHT 2) (/ deep-height 2))
+                  deep-width deep-height nil)))
+  (Wayang/sendFrame))
+
 (defn- welcome-animation
   "Provide a fun animation to make it clear the Push is online."
   [controller]
-  (set-display-line controller 1 (concat (repeat 24 \space) (seq (str "Welcome to" (version/title)))))
-  (set-display-line controller 2 (concat (repeat 27 \space)
-                              (seq (str "version" (version/tag)))))
+  (show-welcome-text controller)
   (let [counter (atom 0)
         task (atom nil)]
     (reset! task (at-at/every 50 #(welcome-frame controller counter task)
                               controllers/pool))))
 
 (defn clear-interface
-  "Clears the text display and all illuminated buttons and pads."
+  "Clears the graphical display and all illuminated buttons and pads."
   [controller]
-  (doseq [line (range 4)]
-    (clear-display-line controller line)
-    (Arrays/fill (get (:last-display controller) line) (byte 32)))
-
+  (clear-display controller)
   (doseq [x (range 8)]
     (set-top-pad-color controller x off-color)
     (set-encoder-pad-color controller x off-color)
@@ -1968,6 +2032,7 @@
     (Thread/sleep 35) ; Give the UI update thread time to shut down
     (clear-interface controller)
     (restore-led-palettes controller)
+    (Wayang/close)
 
     ;; Leave the User button bright, in case the user has Live
     ;; running and wants to be able to see how to return to it.
@@ -2004,8 +2069,7 @@
            :port-out             port-out
            :task                 (atom nil)
            :led-palettes         (atom {})
-           :last-display         (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
-           :next-display         (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
+           :display-buffer       (Wayang/open)
            :last-text-buttons    (atom {})
            :next-text-buttons    (atom {})
            :last-top-pads        (atom empty-top-pads)
