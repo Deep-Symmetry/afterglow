@@ -984,6 +984,7 @@
   [controller]
   (try
     ;; Assume we are starting out with a blank interface.
+    (clear-display-buffer controller)
     (reset! (:next-text-buttons controller) {})
     (reset! (:next-top-pads controller) empty-top-pads)
     (reset! (:next-touch-strip controller) [0 1])
@@ -1012,7 +1013,7 @@
       (controllers/run-overlays (:overlays controller) snapshot))
 
     (update-cue-grid controller)
-    #_(update-text controller)  ;; TODO: Replace with update display
+    (Wayang/sendFrame)
     (update-top-pads controller)
     (update-text-buttons controller)
     (update-touch-strip controller)
@@ -1291,6 +1292,10 @@
                              (handle-aftertouch [this message])
                              (handle-pitch-bend [this message]))))
 
+(def stop-indicator
+  "The overlay drawn on top of the effects when the show is stopped."
+  (javax.imageio.ImageIO/read (.getResourceAsStream Effect "/public/img/Push-2-Stopped.png")))
+
 (defn- enter-stop-mode
   "The user has asked to stop the show. Suspend its update task
   and black it out until the stop button is pressed again."
@@ -1308,14 +1313,8 @@
                              (captured-controls [this] #{85})
                              (captured-notes [this] #{})
                              (adjust-interface [this _]
-                               (write-display-cell controller 0 1 "")
-                               (write-display-cell controller 0 2 "")
-                               (write-display-cell controller 1 1 "         *** Show")
-                               (write-display-cell controller 1 2 "Stop ***")
-                               (write-display-cell controller 2 1 "       Press Stop")
-                               (write-display-cell controller 2 2 "to resume.")
-                               (write-display-cell controller 3 1 "")
-                               (write-display-cell controller 3 2 "")
+                               (.drawImage (.createGraphics (:display-buffer controller))
+                                           stop-indicator 400 0 nil)
                                (swap! (:next-text-buttons controller)
                                       assoc (:stop control-buttons) dim-green-color)
                                (with-show (:show controller)
