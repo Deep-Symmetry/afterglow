@@ -22,7 +22,7 @@
   (:import [afterglow.effects Effect]
            [org.deepsymmetry Wayang]
            [java.util Arrays]
-           [java.awt GraphicsEnvironment Graphics2D Font]
+           [java.awt GraphicsEnvironment Graphics2D Font AlphaComposite RenderingHints]
            [javax.sound.midi ShortMessage]))
 
 (defonce fonts-loaded
@@ -378,6 +378,14 @@
   (clear-display-buffer controller)
   (Wayang/sendFrame))
 
+(defn create-graphics
+  "Create the graphics object we will use to draw in the display, and
+  configure its rendering hints properly."
+  [controller]
+  (let [graphics (.createGraphics (:display-buffer controller))]
+    (.setRenderingHint graphics RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
+    graphics))
+
 (defn show-labels
   "Illuminates all buttons with text labels, for development assistance."
   ([controller]
@@ -445,7 +453,7 @@
   ;; And record the new state for next time
   (reset! (:last-text-buttons controller) @(:next-text-buttons controller)))
 
-(defn- get-safe-text-byte
+(defn- ^:deprecated get-safe-text-byte
   "Converts a character to be displayed to a byte, but if it is
   outside the range that can be displayed by the Push, like Unicode,
   then change it to a byte representing an ellipsis."
@@ -455,7 +463,7 @@
       0
       i)))
 
-(defn write-display-text
+(defn ^:deprecated write-display-text
   "Update a batch of characters within the display to be rendered on
   the next update."
   [controller row start text]
@@ -464,7 +472,7 @@
     (doseq [[i val] (map-indexed vector bytes)]
       (aset (get (:next-display controller) row) (+ start i) (util/ubyte val)))))
 
-(defn- write-display-cell
+(defn- ^:deprecated write-display-cell
   "Update a single text cell (of which there are four per row) in the
   display to be rendered on the next update."
   [controller row cell text]
@@ -473,7 +481,54 @@
     (doseq [[i val] (map-indexed vector bytes)]
       (aset (get (:next-display controller) row) (+ (* cell 17) i) (util/ubyte val)))))
 
-(defn make-gauge
+(def button-cell-width
+  "The number of pixels allocated to each button above or below the
+  graphical display."
+  (/ Wayang/DISPLAY_WIDTH 8))
+
+(def button-cell-margin
+  "The number of pixels to keep blank between labels of adjacent buttons."
+  4)
+
+(defn fit-string
+  "Truncates a string (appending an ellipsis) enough to fit within a
+  given pixel width."
+  [text font-metrics max-width]
+  (if (or (clojure.string/blank? text) (<= (.stringWidth font-metrics text) max-width))
+    text
+    (loop [truncated (subs text 0 (dec (count text)))]
+      (let [result (str truncated "…")]
+        (if (or (clojure.string/blank? truncated) (<= (.stringWidth font-metrics result) max-width))
+          result
+          (recur (subs truncated 0 (dec (count truncated)))))))))
+
+(defn set-graphics-color
+  "Set the paint of the supplied graphics context to use the specified
+  color."
+  [graphics color]
+  (.setPaint graphics (java.awt.Color. (colors/red color) (colors/green color) (colors/blue color)
+                                       (colors/alpha color))))
+
+(defn calculate-text-width
+  "Figure out how many pixels wide some text will be in a given font."
+  [graphics font text]
+  (let [metrics (.getFontMetrics graphics font)]
+    (.stringWidth metrics text)))
+
+(defn draw-bottom-button-label
+  "Draw a label for a button below the graphical display."
+  [controller index text color]
+  (let [graphics (create-graphics controller)
+        font (get-display-font :roboto-medium Font/BOLD 14)
+        metrics (.getFontMetrics graphics font)
+        label (fit-string text metrics (- button-cell-width button-cell-margin))
+        width (.stringWidth metrics label)]
+    (set-graphics-color graphics color)
+    (.setFont graphics font)
+    (.drawString graphics label (int (math/round (- (* (+ index 0.5) button-cell-width) (/ width 2))))
+                 (- Wayang/DISPLAY_HEIGHT 4))))
+
+(defn ^:deprecated make-gauge
   "Create a graphical gauge with an indicator that fills a line.
   The default range is from zero to a hundred, and the default size is
   17 characters, or a full display cell."
@@ -484,7 +539,7 @@
         leader (take (int (/ scaled 2)) (repeat 0))]
     (take width (concat leader [marker] (repeat 0)))))
 
-(defn make-pan-gauge
+(defn ^:deprecated make-pan-gauge
   "Create a graphical gauge with an indicator that moves along a line.
   The default range is from zero to a hundred, and the default size is
   17 characters, or a full display cell."
@@ -658,8 +713,9 @@
                           white-color)
 
                    ;; Add the labels for reset and sync, and light the pads
-                   (write-display-cell controller 3 0
-                                       (str " Reset   " (metronome-sync-label controller)))
+                   (draw-bottom-button-label controller 0 "Reset" red-color)
+                   (draw-bottom-button-label controller 1 (metronome-sync-label controller)
+                                             (metronome-sync-color controller))
                    (swap! (:next-top-pads controller) assoc 0 dim-red-color)
                    (swap! (:next-top-pads controller) assoc 1 (dim (metronome-sync-color controller))))
                  (handle-control-change [this message]
@@ -868,10 +924,16 @@
         offset (swap! (:effect-offset controller) min max-offset)]
     [offset max-offset room]))
 
+(def no-effects-active-color
+  "The color to use for the text explaining that no effects are
+  active."
+  (let [color (colors/desaturate (colors/create-color :blue) 70)]
+    (java.awt.Color. (colors/red color) (colors/green color) (colors/blue color))))
+
 (defn- update-effect-list
   "Display information about the four most recently activated
   effects (or three, if the metronome is taking up a slot)."
-  [controller]
+  [controller snapshot]
 
   ;; First clean up any cue variable scroll offsets for effects that have ended
   (swap! (:cue-var-offsets controller) select-keys (map :id (:meta @(:active-effects (:show controller)))))
@@ -884,7 +946,8 @@
         fx-info     @(:active-effects (:show controller))
         fx          (:effects fx-info)
         fx-meta     (:meta fx-info)
-        num-skipped (- (count fx-meta) room @(:effect-offset controller))]
+        num-skipped (- (count fx-meta) room @(:effect-offset controller))
+        graphics    (create-graphics controller)]
     (if (seq fx)
       (do (loop [fx      (take room (drop num-skipped fx))
                  fx-meta (take room (drop num-skipped fx-meta))
@@ -893,33 +956,52 @@
                   info        (first fx-meta)
                   ending      ((:key info) (:ending fx-info))
                   cue         (:cue info)
-                  end-label   (if ending " Ending  " "  End    ")
+                  color       (if cue
+                                (cues/current-cue-color cue effect (:show controller) snapshot)
+                                white-color)
+                  width       (* 2 button-cell-width)
+                  left        (* x width)
                   scroll-vars (> (count (:variables cue)) 2)
-                  more-label  (when scroll-vars (concat " More " [0]))
                   cur-vals    (when cue (cues/snapshot-cue-variables cue (:id info) :show (:show controller)))
                   saved-vals  (controllers/cue-vars-saved-at (:cue-grid (:show controller)) (:x info) (:y info))
                   save-action (when (seq cur-vals)
                                 (if (seq saved-vals)
                                   (if (= cur-vals saved-vals) :clear :save)
                                   (when (not= cur-vals (:starting-vars info))
-                                    :save)))
-                  save-label  (case save-action
-                                :save  "  Save   "
-                                :clear " Clear   "
-                                "         ")]
+                                    :save)))]
               (write-display-cell controller 0 x (cue-variable-names controller cue (:id info)))
               (write-display-cell controller 1 x (cue-variable-values controller cue (:id info)))
+              (set-graphics-color graphics color)
+              (.fillRect graphics (+ left (/ button-cell-margin 2.0)) (- Wayang/DISPLAY_HEIGHT 38)
+                         (- width button-cell-margin) 20)
+              (let [label-font (get-display-font :condensed Font/PLAIN 16)
+                    metrics (.getFontMetrics graphics label-font)
+                    label (fit-string (or (:name cue) (:name (first fx))) metrics (- width button-cell-margin 2))
+                    label-width (.stringWidth metrics label)]
+                (set-graphics-color graphics off-color)
+                (.setFont graphics label-font)
+                (.drawString graphics label (int (math/round (- (+ left button-cell-width) (/ label-width 2))))
+                             (- Wayang/DISPLAY_HEIGHT 23))
+                )
+              #_(.draw graphics (java.awt.geom.Line2D$Double.
+                               (+ left (/ button-cell-margin 2.0)) effect-underline-height
+                               (+ left (- width (/ button-cell-margin 2.0))) effect-underline-height))
               (write-display-cell controller 2 x (or (:name cue) (:name (first fx))))
-              (write-display-cell controller 3 x (concat (if (in-mode? controller :record) save-label end-label)
-                                                         more-label))
               (if (in-mode? controller :record)
                 (when save-action
-                  (swap! (:next-top-pads controller) assoc (* 2 x) (dim (case save-action
-                                                                          :save green-color
-                                                                          :clear amber-color))))
-                (swap! (:next-top-pads controller) assoc (* 2 x) dim-red-color))
-              (when scroll-vars (swap! (:next-top-pads controller) assoc (inc (* 2 x))
-                                       dim-amber-color))
+                  (let [save-color (case save-action
+                                     :save  green-color
+                                     :clear amber-color)]
+                    (swap! (:next-top-pads controller) assoc (* 2 x) (dim save-color))
+                    (draw-bottom-button-label controller (* 2 x) (case save-action
+                                                                   :save  "Save"
+                                                                   :clear "Clear") save-color)))
+                (do
+                  (swap! (:next-top-pads controller) assoc (* 2 x) dim-red-color)
+                  (draw-bottom-button-label controller (* 2 x) (if ending "Ending" "End") red-color)))
+              (when scroll-vars
+                (swap! (:next-top-pads controller) assoc (inc (* 2 x)) dim-white-color)
+                (draw-bottom-button-label controller (inc (* 2 x)) "More →" white-color))
               (when (seq (rest fx))
                 (recur (rest fx) (rest fx-meta) (inc x)))))
           ;; Draw indicators if there are effects hidden from view in either direction
@@ -927,8 +1009,15 @@
             #_(aset (get (:next-display controller) 3) (* first-cell 17) (util/ubyte 0)))
           (when (pos? @(:effect-offset controller))
             #_(aset (get (:next-display controller) 3) 67 (util/ubyte 0))))
-      (do (write-display-cell controller 2 1 "       No effects")
-          (write-display-cell controller 2 2 "are active.")))))
+      (do
+        (let [font  (get-display-font :condensed-light Font/ITALIC 36)
+              text  "No effects are active."
+              width (calculate-text-width graphics font text)]
+          (.setFont graphics font)
+          (.setPaint graphics no-effects-active-color)
+          (timbre/info width (math/round (- (/ Wayang/DISPLAY_WIDTH 2) (/ width 2))))
+          (.drawString graphics text (int (math/round (- (/ Wayang/DISPLAY_WIDTH 2) (/ width 2))))
+                       (/ Wayang/DISPLAY_HEIGHT 2)))))))
 
 (declare enter-stop-mode)
 
@@ -990,7 +1079,7 @@
     (reset! (:next-touch-strip controller) [0 1])
 
     (let [snapshot (rhythm/metro-snapshot (get-in controller [:show :metronome]))]
-      (update-effect-list controller)
+      (update-effect-list controller snapshot)
       (update-metronome-section controller snapshot)
 
       ;; If the show has stopped without us noticing, enter stop mode
@@ -1110,7 +1199,7 @@
   (clear-display-buffer controller)
   (let [welcome (str "Welcome to " (version/title))
         version (str "version " (version/tag))
-        graphics (.createGraphics (:display-buffer controller))]
+        graphics (create-graphics controller)]
     (.setFont graphics (get-display-font :roboto-medium Font/PLAIN 42))
     (.setPaint graphics (java.awt.Color/WHITE))
     (let [metrics (.getFontMetrics graphics)
@@ -1308,31 +1397,65 @@
       (Thread/sleep (:refresh-interval (:show controller)))
       (show/blackout-show)))
 
-  (controllers/add-overlay (:overlays controller)
-                           (reify controllers/IOverlay
-                             (captured-controls [this] #{85})
-                             (captured-notes [this] #{})
-                             (adjust-interface [this _]
-                               (.drawImage (.createGraphics (:display-buffer controller))
-                                           stop-indicator 400 0 nil)
-                               (swap! (:next-text-buttons controller)
-                                      assoc (:stop control-buttons) dim-green-color)
-                               (with-show (:show controller)
-                                 (when (show/running?)
-                                   (update-mode! controller :stop false))
-                                 (in-mode? controller :stop)))
-                             (handle-control-change [this message]
-                               #_(timbre/info "Stop message" message)
-                               (when (pos? (:velocity message))
-                                 ;; End stop mode
-                                 (with-show (:show controller)
-                                   (show/start!))
-                                 (update-mode! controller :stop false)
-                                 :done))
-                             (handle-note-on [this message])
-                             (handle-note-off [this message])
-                             (handle-aftertouch [this message])
-                             (handle-pitch-bend [this message]))))
+  (let [start-counter (atom 8)
+        end-counter (atom nil)
+        graphics (create-graphics controller)
+        saved-composite (.getComposite graphics)]
+    (controllers/add-overlay (:overlays controller)
+                             (reify controllers/IOverlay
+                               (captured-controls [this] #{85})
+                               (captured-notes [this] #{})
+                               (adjust-interface [this _]
+                                 (if @end-counter
+                                   ;; Draw an ending animation frame, returning false once finished to end the overlay
+                                   (do
+                                     (.setComposite graphics (AlphaComposite/getInstance AlphaComposite/SRC_OVER
+                                                                                         (/ @end-counter 8.0)))
+                                     (.drawImage graphics stop-indicator 400 0 nil)
+                                     (.setComposite graphics saved-composite)
+                                     (pos? (swap! end-counter dec)))
+                                   (do
+                                     (if (pos? @start-counter)
+                                       ;; Draw a starting animation frame rather than the normal view
+                                       (let [x (quot Wayang/DISPLAY_WIDTH 2)
+                                             y (quot Wayang/DISPLAY_HEIGHT 2)
+                                             scale (/ (- 9 @start-counter) 8)
+                                             side (math/round (* scale Wayang/DISPLAY_HEIGHT))
+                                             offset (quot side 2)]
+                                         (.setComposite graphics
+                                                        (AlphaComposite/getInstance AlphaComposite/SRC_OVER
+                                                                                    (/ (- 9 @start-counter) 8.0)))
+                                         (.drawImage graphics stop-indicator (- x offset) (- y offset) side side nil)
+                                         (.setComposite graphics saved-composite)
+                                         (swap! start-counter dec))
+                                       ;; Draw the normal view
+                                       (.drawImage graphics stop-indicator 400 0 nil))
+
+                                     (when (in-mode? controller :stop)
+                                       ;; We seem to still be in stop mode, so do our normal things.
+
+                                       ;; Make the play button green to indicate it will start the show
+                                       (swap! (:next-text-buttons controller)
+                                              assoc (:stop control-buttons) dim-green-color)
+
+                                       ;; But see if we need to exit because the show has started
+                                       (with-show (:show controller)
+                                         (when (show/running?)
+                                           (update-mode! controller :stop false)
+                                           (swap! end-counter #(or % (- 8 @start-counter))))
+                                         true)))))  ; Give the ending animation a chance to run
+                               (handle-control-change [this message]
+                                 #_(timbre/info "Stop message" message)
+                                 (when (pos? (:velocity message))
+                                   ;; End stop mode and start the ending animation if it isn't already
+                                   (with-show (:show controller)
+                                     (show/start!))
+                                   (update-mode! controller :stop false)
+                                   (swap! end-counter #(or % (- 8 @start-counter)))))
+                               (handle-note-on [this message])
+                               (handle-note-off [this message])
+                               (handle-aftertouch [this message])
+                               (handle-pitch-bend [this message])))))
 
 (defn add-button-held-feedback-overlay
   "Adds a simple overlay which keeps a control button bright as long
