@@ -774,7 +774,7 @@
                                       #(rhythm/metro-phrase-start % (rhythm/metro-phrase %))))
 
 (defn find-effect
-  "Looks up the specified effect keyword in list of active effects
+  "Looks up the specified effect keyword in the list of active effects
   for [[*show*]]. Returns a map of the effect metadata, with the
   effect itself under the key `:effect`. If the effect is in the
   process of ending, the keyword `:ending` will have a `true` value."
