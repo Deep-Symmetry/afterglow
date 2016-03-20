@@ -1035,11 +1035,24 @@
                 (draw-bottom-button-label controller (inc (* 2 x)) "More →" white-color))
               (when (seq (rest fx))
                 (recur (rest fx) (rest fx-meta) (inc x)))))
+
           ;; Draw indicators if there are effects hidden from view in either direction
           (when (pos? num-skipped)
-            #_(aset (get (:next-display controller) 3) (* first-cell 17) (util/ubyte 0)))
+            (set-graphics-color graphics white-color)
+            (.draw graphics (java.awt.geom.Line2D$Double.
+                             (+ (* first-cell 2 button-cell-width) 7) (- Wayang/DISPLAY_HEIGHT 16)
+                             (* first-cell 2 button-cell-width) (- Wayang/DISPLAY_HEIGHT 9)))
+            (.draw graphics (java.awt.geom.Line2D$Double.
+                             (* first-cell 2 button-cell-width) (- Wayang/DISPLAY_HEIGHT 9)
+                             (+ (* first-cell 2 button-cell-width) 7) (- Wayang/DISPLAY_HEIGHT 2))))
           (when (pos? @(:effect-offset controller))
-            #_(aset (get (:next-display controller) 3) 67 (util/ubyte 0))))
+            (set-graphics-color graphics white-color)
+            (.draw graphics (java.awt.geom.Line2D$Double.
+                             (- Wayang/DISPLAY_WIDTH 8) (- Wayang/DISPLAY_HEIGHT 16)
+                             (dec Wayang/DISPLAY_WIDTH) (- Wayang/DISPLAY_HEIGHT 9)))
+            (.draw graphics (java.awt.geom.Line2D$Double.
+                             (dec Wayang/DISPLAY_WIDTH) (- Wayang/DISPLAY_HEIGHT 9)
+                             (- Wayang/DISPLAY_WIDTH 8) (- Wayang/DISPLAY_HEIGHT 2)))))
       (do
         (let [font  (get-display-font :condensed-light Font/ITALIC 36)
               text  "No effects are active."
