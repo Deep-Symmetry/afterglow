@@ -992,9 +992,13 @@
                   info        (first fx-meta)
                   ending      ((:key info) (:ending fx-info))
                   cue         (:cue info)
-                  color       (if cue
-                                (cues/current-cue-color cue effect (:show controller) snapshot)
-                                white-color)
+                  base-color       (if cue
+                                     (cues/current-cue-color cue effect (:show controller) snapshot)
+                                     white-color)
+                  color (when base-color
+                          (if (and ending (> (rhythm/snapshot-beat-phase snapshot) 0.4))
+                            (colors/darken base-color 40)
+                            base-color))
                   width       (* 2 button-cell-width)
                   left        (* x width)
                   scroll-vars (> (count (:variables cue)) 2)
