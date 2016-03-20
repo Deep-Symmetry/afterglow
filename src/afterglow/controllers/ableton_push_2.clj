@@ -273,7 +273,7 @@
    :octave-up             {:control 55 :kind :monochrome}
 
    :stop                  {:control 85 :kind :color :index 2}  ; The play button, but stop for stop mode.
-   :record                {:control 86 :kind :color :index 3}
+   :record                {:control 86 :kind :color :index 3 :dim-color dim-red-color :bright-color red-color}
    :automate              {:control 89 :kind :color :index 4}
    :fixed-length          {:control 90 :kind :monochrome}
 
@@ -1099,11 +1099,12 @@
   "Illuminate the buttons which activate modes while they are held
   down. Make them dim when not held, and bright when held."
   [controller mode-buttons]
-  (doseq [button mode-buttons]
-    (swap! (:next-text-buttons controller)
-           assoc (button control-buttons) (if (in-mode? controller button)
-                                            (or (:bright-color button) white-color)
-                                            (or (:dim-color button) dim-white-color)))))
+  (doseq [button-key mode-buttons]
+    (let [button (button-key control-buttons)]
+      (swap! (:next-text-buttons controller)
+             assoc button (if (in-mode? controller button-key)
+                            (or (:bright-color button) white-color)
+                            (or (:dim-color button) dim-white-color))))))
 
 (def empty-top-pads
   "A representation of the state when all eight of the top pads are
@@ -1143,7 +1144,7 @@
       (swap! (:next-text-buttons controller) assoc (:user-mode control-buttons) white-color)
 
       ;; Make the play button red, indicating it will stop the show
-      (swap! (:next-text-buttons controller) assoc (:stop control-buttons) red-color)
+      (swap! (:next-text-buttons controller) assoc (:stop control-buttons) dim-red-color)
 
       ;; Add any contributions from interface overlays, removing them
       ;; if they report being finished.
@@ -1511,7 +1512,8 @@
   [controller button]
   (controllers/add-control-held-feedback-overlay (:overlays controller) (:control button)
                                                  (fn [_] (swap! (:next-text-buttons controller)
-                                                                assoc button white-color))))
+                                                                assoc button (or (:bright-color button)
+                                                                                 white-color)))))
 
 (defn- handle-save-effect
   "Process a tap on one of the pads which indicate the user wants to
