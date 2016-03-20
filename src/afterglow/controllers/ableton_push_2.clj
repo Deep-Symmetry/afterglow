@@ -565,6 +565,23 @@
                      (- (* (+ index encoder-count) button-cell-width) (/ button-cell-margin 2.0) 1.0)
                      encoder-label-underline-height))))
 
+(def font-for-cue-variable-values
+  "The font used when drawing cue variable values."
+  (get-display-font :condensed-light Font/PLAIN 22))
+
+(defn draw-cue-variable-value
+  "Draw a label under an encoder at the top of the graphical display."
+  [controller index encoder-count text color]
+  (let [graphics (create-graphics controller)
+        space (space-for-encoder-button-label encoder-count)
+        context (.getFontRenderContext graphics)
+        label (fit-string text font-for-cue-variable-values context space)
+        width (string-width label font-for-cue-variable-values context)]
+    (set-graphics-color graphics color)
+    (.setFont graphics font-for-cue-variable-values)
+    (.drawString graphics label
+                 (int (math/round (- (* (+ index (/ encoder-count 2)) button-cell-width) (/ width 2)))) 40)))
+
 (defn ^:deprecated make-gauge
   "Create a graphical gauge with an indicator that fills a line.
   The default range is from zero to a hundred, and the default size is
@@ -801,6 +818,10 @@
   (when (not= marker @(:last-marker controller))
     (reset! (:last-marker controller) marker)))
 
+(def metronome-background
+  "The background for the metronome section, to mark it as such."
+  (colors/darken (colors/desaturate (colors/create-color :blue) 55) 45))
+
 (defn- update-metronome-section
   "Updates the sections of the interface related to metronome
   control."
@@ -811,12 +832,19 @@
         metronome-mode @(:metronome-mode controller)]
     ;; Is the first cell reserved for metronome information?
     (if (seq metronome-mode)
-      ;; Draw the beat and BPM information
-      (let [bpm (format "%.1f" (double (:bpm snapshot)))
-            chars (+ (count marker) (count bpm))
-            padding (clojure.string/join (take (- 17 chars) (repeat " ")))]
-        (write-display-cell controller 1 0 (str marker padding bpm))
-        (write-display-cell controller 0 0 "Beat        BPM  ")
+      (let [graphics (create-graphics controller)
+            bpm (format "%.1f" (double (:bpm snapshot)))
+            chars (+ (count marker) (count bpm))]
+        ;; Draw the background that makes the metronome section distinctive.
+        (set-graphics-color graphics metronome-background)
+        (.fillRect graphics 0 0 (* 2 button-cell-width) Wayang/DISPLAY_HEIGHT)
+
+        ;; Draw the beat and BPM information
+        (set-graphics-color graphics white-color)
+        (draw-cue-variable-value controller 0 1 marker white-color)
+        (draw-cue-variable-value controller 1 1 bpm white-color)
+        (draw-encoder-button-label controller 0 1 "Beat" white-color)
+        (draw-encoder-button-label controller 1 1 "BPM" white-color)
 
         ;; Make the metronome button bright, since some overlay is present
         (swap! (:next-text-buttons controller) assoc metronome-button white-color))
