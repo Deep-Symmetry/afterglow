@@ -1577,10 +1577,6 @@
                                    (captured-controls [this] #{note (inc note)})
                                    (captured-notes [this] #{})
                                    (adjust-interface [this _]
-                                     (write-display-cell controller 0 x "")
-                                     (write-display-cell controller 1 x "Ending:")
-                                     (write-display-cell controller 2 x (or (:name (:cue info)) (:name effect)))
-                                     (write-display-cell controller 3 x "")
                                      (swap! (:next-top-pads controller) assoc (* 2 x) red-color)
                                      (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
                                      true)
