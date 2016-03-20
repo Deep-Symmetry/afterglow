@@ -519,7 +519,7 @@
   "Figure out how many pixels wide some text will be in a given font."
   [graphics font text]
   (let [context (.getFontRenderContext graphics)]
-    (.getWidth (.getStringBounds text context))))
+    (.getWidth (.getStringBounds font text context))))
 
 (defn draw-bottom-button-label
   "Draw a label for a button below the graphical display."
@@ -569,6 +569,10 @@
   "The font used when drawing cue variable values."
   (get-display-font :condensed-light Font/PLAIN 22))
 
+(def font-for-cue-variable-emphasis
+  "The font used when drawing cue variable values."
+  (get-display-font :condensed Font/PLAIN 22))
+
 (defn draw-cue-variable-value
   "Draw a label under an encoder at the top of the graphical display."
   [controller index encoder-count text color]
@@ -582,6 +586,23 @@
     (.drawString graphics label
                  (int (math/round (- (* (+ index (/ encoder-count 2)) button-cell-width) (/ width 2)))) 40)))
 
+(defn draw-attributed-variable-value
+  "Draw a label under an encoder at the top of the graphical display,
+  with an attributed string so the label can have mixed fonts, colors,
+  etc. Assumes the value will fit in the allocated space."
+  [controller index encoder-count attributed-string color]
+  (let [graphics (create-graphics controller)
+        space (space-for-encoder-button-label encoder-count)
+        context (.getFontRenderContext graphics)
+        iterator (.getIterator attributed-string)
+        measurer (java.awt.font.LineBreakMeasurer. iterator context)
+        layout (.nextLayout measurer Integer/MAX_VALUE)
+        width (.getWidth (.getBounds layout))]
+    ;; Establish a default color for characters that don't change it
+    (set-graphics-color graphics color)
+    (.drawString graphics iterator
+                 (int (math/round (- (* (+ index (/ encoder-count 2)) button-cell-width) (/ width 2)))) 40)))
+
 (defn ^:deprecated make-gauge
   "Create a graphical gauge with an indicator that fills a line.
   The default range is from zero to a hundred, and the default size is
@@ -592,6 +613,25 @@
         marker 0
         leader (take (int (/ scaled 2)) (repeat 0))]
     (take width (concat leader [marker] (repeat 0)))))
+
+(defn draw-gauge
+  "Draw a graphical gauge with an indicator that fills an arc under a
+  variable value. The default range is from zero to a hundred, and the
+  default color for both the track and active area is dim white."
+  [controller index encoder-count value & {:keys [lowest highest track-color active-color]
+                                           :or {lowest 0 highest 100
+                                                track-color dim-white-color active-color track-color}}]
+  (let [graphics (create-graphics controller)
+        range (- highest lowest)
+        fraction (/ (- value lowest)  range)
+        x-center (+ (* index button-cell-width) (* encoder-count 0.5 button-cell-width))
+        arc (java.awt.geom.Arc2D$Double. (- x-center 25.0) 50.0 50.0 50.0 240.0 -300.0 java.awt.geom.Arc2D/OPEN)]
+    (set-graphics-color graphics track-color)
+    (.draw graphics arc)
+    (.setStroke graphics (java.awt.BasicStroke. 5.0 java.awt.BasicStroke/CAP_ROUND java.awt.BasicStroke/JOIN_ROUND))
+    (set-graphics-color graphics active-color)
+    (.setAngleExtent arc (* -300.0 fraction))
+    (.draw graphics arc)))
 
 (defn ^:deprecated make-pan-gauge
   "Create a graphical gauge with an indicator that moves along a line.
@@ -646,19 +686,45 @@
   (let [button (if (keyword? button) (get-in control-buttons [button :control]) button)]
     (get @(:modes controller) button)))
 
+(def metronome-background
+  "The background for the metronome section, to mark it as such."
+  (colors/darken (colors/desaturate (colors/create-color :blue) 55) 45))
+
+(def metronome-content
+  "The color for content in the metronome section, to mark it as such."
+  (colors/desaturate (colors/create-color :aqua) 30))
+
 (defn- bpm-adjusting-interface
-  "Add an arrow showing the BPM is being adjusted, or point out that
-  it is being externally synced."
-  [controller]
+  "Bold the section of the BPM that is being adjusted, and draw the
+  gauge in a brighter color, or indicate that it is being synced and
+  can't be adjusted."
+  [controller snapshot]
   (if (= (:type (show/sync-status)) :manual)
-    (let [arrow-pos (if (in-mode? controller :shift) 14 16)]
-      #_(aset (get (:next-display controller) 2) arrow-pos 0))
-    (do
-      #_(aset (get (:next-display controller) 2) 9 0)
-      (when-not (:showing @(:metronome-mode controller))
-        ;; We need to display the sync mode in order to point at it
-        (write-display-cell controller 3 0
-                            (str "         " (metronome-sync-label controller)))))))
+    (let [graphics (create-graphics controller)
+          bpm (double (:bpm snapshot))
+          bpm-string (format "%.1f" bpm)
+          label (java.text.AttributedString. bpm-string)]
+      (set-graphics-color graphics metronome-background)
+      (.fillRect graphics button-cell-width 21 button-cell-width 20)
+      (.addAttribute label java.awt.font.TextAttribute/FONT font-for-cue-variable-values)
+      (if (in-mode? controller :shift)
+        (do (.addAttribute label java.awt.font.TextAttribute/FONT font-for-cue-variable-emphasis
+                           0 (- (count bpm-string) 2))
+            (.addAttribute label java.awt.font.TextAttribute/FOREGROUND (java.awt.Color/WHITE)
+                           0 (- (count bpm-string) 2)))
+        (do (.addAttribute label java.awt.font.TextAttribute/FONT font-for-cue-variable-emphasis
+                           (dec (count bpm-string)) (count bpm-string))
+            (.addAttribute label java.awt.font.TextAttribute/FOREGROUND (java.awt.Color/WHITE)
+                           (dec (count bpm-string)) (count bpm-string))))
+      (draw-attributed-variable-value controller 1 1 label metronome-content)
+      (draw-gauge controller 1 1 bpm :lowest controllers/minimum-bpm :highest controllers/maximum-bpm
+                  :track-color metronome-content :active-color white-color))
+
+    ;; Display the sync mode in red to explain why we are not adjusting it.
+    (let [graphics (create-graphics controller)]
+      (set-graphics-color graphics metronome-background)
+      (.fillRect graphics button-cell-width (- Wayang/DISPLAY_HEIGHT 20) button-cell-width 20)
+      (draw-bottom-button-label controller 1 (metronome-sync-label controller) red-color))))
 
 (defn sign-velocity
   "Convert a midi velocity to its signed equivalent, to translate
@@ -690,8 +756,8 @@
                (reify controllers/IOverlay
                  (captured-controls [this] #{72})
                  (captured-notes [this] #{1 9})
-                 (adjust-interface [this _]
-                   (bpm-adjusting-interface controller)
+                 (adjust-interface [this snapshot]
+                   (bpm-adjusting-interface controller snapshot)
                    true)
                  (handle-control-change [this message]
                    (adjust-bpm-from-encoder controller message))
@@ -818,10 +884,6 @@
   (when (not= marker @(:last-marker controller))
     (reset! (:last-marker controller) marker)))
 
-(def metronome-background
-  "The background for the metronome section, to mark it as such."
-  (colors/darken (colors/desaturate (colors/create-color :blue) 55) 45))
-
 (defn- update-metronome-section
   "Updates the sections of the interface related to metronome
   control."
@@ -833,18 +895,20 @@
     ;; Is the first cell reserved for metronome information?
     (if (seq metronome-mode)
       (let [graphics (create-graphics controller)
-            bpm (format "%.1f" (double (:bpm snapshot)))
-            chars (+ (count marker) (count bpm))]
+            bpm (:bpm snapshot)
+            bpm-string (format "%.1f" (double bpm))]
         ;; Draw the background that makes the metronome section distinctive.
         (set-graphics-color graphics metronome-background)
         (.fillRect graphics 0 0 (* 2 button-cell-width) Wayang/DISPLAY_HEIGHT)
 
         ;; Draw the beat and BPM information
-        (set-graphics-color graphics white-color)
-        (draw-cue-variable-value controller 0 1 marker white-color)
-        (draw-cue-variable-value controller 1 1 bpm white-color)
-        (draw-encoder-button-label controller 0 1 "Beat" white-color)
-        (draw-encoder-button-label controller 1 1 "BPM" white-color)
+        (set-graphics-color graphics metronome-content)
+        (draw-encoder-button-label controller 0 1 "Beat" metronome-content)
+        (draw-cue-variable-value controller 0 1 marker metronome-content)
+        (draw-encoder-button-label controller 1 1 "BPM" metronome-content)
+        (draw-cue-variable-value controller 1 1 bpm-string metronome-content)
+        (draw-gauge controller 1 1 bpm :lowest controllers/minimum-bpm :highest controllers/maximum-bpm
+                    :track-color metronome-content)
 
         ;; Make the metronome button bright, since some overlay is present
         (swap! (:next-text-buttons controller) assoc metronome-button white-color))
@@ -1384,8 +1448,8 @@
                            (reify controllers/IOverlay
                              (captured-controls [this] #{15})
                              (captured-notes [this] #{9 1})
-                             (adjust-interface [this _]
-                               (bpm-adjusting-interface controller)
+                             (adjust-interface [this snapshot]
+                               (bpm-adjusting-interface controller snapshot)
                                true)
                              (handle-control-change [this message]
                                (adjust-bpm-from-encoder controller message))
