@@ -1614,7 +1614,7 @@
                                      (captured-controls [this] #{note})
                                      (captured-notes [this] #{})
                                      (adjust-interface [this _]
-                                       (swap! (:next-top-pads controller) assoc (inc (* 2 x)) amber-color)
+                                       (swap! (:next-top-pads controller) assoc (inc (* 2 x)) white-color)
                                        true)
                                      (handle-control-change [this message]
                                        (when (and (= (:note message) note) (zero? (:velocity message)))
