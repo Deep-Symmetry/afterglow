@@ -528,6 +528,37 @@
     (.drawString graphics label (int (math/round (- (* (+ index 0.5) button-cell-width) (/ width 2))))
                  (- Wayang/DISPLAY_HEIGHT 4))))
 
+(defn- space-for-encoder-button-label
+  "Calculate how much room there is to draw a label under an encoder,
+  based on how many encoders the label applies to."
+  [encoder-count]
+  (- (* button-cell-width encoder-count) button-cell-margin))
+
+(def font-for-encoder-button-label
+  "The font used when drawing labels under encoders."
+  (get-display-font :condensed-light Font/PLAIN 14))
+
+(def encoder-label-underline-height
+  "The height at which to draw the line under an encoder label."
+  20.0)
+
+(defn draw-encoder-button-label
+  "Draw a label under an encoder at the top of the graphical display."
+  [controller index encoder-count text color]
+  (let [graphics (create-graphics controller)
+        space (space-for-encoder-button-label encoder-count)
+        metrics (.getFontMetrics graphics font-for-encoder-button-label)
+        label (fit-string text metrics space)
+        width (.stringWidth metrics label)]
+    (set-graphics-color graphics color)
+    (.setFont graphics font-for-encoder-button-label)
+    (.drawString graphics label
+                 (int (math/round (- (* (+ index (/ encoder-count 2)) button-cell-width) (/ width 2)))) 16)
+    (.draw graphics (java.awt.geom.Line2D$Double.
+                     (+ (* index button-cell-width) (/ button-cell-margin 2.0)) encoder-label-underline-height
+                     (- (* (+ index encoder-count) button-cell-width) (/ button-cell-margin 2.0) 1.0)
+                     encoder-label-underline-height))))
+
 (defn ^:deprecated make-gauge
   "Create a graphical gauge with an indicator that fills a line.
   The default range is from zero to a hundred, and the default size is
@@ -658,7 +689,8 @@
                          arrow-pos (if (in-mode? controller :shift)
                                      (dec (.indexOf marker "." (inc (.indexOf marker "."))))
                                      (dec (count marker)))]
-    #_(aset (get (:next-display controller) 2) arrow-pos 0)))
+    #_(aset (get (:next-display controller) 2) arrow-pos 0))
+  true)
 
 (defn- adjust-beat-from-encoder
   "Adjust the current beat based on how the encoder was twisted."
@@ -844,28 +876,32 @@
     1 (vec (repeat 2 (first cue-vars)))
     (vec (take 2 (drop var-offset (apply concat (repeat cue-vars)))))))
 
-(defn- fit-cue-variable-name
-  "Picks the best version of a cue variable name to fit in the specified
-  number of characters, then truncates it if necessary."
-  [v len]
-  (let [longer (or (:name v) (name (:key v)))
-        shorter (or (:short-name v) longer)
-        padding (clojure.string/join (repeat len " "))]
-    (if (<= (count longer) len)
-      (clojure.string/join (take len (str longer padding)))
-      (clojure.string/join (take len (str shorter padding))))))
+(defn- best-cue-variable-name
+  "Picks the best version of a cue variable name to fit under the
+  specified number of encoders."
+  [controller v encoder-count]
+  (let [graphics (create-graphics controller)
+        space (space-for-encoder-button-label encoder-count)
+        font font-for-encoder-button-label
+        metrics (.getFontMetrics graphics font)
+        longer (or (:name v) (name (:key v)))
+        shorter (or (:short-name v) longer)]
+    (if (<= (.stringWidth metrics longer) space) longer shorter)))
 
-(defn- cue-variable-names
-  "Determines the names of adjustable variables to display under an
-  active cue."
-  [controller cue effect-id]
+(defn draw-cue-variable-names
+  "Draw the names of adjustable variables under the appropriate
+  encoders for a cue."
+  [controller x cue effect-id]
   (let [cue-vars (cue-vars-for-encoders (:variables cue) (get @(:cue-var-offsets controller) effect-id 0))]
-    (if (seq cue-vars)
+    (when (seq cue-vars)
       (if (= (count (:variables cue)) 1)
-        (fit-cue-variable-name (first cue-vars) 17)
-        (str (fit-cue-variable-name (first cue-vars) 8) " "
-             (fit-cue-variable-name (second cue-vars) 8)))
-      "")))
+        (draw-encoder-button-label controller (* x 2) 2
+                                   (best-cue-variable-name controller (first cue-vars) 1) white-color)
+        (do
+          (draw-encoder-button-label controller (* x 2) 1
+                                     (best-cue-variable-name controller (first cue-vars) 1) white-color)
+          (draw-encoder-button-label controller (inc (* x 2)) 1
+                                     (best-cue-variable-name controller (second cue-vars) 1) white-color))))))
 
 (defn- fit-cue-variable-value
   "Truncates the current value of a cue variable to fit available
@@ -969,7 +1005,7 @@
                                   (if (= cur-vals saved-vals) :clear :save)
                                   (when (not= cur-vals (:starting-vars info))
                                     :save)))]
-              (write-display-cell controller 0 x (cue-variable-names controller cue (:id info)))
+              (draw-cue-variable-names controller x cue (:id info))
               (write-display-cell controller 1 x (cue-variable-values controller cue (:id info)))
               (set-graphics-color graphics color)
               (.fillRect graphics (+ left (/ button-cell-margin 2.0)) (- Wayang/DISPLAY_HEIGHT 38)
@@ -981,12 +1017,7 @@
                 (set-graphics-color graphics off-color)
                 (.setFont graphics label-font)
                 (.drawString graphics label (int (math/round (- (+ left button-cell-width) (/ label-width 2))))
-                             (- Wayang/DISPLAY_HEIGHT 23))
-                )
-              #_(.draw graphics (java.awt.geom.Line2D$Double.
-                               (+ left (/ button-cell-margin 2.0)) effect-underline-height
-                               (+ left (- width (/ button-cell-margin 2.0))) effect-underline-height))
-              (write-display-cell controller 2 x (or (:name cue) (:name (first fx))))
+                             (- Wayang/DISPLAY_HEIGHT 23)))
               (if (in-mode? controller :record)
                 (when save-action
                   (let [save-color (case save-action
