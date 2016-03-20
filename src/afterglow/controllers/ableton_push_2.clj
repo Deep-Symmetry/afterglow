@@ -490,15 +490,21 @@
   "The number of pixels to keep blank between labels of adjacent buttons."
   4)
 
+(defn string-width
+  "Determines how many pixels wide a string will be in a given font
+  and render context."
+  [text font render-context]
+  (.getWidth (.getStringBounds font text render-context)))
+
 (defn fit-string
   "Truncates a string (appending an ellipsis) enough to fit within a
   given pixel width."
-  [text font-metrics max-width]
-  (if (or (clojure.string/blank? text) (<= (.stringWidth font-metrics text) max-width))
+  [text font render-context max-width]
+  (if (or (clojure.string/blank? text) (<= (string-width text font render-context) max-width))
     text
     (loop [truncated (subs text 0 (dec (count text)))]
       (let [result (str truncated "…")]
-        (if (or (clojure.string/blank? truncated) (<= (.stringWidth font-metrics result) max-width))
+        (if (or (clojure.string/blank? truncated) (<= (string-width result font render-context) max-width))
           result
           (recur (subs truncated 0 (dec (count truncated)))))))))
 
@@ -512,17 +518,17 @@
 (defn calculate-text-width
   "Figure out how many pixels wide some text will be in a given font."
   [graphics font text]
-  (let [metrics (.getFontMetrics graphics font)]
-    (.stringWidth metrics text)))
+  (let [context (.getFontRenderContext graphics)]
+    (.getWidth (.getStringBounds text context))))
 
 (defn draw-bottom-button-label
   "Draw a label for a button below the graphical display."
   [controller index text color]
   (let [graphics (create-graphics controller)
         font (get-display-font :roboto-medium Font/BOLD 14)
-        metrics (.getFontMetrics graphics font)
-        label (fit-string text metrics (- button-cell-width button-cell-margin))
-        width (.stringWidth metrics label)]
+        context (.getFontRenderContext graphics)
+        label (fit-string text font context (- button-cell-width button-cell-margin))
+        width (string-width label font context)]
     (set-graphics-color graphics color)
     (.setFont graphics font)
     (.drawString graphics label (int (math/round (- (* (+ index 0.5) button-cell-width) (/ width 2))))
@@ -536,7 +542,7 @@
 
 (def font-for-encoder-button-label
   "The font used when drawing labels under encoders."
-  (get-display-font :condensed-light Font/PLAIN 14))
+  (get-display-font :condensed Font/PLAIN 14))
 
 (def encoder-label-underline-height
   "The height at which to draw the line under an encoder label."
@@ -547,9 +553,9 @@
   [controller index encoder-count text color]
   (let [graphics (create-graphics controller)
         space (space-for-encoder-button-label encoder-count)
-        metrics (.getFontMetrics graphics font-for-encoder-button-label)
-        label (fit-string text metrics space)
-        width (.stringWidth metrics label)]
+        context (.getFontRenderContext graphics)
+        label (fit-string text font-for-encoder-button-label context space)
+        width (string-width label font-for-encoder-button-label context)]
     (set-graphics-color graphics color)
     (.setFont graphics font-for-encoder-button-label)
     (.drawString graphics label
@@ -883,10 +889,10 @@
   (let [graphics (create-graphics controller)
         space (space-for-encoder-button-label encoder-count)
         font font-for-encoder-button-label
-        metrics (.getFontMetrics graphics font)
+        context (.getFontRenderContext graphics)
         longer (or (:name v) (name (:key v)))
         shorter (or (:short-name v) longer)]
-    (if (<= (.stringWidth metrics longer) space) longer shorter)))
+    (if (<= (string-width longer font context) space) longer shorter)))
 
 (defn draw-cue-variable-names
   "Draw the names of adjustable variables under the appropriate
@@ -1015,9 +1021,10 @@
               (.fillRect graphics (+ left (/ button-cell-margin 2.0)) (- Wayang/DISPLAY_HEIGHT 38)
                          (- width button-cell-margin) 20)
               (let [label-font (get-display-font :condensed Font/PLAIN 16)
-                    metrics (.getFontMetrics graphics label-font)
-                    label (fit-string (or (:name cue) (:name (first fx))) metrics (- width button-cell-margin 2))
-                    label-width (.stringWidth metrics label)]
+                    context (.getFontRenderContext graphics)
+                    label (fit-string (or (:name cue) (:name (first fx))) label-font context
+                                      (- width button-cell-margin 2))
+                    label-width (string-width label label-font context)]
                 (set-graphics-color graphics off-color)
                 (.setFont graphics label-font)
                 (.drawString graphics label (int (math/round (- (+ left button-cell-width) (/ label-width 2))))
@@ -1036,7 +1043,7 @@
                   (draw-bottom-button-label controller (* 2 x) (if ending "Ending" "End") red-color)))
               (when scroll-vars
                 (swap! (:next-top-pads controller) assoc (inc (* 2 x)) dim-white-color)
-                (draw-bottom-button-label controller (inc (* 2 x)) "More →" white-color))
+                (draw-bottom-button-label controller (inc (* 2 x)) "Next Vars >" white-color))
               (when (seq (rest fx))
                 (recur (rest fx) (rest fx-meta) (inc x)))))
 
@@ -1063,7 +1070,6 @@
               width (calculate-text-width graphics font text)]
           (.setFont graphics font)
           (.setPaint graphics no-effects-active-color)
-          (timbre/info width (math/round (- (/ Wayang/DISPLAY_WIDTH 2) (/ width 2))))
           (.drawString graphics text (int (math/round (- (/ Wayang/DISPLAY_WIDTH 2) (/ width 2))))
                        (/ Wayang/DISPLAY_HEIGHT 2)))))))
 
@@ -1248,16 +1254,15 @@
   (clear-display-buffer controller)
   (let [welcome (str "Welcome to " (version/title))
         version (str "version " (version/tag))
-        graphics (create-graphics controller)]
+        graphics (create-graphics controller)
+        context (.getFontRenderContext graphics)]
     (.setFont graphics (get-display-font :roboto-medium Font/PLAIN 42))
     (.setPaint graphics (java.awt.Color/WHITE))
-    (let [metrics (.getFontMetrics graphics)
-          x (int (- (/ Wayang/DISPLAY_WIDTH 2) (/ (.stringWidth metrics welcome) 2)))]
+    (let [x (int (- (/ Wayang/DISPLAY_WIDTH 2) (/ (string-width welcome (.getFont graphics) context) 2)))]
       (.drawString graphics welcome x 80))
     (.setFont graphics (get-display-font :condensed-light Font/ITALIC 20))
     (.setPaint graphics (java.awt.Color/BLUE))
-    (let [metrics (.getFontMetrics graphics)
-          x (int (- (/ Wayang/DISPLAY_WIDTH 2) (/ (.stringWidth metrics version) 2)))]
+    (let [x (int (- (/ Wayang/DISPLAY_WIDTH 2) (/ (string-width version (.getFont graphics) context) 2)))]
       (.drawString graphics version x 110))
     (let [afterglow-logo (javax.imageio.ImageIO/read
                           (.getResourceAsStream Effect "/public/img/Afterglow-logo-padded-left.png"))
@@ -2223,6 +2228,7 @@
   parameters."
   [show port-in port-out device refresh-interval display-name]
   {:pre [(some? show)]}
+  (load-fonts)
   (let [modes (atom #{})
         controller
         (with-meta
