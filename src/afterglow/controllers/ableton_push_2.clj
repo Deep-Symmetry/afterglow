@@ -625,10 +625,10 @@
         range (- highest lowest)
         fraction (/ (- value lowest)  range)
         x-center (+ (* index button-cell-width) (* encoder-count 0.5 button-cell-width))
-        arc (java.awt.geom.Arc2D$Double. (- x-center 25.0) 50.0 50.0 50.0 240.0 -300.0 java.awt.geom.Arc2D/OPEN)]
+        arc (java.awt.geom.Arc2D$Double. (- x-center 20.0) 50.0 40.0 40.0 240.0 -300.0 java.awt.geom.Arc2D/OPEN)]
     (set-graphics-color graphics track-color)
     (.draw graphics arc)
-    (.setStroke graphics (java.awt.BasicStroke. 5.0 java.awt.BasicStroke/CAP_ROUND java.awt.BasicStroke/JOIN_ROUND))
+    (.setStroke graphics (java.awt.BasicStroke. 4.0 java.awt.BasicStroke/CAP_ROUND java.awt.BasicStroke/JOIN_ROUND))
     (set-graphics-color graphics active-color)
     (.setAngleExtent arc (* -300.0 fraction))
     (.draw graphics arc)))
