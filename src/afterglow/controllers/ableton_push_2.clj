@@ -107,6 +107,11 @@
   "The color for dim white buttons."
   (colors/darken white-color 90))
 
+(def default-track-color
+  "The color gauge tracks will use unless otherwise specified."
+  (colors/darken white-color 50))
+
+
 (defn send-sysex
   "Send a MIDI System Exclusive command to the Push 2 with the proper
   prefix. The `command` argument begins with the Command ID of the
@@ -635,7 +640,7 @@
   default color for both the track and active area is dim white."
   [controller index encoder-count value & {:keys [lowest highest track-color active-color]
                                            :or {lowest 0 highest 100
-                                                track-color dim-white-color active-color track-color}}]
+                                                track-color default-track-color active-color track-color}}]
   (let [graphics (create-graphics controller)
         range (- highest lowest)
         fraction (/ (- value lowest)  range)
