@@ -618,6 +618,17 @@
         leader (take (int (/ scaled 2)) (repeat 0))]
     (take width (concat leader [marker] (repeat 0)))))
 
+(defn draw-null-gauge
+ "Draw a mostly meaningless gauge simply to indicate that the encoder
+ is doing something. Used for beat adjustments, for example, which
+ have no reasonable range or location to show."
+  [controller index encoder-count color]
+  (let [graphics (create-graphics controller)
+        x-center (+ (* index button-cell-width) (* encoder-count 0.5 button-cell-width))
+        arc (java.awt.geom.Arc2D$Double. (- x-center 20.0) 50.0 40.0 40.0 240.0 -300.0 java.awt.geom.Arc2D/OPEN)]
+    (set-graphics-color graphics color)
+    (.draw graphics (java.awt.geom.Ellipse2D$Double. (- x-center 20.0) 50.0 40.0 40.0))))
+
 (defn draw-gauge
   "Draw a graphical gauge with an indicator that fills an arc under a
   variable value. The default range is from zero to a hundred, and the
@@ -791,7 +802,8 @@
                        (inc first-dot) second-dot)
         (.addAttribute label java.awt.font.TextAttribute/FOREGROUND (java.awt.Color/WHITE)
                        (inc second-dot) (count marker)))
-      (draw-attributed-variable-value controller 0 1 label metronome-content))
+      (draw-attributed-variable-value controller 0 1 label metronome-content)
+      (draw-null-gauge controller 0 1 white-color))
   true)
 
 (defn- adjust-beat-from-encoder
