@@ -1054,10 +1054,10 @@
           (draw-encoder-button-label controller (inc (* x 2)) 1
                                      (best-cue-variable-name controller (second cue-vars) 1) white-color))))))
 
-(defn- fit-cue-variable-value
-  "Truncates the current value of a cue variable to fit available
-  space."
-  [controller cue v len effect-id]
+(defn- format-cue-variable-value
+  "Translates a cue variable to a string format that will look good
+  and be meaningful on the display."
+  [controller cue v effect-id]
   (let [val (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
         formatted (if (some? val)
                     (cond
@@ -1075,21 +1075,59 @@
                       (double val))
 
                     ;; We got no value, display an ellipsis
-                    "...")
-        padding (clojure.string/join (repeat len " "))]
-    (clojure.string/join (take len (str formatted padding)))))
+                    "…")]
+    (str formatted)))
 
-(defn- cue-variable-values
-  "Formats the current values of the adjustable variables to display
-  under an active cue."
-  [controller cue effect-id]
+(defn- draw-cue-variable-values
+  "Displays the current values of the adjustable variables currently
+  assigned to the encoders over an active cue."
+  [controller x cue effect-id]
   (let [cue-vars (cue-vars-for-encoders (:variables cue) (get @(:cue-var-offsets controller) effect-id 0))]
-    (if (seq cue-vars)
+    (when (seq cue-vars)
       (if (= (count (:variables cue)) 1)
-        (fit-cue-variable-value controller cue (first cue-vars) 17 effect-id)
-        (str (fit-cue-variable-value controller cue (first cue-vars) 8 effect-id) " "
-             (fit-cue-variable-value controller cue (second cue-vars) 8 effect-id)))
-      "")))
+        (draw-cue-variable-value controller (* x 2) 2
+                                 (format-cue-variable-value controller cue (first cue-vars) effect-id) white-color)
+        (do
+          (draw-cue-variable-value controller (* x 2) 1
+                                   (format-cue-variable-value controller cue (first cue-vars) effect-id) white-color)
+          (draw-cue-variable-value controller (inc (* x 2)) 1
+                                   (format-cue-variable-value controller cue (second cue-vars) effect-id)
+                                   white-color))))))
+
+(defn draw-cue-variable-gauge
+  "Draw an appropriate gauge for a cue variable given its type and
+  value."
+  [controller index encoder-count cue cue-var effect-id]
+  (let [cur-val (cues/get-cue-variable cue cue-var :show (:show controller) :when-id effect-id)]
+    (cond
+      (or (number? cur-val) (#{:integer :double} (:type cue-var :double)))
+      (if (:centered cue-var)
+        (draw-pan-gauge controller index encoder-count cur-val :lowest (min cur-val (:min cue-var))
+                    :highest (max cur-val (:max cue-var)))
+        (draw-gauge controller index encoder-count cur-val :lowest (min cur-val (:min cue-var))
+                    :highest (max cur-val (:max cue-var))))
+
+      (or (= (type cur-val) :com.evocomputing.colors/color) (= (:type cue-var) :color))
+      nil ;; TODO: Implement based on this:
+      #_(controllers/add-overlay (:overlays controller)
+                               (build-color-adjustment-overlay controller note cue cue-var effect info))
+
+      (or (= (type cur-val) Boolean) (= (:type cue-var) :boolean))
+      nil ;; TODO: Implement based on this:
+      #_(controllers/add-overlay (:overlays controller)
+                               (build-boolean-adjustment-overlay controller note cue cue-var effect info)))))
+
+(defn draw-cue-variable-gauges
+  "Displays the appropriate style of adjustment gauge for variables
+  currently assigned to the encoders over an active cue."
+  [controller x cue effect-id]
+  (let [cue-vars (cue-vars-for-encoders (:variables cue) (get @(:cue-var-offsets controller) effect-id 0))]
+    (when (seq cue-vars)
+      (if (= (count (:variables cue)) 1)
+        (draw-cue-variable-gauge controller (* x 2) 2 cue (first cue-vars) effect-id)
+        (do
+          (draw-cue-variable-gauge controller (* x 2) 1 cue (first cue-vars) effect-id)
+          (draw-cue-variable-gauge controller (inc (* x 2)) 1 cue (second cue-vars) effect-id))))))
 
 (defn- room-for-effects
   "Determine how many display cells are available for displaying
@@ -1161,7 +1199,8 @@
                                   (when (not= cur-vals (:starting-vars info))
                                     :save)))]
               (draw-cue-variable-names controller x cue (:id info))
-              (write-display-cell controller 1 x (cue-variable-values controller cue (:id info)))
+              (draw-cue-variable-values controller x cue (:id info))
+              (draw-cue-variable-gauges controller x cue (:id info))
               (set-graphics-color graphics color)
               (.fillRect graphics (+ left (/ button-cell-margin 2.0)) (- Wayang/DISPLAY_HEIGHT 38)
                          (- width button-cell-margin) 20)
@@ -1934,7 +1973,7 @@
   [note]
   (+ note 71))
 
-(defn- draw-variable-gauge
+(defn- ^:deprecated draw-variable-gauge
   "Display the value of a variable being adjusted in the effect list."
   [controller cell width offset cue v effect-id]
   (let [value (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id) 0)
@@ -2066,7 +2105,7 @@
 
   Also suppresses the ability to scroll through the cue variables
   while the encoder is being held."
-  [controller note cue v effect info]
+  [controller note cue cue-var effect info]
   (let [x (quot note 2)
         var-index (rem note 2)]
     (if (> (count (:variables cue)) 1)
@@ -2076,20 +2115,25 @@
         (captured-notes [this] #{note})
         (adjust-interface [this _]
           (when (same-effect-active controller cue (:id info))
-            (draw-variable-gauge controller x 8 (* 9 var-index) cue v (:id info))
+            (let [cur-val (or (cues/get-cue-variable cue cue-var :show (:show controller) :when-id (:id info)) 0)]
+              (if (:centered cue-var)
+                (draw-pan-gauge controller note 1 cur-val :lowest (min cur-val (:min cue-var))
+                                :highest (max cur-val (:max cue-var)) :active-color white-color)
+                (draw-gauge controller note 1 cur-val :lowest (min cur-val (:min cue-var))
+                            :highest (max cur-val (:max cue-var)) :active-color white-color)))
             (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
-            (calculate-touch-strip-value controller cue v (:id info))
+            (calculate-touch-strip-value controller cue cue-var (:id info))
             true))
         (handle-control-change [this message]
           (when (= (:note message) (control-for-top-encoder-note note))
-            (adjust-variable-value controller message cue v (:id info)))
+            (adjust-variable-value controller message cue cue-var (:id info)))
           true)
         (handle-note-on [this message])
         (handle-note-off [this message]
           :done)
         (handle-aftertouch [this message])
         (handle-pitch-bend [this message]
-          (bend-variable-value controller message cue v (:id info))
+          (bend-variable-value controller message cue cue-var (:id info))
           true))
 
       ;; Just one variable, take full cell, using either encoder,
@@ -2100,13 +2144,13 @@
           (captured-notes [this] #{note paired-note})
           (adjust-interface [this _]
             (when (same-effect-active controller cue (:id info))
-              (draw-variable-gauge controller x 17 0 cue v (:id info))
+              (draw-variable-gauge controller x 17 0 cue cue-var (:id info))
               (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
-              (calculate-touch-strip-value controller cue v (:id info))
+              (calculate-touch-strip-value controller cue cue-var (:id info))
               true))
           (handle-control-change [this message]
             (when (= (:note message) (control-for-top-encoder-note note))
-              (adjust-variable-value controller message cue v (:id info)))
+              (adjust-variable-value controller message cue cue-var (:id info)))
             true)
           (handle-note-on [this message]
             true)
@@ -2115,7 +2159,7 @@
               :done))
           (handle-aftertouch [this message])
           (handle-pitch-bend [this message]
-            (bend-variable-value controller message cue v (:id info))
+            (bend-variable-value controller message cue cue-var (:id info))
             true))))))
 
 (def ^:private color-picker-grid
