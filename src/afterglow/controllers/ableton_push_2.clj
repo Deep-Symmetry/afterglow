@@ -1499,6 +1499,14 @@
     (reset! (:next-touch-strip controller) [(math/round (* 16383 (/ (- value low) full-range)))
                                             (if (:centered v) 3 1)])))
 
+(def master-background
+  "The background for the grand master section, to mark it as such."
+  (colors/darken (colors/desaturate (colors/create-color :yellow) 55) 45))
+
+(def master-content
+  "The color for content in the metronome section, to mark it as such."
+  (colors/lighten (colors/create-color :yellow) 20))
+
 (defn- master-encoder-touched
   "Add a user interface overlay to give feedback when turning the
   master encoder."
@@ -1506,12 +1514,24 @@
   (controllers/add-overlay (:overlays controller)
                            (reify controllers/IOverlay
                              (captured-controls [this] #{79})
-                             (captured-notes [this] #{8})
+                             (captured-notes [this] #{8 7})
                              (adjust-interface [this _]
-                               (let [level (master-get-level (get-in controller [:show :grand-master]))]
-                                 (write-display-cell controller 0 3 (make-gauge level))
-                                 (write-display-cell controller 1 3
-                                                     (str "GrandMaster " (format "%5.1f" level)))
+                               (let [level (master-get-level (get-in controller [:show :grand-master]))
+                                     graphics (create-graphics controller)]
+                                 (set-graphics-color graphics master-background)
+
+                                 ;; Draw the background that makes the master section distinctive.
+                                 (set-graphics-color graphics master-background)
+                                 (.fillRect graphics (- Wayang/DISPLAY_WIDTH button-cell-width) 0
+                                            button-cell-width 100)
+
+                                 ;; Draw the label, value, and gauge
+                                 (set-graphics-color graphics master-content)
+                                 (draw-encoder-button-label controller 7 1 "Grand Master" master-content)
+                                 (draw-cue-variable-value controller 7 1
+                                                          (format "%5.1f" level) master-content)
+                                 (draw-gauge controller 7 1 level :track-color dim-amber-color
+                                             :active-color master-content)
                                  (reset! (:next-touch-strip controller) [(math/round (* 16383 (/ level 100))) 1]))
                                true)
                              (handle-control-change [this message]
@@ -1521,10 +1541,10 @@
                                  (master-set-level (get-in controller [:show :grand-master]) (+ level delta))
                                  true))
                              (handle-note-on [this message]
-                               false)
+                               true) ; Suppress activation of the encoder above our overlay
                              (handle-note-off [this message]
-                               ;; Exit the overlay
-                               :done)
+                               ;; Exit the overlay if it was our own encoder being released
+                               (when (= (:note message) 8) :done))
                              (handle-aftertouch [this message])
                              (handle-pitch-bend [this message]
                                (master-set-level (get-in controller [:show :grand-master])
