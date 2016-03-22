@@ -821,6 +821,7 @@
     (let [graphics (create-graphics controller)
           bpm (double (:bpm snapshot))
           bpm-string (format "%.1f" bpm)
+          bpm-range (- controllers/maximum-bpm controllers/minimum-bpm)
           label (java.text.AttributedString. bpm-string)]
       (set-graphics-color graphics metronome-background)
       (.fillRect graphics button-cell-width 21 button-cell-width 20)
@@ -832,7 +833,9 @@
                        (dec (count bpm-string)) (count bpm-string)))
       (draw-attributed-variable-value controller 1 1 label metronome-content)
       (draw-gauge controller 1 1 bpm :lowest controllers/minimum-bpm :highest controllers/maximum-bpm
-                  :track-color metronome-content :active-color white-color))
+                  :track-color metronome-content :active-color white-color)
+      (reset! (:next-touch-strip controller) [(math/round (* 16383 (/ (- bpm controllers/minimum-bpm) bpm-range)))
+                                              touch-strip-mode-level]))
 
     ;; Display the sync mode in red to explain why we are not adjusting it.
     (let [graphics (create-graphics controller)]
@@ -883,7 +886,15 @@
                      ;; They released us, end the overlay.
                      :done))
                  (handle-aftertouch [this message])
-                 (handle-pitch-bend [this message]))))
+                 (handle-pitch-bend [this message]
+                   (let [full-range (- controllers/maximum-bpm controllers/minimum-bpm)
+                         fraction (/ (+ (* (:data2 message) 128) (:data1 message)) 16383)
+                         adjusted (double (+ controllers/minimum-bpm (* fraction full-range)))
+                         resolution 0.1
+                         normalized (double (* (Math/round (/ adjusted resolution)) resolution))]
+                     (with-show (:show controller)
+                       (when (= (:type (show/sync-status)) :manual)
+                         (rhythm/metro-bpm (:metronome (:show controller)) normalized))))))))
 
 (defn- beat-adjusting-interface
   "Brighten the section of the beat which is being adjusted."
@@ -2101,8 +2112,7 @@
   "Handle a pitch bend change while an encoder associated with a
   variable is being adjusted in the effect list."
   [controller message cue v effect-id]
-  (let [value (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id) 0)
-        full-range (- (:max v) (:min v))
+  (let [full-range (- (:max v) (:min v))
         fraction (/ (+ (* (:data2 message) 128) (:data1 message)) 16383)
         adjusted (double (+ (:min v) (* fraction full-range)))
         raw-resolution (/ full-range 200)
