@@ -485,14 +485,11 @@
       (if next-strip
         (let [[value mode] next-strip
               message (ShortMessage.)]
-          (if (not= mode last-mode)
-            (do  ; When changing mode, we have to wait until the next frame to update the value.
-              (set-touch-strip-mode controller mode)
-              (reset! (:last-touch-strip controller) [nil mode]))
-            (do
-              (.setMessage message ShortMessage/PITCH_BEND 0 (rem value 128) (quot value 128))
-              (midi/midi-send-msg (get-in controller [:port-out :receiver]) message -1)
-              (reset! (:last-touch-strip controller) next-strip))))
+          (when (not= mode last-mode)
+            (set-touch-strip-mode controller mode))
+          (.setMessage message ShortMessage/PITCH_BEND 0 (rem value 128) (quot value 128))
+          (midi/midi-send-msg (get-in controller [:port-out :receiver]) message -1)
+          (reset! (:last-touch-strip controller) next-strip))
         (do
           (set-touch-strip-mode controller touch-strip-mode-default)
           (reset! (:last-touch-strip controller) nil))))))
