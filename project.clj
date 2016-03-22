@@ -35,7 +35,7 @@
                  [markdown-clj "0.9.86"]
                  [compojure "1.4.0" :exclusions [org.eclipse.jetty/jetty-server
                                                  clj-time]]
-                 [ring/ring-defaults "0.1.5"]
+                 [ring/ring-defaults "0.2.0"]
                  [ring/ring-session-timeout "0.1.0"]
                  [ring-middleware-format "0.7.0" :exclusions [ring/ring-jetty-adapter
                                                               org.clojure/tools.reader
