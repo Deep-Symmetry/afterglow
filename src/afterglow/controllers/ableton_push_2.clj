@@ -682,8 +682,7 @@
  have no reasonable range or location to show."
   [controller index encoder-count color]
   (let [graphics (create-graphics controller)
-        x-center (+ (* index button-cell-width) (* encoder-count 0.5 button-cell-width))
-        arc (java.awt.geom.Arc2D$Double. (- x-center 20.0) 50.0 40.0 40.0 240.0 -300.0 java.awt.geom.Arc2D/OPEN)]
+        x-center (+ (* index button-cell-width) (* encoder-count 0.5 button-cell-width))]
     (set-graphics-color graphics color)
     (.draw graphics (java.awt.geom.Ellipse2D$Double. (- x-center 20.0) 50.0 40.0 40.0))))
 
@@ -707,10 +706,10 @@
     (.draw graphics arc)))
 
 (defn draw-pan-gauge
-  "Draw a graphical gauge with an indicator that rides around an arc
-  under a variable value. The default range is from zero to a hundred,
-  and the default color for both the track and active area is dim
-  white."
+  "Draw a graphical gauge with an indicator that extends from the top
+  center of an arc under a variable value. The default range is from
+  zero to a hundred, and the default color for both the track and
+  active area is dim white."
   [controller index encoder-count value & {:keys [lowest highest track-color active-color]
                                            :or {lowest 0 highest 100
                                                 track-color default-track-color active-color track-color}}]
@@ -721,9 +720,30 @@
         arc (java.awt.geom.Arc2D$Double. (- x-center 20.0) 50.0 40.0 40.0 240.0 -300.0 java.awt.geom.Arc2D/OPEN)]
     (set-graphics-color graphics track-color)
     (.draw graphics arc)
+    (.setStroke graphics (java.awt.BasicStroke. 4.0 java.awt.BasicStroke/CAP_ROUND java.awt.BasicStroke/JOIN_ROUND))
+    (set-graphics-color graphics active-color)
+    (.setAngleStart arc 90.0)
+    (.setAngleExtent arc (+ 150 (* -300.0 fraction)))
+    (.draw graphics arc)))
+
+(defn draw-circular-gauge
+  "Draw a graphical gauge with an indicator that rides around an
+  circle (starting at the bottom) under a variable value. The default
+  range is from 0 to 360 (for hues), and the default color for both
+  the track and active area is dim white."
+  [controller index encoder-count value & {:keys [lowest highest track-color active-color]
+                                           :or {lowest 0 highest 360
+                                                track-color default-track-color active-color track-color}}]
+  (let [graphics (create-graphics controller)
+        range (- highest lowest)
+        fraction (/ (- value lowest)  range)
+        x-center (+ (* index button-cell-width) (* encoder-count 0.5 button-cell-width))
+        arc (java.awt.geom.Arc2D$Double. (- x-center 20.0) 50.0 40.0 40.0 240.0 -300.0 java.awt.geom.Arc2D/OPEN)]
+    (set-graphics-color graphics track-color)
+    (.draw graphics (java.awt.geom.Ellipse2D$Double. (- x-center 20.0) 50.0 40.0 40.0))
     (.setStroke graphics (java.awt.BasicStroke. 6.0 java.awt.BasicStroke/CAP_ROUND java.awt.BasicStroke/JOIN_ROUND))
     (set-graphics-color graphics active-color)
-    (.setAngleStart arc (+ 240.0 (* -300.0 fraction)))
+    (.setAngleStart arc (+ 270.0 (* -300.0 fraction)))
     (.setAngleExtent arc 0.0)
     (.draw graphics arc)))
 
