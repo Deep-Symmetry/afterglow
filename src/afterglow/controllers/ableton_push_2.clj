@@ -700,7 +700,7 @@
         arc (java.awt.geom.Arc2D$Double. (- x-center 20.0) 50.0 40.0 40.0 240.0 -300.0 java.awt.geom.Arc2D/OPEN)]
     (set-graphics-color graphics track-color)
     (.draw graphics arc)
-    (.setStroke graphics (java.awt.BasicStroke. 4.0 java.awt.BasicStroke/CAP_ROUND java.awt.BasicStroke/JOIN_ROUND))
+    (.setStroke graphics (java.awt.BasicStroke. 5.0 java.awt.BasicStroke/CAP_ROUND java.awt.BasicStroke/JOIN_ROUND))
     (set-graphics-color graphics active-color)
     (.setAngleExtent arc (* -300.0 fraction))
     (.draw graphics arc)))
@@ -720,7 +720,7 @@
         arc (java.awt.geom.Arc2D$Double. (- x-center 20.0) 50.0 40.0 40.0 240.0 -300.0 java.awt.geom.Arc2D/OPEN)]
     (set-graphics-color graphics track-color)
     (.draw graphics arc)
-    (.setStroke graphics (java.awt.BasicStroke. 4.0 java.awt.BasicStroke/CAP_ROUND java.awt.BasicStroke/JOIN_ROUND))
+    (.setStroke graphics (java.awt.BasicStroke. 5.0 java.awt.BasicStroke/CAP_ROUND java.awt.BasicStroke/JOIN_ROUND))
     (set-graphics-color graphics active-color)
     (.setAngleStart arc 90.0)
     (.setAngleExtent arc (+ 150 (* -300.0 fraction)))
