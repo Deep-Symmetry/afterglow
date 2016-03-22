@@ -362,7 +362,7 @@
   [controller x color]
   (set-button-color controller (get control-buttons (keyword (str "encoder-pad-" x))) color))
 
-(defn set-display-line
+(defn ^:deprecated set-display-line
   "Sets a line of the text display."
   [controller line bytes]
   {:pre [(<= 0 line 3)]}
@@ -370,6 +370,62 @@
                         (take 68 (concat (map int bytes) (repeat 32)))
                         [247])]
     #_(midi/midi-sysex (:port-out controller) message)))
+
+(def touch-strip-mode-flags
+  "The values which are combined to set the touch strip into
+  particular modes."
+  {:touch-strip-controlled-by-push        0
+   :touch-strip-controlled-by-host        1
+   :touch-strip-host-sends-values         0
+   :touch-strip-host-sends-sysex          2
+   :touch-strip-values-sent-as-pitch-bend 0
+   :touch-strip-values-sent-as-mod-wheel  4
+   :touch-strip-leds-show-bar             0
+   :touch-strip-leds-show-point           8
+   :touch-strip-bar-starts-at-bottom      0
+   :touch-strip-bar-starts-at-center      16
+   :touch-strip-auto-return-inactive      0
+   :touch-strip-auto-return-active        32
+   :touch-strip-auto-return-to-bottom     0
+   :touch-strip-auto-return-to-center     64})
+
+(defn build-touch-strip-mode
+  "Calculate a touch strip mode byte based on a list of flags (keys in
+  `touch-strip-mode-flags`)."
+  [& flags]
+  (apply + (map touch-strip-mode-flags (set flags))))
+
+(def touch-strip-mode-default
+  "The mode to which we should return the touch strip when we are
+  shutting down."
+  (build-touch-strip-mode :touch-strip-controlled-by-push :touch-strip-host-sends-values
+                          :touch-strip-values-sent-as-pitch-bend :touch-strip-leds-show-point
+                          :touch-strip-bar-starts-at-bottom :touch-strip-auto-return-active
+                          :touch-strip-auto-return-to-center))
+
+(def touch-strip-mode-level
+  "The mode to which we should set the touch strip when the user is
+  editing a pan-style control."
+  (build-touch-strip-mode :touch-strip-controlled-by-host :touch-strip-host-sends-values
+                          :touch-strip-values-sent-as-pitch-bend :touch-strip-leds-show-bar
+                          :touch-strip-bar-starts-at-bottom :touch-strip-auto-return-inactive
+                          :touch-strip-auto-return-to-center))
+
+(def touch-strip-mode-pan
+  "The mode to which we should set the touch strip when the user is
+  editing a level-style control."
+  (build-touch-strip-mode :touch-strip-controlled-by-host :touch-strip-host-sends-values
+                          :touch-strip-values-sent-as-pitch-bend :touch-strip-leds-show-bar
+                          :touch-strip-bar-starts-at-center :touch-strip-auto-return-inactive
+                          :touch-strip-auto-return-to-center))
+
+(def touch-strip-mode-hue
+  "The mode to which we should set the touch strip when the user is
+  editing a hue."
+  (build-touch-strip-mode :touch-strip-controlled-by-host :touch-strip-host-sends-values
+                          :touch-strip-values-sent-as-pitch-bend :touch-strip-leds-show-point
+                          :touch-strip-bar-starts-at-bottom :touch-strip-auto-return-inactive
+                          :touch-strip-auto-return-to-center))
 
 (defn- clear-display-buffer
   "Clear the graphical display buffer in preparation for drawing an
@@ -413,10 +469,10 @@
         (set-top-pad-color controller x next-color)
         (swap! (:last-top-pads controller) assoc x next-color)))))
 
-(defn- set-touch-strip-mode
+(defn set-touch-strip-mode
   "Set the touch strip operating mode."
   [controller mode]
-  (midi/midi-sysex (:port-out controller) [240 71 127 21 99 0 1 mode 247]))
+  (send-sysex controller [0x17 mode]))
 
 (defn- update-touch-strip
   "Sees if the state of the touch strip has changed since the
@@ -438,7 +494,7 @@
               (midi/midi-send-msg (get-in controller [:port-out :receiver]) message -1)
               (reset! (:last-touch-strip controller) next-strip))))
         (do
-          (set-touch-strip-mode controller 5)
+          (set-touch-strip-mode controller touch-strip-mode-default)
           (reset! (:last-touch-strip controller) nil))))))
 
 (defn- update-text-buttons
@@ -1315,7 +1371,7 @@
     (clear-display-buffer controller)
     (reset! (:next-text-buttons controller) {})
     (reset! (:next-top-pads controller) empty-top-pads)
-    (reset! (:next-touch-strip controller) [0 1])
+    (reset! (:next-touch-strip controller) [0 touch-strip-mode-level])
 
     (let [snapshot (rhythm/metro-snapshot (get-in controller [:show :metronome]))]
       (update-effect-list controller snapshot)
@@ -1486,7 +1542,7 @@
   (doseq [[_ button] control-buttons]
     (set-button-color controller button off-color))
   (reset! (:last-text-buttons controller) {})
-  (set-touch-strip-mode controller 5)
+  (set-touch-strip-mode controller touch-strip-mode-default)
   (reset! (:last-touch-strip controller) nil))
 
 (defn- calculate-touch-strip-value
@@ -1497,7 +1553,9 @@
         high (max value (:max v))
         full-range (- high low)]
     (reset! (:next-touch-strip controller) [(math/round (* 16383 (/ (- value low) full-range)))
-                                            (if (:centered v) 3 1)])))
+                                            (if (:centered v)
+                                              touch-strip-mode-pan
+                                              touch-strip-mode-level)])))
 
 (def master-background
   "The background for the grand master section, to mark it as such."
@@ -1532,7 +1590,8 @@
                                                           (format "%5.1f" level) master-content)
                                  (draw-gauge controller 7 1 level :track-color dim-amber-color
                                              :active-color master-content)
-                                 (reset! (:next-touch-strip controller) [(math/round (* 16383 (/ level 100))) 1]))
+                                 (reset! (:next-touch-strip controller) [(math/round (* 16383 (/ level 100)))
+                                                                         touch-strip-mode-level]))
                                true)
                              (handle-control-change [this message]
                                ;; Adjust the BPM based on how the encoder was twisted
@@ -2249,8 +2308,8 @@
               ;; Put the touch pad into the appropriate state
               (reset! (:next-touch-strip controller)
                       (if (@anchors hue-note)
-                        [(math/round (* 16383 (/ hue 360))) 3]
-                        [(math/round (* 16383 (/ sat 100))) 1]))
+                        [(math/round (* 16383 (/ hue 360))) touch-strip-mode-hue]
+                        [(math/round (* 16383 (/ sat 100))) touch-strip-mode-level]))
 
               ;; Darken the cue var scroll button if it was going to be lit
               (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
