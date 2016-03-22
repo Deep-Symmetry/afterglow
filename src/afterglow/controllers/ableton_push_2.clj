@@ -317,7 +317,7 @@
    :encoder-pad-7         {:control 109 :kind :color}})
 
 (defn set-cc-led-color
-  "Set one of the color LEDs that respons to control change values to
+  "Set one of the color LEDs that respond to control change values to
   a particular color. If the color is black, we send a control value
   of zero. Otherwise, we take over the color palette entry assigned to
   the LED, and set it to the desired RGB value, then send it a control
