@@ -1931,7 +1931,10 @@
             cur-vals    (cues/snapshot-cue-variables cue (:id info) :show (:show controller))
             saved-vals  (controllers/cue-vars-saved-at (:cue-grid (:show controller)) (:x info) (:y info))
             save-action (when (seq cur-vals)
-                          (if (= cur-vals saved-vals) :clear :save))]
+                          (if (= cur-vals saved-vals) :clear :save))
+            save-color (case save-action
+                         :save  green-color
+                         :clear amber-color)]
         (when save-action
           (case save-action
             :save  (controllers/save-cue-vars! (:cue-grid (:show controller)) (:x info) (:y info) cur-vals)
@@ -1939,13 +1942,11 @@
           (controllers/add-control-held-feedback-overlay (:overlays controller) note
                                                          (fn [_]
                                                            (swap! (:next-top-pads controller) assoc (* 2 x)
-                                                                  (case save-action
-                                                                    :save  green-color
-                                                                    :clear amber-color))
-                                                           (write-display-cell controller 3 x
-                                                                               (case save-action
-                                                                                 :save  "  Saved  "
-                                                                                 :clear "Cleared  "))
+                                                                  save-color)
+                                                           (draw-bottom-button-label controller (* 2 x)
+                                                                                     (case save-action
+                                                                                       :save "Saved"
+                                                                                       :clear "Cleared") save-color)
                                                            true)))))))
 
 (defn- handle-end-effect
