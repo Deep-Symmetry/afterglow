@@ -627,6 +627,9 @@
         context (.getFontRenderContext graphics)
         label (fit-string text font context (- button-cell-width button-cell-margin))
         width (string-width label font context)]
+    (set-graphics-color graphics off-color)
+    (.fillRect graphics (* index button-cell-width) (- Wayang/DISPLAY_HEIGHT 15)
+               button-cell-width 15)
     (set-graphics-color graphics color)
     (.setFont graphics font)
     (.drawString graphics label (int (math/round (- (* (+ index 0.5) button-cell-width) (/ width 2))))
