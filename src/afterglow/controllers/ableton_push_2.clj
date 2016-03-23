@@ -808,6 +808,46 @@
     (.setAngleExtent arc 0.0)
     (.draw graphics arc)))
 
+(defn draw-hue-gauge
+  "Draw a graphical gauge whose colors are the hues of the color
+  circle, with an indicator that rides around an circle (starting at
+  the bottom) under a variable value."
+  [controller index encoder-count value active?]
+  (let [graphics (create-graphics controller)
+        x-center (+ (* index button-cell-width) (* encoder-count 0.5 button-cell-width))
+        arc (java.awt.geom.Arc2D$Double. (- x-center 20.0) 50.0 40.0 40.0 270.0 -1.0 java.awt.geom.Arc2D/OPEN)]
+    (dotimes [i 360]
+      (.setAngleStart arc (- 270.0 i))
+      (set-graphics-color graphics (colors/create-color :h i :s 70.0 :l 35.0))
+      (.draw graphics arc))
+    (.setStroke graphics (java.awt.BasicStroke. 6.0 java.awt.BasicStroke/CAP_ROUND java.awt.BasicStroke/JOIN_ROUND))
+    (if active?
+      (set-graphics-color graphics (colors/create-color :h value :s 100.0 :l 50.0))
+      (set-graphics-color graphics (colors/create-color :h value :s 70.0 :l 35.0)))
+    (.setAngleStart arc (- 270.0 value))
+    (.setAngleExtent arc 0.0)
+    (.draw graphics arc)))
+
+(defn draw-saturation-gauge
+  "Draw a graphical gauge whose colors are the saturation levels of
+  the specified hue circle, with an indicator like that of a level
+  gauge, under a variable value."
+  [controller index encoder-count hue value active?]
+  (let [graphics (create-graphics controller)
+        x-center (+ (* index button-cell-width) (* encoder-count 0.5 button-cell-width))
+        arc (java.awt.geom.Arc2D$Double. (- x-center 20.0) 50.0 40.0 40.0 240.0 -3.0 java.awt.geom.Arc2D/OPEN)]
+    (dotimes [i 100]
+      (.setAngleStart arc (- 240.0 (* i 3)))
+      (set-graphics-color graphics (colors/create-color :h hue :s i :l 35.0))
+      (.draw graphics arc))
+    (.setStroke graphics (java.awt.BasicStroke. 5.0 java.awt.BasicStroke/CAP_ROUND java.awt.BasicStroke/JOIN_ROUND))
+    (dotimes [i (math/round value)]
+      (if active?
+        (set-graphics-color graphics (colors/create-color :h hue :s i :l 50.0))
+        (set-graphics-color graphics (colors/create-color :h value :s i :l 35.0)))
+      (.setAngleStart arc (- 240.0 (* i 3)))
+      (.draw graphics arc))))
+
 (defn ^:deprecated make-pan-gauge
   "Create a graphical gauge with an indicator that moves along a line.
   The default range is from zero to a hundred, and the default size is
@@ -1252,9 +1292,17 @@
                     :highest (max cur-val (:max cue-var))))
 
       (or (= (type cur-val) :com.evocomputing.colors/color) (= (:type cue-var) :color))
-      nil ;; TODO: Implement based on this:
-      #_(controllers/add-overlay (:overlays controller)
-                               (build-color-adjustment-overlay controller note cue cue-var effect info))
+      (let [current-color (or (cues/get-cue-variable cue cue-var :show (:show controller) :when-id effect-id)
+                              white-color)
+            hue (colors/hue current-color)
+            sat (colors/saturation current-color)]
+        (if (= encoder-count 1)
+          (if (odd? index)  ; We have room for just one gauge; draw whichever will be there in the overlay
+            (draw-saturation-gauge controller index 1 hue sat false)
+            (draw-hue-gauge controller index 1 hue false))
+          (do   ; We have room for both gauges
+            (draw-hue-gauge controller index 1 hue false)
+            (draw-saturation-gauge controller (inc index) 1 hue sat false))))
 
       (or (= (type cur-val) Boolean) (= (:type cue-var) :boolean))
       (draw-boolean-gauge controller index encoder-count cur-val))))
@@ -2372,14 +2420,9 @@
                                                                   (colors/darken current-color 20)
                                                                   (colors/lighten current-color 20))))))
 
-              ;; Display the hue and saturation numbers and gauges
-              (let [hue-str (clojure.string/join (take 5 (str (double hue) "     ")))
-                    sat-str (clojure.string/join (take 5 (str (double sat))))
-                    hue-gauge (make-pan-gauge hue :highest 360 :width 8)
-                    sat-gauge (make-gauge sat :width 8)]
-                (write-display-cell controller 0 x (str "H: " hue-str " S: " sat-str))
-                (write-display-text controller 1 (* x 17) hue-gauge)
-                (write-display-text controller 1 (+ 9 (* x 17)) sat-gauge))
+              ;; Display the hue and saturation gauges
+              (draw-hue-gauge controller (* 2 x) 1 hue (@anchors hue-note))
+              (draw-saturation-gauge controller (inc (* 2 x)) 1 hue sat (@anchors sat-note))
 
               ;; Put the touch pad into the appropriate state
               (if (@anchors hue-note)
