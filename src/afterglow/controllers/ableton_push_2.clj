@@ -494,6 +494,29 @@
           (set-touch-strip-mode controller touch-strip-mode-default)
           (reset! (:last-touch-strip controller) nil))))))
 
+(defn- set-touch-strip-from-value
+  "Display a value being adjusted in the touch strip."
+  [controller value low high mode]
+  (let [full-range (- high low)]
+    (reset! (:next-touch-strip controller) [(math/round (* 16383 (/ (- value low) full-range))) mode])))
+
+(defn- set-touch-strip-from-cue-var
+  "Display the value of a cue variable being adjusted in the touch
+  strip."
+  [controller cue v effect-id]
+  (let [value (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id) 0)
+        low (min value (:min v))  ; In case user set "out of bounds".
+        high (max value (:max v))]
+    (set-touch-strip-from-value controller value low high
+                                (if (:centered v) touch-strip-mode-pan touch-strip-mode-level))))
+
+(defn- value-from-touch-strip
+  "Convert a pitch bend message from the touch strip to the
+  corresponding variable value it represents."
+  [message low high]
+  (let [full-range (- high low)]
+    (+ low (* full-range (double (/ (+ (* (:data2 message) 128) (:data1 message)) 16383))))))
+
 (defn- update-text-buttons
   "Sees if any labeled buttons have changed state since the last time
   the interface was updated, and if so, sends the necessary MIDI
@@ -821,7 +844,6 @@
     (let [graphics (create-graphics controller)
           bpm (double (:bpm snapshot))
           bpm-string (format "%.1f" bpm)
-          bpm-range (- controllers/maximum-bpm controllers/minimum-bpm)
           label (java.text.AttributedString. bpm-string)]
       (set-graphics-color graphics metronome-background)
       (.fillRect graphics button-cell-width 21 button-cell-width 20)
@@ -834,8 +856,8 @@
       (draw-attributed-variable-value controller 1 1 label metronome-content)
       (draw-gauge controller 1 1 bpm :lowest controllers/minimum-bpm :highest controllers/maximum-bpm
                   :track-color metronome-content :active-color white-color)
-      (reset! (:next-touch-strip controller) [(math/round (* 16383 (/ (- bpm controllers/minimum-bpm) bpm-range)))
-                                              touch-strip-mode-level]))
+      (set-touch-strip-from-value controller bpm controllers/minimum-bpm controllers/maximum-bpm
+                                  touch-strip-mode-level))
 
     ;; Display the sync mode in red to explain why we are not adjusting it.
     (let [graphics (create-graphics controller)]
@@ -1573,18 +1595,6 @@
   (set-touch-strip-mode controller touch-strip-mode-default)
   (reset! (:last-touch-strip controller) nil))
 
-(defn- calculate-touch-strip-value
-  "Display the value of a variable being adjusted in the touch strip."
-  [controller cue v effect-id]
-  (let [value (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id) 0)
-        low (min value (:min v))  ; In case user set "out of bounds".
-        high (max value (:max v))
-        full-range (- high low)]
-    (reset! (:next-touch-strip controller) [(math/round (* 16383 (/ (- value low) full-range)))
-                                            (if (:centered v)
-                                              touch-strip-mode-pan
-                                              touch-strip-mode-level)])))
-
 (def master-background
   "The background for the grand master section, to mark it as such."
   (colors/darken (colors/desaturate (colors/create-color :yellow) 55) 45))
@@ -1618,8 +1628,7 @@
                                                           (format "%5.1f" level) master-content)
                                  (draw-gauge controller 7 1 level :track-color dim-amber-color
                                              :active-color master-content)
-                                 (reset! (:next-touch-strip controller) [(math/round (* 16383 (/ level 100)))
-                                                                         touch-strip-mode-level]))
+                                 (set-touch-strip-from-value controller level 0 100 touch-strip-mode-level))
                                true)
                              (handle-control-change [this message]
                                ;; Adjust the BPM based on how the encoder was twisted
@@ -1635,7 +1644,7 @@
                              (handle-aftertouch [this message])
                              (handle-pitch-bend [this message]
                                (master-set-level (get-in controller [:show :grand-master])
-                                                 (* 100.0 (/ (+ (* (:data2 message) 128) (:data1 message)) 16383)))))))
+                                                 (value-from-touch-strip message 0 100))))))
 
 (defn- bpm-encoder-touched
   "Add a user interface overlay to give feedback when turning the BPM
@@ -1663,7 +1672,10 @@
                                  (swap! (:metronome-mode controller) dissoc :adjusting-bpm)
                                  :done))
                              (handle-aftertouch [this message])
-                             (handle-pitch-bend [this message]))))
+                             (handle-pitch-bend [this message]
+                               (rhythm/metro-bpm (:metronome (:show controller))
+                                                 (value-from-touch-strip message controllers/minimum-bpm
+                                                                         controllers/maximum-bpm))))))
 
 (defn- beat-encoder-touched
   "Add a user interface overlay to give feedback when turning the beat
@@ -2112,13 +2124,10 @@
   "Handle a pitch bend change while an encoder associated with a
   variable is being adjusted in the effect list."
   [controller message cue v effect-id]
-  (let [full-range (- (:max v) (:min v))
-        fraction (/ (+ (* (:data2 message) 128) (:data1 message)) 16383)
-        adjusted (double (+ (:min v) (* fraction full-range)))
-        raw-resolution (/ full-range 200)
+  (let [adjusted (value-from-touch-strip message (:min v) (:max v))
         resolution (or (:resolution v) (if (= :integer (:type v))
                                          1
-                                         raw-resolution))
+                                         (/ (- (:max v) (:min v)) 200)))
         normalized (if (= :integer (:type v)) (Math/round (double adjusted))
                        (double (* (Math/round (/ adjusted resolution)) resolution)))]
     (cues/set-cue-variable! cue v (max (:min v) (min (:max v) normalized)) :show (:show controller)
@@ -2228,7 +2237,7 @@
                 (draw-gauge controller note 1 cur-val :lowest (min cur-val (:min cue-var))
                             :highest (max cur-val (:max cue-var)) :active-color white-color)))
             (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
-            (calculate-touch-strip-value controller cue cue-var (:id info))
+            (set-touch-strip-from-cue-var controller cue cue-var (:id info))
             true))
         (handle-control-change [this message]
           (when (= (:note message) (control-for-top-encoder-note note))
@@ -2252,7 +2261,7 @@
             (when (same-effect-active controller cue (:id info))
               (draw-variable-gauge controller x 17 0 cue cue-var (:id info))
               (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
-              (calculate-touch-strip-value controller cue cue-var (:id info))
+              (set-touch-strip-from-cue-var controller cue cue-var (:id info))
               true))
           (handle-control-change [this message]
             (when (= (:note message) (control-for-top-encoder-note note))
@@ -2333,10 +2342,9 @@
                 (write-display-text controller 1 (+ 9 (* x 17)) sat-gauge))
 
               ;; Put the touch pad into the appropriate state
-              (reset! (:next-touch-strip controller)
-                      (if (@anchors hue-note)
-                        [(math/round (* 16383 (/ hue 360))) touch-strip-mode-hue]
-                        [(math/round (* 16383 (/ sat 100))) touch-strip-mode-level]))
+              (if (@anchors hue-note)
+                (set-touch-strip-from-value controller hue 0 360 touch-strip-mode-hue)
+                (set-touch-strip-from-value controller hue 0 100 touch-strip-mode-level))
 
               ;; Darken the cue var scroll button if it was going to be lit
               (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
@@ -2374,7 +2382,7 @@
         (handle-pitch-bend [this message]
           (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
                                   white-color)
-                fraction (double (/ (+ (* (:data2 message) 128) (:data1 message)) 16383))
+                fraction (value-from-touch-strip message 0 1)
                 new-hue (if (@anchors hue-note) (* fraction 360) (colors/hue current-color))
                 new-sat (if (@anchors sat-note) (* fraction 100) (colors/saturation current-color))]
             (cues/set-cue-variable! cue v (colors/create-color :h new-hue :s new-sat :l 50)

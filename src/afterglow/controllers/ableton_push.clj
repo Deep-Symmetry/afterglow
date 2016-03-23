@@ -324,6 +324,27 @@
           (set-touch-strip-mode controller 5)
           (reset! (:last-touch-strip controller) nil))))))
 
+(defn- set-touch-strip-from-value
+  "Display a value being adjusted in the touch strip."
+  [controller value low high mode]
+  (let [full-range (- high low)]
+    (reset! (:next-touch-strip controller) [(math/round (* 16383 (/ (- value low) full-range))) mode])))
+
+(defn- set-touch-strip-from-cue-var
+  "Display the value of a variable being adjusted in the touch strip."
+  [controller cue v effect-id]
+  (let [value (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id) 0)
+        low (min value (:min v))  ; In case user set "out of bounds".
+        high (max value (:max v))]
+    (set-touch-strip-from-value controller value low high (if (:centered v) 3 1))))
+
+(defn- value-from-touch-strip
+  "Convert a pitch bend message from the touch strip to the
+  corresponding variable value it represents."
+  [message low high]
+  (let [full-range (- high low)]
+    (+ low (* full-range (double (/ (+ (* (:data2 message) 128) (:data1 message)) 16383))))))
+
 (defn- update-text-buttons
   "Sees if any labeled buttons have changed state since the last time
   the interface was updated, and if so, sends the necessary MIDI
@@ -444,10 +465,12 @@
 (defn- bpm-adjusting-interface
   "Add an arrow showing the BPM is being adjusted, or point out that
   it is being externally synced."
-  [controller]
+  [controller snapshot]
   (if (= (:type (show/sync-status)) :manual)
-    (let [arrow-pos (if (in-mode? controller :shift) 14 16)]
-      (aset (get (:next-display controller) 2) arrow-pos (:up-arrow special-symbols)))
+    (let [arrow-pos (if (in-mode? controller :shift) 14 16)
+          bpm (double (:bpm snapshot))]
+      (aset (get (:next-display controller) 2) arrow-pos (:up-arrow special-symbols))
+      (set-touch-strip-from-value controller bpm controllers/minimum-bpm controllers/maximum-bpm 1))
     (do
       (aset (get (:next-display controller) 2) 9 (:down-arrow special-symbols))
       (when-not (:showing @(:metronome-mode controller))
@@ -485,8 +508,8 @@
                (reify controllers/IOverlay
                  (captured-controls [this] #{72})
                  (captured-notes [this] #{1 9})
-                 (adjust-interface [this _]
-                   (bpm-adjusting-interface controller)
+                 (adjust-interface [this snapshot]
+                   (bpm-adjusting-interface controller snapshot)
                    true)
                  (handle-control-change [this message]
                    (adjust-bpm-from-encoder controller message))
@@ -498,7 +521,10 @@
                      ;; They released us, end the overlay.
                      :done))
                  (handle-aftertouch [this message])
-                 (handle-pitch-bend [this message]))))
+                 (handle-pitch-bend [this message]
+                   (rhythm/metro-bpm (:metronome (:show controller))
+                                                 (value-from-touch-strip message controllers/minimum-bpm
+                                                                         controllers/maximum-bpm))))))
 
 (defn- beat-adjusting-interface
   "Add an arrow showing the beat is being adjusted."
@@ -1055,16 +1081,6 @@
   (set-touch-strip-mode controller 5)
   (reset! (:last-touch-strip controller) nil))
 
-(defn- calculate-touch-strip-value
-  "Display the value of a variable being adjusted in the touch strip."
-  [controller cue v effect-id]
-  (let [value (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id) 0)
-        low (min value (:min v))  ; In case user set "out of bounds".
-        high (max value (:max v))
-        full-range (- high low)]
-    (reset! (:next-touch-strip controller) [(math/round (* 16383 (/ (- value low) full-range)))
-                                            (if (:centered v) 3 1)])))
-
 (defn- master-encoder-touched
   "Add a user interface overlay to give feedback when turning the
   master encoder."
@@ -1078,10 +1094,10 @@
                                  (write-display-cell controller 0 3 (make-gauge level))
                                  (write-display-cell controller 1 3
                                                      (str "GrandMaster " (format "%5.1f" level)))
-                                 (reset! (:next-touch-strip controller) [(math/round (* 16383 (/ level 100))) 1]))
+                                 (set-touch-strip-from-value controller level 0 100 1))
                                true)
                              (handle-control-change [this message]
-                               ;; Adjust the BPM based on how the encoder was twisted
+                               ;; Adjust the grand master based on how the encoder was twisted
                                (let [delta (/ (sign-velocity (:velocity message)) 2)
                                      level (master-get-level (get-in controller [:show :grand-master]))]
                                  (master-set-level (get-in controller [:show :grand-master]) (+ level delta))
@@ -1094,7 +1110,7 @@
                              (handle-aftertouch [this message])
                              (handle-pitch-bend [this message]
                                (master-set-level (get-in controller [:show :grand-master])
-                                                 (* 100.0 (/ (+ (* (:data2 message) 128) (:data1 message)) 16383)))))))
+                                                 (value-from-touch-strip message 0 100))))))
 
 (defn- bpm-encoder-touched
   "Add a user interface overlay to give feedback when turning the BPM
@@ -1106,8 +1122,8 @@
                            (reify controllers/IOverlay
                              (captured-controls [this] #{15})
                              (captured-notes [this] #{9 1})
-                             (adjust-interface [this _]
-                               (bpm-adjusting-interface controller)
+                             (adjust-interface [this snapshot]
+                               (bpm-adjusting-interface controller snapshot)
                                true)
                              (handle-control-change [this message]
                                (adjust-bpm-from-encoder controller message))
@@ -1122,7 +1138,10 @@
                                  (swap! (:metronome-mode controller) dissoc :adjusting-bpm)
                                  :done))
                              (handle-aftertouch [this message])
-                             (handle-pitch-bend [this message]))))
+                             (handle-pitch-bend [this message]
+                               (rhythm/metro-bpm (:metronome (:show controller))
+                                                 (value-from-touch-strip message controllers/minimum-bpm
+                                                                         controllers/maximum-bpm))))))
 
 (defn- beat-encoder-touched
   "Add a user interface overlay to give feedback when turning the beat
@@ -1554,14 +1573,10 @@
   "Handle a pitch bend change while an encoder associated with a
   variable is being adjusted in the effect list."
   [controller message cue v effect-id]
-  (let [value (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id) 0)
-        full-range (- (:max v) (:min v))
-        fraction (/ (+ (* (:data2 message) 128) (:data1 message)) 16383)
-        adjusted (double (+ (:min v) (* fraction full-range)))
-        raw-resolution (/ full-range 200)
+  (let [adjusted (value-from-touch-strip message (:min v) (:max v))
         resolution (or (:resolution v) (if (= :integer (:type v))
                                          1
-                                         raw-resolution))
+                                         (/ (- (:max v) (:min v)) 200)))
         normalized (if (= :integer (:type v)) (Math/round (double adjusted))
                        (double (* (Math/round (/ adjusted resolution)) resolution)))]
     (cues/set-cue-variable! cue v (max (:min v) (min (:max v) normalized)) :show (:show controller)
@@ -1666,7 +1681,7 @@
           (when (same-effect-active controller cue (:id info))
             (draw-variable-gauge controller x 8 (* 9 var-index) cue v (:id info))
             (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
-            (calculate-touch-strip-value controller cue v (:id info))
+            (set-touch-strip-from-cue-var controller cue v (:id info))
             true))
         (handle-control-change [this message]
           (when (= (:note message) (control-for-top-encoder-note note))
@@ -1690,7 +1705,7 @@
             (when (same-effect-active controller cue (:id info))
               (draw-variable-gauge controller x 17 0 cue v (:id info))
               (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
-              (calculate-touch-strip-value controller cue v (:id info))
+              (set-touch-strip-from-cue-var controller cue v (:id info))
               true))
           (handle-control-change [this message]
             (when (= (:note message) (control-for-top-encoder-note note))
@@ -1771,10 +1786,9 @@
                 (write-display-text controller 1 (+ 9 (* x 17)) sat-gauge))
 
               ;; Put the touch pad into the appropriate state
-              (reset! (:next-touch-strip controller)
-                      (if (@anchors hue-note)
-                        [(math/round (* 16383 (/ hue 360))) 3]
-                        [(math/round (* 16383 (/ sat 100))) 1]))
+              (if (@anchors hue-note)
+                (set-touch-strip-from-value controller hue 0 360 3)
+                (set-touch-strip-from-value controller hue 0 100 1))
 
               ;; Darken the cue var scroll button if it was going to be lit
               (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
@@ -1812,7 +1826,7 @@
         (handle-pitch-bend [this message]
           (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
                                   (aget color-picker-grid 6))
-                fraction (double (/ (+ (* (:data2 message) 128) (:data1 message)) 16383))
+                fraction (value-from-touch-strip message 0 1)
                 new-hue (if (@anchors hue-note) (* fraction 360) (colors/hue current-color))
                 new-sat (if (@anchors sat-note) (* fraction 100) (colors/saturation current-color))]
             (cues/set-cue-variable! cue v (colors/create-color :h new-hue :s new-sat :l 50)
