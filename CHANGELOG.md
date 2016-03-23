@@ -22,6 +22,8 @@ This change log follows the conventions of
   menu of actions. The menu so far offers just the ability to delete
   the cue if there is one there (this can clean up macros you no
   longer want, for example).
+- The Ableton Push 2 is now supported as a rich grid control
+  interface, taking full advantage of its color graphic display.
 - Support for other members of the Novation Launchpad family of grid
   controllers has been implemented:
   - Launchpad Mini
@@ -47,10 +49,10 @@ This change log follows the conventions of
 - The Ableton Push mapping now lets you scroll through all variables
   assigned to a cue so you can see and adjust more than the first two.
 - You can now use the touch strip on the Ableton Push to immediately
-  jump to any part of the legal value range when adjusting a numeric
-  or color cue variable, or the Dimmer Grand Master. The LEDs on the
-  touch strip also reflect the current value of the variable being
-  adjusted.
+  jump to any part of the legal value range when adjusting a numeric,
+  boolean, or color cue variable, BPM, or the Dimmer Grand Master. The
+  LEDs on the touch strip also reflect the current value of the
+  variable being adjusted.
 - You can use the keyboard arrow keys to navigate around the cue grid
   when using the web UI, as long as no input element is focused.
 - You can use the space bar to tap tempo when using the web UI, as

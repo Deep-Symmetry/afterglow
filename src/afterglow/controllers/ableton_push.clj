@@ -296,6 +296,26 @@
         (set-top-pad-state controller x next-state)
         (aset (:last-top-pads controller) x next-state)))))
 
+(def touch-strip-mode-default
+  "The mode to which we should return the touch strip when we are
+  shutting down."
+  5)
+
+(def touch-strip-mode-level
+  "The mode to which we should set the touch strip when the user is
+  editing a pan-style control."
+  1)
+
+(def touch-strip-mode-pan
+  "The mode to which we should set the touch strip when the user is
+  editing a level-style control."
+  2)
+
+(def touch-strip-mode-hue
+  "The mode to which we should set the touch strip when the user is
+  editing a hue."
+  3)
+
 (defn- set-touch-strip-mode
   "Set the touch strip operating mode."
   [controller mode]
@@ -321,7 +341,7 @@
               (midi/midi-send-msg (get-in controller [:port-out :receiver]) message -1)
               (reset! (:last-touch-strip controller) next-strip))))
         (do
-          (set-touch-strip-mode controller 5)
+          (set-touch-strip-mode controller touch-strip-mode-default)
           (reset! (:last-touch-strip controller) nil))))))
 
 (defn- set-touch-strip-from-value
@@ -336,7 +356,9 @@
   (let [value (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id) 0)
         low (min value (:min v))  ; In case user set "out of bounds".
         high (max value (:max v))]
-    (set-touch-strip-from-value controller value low high (if (:centered v) 3 1))))
+    (set-touch-strip-from-value controller value low high (if (:centered v)
+                                                            touch-strip-mode-pan
+                                                            touch-strip-mode-level))))
 
 (defn- value-from-touch-strip
   "Convert a pitch bend message from the touch strip to the
@@ -1078,7 +1100,7 @@
   (doseq [[_ button] control-buttons]
     (set-button-state controller button :off))
   (reset! (:last-text-buttons controller) {})
-  (set-touch-strip-mode controller 5)
+  (set-touch-strip-mode controller touch-strip-mode-default)
   (reset! (:last-touch-strip controller) nil))
 
 (defn- master-encoder-touched
@@ -1094,7 +1116,7 @@
                                  (write-display-cell controller 0 3 (make-gauge level))
                                  (write-display-cell controller 1 3
                                                      (str "GrandMaster " (format "%5.1f" level)))
-                                 (set-touch-strip-from-value controller level 0 100 1))
+                                 (set-touch-strip-from-value controller level 0 100 touch-strip-mode-level))
                                true)
                              (handle-control-change [this message]
                                ;; Adjust the grand master based on how the encoder was twisted
@@ -1625,6 +1647,8 @@
         (adjust-interface [this _]
           (when (same-effect-active controller cue (:id info))
             (draw-boolean-gauge controller x 8 (* 9 var-index) cue v (:id info))
+            (let [cur-val (or (cues/get-cue-variable cue v :show (:show controller) :when-id (:id info)) false)]
+              (set-touch-strip-from-value controller (if cur-val 1 0) 0 1 touch-strip-mode-pan))
             (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
             true))
         (handle-control-change [this message]
@@ -1635,7 +1659,9 @@
         (handle-note-off [this message]
           :done)
         (handle-aftertouch [this message])
-        (handle-pitch-bend [this message]))
+        (handle-pitch-bend [this message]
+          (cues/set-cue-variable! cue v (true? (>= (value-from-touch-strip message 0 100) 50))
+                                  :show (:show controller) :when-id (:id info))))
 
       ;; Just one variable, take full cell, using either encoder,
       ;; suppress the other one.
@@ -1645,9 +1671,11 @@
           (captured-notes [this] #{note paired-note})
           (adjust-interface [this _]
             (when (same-effect-active controller cue (:id info))
-              (draw-boolean-gauge controller x 17 0 cue v (:id info)))
-            (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
-            true)
+              (draw-boolean-gauge controller x 17 0 cue v (:id info))
+              (let [cur-val (or (cues/get-cue-variable cue v :show (:show controller) :when-id (:id info)) false)]
+                (set-touch-strip-from-value controller (if cur-val 1 0) 0 1 touch-strip-mode-pan))
+              (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))
+              true))
           (handle-control-change [this message]
             (when (= (:note message) (control-for-top-encoder-note note))
               (adjust-boolean-value controller message cue v (:id info)))
@@ -1658,7 +1686,9 @@
             (when (= (:note message) note)
               :done))
           (handle-aftertouch [this message])
-          (handle-pitch-bend [this message]))))))
+          (handle-pitch-bend [this message]
+            (cues/set-cue-variable! cue v (true? (>= (value-from-touch-strip message 0 100) 50))
+                                  :show (:show controller) :when-id (:id info))))))))
 
 (defn- build-numeric-adjustment-overlay
   "Create an overlay for adjusting a numeric cue parameter. `note`
@@ -1787,8 +1817,8 @@
 
               ;; Put the touch pad into the appropriate state
               (if (@anchors hue-note)
-                (set-touch-strip-from-value controller hue 0 360 3)
-                (set-touch-strip-from-value controller hue 0 100 1))
+                (set-touch-strip-from-value controller hue 0 360 touch-strip-mode-hue)
+                (set-touch-strip-from-value controller sat 0 100 touch-strip-mode-level))
 
               ;; Darken the cue var scroll button if it was going to be lit
               (aset (:next-top-pads controller) (inc (* 2 x)) (top-pad-state :off))

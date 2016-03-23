@@ -738,7 +738,7 @@
                                                 track-color default-track-color active-color track-color}}]
   (let [graphics (create-graphics controller)
         range (- highest lowest)
-        fraction (/ (- value lowest)  range)
+        fraction (/ (- value lowest) range)
         x-center (+ (* index button-cell-width) (* encoder-count 0.5 button-cell-width))
         arc (java.awt.geom.Arc2D$Double. (- x-center 20.0) 50.0 40.0 40.0 240.0 -300.0 java.awt.geom.Arc2D/OPEN)]
     (set-graphics-color graphics track-color)
@@ -747,6 +747,29 @@
     (set-graphics-color graphics active-color)
     (.setAngleStart arc 90.0)
     (.setAngleExtent arc (+ 150 (* -300.0 fraction)))
+    (.draw graphics arc)))
+
+(defn draw-boolean-gauge
+  "Draw a graphical gauge with an indicator that covers the left or
+  right half of an arc under a variable value, depending on if the
+  value is true or false. The default color for both the track and
+  active area is dim white. To support animating state changes, a
+  fraction parameter can be supplied which specifies how far from the
+  opposite state the indicator should be drawn."
+  [controller index encoder-count value & {:keys [track-color active-color fraction]
+                                           :or {track-color default-track-color active-color track-color
+                                                fraction 1.0}}]
+  (let [graphics (create-graphics controller)
+        x-center (+ (* index button-cell-width) (* encoder-count 0.5 button-cell-width))
+        arc (java.awt.geom.Arc2D$Double. (- x-center 20.0) 50.0 40.0 40.0 240.0 -300.0 java.awt.geom.Arc2D/OPEN)]
+    (set-graphics-color graphics track-color)
+    (.draw graphics arc)
+    (.setStroke graphics (java.awt.BasicStroke. 5.0 java.awt.BasicStroke/CAP_ROUND java.awt.BasicStroke/JOIN_ROUND))
+    (set-graphics-color graphics active-color)
+    (.setAngleStart arc (if value
+                          (+ 90.0 (* (- 1.0 fraction) 150))
+                          (- 240.0 (* (- 1.0 fraction) 150))))
+    (.setAngleExtent arc -150.0)
     (.draw graphics arc)))
 
 (defn draw-circular-gauge
@@ -1219,9 +1242,7 @@
                                (build-color-adjustment-overlay controller note cue cue-var effect info))
 
       (or (= (type cur-val) Boolean) (= (:type cue-var) :boolean))
-      nil ;; TODO: Implement based on this:
-      #_(controllers/add-overlay (:overlays controller)
-                               (build-boolean-adjustment-overlay controller note cue cue-var effect info)))))
+      (draw-boolean-gauge controller index encoder-count cur-val))))
 
 (defn draw-cue-variable-gauges
   "Displays the appropriate style of adjustment gauge for variables
@@ -2133,15 +2154,6 @@
     (cues/set-cue-variable! cue v (max (:min v) (min (:max v) normalized)) :show (:show controller)
                             :when-id effect-id)))
 
-(defn- draw-boolean-gauge
-  "Display the value of a boolean variable being adjusted in the effect list."
-  [controller cell width offset cue v effect-id]
-  (let [value (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
-        gauge (concat "No" (when-not value [0])
-                      (repeat (- width 6) \ )
-                      (when value [0]) "Yes")]
-    (write-display-text controller 0 (+ offset (* cell 17)) gauge)))
-
 (defn- adjust-boolean-value
   "Handle a control change from turning an encoder associated with a
   boolean variable being adjusted in the effect list."
@@ -2175,7 +2187,9 @@
         (captured-notes [this] #{note})
         (adjust-interface [this _]
           (when (same-effect-active controller cue (:id info))
-            (draw-boolean-gauge controller x 8 (* 9 var-index) cue v (:id info))
+            (let [cur-val (or (cues/get-cue-variable cue v :show (:show controller) :when-id (:id info)) false)]
+              (draw-boolean-gauge controller note 1 cur-val :active-color white-color)
+              (set-touch-strip-from-value controller (if cur-val 1 0) 0 1 touch-strip-mode-pan))
             (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
             true))
         (handle-control-change [this message]
@@ -2186,7 +2200,9 @@
         (handle-note-off [this message]
           :done)
         (handle-aftertouch [this message])
-        (handle-pitch-bend [this message]))
+        (handle-pitch-bend [this message]
+          (cues/set-cue-variable! cue v (true? (>= (value-from-touch-strip message 0 100) 50))
+                                  :show (:show controller) :when-id (:id info))))
 
       ;; Just one variable, take full cell, using either encoder,
       ;; suppress the other one.
@@ -2196,9 +2212,11 @@
           (captured-notes [this] #{note paired-note})
           (adjust-interface [this _]
             (when (same-effect-active controller cue (:id info))
-              (draw-boolean-gauge controller x 17 0 cue v (:id info)))
-            (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
-            true)
+              (let [cur-val (or (cues/get-cue-variable cue v :show (:show controller) :when-id (:id info)) false)]
+                (draw-boolean-gauge controller (* 2 x) 2 cur-val :active-color white-color)
+                (set-touch-strip-from-value controller (if cur-val 1 0) 0 1 touch-strip-mode-pan))
+              (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
+              true))
           (handle-control-change [this message]
             (when (= (:note message) (control-for-top-encoder-note note))
               (adjust-boolean-value controller message cue v (:id info)))
@@ -2209,7 +2227,9 @@
             (when (= (:note message) note)
               :done))
           (handle-aftertouch [this message])
-          (handle-pitch-bend [this message]))))))
+          (handle-pitch-bend [this message]
+            (cues/set-cue-variable! cue v (true? (>= (value-from-touch-strip message 0 100) 50))
+                                  :show (:show controller) :when-id (:id info))))))))
 
 (defn- build-numeric-adjustment-overlay
   "Create an overlay for adjusting a numeric cue parameter. `note`
@@ -2259,7 +2279,12 @@
           (captured-notes [this] #{note paired-note})
           (adjust-interface [this _]
             (when (same-effect-active controller cue (:id info))
-              (draw-variable-gauge controller x 17 0 cue cue-var (:id info))
+              (let [cur-val (or (cues/get-cue-variable cue cue-var :show (:show controller) :when-id (:id info)) 0)]
+                (if (:centered cue-var)
+                  (draw-pan-gauge controller (* 2 x) 2 cur-val :lowest (min cur-val (:min cue-var))
+                                  :highest (max cur-val (:max cue-var)) :active-color white-color)
+                  (draw-gauge controller (* 2 x) 2 cur-val :lowest (min cur-val (:min cue-var))
+                              :highest (max cur-val (:max cue-var)) :active-color white-color)))
               (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
               (set-touch-strip-from-cue-var controller cue cue-var (:id info))
               true))
@@ -2344,7 +2369,7 @@
               ;; Put the touch pad into the appropriate state
               (if (@anchors hue-note)
                 (set-touch-strip-from-value controller hue 0 360 touch-strip-mode-hue)
-                (set-touch-strip-from-value controller hue 0 100 touch-strip-mode-level))
+                (set-touch-strip-from-value controller sat 0 100 touch-strip-mode-level))
 
               ;; Darken the cue var scroll button if it was going to be lit
               (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
