@@ -362,15 +362,6 @@
   [controller x color]
   (set-button-color controller (get control-buttons (keyword (str "encoder-pad-" x))) color))
 
-(defn ^:deprecated set-display-line
-  "Sets a line of the text display."
-  [controller line bytes]
-  {:pre [(<= 0 line 3)]}
-  (let [message (concat [240 71 127 21 (+ line 24) 0 69 0]
-                        (take 68 (concat (map int bytes) (repeat 32)))
-                        [247])]
-    #_(midi/midi-sysex (:port-out controller) message)))
-
 (def touch-strip-mode-flags
   "The values which are combined to set the touch strip into
   particular modes."
@@ -551,34 +542,6 @@
   ;; And record the new state for next time
   (reset! (:last-text-buttons controller) @(:next-text-buttons controller)))
 
-(defn- ^:deprecated get-safe-text-byte
-  "Converts a character to be displayed to a byte, but if it is
-  outside the range that can be displayed by the Push, like Unicode,
-  then change it to a byte representing an ellipsis."
-  [c]
-  (let [i (int c)]
-    (if (> i 127)
-      0
-      i)))
-
-(defn ^:deprecated write-display-text
-  "Update a batch of characters within the display to be rendered on
-  the next update."
-  [controller row start text]
-  {:pre [(<= 0 row 3) (<= 0 start 67)]}
-  #_(let [bytes (map get-safe-text-byte text)]
-    (doseq [[i val] (map-indexed vector bytes)]
-      (aset (get (:next-display controller) row) (+ start i) (util/ubyte val)))))
-
-(defn- ^:deprecated write-display-cell
-  "Update a single text cell (of which there are four per row) in the
-  display to be rendered on the next update."
-  [controller row cell text]
-  {:pre [(<= 0 row 3) (<= 0 cell 3)]}
-  #_(let [bytes (take 17 (concat (map get-safe-text-byte text) (repeat 32)))]
-    (doseq [[i val] (map-indexed vector bytes)]
-      (aset (get (:next-display controller) row) (+ (* cell 17) i) (util/ubyte val)))))
-
 (def button-cell-width
   "The number of pixels allocated to each button above or below the
   graphical display."
@@ -705,17 +668,6 @@
     (set-graphics-color graphics color)
     (.drawString graphics iterator
                  (int (math/round (- (* (+ index (/ encoder-count 2)) button-cell-width) (/ width 2)))) 40)))
-
-(defn ^:deprecated make-gauge
-  "Create a graphical gauge with an indicator that fills a line.
-  The default range is from zero to a hundred, and the default size is
-  17 characters, or a full display cell."
-  [value & {:keys [lowest highest width] :or {lowest 0 highest 100 width 17}}]
-  (let [range (- highest lowest)
-        scaled (int (* 2 width (/ (- value lowest) range)))
-        marker 0
-        leader (take (int (/ scaled 2)) (repeat 0))]
-    (take width (concat leader [marker] (repeat 0)))))
 
 (defn draw-null-gauge
  "Draw a mostly meaningless gauge simply to indicate that the encoder
@@ -851,31 +803,13 @@
       (.setAngleStart arc (- 240.0 (* i 3)))
       (.draw graphics arc))))
 
-(defn ^:deprecated make-pan-gauge
-  "Create a graphical gauge with an indicator that moves along a line.
-  The default range is from zero to a hundred, and the default size is
-  17 characters, or a full display cell."
-  [value & {:keys [lowest highest width] :or {lowest 0 highest 100 width 17}}]
-  (let [range (* 1.01 (- highest lowest))
-        midpoint (/ (- highest lowest) 2)
-        scaled (int (* 2 width (/ (- value lowest) range)))
-        filler (repeat 0)
-        centered (< (math/abs (- (- value lowest) midpoint)) (/ range 256))
-        marker 0
-        leader (if (and centered (even? width) (even? scaled))
-                 (concat (take (dec (int (/ scaled 2))) filler) [0])
-                 (take (int (/ scaled 2)) filler))]
-    (take width (concat leader [marker]
-                        (when (and centered (even? width) (odd? scaled)) [0])
-                        filler))))
-
 (defn- metronome-sync-label
   "Determine the sync type label to display under the BPM section."
   [controller]
   (with-show (:show controller)
     (case (:type (show/sync-status))
-      :manual " Manual"
-      :midi "  MIDI"
+      :manual "Manual"
+      :midi "MIDI"
       :dj-link "DJ Link"
       :traktor-beat-phase "Traktor"
       "Unknown")))
@@ -2179,17 +2113,6 @@
   touch events are sent on the specified note will be sent."
   [note]
   (+ note 71))
-
-(defn- ^:deprecated draw-variable-gauge
-  "Display the value of a variable being adjusted in the effect list."
-  [controller cell width offset cue v effect-id]
-  (let [value (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id) 0)
-        low (min value (:min v))  ; In case user set "out of bounds".
-        high (max value (:max v))
-        gauge (if (:centered v)
-                (make-pan-gauge value :lowest low :highest high :width width)
-                (make-gauge value :lowest low :highest high :width width))]
-    (write-display-text controller 0 (+ offset (* cell 17)) gauge)))
 
 (defn- adjust-variable-value
   "Handle a control change from turning an encoder associated with a
