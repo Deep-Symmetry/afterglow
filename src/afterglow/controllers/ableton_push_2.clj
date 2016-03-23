@@ -2500,11 +2500,14 @@
     (Thread/sleep 35) ; Give the UI update thread time to shut down
     (clear-interface controller)
     (restore-led-palettes controller)
-    (Wayang/close)
 
     ;; Leave the User button bright, in case the user has Live
     ;; running and wants to be able to see how to return to it.
     (set-button-color controller (:user-mode control-buttons) white-color))
+
+  ;; Regardless of whether it was a clean or abrupt end, shut down the
+  ;; graphical display interface library.
+  (Wayang/close)
 
   ;; Cancel any UI overlays which were in effect
   (reset! (:overlays controller) (controllers/create-overlay-state))
