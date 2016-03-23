@@ -427,6 +427,18 @@
                           :touch-strip-bar-starts-at-bottom :touch-strip-auto-return-inactive
                           :touch-strip-auto-return-to-center))
 
+(def touch-strip-mode-sysex
+  "The mode to which we should set the touch strip when we want to be
+  able to individually set LEDs, for example to turn them all off."
+  (build-touch-strip-mode :touch-strip-controlled-by-host :touch-strip-host-sends-sysex
+                          :touch-strip-auto-return-inactive :touch-strip-auto-return-to-center))
+
+(defn clear-all-touch-strip-leds
+  "Send a System Exclusive message which requests all touch strip LEDs
+  be turned off."
+  [controller]
+  (send-sysex controller (concat [0x19] (repeat 16 0))))
+
 (defn- clear-display-buffer
   "Clear the graphical display buffer in preparation for drawing an
   interface frame."
@@ -486,9 +498,12 @@
         (let [[value mode] next-strip
               message (ShortMessage.)]
           (when (not= mode last-mode)
-            (set-touch-strip-mode controller mode))
-          (.setMessage message ShortMessage/PITCH_BEND 0 (rem value 128) (quot value 128))
-          (midi/midi-send-msg (get-in controller [:port-out :receiver]) message -1)
+            (set-touch-strip-mode controller mode)
+            (if (= mode touch-strip-mode-sysex)  ; We want the touch strip fully dark
+              (clear-all-touch-strip-leds controller)))
+          (when (not= mode touch-strip-mode-sysex)  ; We are actually displaying values
+            (.setMessage message ShortMessage/PITCH_BEND 0 (rem value 128) (quot value 128))
+            (midi/midi-send-msg (get-in controller [:port-out :receiver]) message -1))
           (reset! (:last-touch-strip controller) next-strip))
         (do
           (set-touch-strip-mode controller touch-strip-mode-default)
@@ -1442,7 +1457,7 @@
     (clear-display-buffer controller)
     (reset! (:next-text-buttons controller) {})
     (reset! (:next-top-pads controller) empty-top-pads)
-    (reset! (:next-touch-strip controller) [0 touch-strip-mode-level])
+    (reset! (:next-touch-strip controller) [0 touch-strip-mode-sysex])
 
     (let [snapshot (rhythm/metro-snapshot (get-in controller [:show :metronome]))]
       (update-effect-list controller snapshot)
