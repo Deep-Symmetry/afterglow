@@ -637,21 +637,6 @@
   "The font used when drawing cue variable values."
   (get-display-font :condensed Font/PLAIN 22))
 
-(defn draw-cue-variable-value
-  "Draw a label under an encoder at the top of the graphical display."
-  ([controller index encoder-count text color]
-   (draw-cue-variable-value controller index encoder-count text color font-for-cue-variable-values))
-  ([controller index encoder-count text color font]
-   (let [graphics (create-graphics controller)
-         space (space-for-encoder-button-label encoder-count)
-         context (.getFontRenderContext graphics)
-         label (fit-string text font context space)
-         width (string-width label font context)]
-     (set-graphics-color graphics color)
-     (.setFont graphics font)
-     (.drawString graphics label
-                  (int (math/round (- (* (+ index (/ encoder-count 2)) button-cell-width) (/ width 2)))) 40))))
-
 (defn draw-attributed-variable-value
   "Draw a label under an encoder at the top of the graphical display,
   with an attributed string so the label can have mixed fonts, colors,
@@ -668,6 +653,23 @@
     (set-graphics-color graphics color)
     (.drawString graphics iterator
                  (int (math/round (- (* (+ index (/ encoder-count 2)) button-cell-width) (/ width 2)))) 40)))
+
+(defn draw-cue-variable-value
+  "Draw a label under an encoder at the top of the graphical display."
+  ([controller index encoder-count text color]
+   (draw-cue-variable-value controller index encoder-count text color font-for-cue-variable-values))
+  ([controller index encoder-count text color font]
+   (if (= (class text) java.text.AttributedString)
+     (draw-attributed-variable-value controller index encoder-count text color)
+     (let [graphics (create-graphics controller)
+           space (space-for-encoder-button-label encoder-count)
+           context (.getFontRenderContext graphics)
+           label (fit-string text font context space)
+           width (string-width label font context)]
+       (set-graphics-color graphics color)
+       (.setFont graphics font)
+       (.drawString graphics label
+                    (int (math/round (- (* (+ index (/ encoder-count 2)) button-cell-width) (/ width 2)))) 40)))))
 
 (defn draw-null-gauge
  "Draw a mostly meaningless gauge simply to indicate that the encoder
@@ -1186,7 +1188,16 @@
                       (int val)
 
                       (or (= (type val) :com.evocomputing.colors/color) (= (:type v) :color))
-                      (colors/rgb-hexstr val)
+                      (let [as (java.text.AttributedString. (str "\ufffc " (colors/rgb-hexstr val)))
+                            img (java.awt.image.BufferedImage. 11 11 java.awt.image.BufferedImage/TYPE_INT_RGB)
+                            graphics (.createGraphics img)
+                            img-attribute (java.awt.font.ImageGraphicAttribute.
+                                           img java.awt.font.GraphicAttribute/CENTER_BASELINE)]
+                        (set-graphics-color graphics val)
+                        (.fillRect graphics 0 0 11 11)
+                        (.addAttribute as java.awt.font.TextAttribute/FONT font-for-cue-variable-values)
+                        (.addAttribute as java.awt.font.TextAttribute/CHAR_REPLACEMENT img-attribute 0 1)
+                        as)
 
                       (or (= (type val) Boolean) (= (:type v) :boolean))
                       (if val "Yes" "No")
@@ -1197,7 +1208,9 @@
 
                     ;; We got no value, display an ellipsis
                     "…")]
-    (str formatted)))
+    (if (= (class formatted) java.text.AttributedString)
+      formatted
+      (str formatted))))
 
 (defn- draw-cue-variable-values
   "Displays the current values of the adjustable variables currently
@@ -1309,7 +1322,7 @@
                   ending      ((:key info) (:ending fx-info))
                   cue         (:cue info)
                   base-color       (if cue
-                                     (cues/current-cue-color cue effect (:show controller) snapshot)
+                                     (cues/current-cue-color cue info (:show controller) snapshot)
                                      white-color)
                   color (when base-color
                           (if (and ending (> (rhythm/snapshot-beat-phase snapshot) 0.4))
@@ -1336,7 +1349,7 @@
                     label (fit-string (or (:name cue) (:name (first fx))) label-font context
                                       (- width button-cell-margin 2))
                     label-width (string-width label label-font context)]
-                (set-graphics-color graphics off-color)
+                (set-graphics-color graphics (colors/create-color (util/contrasting-text-color color)))
                 (.setFont graphics label-font)
                 (.drawString graphics label (int (math/round (- (+ left button-cell-width) (/ label-width 2))))
                              (- Wayang/DISPLAY_HEIGHT 23)))

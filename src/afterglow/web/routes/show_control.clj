@@ -8,6 +8,7 @@
             [afterglow.rhythm :as rhythm]
             [afterglow.show :as show]
             [afterglow.show-context :refer [with-show]]
+            [afterglow.util :as util]
             [afterglow.web.layout :as layout]
             (clj-time core format coerce)
             [clojure.data.json :refer [read-json write-str]]
@@ -44,19 +45,6 @@
                      (seq (clojure.set/intersection active-keys (set (:end-keys cue))))) 25.0 50.0))
            l-boost))))
 
-(defn- contrasting-text-color
-  "If the default text color of white will be hard to read against a
-  cell assigned the specified color, returns black. Otherwise returns
-  white. Both are in the form of hex strings suitable for use in a CSS
-  style."
-  [color]
-  (if (and color
-           ;; Calculate the perceived brightness of the color.
-           (let [[r g b] (map #(/ % 255) [(colors/red color) (colors/green color) (colors/blue color)])]
-             (> (Math/sqrt (+ (* 0.299 r r) (* 0.587 g g) (* 0.114 b b))) 0.6)))
-    "#000"
-    "#fff"))
-
 (defn cue-view
   "Returns a nested structure of rows of cue information starting at
   the specified origin, with the specified width and height. Ideal for
@@ -77,7 +65,7 @@
                  color (current-cue-color show active-keys cue active held? snapshot)]
              (assoc cue :current-color color
                     :style-color (str "style=\"background-color: " (colors/rgb-hexstr color)
-                                      "; color: " (contrasting-text-color color) "\"")))
+                                      "; color: " (util/contrasting-text-color color) "\"")))
            ;; No actual cue found, start with an empty map
            {})
          ;; Add the ID whether or not there is a cue
@@ -408,7 +396,7 @@
                                                  :color (if (:current-color cell)
                                                           (colors/rgb-hexstr (:current-color cell))
                                                           "")
-                                                 :textColor (contrasting-text-color (:current-color cell))})))))]
+                                                 :textColor (util/contrasting-text-color (:current-color cell))})))))]
     (record-page-grid page-id grid left bottom width height)
     (when (seq changes) {:grid-changes changes})))
 

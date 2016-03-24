@@ -1,7 +1,8 @@
 (ns afterglow.util
   "Utility functions that are likely to be widely useful"
   {:author "James Elliott"}
-  (:require [clojure.math.numeric-tower :as math]))
+  (:require [clojure.math.numeric-tower :as math]
+            [com.evocomputing.colors :as colors]))
 
 (defn ubyte
   "Convert small integer to its signed byte equivalent. Necessary for convenient handling of DMX values
@@ -89,6 +90,19 @@
   if not provided."
   ([x y] (not (float< x y)))
   ([x y epsilon] (not (float< x y epsilon))))
+
+(defn contrasting-text-color
+  "If the default text color of white will be hard to read against a
+  cell assigned the specified color, returns black. Otherwise returns
+  white. Both are in the form of hex strings suitable for use in a CSS
+  style."
+  [color]
+  (if (and color
+           ;; Calculate the perceived brightness of the color.
+           (let [[r g b] (map #(/ % 255) [(colors/red color) (colors/green color) (colors/blue color)])]
+             (> (Math/sqrt (+ (* 0.299 r r) (* 0.587 g g) (* 0.114 b b))) 0.6)))
+    "#000"
+    "#fff"))
 
 (defn normalize-cue-variable-value
   "Given a raw value that has been looked up for a cue variable,
