@@ -1187,18 +1187,22 @@
                       (= (:type v) :integer)
                       (int val)
 
+                      ;; For color values, create an attributed string which contains a swatch of
+                      ;; the actual color, followed by the RGB hex string describing it.
                       (or (= (type val) :com.evocomputing.colors/color) (= (:type v) :color))
                       (let [as (java.text.AttributedString. (str "\ufffc " (colors/rgb-hexstr val)))
-                            img (java.awt.image.BufferedImage. 11 11 java.awt.image.BufferedImage/TYPE_INT_RGB)
-                            graphics (.createGraphics img)
-                            img-attribute (java.awt.font.ImageGraphicAttribute.
-                                           img java.awt.font.GraphicAttribute/CENTER_BASELINE)]
-                        (set-graphics-color graphics val)
-                        (.fillRect graphics 0 0 11 11)
+                            swatch (java.awt.geom.Rectangle2D$Double. 0 -16 16 16)
+                            shape-attribute (java.awt.font.ShapeGraphicAttribute.
+                                             swatch java.awt.font.ShapeGraphicAttribute/ROMAN_BASELINE
+                                             java.awt.font.ShapeGraphicAttribute/FILL)]
                         (.addAttribute as java.awt.font.TextAttribute/FONT font-for-cue-variable-values)
-                        (.addAttribute as java.awt.font.TextAttribute/CHAR_REPLACEMENT img-attribute 0 1)
+                        (.addAttribute as java.awt.font.TextAttribute/CHAR_REPLACEMENT shape-attribute 0 1)
+                        (.addAttribute as java.awt.font.TextAttribute/FOREGROUND
+                                       (java.awt.Color. (colors/red val) (colors/green val) (colors/blue val))
+                                       0 1)
                         as)
 
+                      ;; For boolean values, display yes or no.
                       (or (= (type val) Boolean) (= (:type v) :boolean))
                       (if val "Yes" "No")
 
