@@ -770,15 +770,15 @@
   [controller index encoder-count value active?]
   (let [graphics (create-graphics controller)
         x-center (+ (* index button-cell-width) (* encoder-count 0.5 button-cell-width))
-        arc (java.awt.geom.Arc2D$Double. (- x-center 20.0) 50.0 40.0 40.0 270.0 -1.0 java.awt.geom.Arc2D/OPEN)]
-    (dotimes [i 360]
-      (.setAngleStart arc (- 270.0 i))
-      (set-graphics-color graphics (colors/create-color :h i :s 70.0 :l 35.0))
+        arc (java.awt.geom.Arc2D$Double. (- x-center 20.0) 50.0 40.0 40.0 270.0 -5.0 java.awt.geom.Arc2D/OPEN)]
+    (dotimes [i 72]
+      (.setAngleStart arc (- 270.0 (* i 5)))
+      (set-graphics-color graphics (colors/create-color :h (* i 5) :s 100.0 :l 50.0))
       (.draw graphics arc))
     (.setStroke graphics (java.awt.BasicStroke. 6.0 java.awt.BasicStroke/CAP_ROUND java.awt.BasicStroke/JOIN_ROUND))
     (if active?
       (set-graphics-color graphics (colors/create-color :h value :s 100.0 :l 50.0))
-      (set-graphics-color graphics (colors/create-color :h value :s 70.0 :l 35.0)))
+      (set-graphics-color graphics (colors/create-color :h value :s 100.0 :l 25.0)))
     (.setAngleStart arc (- 270.0 value))
     (.setAngleExtent arc 0.0)
     (.draw graphics arc)))
@@ -793,13 +793,13 @@
         arc (java.awt.geom.Arc2D$Double. (- x-center 20.0) 50.0 40.0 40.0 240.0 -3.0 java.awt.geom.Arc2D/OPEN)]
     (dotimes [i 100]
       (.setAngleStart arc (- 240.0 (* i 3)))
-      (set-graphics-color graphics (colors/create-color :h hue :s i :l 35.0))
+      (set-graphics-color graphics (colors/create-color :h hue :s i :l 50.0))
       (.draw graphics arc))
     (.setStroke graphics (java.awt.BasicStroke. 5.0 java.awt.BasicStroke/CAP_ROUND java.awt.BasicStroke/JOIN_ROUND))
-    (dotimes [i (math/round value)]
+    (dotimes [i (max (math/round value) 1)]
       (if active?
         (set-graphics-color graphics (colors/create-color :h hue :s i :l 50.0))
-        (set-graphics-color graphics (colors/create-color :h value :s i :l 35.0)))
+        (set-graphics-color graphics (colors/create-color :h hue :s i :l 25.0)))
       (.setAngleStart arc (- 240.0 (* i 3)))
       (.draw graphics arc))))
 
