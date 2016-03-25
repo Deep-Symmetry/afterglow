@@ -357,18 +357,21 @@
   functions that manipulate and invoke overlays."
   []
   (atom {:next-id 0
-         :overlays (sorted-map-by >)}))
+         :overlays (sorted-map)}))
 
 (defn add-overlay
   "Add a temporary overlay to the interface. The `state` argument must
   be a value created by [[create-overlay-state]], and `overlay` an
   implementation of the [[IOverlay]] protocol to be added as the most
-  recent overlay to that state."
-  [state overlay]
+  recent overlay to that state. The optional keyword argument
+  `:priority` can be used to modify the sorting order of overlays,
+  which is that more recent ones run later, so they get the last word
+  when it comes to rendering. The default priority is `0`."
+  [state overlay & {:keys [priority] :or {priority 0}}]
   (swap! state (fn [old-state]
                  (let [id (:next-id old-state)
                        overlays (:overlays old-state)]
-                   (assoc old-state :next-id (inc id) :overlays (assoc overlays id overlay))))))
+                   (assoc old-state :next-id (inc id) :overlays (assoc overlays [priority id] overlay))))))
 
 (defn add-control-held-feedback-overlay
   "Builds a simple overlay which just adds something to the user
@@ -398,15 +401,15 @@
 
 (defn run-overlays
   "Add any contributions from interface overlays, removing them if
-  they report being finished. Most recent overlays run last, having
-  the opportunity to override older ones. `state` must be a value
-  created by [[create-overlay-state]] and tracked by the controller.
-  The `snapshot` is an [[IMetroSnapshot]] that captures the instant in
-  time at which the interface is being rendered, and is passed in to
-  the overlay so it can be rendered in sync with all other interface
-  elements."
+  they report being finished. Most recent and higher priority overlays
+  run last, having the opportunity to override older ones. `state`
+  must be a value created by [[create-overlay-state]] and tracked by
+  the controller. The `snapshot` is an [[IMetroSnapshot]] that
+  captures the instant in time at which the interface is being
+  rendered, and is passed in to the overlay so it can be rendered in
+  sync with all other interface elements."
   [state snapshot]
-  (doseq [[k overlay] (reverse (:overlays @state))]
+  (doseq [[k overlay] (:overlays @state)]
       (when-not (adjust-interface overlay snapshot)
         (swap! state update-in [:overlays] dissoc k))))
 
