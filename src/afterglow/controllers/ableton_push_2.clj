@@ -1850,7 +1850,8 @@
                                (handle-note-on [this message])
                                (handle-note-off [this message])
                                (handle-aftertouch [this message])
-                               (handle-pitch-bend [this message])))))
+                               (handle-pitch-bend [this message]))
+                             :priority 100))) ; Draw the stop overlay after all others.
 
 (defn add-button-held-feedback-overlay
   "Adds a simple overlay which keeps a control button bright as long
