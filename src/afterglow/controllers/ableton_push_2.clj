@@ -1086,6 +1086,37 @@
         (draw-gauge controller 1 1 bpm :lowest controllers/minimum-bpm :highest controllers/maximum-bpm
                     :track-color metronome-content)
 
+        ;; Draw the beat grid visualization
+        (set-graphics-color graphics metronome-content)
+        (.draw graphics (java.awt.geom.Line2D$Double. button-cell-width (- Wayang/DISPLAY_HEIGHT 60)
+                                                            button-cell-width (- Wayang/DISPLAY_HEIGHT 19)))
+
+        (let [beat-width (/ button-cell-width (:bpb snapshot))
+              beat-position (- button-cell-width (* beat-width (:beat-phase snapshot)))
+              metro (:metronome (:show controller))]
+          (.setClip graphics  0 (- Wayang/DISPLAY_HEIGHT 60) (* 2 button-cell-width) 40)
+          (set-graphics-color graphics (if (rhythm/snapshot-down-beat? snapshot) red-color white-color))
+          (.draw graphics (java.awt.geom.Line2D$Double. beat-position (- Wayang/DISPLAY_HEIGHT 40)
+                                                        beat-position (- Wayang/DISPLAY_HEIGHT 20)))
+          (loop [position (+ beat-position beat-width)
+                 snap (rhythm/metro-snapshot metro (+ (:instant snapshot) (rhythm/metro-tick metro)))]
+            (when (< position (* 2 button-cell-width))
+              (set-graphics-color graphics (if (rhythm/snapshot-down-beat? snap) red-color white-color))
+              (.draw graphics (java.awt.geom.Line2D$Double. position (- Wayang/DISPLAY_HEIGHT 40)
+                                                            position (- Wayang/DISPLAY_HEIGHT 20)))
+              (recur (+ position beat-width)
+                     (rhythm/metro-snapshot metro (+ (:instant snap) (rhythm/metro-tick metro))))))
+          (loop [position (- beat-position beat-width)
+                 snap (rhythm/metro-snapshot metro (- (:instant snapshot) (rhythm/metro-tick metro)))]
+            (when (>= position 0)
+              (set-graphics-color graphics (if (rhythm/snapshot-down-beat? snap) red-color white-color))
+              (.draw graphics (java.awt.geom.Line2D$Double. position (- Wayang/DISPLAY_HEIGHT 40)
+                                                            position (- Wayang/DISPLAY_HEIGHT 20)))
+              (recur (- position beat-width)
+                     (rhythm/metro-snapshot metro (- (:instant snap) (rhythm/metro-tick metro)))))))
+
+
+
         ;; Make the metronome button bright, since some overlay is present
         (swap! (:next-text-buttons controller) assoc metronome-button white-color))
 
