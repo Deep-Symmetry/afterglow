@@ -584,13 +584,13 @@
 
 (defn draw-bottom-button-label
   "Draw a label for a button below the graphical display."
-  [controller index text color]
+  [controller index text color & {:keys [background-color] :or {background-color off-color}}]
   (let [graphics (create-graphics controller)
         font (get-display-font :roboto-medium Font/BOLD 14)
         context (.getFontRenderContext graphics)
         label (fit-string text font context (- button-cell-width button-cell-margin))
         width (string-width label font context)]
-    (set-graphics-color graphics off-color)
+    (set-graphics-color graphics background-color)
     (.fillRect graphics (* index button-cell-width) (- Wayang/DISPLAY_HEIGHT 15)
                button-cell-width 15)
     (set-graphics-color graphics color)
@@ -1008,9 +1008,9 @@
                           white-color)
 
                    ;; Add the labels for reset and sync, and light the pads
-                   (draw-bottom-button-label controller 0 "Reset" red-color)
+                   (draw-bottom-button-label controller 0 "Reset" red-color :background-color metronome-background)
                    (draw-bottom-button-label controller 1 (metronome-sync-label controller)
-                                             (metronome-sync-color controller))
+                                             (metronome-sync-color controller) :background-color metronome-background)
                    (swap! (:next-top-pads controller) assoc 0 dim-red-color)
                    (swap! (:next-top-pads controller) assoc 1 (dim (metronome-sync-color controller))))
                  (handle-control-change [this message]
