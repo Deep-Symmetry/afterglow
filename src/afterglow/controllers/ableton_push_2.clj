@@ -1206,9 +1206,10 @@
                       (or (= (type val) Boolean) (= (:type v) :boolean))
                       (if val "Yes" "No")
 
-                      ;; If we don't know what else to do, at least turn ratios to doubles
+                      ;; If we don't know what else to do, at least turn ratios to doubles, and
+                      ;; round to a reasonable number of digits.
                       :else
-                      (double val))
+                      (/ (math/round (* val 1000)) 1000.0))
 
                     ;; We got no value, display an ellipsis
                     "…")]
