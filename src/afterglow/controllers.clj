@@ -418,7 +418,11 @@
   this message; if so, send it, and see if the overlay consumes it.
   Returns truthy if an overlay consumed the message, and it should not
   be given to anyone else. `state` must be a value created
-  by [[create-overlay-state]] and tracked by the controller."
+  by [[create-overlay-state]] and tracked by the controller.
+
+  More recent (and higher priority) overlays get the first chance to
+  decide if they want to consume the message, so the overlay list is
+  traversed in reverse order."
   [state message]
   (case (:command message)
     (:note-on :note-off :poly-pressure)
@@ -431,7 +435,7 @@
                 (when (= result :done)
                   (swap! state update-in [:overlays] dissoc k))
                 result)))
-          (seq (:overlays @state)))
+          (rseq (:overlays @state)))
 
     :control-change
     (some (fn [[k overlay]]
