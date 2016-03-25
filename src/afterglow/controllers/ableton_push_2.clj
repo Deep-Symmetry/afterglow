@@ -2342,7 +2342,8 @@
         effect-id (:id info)]
     ;; Take full cell, using both encoders to adjust hue and saturation.
     (let [[hue-note sat-note] (if (odd? note) [(dec note) note] [note (inc note)])
-          [hue-control sat-control] (map control-for-top-encoder-note [hue-note sat-note])]
+          [hue-control sat-control] (map control-for-top-encoder-note [hue-note sat-note])
+          graphics (create-graphics controller)]
       (reify controllers/IOverlay
         (captured-controls [this] #{hue-control sat-control (+ 21 (* 2 x))})
         (captured-notes [this] (clojure.set/union #{hue-note sat-note} (set (drop 36 (range 100)))))
@@ -2364,6 +2365,18 @@
                     (swap! (:next-grid-pads controller) assoc i (if (= i 4)
                                                                   (colors/darken current-color 20)
                                                                   (colors/lighten current-color 20))))))
+
+              ;; Replace the cue's variable value section with a hue and saturation editor.
+              (set-graphics-color graphics off-color)
+              (.fillRect graphics (* x 2 button-cell-width) 0 (* 2 button-cell-width) 100)
+              (draw-encoder-button-label controller (* x 2) 1 "Hue" white-color)
+              (draw-cue-variable-value controller (* x 2) 1 (format "%.1f" hue) white-color)
+              (draw-encoder-button-label controller (inc (* x 2)) 1 "Saturation" white-color)
+              (draw-cue-variable-value controller (inc (* x 2)) 1 (format "%.1f" sat) white-color)
+
+              ;; Add a larger color swatch between the gauges
+              (set-graphics-color graphics current-color)
+              (.fillRect graphics (- (* (inc (* x 2)) button-cell-width) 20) 50 40 40)
 
               ;; Display the hue and saturation gauges
               (draw-hue-gauge controller (* 2 x) 1 hue (@anchors hue-note))
