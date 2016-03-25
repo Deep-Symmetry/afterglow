@@ -2639,3 +2639,37 @@
       (show/register-grid-controller @(:grid-controller-impl controller))
       (amidi/add-disconnected-device-handler! port-in #(deactivate controller :disconnected true))
       controller)))
+
+(defn record-interface
+  "Capture an animated GIF of the display for documentation purposes.
+  Takes a filename to which the animation should be written. Returns a
+  function which you must call to end the recording and close the
+  file. Defaults to creating an animation which loops, but you can
+  override that by passing `false` with the optional keyword argument
+  `:loop`."
+  [controller path & {:keys [loop] :or {loop true}}]
+  (let [output (javax.imageio.stream.FileImageOutputStream. (clojure.java.io/file path))
+        writer (org.deepsymmetry.GifSequenceWriter. output (:display-buffer controller)
+                                                    (int (:refresh-interval controller)) loop)
+        running (atom true)]
+    (controllers/add-overlay (:overlays controller)
+                             (reify controllers/IOverlay
+                               (captured-controls [this] #{})
+                               (captured-notes [this] #{})
+                               (adjust-interface [this _]
+                                 (when @running
+                                   (.writeToSequence writer (:display-buffer controller))
+                                   true))
+                               (handle-control-change [this message])
+                               (handle-note-on [this  message])
+                               (handle-note-off [this message])
+                               (handle-aftertouch [this message])
+                               (handle-pitch-bend [this message]))
+                             :priority 1000000)  ; Make sure we run last, so we can capture what each overlay drew
+    (fn []
+      (when @running
+        (reset! running false)         ; Shut down the overlay
+        (Thread/sleep 100)  ; Give any last rendering a chance to finish
+        (.close writer)
+        (.close output)
+        (str path " written.")))))
