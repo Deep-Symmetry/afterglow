@@ -1117,16 +1117,18 @@
 
         (let [beat-width (/ button-cell-width (:bpb snapshot))
               beat-position (- button-cell-width (* beat-width (:beat-phase snapshot)))
-              metro (:metronome (:show controller))]
+              metro (:metronome (:show controller))
+              beat-background (colors/adjust-alpha white-color -0.25)]
           (.setClip graphics  0 (- Wayang/DISPLAY_HEIGHT 60) (* 2 button-cell-width) 40)
-          (set-graphics-color graphics (if (rhythm/snapshot-down-beat? snapshot) red-color white-color))
-          (.draw graphics (java.awt.geom.Line2D$Double. beat-position (- Wayang/DISPLAY_HEIGHT 40)
+          (set-graphics-color graphics (beat-mark-color snapshot))
+          (draw-beat-grid-triangle graphics beat-position beat-width 40 beat-background)
+          (.draw graphics (java.awt.geom.Line2D$Double. beat-position (beat-mark-top-y snapshot)
                                                         beat-position (- Wayang/DISPLAY_HEIGHT 20)))
           (loop [position (+ beat-position beat-width)
                  snap (rhythm/metro-snapshot metro (+ (:instant snapshot) (rhythm/metro-tick metro)))]
             (when (< position (* 2 button-cell-width))
               (set-graphics-color graphics (if (rhythm/snapshot-down-beat? snap) red-color white-color))
-              (.draw graphics (java.awt.geom.Line2D$Double. position (- Wayang/DISPLAY_HEIGHT 40)
+              (.draw graphics (java.awt.geom.Line2D$Double. position (beat-mark-top-y snap)
                                                             position (- Wayang/DISPLAY_HEIGHT 20)))
               (recur (+ position beat-width)
                      (rhythm/metro-snapshot metro (+ (:instant snap) (rhythm/metro-tick metro))))))
@@ -1134,7 +1136,7 @@
                  snap (rhythm/metro-snapshot metro (- (:instant snapshot) (rhythm/metro-tick metro)))]
             (when (>= position 0)
               (set-graphics-color graphics (if (rhythm/snapshot-down-beat? snap) red-color white-color))
-              (.draw graphics (java.awt.geom.Line2D$Double. position (- Wayang/DISPLAY_HEIGHT 40)
+              (.draw graphics (java.awt.geom.Line2D$Double. position (beat-mark-top-y snap)
                                                             position (- Wayang/DISPLAY_HEIGHT 20)))
               (recur (- position beat-width)
                      (rhythm/metro-snapshot metro (- (:instant snap) (rhythm/metro-tick metro)))))))
