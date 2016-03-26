@@ -1058,6 +1058,30 @@
   (when (not= marker @(:last-marker controller))
     (reset! (:last-marker controller) marker)))
 
+(defn- beat-mark-color
+  "Returns the color in which to draw the stripe marking a beat. Red
+  for down beats, white for others."
+  [snapshot]
+  (if (rhythm/snapshot-down-beat? snapshot) red-color white-color))
+
+(defn- beat-mark-top-y
+  "Returns the upper Y coordinate from which to draw the stripe
+  marking a beat."
+  [snapshot]
+  (- Wayang/DISPLAY_HEIGHT (if (rhythm/snapshot-down-beat? snapshot) 50 40)))
+
+(defn- draw-beat-grid-triangle
+  "Draw a triangle growing to the specified x coordinate, with
+  specified width, top y coordinate, and color."
+  [graphics x width top color]
+  (let [path (java.awt.geom.Path2D$Double.)]
+    (.moveTo path x (- Wayang/DISPLAY_HEIGHT 20))
+    (.lineTo path x (- Wayang/DISPLAY_HEIGHT top))
+    (.lineTo path (- x width) (- Wayang/DISPLAY_HEIGHT 20))
+    (.closePath path)
+    (set-graphics-color graphics color)
+    (.fill graphics path)))
+
 (defn- update-metronome-section
   "Updates the sections of the interface related to metronome
   control."
