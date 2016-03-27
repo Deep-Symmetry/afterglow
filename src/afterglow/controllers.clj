@@ -566,39 +566,153 @@
           (or found (when (< attempts 2) (recur (inc attempts))))))
       (finally (amidi/remove-sysex-mapping port-in handler)))))
 
-(defonce ^{:doc "Controllers which are currently bound to shows can
-  register a deactivation function here. All functions in this set
-  will be called when [[deactivate-all]] is called, and when the JVM
-  is shutting down, to gracefully shut down those bindings."
+(defmulti bind-to-show-impl
+    "Establish a rich user-interface binding on a supported grid
+  controller for `show`. A multimethod which selects the appropriate
+  implementation based on passing the value returned by [[identify]]
+  to all functions registered in [[recognizers]]. The port used to
+  receive MIDI messages from the controller is passed as `port-in`,
+  and the port used to send messages to it is passed as `port-out`.
+
+  New controller binding implementations simply need to define an
+  appropriate implementation of this multimethod, and add their
+  recognition function to [[recognizers]].
+
+  All rich controller binding implementations should honor the
+  `:display-name` and `:refresh-interval` optional keyword arguments
+  described in [[bind-rich-controller]]. They may also support
+  additional optional keyword arguments specific to the details of
+  their implementation, which the caller can supply when they know
+  they are binding to such a controller."
+  (fn [kind show port-in port-out recognizer-result & args]
+    kind))
+
+(defonce ^{:doc "A map whose keywords are dispatch values registered
+  with [[bind-to-show-impl]] and whose values are functions which
+  examine the [[identify]] response for a controller, and if it is
+  recognized as a controller which is supported by the particular
+  binding implementation associated with the dispatch keyword, return
+  the binding information needed by their controller implementations
+  to complete a binding to that device. In other words, non-`nil`
+  responses mean the corresponding dispatch value and function result
+  should be used with [[bind-to-show-impl]] to establish a binding
+  with that controller.
+
+  New controller binding implementations simply need to add an
+  appropriate implementation of that multimethod, and register their
+  recognition function in this map."}
+  recognizers (atom {}))
+
+(defn bind-to-show
+  "Establish a rich user-interface binding on a supported grid
+  controller for `show`.
+
+  To locate the controller that you want to bind to, you need to
+  supply a `device-filter` which uniquely matches the ports to be used
+  to communicate with it. The values returned
+  by [[afterglow.midi/open-inputs-if-needed!]]
+  and [[afterglow.midi/open-outputs-if-needed!]] will be searched, and
+  the first port that matches with [[filter-devices]] will be used.
+  There must be both an input and output matching the filter for the
+  binding to succeed.
+
+  The controller binding implementation chosen will be determined by
+  calling [[identify]] with the ports found, and seeing which member
+  of [[recognizers]] recognizes the result and returns a non-null
+  value. The corresponding dispatch key will be used with the result
+  value to call [[bind-to-show-impl]] with the ports and other
+  arguments, and it will do the appropriate things to work with the
+  controller that was found.
+
+  All rich controller binding implementations accept a couple of
+  standard optional keyword arguments to adjust their behavior. The
+  controller will be identified in the user interface (for the
+  purposes of linking it to the web cue grid) with a default name
+  based on its type (for example \"Ableton Push\"). If you would like
+  to use a different name (for example, if you are lucky enough to
+  have more than one Push), you can pass in a custom value after
+  the optional keyword argument `:display-name`.
+
+  If you want the user interface to be refreshed at a different rate
+  than the default for the controller type, pass your desired number
+  of milliseconds after `:refresh-interval`.
+
+  If you are binding to a specific controller type whose mapping
+  accepts other optional keyword arguments, you can include them as
+  well, and they will be passed on to the binding implementation
+  function."
+  [show device-filter & args]
+  {:pre [(some? show) (some? device-filter)]}
+  (let [port-in  (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
+        port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))
+        identity (when (every? some? [port-in port-out]) (identify port-in port-out))]
+    (if identity
+      (loop [candidates (seq @recognizers)]
+        (if (seq candidates)
+          (let [[dispatch recognizer] (first candidates)]
+            (if-let [recognizer-result (recognizer identity)]
+              (apply bind-to-show-impl (concat [dispatch show port-in port-out recognizer-result] args))
+              (recur (rest candidates))))
+          (timbre/error "Unrecognized response from controller" (amidi/describe-device-filter device-filter))))
+      (timbre/error "Unable to find rich controller" (amidi/describe-device-filter device-filter)))))
+
+(defonce ^{:doc "Controllers which are currently bound to shows must
+  register themselves here. All controllers in this set will be passed
+  to [[deactivate]] when [[deactivate-all]] is called, and when the
+  JVM is shutting down, to gracefully terminate those bindings."
            :private true}
   active-bindings (atom #{}))
 
 (defn add-active-binding
-  "Registers a controller which has been bound to a show, and which
-  should be deactivated when [[deactivate-all]] is called or the JVM
-  is shutting down, to gracefully clean up the binding. The single
-  argument is a function that will be called with no arguments when
-  the binding should be deactivated."
-  [f]
-  {:pre [(have? ifn? f)]}
-  (swap! active-bindings conj f))
+  "Registers a controller or controlle watcher which has been bound to
+  a show, and which should be deactivated when [[deactivate-all]] is
+  called or the JVM is shutting down, to gracefully clean up the
+  binding."
+  [controller]
+  {:pre [(have? some? controller) (have? keyword? (type controller))]}
+  (swap! active-bindings conj controller))
 
 (defn remove-active-binding
   "Removes a controller from the set of active bindings, so it will no
   longer be deactivated when [[deactivate-all]] is called or the JVM
-  is shutting down. The single argument is a function that was
-  registered with [[add-active-binding]]."
-  [f]
-  {:pre [(have? ifn? f)]}
-  (swap! active-bindings disj f))
+  is shutting down."
+  [controller]
+  {:pre [(have? some? controller) (have? keyword? (type controller))]}
+  (swap! active-bindings disj controller))
+
+(defmulti deactivate
+  "Deactivates a controller binding established by [[bind-to-show]].
+   If `:disconnected` is passed with a
+  `true` value, it means that the controller has already been removed
+  from the MIDI environment, so no effort will be made to clear its
+  display or take it out of User mode.
+
+  You can also pass a watcher object created by [[auto-bind]] as
+  `controller`; this will both deactivate the controller being managed
+  by the watcher, if it is currently connected, and cancel the
+  watcher itself. In such cases, `:disconnected` is meaningless.
+
+  The implementation of this multimethod is chosen by using the
+  `:type` key in the `controller` map as the dispatch value, so rich
+  controller implementations simply need to register their own
+  implementations appropriately when their namespaces are loaded."
+  (fn [controller & {:keys [disconnected] :or {disconnected false}}]
+    (type controller)))
+
+;; Provide a shared implementation for deactivating controller watchers.
+(defmethod deactivate ::watcher
+  [controller & {:keys [disconnected] :or {disconnected false}}]
+  (do ((:cancel controller))  ; Shut down the watcher
+        (when-let [watched-controller @(:controller controller)]
+          (deactivate watched-controller))))  ; And deactivate the controller it was watching for.
 
 (defn deactivate-all
   "Deactivates all controller bindings which are currently active.
   This will be registered as a shutdown hook to be called when the
   Java environment is shutting down, to clean up gracefully."
   []
-  (doseq [f @active-bindings]
-    (f)))
+  (doseq [controller @active-bindings]
+    (deactivate controller)))
 
 (defonce ^{:doc "Deactivates any registered controller bindings when
   Java is shutting down."
@@ -608,3 +722,106 @@
     (.addShutdownHook (Runtime/getRuntime) hook)
     hook))
 
+(defn auto-bind
+  "Watches for a recognized grid controller to be connected, and as
+  soon as it is, binds it to the specified show
+  using [[bind-to-show]]. If that controller ever gets disconnected,
+  it will be re-bound once it reappears. Returns a watcher structure
+  which can be passed to [[deactivate]] if you would like to stop it
+  watching for reconnections. The underlying controller mapping, once
+  bound, can be accessed through the watcher's `:controller` key.
+
+  To locate the controller that you want to bind to, you need to
+  supply a `device-filter` which uniquely matches the ports to be used
+  to communicate with it. The values returned
+  by [[afterglow.midi/open-inputs-if-needed!]]
+  and [[afterglow.midi/open-outputs-if-needed!]] will be searched, and
+  the first port that matches with [[filter-devices]] will be used.
+  There must be both an input and output matching the filter for the
+  binding to succeed.
+
+  The controller binding implementation chosen will be determined by
+  calling [[identify]] with the ports found, and seeing which member
+  of [[recognizers]] recognizes the result and returns a dispatch
+  value. That value will be used to call [[bind-to-show-impl]] with the
+  ports and other arguments, and it will do the appropriate things to
+  work with the controller that was found.
+
+  All rich controller binding implementations accept a couple of
+  standard optional keyword arguments to adjust their behavior. The
+  controller will be identified in the user interface (for the
+  purposes of linking it to the web cue grid) with a default name
+  based on its type (for example \"Ableton Push\"). If you would like
+  to use a different name (for example, if you are lucky enough to
+  have more than one Push), you can pass in a custom value after
+  the optional keyword argument `:display-name`.
+
+  If you want the user interface to be refreshed at a different rate
+  than the default for the controller type, pass your desired number
+  of milliseconds after `:refresh-interval`.
+
+  Controllers which perform their own startup animation, or which need
+  to be given extra time to become ready after their ports appear in
+  the MIDI environment can look for the optional keyword argument
+  `:new-connection` to indicate the device has just been connected,
+  and react appropriately.
+
+  If you are watching for a specific controller type whose mapping
+  accepts other optional keyword arguments, you can include them as
+  well, and they will be passed along to [[bind-to-show]] when it is
+  detected."
+  [show device-filter & args]
+  {:pre [(have? some? show) (have? some? device-filter)]}
+  (let [idle (atom true)
+        controller (atom nil)]
+    (letfn [(disconnection-handler []
+              (reset! controller nil)
+              (reset! idle true))
+            (connection-handler
+              ([device]
+               (connection-handler device true))
+              ([device new-connection]
+               (when (compare-and-set! idle true false)
+                 (if (and (nil? @controller) (seq (amidi/filter-devices device-filter [device])))
+                   (let [port-in (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
+                         port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))]
+                     (when (every? some? [port-in port-out])  ; We found our controller! Bind to it in the background.
+                       (timbre/info "Auto-binding to controller" device)
+                       (future
+                         (try
+                           (reset! controller (apply bind-to-show show device-filter
+                                                     (concat args [:new-connection new-connection])))
+                           (if (some? @controller)
+                             (amidi/add-disconnected-device-handler! (:port-in @controller) disconnection-handler)
+                             (reset! idle true))
+                           (catch Exception e
+                             (reset! idle true)
+                             (timbre/error e "Problem binding to controller"))))))
+                   (reset! idle true)))))
+            (cancel-handler []
+              (amidi/remove-new-device-handler! connection-handler)
+              (when-let [device (:port-in @controller)]
+                (amidi/remove-disconnected-device-handler! device disconnection-handler)))]
+
+      ;; See if our controller seems to already be connected, and if so, bind to it right away.
+      (when-let [found (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))]
+        (connection-handler found false))
+
+      ;; Set up to bind when connected in future.
+      (amidi/add-new-device-handler! connection-handler)
+
+      ;; Return a watcher object which can provide access to the bound controller, and be canceled later.
+      (with-meta
+        {:controller controller
+         :device-filter device-filter
+         :cancel cancel-handler}
+        {:type ::watcher}))))
+
+;; Load all the built-in controller implementations, so they can register their recognizers.
+(at-at/after 50 (fn []
+                  (require 'afterglow.controllers.ableton-push)
+                  (require 'afterglow.controllers.ableton-push-2)
+                  (require 'afterglow.controllers.launchpad-pro)
+                  (require 'afterglow.controllers.launchpad-mini)
+                  (require 'afterglow.controllers.launchpad-mk2))
+             pool :desc "Register built-in grid controller implementations")

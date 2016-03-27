@@ -2666,49 +2666,61 @@
   from the MIDI environment, so no effort will be made to clear its
   display or take it out of User mode.
 
-  You can also pass a watcher object created by [[auto-bind]] as
-  `controller`; this will both deactivate the controller being managed
-  by the watcher, if it is currently connected, and cancel the
-  watcher itself. In such cases, `:disconnected` is meaningless."
+  In general you will not need to call this function directly; it will
+  be dispatched to via [[controllers/deactivate]] when that is called
+  with a controller binding implementation from this namespace. It is
+  also called automatically when one of the controllers being used
+  disappears from the MIDI environment."
   [controller & {:keys [disconnected] :or {disconnected false}}]
-  {:pre [(= ::controller (type controller))]}
-  (swap! (:task controller) (fn [task]
-                              (when task (at-at/kill task))
-                              nil))
-  (show/unregister-grid-controller @(:grid-controller-impl controller))
-  (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :deactivated))
-  (reset! (:move-listeners controller) #{})
-  (amidi/remove-device-mapping (:port-in controller) @(:midi-handler controller))
+  {:pre (= ::controller (type controller))}
+  (swap! (:task controller)
+         (fn [task]
+           (when task  ; We were running. Shut everything down.
+             (at-at/kill task)
+             (show/unregister-grid-controller @(:grid-controller-impl controller))
+             (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :deactivated))
+             (reset! (:move-listeners controller) #{})
+             (amidi/remove-device-mapping (:port-in controller) @(:midi-handler controller))
 
-  (when-not disconnected
-    (Thread/sleep 35) ; Give the UI update thread time to shut down
-    (clear-interface controller)
-    (restore-led-palettes controller)
+             (when-not disconnected
+               (Thread/sleep 35) ; Give the UI update thread time to shut down
+               (clear-interface controller)
+               (restore-led-palettes controller)
 
-    ;; Leave the User button bright, in case the user has Live
-    ;; running and wants to be able to see how to return to it.
-    (set-button-color controller (:user-mode control-buttons) white-color))
+               ;; Leave the User button bright, in case the user has Live
+               ;; running and wants to be able to see how to return to it.
+               (set-button-color controller (:user-mode control-buttons) white-color))
 
-  ;; Regardless of whether it was a clean or abrupt end, shut down the
-  ;; graphical display interface library.
-  (Wayang/close)
+             ;; Regardless of whether it was a clean or abrupt end, shut down the
+             ;; graphical display interface library.
+             (Wayang/close)
 
-  ;; Cancel any UI overlays which were in effect
-  (reset! (:overlays controller) (controllers/create-overlay-state))
+             ;; Cancel any UI overlays which were in effect
+             (reset! (:overlays controller) (controllers/create-overlay-state))
 
-  ;; And finally, note that we are no longer active.
-  (controllers/remove-active-binding @(:deactivate-handler controller)))
+             ;; And finally, note that we are no longer active.
+             (controllers/remove-active-binding controller))
+           nil)))
 
-(defn bind-to-show
-  "Establish a connection to the Ableton Push 2, for managing the
-  given show. This version is designed to be delegated to by
-  [[afterglow.controllers.ableton-push/bind-to-show]] when that detects
-  that it has found a Push 2 rather than an original Push. It uses the
-  ports and device identifier information that were found in the
-  process of starting the binding. See that function for more
-  information, and for the externally usable configuration
-  parameters."
-  [show port-in port-out device refresh-interval display-name]
+(defn- recognize
+  "Returns the controller's device ID if `message` is a response
+  from [[controllers/identify]] which marks it as an Ableton Push 2."
+  [message]
+  (when (= (take 7 (drop 4 (:data message))) '(0 33 29 103 50 2 0))
+    (int (aget (:data message) 1))))
+
+;; Register our recognition function and rich binding with the
+;; controller manager.
+(swap! controllers/recognizers assoc ::controller recognize)
+
+(defmethod controllers/deactivate ::controller
+  [controller & {:keys [disconnected] :or {disconnected false}}]
+  (deactivate controller :disconnected disconnected))
+
+(defmethod controllers/bind-to-show-impl ::controller
+  [kind show port-in port-out device & {:keys [refresh-interval display-name]
+                                        :or   {refresh-interval (/ 1000 15)
+                                               display-name     "Ableton Push"}}]
   {:pre [(some? show)]}
   (load-fonts)
   (let [modes (atom #{})
@@ -2738,7 +2750,6 @@
            :last-touch-strip     (atom nil)
            :next-touch-strip     (atom nil)
            :midi-handler         (atom nil)
-           :deactivate-handler   (atom nil)
            :tempo-tap-handler    (tempo/create-show-tempo-tap-handler
                                   show :shift-fn (fn [] (get @modes (get-in control-buttons [:shift :control]))))
            :overlays             (controllers/create-overlay-state)
@@ -2747,7 +2758,6 @@
           {:type ::controller})]
     (when (gather-led-palettes controller)
       (reset! (:midi-handler controller) (partial midi-received controller))
-      (reset! (:deactivate-handler controller) #(deactivate controller))
       (reset! (:grid-controller-impl controller)
               (reify controllers/IGridController
                 (display-name [this] (:display-name controller))
@@ -2770,7 +2780,7 @@
 
       (clear-interface controller)
       (welcome-animation controller)
-      (controllers/add-active-binding @(:deactivate-handler controller))
+      (controllers/add-active-binding controller)
       (show/register-grid-controller @(:grid-controller-impl controller))
       (amidi/add-disconnected-device-handler! port-in #(deactivate controller :disconnected true))
       controller)))

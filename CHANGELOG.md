@@ -126,9 +126,19 @@ This change log follows the conventions of
 
 ### Changed
 
+- You no longer need to specify what kind of grid controller you are
+  trying to bind to in advance; the controller manager in
+  `afterglow.controllers` can recognize the supported controllers from
+  their responses to the MIDI Device Inquiry message, and instantiate
+  the appropriate binding. New controller implementations can register
+  themselves when their namespaces are loaded so the controller
+  manager will dispatch to them as needed.
 - The code to gracefully shut down active controller bindings, which
   was becoming duplicated with every new controller mapping created,
   has been pulled up into the shared controllers namespace.
+- The code to watch for and automatically bind to a controller when it
+  appears in the MIDI environment has similarly been generalized and
+  pulled into the shared controllers namespace.
 - The ability to register an interest in all events from a specific
   MIDI device was added, and the controller mapping implementations
   were updated to take advantage of this, so they no longer need to

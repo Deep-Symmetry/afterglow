@@ -1955,64 +1955,122 @@
   from the MIDI environment, so no effort will be made to clear its
   display or take it out of User mode.
 
-  You can also pass a watcher object created by [[auto-bind]] as
-  `controller`; this will both deactivate the controller being managed
-  by the watcher, if it is currently connected, and cancel the
-  watcher itself. In such cases, `:disconnected` is meaningless."
+  In general you will not need to call this function directly; it will
+  be dispatched to via [[controllers/deactivate]] when that is called
+  with a controller binding implementation from this namespace. It is
+  also called automatically when one of the controllers being used
+  disappears from the MIDI environment."
   [controller & {:keys [disconnected] :or {disconnected false}}]
-  (case (type controller)
-    ::watcher
-    (do ((:cancel controller))  ; Shut down the watcher
-        (when-let [watched-controller @(:controller controller)]
-          (deactivate watched-controller)))  ; And deactivate the controller it was watching for
+  {:pre (= ::controller (type controller))}
+  (swap! (:task controller)
+         (fn [task]
+           (when task  ; We were running. Shut everything down.
+             (at-at/kill task)
+             (show/unregister-grid-controller @(:grid-controller-impl controller))
+             (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :deactivated))
+             (reset! (:move-listeners controller) #{})
+             (amidi/remove-device-mapping (:port-in controller) @(:midi-handler controller))
 
-    ::controller
-    (do ; We were passed an actual controller, not a watcher, so deactivate it.
-      (swap! (:task controller) (fn [task]
-                                  (when task (at-at/kill task))
-                                  nil))
-      (show/unregister-grid-controller @(:grid-controller-impl controller))
-      (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :deactivated))
-      (reset! (:move-listeners controller) #{})
-      (amidi/remove-device-mapping (:port-in controller) @(:midi-handler controller))
+             (when-not disconnected
+               (Thread/sleep 35) ; Give the UI update thread time to shut down
+               (clear-interface controller)
 
-      (when-not disconnected
-        (Thread/sleep 35) ; Give the UI update thread time to shut down
-        (clear-interface controller)
-        ;; Leave the User button bright, in case the user has Live
-        ;; running and wants to be able to see how to return to it.
-        (set-button-state controller (:user-mode control-buttons) :bright))
+               ;; Leave the User button bright, in case the user has Live
+               ;; running and wants to be able to see how to return to it.
+               (set-button-state controller (:user-mode control-buttons) :bright))
 
-      ;; Cancel any UI overlays which were in effect
-      (reset! (:overlays controller) (controllers/create-overlay-state))
+             ;; Cancel any UI overlays which were in effect
+             (reset! (:overlays controller) (controllers/create-overlay-state))
 
-      ;; And finally, note that we are no longer active.
-      (controllers/remove-active-binding @(:deactivate-handler controller)))
+             ;; And finally, note that we are no longer active.
+             (controllers/remove-active-binding controller))
+           nil)))
 
-    :afterglow.controllers.ableton-push-2/controller
-    (do ; We were passed a Push 2 controller implementation, delegate to its own deactivation function.
-      ((resolve 'afterglow.controllers.ableton-push-2/deactivate) controller))))
+(defn- recognize
+  "Returns the controller's device ID if `message` is a response
+  from [[controllers/identify]] which marks it as an Ableton Push."
+  [message]
+  (when (= (take 5 (drop 4 (:data message))) '(71 21 0 25 0))
+    (int (aget (:data message) 1))))
 
-(defn- valid-identity
-  "Checks that the device we are trying to bind to reports the proper
-  identity in response to a MIDI Device Inquiry message. This also
-  gives it time to boot if it has just powered on. Returns a tuple of
-  the assigned device ID and model (either `:push` or `:push-2`) if
-  the identity is correct, or logs an error and returns nil if it is
-  not."
-  [port-in port-out]
-  (let [ident (controllers/identify port-in port-out)]
-    (cond (= (take 5 (drop 4 (:data ident))) '(71 21 0 25 0))
-          [(int (aget (:data ident) 1)) :push]
+;; Register our recognition function and rich binding with the
+;; controller manager.
+(swap! controllers/recognizers assoc ::controller recognize)
 
-          (= (take 7 (drop 4 (:data ident))) '(0 33 29 103 50 2 0))
-          [(int (aget (:data ident) 1)) :push-2]
+(defmethod controllers/deactivate ::controller
+  [controller & {:keys [disconnected] :or {disconnected false}}]
+  (deactivate controller :disconnected disconnected))
 
-          :else
-          (timbre/error "Device does not identify as an Ableton Push:" port-in))))
+(defmethod controllers/bind-to-show-impl ::controller
+  [kind show port-in port-out device & {:keys [refresh-interval display-name]
+           :or   {refresh-interval (/ 1000 15)
+                  display-name     "Ableton Push"}}]
+  (let [modes (atom #{})
+        controller
+        (with-meta
+          {:display-name         display-name
+           :device-id            device
+           :show                 show
+           :origin               (atom [0 0])
+           :effect-offset        (atom 0)
+           :cue-var-offsets      (atom {})
+           :refresh-interval     refresh-interval
+           :port-in              port-in
+           :port-out             port-out
+           :task                 (atom nil)
+           :last-display         (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
+           :next-display         (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
+           :last-text-buttons    (atom {})
+           :next-text-buttons    (atom {})
+           :last-top-pads        (int-array 8)
+           :next-top-pads        (int-array 8)
+           :last-grid-pads       (make-array clojure.lang.IPersistentMap 64)
+           :next-grid-pads       (make-array clojure.lang.IPersistentMap 64)
+           :metronome-mode       (atom {})
+           :last-marker          (atom nil)
+           :modes                modes
+           :last-touch-strip     (atom nil)
+           :next-touch-strip     (atom nil)
+           :midi-handler         (atom nil)
+           :tempo-tap-handler    (tempo/create-show-tempo-tap-handler
+                                  show :shift-fn (fn [] (get @modes (get-in control-buttons [:shift :control]))))
+           :overlays             (controllers/create-overlay-state)
+           :move-listeners       (atom #{})
+           :grid-controller-impl (atom nil)}
+          {:type ::controller})]
+    (reset! (:midi-handler controller) (partial midi-received controller))
+    (reset! (:grid-controller-impl controller)
+            (reify controllers/IGridController
+              (display-name [this] (:display-name controller))
+              (physical-height [this] 8)
+              (physical-width [this] 8)
+              (current-bottom [this] (@(:origin controller) 1))
+              (current-bottom [this y] (move-origin controller (assoc @(:origin controller) 1 y)))
+              (current-left [this] (@(:origin controller) 0))
+              (current-left [this x] (move-origin controller (assoc @(:origin controller) 0 x)))
+              (add-move-listener [this f] (swap! (:move-listeners controller) conj f))
+              (remove-move-listener [this f] (swap! (:move-listeners controller) disj f))))
+    ;; Set controller in User mode
+    (midi/midi-sysex (:port-out controller) [240 71 127 21 98 0 1 1 247])
+    ;; Put pads in aftertouch (poly) pressure mode
+    (midi/midi-sysex (:port-out controller) [240 71 127 21 92 0 1 0 247])
+    ;; Set pad sensitivity level to 1 to avoid stuck pads
+    (midi/midi-sysex (:port-out controller)
+                     [0xF0 0x47 0x7F 0x15 0x5D 0x00 0x20 0x00 0x00 0x0C 0x07 0x00 0x00 0x0D 0x0C 0x00
+                      0x00 0x00 0x01 0x04 0x0C 0x00 0x08 0x00 0x00 0x00 0x01 0x0D 0x04 0x0C 0x00 0x00
+                      0x00 0x00 0x00 0x0E 0x0A 0x06 0x00 0xF7])
+    (clear-interface controller)
+    (welcome-animation controller)
+    (controllers/add-active-binding controller)
+    (show/register-grid-controller @(:grid-controller-impl controller))
+    (amidi/add-disconnected-device-handler! port-in #(deactivate controller :disconnected true))
+    controller))
 
 (defn bind-to-show
-  "Establish a connection to the Ableton Push, for managing the given
+  "*Deprecated in favor of the shared [[controllers/bind-to-show]]
+  implementation.*
+
+  Establish a connection to the Ableton Push, for managing the given
   show.
 
   Initializes the display, and starts the UI updater thread. Since
@@ -2042,86 +2100,18 @@
   If you want the user interface to be refreshed at a different rate
   than the default of fifteen times per second, pass your desired
   number of milliseconds after `:refresh-interval`."
+  {:deprecated "0.2.1"}
   [show & {:keys [device-filter refresh-interval display-name]
            :or   {device-filter    "User Port"
                   refresh-interval (/ 1000 15)
                   display-name     "Ableton Push"}}]
-  {:pre [(some? show)]}
-  (let [port-in  (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
-        port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))
-        [device model]   (when (every? some? [port-in port-out]) (valid-identity port-in port-out))]
-    (if device
-      (if (= model :push-2)
-        (do ; We found a version 2 push, so load that namespace and let it do the actual binding.
-          (require '[afterglow.controllers.ableton-push-2])
-          ((resolve 'afterglow.controllers.ableton-push-2/bind-to-show) show port-in port-out device
-           refresh-interval display-name))
-        (let [modes (atom #{}) ; We found an original push, so use the implementation in this namespace.
-              controller
-              (with-meta
-                {:display-name         display-name
-                 :device-id            device
-                 :show                 show
-                 :origin               (atom [0 0])
-                 :effect-offset        (atom 0)
-                 :cue-var-offsets      (atom {})
-                 :refresh-interval     refresh-interval
-                 :port-in              port-in
-                 :port-out             port-out
-                 :task                 (atom nil)
-                 :last-display         (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
-                 :next-display         (vec (for [_ (range 4)] (byte-array (take 68 (repeat 32)))))
-                 :last-text-buttons    (atom {})
-                 :next-text-buttons    (atom {})
-                 :last-top-pads        (int-array 8)
-                 :next-top-pads        (int-array 8)
-                 :last-grid-pads       (make-array clojure.lang.IPersistentMap 64)
-                 :next-grid-pads       (make-array clojure.lang.IPersistentMap 64)
-                 :metronome-mode       (atom {})
-                 :last-marker          (atom nil)
-                 :modes                modes
-                 :last-touch-strip     (atom nil)
-                 :next-touch-strip     (atom nil)
-                 :midi-handler         (atom nil)
-                 :deactivate-handler   (atom nil)
-                 :tempo-tap-handler    (tempo/create-show-tempo-tap-handler
-                                        show :shift-fn (fn [] (get @modes (get-in control-buttons [:shift :control]))))
-                 :overlays             (controllers/create-overlay-state)
-                 :move-listeners       (atom #{})
-                 :grid-controller-impl (atom nil)}
-                {:type ::controller})]
-          (reset! (:midi-handler controller) (partial midi-received controller))
-          (reset! (:deactivate-handler controller) #(deactivate controller))
-          (reset! (:grid-controller-impl controller)
-                  (reify controllers/IGridController
-                    (display-name [this] (:display-name controller))
-                    (physical-height [this] 8)
-                    (physical-width [this] 8)
-                    (current-bottom [this] (@(:origin controller) 1))
-                    (current-bottom [this y] (move-origin controller (assoc @(:origin controller) 1 y)))
-                    (current-left [this] (@(:origin controller) 0))
-                    (current-left [this x] (move-origin controller (assoc @(:origin controller) 0 x)))
-                    (add-move-listener [this f] (swap! (:move-listeners controller) conj f))
-                    (remove-move-listener [this f] (swap! (:move-listeners controller) disj f))))
-          ;; Set controller in User mode
-          (midi/midi-sysex (:port-out controller) [240 71 127 21 98 0 1 1 247])
-          ;; Put pads in aftertouch (poly) pressure mode
-          (midi/midi-sysex (:port-out controller) [240 71 127 21 92 0 1 0 247])
-          ;; Set pad sensitivity level to 1 to avoid stuck pads
-          (midi/midi-sysex (:port-out controller)
-                           [0xF0 0x47 0x7F 0x15 0x5D 0x00 0x20 0x00 0x00 0x0C 0x07 0x00 0x00 0x0D 0x0C 0x00
-                            0x00 0x00 0x01 0x04 0x0C 0x00 0x08 0x00 0x00 0x00 0x01 0x0D 0x04 0x0C 0x00 0x00
-                            0x00 0x00 0x00 0x0E 0x0A 0x06 0x00 0xF7])
-          (clear-interface controller)
-          (welcome-animation controller)
-          (controllers/add-active-binding @(:deactivate-handler controller))
-          (show/register-grid-controller @(:grid-controller-impl controller))
-          (amidi/add-disconnected-device-handler! port-in #(deactivate controller :disconnected true))
-          controller))
-      (timbre/error "Unable to find Ableton Push" (amidi/describe-device-filter device-filter)))))
+  (controllers/bind-to-show show device-filter :refresh-interval refresh-interval :display-name display-name))
 
 (defn auto-bind
-  "Watches for an Ableton Push controller to be connected, and as soon
+  "*Deprecated in favor of the shared [[controllers/auto-bind]]
+  implementation.*
+
+  Watches for an Ableton Push controller to be connected, and as soon
   as it is, binds it to the specified show using [[bind-to-show]]. If
   that controller ever gets disconnected, it will be re-bound once it
   reappears. Returns a watcher structure which can be passed
@@ -2146,47 +2136,9 @@
   If you want the user interface to be refreshed at a different rate
   than the default of fifteen times per second, pass your desired
   number of milliseconds after `:refresh-interval`."
+  {:deprecated "0.2.1"}
   [show & {:keys [device-filter refresh-interval display-name]
            :or {device-filter "User Port"
                 refresh-interval (/ 1000 15)
                 display-name "Ableton Push"}}]
-  {:pre [(some? show)]}
-  (let [idle (atom true)
-        controller (atom nil)]
-    (letfn [(disconnection-handler []
-              (reset! controller nil)
-              (reset! idle true))
-            (connection-handler [device]
-              (when (compare-and-set! idle true false)
-                (if (and (nil? @controller) (seq (amidi/filter-devices device-filter [device])))
-                    (let [port-in (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
-                          port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))]
-                      (when (every? some? [port-in port-out])  ; We found our Push! Bind to it in the background.
-                        (timbre/info "Auto-binding to Ableton Push" device)
-                        (future
-                          (try
-                            (reset! controller (bind-to-show show :device-filter device-filter
-                                                             :refresh-interval refresh-interval
-                                                             :display-name display-name))
-                            (amidi/add-disconnected-device-handler! (:port-in @controller) disconnection-handler)
-                            (catch Exception e
-                                (timbre/error e "Problem binding to Push"))))))
-                    (reset! idle true))))
-            (cancel-handler []
-              (amidi/remove-new-device-handler! connection-handler)
-              (when-let [device (:port-in @controller)]
-                (amidi/remove-disconnected-device-handler! device disconnection-handler)))]
-
-      ;; See if our Push seems to already be connected, and if so, bind to it right away.
-      (when-let [found (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))]
-        (connection-handler found))
-
-      ;; Set up to bind when connected in future.
-      (amidi/add-new-device-handler! connection-handler)
-
-      ;; Return a watcher object which can provide access to the bound controller, and be canceled later.
-      (with-meta
-        {:controller controller
-         :device-filter device-filter
-         :cancel cancel-handler}
-        {:type ::watcher}))))
+  (controllers/auto-bind show device-filter :refresh-interval refresh-interval :display-name display-name))

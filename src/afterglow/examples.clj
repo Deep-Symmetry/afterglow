@@ -3,7 +3,6 @@
   exploration." {:author "James Elliott"}
   (:require [afterglow.beyond :as beyond]
             [afterglow.channels :as chan]
-            [afterglow.controllers.ableton-push :as push]
             [afterglow.controllers :as ct]
             [afterglow.controllers.tempo]
             [afterglow.core :as core]
@@ -2234,4 +2233,5 @@
            :or {device-filter "User Port"
                 refresh-interval (/ 1000 15)
                 display-name "Ableton Push"}}]
-  (push/auto-bind *show* :device-filter device-filter :refresh-interval refresh-interval :display-name display-name))
+  (afterglow.controllers/auto-bind *show* device-filter
+                                   :refresh-interval refresh-interval :display-name display-name))

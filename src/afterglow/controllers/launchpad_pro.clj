@@ -619,57 +619,117 @@
   from the MIDI environment, so no effort will be made to clear its
   display or take it out of User mode.
 
-  You can also pass a watcher object created by [[auto-bind]] as
-  `controller`; this will both deactivate the controller being managed
-  by the watcher, if it is currently connected, and cancel the
-  watcher itself. In such cases, `:disconnected` is meaningless."
+  In general you will not need to call this function directly; it will
+  be dispatched to via [[controllers/deactivate]] when that is called
+  with a controller binding implementation from this namespace. It is
+  also called automatically when one of the controllers being used
+  disappears from the MIDI environment."
   [controller & {:keys [disconnected] :or {disconnected false}}]
-  {:pre [(#{::controller ::watcher} (type controller))]}
-  (if (= (type controller) ::watcher)
-    (do ((:cancel controller))  ; Shut down the watcher
-        (when-let [watched-controller @(:controller controller)]
-          (deactivate watched-controller)))  ; And deactivate the controller it was watching for
-    (do ;; We were passed an actual controller, not a watcher, so deactivate it.
-      (swap! (:task controller) (fn [task]
-                                  (when task (at-at/kill task))
-                                  nil))
-      (show/unregister-grid-controller @(:grid-controller-impl controller))
-      (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :deactivated))
-      (reset! (:move-listeners controller) #{})
-      (amidi/remove-device-mapping (:port-in controller) @(:midi-handler controller))
+  {:pre (= ::controller (type controller))}
+  (swap! (:task controller)
+         (fn [task]
+           (when task
+             (at-at/kill task)
+             (show/unregister-grid-controller @(:grid-controller-impl controller))
+             (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :deactivated))
+             (reset! (:move-listeners controller) #{})
+             (amidi/remove-device-mapping (:port-in controller) @(:midi-handler controller))
 
-      (when-not disconnected
-        (Thread/sleep 35) ; Give the UI update thread time to shut down
+             (when-not disconnected
+               (Thread/sleep 35) ; Give the UI update thread time to shut down
+               (clear-interface controller)
+               ;; Leave the User button bright, in case the user has Live
+               ;; running and wants to be able to see how to return to it.
+               (set-led-color controller (:user-mode control-buttons) (colors/create-color :white)))
+
+             ;; Cancel any UI overlays which were in effect
+             (reset! (:overlays controller) (controllers/create-overlay-state))
+
+             ;; And finally, note that we are no longer active.
+             (controllers/remove-active-binding controller))
+           nil)))
+
+(defn- recognize
+  "Returns the controller's device ID if `message` is a response
+  from [[controllers/identify]] which marks it as a Novation Launchpad
+  Pro"
+  [message]
+  (when (= (take 5 (drop 4 (:data message))) '(0 32 41 81 0))
+    (int (aget (:data message) 1))))
+
+;; Register our recognition function and rich binding with the
+;; controller manager.
+(swap! controllers/recognizers assoc ::controller recognize)
+
+(defmethod controllers/deactivate ::controller
+  [controller & {:keys [disconnected] :or {disconnected false}}]
+  (deactivate controller :disconnected disconnected))
+
+(defmethod controllers/bind-to-show-impl ::controller
+  [kind show port-in port-out device & {:keys [refresh-interval display-name new-connection]
+           :or   {refresh-interval (/ 1000 15)
+                  display-name     "Launchpad Pro"}}]
+  {:pre [(some? show)]}
+  (let [shift-mode (atom false)
+        controller
+        (with-meta
+          {:display-name         display-name
+           :device-id            device
+           :show                 show
+           :origin               (atom [0 0])
+           :refresh-interval     refresh-interval
+           :port-in              port-in
+           :port-out             port-out
+           :task                 (atom nil)
+           :last-text-buttons    (atom {})
+           :next-text-buttons    (atom {})
+           :last-grid-pads       (atom nil)
+           :next-grid-pads       (atom nil)
+           :shift-mode           shift-mode
+           :stop-mode            (atom false)
+           :midi-handler         (atom nil)
+           :tempo-tap-handler    (tempo/create-show-tempo-tap-handler show :shift-fn (fn [] @shift-mode))
+           :last-marker          (atom nil)
+           :overlays             (controllers/create-overlay-state)
+           :move-listeners       (atom #{})
+           :grid-controller-impl (atom nil)}
+          {:type ::controller})]
+    (reset! (:midi-handler controller) (partial midi-received controller))
+    (reset! (:grid-controller-impl controller)
+            (reify controllers/IGridController
+              (display-name [this] (:display-name controller))
+              (physical-height [this] 8)
+              (physical-width [this] 8)
+              (current-bottom [this] (@(:origin controller) 1))
+              (current-bottom [this y] (move-origin controller (assoc @(:origin controller) 1 y)))
+              (current-left [this] (@(:origin controller) 0))
+              (current-left [this x] (move-origin controller (assoc @(:origin controller) 0 x)))
+              (add-move-listener [this f] (swap! (:move-listeners controller) conj f))
+              (remove-move-listener [this f] (swap! (:move-listeners controller) disj f))))
+    (if new-connection
+      (at-at/after 3000 (fn []
+                          (set-layout controller)
+                          (clear-interface controller)
+                          (start-interface controller)) controllers/pool :desc "Start Launchpad Pro interface")
+      (do
+        (set-layout controller)
         (clear-interface controller)
-        ;; Leave the User button bright, in case the user has Live
-        ;; running and wants to be able to see how to return to it.
-        (set-led-color controller (:user-mode control-buttons) (colors/create-color :white)))
-
-      ;; Cancel any UI overlays which were in effect
-      (reset! (:overlays controller) (controllers/create-overlay-state))
-
-      ;; And finally, note that we are no longer active.
-      (controllers/remove-active-binding @(:deactivate-handler controller)))))
-
-(defn- valid-identity
-  "Checks that the device we are trying to bind to reports the proper
-  identity in response to a MIDI Device Inquiry message. This also
-  gives it time to boot if it has just powered on. Returns the
-  assigned device ID if the identity is correct, or logs an error and
-  returns nil if it is not."
-  [port-in port-out]
-  (let [ident (controllers/identify port-in port-out)]
-    (if (= (take 5 (drop 4 (:data ident))) '(0 32 41 81 0))
-      (aget (:data ident) 1)
-      (timbre/error "Device does not identify as a Launchpad Pro:" port-in))))
+        (welcome-animation controller)))
+    (controllers/add-active-binding controller)
+    (show/register-grid-controller @(:grid-controller-impl controller))
+    (amidi/add-disconnected-device-handler! port-in #(deactivate controller :disconnected true))
+    controller))
 
 (defn bind-to-show
-  "Establish a connection to the Novation Launchpad Pro, for managing
+  "*Deprecated in favor of the shared [[controllers/bind-to-show]]
+  implementation.*
+
+  Establish a connection to the Novation Launchpad Pro, for managing
   the given show.
 
-  Makes sure it identifies as a Launchpad Pro, then initializes the
-  display and starts the UI updater thread. Since SysEx messages are
-  required for updating the display, if you are on a Mac, you must
+  Initializes the display and starts the UI updater thread. Since
+  SysEx messages are required for updating the display, if you are on
+  a Mac, you must
   install [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J) to
   provide a working implementation. (If you need to work with Java
   1.6, you can instead
@@ -698,66 +758,19 @@
   If you would like to skip the startup animation (for example because
   the device has just powered on and run its own animation), pass
   `true` after `:skip-animation`."
+  {:deprecated "0.2.1"}
   [show & {:keys [device-filter refresh-interval display-name skip-animation]
            :or   {device-filter    "Standalone Port"
                   refresh-interval (/ 1000 15)
                   display-name     "Launchpad Pro"}}]
-  {:pre [(some? show)]}
-  (let [port-in  (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
-        port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))
-        device   (when (every? some? [port-in port-out]) (valid-identity port-in port-out))]
-    (if device
-      (let [shift-mode (atom false)
-            controller
-            (with-meta
-              {:display-name         display-name
-               :device-id            device
-               :show                 show
-               :origin               (atom [0 0])
-               :refresh-interval     refresh-interval
-               :port-in              port-in
-               :port-out             port-out
-               :task                 (atom nil)
-               :last-text-buttons    (atom {})
-               :next-text-buttons    (atom {})
-               :last-grid-pads       (atom nil)
-               :next-grid-pads       (atom nil)
-               :shift-mode           shift-mode
-               :stop-mode            (atom false)
-               :midi-handler         (atom nil)
-               :deactivate-handler   (atom nil)
-               :tempo-tap-handler    (tempo/create-show-tempo-tap-handler show :shift-fn (fn [] @shift-mode))
-               :last-marker          (atom nil)
-               :overlays             (controllers/create-overlay-state)
-               :move-listeners       (atom #{})
-               :grid-controller-impl (atom nil)}
-              {:type ::controller})]
-        (reset! (:midi-handler controller) (partial midi-received controller))
-        (reset! (:deactivate-handler controller) #(deactivate controller))
-        (reset! (:grid-controller-impl controller)
-                (reify controllers/IGridController
-                  (display-name [this] (:display-name controller))
-                  (physical-height [this] 8)
-                  (physical-width [this] 8)
-                  (current-bottom [this] (@(:origin controller) 1))
-                  (current-bottom [this y] (move-origin controller (assoc @(:origin controller) 1 y)))
-                  (current-left [this] (@(:origin controller) 0))
-                  (current-left [this x] (move-origin controller (assoc @(:origin controller) 0 x)))
-                  (add-move-listener [this f] (swap! (:move-listeners controller) conj f))
-                  (remove-move-listener [this f] (swap! (:move-listeners controller) disj f))))
-        (set-layout controller)
-        (clear-interface controller)
-        (if skip-animation
-          (start-interface controller)
-          (welcome-animation controller))
-        (controllers/add-active-binding @(:deactivate-handler controller))
-        (show/register-grid-controller @(:grid-controller-impl controller))
-        (amidi/add-disconnected-device-handler! port-in #(deactivate controller :disconnected true))
-        controller)
-      (timbre/error "Unable to find Launchpad Pro" (amidi/describe-device-filter device-filter)))))
+  (controllers/bind-to-show device-filter :refresh-interval refresh-interval :display-name display-name
+                            :new-connection skip-animation))
 
 (defn auto-bind
-  "Watches for a Novation Launchpad Pro controller to be connected,
+  "*Deprecated in favor of the shared [[controllers/auto-bind]]
+  implementation.*
+
+  Watches for a Novation Launchpad Pro controller to be connected,
   and as soon as it is, binds it to the specified show
   using [[bind-to-show]]. If that controller ever gets disconnected,
   it will be re-bound once it reappears. Returns a watcher structure
@@ -784,49 +797,9 @@
   If you want the user interface to be refreshed at a different rate
   than the default of fifteen times per second, pass your desired
   number of milliseconds after `:refresh-interval`."
+  {:deprecated "0.2.1"}
   [show & {:keys [device-filter refresh-interval display-name]
            :or {device-filter "Standalone Port"
                 refresh-interval (/ 1000 15)
                 display-name "Launchpad Pro"}}]
-  {:pre [(some? show)]}
-  (let [idle (atom true)
-        controller (atom nil)]
-    (letfn [(disconnection-handler []
-              (reset! controller nil)
-              (reset! idle true))
-            (connection-handler
-              ([device]
-               (connection-handler device true))
-              ([device wait-for-boot]
-               (when (compare-and-set! idle true false)
-                 (if (and (nil? @controller) (seq (amidi/filter-devices device-filter [device])))
-                   (let [port-in (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
-                         port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))]
-                     (when (every? some? [port-in port-out])  ; We found our Launchpad! Bind to it in the background.
-                       (timbre/info "Auto-binding to Launchpad Pro" device)
-                       (future
-                         (when wait-for-boot (Thread/sleep 3000)) ; Allow for firmware's own welcome animation
-                         (reset! controller (bind-to-show show :device-filter device-filter
-                                                          :refresh-interval refresh-interval
-                                                          :display-name display-name
-                                                          :skip-animation wait-for-boot))
-                         (amidi/add-disconnected-device-handler! (:port-in @controller) disconnection-handler))))
-                   (reset! idle true)))))
-            (cancel-handler []
-              (amidi/remove-new-device-handler! connection-handler)
-              (when-let [device (:port-in @controller)]
-                (amidi/remove-disconnected-device-handler! device disconnection-handler)))]
-
-      ;; See if our Launchpad seems to already be connected, and if so, bind to it right away.
-      (when-let [found (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))]
-        (connection-handler found false))
-
-      ;; Set up to bind when connected in future.
-      (amidi/add-new-device-handler! connection-handler)
-
-      ;; Return a watcher object which can provide access to the bound controller, and be canceled later.
-      (with-meta
-        {:controller controller
-         :device-filter device-filter
-         :cancel cancel-handler}
-        {:type ::watcher}))))
+  (controllers/auto-bind show device-filter :refresh-interval refresh-interval :display-name display-name))
