@@ -1324,14 +1324,16 @@
     (cond
       (or (number? cur-val) (#{:integer :double} (:type cue-var :double)))
       (if (:centered cue-var)
-        (draw-pan-gauge controller index encoder-count cur-val :lowest (min cur-val (:min cue-var))
-                    :highest (max cur-val (:max cue-var)))
-        (draw-gauge controller index encoder-count cur-val :lowest (min cur-val (:min cue-var))
-                    :highest (max cur-val (:max cue-var))))
+        (let [cur-val (or cur-val (/ (+ (:min cue-var) (:max cue-var)) 2))]  ; Treat missing values as centered
+          (draw-pan-gauge controller index encoder-count cur-val :lowest (min cur-val (:min cue-var))
+                          :highest (max cur-val (:max cue-var))))
+        (let [cur-val (or cur-val (:min cue-var))]  ; Treat missing values as minima
+          (draw-gauge controller index encoder-count cur-val :lowest (min cur-val (:min cue-var))
+                      :highest (max cur-val (:max cue-var)))))
 
       (or (= (type cur-val) :com.evocomputing.colors/color) (= (:type cue-var) :color))
       (let [current-color (or (cues/get-cue-variable cue cue-var :show (:show controller) :when-id effect-id)
-                              white-color)
+                              white-color)  ; Treat missing values as white
             hue (colors/hue current-color)
             sat (colors/saturation current-color)]
         (if (= encoder-count 1)
