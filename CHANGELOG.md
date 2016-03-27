@@ -57,6 +57,8 @@ This change log follows the conventions of
   when using the web UI, as long as no input element is focused.
 - You can use the space bar to tap tempo when using the web UI, as
   long as no input element is focused.
+- Cues can have visualizer creation functions assigned to them, so
+  they can provide animated visualizer displays on the Push 2.
 
 ### Fixed
 
