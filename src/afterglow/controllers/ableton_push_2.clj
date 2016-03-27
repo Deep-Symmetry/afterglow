@@ -1062,7 +1062,14 @@
   "Returns the color in which to draw the stripe marking a beat. Red
   for down beats, white for others."
   [snapshot]
-  (if (rhythm/snapshot-down-beat? snapshot) red-color white-color))
+  (if (rhythm/snapshot-down-beat? snapshot) java.awt.Color/RED java.awt.Color/WHITE))
+
+(defn draw-beat-mark
+  "Draw one of the marks representing a beat on the beat grid."
+  [graphics snapshot beat-position]
+  (.setPaint graphics (beat-mark-color snapshot))
+  (.draw graphics (java.awt.geom.Line2D$Double. beat-position (beat-mark-top-y snapshot)
+                                                beat-position (- Wayang/DISPLAY_HEIGHT 20))))
 
 (defn- beat-mark-top-y
   "Returns the upper Y coordinate from which to draw the stripe
@@ -1079,7 +1086,7 @@
     (.lineTo path x (- Wayang/DISPLAY_HEIGHT top))
     (.lineTo path (- x width) (- Wayang/DISPLAY_HEIGHT 20))
     (.closePath path)
-    (set-graphics-color graphics color)
+    (.setPaint graphics color)
     (.fill graphics path)))
 
 (defn- update-metronome-section
@@ -1117,27 +1124,46 @@
 
         (let [beat-width (/ button-cell-width (:bpb snapshot))
               beat-position (- button-cell-width (* beat-width (:beat-phase snapshot)))
+              bar-position (- button-cell-width (* beat-width (:bpb snapshot) (:bar-phase snapshot)))
+              phrase-position (- button-cell-width (* beat-width (:bpb snapshot) (:bpp snapshot)
+                                                      (:phrase-phase snapshot)))
               metro (:metronome (:show controller))
-              beat-background (colors/adjust-alpha white-color -0.25)]
+              beat-background (java.awt.Color. 255 255 255 100)
+              down-beat-background (java.awt.Color. 255 0 0 72)
+              phrase-background (java.awt.Color. (colors/red metronome-content) (colors/green metronome-content)
+                                                 (colors/blue metronome-content) 32)]
           (.setClip graphics  0 (- Wayang/DISPLAY_HEIGHT 60) (* 2 button-cell-width) 40)
-          (set-graphics-color graphics (beat-mark-color snapshot))
-          (draw-beat-grid-triangle graphics beat-position beat-width 40 beat-background)
-          (.draw graphics (java.awt.geom.Line2D$Double. beat-position (beat-mark-top-y snapshot)
-                                                        beat-position (- Wayang/DISPLAY_HEIGHT 20)))
-          (loop [position (+ beat-position beat-width)
-                 snap (rhythm/metro-snapshot metro (+ (:instant snapshot) (rhythm/metro-tick metro)))]
+
+          ;; Draw a triangle representing the current measure and any following ones that at least partially fit
+          (loop [position phrase-position]
+            (draw-beat-grid-triangle graphics position (* beat-width (:bpb snapshot) (:bpp snapshot))
+                                     60 phrase-background)
             (when (< position (* 2 button-cell-width))
-              (set-graphics-color graphics (if (rhythm/snapshot-down-beat? snap) red-color white-color))
-              (.draw graphics (java.awt.geom.Line2D$Double. position (beat-mark-top-y snap)
-                                                            position (- Wayang/DISPLAY_HEIGHT 20)))
+              (recur (+ position (* beat-width (:bpb snapshot) (:bpp snapshot))))))
+
+          ;; Draw a triangle representing the current measure and any following ones that at least partially fit
+          (loop [position bar-position
+                 snap snapshot]
+            (draw-beat-grid-triangle graphics position (* beat-width (:bpb snap)) 50 down-beat-background)
+            (when (< position (* 2 button-cell-width))
+              (recur (+ position (* beat-width (:bpb snap)))
+                     (rhythm/metro-snapshot metro (+ (:instant snap) (rhythm/metro-tock metro))))))
+
+          ;; Draw the current beat and any following ones that fit, and one additional triangle beyond that.
+          (loop [position beat-position
+                 snap snapshot]
+            (draw-beat-grid-triangle graphics position beat-width 40 beat-background)
+            (when (< position (* 2 button-cell-width))
+              (draw-beat-mark graphics snap position)
               (recur (+ position beat-width)
                      (rhythm/metro-snapshot metro (+ (:instant snap) (rhythm/metro-tick metro))))))
+
+          ;; Draw any beats preceding the current one that fit
           (loop [position (- beat-position beat-width)
                  snap (rhythm/metro-snapshot metro (- (:instant snapshot) (rhythm/metro-tick metro)))]
             (when (>= position 0)
-              (set-graphics-color graphics (if (rhythm/snapshot-down-beat? snap) red-color white-color))
-              (.draw graphics (java.awt.geom.Line2D$Double. position (beat-mark-top-y snap)
-                                                            position (- Wayang/DISPLAY_HEIGHT 20)))
+              (draw-beat-grid-triangle graphics position beat-width 40 beat-background)
+              (draw-beat-mark graphics snap position)
               (recur (- position beat-width)
                      (rhythm/metro-snapshot metro (- (:instant snap) (rhythm/metro-tick metro)))))))
 
