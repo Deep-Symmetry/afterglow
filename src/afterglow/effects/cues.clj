@@ -71,6 +71,20 @@
   key when triggering the cue on interfaces which have `Shift` keys,
   like the web interface and Ableton Push.
 
+  To support controllers with animated graphical displays like the
+  Push 2, a visualizer creation function can be passed with the
+  optional keyword argument `:visualizer`. This function will be
+  called when the controller wants to draw a visualization of the
+  progression of the cue over time, and will be passed two arguments,
+  the cue's `var-map` (see below), and the `show` in which the cue is
+  running. The function must return another function, which takes a
+  metronome snapshot, and returns a value between 0 and 1 representing
+  some meaningful numerical summary of the cue state at that time. It
+  will be used to draw a moving strip chart of the cue's activity
+  around the current moment on the display. The example dimmer
+  oscillator cues like [[make-sine-dimmer-cue]] show how this can be
+  used to good effect.
+
   `:variables` introduces a list of variable bindings for the cue,
   each of which is a map with the following keys:
 
@@ -129,10 +143,10 @@
   * `:velocity-min` and `:velocity-max` specify the range into
      which MIDI velocity and aftertouch values will be mapped, if they are present.
      Otherwise the standard `:min` and `:max` values will be used."
-  [show-key effect-fn & {:keys [variables short-name color color-fn end-keys priority held]
+  [show-key effect-fn & {:keys [variables short-name color color-fn end-keys priority held visualizer]
                          :or {short-name (:name (show/get-cue-effect effect-fn variables)) color :white priority 0}}]
   {:pre [(some? show-key) (ifn? effect-fn) (satisfies? fx/IEffect (show/get-cue-effect effect-fn variables))
-         (or (nil? color-fn) (ifn? color-fn))]}
+         (or (nil? color-fn) (ifn? color-fn)) (or (nil? visualizer) (ifn? visualizer))]}
   (merge {:name (name short-name)
           :key (keyword show-key)
           :effect effect-fn
@@ -141,7 +155,8 @@
           :color (params/interpret-color (if (keyword? color) (name color) color))
           :end-keys (vec end-keys)
           :variables (vec variables)}
-         (when color-fn {:color-fn color-fn})))
+         (when color-fn {:color-fn color-fn})
+         (when visualizer {:visualizer visualizer})))
 
 (defn function-cue
   "Creates a cue that applies the specified function to the supplied

@@ -662,6 +662,16 @@
         cycles-param (params/bind-keyword-param (:cycles var-map) Number 1)]
     (params/build-param-formula Number #(/ %1 %2) beats-param cycles-param)))
 
+(defn- make-sawtooth-dimmer-param
+  "Creates the sawtooth oscillated parameter used by
+  `make-sawtooth-dimmer-cue` for both the actual effect and its
+  visualizer."
+  [var-map]
+  (oscillators/build-oscillated-param (oscillators/sawtooth :down? (:down var-map)
+                                                            :interval-ratio (build-ratio-param var-map)
+                                                            :phase (:phase var-map))
+                                      :min (:min var-map) :max (:max var-map)))
+
 (defn make-sawtooth-dimmer-cue
   "Create a cue which applies a sawtooth oscillator to the dimmers of
   the specified group of fixtures, with cue variables to adjust the
@@ -670,13 +680,7 @@
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "saw")]
     (show/set-cue! x y
                    (cues/cue effect-key
-                             (fn [var-map] (dimmer-effect
-                                            (oscillators/build-oscillated-param
-                                             (oscillators/sawtooth :down? (:down var-map)
-                                                                   :interval-ratio (build-ratio-param var-map)
-                                                                   :phase (:phase var-map))
-                                             :min (:min var-map) :max (:max var-map))
-                                            fixtures
+                             (fn [var-map] (dimmer-effect (make-sawtooth-dimmer-param var-map) fixtures
                                             :effect-name effect-name))
                              :color color
                              :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
@@ -685,7 +689,20 @@
                                          {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}
                                          {:key "min" :min 0 :max 255 :start 0 :name "Min"}
                                          {:key "max" :min 0 :max 255 :start 255 :name "Max"}]
+                             :visualizer (fn [var-map show]
+                                           (let [p (make-sawtooth-dimmer-param var-map)]
+                                             (fn [snapshot]
+                                               (/ (params/evaluate p show snapshot nil) 255.0))))
                              :end-keys end-keys))))
+
+(defn- make-triangle-dimmer-param
+  "Creates the triangle oscillated parameter used by
+  `make-triangle-dimmer-cue` for both the actual effect and its
+  visualizer."
+  [var-map]
+  (oscillators/build-oscillated-param (oscillators/triangle :interval-ratio (build-ratio-param var-map)
+                                                            :phase (:phase var-map))
+                                      :min (:min var-map) :max (:max var-map)))
 
 (defn make-triangle-dimmer-cue
   "Create a cue which applies a triangle oscillator to the dimmers of
@@ -695,20 +712,28 @@
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "triangle")]
     (show/set-cue! x y
                    (cues/cue effect-key
-                             (fn [var-map] (dimmer-effect
-                                            (oscillators/build-oscillated-param
-                                             (oscillators/triangle :interval-ratio (build-ratio-param var-map)
-                                                                   :phase (:phase var-map))
-                                             :min (:min var-map) :max (:max var-map))
-                                            fixtures
-                                            :effect-name effect-name))
+                             (fn [var-map] (dimmer-effect (make-triangle-dimmer-param var-map) fixtures
+                                                          :effect-name effect-name))
                              :color color
                              :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
                                          {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
                                          {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}
                                          {:key "min" :min 0 :max 255 :start 0 :name "Min"}
                                          {:key "max" :min 0 :max 255 :start 255 :name "Max"}]
+                             :visualizer (fn [var-map show]
+                                           (let [p (make-triangle-dimmer-param var-map)]
+                                             (fn [snapshot]
+                                               (/ (params/evaluate p show snapshot nil) 255.0))))
                              :end-keys end-keys))))
+
+(defn- make-sine-dimmer-param
+  "Creates the sine oscillated parameter used by
+  `make-sine-dimmer-cue` for both the actual effect and its
+  visualizer."
+  [var-map]
+  (oscillators/build-oscillated-param (oscillators/sine :interval-ratio (build-ratio-param var-map)
+                                                        :phase (:phase var-map))
+                                      :min (:min var-map) :max (:max var-map)))
 
 (defn make-sine-dimmer-cue
   "Create a cue which applies a sine oscillator to the dimmers of the
@@ -718,20 +743,29 @@
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "sine")]
     (show/set-cue! x y
                    (cues/cue effect-key
-                             (fn [var-map] (dimmer-effect
-                                            (oscillators/build-oscillated-param
-                                             (oscillators/sine :interval-ratio (build-ratio-param var-map)
-                                                               :phase (:phase var-map))
-                                             :min (:min var-map) :max (:max var-map))
-                                            fixtures
-                                            :effect-name effect-name))
+                             (fn [var-map] (dimmer-effect (make-sine-dimmer-param var-map) fixtures
+                                                          :effect-name effect-name))
                              :color color
                              :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
                                          {:key "cycles" :min 1 :max 10 :type :integer :start 1 :name "Cycles"}
                                          {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}
                                          {:key "min" :min 0 :max 255 :start 1 :name "Min"}
                                          {:key "max" :min 0 :max 255 :start 255 :name "Max"}]
+                             :visualizer (fn [var-map show]
+                                           (let [p (make-sine-dimmer-param var-map)]
+                                             (fn [snapshot]
+                                               (/ (params/evaluate p show snapshot nil) 255.0))))
                              :end-keys end-keys))))
+
+(defn- make-square-dimmer-param
+  "Creates the square oscillated parameter used by
+  `make-square-dimmer-cue` for both the actual effect and its
+  visualizer."
+  [var-map]
+  (oscillators/build-oscillated-param (oscillators/square :interval-ratio (build-ratio-param var-map)
+                                                          :width (:width var-map)
+                                                          :phase (:phase var-map))
+                                      :min (:min var-map) :max (:max var-map)))
 
 (defn make-square-dimmer-cue
   "Create a cue which applies a square oscillator to the dimmers of
@@ -741,14 +775,8 @@
   (let [[effect-key fixtures end-keys effect-name] (build-group-cue-elements group "dimmers" "square")]
     (show/set-cue! x y
                    (cues/cue effect-key
-                             (fn [var-map] (dimmer-effect
-                                            (oscillators/build-oscillated-param
-                                             (oscillators/square :interval-ratio (build-ratio-param var-map)
-                                                                 :width (:width var-map)
-                                                                 :phase (:phase var-map))
-                                             :min (:min var-map) :max (:max var-map))
-                                            fixtures
-                                            :effect-name effect-name))
+                             (fn [var-map] (dimmer-effect (make-square-dimmer-param var-map) fixtures
+                                                          :effect-name effect-name))
                              :color color
                              :variables [{:key "beats" :min 1 :max 32 :type :integer :start 2 :name "Beats"}
                                          {:key "width" :min 0 :max 1 :start 0.5 :name "Width"}
@@ -756,6 +784,10 @@
                                          {:key "phase" :min 0 :max 1 :start 0 :name "Phase"}
                                          {:key "min" :min 0 :max 255 :start 0 :name "Min"}
                                          {:key "max" :min 0 :max 255 :start 255 :name "Max"}]
+                             :visualizer (fn [var-map show]
+                                           (let [p (make-square-dimmer-param var-map)]
+                                             (fn [snapshot]
+                                               (/ (params/evaluate p show snapshot nil) 255.0))))
                              :end-keys end-keys))))
 
 (defn x-phase

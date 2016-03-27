@@ -1357,6 +1357,53 @@
           (draw-cue-variable-gauge controller (* x 2) 1 cue (first cue-vars) effect-id)
           (draw-cue-variable-gauge controller (inc (* x 2)) 1 cue (second cue-vars) effect-id))))))
 
+(defn draw-cue-visualizer
+  "Displays an animated visualization of the cue progress right above
+  the name for cues which support this."
+  [controller snapshot cell-x cue var-map]
+  (let [graphics (create-graphics controller)
+        cell-width (* 2 button-cell-width)
+        cell-left (* cell-x cell-width)
+        current-x (+ cell-left button-cell-width)
+        graph-left (+ cell-left button-cell-margin)
+        graph-width (- cell-width (* 2 button-cell-margin))
+        beat-width (/ button-cell-width (:bpb snapshot))
+        beat-position (+ cell-left (- button-cell-width (* beat-width (:beat-phase snapshot))))
+        metro (:metronome (:show controller))
+        column-time (/ (rhythm/metro-tick metro) beat-width)
+        visualizer ((:visualizer cue) var-map (:show controller))]
+    (.setClip graphics  graph-left (- Wayang/DISPLAY_HEIGHT 62) graph-width 22)
+    (set-graphics-color graphics default-track-color)
+    (doseq [x (range graph-left (+ graph-left graph-width))]
+      (let [snap (rhythm/metro-snapshot metro (+ (:instant snapshot) (* column-time (- x current-x))))]
+        (.drawLine graphics x (- Wayang/DISPLAY_HEIGHT 40)
+                   x (- Wayang/DISPLAY_HEIGHT 40 (* 20.0 (visualizer snap))))))
+
+    ;; Draw the "now" marker
+    (.setPaint graphics java.awt.Color/WHITE)
+    (.draw graphics (java.awt.geom.Line2D$Double. current-x (- Wayang/DISPLAY_HEIGHT 62)
+                                                  current-x (- Wayang/DISPLAY_HEIGHT 40)))
+
+    ;; Draw markers for the current beat and any following ones that fit.
+    (loop [position beat-position
+           snap snapshot]
+      (when (< position (+ graph-left graph-width))
+        (.setPaint graphics (beat-mark-color snap))
+        (.draw graphics (java.awt.geom.Line2D$Double. position (- Wayang/DISPLAY_HEIGHT 60)
+                                                      position (- Wayang/DISPLAY_HEIGHT 40)))
+        (recur (+ position beat-width)
+               (rhythm/metro-snapshot metro (+ (:instant snap) (rhythm/metro-tick metro))))))
+
+    ;; Draw any beats preceding the current one that fit
+    (loop [position (- beat-position beat-width)
+           snap (rhythm/metro-snapshot metro (- (:instant snapshot) (rhythm/metro-tick metro)))]
+      (when (>= position graph-left)
+        (.setPaint graphics (beat-mark-color snap))
+        (.draw graphics (java.awt.geom.Line2D$Double. position (- Wayang/DISPLAY_HEIGHT 60)
+                                                      position (- Wayang/DISPLAY_HEIGHT 40)))
+        (recur (- position beat-width)
+               (rhythm/metro-snapshot metro (- (:instant snap) (rhythm/metro-tick metro))))))))
+
 (defn- room-for-effects
   "Determine how many display cells are available for displaying
   effect information."
@@ -1429,6 +1476,8 @@
               (draw-cue-variable-names controller x cue (:id info))
               (draw-cue-variable-values controller x cue (:id info))
               (draw-cue-variable-gauges controller x cue (:id info))
+              (when (:visualizer cue)
+                (draw-cue-visualizer controller snapshot x cue (:variables info)))
               (set-graphics-color graphics color)
               (.fillRect graphics (+ left (/ button-cell-margin 2.0)) (- Wayang/DISPLAY_HEIGHT 38)
                          (- width button-cell-margin) 20)
