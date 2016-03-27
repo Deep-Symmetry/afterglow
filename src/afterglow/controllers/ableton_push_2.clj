@@ -1064,18 +1064,18 @@
   [snapshot]
   (if (rhythm/snapshot-down-beat? snapshot) java.awt.Color/RED java.awt.Color/WHITE))
 
+(defn- beat-mark-top-y
+  "Returns the upper Y coordinate from which to draw the stripe
+  marking a beat."
+  [snapshot]
+  (- Wayang/DISPLAY_HEIGHT (if (rhythm/snapshot-down-beat? snapshot) 50 40)))
+
 (defn draw-beat-mark
   "Draw one of the marks representing a beat on the beat grid."
   [graphics snapshot beat-position]
   (.setPaint graphics (beat-mark-color snapshot))
   (.draw graphics (java.awt.geom.Line2D$Double. beat-position (beat-mark-top-y snapshot)
                                                 beat-position (- Wayang/DISPLAY_HEIGHT 20))))
-
-(defn- beat-mark-top-y
-  "Returns the upper Y coordinate from which to draw the stripe
-  marking a beat."
-  [snapshot]
-  (- Wayang/DISPLAY_HEIGHT (if (rhythm/snapshot-down-beat? snapshot) 50 40)))
 
 (defn- draw-beat-grid-triangle
   "Draw a triangle growing to the specified x coordinate, with
