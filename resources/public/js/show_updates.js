@@ -501,59 +501,66 @@ function updateStatus( data ) {
 }
 
 function updateShow() {
-    var jqxhr = $.getJSON( (context + "/ui-updates/" + page_id), function( data ) {
-        $.each( data, function( key, val ) {
-            switch (key) {
-            case "grid-changes":
-                updateCueGrid(val);
-                break;
+    try {
+        var jqxhr = $.getJSON( (context + "/ui-updates/" + page_id), function( data ) {
+            $.each( data, function( key, val ) {
+                switch (key) {
+                case "grid-changes":
+                    updateCueGrid(val);
+                    break;
 
-            case "effect-changes":
-                updateEffectList(val);
-                break;
+                case "effect-changes":
+                    updateEffectList(val);
+                    break;
 
-            case "grand-master":
-                updateGrandMaster(val);
-                break;
+                case "grand-master":
+                    updateGrandMaster(val);
+                    break;
 
-            case "button-changes":
-                updateButtons(val);
-                break;
+                case "button-changes":
+                    updateButtons(val);
+                    break;
 
-            case "link-menu-changes":
-                updateLinkMenu(val);
-                break;
+                case "link-menu-changes":
+                    updateLinkMenu(val);
+                    break;
 
-            case "sync-menu-changes":
-                updateSyncMenu(val);
-                break;
+                case "sync-menu-changes":
+                    updateSyncMenu(val);
+                    break;
 
-            case "metronome-changes":
-                updateMetronome(val);
-                break;
+                case "metronome-changes":
+                    updateMetronome(val);
+                    break;
 
-            case "load-level":
-                updateLoad(val);
-                break;
+                case "load-level":
+                    updateLoad(val);
+                    break;
 
-            case "show-status":
-                updateStatus(val);
-                break;
+                case "show-status":
+                    updateStatus(val);
+                    break;
 
-            case "reload":
-                console.log("Reloading page since Afterglow does not recognize our page ID.");
-                location.reload(true);
-                break;
+                case "reload":
+                    console.log("Reloading page since Afterglow does not recognize our page ID.");
+                    location.reload(true);
+                    break;
 
-            default:
-                console.log("Unknown show update response:" + key + ":" + val);
-            }
+                default:
+                    console.log("Unknown show update response:" + key + ":" + val);
+                }
+            });
+            setTimeout(updateShow, 50);  // Try again quickly after success
+        }).fail(function() {
+            console.log("Problem updating show interface, waiting for a few seconds to try again.");
+            setTimeout(updateShow, 3000);
         });
-        setTimeout(updateShow, 50);  // Try again quickly after success
-    }).fail(function() {
-        console.log("Problem updating show interface, waiting for a few seconds to try again.");
-        setTimeout(updateShow, 3000);
-    });
+    }
+    catch(e) {
+        console.log("Exception while updating show interface, waiting a second to try again.");
+        console.log(e);
+        setTimeout(updateShow, 1000);
+    }
 }
 
 function uiButtonClicked( eventObject ) {
