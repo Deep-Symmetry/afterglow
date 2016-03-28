@@ -342,12 +342,13 @@ the right.
 image:assets/CueScrollLink.png[Cue scroll arrows and link menu,align="right"]
 
 If you have any grid controllers you can attach them to the show. An
-Ableton Push would be bound as follows:
+Ableton Push would be bound as follows, assuming its User Port shows
+up in your MIDI environment with the standard name `"User Port"`:
 
 [source,clojure]
 ----
-(require '[afterglow.controllers.ableton-push :as push])
-(def controller (push/auto-bind *show*))
+(require '[afterglow.controllers :as ct])
+(def watcher (ct/auto-bind *show* "User Port"))
 ----
 
 Once this was done, whenever a Push was connected and powered on, you

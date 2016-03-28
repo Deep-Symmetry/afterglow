@@ -2,18 +2,18 @@
 
 [![Gitter](https://img.shields.io/gitter/room/brunchboy/afterglow.svg)](https://gitter.im/brunchboy/afterglow)
  <image align="right" width="275"
-src="doc/assets/Afterglow-logo-padded-left.png">
-<br/><br/>
-An environment supporting
-[live coding](https://en.wikipedia.org/wiki/Live_coding) for the
-creation of algorithmic light shows in [Clojure](http://clojure.org),
-leveraging the
-[Open Lighting Architecture](https://www.openlighting.org/ola/) with
-the help of
-[ola-clojure](https://github.com/brunchboy/ola-clojure#ola-clojure),
-and pieces of the [Overtone](http://overtone.github.io) toolkit.
-Beyond building on pieces of Overtone, the entire Afterglow project
-was [inspired](https://vimeo.com/22798433) by it.
+ src="doc/assets/Afterglow-logo-padded-left.png"> <br/><br/> An
+ environment supporting
+ [live coding](https://en.wikipedia.org/wiki/Live_coding) for the
+ creation of algorithmic light shows in [Clojure](http://clojure.org),
+ leveraging the
+ [Open Lighting Architecture](https://www.openlighting.org/ola/) with
+ the help of
+ [ola-clojure](https://github.com/brunchboy/ola-clojure#ola-clojure),
+ [wayang](https://github.com/brunchboy/wayang#wayang), and pieces of
+ the [Overtone](http://overtone.github.io) toolkit. Beyond building on
+ pieces of Overtone, the entire Afterglow project was
+ [inspired](https://vimeo.com/22798433) by it.
 
 [![License](https://img.shields.io/badge/License-Eclipse%20Public%20License%201.0-blue.svg)](#license)
 
@@ -328,7 +328,7 @@ controls whether a browser window should be automatically opened):
 ```
 
 ![Web interface](doc/assets/WebHome.png)
-    
+
 As noted at the bottom, the web interface provides a minimal console
 as well, so if you are running Afterglow from a jar and just want to
 tweak something quickly, you can use that:
@@ -492,16 +492,18 @@ connected. That way, if someone trips over the controller cable, as
 soon as you plug it back in, you are good to go again.)
 
 > If you have access to an Ableton Push, it is even easier to have
-> [intutive control](doc/mapping_sync.adoc#using-ableton-push)
-> over your show’s grand master dimmer. As soon as you bind the Push
-> to your show, the Push Master encoder is automatically tied to the
-> show master dimmer, with nice graphical feedback in the text area.
-> Plus you get deep control over the show metronome as well, as shown
-> in the photo above. Here is how the binding is established:
+> [intutive control](doc/mapping_sync.adoc#using-ableton-push) over
+> your show’s grand master dimmer. As soon as you bind the Push to
+> your show, the Push Master encoder is automatically tied to the show
+> master dimmer, with nice graphical feedback in the text area. Plus
+> you get deep control over the show metronome as well, as shown in
+> the photo above. Here is how the binding is established, assuming
+> the Push User Port shows up in your MIDI environment with its
+> default name of `"User Port"`:
 
 ```clojure
-(require '[afterglow.controllers.ableton-push :as push])
-(def watcher (push/auto-bind *show*))
+(require '[afterglow.controllers :as ct])
+(def watcher (ct/auto-bind *show* "User Port"))
 ```
 
 Moving on, though... we can change the global color to orange:
@@ -740,10 +742,10 @@ though.
   in the dimmer master chain, as proposed
   [here](https://github.com/brunchboy/afterglow/issues/43).
 - [x] Get geometry engine and head-movement cues working.
-- [ ] Named cues: Define cues with a unique name so they can have
+- [x] Named cues: Define cues with a unique name so they can have
   parameters saved for them, to be reloaded on future runs, once we
   have a database. Also useful for compound cues, see below.
-  - [ ] This requires cues to have a mechanism for reporting their
+  - [x] This requires cues to have a mechanism for reporting their
     current variable values for saving, and to look them up when
     saved.
 - [ ] Compound cues:
@@ -804,7 +806,7 @@ though.
 - [ ] Provide a mechanism for creating and controlling/monitoring
   effects via OSC messages. Probably essentially a special-purpose OSC
   REPL.
-- [ ] Add web page for viewing/adjusting show variables; associate
+- [x] Add web page for viewing/adjusting cue variables; associate
   metadata with the variables so the page can provide appropriate
   editing tools and validation. Values live-update when controllers
   change them.
@@ -845,7 +847,7 @@ though.
 - [x] Separate, or at least document clearly, how to use the low-level
   OLA communication tools, for the benefit of people interested in
   their own implementations.
-- [ ] Support Push version 2 if possible. As of March, 2016 this is
+- [x] Support Push version 2 if possible. As of March, 2016 this is
   looking possible! Ableton has published
   [detailed documentation](https://github.com/Ableton/push-interface)
   of the MIDI and USB interfaces of the Push 2 and display.
@@ -915,7 +917,7 @@ though.
     Eric Haines, Udacity.com. And the
     [Aerotwist tutorials](https://aerotwist.com/tutorials/), in
     particular Three.js and shaders.
-  - [ ] Fix the transform of lights into the WebGL shader space;
+  - [x] Fix the transform of lights into the WebGL shader space;
     currently inconsistent.
   - [ ] See if someone can come up with a more bare bones but scalable preview, probably building a geometry of the light cones instead of ray marching through them.
 - [ ] Add a Focus effect type, which is resolved after direction and aim

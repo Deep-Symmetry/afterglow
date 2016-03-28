@@ -2233,5 +2233,4 @@
            :or {device-filter "User Port"
                 refresh-interval (/ 1000 15)
                 display-name "Ableton Push"}}]
-  (afterglow.controllers/auto-bind *show* device-filter
-                                   :refresh-interval refresh-interval :display-name display-name))
+  (ct/auto-bind *show* device-filter :refresh-interval refresh-interval :display-name display-name))

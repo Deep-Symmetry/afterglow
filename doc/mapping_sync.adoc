@@ -802,12 +802,13 @@ results are going to be delightful.
 
 Assuming you have an Ableton Push connected to the machine running
 Afterglow, you can activate the Push mapping and attach it to the
-current default show like this:
+current default show like this, as long as its User Port shows up in
+your MIDI environment with the standard name `"User Port"`:
 
 [source,clojure]
 ----
-(require '[afterglow.controllers.ableton-push :as push])
-(def watcher (push/auto-bind *show*))
+(require '[afterglow.controllers :as ct])
+(def watcher (ct/auto-bind *show* "User Port"))
 ----
 
 You will see a brief startup animation, and Afterglow's Push interface
@@ -1220,12 +1221,14 @@ grid controller for Afterglow, and has its own custom
 
 Assuming you have a Launchpad Pro connected to the machine running
 Afterglow, you can activate the Launchpad mapping and attach it to the
-current default show like this:
+current default show like this, as long as its Standalone Port shows
+up in your MIDI environment with the standard name `"Standalone
+Port"`:
 
 [source,clojure]
 ----
-(require '[afterglow.controllers.launchpad-pro :as lpro])
-(def pro-watcher (lpro/auto-bind *show*))
+(require '[afterglow.controllers :as ct])
+(def pro-watcher (ct/auto-bind *show* "Standalone Port"))
 ----
 
 You will see a brief startup animation, and Afterglow's Launchpad
@@ -1407,14 +1410,15 @@ Launchpad Mini and Launchpad S
 {api-doc}afterglow.controllers.launchpad-mk2.html[mapping] uses the
 same arrangement of round buttons as those controllers.
 
-Assuming you have a Launchpad Mk2 connected to the machine
-running Afterglow, you can activate its mapping and attach it to the
-current default show like this:
+Assuming you have a Launchpad Mk2 connected to the machine running
+Afterglow, you can activate its mapping and attach it to the current
+default show like this, as long as its ports show up in your MIDI
+environment with the standard names which include the string `"Mk2"`:
 
 [source,clojure]
 ----
-(require '[afterglow.controllers.launchpad-mk2 :as mk2])
-(def mk2-watcher (mk2/auto-bind *show*))
+(require '[afterglow.controllers :as ct])
+(def mk2-watcher (ct/auto-bind *show* "Mk2"))
 ----
 
 You will see a brief startup animation, and Afterglow's Launchpad Mk2
@@ -1437,18 +1441,27 @@ state.
 
 Assuming you have a Launchpad Mini or S connected to the machine
 running Afterglow, you can activate its mapping and attach it to the
-current default show like this:
+current default show like this, as long as its ports show up in your
+MIDI environment with the standard names of `"Launchpad Mini"` or
+`"Launchpad S"`:
 
 [source,clojure]
 ----
-(require '[afterglow.controllers.launchpad-mini :as mini])
-(def mini-watcher (mini/auto-bind *show*))
+(require '[afterglow.controllers :as ct])
+(def mini-watcher (ct/auto-bind *show* "Launchpad Mini"))
+(def s-watcher (ct/auto-bind *show* "Launchpad S"))
 ----
 
 You will see a brief startup animation, and Afterglow's Launchpad Mini
 interface will start. (This also arranges for the Launchpad to be
 re-bound to the show if it gets disconnected or powered off and then
-reappears, which is very handy in a performance setting.)
+reappears, which is very handy in a performance setting.) If you
+wonder what would happen if you plugged in both a Launchpad Mini and
+Launchpad S after running the above lines, the answer is that they
+would both become active and you could use them at the same time. You
+can have as many controller watchers and bindings running at the same
+time as you like, as long as they can each properly identify the MIDI
+ports to work with.
 
 === Launchpad Mini and S Cue Grid Colors
 
