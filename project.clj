@@ -5,8 +5,8 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :jvm-opts ["-Dapple.awt.UIElement=true"]  ; Suppress dock icon and focus stealing when compiling on a Mac.
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/core.cache "0.6.4"]
-                 [org.clojure/core.async "0.2.374"]
+                 [org.clojure/core.cache "0.6.5"]
+                 [org.clojure/core.async "0.2.374" :exclusions [org.clojure/tools.reader]]
                  [org.clojure/data.json "0.2.6"]
                  [org.clojure/data.zip "0.1.1"]
                  [org.clojure/math.numeric-tower "0.0.4"]
@@ -24,25 +24,26 @@
                                                          com.google.protobuf/protobuf-java]]
                  [com.climate/claypoole "1.1.2"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
-                 [ola-clojure "0.1.4"]
-                 [selmer "1.0.2"]
+                 [ola-clojure "0.1.5" :exclusions [org.clojure/tools.reader]]
+                 [selmer "1.0.3"]
                  [com.evocomputing/colors "1.0.3"]
                  [environ "1.0.2"]
                  [camel-snake-kebab "0.3.2"]
-                 [com.taoensso/timbre "4.2.1"]
+                 [com.taoensso/timbre "4.3.1"]
                  [com.taoensso/tower "3.0.2"]
-                 [com.taoensso/truss "1.1.2"]
+                 [com.taoensso/truss "1.2.0"]
                  [markdown-clj "0.9.86"]
-                 [compojure "1.4.0" :exclusions [org.eclipse.jetty/jetty-server
+                 [compojure "1.5.0" :exclusions [org.eclipse.jetty/jetty-server
                                                  clj-time]]
                  [ring/ring-defaults "0.2.0"]
                  [ring/ring-session-timeout "0.1.0"]
                  [ring-middleware-format "0.7.0" :exclusions [ring/ring-jetty-adapter
                                                               org.clojure/tools.reader
-                                                              org.clojure/java.classpath]]
+                                                              org.clojure/java.classpath
+                                                              org.clojure/core.memoize]]
                  [metosin/ring-http-response "0.6.5"]
-                 [prone "1.0.2"]
-                 [buddy "0.9.0"]
+                 [prone "1.1.0"]
+                 [buddy "0.11.0"]
                  [instaparse "1.4.1"]
                  [http-kit "2.1.19"]]
   :main afterglow.core
@@ -67,7 +68,7 @@
                    :env {:dev "true"}}
              :uberjar {:env {:production "true"}
                        :aot :all}}
-  :plugins [[lein-codox "0.9.3"]
+  :plugins [[lein-codox "0.9.4"]
             [lein-environ "1.0.2"]]
 
   :codox {:output-path "api-doc"
