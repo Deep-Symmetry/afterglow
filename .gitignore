@@ -2,6 +2,8 @@
 *.jar
 .hg/
 .hgignore
+/.cider_history
+/.dir-locals.el
 /.env
 /.lein-*
 /.nrepl-port
