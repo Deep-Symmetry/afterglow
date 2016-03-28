@@ -22,21 +22,34 @@
   200)
 
 (defonce ^{:private true
-           :doc "Loads all the built-in controller implementations, so
-           they can register their recognizers. Performed in a future,
-           after the namespace itself loads, to avoid circular
-           dependency issues. Functions like [[bind-to-show]]
-           and [[auto-bind]] which rely on controller implementations
-           being registered should `deref` this future to ensure it
-           has finished."}
-  controller-binding-loader
-  (future
-    (Thread/sleep 100)
-    (require 'afterglow.controllers.ableton-push)
-    (require 'afterglow.controllers.ableton-push-2)
-    (require 'afterglow.controllers.launchpad-pro)
-    (require 'afterglow.controllers.launchpad-mini)
-    (require 'afterglow.controllers.launchpad-mk2)))
+           :doc "Lists all the built-in controller implementations
+           that need to be loaded, so they can register their
+           recognizers. This needs to happen after the namespace
+           itself loads, to avoid circular dependency issues. Once
+           that is done, this atom will be set to `nil`. Functions
+           like [[bind-to-show]] and [[auto-bind]] which rely on
+           controller implementations being registered must call
+           [[load-built-in-controllers]] to ensure this has
+           happened."}
+  built-in-controllers
+  (atom '[afterglow.controllers.ableton-push afterglow.controllers.ableton-push-2
+          afterglow.controllers.launchpad-pro afterglow.controllers.launchpad-mk2
+          afterglow.controllers.launchpad-mini]))
+
+(defn- load-built-in-controllers
+  "Makes sure that the namespaces defining the grid controllers that
+  Afterglow supports natively have been loaded. Because of circular
+  dependency issues, this has to wait until after the namespace itself
+  has been loaded. Functions like [[bind-to-show]] and [[auto-bind]]
+  which rely on controller implementations need to call this function
+  to ensure loading has occurred. After the first call, the list of
+  namespaces will be replaced by `nil`, so it will no longer do
+  anything."
+  []
+  (swap! built-in-controllers
+         (fn [namespaces]
+           (doseq [n namespaces]
+             (require n)))))
 
 (defonce
   ^{:private true
@@ -660,7 +673,7 @@
   function."
   [show device-filter & args]
   {:pre [(some? show) (some? device-filter)]}
-  @controller-binding-loader  ; Make sure controller implementations are finished registering
+  (load-built-in-controllers)  ; Make sure controller implementations are registered
   (let [port-in  (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
         port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))
         identity (when (every? some? [port-in port-out]) (identify port-in port-out))]
@@ -790,7 +803,7 @@
   detected."
   [show device-filter & args]
   {:pre [(have? some? show) (have? some? device-filter)]}
-  @controller-binding-loader  ; Make sure controller implementations are finished registering
+  (load-built-in-controllers)  ; Make sure controller implementations are registered
   (let [idle (atom true)
         controller (atom nil)]
     (letfn [(disconnection-handler []
