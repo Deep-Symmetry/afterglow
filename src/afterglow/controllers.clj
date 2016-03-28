@@ -21,6 +21,23 @@
   "The highest BPM value which controllers are allowed to set."
   200)
 
+(defonce ^{:private true
+           :doc "Loads all the built-in controller implementations, so
+           they can register their recognizers. Performed in a future,
+           after the namespace itself loads, to avoid circular
+           dependency issues. Functions like [[bind-to-show]]
+           and [[auto-bind]] which rely on controller implementations
+           being registered should `deref` this future to ensure it
+           has finished."}
+  controller-binding-loader
+  (future
+    (Thread/sleep 100)
+    (require 'afterglow.controllers.ableton-push)
+    (require 'afterglow.controllers.ableton-push-2)
+    (require 'afterglow.controllers.launchpad-pro)
+    (require 'afterglow.controllers.launchpad-mini)
+    (require 'afterglow.controllers.launchpad-mk2)))
+
 (defonce
   ^{:private true
     :doc "Protect protocols against namespace reloads"}
@@ -643,6 +660,7 @@
   function."
   [show device-filter & args]
   {:pre [(some? show) (some? device-filter)]}
+  @controller-binding-loader  ; Make sure controller implementations are finished registering
   (let [port-in  (first (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!)))
         port-out (first (amidi/filter-devices device-filter (amidi/open-outputs-if-needed!)))
         identity (when (every? some? [port-in port-out]) (identify port-in port-out))]
@@ -772,6 +790,7 @@
   detected."
   [show device-filter & args]
   {:pre [(have? some? show) (have? some? device-filter)]}
+  @controller-binding-loader  ; Make sure controller implementations are finished registering
   (let [idle (atom true)
         controller (atom nil)]
     (letfn [(disconnection-handler []
@@ -816,12 +835,3 @@
          :device-filter device-filter
          :cancel cancel-handler}
         {:type ::watcher}))))
-
-;; Load all the built-in controller implementations, so they can register their recognizers.
-(at-at/after 50 (fn []
-                  (require 'afterglow.controllers.ableton-push)
-                  (require 'afterglow.controllers.ableton-push-2)
-                  (require 'afterglow.controllers.launchpad-pro)
-                  (require 'afterglow.controllers.launchpad-mini)
-                  (require 'afterglow.controllers.launchpad-mk2))
-             pool :desc "Register built-in grid controller implementations")
