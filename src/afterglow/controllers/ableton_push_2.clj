@@ -2175,18 +2175,18 @@
 
     45 ; Right arrow, scroll right in cue grid
     (when (pos? (:velocity message))
-      (let [[x y] @(:origin controller)]
-        ;; TODO: Shift to scroll all the way; also add shift support in web UI and other controllers
-        (when (> (- (controllers/grid-width (:cue-grid (:show controller))) x) 7)
-          (move-origin controller [(+ x 8) y])
+      (let [[x y] @(:origin controller)
+            width (max (controllers/grid-width (:cue-grid (:show controller))) 1)]
+        (when (> (- width x) 7)
+          (move-origin controller [(if (in-mode? controller :shift) (* 8 (quot (dec width) 8)) (+ x 8)) y])
           (add-button-held-feedback-overlay controller (:right-arrow control-buttons)))))
 
     46 ; Up arrow, scroll up in cue grid
     (when (pos? (:velocity message))
-      (let [[x y] @(:origin controller)]
-        ;; TODO: Shift to scroll all the way; also add shift support in web UI and other controllers
-        (when (> (- (controllers/grid-height (:cue-grid (:show controller))) y) 7)
-          (move-origin controller [x (+ y 8)])
+      (let [[x y] @(:origin controller)
+            height (max (controllers/grid-height (:cue-grid (:show controller))) 1)]
+        (when (> height 7)
+          (move-origin controller [x (if (in-mode? controller :shift) (* 8 (quot (dec height) 8))  (+ y 8))])
           (add-button-held-feedback-overlay controller (:up-arrow control-buttons)))))
 
     47 ; Down arrow, scroll down in cue grid
