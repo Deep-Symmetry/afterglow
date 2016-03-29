@@ -39,56 +39,61 @@ your MIDI environment with the standard name `"User Port"`:
 (def watcher (ct/auto-bind *show* "User Port"))
 ----
 
-You will see a brief startup animation, and Afterglow's Push interface
-will start. (This also arranges for the Push to be re-bound to the
-show if it gets disconnected or powered off and then reappears, which
-is very handy in a performance setting.) Here is an overview of how
-the Push mapping works:
+You will see a brief startup animation, and Afterglow's Push 2
+interface will start. (This also arranges for the Push to be re-bound
+to the show if it gets disconnected or powered off and then reappears,
+which is very handy in a performance setting.) Here is an overview of
+how the Push 2 mapping works, with details explained in the upcoming
+sections:
 
-image::assets/PushNoEffects.jpg[Push interface]
+image::assets/Push2NoEffects.jpg[Push 2 interface]
 
 == Show Control
 
-Once you have the Push linked to a show, it becomes a very direct and
+Once you have the Push 2 bound to a show, it becomes a very direct and
 tactile way to monitor and control the cues and other aspects of the
 show.
 
-The text area at the top of the Push displays the effects currently
-running, and can optionally display <<metronome-control,metronome>>
-information as well. If a cue was defined with adjustable variables
-for its effect, they will also be displayed in the text area, and you
-will be able to <<effect-control,adjust>> them by turning the encoder
-above the variable.
+The graphical display at the top of the Push displays the effects
+currently running, and can optionally display
+<<metronome-control,metronome>> information as well. If a cue was
+defined with adjustable variables for its effect, they will also be
+displayed, and you will be able to <<effect-control,adjust>> them by
+turning the encoder above the variable.
 
-The rightmost encoder, past the text area, adjusts the show Grand
+The rightmost encoder, past the display, adjusts the show Grand
 Master, which controls the maximum brightness that any dimmer cue can
 achieve, so you can always use it to adjust the overall brightness of
-the show. As soon as you touch the encoder, the current Grand Master
-level will appear, and be updated as you turn the encoder. When you
-release it, the display returns to showing whatever it was before.
+the show. As soon as you touch the encoder, the Grand Master level
+will appear along with a gauge representing what fraction of its
+maximum level is currently in effect, and both will be updated as you
+turn the encoder. When you release it, the display returns to showing
+whatever it was before.
 
-image::assets/GrandMaster.jpg[Grand Master adjustment]
+image::assets/GrandMaster2.jpg[Grand Master adjustment]
 
 As with other numeric values that you can adjust, while you are
 adjusting the Grand Master, the touch strip on the left hand side of
-the Push will light up in the same proportion as the bar graph in the
-display, and you can touch or drag it to instantly set the value to
-whatever level you want.
+the Push will light up in the same proportion as the circular gauge
+in the display under the encoder, and you can touch or drag on the
+strip to instantly set the level to whatever value you want.
 
-The red kbd:[Stop] button to the right of the top of the cue grid can be
-used to temporarily shut down the show, blacking out all universes
-that it controls, and suspending the processing of its effects.
+The red kbd:[&#9655;] button to the at the bottom left of the cue grid
+can be used to temporarily shut down the show, blacking out all
+universes that it controls, and suspending the processing of its
+effects.
 
-image::assets/ShowStop.jpg[Show stopped]
+image::assets/ShowStop2.jpg[Show stopped]
 
-Pressing it again restarts the show where it would
-have been had it not stopped.
+Whenever the show is stopped, the button becomes a green Play button.
+Pressing it again restarts the show where it would have been had it
+not stopped.
 
 == Cues
 
 Most of the space on the interface is dedicated to an 8&times;8 grid
 of color coded cue trigger pads, which provide a window onto the
-show's overall <<cues#cues,cue grid>>. The Push can be
+show's overall <<cues#cues,cue grid>>. The Push 2 can be
 <<README#scrolling-and-linked-controllers,linked>> to the
 <<README#the-embedded-web-interface,web interface>> so that both
 always display the same section of the cue grid, and the web interface
@@ -104,18 +109,18 @@ space.
 
 You can activate any cue shown by pressing its pad; running cues will
 light up, and darken again when they end. The effects which cues
-create will also appear in the text area above the cue pad, from left
-to right, with the most recent effect on the right. In the photo
-below, &ldquo;Sparkle&rdquo; is the most recent effect, and it has two
+create will also appear in the display above the cue pad, from left to
+right, with the most recent effect on the right. In the photo below,
+&ldquo;Sparkle&rdquo; is the most recent effect, and it has two
 variables, `chance` and `Fade`, which can be adjusted by turning the
-encoders above them. The `chance` value is changing rapidly because it
-is configured to also be adjusted through the pressure sensitive cue
-pad that was used to launch it.
+encoders above them. The `chance` value is changing because it is
+configured to also be adjusted through the pressure sensitive cue pad
+that was used to launch it.
 
-image::assets/SparklePressure.jpg[Sparkle effect, ajusting chance variable]
+image::assets/SparklePressure2.jpg[Sparkle effect, ajusting chance variable]
 
 To stop a running cue, press its pad again, or press the red kbd:[End]
-pad underneath its effect entry in the text area. Some cues will end
+pad underneath its effect entry in the display. Some cues will end
 immediately, others will continue to run until they reach what they
 feel is an appropriate stopping point. While they are in the process
 of ending, the cue pad will blink, and the kbd:[End] pad will be
@@ -144,7 +149,7 @@ created by
 for the sample show work this way: the intensity and lightness of the
 strobe are increased by pressure, and so is the chance that a sparkle
 will be assigned to a light on each frame. You can see these
-variables change in the text area above the cue's effect name while
+variables change in the display above the cue's effect name while
 you are adjusting them, as shown in the photo above.
 
 [[exclusivity]]Cues may be mutually exclusive by nature, and if they
@@ -160,14 +165,14 @@ they would replace the running &ldquo;T1 atom shake&rdquo; cue.
 == Scrolling
 
 The show will likely have many more cues than fit on the pad grid; the
-diamond of arrow buttons at the bottom right allow you to page through
-the larger show grid. If there are more cues available in a given
-direction, that arrow will be lit, otherwise it is dark. Pressing an
-active arrow scrolls the view one &ldquo;page&rdquo; in that
-direction. In the photo below, it is currently possible to scroll up
-and to the right:
+diamond of arrow buttons to the right of the top of the cue grid allow
+you to page through the larger show grid. If there are more cues
+available in a given direction, that arrow will be lit, otherwise it
+is dark. Pressing an active arrow scrolls the view one
+&ldquo;page&rdquo; in that direction. In the photo below, it is
+currently possible to scroll up and to the right:
 
-image:assets/PushScroll.jpg[Push scroll diamond,300,337]
+image:assets/PushScroll2.jpg[Push 2 scroll diamond,300,337]
 
 If you hold down the kbd:[Shift] button, the arrows will scroll you as
 far as possible in the direction that you press.
