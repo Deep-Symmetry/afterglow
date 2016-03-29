@@ -31,10 +31,10 @@ grid of the web interface) you can still accomplish a great deal with
 a simple controller with a few buttons. You will still want to start
 by creating the cues in the show cue grid, not only so you can see and
 manipulate them with the web interface, but also because that is how
-they can be mapped to MIDI controllers. (The
+they can be mapped to MIDI controllers. (The rich
 <<push#using-ableton-push,Push>> and
 <<launchpad#using-the-novation-launchpad-family,Launchpad family>>
-mappings are described in detail below.)
+mappings are described in detail on their own pages.)
 
 First you need to identify the MIDI messages that the controller sends
 when you press and release the interface element you want to assign
@@ -779,14 +779,21 @@ or even black things out:
 (show/clear-effects!)
 ----
 
-== Using Ableton Push
+== Rich Grid Controller Mappings
+
+Afterglow ships with built-in mappings that take advantage of several
+excellent grid controllers. If you happen to own one, you are in luck!
+And if you don't, reading about these capabilities may tempt you to
+buy one.
+
+=== Using Ableton Push
 
 Perhaps the best way to control Afterglow is using the fluid, tactile
 interface offered by the Ableton Push. There's enough to say about
 that now that it has been moved to its own
 <<push#using-ableton-push,page>>.
 
-== Using the Novation Launchpad Family
+=== Using the Novation Launchpad Family
 
 Novation also makes a great line of grid controllers, some of which
 offer touch-sensitivity as well. Even though they lack built-in text
