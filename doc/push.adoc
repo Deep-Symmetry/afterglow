@@ -191,7 +191,7 @@ and they can be adjusted using the encoder knob above the variable.
 For example, in addition to varying the sparkle `chance` variable
 using the pad pressure, as was done above, its `Fade` variable can be
 adjusted using the effect variable encoder above it. As soon as you
-touch the encode knob associated with a variable, a graphical
+touch the encoder knob associated with a variable, a graphical
 representation of the current value replaces its name, and updates as
 you turn the encoder to change the value.
 

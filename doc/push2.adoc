@@ -21,10 +21,10 @@ the <<README#the-embedded-web-interface,web interface>> for, often
 with deeper control, since you can press multiple cue trigger pads at
 the same time, and they respond to variations in pressure.
 
-NOTE: This document is in progress; the photos currently show the
-original Push. They will shortly be replaced with photos of the Push 2
-in action. There is also a page describing the
-<<push#using-ableton-push,original Push mapping>>.
+NOTE: Although this page discusses the second version of the Push
+controller, with a graphical display, there is also a page describing
+the <<push#using-ableton-push,original Push mapping>>, which is still
+fully supported.
 
 ## Binding to the Push 2
 
@@ -110,8 +110,10 @@ space.
 You can activate any cue shown by pressing its pad; running cues will
 light up, and darken again when they end. The effects which cues
 create will also appear in the display above the cue pad, from left to
-right, with the most recent effect on the right. In the photo below,
-&ldquo;Sparkle&rdquo; is the most recent effect, and it has two
+right, with the most recent effect on the right. The labels containing
+the effect name are drawn in the same color as the cue pad used to
+launch the effect, to help keep track of which is which. In the photo
+below, &ldquo;Sparkle&rdquo; is the most recent effect, and it has two
 variables, `chance` and `Fade`, which can be adjusted by turning the
 encoders above them. The `chance` value is changing because it is
 configured to also be adjusted through the pressure sensitive cue pad
@@ -172,27 +174,34 @@ is dark. Pressing an active arrow scrolls the view one
 &ldquo;page&rdquo; in that direction. In the photo below, it is
 currently possible to scroll up and to the right:
 
-image:assets/PushScroll2.jpg[Push 2 scroll diamond,300,337]
+image:assets/PushScroll2.jpg[Push 2 scroll diamond,286]
 
 If you hold down the kbd:[Shift] button, the arrows will scroll you as
 far as possible in the direction that you press.
 
-The kbd:[Page <] and kbd:[Page >] buttons allow you to scroll the text
-display left and right, to see and <<effect-control,adjust>> all of
-the currently running effects, even though only four at a time (or
-three, if the <<metronome-control,metronome section>> is showing) fit
-in the display. Pressing the kbd:[Page <] scrolls the display left,
-showing you older (or lower priority) effects, and kbd:[Page >]
+The kbd:[Page <] and kbd:[> Page] buttons allow you to scroll the
+graphical display left and right, to see and <<effect-control,adjust>>
+all of the currently running effects, even though only four at a time
+(or three, if the <<metronome-control,metronome section>> is showing)
+fit in the display. Pressing the kbd:[Page <] scrolls the display
+left, showing you older (or lower priority) effects, and kbd:[Page >]
 scrolls the next group effects to the right into view, showing you
 newer and higher priority effects. Pressing these buttons while
 kbd:[Shift] is held will scroll as far as possible in the
-corresponding direction.
+corresponding direction. (As illustrated in the photo below, in
+addition to lighting up the kbd:[Page <] and kbd:[> Page] buttons when
+there are effects off the screen in that direction, Afterglow draws
+`<` and `>` markers below the effect names at the corresponding edge
+of the screen.)
+
+image:assets/Push2Page.jpg[Push 2 page arrows]
 
 == Effect Control
 
-As described above, the effects created by cues appear in the text
-display area, and can be scrolled through and ended by pressing the
-corresponding red kbd:[End] pad which appears underneath them.
+As described above, the effects created by cues appear in the display
+area, and can be scrolled through and ended by pressing the
+corresponding red kbd:[End] pad which appears underneath them. There
+are many other ways you can interact with running effects:
 
 === Numeric Cue Variables
 
@@ -202,44 +211,43 @@ and they can be adjusted using the encoder knob above the variable.
 For example, in addition to varying the sparkle `chance` variable
 using the pad pressure, as was done above, its `Fade` variable can be
 adjusted using the effect variable encoder above it. As soon as you
-touch the encode knob associated with a variable, a graphical
-representation of the current value replaces its name, and updates as
-you turn the encoder to change the value.
+touch the encoder knob associated with a variable, the gauge
+underneath its value brightens to indicate that you are adjusting it,
+and updates as you turn the encoder to change the value.
 
-image::assets/AdjustingFade.jpg[Adjusting Fade variable]
+image::assets/AdjustingConfetti.jpg[Adjusting Min Last variable,693]
 
 While you are adjusting the variable, the large touch strip on the
 left hand side of the Push lights up to show you where you are in the
 variable range, and you can touch and drag on the strip to instantly
-set the variable to another value. Most numeric variables will have
-values that grow from the bottom of the touch strip, but variables
-marked as `:centered`, like Pan and Tilt, grow from the center up or
-down.
+set the variable to another value.
+
+image::assets/AdjustingConfetti2.jpg[Adjusting and touch strip]
+
+Most numeric variables will have values that grow from the bottom of
+the touch strip, but variables marked as `:centered` when created,
+like Pan and Tilt, grow from the center up or down. (Their graphical
+gauges grow from the center as well.)
+
+image::assets/AdjustingCentered2.jpg[Adjusting centered cue variables]
 
 If an effect has only one adjustable variable, it will take up the
 entire effect area, and you can use either encoder to adjust it, as
-when adjusting a Focus <<cues#creating-function-cues,function cue>>
-for the Torrent moving head spot:
+when adjusting a gobo shaking <<cues#creating-function-cues,function
+cue>> for the Torrent moving head spot:
 
-image::assets/AdjustingFocus.jpg[Adjusting Focus cue]
+image::assets/AdjustingShake.jpg[Adjusting gobo shake cue]
 
-When you release the encoder knob, the adjustment graph disappears,
-and the variable name reappears.
-
-The <- indicator at the left of the text area in the above photo is an
-indicator that there are older effects which have been scrolled to the
-left, off the display. You will see -> at the bottom right of the
-display when there are newer effects to the right. You can scroll to
-them using the kbd:[Shift] button with the scroll arrow buttons as
-described <<scrolling,above>>.
+When you release the encoder knob, the adjustment graph returns to its
+normal brightness, and the touch strip deactivates.
 
 This photo also illustrates the dimming of incompatible cues discussed
-<<exclusivity,above>>: The leftmost columns of blue cues
-all establish settings for the fixed gobo wheel of one of the Torrent
-moving-head spots. Since one of them is active (the `T1 atom
-shake` effect at the left of the text area corresponds to the
-bright blue button three rows down the second column), the others are
-dimmed to hint that pressing them would replace the active cue.
+<<exclusivity,above>>: The leftmost columns of blue cues all establish
+settings for the fixed gobo wheel of one of the Torrent moving-head
+spots. Since one of them is active (the `T1 atom shake` effect being
+adjusted corresponds to the bright blue button three rows down the
+second column), the others are dimmed to hint that pressing them would
+replace the active cue.
 
 This dimming can also be seen in the web interface view of the cue grid:
 
@@ -250,36 +258,44 @@ image::assets/GoboCues.png[Gobo cues]
 
 If a cue has Boolean variables assigned to it, they will also appear
 above the effect name, with the current value showing as `Yes` or
-`No`. To adjust them you also start by grabbing the closest encoder,
-at which point you will see the two options with an arrow pointing at
-the currently-chosen one. Rotate the encoder towards the option you
-want to choose and the variable will be updated:
+`No`. To adjust them you also start by grabbing the closest encoder.
+With a Boolean value, the adjustment graph is always half full, and
+you rotate it to the left for No, or right for Yes:
 
-image::assets/AdjustingDown.jpg[Adjusting a Down? cue variable]
-
-When you release the encoder knob, the choices disappear and the
-variable name reappears.
+image::assets/AdjustingDown2.jpg[Adjusting a Down? cue variable]
 
 You can also use the touch strip when setting a Boolean variable;
 touching the top half sets it to `Yes`, while the bottom half sets it to
 `No`.
 
+image::assets/AdjustingDown2Strip.jpg[Adjusting a Down? cue with the touch strip]
+
+NOTE: The `Rainbow Pulse` cue to the left of the one being adjusted is
+an example of a cue with no variables to adjust.
+
 === Color Cue Variables
 
 If a cue has color variables assigned to it, they will also appear
 above the effect name. The currently assigned color value will be
-displayed as a six digit hexadecimal number, representing the eight
-bit red, green, and blue representation of the color value, #rrggbb.
-In this photo, a cue with a color variable that starts out white has
-just been launched:
+displayed as swatch and a six digit hexadecimal number, representing
+the eight bit red, green, and blue representation of the color value,
+#rrggbb. In this photo, a `Color all` cue with a color variable that
+starts out white has just been launched:
 
-image::assets/ColorParam.jpg[Cue with color variable]
+image::assets/ColorParam2.jpg[Cue with color variable]
 
-When an effect is displaying a color cue variable, touching the
-associated encoder will open up a special color selection interface,
-which takes over the entire cue grid, as well as the effect cell:
+When an effect is displaying a color cue variable, the gauges beneath
+it represent hue and saturation values. (If the cue has only one
+variable, both of these will always be visible. Otherwise, only the
+one underneath the variable's encoder will be visible until you start
+adjusting that variable, at which point the other color gauge will
+appear.)
 
-image::assets/ColorPalette.jpg[Color adjustment palette]
+Touching the associated encoder will open up a special color selection
+interface, which takes over the entire cue grid, as well as the effect
+cell:
+
+image::assets/ColorPalette2.jpg[Color adjustment palette]
 
 In addition to adjusting the color's hue and saturation using the
 encoders above the effect, you can instantly jump to a color by
@@ -309,15 +325,56 @@ at a time on the Push, you can still check and adjust all of them.
 Whenever there are too many to fit, the rightmost pad just below the
 effect display will be lit white and labeled kbd:[Next Vars >] as shown below:
 
-image::assets/MoreVars.jpg[More than Two Cue Variables]
+image::assets/MoreVars2.jpg[More than Two Cue Variables]
 
-Each time you press the kbd:[Next Vars >] button, you will see the
-next two variables assigned to the cue. Once you reach the end of the
-list, it wraps back to the beginning. Grabbing an encoder above the
+In the photo, the `Torrent Sine` and `Blade Triangle` cues have more
+variables than are being displayed, while the `Color all` cue does
+not.
+
+Each time you press a kbd:[Next Vars >] button, you will see the next
+two variables assigned to the cue. Once you reach the end of the list,
+it wraps back to the beginning. Grabbing an encoder above the
 variables will adjust whichever variable is currently displayed
 beneath it. (While you are holding encoders to adjust an effect's
 variables, its kbd:[Next Vars >] button will be blacked out and
 disabled.)
+
+=== Saving Cues
+
+If you have made any adjustments to cue variable values, these are
+normally discarded when you end the cue; the next time it begins, it
+starts with the values that were configured in the show. You can
+change that by saving the cue's variables. To begin, hold down the
+kbd:[&#9711;] button near the bottom left of the Push 2:
+
+image::assets/Saving2.jpg[Saving Cue Variables]
+
+While this button is held down, the red kbd:[End] buttons beneath the
+effect list disappear, and are replaced with the cue saving interface.
+If you have made any adjustments to a cue's variables since it was
+started, a green kbd:[Save] button will appear (like the one beneath
+the `Color all` effect in the photo above). Pressing that will save
+the adjustments you made, so the next time you launch the cue, the
+adjusted values will be used.
+
+Once you have saved a cue's variables, while it is running, instead of
+a green kbd:[Save] button, you will see an amber kbd:[Clear] button
+(like the one beneath the `Torrent Sine` effect in the photo).
+Pressing that will remove the saved values, so the cue goes back to
+its original configuration.
+
+If you save a cue's variables, and then adjust them further, the
+kbd:[Save] button returns, allowing you to save your new values. If
+you don't, the values you saved earlier will be used the next time you
+start the cue.
+
+If a cue's variables have neither been saved nor adjusted, no
+kbd:[Save] or kbd:[Update] button appears. Of course, while saving
+cues, you can still scroll though their variables using the kbd:[Next
+Vars >] buttons.
+
+Once you release the kbd:[&#9711;] button, the save interface goes
+away, and the effect kbd:[End] buttons return.
 
 == Metronome Control
 
@@ -326,11 +383,11 @@ Metronome that the show is using to keep time with the music that is
 being played. Since Afterglow's effects are generally defined with
 respect to the metronome, it is important to keep it synchronized with
 the music. When active, the metronome section takes over the leftmost
-quarter of the text area (so there are room to see only three effects,
-rather than the normal four). To toggle the metronome section, press
-the kbd:[Metronome] button. It will appear if it was not showing, and
-disappear if it was there. The kbd:[Metronome] button is lit more
-brightly when the section is active.
+quarter of the graphical display (so there are room to see only three
+effects, rather than the normal four). To toggle the metronome
+section, press the kbd:[Metronome] button. It will appear if it was
+not showing, and disappear if it was there. The kbd:[Metronome] button
+is lit more brightly when the section is active.
 
 The metronome section shows the current speed, in Beats Per Minute, of
 the metronome, and the kbd:[Tap Tempo] button label flashes at each beat
@@ -339,7 +396,16 @@ visible in the text area). The metronome section also shows you the
 current phrase number, the bar within that phrase, and the beat within
 that bar which has been reached.
 
-image:assets/PushMetronome.jpg[Metronome section]
+Finally, below the beat and BPM displays, there is a visualization of
+the passing beats, bars, and phrases. The beats are drawn in white,
+with their phase increasing until the next beat hits. In a layer
+beneath them, the measures (bars) are drawn in red, and beneath those,
+the phrases in blue. The current moment in time is centered in the
+visualization with a stationary line to mark it, and there is room for
+one measure before and after the line. A full phrase doesn't fit, but
+you can see its phase gradually growing until it ends.
+
+image:assets/Metronome2.png[Metronome section]
 
 The most basic way of synchronizing the metronome is to tap the
 kbd:[Tap Tempo] button at each beat of the music. Tapping the button
@@ -356,26 +422,29 @@ Afterglow that the moment when you tapped the button is the down beat
 (the first beat of a bar).
 
 You can also adjust the BPM by turning the BPM encoder, which is the
-rightmost encoder below the Metronome button:
+encoder right above the kbd:[Metronome] button:
 
-image:assets/PushBPM.jpg[BPM encoder]
+image:assets/Push2BPM.jpg[BPM encoder]
 
-While you are holding this encoder, the symbol `&uparrow;` appears below
-the BPM value as a visual reminder of what value you are adjusting.
-Turning the encoder clockwise raises the BPM, turning counterclockwise
-lowers it. While the metronome section is showing, you can also use
-the encoder above the BPM value to adjust it. But you can grab the
-dedicated BPM encoder below the kbd:[Metronome] button even when the
-metronome section is not showing, and it will appear while you have
-the encoder in your hand, so you can adjust the BPM quickly, and then
-get back to what you were doing.
+While you are holding this encoder, the BPM gauge brightens, along
+with the BPM digit after the decimal point, as a visual reminder of
+what value you are adjusting. Turning the encoder clockwise raises the
+BPM, turning counterclockwise lowers it. While the metronome section
+is showing, you can also use the encoder above the BPM value to adjust
+it. But you can grab the dedicated BPM encoder above the
+kbd:[Metronome] button even when the metronome section is not showing,
+and it will appear while you have the encoder in your hand, so you can
+adjust the BPM quickly, and then get back to what you were doing.
 
 If you press the kbd:[Shift] button, the BPM encoder can be used to
 adjust the BPM by whole beats rather than tenths. While kbd:[Shift] is
-down, the `&uparrow;` will point to the left of the decimal point
-rather than to the right of it, and the BPM will change ten times as
-quickly as you turn it. You can switch back and forth in the middle of
-your adjustments by pressing and releasing the shift key at any time.
+down, the BPM value before the decimal point will be brightened,
+rather than the digit after it, and the BPM will change ten times as
+quickly when you turn it. You can switch back and forth in the middle
+of your adjustments by pressing and releasing the shift key at any
+time.
+
+image:assets/Push2BPMShift.jpg[BPM when shifted]
 
 In order to make longer chases and effects line up properly with the
 music, you will also want to make sure the count is right, that the
@@ -383,36 +452,37 @@ beat number shows `1` on the down beat, and that the bar numbers are
 right as well, so that the start of a phrase is reflected as bar
 number `1`. In addition to using kbd:[Shift] with kbd:[Tap Tempo] to
 set the down beat, you can adjust the current beat number using the
-beat encoder, the leftmost encoder below the metronome button:
+beat encoder, the encoder above the kbd:[Tap Tempo] button:
 
-image:assets/PushBeat.jpg[Beat encoder]
+image:assets/Push2Beat.jpg[Beat encoder]
 
-While you are holding this encoder, the symbol `&uparrow;` appears
-below the beat number as a visual reminder of what value you are
-adjusting. Turning the encoder clockwise jumps to the next beat,
-turning counterclockwise jumps back to the previous one. As a tactile
-reminder that you are adjusting whole beats, this encoder moves with a
-distinct click as it changes value, while the BPM encoder turns
-smoothly as you scroll through fractional BPM values.
+While you are holding this encoder, an endless circular gauge appears
+below the beat information, and the beat number is brightened, as a
+visual reminder of what value you are adjusting. Turning the encoder
+clockwise jumps to the next beat, turning counterclockwise jumps back
+to the previous one. As a tactile reminder that you are adjusting
+whole beats, this encoder moves with a distinct click as it changes
+value, while the BPM encoder turns smoothly as you scroll through
+fractional BPM values.
 
 While the metronome section is showing, you can also use the encoder
 above the Beat value to adjust it. But you can grab the dedicated Beat
-encoder below the kbd:[Metronome] button even when the metronome
+encoder above the kbd:[Tap Tempo] button even when the metronome
 section is not showing, and it will appear while you have the encoder
 in your hand, so you can adjust the beat number quickly, and then get
 back to what you were doing.
 
 If you press the kbd:[Shift] button, the Beat encoder can be used to
 adjust the current bar within the phrase instead of the current beat.
-While kbd:[Shift] is down, the `&uparrow;` will point at the bar
-instead of the beat, and turning the encoder will jump that value
-forwards or backwards:
+While kbd:[Shift] is down, the bar will be brightened instead of the
+beat, and turning the encoder will jump that value forwards or
+backwards:
 
-image:assets/PushBar.jpg[Bar jumping]
+image:assets/Push2Bar.jpg[Bar jumping]
 
-If you know a phrase is about to begin, you can press the red Reset
-pad in the metronome section right as it does. This will reset the
-count to Phrase 1, Bar 1, Beat 1.
+If you know a phrase is about to begin, you can press the red
+kbd:[Reset] button in the metronome section right as it does. This
+will reset the count to Phrase 1, Bar 1, Beat 1.
 
 Trying to keep up with tempo changes during dynamic shows can be
 tedious, so you will hopefully be able to take advantage of
@@ -424,16 +494,16 @@ lock into the beat grid established by
 keep the BPM (with MIDI) and even the beats (with Pro DJ Link and the
 Traktor Afterglow Beat Phase
 <<mapping_sync#syncing-to-traktor-beat-phase,controller mapping>>)
-synchronized for you. The Sync pad in the Metronome section (showing
-`Manual` sync in these photos) will eventually allow you to set this
-up, but that is not yet implemented, so for now you will need to use
-the <<README#metronome-control,web interface>> to configure it.
+synchronized for you. The Sync button in the Metronome section
+(showing kbd:[Manual] sync in these photos) will eventually allow you to
+set this up, but that is not yet implemented, so for now you will need
+to use the <<README#metronome-control,web interface>> to configure it.
 
-NOTE: The pad does already change color to let you know the sync
+NOTE: The button does already change color to let you know the sync
 status: amber means manual, green means successful automatic sync, and
 red means a requested automatic sync has failed. It is likely that a
-future release of Afterglow will let you press this pad to choose your
-sync source.
+future release of Afterglow will let you press this button to choose
+your sync source.
 
 Once your sync is established, the meaning of the kbd:[Tap Tempo]
 button changes. If you are using MIDI clock to sync the BPM, it

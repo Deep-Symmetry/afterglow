@@ -32,7 +32,7 @@ a simple controller with a few buttons. You will still want to start
 by creating the cues in the show cue grid, not only so you can see and
 manipulate them with the web interface, but also because that is how
 they can be mapped to MIDI controllers. (The rich
-<<push#using-ableton-push,Push>> and
+<<push2#using-ableton-push-2,Push>> and
 <<launchpad#using-the-novation-launchpad-family,Launchpad family>>
 mappings are described in detail on their own pages.)
 
@@ -215,7 +215,7 @@ Wiki].
 NOTE: These examples show how to perform low-level MIDI mapping. Over
 time, you might find that someone has written a rich user interface
 binding for your controller, as has been done for the
-<<push#using-ableton-push,Ableton Push>>, which would let you
+<<push2#using-ableton-push-2,Ableton Push>>, which would let you
 jump right in without having to worry about such details. These
 examples can still help explain how your controller's binding works,
 or encourage you to write and share a binding for a new controller
@@ -791,7 +791,7 @@ buy one.
 Perhaps the best way to control Afterglow is using the fluid, tactile
 interface offered by the Ableton Push. There's enough to say about
 that now that it has been moved to its own
-<<push#using-ableton-push,page>>.
+<<push2#using-ableton-push-2,page>>.
 
 === Using the Novation Launchpad Family
 

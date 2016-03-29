@@ -67,7 +67,7 @@ can ask it for all the counts as a string by calling:
 ; -> "15.1.4"
 ----
 
-TIP: This is used by the <<push2#using-ableton-push,Ableton
+TIP: This is used by the <<push2#using-ableton-push-2,Ableton
 Push controller mapping>> to display the metronome state and support
 beat jumping.
 

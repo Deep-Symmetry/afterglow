@@ -39,7 +39,7 @@ use <<mapping_sync#mapping-a-control-to-a-variable,MIDI mappings>> to
 have them set by turning a knob or sliding a fader on a MIDI control
 surface. <<cues.adoc#cues,Cues>> can also set variables, and can bind
 them to encoders or pressure sensitive pads on controllers like the
-<<push2#using-ableton-push,Ableton Push>> and
+<<push2#using-ableton-push-2,Ableton Push>> and
 <<launchpad#using-launchpad-pro,Novation Launchpad Pro>>.
 
 You can then refer to that stored value whenever you are building a

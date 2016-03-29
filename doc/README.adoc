@@ -97,7 +97,7 @@ Someday a user interface for building shows and fixture definitions
 may be created, either within Afterglow, or as a companion project,
 but that is not currently planned. For now the focus is on building
 rich user interfaces for controlling shows, such as the
-<<push#using-ableton-push,Ableton Push>> and
+<<push2#using-ableton-push-2,Ableton Push>> and
 <<launchpad#using-the-novation-launchpad-family,Novation Launchpad
 family>> mappings and the <<README#the-embedded-web-interface,embedded
 web interface>>, while using the concise expressive power of Clojure
@@ -179,7 +179,7 @@ physical grid controllers or simpler MIDI controllers.
 == The Embedded Web Interface
 
 Although a physical grid controller (especially one as well-designed
-as the <<push#using-ableton-push,Ableton Push>> or
+as the <<push2#using-ableton-push-2,Ableton Push>> or
 <<launchpad#using-launchpad-pro,Novation Launchpad Pro>>) offers
 the ideal control surface for running a light show, you can do a lot
 with just the web interface built in to Afterglow. And even when you
@@ -554,7 +554,7 @@ arranged, labeled, and colored in a way that makes sense to you.
 
 . Map some cues to a controller, if you have one. If you have an
 Ableton Push, you are in luck because you will be able to take
-advantage of the built in <<push#using-ableton-push,support>>
+advantage of the built in <<push2#using-ableton-push-2,support>>
 Afterglow offers. Or perhaps a
 <<launchpad#using-the-novation-launchpad-family,Novation Launchpad>>?
 But even if you just have a simple MIDI controller with a few buttons
