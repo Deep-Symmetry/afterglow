@@ -267,10 +267,11 @@ image::assets/AdjustingDown2.jpg[Adjusting a Down? cue variable]
 NOTE: The `Blade Saw` cue in the photo is also an example of a cue
 that defines a custom visualization. Underneath its variable gauges,
 it draws an animated view of the previous and upcoming measure of
-time, showing the dimmer level that it will establish at each point in
-time. As you adjust the cue variables, the visualization instantly
-updates to reflect your changes, helping you understand how they
-affect it.
+time, with down beats marked in red as they are in the Metronome
+section. The visualization is a strip chart showing the dimmer level
+that the cue will establish at each point in time. As you adjust the
+cue variables, the visualization instantly updates to reflect your
+changes, helping you understand how they affect it.
 
 You can also use the touch strip when setting a Boolean variable;
 touching the top half sets it to `Yes`, while the bottom half sets it to
