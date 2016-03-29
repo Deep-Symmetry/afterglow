@@ -39,8 +39,8 @@ use <<mapping_sync#mapping-a-control-to-a-variable,MIDI mappings>> to
 have them set by turning a knob or sliding a fader on a MIDI control
 surface. <<cues.adoc#cues,Cues>> can also set variables, and can bind
 them to encoders or pressure sensitive pads on controllers like the
-<<mapping_sync#using-ableton-push,Ableton Push>> and
-<<mapping_sync#using-launchpad-pro,Novation Launchpad Pro>>.
+<<push2#using-ableton-push,Ableton Push>> and
+<<launchpad#using-launchpad-pro,Novation Launchpad Pro>>.
 
 You can then refer to that stored value whenever you are building a
 dynamic parameter (for example when you are passing in the `:hue`
@@ -657,7 +657,7 @@ prints the new values of the variable named `:key` each time it is changed.
   "Prints a variable every time it changes"
   [key value]
   (println key "set to" value))
-  
+
 (show/add-variable-set-fn! :key println-on-change)
 (show/set-variable! :key 10)
 ; prints ":key set to 10"

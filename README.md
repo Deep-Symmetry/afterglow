@@ -71,8 +71,8 @@ are fully supported too):
   [complex effects](doc/effects.adoc#complex-effects), with
   [adjustable parameters](doc/parameters.adoc#dynamic-parameters) that
   can be controlled through a rich binding to an
-  [Ableton Push](doc/mapping_sync.adoc#using-ableton-push) or
-  [Novation Launchpad family](doc/mapping_sync.adoc#using-launchpad-pro)
+  [Ableton Push](doc/push.adoc#using-ableton-push) or
+  [Novation Launchpad family](doc/launchpad.adoc#using-the-novation-launchpad-family)
   controller.
 
 * The timing of effects is pervasively influenced by a deep notion of
@@ -161,7 +161,7 @@ if it sounds interesting!
 > configuration of Afterglow from the command line and text files. The
 > show control interface is explained in the
 > [web](doc/README.adoc#the-embedded-web-interface) and
-> [Push](doc/mapping_sync.adoc#using-ableton-push) sections.
+> [Push](doc/push.adoc#using-ableton-push) sections.
 
 Although you will often want to use Afterglow from a Clojure repl, you
 can also bring it up as an executable jar, and run it using `java
@@ -492,7 +492,7 @@ connected. That way, if someone trips over the controller cable, as
 soon as you plug it back in, you are good to go again.)
 
 > If you have access to an Ableton Push, it is even easier to have
-> [intutive control](doc/mapping_sync.adoc#using-ableton-push) over
+> [intutive control](doc/push.adoc#using-ableton-push) over
 > your show’s grand master dimmer. As soon as you bind the Push to
 > your show, the Push Master encoder is automatically tied to the show
 > master dimmer, with nice graphical feedback in the text area. Plus

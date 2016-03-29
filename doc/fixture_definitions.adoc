@@ -589,7 +589,7 @@ that range. Each map has the following content:
  and are identified by a `:range` type of `:variable`. This helps
  Afterglow build an appropriate user interface for interacting with
  <<effects#function-effects,Function Effects>> in places like the
- <<mapping_sync#effect-control,Ableton Push Effect Control interface>>.
+ <<push2#effect-control,Ableton Push Effect Control interface>>.
 
 |:label
 
@@ -608,7 +608,7 @@ that range. Each map has the following content:
  sense to set this only when `:range` is `:variable`).
  <<cues#creating-function-cues,Function Cues>> will use this as the
  label for the cue-local variable they create, and it will appear in
- places like the <<mapping_sync#effect-control,Ableton Push Effect
+ places like the <<push2#effect-control,Ableton Push Effect
  Control interface>>. If omitted, the generic label
  &ldquo;Level&rdquo; will be displayed under the encoder knob.
 
@@ -671,7 +671,7 @@ argument `:fine-offset`.
 
 If you want to use a label which differs from the name of the `color`
 keyword in the user interface when
-<<mapping_sync#effect-control,adjusting>>
+<<push2#effect-control,adjusting>>
 <<cues#creating-function-cues,Function Cues>> (for example, if the
 keyword is hyphenated, and you want the label to use a space), specify
 your desired label with the optional keyword argument
@@ -883,7 +883,7 @@ argument `:function-type`.
 
 If you want to use a variable label which differs from the name of the
 channel's function type keyword in the user interface when
-<<mapping_sync#effect-control,adjusting>>
+<<push2#effect-control,adjusting>>
 <<cues#creating-function-cues,Function Cues>> (for example, if the
 keyword is hyphenated, and you want the label to use a space), specify
 your desired label with the optional keyword argument

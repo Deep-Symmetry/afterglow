@@ -137,7 +137,7 @@
   Cues](https://github.com/brunchboy/afterglow/blob/master/doc/cues.adoc#creating-function-cues)
   will use this as the label for the cue-local variable they create,
   and it will appear in places like the [Ableton Push Effect Control
-  interface](https://github.com/brunchboy/afterglow/blob/master/doc/mapping_sync.adoc#effect-control).
+  interface](https://github.com/brunchboy/afterglow/blob/master/doc/push2.adoc#effect-control).
   You can specify what this variable label should be with
   `:var-label`; if you do not, the generic label `Level` will be
   used."

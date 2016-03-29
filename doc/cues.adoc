@@ -18,8 +18,8 @@ with through the <<README#the-embedded-web-interface,embedded web
 interface>> and MIDI controller mapping implementations which can be
 {api-doc}afterglow.show.html#var-register-grid-controller[registered
 as grid controllers], like the
-<<mapping_sync#using-ableton-push,Ableton Push>> and
-<<mapping_sync#using-launchpad-pro,Novation Launchpad family>>.
+<<push2#using-ableton-push-2,Ableton Push>> and
+<<launchpad#using-the-novation-launchpad-family,Novation Launchpad family>>.
 
 == The Cue Grid
 
@@ -287,7 +287,7 @@ be present in their fixtures.
 only as long as the corresponding controller button or pad is held
 down, if the controller supports that capability. All current
 controller implementations, including the web interface, the
-<<mapping_sync#using-ableton-push,Ableton Push mapping>>, and mappings
+<<push2#using-ableton-push-2,Ableton Push mapping>>, and mappings
 to generic MIDI controllers created using
 {api-doc}afterglow.effects.cues.html#var-add-midi-to-cue-mapping[`afterglow.effects.cues/add-midi-to-cue-mapping`]
 do honor this setting. The web interface and controllers like the
@@ -336,9 +336,9 @@ which assigns variables to the cue. These variables allow the cue to
 be adjusted by the show operator in convenient and powerful ways,
 either through the interfaces automatically presented by the Effect
 Control sections of the <<README#effect-control,embedded Web
-interface>> or <<mapping_sync#effect-control,Ableton Push mapping>>,
+interface>> or <<push2#effect-control,Ableton Push mapping>>,
 through velocity-sensitive grid controllers like the Push or
-<<mapping_sync#using-launchpad-pro,Launchpad Pro>>, or a binding to
+<<launchpad#using-launchpad-pro,Launchpad Pro>>, or a binding to
 <<mapping_sync#mapping-cues-to-a-controller,any velocity-sensitive
 MIDI controller>>.
 
@@ -346,7 +346,7 @@ Cue Variables can either be numeric (adjusted by sliders in the web
 UI, or rotary encoders and faders on MIDI controllers), boolean (with
 corresponding simple Web and Push interfaces) or they can store
 colors, in which case both the web UI and
-<<mapping_sync#color-cue-variables,Push mapping>> provide a powerful
+<<push2#color-cue-variables,Push mapping>> provide a powerful
 interface for picking and adjusting the color.
 
 They can also be temporary, lasting only the duration of the cue, or
@@ -538,7 +538,7 @@ fixture into a show, Afterglow indexes its function ranges in order to
 make this efficient.
 
 `function-cue` also automatically creates a temporary cue-local
-variable for <<mapping_sync#effect-control,adjusting>> the function
+variable for <<push2#effect-control,adjusting>> the function
 level if the function is not fixed over its range. This makes it
 essentially a one-liner to create a button in your cue grid which
 activates a function and then, via the web interface or if your
@@ -686,7 +686,7 @@ be present in their fixtures.
 only as long as the corresponding controller button or pad is held
 down, if the controller supports that capability. All current
 controller implementations, including the web interface, the
-<<mapping_sync#using-ableton-push,Ableton Push mapping>>, and mappings
+<<push2#using-ableton-push-2,Ableton Push mapping>>, and mappings
 to generic MIDI controllers created using
 {api-doc}afterglow.effects.cues.html#var-add-midi-to-cue-mapping[`afterglow.effects.cues/add-midi-to-cue-mapping`]
 do honor this setting. The web interface and controllers like the
@@ -775,8 +775,8 @@ The {api-doc}afterglow.controllers.html[`afterglow.controllers`]
 namespace defines some helpful functions for working with cues, and
 defines a {api-doc}afterglow.controllers.html#var-IGridController[grid
 controller protocol] which rich controller mappings, like the ones for
-the <<mapping_sync#using-ableton-push,Ableton Push>> and
-<<mapping_sync#using-launchpad-pro,Novation Launchpad family>>, use to
+the <<push2#using-ableton-push-2,Ableton Push>> and
+<<launchpad#using-the-novation-launchpad-family,Novation Launchpad family>>, use to
 attach themselves to a running show, and synchronize with the web
 interface.
 
