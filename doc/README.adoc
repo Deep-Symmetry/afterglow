@@ -299,7 +299,8 @@ with the same priority.)
 
 image:assets/EffectList.png[The Effect List]
 
-The name of the effect is shown, along with when it was started, in
+The name of the effect is shown, along with its prority (if it is
+anything other than the default of zero), when it was started, in
 terms of clock time (down to 1/100 of a second), and the show
 Metronome (phrase, bar, beat, and hundredths of a beat).
 
@@ -320,6 +321,71 @@ color adjustment interface.
 If cue variables are adjusted somewhere else, such as a mapped MIDI
 controller or from other code that is running, the web interface will
 update to show their changed values.
+
+===== Saving Cues
+
+If you have made any adjustments to cue variable values, these are
+normally discarded when you end the cue; the next time it begins, it
+starts with the values that were configured in the show. You can
+change that by saving the cue's variables. In the effect list, any cues whose variables you've adjusted will have a green kbd:[Save] button on the right, like the `Color snowball` cue in the photo below:
+
+image:assets/SavingCues.png[Saving Cues]
+
+After clicking kbd:[Save] in this situation, whenever you click the
+`Color snowball` cue in the cue grid, it will start out blue rather
+than its previous white color. To reflect this, the color of the cue
+in the cue grid is updated to be blue as well, both in the web
+interface, and on any attached hardware grid controllers.
+
+Once you have saved a cue's variables, while it is running, instead of
+a green kbd:[Save] button, you will see a gray kbd:[Clear] button
+(like the one on the `All Dimmers` effect in the photo). Clicking that
+will remove the saved values, so the cue goes back to its original
+configuration.
+
+For the moment, saved cue variables last only for the duration of an
+Afterglow run. The next time you start up a show, all cues are back to
+their configured values. This may change in a future release.
+
+===== Creating Macros
+
+In addition to saving the values of a single cue, you can also make an
+entirely new cue which, when you launch it, will start one or more
+cues that you currently have running, with whatever cue variable
+values they had when you created the macro. This is a great way to
+quickly build up a library of looks by combining a bunch of running
+cues that you like, so you can get back to them in an instant.
+
+To do that, start by clicking the kbd:[Make Macro] button at the
+bottom of the effect list. Checkboxes will appear in front of all
+running effects that were created by cues. Check the ones that you
+want the macro to include, type a name for it, then click on any empty
+cell in the cue grid. A new cue will appear there with the name you
+have chosen.
+
+image:assets/MakeMacro.png[Creating a Macro]
+
+Whenver you click that cue cell, it will start all of the cues that
+you included in the macro, with the variable settings they had at the
+time you created the macro.
+
+If you decide you don't want to create a macro after all, you can
+click the red kbd:[Cancel] button, and the effect list will return to
+its normal state.
+
+===== Deleting Cues
+
+If you have created a macro and decide you don't want it any more, you
+can right-click on the cue cell and choose the `Delete` option that
+appears.
+
+image:assets/DeletingCue.png[Deleting a Cue]
+
+WARNING: Be careful with this: You can delete any cue this way, and if
+it was not a macro, the only way to get it back is to re-run the code
+that created it in the first place.
+
+===== Ending Effects
 
 A running effect can be asked to end by clicking its kbd:[End] button.
 If the effect takes a while to end, its entire row will take on the

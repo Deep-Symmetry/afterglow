@@ -386,6 +386,11 @@ the `Color all` effect in the photo above). Pressing that will save
 the adjustments you made, so the next time you launch the cue, the
 adjusted values will be used.
 
+When you save a color cue that is configured like the ones in the
+sample show, the color of the cue's pad in the cue grid is updated to
+reflect the new color you have chosen. (Its color in the the web
+interface cue grid is updated as well).
+
 Once you have saved a cue's variables, while it is running, instead of
 a green kbd:[Save] button, you will see an amber kbd:[Clear] button
 (like the one beneath the `Torrent Sine` effect in the photo).
