@@ -96,7 +96,7 @@ function buildEffectRow( data ) {
                         });
                 })
                )
-        .append($('<button/>', { type: "button", id: "effect-" + data.id + "-clear", "class": "btn btn-default",
+        .append($('<button/>', { type: "button", id: "effect-" + data.id + "-clear", "class": "btn btn-sm btn-default",
                                  style: "display: none" })
                 .text("Clear")
                 .click(function ( eventObject ) {
