@@ -362,14 +362,14 @@ to the actual web interface):
 
 ![Show control](doc/assets/ShowGrid.gif)
 
-Here is the Ableton Push interface tied to an earlier version of the
-same cue grid. This physical control surface lets you trigger more
-than one cue at the same time, and also gives you niceties unavailable
-with a mouse, like pressure sensitivity so your effect intensity,
-speed, color, or other parameters can be varied as you alter the
-pressure which you are applying to the pads:
+Here is the Ableton Push interface tied to the same cue grid. This
+physical control surface lets you trigger more than one cue at the
+same time, and also gives you niceties unavailable with a mouse, like
+pressure sensitivity so your effect intensity, speed, color, or other
+parameters can be varied as you alter the pressure which you are
+applying to the pads:
 
-![Push interface](doc/assets/AbletonInterface.jpg)
+![Push interface](doc/assets/GrandMaster2.jpg)
 
 You can adjust running effects, scroll around the cue grid, and adjust
 or sync the show metronome from either interface. Other MIDI
@@ -491,20 +491,15 @@ to automatically set up your bindings whenever the controller is
 connected. That way, if someone trips over the controller cable, as
 soon as you plug it back in, you are good to go again.)
 
-> If you have access to an Ableton Push, it is even easier to have
-> [intutive control](doc/push2.adoc#using-ableton-push-2) over
-> your show’s grand master dimmer. As soon as you bind the Push to
-> your show, the Push Master encoder is automatically tied to the show
-> master dimmer, with nice graphical feedback in the text area. Plus
-> you get deep control over the show metronome as well, as shown in
-> the photo above. Here is how the binding is established, assuming
-> the Push User Port shows up in your MIDI environment with its
-> default name of `"User Port"`:
-
-```clojure
-(require '[afterglow.controllers :as ct])
-(def watcher (ct/auto-bind *show* "User Port"))
-```
+> If you have an Ableton Push, it is even easier to have
+> [intutive control](doc/push2.adoc#show-control) over your show’s
+> grand master dimmer. As soon as you bind the Push to your show, the
+> Push Master encoder is automatically tied to the show master dimmer,
+> with nice graphical feedback in the text area. Plus you get deep
+> control over the show metronome as well, as shown in the photo
+> above. If you called `(use-sample-show)` as discussed above, as soon
+> as you connect and power on your Push, Afterglow will activate its
+> show control interface.
 
 Moving on, though... we can change the global color to orange:
 

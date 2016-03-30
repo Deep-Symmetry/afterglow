@@ -311,6 +311,10 @@
   ;; Create a bunch of example cues
   (make-cues)
 
+  ;; Automatically bind the show to any compatible grid controllers that are connected now
+  ;; or in the future.
+  (ct/auto-bind *show*)
+
   ;; Return the symbol through which the show can be accessed, rather than the value itself,
   ;; which is huge and causes issues for some REPL environments.
   '*show*)
@@ -2225,12 +2229,3 @@
                                               @step-param :beyond :loop))
                            :color :magenta))
 )
-
-(defn use-push
-  "A trivial reminder of how to connect the Ableton Push to run the
-  show."
-  [& {:keys [device-filter refresh-interval display-name]
-           :or {device-filter "User Port"
-                refresh-interval (/ 1000 15)
-                display-name "Ableton Push"}}]
-  (ct/auto-bind *show* device-filter :refresh-interval refresh-interval :display-name display-name))

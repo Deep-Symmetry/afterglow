@@ -2702,11 +2702,21 @@
              (controllers/remove-active-binding controller))
            nil)))
 
+(def port-filter
+  "Because the Push registers multiple ports with the MIDI
+  environment, we need to be sure to bind only to the User port. This
+  filter is used with [[filter-devices]] to screen out any port that
+  does not seem to be the User port. If port names are assigned
+  differently on your operating system, you may need to change this."
+  "User Port")
+
 (defn- recognize
   "Returns the controller's device ID if `message` is a response
-  from [[controllers/identify]] which marks it as an Ableton Push 2."
-  [message]
-  (when (= (take 7 (drop 4 (:data message))) '(0 33 29 103 50 2 0))
+  from [[controllers/identify]] which marks it as an Ableton Push 2,
+  and the ports are User ports."
+  [message port-in port-out]
+  (when (and (= (take 7 (drop 4 (:data message))) '(0 33 29 103 50 2 0))
+             (= 2 (count (amidi/filter-devices port-filter [port-in port-out]))))
     (int (aget (:data message) 1))))
 
 ;; Register our recognition function and rich binding with the

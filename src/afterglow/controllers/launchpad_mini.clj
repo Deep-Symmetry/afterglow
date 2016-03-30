@@ -598,8 +598,8 @@
 (defn- recognize
   "Returns a tuple of the controller's device ID and model name if
   `message` is a response from [[controllers/identify]] which marks it
-  as a Novation Launchpad Mini or S"
-  [message]
+  as a Novation Launchpad Mini or S."
+  [message _ _]
   (let [ident (take 5 (drop 4 (:data message)))
         device (int (aget (:data message) 1))]
     (cond (= ident '(0 32 41 54 0))

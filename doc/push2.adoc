@@ -29,22 +29,17 @@ fully supported.
 ## Binding to the Push 2
 
 Assuming you have an Ableton Push 2 connected to the machine running
-Afterglow, you can activate the Push 2 mapping and attach it to the
-current default show like this, as long as its User Port shows up in
-your MIDI environment with the standard name `"User Port"`:
+Afterglow, Afterglow will find and activate it as soon as you have set
+up the sample show. You will see a brief startup animation, and
+Afterglow's Push 2 interface will start.
 
-[source,clojure]
-----
-(require '[afterglow.controllers :as ct])
-(def watcher (ct/auto-bind *show* "User Port"))
-----
+TIP: For information about how to set up bindings without the sample
+show, or more details about how it works, see
+<<mapping_sync#setting-up-grid-controller-bindings,Setting Up Grid
+Controller Bindings>>.
 
-You will see a brief startup animation, and Afterglow's Push 2
-interface will start. (This also arranges for the Push to be re-bound
-to the show if it gets disconnected or powered off and then reappears,
-which is very handy in a performance setting.) Here is an overview of
-how the Push 2 mapping works, with details explained in the upcoming
-sections:
+Here is an overview of how the Push 2 mapping works, with details
+explained in the upcoming sections:
 
 image::assets/Push2NoEffects.jpg[Push 2 interface]
 

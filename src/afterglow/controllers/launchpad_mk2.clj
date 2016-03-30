@@ -598,7 +598,7 @@
   "Returns the controller's device ID if `message` is a response
   from [[controllers/identify]] which marks it as a Novation Launchpad
   Mk2."
-  [message]
+  [message _ _]
   (when (= (take 5 (drop 4 (:data message))) '(0 32 41 105 0))
     (int (aget (:data message) 1))))
 

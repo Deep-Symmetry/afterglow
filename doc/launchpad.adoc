@@ -14,6 +14,18 @@ Novation makes an entire family of grid controllers which can all be
 used with Afterglow, with differing capabilities. The most powerful is
 the Launchpad Pro, with pressure-sensitive RGB pads.
 
+== Binding to a Launchpad
+
+Assuming you have a Launchpad family controller connected to the
+machine running Afterglow, Afterglow will find and activate it as soon
+as you have set up the sample show. You will see a brief startup
+animation, and Afterglow's appropriate Launchpad interface will start.
+
+TIP: For information about how to set up bindings without the sample
+show, or more details about how it works, see
+<<mapping_sync#setting-up-grid-controller-bindings,Setting Up Grid
+Controller Bindings>>.
+
 == Using Launchpad Pro
 
 Although when compared with the Ableton Push it lacks a text or
@@ -26,31 +38,15 @@ custom {api-doc}afterglow.controllers.launchpad-pro.html[mapping].
   <<using-launchpad-mini-and-launchpad-s,Launchpad Mini,
   and Launchpad S>>
 
-Assuming you have a Launchpad Pro connected to the machine running
-Afterglow, you can activate the Launchpad mapping and attach it to the
-current default show like this, as long as its Standalone Port shows
-up in your MIDI environment with the standard name `"Standalone
-Port"`:
-
-[source,clojure]
-----
-(require '[afterglow.controllers :as ct])
-(def pro-watcher (ct/auto-bind *show* "Standalone Port"))
-----
-
-You will see a brief startup animation, and Afterglow's Launchpad
-interface will start. (This also arranges for the Launchpad to be
-re-bound to the show if it gets disconnected or powered off and then
-reappears, which is very handy in a performance setting.) Here is an
-overview of how the Launchpad Pro mapping works:
+Here is what the Launchpad Pro interface looks like:
 
 image::assets/LaunchpadPro.jpg[Launchpad Pro interface]
 
 === Show Control
 
-Once you have the push linked to a show, it becomes a very intuitive
-way to monitor and control the cues and help with synchronization of
-the show.
+Once you have the Launchpad linked to a show, it becomes a helpful way
+to monitor and control the cues and manage the musical synchronization
+of the show.
 
 The red kbd:[Stop] button at the bottom can be used to stop a running
 show, which will suspend the processing of its effects, and black out
@@ -123,8 +119,8 @@ the show, or specifying other effect keys in their `:end-keys` list),
 when you activate one, the other cues which use the same keyword are
 dimmed. This is a hint that when you activate one of them, it will
 _replace_ the others, rather than running at the same time. (There are
-photos demonstrating this effect in the Ableton Push discussion
-above.)
+photos demonstrating this effect on the
+<<push2#numeric-cue-variables,Ableton Push page>>.)
 
 === Scrolling
 
@@ -215,22 +211,6 @@ Launchpad Mini and Launchpad S
 {api-doc}afterglow.controllers.launchpad-mk2.html[mapping] uses the
 same arrangement of round buttons as those controllers.
 
-Assuming you have a Launchpad Mk2 connected to the machine running
-Afterglow, you can activate its mapping and attach it to the current
-default show like this, as long as its ports show up in your MIDI
-environment with the standard names which include the string `"Mk2"`:
-
-[source,clojure]
-----
-(require '[afterglow.controllers :as ct])
-(def mk2-watcher (ct/auto-bind *show* "Mk2"))
-----
-
-You will see a brief startup animation, and Afterglow's Launchpad Mk2
-interface will start. (This also arranges for the Launchpad to be
-re-bound to the show if it gets disconnected or powered off and then
-reappears, which is very handy in a performance setting.)
-
 == Using Launchpad Mini and Launchpad S
 
 These two controllers share the same
@@ -243,30 +223,6 @@ state.
 
 > The mapping of these controllers was made possible thanks to the
   kind loan of a Launchpad Mini for that purpose by Novation.
-
-Assuming you have a Launchpad Mini or S connected to the machine
-running Afterglow, you can activate its mapping and attach it to the
-current default show like this, as long as its ports show up in your
-MIDI environment with the standard names of `"Launchpad Mini"` or
-`"Launchpad S"`:
-
-[source,clojure]
-----
-(require '[afterglow.controllers :as ct])
-(def mini-watcher (ct/auto-bind *show* "Launchpad Mini"))
-(def s-watcher (ct/auto-bind *show* "Launchpad S"))
-----
-
-You will see a brief startup animation, and Afterglow's Launchpad Mini
-interface will start. (This also arranges for the Launchpad to be
-re-bound to the show if it gets disconnected or powered off and then
-reappears, which is very handy in a performance setting.) If you
-wonder what would happen if you plugged in both a Launchpad Mini and
-Launchpad S after running the above lines, the answer is that they
-would both become active and you could use them at the same time. You
-can have as many controller watchers and bindings running at the same
-time as you like, as long as they can each properly identify the MIDI
-ports to work with.
 
 === Launchpad Mini and S Cue Grid Colors
 

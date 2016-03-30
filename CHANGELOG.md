@@ -29,6 +29,10 @@ This change log follows the conventions of
   - Launchpad Mini
   - Launchpad S (untested, but the Mini, which works, is based on the S)
   - Launchpad Mk2
+- The auto-bind mechanism has been improved so much that the sample
+  show can now simply turn it on to fully automate the process of
+  detecting and binding to any compatible grid controllers that appear
+  in the MIDI environment, with no user or configuration effort.
 - Direction and aim parameters can now be transformed by a dynamic
   Java3D `Transform3D` parameter to create kaleidoscopic looks with
   groups of lights.

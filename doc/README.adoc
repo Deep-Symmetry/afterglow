@@ -341,24 +341,23 @@ the right.
 
 image:assets/CueScrollLink.png[Cue scroll arrows and link menu,align="right"]
 
-If you have any grid controllers you can attach them to the show. An
-Ableton Push would be bound as follows, assuming its User Port shows
-up in your MIDI environment with the standard name `"User Port"`:
+If you have any compatible grid controllers, Afterglow started
+watching for them to be connected as soon as you called
+`(use-sample-show)`. If you are defining your own show and want to
+learn more about how that works, or lower-level ways of binding to a
+specific controller, see the
+<<mapping_sync#rich-grid-controller-mappings,details>> in the Mapping
+and Sync section.
 
-[source,clojure]
-----
-(require '[afterglow.controllers :as ct])
-(def watcher (ct/auto-bind *show* "User Port"))
-----
-
-Once this was done, whenever a Push was connected and powered on, you
-would see a link menu appear next to the scroll diamond, as shown in
-the above screen image. The link menu allows the web interface to be
-tied to a grid controller, so that each is always looking at the same
-page of cues. Using the scroll arrows on either the web interface, or
-on the controller itself if it has them (the Push does), will cause
-both to scroll simultaneously. This provides an excellent additional
-layer of information about the buttons on the physical controller.
+With auto-binding active, whenever a compatible grid controller is
+connected and powered on, you will see a link menu appear next to the
+scroll diamond, as shown in the above screen image. The link menu
+allows the web interface to be tied to a grid controller, so that each
+is always looking at the same page of cues. Using the scroll arrows on
+either the web interface, or on the controller itself if it has them
+(the Push and Launchpad family do), will cause both to scroll
+simultaneously. This provides an excellent additional layer of
+information about the buttons on the physical controller.
 
 TIP: Of course, there may be times you want to break this link, for
 example so you could have access to one set of cues on the physical

@@ -784,7 +784,8 @@ or even black things out:
 Afterglow ships with built-in mappings that take advantage of several
 excellent grid controllers. If you happen to own one, you are in luck!
 And if you don't, reading about these capabilities may tempt you to
-buy one.
+buy one, or write a mapping for one that you own that is not yet
+supported.
 
 === Using Ableton Push
 
@@ -800,6 +801,114 @@ offer touch-sensitivity as well. Even though they lack built-in text
 and graphical displays (at least so far), Afterglow uses them well
 enough that they get their own
 <<launchpad#using-the-novation-launchpad-family,page>>.
+
+=== Setting Up Grid Controller Bindings
+
+When you set up the sample show by calling `(use-sample-show)` in the
+`afterglow.examples` namespace, it configures Afterglow to
+automatically use any compatible grid controller as soon as it is
+detected in the MIDI environment. Here is a closer look at how it
+accomplishes that. It uses the
+{api-doc}afterglow.controllers.html#var-auto-bind[`auto-bind`]
+function in the `afterglow.controllers` namespace:
+
+[source,clojure]
+----
+(require '[afterglow.controllers :as ct])
+(ct/auto-bind *show*)
+----
+
+When you want to shut down the bindings running on all connected
+controllers, you can call:
+
+[source,clojure]
+----
+(ct/deactivate-all)
+----
+
+You can also undo the binding of any controller by simply
+disconnecting it or powering it down; Afterglow will gracefully
+stop using it when that happens.
+
+Both of the above approaches leave the auto-binding mechanism active,
+though. So if you attach a new controller, or disconnect (or turn off)
+one of the controllers that you just deactivated, then reconnect it
+(or turn it back on), it will get bound again. To stop that from
+happening, you can call:
+
+[source,clojure]
+----
+(ct/cancel-auto-bind)
+----
+
+From that point on, controllers will be ignored as they come and go
+until you reactivate the auto-bind system. As described in the
+{api-doc}afterglow.controllers.html#var-auto-bind[API documentation],
+there are optional parameters you can give to `auto-bind` to adjust
+things like the refresh rate used by the controllers, or to only
+auto-bind to certain controllers. For example, if you only want to
+auto-bind to Push, you could call:
+
+[source,clojure]
+----
+(ct/auto-bind *show* :device-filter "Ableton Push")
+----
+
+Similarly, to only bind to Launchpad Pro, you could use a
+`:device-filter` value of `"Launchpad Pro"` (or `"Launchpad Mk2"`,
+`"Launchpad Mini"`, or `"Launchpad S"`), or to bind to any member of
+the Launchpad family, just `"Launchpad"`.
+
+Whenever you call `auto-bind` it cancels whatever previous auto-bind
+configuration had been set up, and applies your new arguments.
+
+If you don't want to turn on auto-binding at all but simply want to
+set up a one-time binding to a controller that is already connected,
+you can call
+{api-doc}afterglow.controllers.html#var-bind-to-show[`afterglow.controllers/bind-to-show`].
+That function always expects you to pass a device filter as its second
+argument, and then accepts the same kinds of optional keyword
+arguments that `auto-bind` does. It will try to bind to first device
+matching the `device-filter` argument you supplied, so that needs to
+be the correct port on a device like the Push or launchpad Pro which
+has multiple MIDI ports. That means that to successfully bind to a
+Push or Launchpad Pro, you need calls like these:
+
+[source,clojure]
+----
+(def push (ct/bind-to-show *show* "User Port"))
+(def launchpad-pro (ct/bind-to-show *show* "Standalone Port"))
+----
+
+That finds the User Port on the Push, and the Standalone Port on the
+Launchpad Pro, which are the ports that Afterglow needs to use to
+communicate successfully with them. Simpler controllers like the
+Launchpad Mk2, Mini, and S have only one port, so you can use the name
+of the device itself as your device filter.
+
+NOTE: If a compatible controller can't be immediately found at the
+first port that matches your device filter, `bind-to-show` will fail.
+There are more sophisticated ways of building device filters than
+simply using strings; see the
+{api-doc}afterglow.midi.html#var-filter-devices[`afterglow.midi/filter-devices`]
+documentation for details.
+
+
+The example calls stored the results of calling `bind-to-show` in
+variables, which is useful because you can later use those variables
+to individually shut down the resulting bindings:
+
+[source,clojure]
+----
+(ct/deactivate push)
+(ct/deactivate launchpad-pro)
+----
+
+Of course, if you don't care about that and simply want to deactivate
+all bindings, you can still use `(ct/deactivate-all)` as described
+above. Or you can just turn off or unplug the controllers. Since
+auto-binding is not active, that will permanently remove them from
+Afterglow's control (at least until you explicitly re-bind them).
 
 ==== License
 

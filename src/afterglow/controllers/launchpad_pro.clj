@@ -649,12 +649,22 @@
              (controllers/remove-active-binding controller))
            nil)))
 
+(def port-filter
+  "Because the Launchpad Pro registers multiple ports with the MIDI
+  environment, we need to be sure to bind only to the Standalone port.
+  This filter is used with [[filter-devices]] to screen out any port
+  that does not seem to be the Standalone port. If port names are
+  assigned differently on your operating system, you may need to
+  change this."
+  "Standalone Port")
+
 (defn- recognize
   "Returns the controller's device ID if `message` is a response
   from [[controllers/identify]] which marks it as a Novation Launchpad
-  Pro"
-  [message]
-  (when (= (take 5 (drop 4 (:data message))) '(0 32 41 81 0))
+  Pro, and the ports are Standalone ports."
+  [message port-in port-out]
+  (when (and (= (take 5 (drop 4 (:data message))) '(0 32 41 81 0))
+             (= 2 (count (amidi/filter-devices port-filter [port-in port-out]))))
     (int (aget (:data message) 1))))
 
 ;; Register our recognition function and rich binding with the

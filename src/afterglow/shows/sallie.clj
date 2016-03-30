@@ -459,10 +459,3 @@
                                            :color-index-function rhythm/snapshot-beat-within-phrase
                                            :transition-phase-function rhythm/snapshot-beat-phase
                                            :effect-name "Wipe Right Beat"))))))
-
-(defn use-push
-  "A trivial reminder of how to connect the Ableton Push to run the
-  show. But also sets up the cues, if you haven't yet."
-  []
-  (make-cues)
-  (push/bind-to-show *show*))
