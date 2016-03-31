@@ -44,7 +44,10 @@
     (when device
       (timbre/info "Attempting auto-binding to potential controller" device args)
       (try
-        (apply bind-to-show (concat [show (:name device)] (flatten (seq args))))
+        (apply bind-to-show (concat [show (fn [port]
+                                            (and (= (:name port) (:name device))
+                                                 (= (:description port) (:description device))))]
+                                    (flatten (seq args))))
         (catch Exception e
           (timbre/error e "Problem binding to controller"))))
 
