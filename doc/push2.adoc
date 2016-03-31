@@ -403,9 +403,10 @@ you don't, the values you saved earlier will be used the next time you
 start the cue.
 
 If a cue's variables have neither been saved nor adjusted, no
-kbd:[Save] or kbd:[Update] button appears. Of course, while saving
-cues, you can still scroll though their variables using the kbd:[Next
-Vars >] buttons.
+kbd:[Save] or kbd:[Update] button appears (like for the `Blade
+Triangle` effect in the photo). Of course, while saving cues, you can
+still scroll though their variables using the kbd:[Next Vars >]
+buttons.
 
 Once you release the kbd:[&#9711;] button, the save interface goes
 away, and the effect kbd:[End] buttons return.

@@ -305,6 +305,49 @@ variables will adjust whichever variable is currently displayed
 beneath it. (While you are holding encoders to adjust an effect's
 variables, its kbd:[More ->] button will be blacked out and disabled.)
 
+== Saving Cues
+
+If you have made any adjustments to cue variable values, these are
+normally discarded when you end the cue; the next time it begins, it
+starts with the values that were configured in the show. You can
+change that by saving the cue's variables. To begin, hold down the
+kbd:[&#9711;] button near the bottom left of the Push:
+
+image::assets/Saving1.jpg[Saving Cue Variables]
+
+While this button is held down, the red kbd:[End] buttons beneath the
+effect list disappear, and are replaced with the cue saving interface.
+If you have made any adjustments to a cue's variables since it was
+started, a green kbd:[Save] button will appear (like the one beneath
+the `Color all` effect in the photo above). Pressing that will save
+the adjustments you made, so the next time you launch the cue, the
+adjusted values will be used.
+
+When you save a color cue that is configured like the ones in the
+sample show, the color of the cue's pad in the cue grid is updated to
+reflect the new color you have chosen. (Its color in the the web
+interface cue grid is updated as well).
+
+Once you have saved a cue's variables, while it is running, instead of
+a green kbd:[Save] button, you will see an amber kbd:[Clear] button
+(like the one beneath the `Torrent Sine` effect in the photo).
+Pressing that will remove the saved values, so the cue goes back to
+its original configuration.
+
+If you save a cue's variables, and then adjust them further, the
+kbd:[Save] button returns, allowing you to save your new values. If
+you don't, the values you saved earlier will be used the next time you
+start the cue.
+
+If a cue's variables have neither been saved nor adjusted, no
+kbd:[Save] or kbd:[Update] button appears (like for the `Blade
+Triangle` effect in the photo). Of course, while saving cues, you can
+still scroll though their variables using the kbd:[More ->]
+buttons.
+
+Once you release the kbd:[&#9711;] button, the save interface goes
+away, and the effect kbd:[End] buttons return.
+
 == Metronome Control
 
 The top left section of the Push lets you view and adjust the
