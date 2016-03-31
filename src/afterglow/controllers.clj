@@ -34,11 +34,26 @@
 
 (declare bind-to-show)
 
+(defonce ^:private ^{:doc "The thread used to run [[bind-bottleneck]]
+  and serialize the auto-binding of potential controllers that have
+  been found."}
+  auto-bind-thread
+  (atom nil))
+
 (defn- bind-bottleneck
   "Takes potential auto-bind devices from the incoming queue one by
   one and tries binding to them. This is used to make sure that we are
   only trying one device at a time, taking as long as it needs,
-  without backing up the main MIDI event handler thread."
+  without backing up the main MIDI event handler thread.
+
+  Entries on the cue are a tuple containing the device which has been
+  identified as a potential new controller port, the show to which it
+  should be bound if it turns out to be suitable, and any optional
+  arguments which should be passed along to [[bind-to-show]].
+
+  If the special flag value `:done` is passed as the third element in
+  the tuple, it signals the loop to end, because auto-binding has been
+  canceled."
   []
   (loop [[device show args] (.take bind-queue)]
     (when device
@@ -51,12 +66,10 @@
         (catch Exception e
           (timbre/error e "Problem binding to controller"))))
 
-    ;; Wait for the next candidate device
-    (recur (.take bind-queue))))
-
-(defonce ^:private ^{:doc "The thread used to run [[bind-bottleneck]]."}
-  auto-bind-thread
-  (atom nil))
+    ;; Wait for the next candidate device, unless we have been told to end
+    (when-not (= args :done)
+      (recur (.take bind-queue))))
+  (swap! auto-bind-thread (constantly nil)))
 
 (defn- start-auto-bind-thread
   "Creates the thread used to serialize auto-bind attempts."
@@ -89,11 +102,8 @@
   which rely on controller implementations need to call this function
   to ensure loading has occurred. After the first call, the list of
   namespaces will be replaced by `nil`, so it will no longer do
-  anything.
-
-  Also ensures the auto-bind thread has been started."
+  anything."
   []
-  (swap! auto-bind-thread start-auto-bind-thread)
   (swap! built-in-controllers
          (fn [namespaces]
            (doseq [n namespaces]
@@ -870,6 +880,7 @@
   [show & {:keys [device-filter] :as args}]
   {:pre [(have? some? show)]}
   (load-built-in-controllers)  ; Make sure controller implementations are registered
+  (swap! auto-bind-thread start-auto-bind-thread)  ; Make sure the auto-bind thread is running
   (letfn [(connection-handler
             ([device]
              (connection-handler device true))
@@ -882,7 +893,7 @@
                                                     {:auto-binding   true
                                                      :new-connection new-connection})]))))]
 
-    ;; See if our controller seems to already be connected, and if so, try bind to it right away.
+    ;; See if any eligible controller seems to already be connected, and if so, try bind to it right away.
     (doseq [found (amidi/filter-devices device-filter (amidi/open-inputs-if-needed!))]
       (when-not (already-bound? found) (connection-handler found false)))
 
@@ -897,7 +908,8 @@
 (defn cancel-auto-bind
   "Stop any [[auto-bind]] which may be in effect."
   []
-  (swap! auto-bind-handler (fn [former-handler]
+  (swap! auto-bind-handler (fn [former-handler]  ; Stop noticing new device connections
                              (when former-handler
                                (amidi/remove-new-device-handler! former-handler))
-                             nil)))
+                             nil))
+  (.add bind-queue [nil nil :done]))  ; Tell the auto-bind thread to shut down
