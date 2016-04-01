@@ -1185,9 +1185,10 @@
   When you specify a fixture rotation using the `:x-rotation`,
   `:y-rotation`, and `:z-rotation` arguments, this represents a set of
   Euler angles within the fixed frame of reference of show space, as
-  implemented by [[transform-fixture-euler]], which uses
-  Java's [setEuler](https://docs.oracle.com/cd/E17802_01/j2se/javase/technologies/desktop/java3d/forDevelopers/J3D_1_3_API/j3dapi/javax/media/j3d/Transform3D.html#setEuler(javax.vecmath.Vector3d))
-  method. It can sometimes be very challenging, when looking at a
+  implemented by [[transform-fixture-euler]], which uses the
+  `setEuler` method the
+  Java3D [Transform3D](https://docs.oracle.com/cd/E17802_01/j2se/javase/technologies/desktop/java3d/forDevelopers/J3D_1_3_API/j3dapi/javax/media/j3d/Transform3D.html)
+  object. It can sometimes be very challenging, when looking at a
   fixture, to figure out how to calculate the Euler angles
   representing how it was hung. In those situations, you can use an
   alternate method to specify its rotations:
@@ -1205,10 +1206,10 @@
 
   `:relative-rotations [[:y-rotation (tf/degrees 90)] [:z-rotation (tf/degrees -45)]]`
 
-  Finally, if you happen to have a `javax.media.j3d.Transform3D`
-  object which specifies the rotation applied to the fixture (perhaps
-  from some other program), you can simply pass that using the
-  optional keyword argument `:rotation-matrix`."
+  Finally, if you happen to have a `Transform3D` object which
+  specifies the rotation applied to the fixture (perhaps from some
+  other program), you can simply pass that using the optional keyword
+  argument `:rotation-matrix`."
   [key fixture universe start-address & {:keys [x y z x-rotation y-rotation z-rotation
                                                 relative-rotations rotation-matrix]
                                          :or {x 0.0 y 0.0 z 0.0 x-rotation 0.0 y-rotation 0.0 z-rotation 0.0}}]
