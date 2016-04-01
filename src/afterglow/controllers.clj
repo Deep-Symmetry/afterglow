@@ -775,8 +775,8 @@
   [show device-filter & {:keys [auto-binding] :as args}]
   {:pre [(some? show) (some? device-filter)]}
   (load-built-in-controllers)  ; Make sure controller implementations are registered
-  (let [port-in  (amidi/find-midi-in device-filter)
-        port-out (amidi/find-midi-out device-filter)
+  (let [port-in  (amidi/find-midi-in device-filter false)
+        port-out (amidi/find-midi-out device-filter false)
         ident (when (every? some? [port-in port-out]) (identify port-in port-out))]
     (if (already-bound? port-in)
       (timbre/info "Not binding controller to show, it already has an active binding:" port-in)

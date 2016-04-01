@@ -1175,19 +1175,29 @@
 (defn find-midi-in
   "Find the first MIDI input port matching the specified
   `device-filter` using [[filter-devices]], or throw an exception if
-  no matches can be found."
-  [device-filter]
-  (let [result (filter-devices device-filter (open-inputs-if-needed!))]
-    (if (empty? result)
-      (throw (IllegalArgumentException. (str "No MIDI inputs " (describe-device-filter device-filter) "were found.")))
-      (first result))))
+  no matches can be found. The exception can be suppressed by passing
+  a false value for the optional second argument `required`."
+  ([device-filter]
+   (find-midi-in device-filter true))
+  ([device-filter required]
+   (let [result (filter-devices device-filter (open-inputs-if-needed!))]
+     (if (empty? result)
+       (when required
+         (throw (IllegalArgumentException. (str "No MIDI inputs " (describe-device-filter device-filter)
+                                                "were found."))))
+       (first result)))))
 
 (defn find-midi-out
   "Find the first MIDI output port matching the specified
   `device-filter` using [[filter-devices]], or throw an exception if
-  no matches can be found."
-  [device-filter]
-  (let [result (filter-devices device-filter (open-outputs-if-needed!))]
-    (if (empty? result)
-      (throw (IllegalArgumentException. (str "No MIDI outputs " (describe-device-filter device-filter) "were found.")))
-      (first result))))
+  no matches can be found. The exception can be suppressed by passing
+  a false value for the optional second argument `required`."
+  ([device-filter]
+   (find-midi-out device-filter true))
+  ([device-filter required]
+   (let [result (filter-devices device-filter (open-outputs-if-needed!))]
+     (if (empty? result)
+       (when required
+         (throw (IllegalArgumentException. (str "No MIDI outputs " (describe-device-filter device-filter)
+                                                "were found."))))
+       (first result)))))
