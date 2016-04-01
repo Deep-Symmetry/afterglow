@@ -650,6 +650,21 @@ parameters that will be evaluated and fed as input to `calc-fn`. This
 is a very compact way to perform calculations to combine or transform
 other dynamic parameters.
 
+If you want to perform geometric transformations on
+<<aim-parameters,Aim>> and <<direction-parameters,Direction>>
+parameters, there are some helper functions for that as well.
+{api-doc}afterglow.effects.params.html#var-build-direction-transformer[`build-direction-transformer`]
+takes an incoming direction parameter and a Java3D
+https://docs.oracle.com/cd/E17802_01/j2se/javase/technologies/desktop/java3d/forDevelopers/J3D_1_3_API/j3dapi/javax/media/j3d/Transform3D.html[`Transform3D`]
+object which will be used to transform it. Both can by dynamic
+parameters, including keywords that will be looked up as show
+variables. Similarly,
+{api-doc}afterglow.effects.params.html#var-build-aim-transformer[`build-aim-transformer`]
+applies a transformation parameter to an aim parameter. The function
+{api-doc}afterglow.examples.html#var-build-direction-cue[`build-direction-cue`]
+in the `examples` namespace shows one way to use these.
+
+
 == Debugging Dynamic Parameters
 
 Since dynamic parameters are such a source of flexibility, they can
