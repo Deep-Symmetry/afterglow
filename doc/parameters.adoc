@@ -621,6 +621,35 @@ excellent building blocks for <<color-parameters,color>>,
 parameters, as shown in the
 <<effects#spatial-effects,effect examples>>.
 
+== Combining Parameters
+
+Sometimes you want to build a cue parameter by combining some other
+values using a simple expression. While you can certainly do this by
+implementing the low-level
+{api-doc}afterglow.effects.params.html#var-IParam[`IParam`] protocol,
+Afterglow provides a helper function,
+{api-doc}afterglow.effects.params.html#var-build-param-formula[`build-param-formula`]
+to eliminate most of the boilerplate involved in that approach. You
+can see an example of it being used in
+{api-doc}afterglow.examples.html#var-build-ratio-param[`build-ratio-param`]
+in the `examples` namespace, which takes the `beats` and `cycles` cue
+parameters chosen by a user, and divides them to create the ratio that
+an oscillated parameter needs:
+
+[source,clojure]
+----
+(params/build-param-formula Number #(/ %1 %2) beats-param cycles-param)
+----
+
+The `build-param-formula` function takes the `param-type` of the
+parameter you want to create (in this case a `Number`), a function
+`calc-fn` that will be called to calculate the parameter value when
+needed (in this case, an anonymous function that simply divides its
+first argument by its second), and then the list of other dynamic
+parameters that will be evaluated and fed as input to `calc-fn`. This
+is a very compact way to perform calculations to combine or transform
+other dynamic parameters.
+
 == Debugging Dynamic Parameters
 
 Since dynamic parameters are such a source of flexibility, they can
