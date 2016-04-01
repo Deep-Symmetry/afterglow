@@ -878,9 +878,8 @@
 
     ;; Display the sync mode in red to explain why we are not adjusting it.
     (let [graphics (create-graphics controller)]
-      (set-graphics-color graphics metronome-background)
-      (.fillRect graphics button-cell-width (- Wayang/DISPLAY_HEIGHT 20) button-cell-width 20)
-      (draw-bottom-button-label controller 1 (metronome-sync-label controller) red-color))))
+      (draw-bottom-button-label controller 1 (metronome-sync-label controller) red-color
+                                :background-color metronome-background))))
 
 (defn sign-velocity
   "Convert a midi velocity to its signed equivalent, to translate
