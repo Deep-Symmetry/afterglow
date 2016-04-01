@@ -1180,7 +1180,35 @@
   and are in meters and radians. You can
   use [[transform/inches]], [[transform/feet]]
   and [[transform/degrees]] to convert those units for you if
-  desired."
+  desired.
+
+  When you specify a fixture rotation using the `:x-rotation`,
+  `:y-rotation`, and `:z-rotation` arguments, this represents a set of
+  Euler angles within the fixed frame of reference of show space, as
+  implemented by [[transform-fixture-euler]], which uses
+  Java's [setEuler](https://docs.oracle.com/cd/E17802_01/j2se/javase/technologies/desktop/java3d/forDevelopers/J3D_1_3_API/j3dapi/javax/media/j3d/Transform3D.html#setEuler(javax.vecmath.Vector3d))
+  method. It can sometimes be very challenging, when looking at a
+  fixture, to figure out how to calculate the Euler angles
+  representing how it was hung. In those situations, you can use an
+  alternate method to specify its rotations:
+
+  If you pass in the optional keyword argument `:relative-rotations`,
+  you can follow it with a vector of paired rotation keywords and
+  angles of any length, and Afterglow will interpret them
+  using [[transform-fixture-relative]]. Starting with the fixture at
+  its default orientation, Afterglow will perform all the rotations
+  you list, in order, from the perspective of the transfomed fixture
+  at each step. This can be a lot easier to think about. For example,
+  if the fixture was first rotated 90 degrees counterclockwise on its
+  _y_ axis, then 45 degrees clockwise on its (new) _z_ axis, you would
+  specify:
+
+  `:relative-rotations [[:y-rotation (tf/degrees 90)] [:z-rotation (tf/degrees -45)]]`
+
+  Finally, if you happen to have a `javax.media.j3d.Transform3D`
+  object which specifies the rotation applied to the fixture (perhaps
+  from some other program), you can simply pass that using the
+  optional keyword argument `:rotation-matrix`."
   [key fixture universe start-address & {:keys [x y z x-rotation y-rotation z-rotation
                                                 relative-rotations rotation-matrix]
                                          :or {x 0.0 y 0.0 z 0.0 x-rotation 0.0 y-rotation 0.0 z-rotation 0.0}}]
