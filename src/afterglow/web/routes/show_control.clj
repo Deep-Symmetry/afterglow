@@ -739,17 +739,20 @@
 
 (defn- handle-cue-move-event
   "Process a request to scroll the cue grid."
-  [page-info kind]
-  (let [[left bottom width height] (:view page-info)]
+  [page-info kind req]
+  (let [[left bottom width height] (:view page-info)
+        grid-width (controllers/grid-width (:cue-grid (:show page-info)))
+        grid-height (controllers/grid-height (:cue-grid (:show page-info)))
+        shift (= (get-in req [:params :shift]) "true")]
     (if (case kind
-          "cues-up" (when (> (- (controllers/grid-height (:cue-grid (:show page-info))) bottom) (dec height))
-                      (move-view page-info left (+ bottom height)))
+          "cues-up" (when (> (- grid-height bottom) (dec height))
+                      (move-view page-info left (if shift (* 8 (quot (dec grid-width) 8)) (+ bottom height))))
           "cues-down" (when (pos? bottom)
-                        (move-view page-info left (- bottom (min bottom height))))
-          "cues-right" (when (> (- (controllers/grid-width (:cue-grid (:show page-info))) left) (dec width))
-                         (move-view page-info (+ left width) bottom))
+                        (move-view page-info left (if shift 0 (- bottom (min bottom height)))))
+          "cues-right" (when (> (- grid-width left) (dec width))
+                         (move-view page-info (if shift (* 8 (quot (dec grid-width) 8)) (+ left width)) bottom))
           "cues-left" (when (pos? left)
-                        (move-view page-info (- left (min left width)) bottom))
+                        (move-view page-info (if shift 0 (- left (min left width))) bottom))
           nil)  ; We did not recognize the direction
       {:moved kind}
       {:error (str "Unable to move cue grid in direction: " kind)})))
@@ -893,7 +896,7 @@
                   (handle-cue-delete-event page-info kind)
 
                   (.startsWith kind "cues-")
-                  (handle-cue-move-event page-info kind)
+                  (handle-cue-move-event page-info kind req)
 
                   (= kind "end-effect")
                   (handle-end-effect-event page-info req)

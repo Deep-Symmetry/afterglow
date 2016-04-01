@@ -565,7 +565,8 @@ function updateShow() {
 
 function uiButtonClicked( eventObject ) {
     var jqxhr = $.post( (context + "/ui-event/" + page_id + "/" + this.id),
-                        { "__anti-forgery-token": csrf_token } ).fail(function() {
+                        { "__anti-forgery-token": csrf_token,
+                          "shift": eventObject.shiftKey } ).fail(function() {
         console.log("Problem reporting UI button press.");
     });
 }
@@ -731,10 +732,11 @@ function checkShiftKey( eventObject ) {
 
 var cueCellMenu;
 
-function fakeScrollClick ( direction ) {
+function fakeScrollClick ( direction, eventObject ) {
     if (!$('#cues-' + direction).attr("disabled")) {
         var jqxhr = $.post( (context + "/ui-event/" + page_id + "/cues-" + direction),
-                            { "__anti-forgery-token": csrf_token } ).fail(function() {
+                            { "__anti-forgery-token": csrf_token,
+                              "shift": eventObject.shiftKey } ).fail(function() {
                                 console.log("Problem reporting UI button press.");
                             });
     }
@@ -829,22 +831,22 @@ $( document ).ready(function() {
             switch (e.which) {
 
             case 38:
-                fakeScrollClick("up");
+                fakeScrollClick("up", e);
                 e.preventDefault();
                 break;
 
             case 40:
-                fakeScrollClick("down");
+                fakeScrollClick("down", e);
                 e.preventDefault();
                 break;
 
             case 39:
-                fakeScrollClick("right");
+                fakeScrollClick("right", e);
                 e.preventDefault();
                 break;
 
             case 37:
-                fakeScrollClick("left");
+                fakeScrollClick("left", e);
                 e.preventDefault();
                 break;
 

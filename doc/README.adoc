@@ -407,6 +407,13 @@ the right.
 
 image:assets/CueScrollLink.png[Cue scroll arrows and link menu,align="right"]
 
+If you hold down kbd:[Shift] while clicking a scroll arrow, it will
+scroll you as far as possible in the direction you clicked.
+
+You can also use the arrow keys on your keyboard to scroll in the
+corresponding direction. (Again, holding kbd:[Shift] will scroll you
+as far as possible in that direction.)
+
 If you have any compatible grid controllers, Afterglow started
 watching for them to be connected as soon as you called
 `(use-sample-show)`. If you are defining your own show and want to
