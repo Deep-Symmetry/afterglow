@@ -1186,7 +1186,7 @@
   `:y-rotation`, and `:z-rotation` arguments, this represents a set of
   Euler angles within the fixed frame of reference of show space, as
   implemented by [[transform-fixture-euler]], which uses the
-  `setEuler` method the
+  `setEuler` method of the
   Java3D [Transform3D](https://docs.oracle.com/cd/E17802_01/j2se/javase/technologies/desktop/java3d/forDevelopers/J3D_1_3_API/j3dapi/javax/media/j3d/Transform3D.html)
   object. It can sometimes be very challenging, when looking at a
   fixture, to figure out how to calculate the Euler angles
