@@ -312,6 +312,24 @@ map describing any cue-local variables is passed to the `effect-fn`
 function when the cue is triggered, so they can be used as needed when
 creating the cue's effect.
 
+|`:visualizer`
+|none
+
+|A visualizer creation function that will be called by controllers
+ with animated graphical displays like the Push 2. It will be passed
+ two arguments, the cue's `var-map` and the `show` in which the cue is
+ running. It must return another function which takes a metronome
+ snapshot and returns a value between 0 and 1 representing a
+ meaningful numerical summary of the cue state at that time.
+
+When supplied, this function will be used to create a moving strip
+chart of the cue's activity around the current moment on the display.
+The example dimmer oscillator cues like
+{api-doc}afterglow.examples.html#var-make-sawtooth-dimmer-cue[make-sawtooth-dimmer-cue]
+show how this can be used effectively.
+
+image:assets/blade-saw.gif[Visualizer function in action]
+
 |===
 
 The ability to create animated cue colors in a grid controller
