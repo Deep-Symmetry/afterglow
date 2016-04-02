@@ -304,13 +304,13 @@ and will not whiten the cue color while it is held down.
 |`:variables`
 |none
 
-|Specifies a sequence of show variable bindings that
-can be used by the cue's effect. Each variable specification is a map,
-whose content is described in the following table. These
-specifications are used to create any necessary new variables, and a
-map describing any cue-local variables is passed to the `effect-fn`
-function when the cue is triggered, so they can be used as needed when
-creating the cue's effect.
+|Specifies a sequence of show variable bindings that can be used by
+the cue's effect. Each variable specification is a map, whose content
+is described in the following table. These specifications are used to
+create any necessary new variables, and a `var-map` describing any
+cue-local variables is passed to the `effect-fn` function when the cue
+is triggered, so they can be used as needed when creating the cue's
+effect. See <<Cue Variables>> below for many more details.
 
 |`:visualizer`
 |none
@@ -508,12 +508,62 @@ Otherwise, the value is simply copied to the variable.
 
 |===
 
+==== Using Cue Variables
+
+The purpose of cue variables is to define a user interface for the
+show operator, either in the web interface, or on a rich MIDI
+controller like the Ableton Push. The web UI and controller
+implementations look at the variable specifications as you have set
+them up, and build interface elements accordingly when the cue is
+running. The running effect looks up the variable values when it needs
+them, and adjusts itself appropriately.
+
+If the cue is configured to use any temporary variables (which are
+indicated by using strings rather than keywords for their `:key`
+entry), the effect needs to know how to look them up. That's the
+purpose of the `var-map` argument which gets passed to `effect-fn`. It
+contains a mapping from the keyword version of the temporary
+variable's name to the actual keyword of the temporary variable that
+was created to hold its value for the duration of the cue.
+
+For example, a cue with a temporary variable named "color", defined by
+including `:key "color"` in the cue variable specification, might be
+assigned a temporary variable with the actual name
+`:cue-3-9-temp-color`. The `var-map` passed to `effect-fn` would have
+an entry `:color :cue-3-9-temp-color` to let it know about this
+assignment. So `effect-fn` can find the actual variable keyword to use
+for its effects that want to access its `:color` variable by looking
+up that keyword in `var-map`
+
+[source,clojure]
+----
+(:color var-map)
+----
+
+The above function call would return `:cue-3-9-temp-color` in this
+example scenario.
+
+There are many examples of cues using permanent and temporary
+variables in the `afterglow.examples` namespace. Several of them take
+advantage of the helper function
+{api-doc}afterglow.effects.cues.html#var-apply-merging-var-map[`apply-merging-var-map`]
+which provides a very convenient shortcut: If the effect that you want
+to call makes use of keyword arguments, name your temporary cue
+variables the same as those keyword arguments, and you can then simply
+use `apply-merging-var-map` to build the function call to the effect,
+passing in the cue variables (and their values) as the keyword
+arguments and values that configure the effect.
+
+
 ==== A Cue Example
 
 As a simple illustration, here is how to wrap the blue and red scene
 from the <<effects#multiple-colors,Multiple Colors example>> into a
 cue, and add it to the show grid, so it can be started and stopped
-from a grid controller or the web interface:
+from a grid controller or the web interface. This cue has no
+variables, so the effect-creation function ignores its argument (this
+is reflected by using the conventional Clojure “don't care” name for
+it, `_`, rather than `var-map`):
 
 [source,clojure]
 ----
