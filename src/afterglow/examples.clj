@@ -268,8 +268,11 @@
   it will create the show to use universe 1, but if you want to use a
   different universe (for example, a dummy universe on ID 0, because
   your DMX interface isn't handy right now), you can override that by
-  supplying a different ID after :universe."
-  [& {:keys [universe extra-universe] :or {universe 1 extra-universe universe}}]
+  supplying a different ID after :universe.
+
+  If you have an instance of Pangolin Beyond running a laser show that
+  you want to control as well, pass a true value with `:add-beyond?`."
+  [& {:keys [universe extra-universe add-beyond?] :or {universe 1 extra-universe universe}}]
   ;; Since this class is an entry point for interactive REPL usage,
   ;; make sure a sane logging environment is established.
   (core/init-logging)
@@ -306,10 +309,10 @@
   (reset! var-binder (var-fx/create-for-show *show*))
 
   ;; Enable communication with the Beyond laser show
-  (beyond/bind-to-show laser-show *show*)
+  (when add-beyond? (beyond/bind-to-show laser-show *show*))
 
   ;; Create a bunch of example cues
-  (make-cues)
+  (make-cues add-beyond?)
 
   ;; Automatically bind the show to any compatible grid controllers that are connected now
   ;; or in the future.
@@ -847,8 +850,10 @@
 (defn make-main-color-dimmer-cues
   "Creates a page of cues that assign dimmers and colors to the
   lights. This is probably going to be assigned as the first page, but
-  can be moved by passing non-zero values for `page-x` and `page-y`."
-  [page-x page-y]
+  can be moved by passing non-zero values for `page-x` and `page-y`.
+  If Beyond laser show integration is desired, `add-beyond?` will be
+  `true`."
+  [page-x page-y add-beyond?]
   (let [x-base (* page-x 8)
         y-base (* page-y 8)
         rig-left (:x (first (show/fixtures-named :hex-2)))
@@ -921,14 +926,15 @@
                                                  (params/build-color-param :s 100 :l 50 :h hue-z-gradient)
                                                  :include-color-wheels? true))
                              :short-name "Z Rainbow Grid"))
-    (show/set-cue! (+ x-base 6) (inc y-base)
-                   (let [color-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-bar)]
-                     (cues/cue :all-color (fn [_] (fx/scene "Rainbow with laser" (global-color-effect color-param)
-                                                          (beyond/laser-color-effect laser-show color-param)))
-                               :color-fn (cues/color-fn-from-param color-param)
-                               :short-name "Rainbow with Laser"
-                               :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
-                                            :type :integer}])))
+    (when add-beyond?
+      (show/set-cue! (+ x-base 6) (inc y-base)
+                     (let [color-param (params/build-color-param :s :rainbow-saturation :l 50 :h hue-bar)]
+                       (cues/cue :all-color (fn [_] (fx/scene "Rainbow with laser" (global-color-effect color-param)
+                                                              (beyond/laser-color-effect laser-show color-param)))
+                                 :color-fn (cues/color-fn-from-param color-param)
+                                 :short-name "Rainbow with Laser"
+                                 :variables [{:key :rainbow-saturation :name "Saturatn" :min 0 :max 100 :start 100
+                                              :type :integer}]))))
     (show/set-cue! (+ x-base 7) (inc y-base)
                    (let [color-param (params/build-color-param :s 100 :l 50 :h hue-gradient
                                                                :adjust-hue hue-bar)]
@@ -2124,8 +2130,9 @@
                              :color :orange :short-name "Group B flip XY"))))
 
 (defn make-cues
-  "Create a bunch of example cues for experimentation."
-  []
+  "Create a bunch of example cues for experimentation. If Beyond laser
+  show integration is desired, `add-beyond?` will be `true`."
+  [add-beyond?]
   ;; Create an OSC client that so cues can send their state to TouchOSC.
   (when (nil? @osc-client)
     (reset! osc-client (osc/osc-client ipad-address 9000)))
@@ -2134,7 +2141,7 @@
   (clear-osc-cue-bindings)
 
   ;; Fill in some cue pages
-  (make-main-color-dimmer-cues 0 0)  ; Creates a sigle 8x8 page at the origin
+  (make-main-color-dimmer-cues 0 0 add-beyond?)  ; Creates a sigle 8x8 page at the origin
   (make-torrent-cues 0 2)  ; Creates 2 8x8 pages: two pages up from the origin, and the next page to the right
   (make-ambient-cues 1 0)  ; Creates a single 8x8 page to the right of the origin
   (make-movement-cues 0 1)  ; Creates an 8x8 page above the origin
