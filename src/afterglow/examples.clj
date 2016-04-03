@@ -289,7 +289,9 @@
   (set-default-show! (swap! sample-show (fn [s]
                                           (when s
                                             (show/unregister-show s)
-                                            (with-show s (show/stop!)))
+                                            (with-show s
+                                              (show/stop!)
+                                              (show/blackout-show)))
                                           (show/show :universes (distinct [universe extra-universe])
                                                      :description "Sample Show"))))
 
