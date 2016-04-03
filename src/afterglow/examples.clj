@@ -223,7 +223,8 @@
 (defn add-osc-var-binding
   "Arrange to send an OSC message whenever the value of a show
   variable changes, and record that we did that so it can be cleaned
-  up later. The set up so incoming OSC messages update the value of that variable.
+  up later. Then set things up so incoming OSC messages update the
+  value of that variable.
 
   If you need to do anything more complicated than send a message with
   the raw value of the variable, or update the variable with the raw
@@ -268,7 +269,12 @@
   it will create the show to use universe 1, but if you want to use a
   different universe (for example, a dummy universe on ID 0, because
   your DMX interface isn't handy right now), you can override that by
-  supplying a different ID after :universe.
+  supplying a different ID after `:universe`.
+
+  Usually we run our shows on a single universe, but sometimes we
+  connect the Weather System fixtures to an extra universe, and wire
+  them separately from the main lighting rig. When we do that, we can
+  pass the extra universe ID in after `:extra-universe`.
 
   If you have an instance of Pangolin Beyond running a laser show that
   you want to control as well, pass a true value with `:add-beyond?`."
