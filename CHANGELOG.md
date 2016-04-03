@@ -6,6 +6,10 @@ This change log follows the conventions of
 
 ## [Unreleased][unreleased]
 
+Nothing yet.
+
+## [0.2.1] - 2016-04-03
+
 ### Added
 
 - The web and Push interfaces now offer a way to save adjusted cue
@@ -29,6 +33,9 @@ This change log follows the conventions of
   - Launchpad Mini
   - Launchpad S (untested, but the Mini, which works, is based on the S)
   - Launchpad Mk2
+- The identity of grid controllers is verified before binding to them,
+  by sending a MIDI Device Inquiry message and inspecting the
+  response.
 - The auto-bind mechanism has been improved so much that the sample
   show can now simply turn it on to fully automate the process of
   detecting and binding to any compatible grid controllers that appear
@@ -42,9 +49,6 @@ This change log follows the conventions of
   across fixtures.
 - Incoming MIDI System Exclusive messages can now be received and
   delivered to handlers.
-- The identity of grid controllers is verified before binding to them,
-  by sending a MIDI Device Inquiry message and inspecting the
-  response.
 - Cue variables can now be Booleans, to support cues which want to be
   able to adjust the direction of a sawtooth oscillator while running.
 - The dimmer oscillator cues created in the sample show now include
@@ -150,7 +154,7 @@ This change log follows the conventions of
 - The sample show is becoming a much more practical example of how to
   layer flexible color and dimmer cues, with good cue variables to add
   even more dimensions.
-- A lot of repetitive code in the examples namespace was consolitated
+- A lot of repetitive code in the examples namespace was consolidated
   using helper functions.
 - The `controllers/IOverlay` protocol was expanded to include the
   ability for an overlay to handle and absorb pitch-bend messages, in
@@ -558,7 +562,8 @@ This change log follows the conventions of
 - Initial Public Release
 
 
-[unreleased]: https://github.com/brunchboy/afterglow/compare/v0.2.0...HEAD
+[unreleased]: https://github.com/brunchboy/afterglow/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/brunchboy/afterglow/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/brunchboy/afterglow/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/brunchboy/afterglow/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/brunchboy/afterglow/compare/v0.1.4...v0.1.5

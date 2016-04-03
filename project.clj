@@ -1,4 +1,4 @@
-(defproject afterglow "0.2.1-SNAPSHOT"
+(defproject afterglow "0.2.1"
   :description "A live-coding environment for light shows, built on the Open Lighting Architecture, using bits of Overtone."
   :url "https://github.com/brunchboy/afterglow"
   :license {:name "Eclipse Public License"
@@ -32,7 +32,7 @@
                  [com.taoensso/timbre "4.3.1"]
                  [com.taoensso/tower "3.0.2"]
                  [com.taoensso/truss "1.2.0"]
-                 [markdown-clj "0.9.86"]
+                 [markdown-clj "0.9.87"]
                  [compojure "1.5.0" :exclusions [org.eclipse.jetty/jetty-server
                                                  clj-time]]
                  [ring/ring-defaults "0.2.0"]
@@ -42,7 +42,7 @@
                                                               org.clojure/java.classpath
                                                               org.clojure/core.memoize]]
                  [metosin/ring-http-response "0.6.5"]
-                 [prone "1.1.0"]
+                 [prone "1.1.1"]
                  [buddy "0.11.0"]
                  [instaparse "1.4.1"]
                  [http-kit "2.1.19"]]
@@ -72,6 +72,6 @@
             [lein-environ "1.0.2"]]
 
   :codox {:output-path "api-doc"
-          :source-uri "https://github.com/brunchboy/afterglow/blob/master/{filepath}#L{line}"
+          :source-uri "https://github.com/brunchboy/afterglow/blob/v0.2.1/{filepath}#L{line}"
           :metadata {:doc/format :markdown}}
   :min-lein-version "2.0.0")
