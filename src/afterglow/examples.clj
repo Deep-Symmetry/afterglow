@@ -308,10 +308,11 @@
   #_(show/patch-fixture! :puck-1 (blizzard/puck-fab5) universe 97 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 52))
   #_(show/patch-fixture! :puck-2 (blizzard/puck-fab5) universe 113 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 40))
 
-  ;; Turn on the OSC server, and clear any variable bindings that might have been around from previous runs.
+  ;; Turn on the OSC server, and clear any variable and cue bindings that might have been around from previous runs.
   (when (nil? @core/osc-server)
     (core/start-osc-server 16010))
   (clear-osc-var-bindings)
+  (clear-osc-cue-bindings)
 
   ;; Enable cues whose purpose is to set show variable values while they run.
   (reset! var-binder (var-fx/create-for-show *show*))
