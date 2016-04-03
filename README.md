@@ -73,7 +73,9 @@ are fully supported too):
   can be controlled through a rich binding to an
   [Ableton Push](doc/push2.adoc#using-ableton-push-2) or
   [Novation Launchpad family](doc/launchpad.adoc#using-the-novation-launchpad-family)
-  controller.
+  controller, or via
+  [Open Sound Control](doc/mapping_sync.adoc#open-sound-control)
+  (OSC)&mdash;even wirelessly from a tablet or smartphone.
 
 * The timing of effects is pervasively influenced by a deep notion of
   [musical time](doc/metronomes.adoc#metronomes), with support for
@@ -103,7 +105,7 @@ If any of this sounds interesting to you, here is how to get started:
    > :wrench: If you are installing Afterglow on Windows, see the
    > [Wiki discussion](https://github.com/brunchboy/afterglow/wiki/Questions#ola-and-windows)
    > about OLA options.
-   
+
 2. For now set up a Clojure project using [Leiningen](http://leiningen.org).
 
 3. Add this project as a dependency:

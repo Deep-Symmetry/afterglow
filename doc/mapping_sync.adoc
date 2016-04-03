@@ -779,6 +779,25 @@ or even black things out:
 (show/clear-effects!)
 ----
 
+== Open Sound Control
+
+Afterglow also embeds https://github.com/rosejn/osc-clj[osc-clj] so
+you can bind cues and variables to be controlled via Open Sound
+Control (OSC), using tools like hexler.net's
+http://hexler.net/software/touchosc[TouchOSC]. The sample show in the
+`afterglow.examples` namespace uses this capability to offer wireless
+graphical X-Y-Z aiming of groups of moving heads:
+
+image::assets/TouchOSC.jpg[TouchOSC interface]
+
+The functions
+{api-doc}afterglow.examples.html#var-add-osc-cue-binding[`add-osc-cue-binding`] and
+{api-doc}afterglow.examples.html#add-osc-var-binding[`add-osc-var-binding`], and
+the ones near them in the namespace, show how this was done. They seem
+to work well enough that they will be fleshed out a bit and moved into
+a new OSC-support namespace in a future release of Afterglow. But for
+now, you can use them and tweak them as they are.
+
 == Rich Grid Controller Mappings
 
 Afterglow ships with built-in mappings that take advantage of several
