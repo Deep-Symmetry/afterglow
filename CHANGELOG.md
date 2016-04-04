@@ -6,7 +6,11 @@ This change log follows the conventions of
 
 ## [Unreleased][unreleased]
 
-Nothing yet.
+### Added
+
+- Holding down kbd:[Shift] while pressing a scroll arrow on the
+  Launchpad family of controllers now moves you as far as possible in
+  that direction, as it did on the Push 2.
 
 ## [0.2.1] - 2016-04-03
 

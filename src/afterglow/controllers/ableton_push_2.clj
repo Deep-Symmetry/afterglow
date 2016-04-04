@@ -2185,7 +2185,7 @@
       (let [[x y] @(:origin controller)
             height (max (controllers/grid-height (:cue-grid (:show controller))) 1)]
         (when (> height 7)
-          (move-origin controller [x (if (in-mode? controller :shift) (* 8 (quot (dec height) 8))  (+ y 8))])
+          (move-origin controller [x (if (in-mode? controller :shift) (* 8 (quot (dec height) 8)) (+ y 8))])
           (add-button-held-feedback-overlay controller (:up-arrow control-buttons)))))
 
     47 ; Down arrow, scroll down in cue grid

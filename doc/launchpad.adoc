@@ -134,6 +134,9 @@ and to the left:
 
 image::assets/LaunchpadPro-scroll.jpg[Launchpad Pro interface]
 
+If you hold down the kbd:[Shift] button, the arrows will scroll you as
+far as possible in the direction that you press.
+
 === Metronome Control
 
 The kbd:[Click] button lets you monitor and adjust the Metronome that

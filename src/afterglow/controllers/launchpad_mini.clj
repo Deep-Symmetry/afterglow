@@ -374,28 +374,30 @@
     (when (pos? (:velocity message))
       (let [[x y] @(:origin controller)]
         (when (pos? x)
-          (move-origin controller [(max 0 (- x 8)) y])
+          (move-origin controller [(if @(:shift-mode controller) 0 (max 0 (- x 8))) y])
           (add-button-held-feedback-overlay controller (:left-arrow control-buttons)))))
 
     107 ; Right arrow
     (when (pos? (:velocity message))
-      (let [[x y] @(:origin controller)]
+      (let [[x y] @(:origin controller)
+            width (max (controllers/grid-width (:cue-grid (:show controller))) 1)]
         (when (> (- (controllers/grid-width (:cue-grid (:show controller))) x) 7)
-          (move-origin controller [(+ x 8) y])
+          (move-origin controller [(if @(:shift-mode controller) (* 8 (quot (dec width) 8)) (+ x 8)) y])
           (add-button-held-feedback-overlay controller (:right-arrow control-buttons)))))
 
     104 ; Up arrow
     (when (pos? (:velocity message))
-      (let [[x y] @(:origin controller)]
+      (let [[x y] @(:origin controller)
+            height (max (controllers/grid-height (:cue-grid (:show controller))) 1)]
         (when (> (- (controllers/grid-height (:cue-grid (:show controller))) y) 7)
-          (move-origin controller [x (+ y 8)])
+          (move-origin controller [x (if @(:shift-mode controller) (* 8 (quot (dec height) 8)) (+ y 8))])
           (add-button-held-feedback-overlay controller (:up-arrow control-buttons)))))
 
     105 ; Down arrow
     (when (pos? (:velocity message))
       (let [[x y] @(:origin controller)]
         (when (pos? y)
-          (move-origin controller [x (max 0 (- y 8))])
+          (move-origin controller [x (max 0 (if @(:shift-mode controller) 0 (max 0 (- y 8))))])
           (add-button-held-feedback-overlay controller (:down-arrow control-buttons)))))
 
     110 ; User 2 button
