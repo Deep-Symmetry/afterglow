@@ -796,7 +796,7 @@
     (.draw mask-graphics (java.awt.geom.Ellipse2D$Double. 5.0 5.0 40.0 40.0))
 
     ;; Render the track into the mask using SrcAtop, which effectively uses the alpha value as
-    ;; a covereage value for each pixel stored in the destination. For the areas outside our clip
+    ;; a coverage value for each pixel stored in the destination. For the areas outside our clip
     ;; shape, the destination alpha will be zero, so nothing is rendered in those areas. For the
     ;; areas inside our clip shape, the destination alpha will be fully opaque, so the full color
     ;; is rendered. At the edges, the original antialiasing is carried over to give us the desired
@@ -831,19 +831,61 @@
   gauge, under a variable value."
   [controller index encoder-count hue value active?]
   (let [graphics (create-graphics controller)
+        gauge-image (java.awt.image.BufferedImage. 50 50 java.awt.image.BufferedImage/TYPE_INT_ARGB)
+        gauge-graphics (.createGraphics gauge-image)
+        mask-image (java.awt.image.BufferedImage. 50 50 java.awt.image.BufferedImage/TYPE_INT_ARGB)
+        mask-graphics (.createGraphics mask-image)
         x-center (+ (* index button-cell-width) (* encoder-count 0.5 button-cell-width))
-        arc (java.awt.geom.Arc2D$Double. (- x-center 20.0) 50.0 40.0 40.0 240.0 -3.0 java.awt.geom.Arc2D/OPEN)]
-    (dotimes [i 100]
+        arc (java.awt.geom.Arc2D$Double. 5.0 5.0 40.0 40.0 240.0 -3.0 java.awt.geom.Arc2D/OPEN)]
+
+    ;; Color "outside the lines" that we will be masking so the mask can smoothe the edges
+    (.setStroke gauge-graphics (java.awt.BasicStroke. 3.0 java.awt.BasicStroke/CAP_ROUND
+                                                      java.awt.BasicStroke/JOIN_ROUND))
+    (dotimes [i 100]  ; Draw the saturation track
       (.setAngleStart arc (- 240.0 (* i 3)))
-      (set-graphics-color graphics (colors/create-color :h hue :s i :l 50.0))
-      (.draw graphics arc))
-    (.setStroke graphics (java.awt.BasicStroke. 5.0 java.awt.BasicStroke/CAP_ROUND java.awt.BasicStroke/JOIN_ROUND))
+      (set-graphics-color gauge-graphics (colors/create-color :h hue :s i :l 50.0))
+      (.draw gauge-graphics arc))
+
+    ;; Then draw the wider section representing the current saturation
+    (.setStroke gauge-graphics (java.awt.BasicStroke. 8.0 java.awt.BasicStroke/CAP_ROUND
+                                                      java.awt.BasicStroke/JOIN_ROUND))
     (dotimes [i (max (math/round value) 1)]
       (if active?
-        (set-graphics-color graphics (colors/create-color :h hue :s i :l 50.0))
-        (set-graphics-color graphics (colors/create-color :h hue :s i :l 25.0)))
+        (set-graphics-color gauge-graphics (colors/create-color :h hue :s i :l 50.0))
+        (set-graphics-color gauge-graphics (colors/create-color :h hue :s i :l 25.0)))
       (.setAngleStart arc (- 240.0 (* i 3)))
-      (.draw graphics arc))))
+      (.draw gauge-graphics arc))
+
+    ;; Draw a mask we can use to soft clip the saturation gauge. Start by clearing it so all pixels have zero alpha.
+    (.setComposite mask-graphics java.awt.AlphaComposite/Clear)
+    (.fillRect mask-graphics 0 0 50 50)
+
+    ;; Render the gauge track mask, an anti-aliased arc
+    (.setComposite mask-graphics java.awt.AlphaComposite/Src)
+    (.setRenderingHint mask-graphics java.awt.RenderingHints/KEY_ANTIALIASING
+                       java.awt.RenderingHints/VALUE_ANTIALIAS_ON)
+    (.setColor mask-graphics java.awt.Color/WHITE)
+    (.setAngleStart arc 240.0)
+    (.setAngleExtent arc -300.0)
+    (.draw mask-graphics arc)
+
+    ;; Render the gauge current saturation section, a wider anti-aliased arc
+    (.setStroke mask-graphics (java.awt.BasicStroke. 5.0 java.awt.BasicStroke/CAP_ROUND
+                                                     java.awt.BasicStroke/JOIN_ROUND))
+    (.setAngleExtent arc (* -3.0 value))
+    (.draw mask-graphics arc)
+
+    ;; Render the gauge into the mask using SrcAtop, which effectively uses the alpha value as
+    ;; a coverage value for each pixel stored in the destination. For the areas outside our clip
+    ;; shape, the destination alpha will be zero, so nothing is rendered in those areas. For the
+    ;; areas inside our clip shape, the destination alpha will be fully opaque, so the full color
+    ;; is rendered. At the edges, the original antialiasing is carried over to give us the desired
+    ;; soft clipping effect.
+    (.setComposite mask-graphics java.awt.AlphaComposite/SrcAtop)
+    (.drawImage mask-graphics gauge-image 0 0 nil)
+
+    ;; Finally, draw the soft-masked gauge onto the controller display image
+    (.drawImage graphics mask-image (math/round (- x-center 25)) 45 nil)))
 
 (defn- metronome-sync-label
   "Determine the sync type label to display under the BPM section."
