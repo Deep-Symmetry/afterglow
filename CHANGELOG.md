@@ -12,6 +12,13 @@ This change log follows the conventions of
   family of controllers now moves you as far as possible in that
   direction, as it did on the Push 2.
 
+### Changed
+
+- The hue and saturation gauges on the Push 2 are now drawn using a
+  masking image so they can be anti-aliased to the same outline shape
+  as the other gauges, and look much cleaner.
+
+
 ## [0.2.1] - 2016-04-03
 
 ### Added
