@@ -20,11 +20,12 @@
                  [overtone/at-at "1.2.0"]
                  [overtone/midi-clj "0.5.0"]
                  [overtone/osc-clj "0.9.0"]
+                 [uk.co.xfactory-librarians/coremidi4j "0.6-SNAPSHOT"]
                  [amalloy/ring-buffer "1.2" :exclusions [org.clojure/tools.reader
                                                          com.google.protobuf/protobuf-java]]
                  [com.climate/claypoole "1.1.2"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
-                 [ola-clojure "0.1.5" :exclusions [org.clojure/tools.reader]]
+                 [ola-clojure "0.1.6-SNAPSHOT" :exclusions [org.clojure/tools.reader]]
                  [selmer "1.0.4"]
                  [com.evocomputing/colors "1.0.3"]
                  [environ "1.0.2"]
@@ -59,8 +60,7 @@
   ;; enable to start the nREPL server when the application launches
   ;; :env {:repl-port 16002}
 
-  :profiles {:provided {:dependencies [[uk.co.xfactory-librarians/coremidi4j "0.4"]]}
-             :dev {:dependencies [[ring-mock "0.1.5"]
+  :profiles {:dev {:dependencies [[ring-mock "0.1.5"]
                                   [ring/ring-devel "1.4.0"]]
                    :repl-options {:init-ns afterglow.examples
                                   :welcome (println "afterglow loaded.")}
