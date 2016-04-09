@@ -44,7 +44,7 @@
                                                               org.clojure/core.memoize]]
                  [metosin/ring-http-response "0.6.5"]
                  [prone "1.1.1"]
-                 [buddy "0.11.0"]
+                 [buddy "0.12.0"]
                  [instaparse "1.4.1"]
                  [http-kit "2.1.19"]]
   :main afterglow.core
