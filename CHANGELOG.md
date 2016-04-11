@@ -14,9 +14,18 @@ This change log follows the conventions of
 
 ### Changed
 
+- The CoreMIDI4J library is now embedded within Afterglow, so it does
+  not need to be separately installed by the user for MIDI to work
+  properly on Mac OS X. If you have a separate installation of
+  CoreMIDI4J in `/Library/Java/Extensions`, you should remove it to
+  avoid version conflicts with newer versions shipped with Afterglow.
 - The hue and saturation gauges on the Push 2 are now drawn using a
   masking image so they can be anti-aliased to the same outline shape
   as the other gauges, and look much cleaner.
+- Boolean gauges on the Push 2 are drawn in red or green for No and
+  Yes values, and the transition between values is animated, to make
+  it easier to see what is happening, and to relate it to the encoder
+  rotation.
 
 
 ## [0.2.1] - 2016-04-03
