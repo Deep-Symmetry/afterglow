@@ -2406,7 +2406,8 @@
   while the encoder is being held."
   [controller note cue v effect info]
   (let [x (quot note 2)
-        var-index (rem note 2)]
+        var-index (rem note 2)
+        fraction (atom nil)]
     (if (> (count (:variables cue)) 1)
       ;; More than one variable, adjust whichever's encoder was touched
       (reify controllers/IOverlay
@@ -2415,13 +2416,17 @@
         (adjust-interface [this _]
           (when (same-effect-active controller cue (:id info))
             (let [cur-val (or (cues/get-cue-variable cue v :show (:show controller) :when-id (:id info)) false)]
-              (draw-boolean-gauge controller note 1 cur-val :active? true)
+              (draw-boolean-gauge controller note 1 cur-val :active? true :fraction (or @fraction 1.0))
               (set-touch-strip-from-value controller (if cur-val 1 0) 0 1 touch-strip-mode-pan))
+            (swap! fraction (fn [v] (when v (let [result (+ v 0.25)] (when (< result 1.0) result)))))
             (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
             true))
         (handle-control-change [this message]
           (when (= (:note message) (control-for-top-encoder-note note))
-            (adjust-boolean-value controller message cue v (:id info)))
+            (let [cur-val (or (cues/get-cue-variable cue v :show (:show controller) :when-id (:id info)) false)]
+              (adjust-boolean-value controller message cue v (:id info))
+              (when (not= cur-val (cues/get-cue-variable cue v :show (:show controller) :when-id (:id info)))
+                (swap! fraction (fn [v] (if (nil? v) 0.25 (- 1.0 v)))))))
           true)
         (handle-note-on [this message])
         (handle-note-off [this message]
@@ -2429,7 +2434,8 @@
         (handle-aftertouch [this message])
         (handle-pitch-bend [this message]
           (cues/set-cue-variable! cue v (true? (>= (value-from-touch-strip message 0 100) 50))
-                                  :show (:show controller) :when-id (:id info))))
+                                  :show (:show controller) :when-id (:id info))
+          (reset! fraction nil)))
 
       ;; Just one variable, take full cell, using either encoder,
       ;; suppress the other one.
