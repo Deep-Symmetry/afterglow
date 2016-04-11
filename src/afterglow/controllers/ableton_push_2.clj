@@ -724,20 +724,23 @@
 (defn draw-boolean-gauge
   "Draw a graphical gauge with an indicator that covers the left or
   right half of an arc under a variable value, depending on if the
-  value is true or false. The default color for both the track and
-  active area is dim white. To support animating state changes, a
-  fraction parameter can be supplied which specifies how far from the
-  opposite state the indicator should be drawn."
-  [controller index encoder-count value & {:keys [track-color active-color fraction]
-                                           :or {track-color default-track-color active-color track-color
-                                                fraction 1.0}}]
+  value is true or false. The default color for the track is dim
+  white. The color for the current value area is either red (for no)
+  or green (for yes), and is dimmed when `:active?` is false. To
+  support animating state changes, a `:fraction` parameter can be
+  supplied which specifies how far from the opposite state the
+  indicator should be drawn."
+  [controller index encoder-count value & {:keys [track-color active? fraction]
+                                           :or {track-color default-track-color fraction 1.0}}]
   (let [graphics (create-graphics controller)
         x-center (+ (* index button-cell-width) (* encoder-count 0.5 button-cell-width))
         arc (java.awt.geom.Arc2D$Double. (- x-center 20.0) 50.0 40.0 40.0 240.0 -300.0 java.awt.geom.Arc2D/OPEN)]
     (set-graphics-color graphics track-color)
     (.draw graphics arc)
     (.setStroke graphics (java.awt.BasicStroke. 5.0 java.awt.BasicStroke/CAP_ROUND java.awt.BasicStroke/JOIN_ROUND))
-    (set-graphics-color graphics active-color)
+    (set-graphics-color graphics (if active?
+                                   (if value green-color red-color)
+                                   (if value dim-green-color dim-red-color)))
     (.setAngleStart arc (if value
                           (+ 90.0 (* (- 1.0 fraction) 150))
                           (- 240.0 (* (- 1.0 fraction) 150))))
@@ -2412,7 +2415,7 @@
         (adjust-interface [this _]
           (when (same-effect-active controller cue (:id info))
             (let [cur-val (or (cues/get-cue-variable cue v :show (:show controller) :when-id (:id info)) false)]
-              (draw-boolean-gauge controller note 1 cur-val :active-color white-color)
+              (draw-boolean-gauge controller note 1 cur-val :active? true)
               (set-touch-strip-from-value controller (if cur-val 1 0) 0 1 touch-strip-mode-pan))
             (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
             true))
@@ -2437,7 +2440,7 @@
           (adjust-interface [this _]
             (when (same-effect-active controller cue (:id info))
               (let [cur-val (or (cues/get-cue-variable cue v :show (:show controller) :when-id (:id info)) false)]
-                (draw-boolean-gauge controller (* 2 x) 2 cur-val :active-color white-color)
+                (draw-boolean-gauge controller (* 2 x) 2 cur-val :active? true)
                 (set-touch-strip-from-value controller (if cur-val 1 0) 0 1 touch-strip-mode-pan))
               (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
               true))
