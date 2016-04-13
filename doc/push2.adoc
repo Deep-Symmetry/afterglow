@@ -30,9 +30,9 @@ fully supported.
 ## Binding to the Push 2
 
 Assuming you have an Ableton Push 2 connected to the machine running
-Afterglow, Afterglow will find and activate it as soon as you have set
-up the sample show. You will see a brief startup animation, and
-Afterglow's Push 2 interface will start.
+Afterglow and powered on, it will be noticed, identified, and
+activated as soon as you have set up the sample show. You will see a
+brief startup animation, and Afterglow's Push 2 interface will appear.
 
 TIP: For information about how to set up bindings without the sample
 show, or more details about how it works, see
