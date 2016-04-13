@@ -1276,7 +1276,7 @@
       (let [[cue active] (show/find-cue-grid-active-effect (:show controller) (+ x origin-x) (+ y origin-y))
             ending (and active (:ending active))
             base-color (when cue (cues/current-cue-color cue active (:show controller) snapshot))
-            l-boost (when base-color (if (zero? (colors/saturation base-color)) 20.0 0.0))
+            l-boost (when base-color (if (zero? (colors/saturation base-color)) 8.0 0.0))
             color (when base-color
                     (colors/create-color
                      :h (colors/hue base-color)
@@ -1287,10 +1287,10 @@
                      ;; the same keyword, in which case they are dim.
                      :l (+ (if active
                              (if ending
-                               (if (> (rhythm/snapshot-beat-phase snapshot) 0.4) 6 22)
+                               (if (> (rhythm/snapshot-beat-phase snapshot) 0.4) 4 22)
                                55)
                              (if (or (active-keys (:key cue))
-                                     (seq (clojure.set/intersection active-keys (set (:end-keys cue))))) 6 22))
+                                     (seq (clojure.set/intersection active-keys (set (:end-keys cue))))) 4 22))
                            l-boost)))]
         (swap! (:next-grid-pads controller) assoc (+ x (* y 8)) (or color off-color))))))
 
