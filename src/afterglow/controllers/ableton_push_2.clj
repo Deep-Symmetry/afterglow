@@ -1611,14 +1611,13 @@
             (.draw graphics (java.awt.geom.Line2D$Double.
                              (dec Wayang/DISPLAY_WIDTH) (- Wayang/DISPLAY_HEIGHT 9)
                              (- Wayang/DISPLAY_WIDTH 8) (- Wayang/DISPLAY_HEIGHT 2)))))
-      (do
-        (let [font  (get-display-font :condensed-light Font/ITALIC 36)
-              text  "No effects are active."
-              width (calculate-text-width graphics font text)]
-          (.setFont graphics font)
-          (.setPaint graphics no-effects-active-color)
-          (.drawString graphics text (int (math/round (- (/ Wayang/DISPLAY_WIDTH 2) (/ width 2))))
-                       (/ Wayang/DISPLAY_HEIGHT 2)))))))
+      (let [font  (get-display-font :condensed-light Font/ITALIC 36)
+            text  "No effects are active."
+            width (calculate-text-width graphics font text)]
+        (.setFont graphics font)
+        (.setPaint graphics no-effects-active-color)
+        (.drawString graphics text (int (math/round (- (/ Wayang/DISPLAY_WIDTH 2) (/ width 2))))
+                     (/ Wayang/DISPLAY_HEIGHT 2))))))
 
 (declare enter-stop-mode)
 
