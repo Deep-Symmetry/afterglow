@@ -28,10 +28,10 @@ Controller Bindings>>.
 
 == Using Launchpad Pro
 
-Although when compared with the Ableton Push it lacks a text or
-graphical display and rotary encoders, the Novation Launchpad Pro
-makes an excellent grid controller for Afterglow, and has its own
-custom {api-doc}afterglow.controllers.launchpad-pro.html[mapping].
+With its pressure-sensitive, RGB-capable 8&times;8 pad grid, the
+Novation Launchpad Pro makes an excellent grid controller for
+Afterglow, and has its own custom
+{api-doc}afterglow.controllers.launchpad-pro.html[mapping].
 
 > There are also mappings for the
   <<using-launchpad-mk2,Launchpad Mk2>>,
