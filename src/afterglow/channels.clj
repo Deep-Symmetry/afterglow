@@ -21,20 +21,23 @@
   "Given a universe and DMX address at which a fixture is being
   patched, and a raw channel description from the fixture definition,
   calculate and assign the channel's actual DMX address and universe
-  that it will have in a show."
-  [universe start-address raw-channel]
+  that it will have in a show. Also adds the back pointer to the head
+  that owns the channel, so dynamic and spatial parameter resolution
+  can access head information."
+  [universe start-address head raw-channel]
   (cond-> raw-channel
     (:offset raw-channel) (assoc :address (+ (:offset raw-channel) (dec start-address))
                                  :index (+ (dec (:offset raw-channel)) (dec start-address))
                                  :universe universe)
     (:fine-offset raw-channel) (assoc :fine-address (+ (:fine-offset raw-channel) (dec start-address))
-                                      :fine-index (+ (dec (:fine-offset raw-channel)) (dec start-address)))))
+                                      :fine-index (+ (dec (:fine-offset raw-channel)) (dec start-address)))
+    head (assoc :head head)))
 
 (defn- patch-head
   "Assigns a single head to a DMX universe and starting channel; resolves all of its
   channel assignments."
   [channel-assigner fixture id-fn raw-head]
-  (assoc (update-in raw-head [:channels] #(map channel-assigner %))
+  (assoc (update-in raw-head [:channels] #(map (partial channel-assigner raw-head) %))
          :fixture fixture :id (id-fn)))
 
 (defn- patch-heads
@@ -49,7 +52,7 @@
   all of its channel assignments."
   [fixture universe start-address id-fn]
   (let [assigner (partial assign-channel universe start-address)]
-    (update-in (patch-heads fixture assigner id-fn) [:channels] #(map assigner %))))
+    (update-in (patch-heads fixture assigner id-fn) [:channels] #(map (partial assigner fixture) %))))
 
 (defn extract-channels
   "Given a fixture list, returns the channels matching the specified predicate."

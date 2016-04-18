@@ -59,7 +59,7 @@
   [name level channels & {:keys [htp?]}]
   (let [f (if htp?
             (fn [show snapshot target previous-assignment]
-              (max level (or (params/resolve-param previous-assignment show snapshot) 0)))
+              (max level (or (params/resolve-param previous-assignment show snapshot (:head target)) 0)))
             (fn [show snapshot target previous-assignment] level))
         assigners (build-raw-channel-assigners channels f)]
     (Effect. name always-active (fn [show snapshot] assigners) end-immediately)))
@@ -77,8 +77,8 @@
             ;; We need to resolve any dynamic parameters at this point so we can apply the
             ;; highest-take-precedence rule.
             (fn [show snapshot target previous-assignment]
-              (max (clamp-rgb-int (params/resolve-param level show snapshot))
-                   (or (clamp-rgb-int (params/resolve-param previous-assignment show snapshot)) 0)))
+              (max (clamp-rgb-int (params/resolve-param level show snapshot (:head target)))
+                   (or (clamp-rgb-int (params/resolve-param previous-assignment show snapshot (:head target))) 0)))
             ;; We can defer resolution to the final DMX calculation stage.
             (fn [show snapshot target previous-assignment]
               level))
@@ -97,7 +97,7 @@
 ;; Resolves the assignment of a level to a single DMX channel.
 (defmethod fx/resolve-assignment :channel [assignment show snapshot buffers]
   ;; Resolve in case it is frame dynamic
-  (let [resolved (clamp-rgb-int (params/resolve-param (:value assignment) show snapshot))]
+  (let [resolved (clamp-rgb-int (params/resolve-param (:value assignment) show snapshot (:head (:target assignment))))]
     (apply-channel-value buffers (:target assignment) resolved)))
 
 ;; Fades between two assignments to a channel; often you won't want to do this, especially for
@@ -108,11 +108,11 @@
         (>= fraction 1) to-assignment
         ;; We are blending, so we need to resolve any remaining dynamic parameters now, and make sure
         ;; fraction really does only range between 0 and 1.
-        :else (let [target (:target from-assignment)
+        :else (let [head (:head (:target from-assignment))
                     from-resolved (clamp-rgb-int (params/resolve-param (or (:value from-assignment) 0)
-                                                                       show snapshot target))
+                                                                       show snapshot head))
                     to-resolved (clamp-rgb-int (params/resolve-param (or (:value to-assignment) 0)
-                                                                     show snapshot target))
+                                                                     show snapshot head))
                     fraction (clamp-unit-float fraction)]
                 (merge from-assignment {:value (+ (* fraction to-resolved) (* (- 1.0 fraction) from-resolved))}))))
 
