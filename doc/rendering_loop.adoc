@@ -105,16 +105,24 @@ effect.
 
 . While being gathered, the assigners are separated into individual
 lists, divided first by the `kind` value of the assigner (`:channel`,
-`:function`, `:color`, `:pan-tilt`, `:direction`, or `:aim`), and
-within each kind, further divided into lists based on the target ID
-that the assigner wants to affect. Since the effects are run in
-priority order (lower priority first, with effects of the same
-priority running in the order in which they were added to the show),
-higher-priority and more recent effects’ assigners will come later in
-the gathered lists, and will get the chance to modify or veto any
-assigners from earlier and lower-priority effects which are trying to
-control the same thing. If the effect doesn’t want to do anything this
-frame, it can simply return an empty assigner list.
+`:function`, `:color`, `:pan-tilt`, `:direction`, or `:aim`, or some
+other value added by a rendering loop
+<<rendering_loop#extensions,extension>>), and within each kind,
+further divided into lists based on the target ID that the assigner
+wants to affect. The structure of a target ID is up to the Assigner
+kind, and may be a simple number or tuple, depending on the needs of
+the Assigner implementation; the important thing from the Show's
+perspective is that if two target IDs are equal to each other, the
+assigners are affecting the same element of the show.
++
+Since the effects are run in priority order (lower priority first,
+with effects of the same priority running in the order in which they
+were added to the show), higher-priority and more recent effects’
+assigners will come later in the gathered lists, and will get the
+chance to modify or veto any assigners from earlier and lower-priority
+effects which are trying to control the same thing. If the effect
+doesn’t want to do anything this frame, it can simply return an empty
+assigner list.
 
 . Once all the assigners have been collected into their kind/target
 lists, each list is evaluated. The assigner kinds are processed in the
@@ -216,12 +224,12 @@ be ready to build your own complex and mesmerizing effects!
 === Channel Assigners
 
 Channel assigners have a `kind` of `:channel`, and their `target-id`
-is a keyword of the form `:u1a234` which would represent an assignment
-to universe `1`, address `234`. The assignment values they return are
-either a valid DMX data value (see next paragraph), a
-<<parameters#dynamic-parameters,dynamic parameter>> which will resolve
-to a valid DMX data value, or `nil`, meaning no assignment should take
-place.
+is a tuple of universe ID and channel address, so `[1 234]` would
+represent an assignment to universe `1`, address `234`. The assignment
+values they return are either a valid DMX data value (see next
+paragraph), a <<parameters#dynamic-parameters,dynamic parameter>>
+which will resolve to a valid DMX data value, or `nil`, meaning no
+assignment should take place.
 
 
 [[dmx-values]] The DMX data value is a number in the range `[0-256)`.
@@ -254,9 +262,9 @@ the nature of the channel.)
 === Function Assigners
 
 Function assigners have a `kind` of `:function`, and their `target-id`
-is a keyword of the form `:3-strobe` which would represent an
-assignment to the fixture or head with ID 3, setting the value of that
-head's `:strobe`
+is a tuple of the head or fixture ID and the function keyword, so `[3
+:strobe]` would represent an assignment to the fixture or head with ID
+3, setting the value of that head's `:strobe`
 <<fixture_definitions#function-specifications,function>>. The
 assignment values they return are either a percentage value, a
 <<parameters#dynamic-parameters,dynamic parameter>> which will resolve
@@ -273,8 +281,8 @@ was 50.0, then the assignment for that fixture would send a value of
 [[color-assigners]]
 === Color Assigners
 
-Color assigners have a `kind` of `:color`, and their `target-id` is a
-keyword of the form `:i42` which would represent an assignment to the
+Color assigners have a `kind` of `:color`, and their `target-id` is
+the head or fixture ID; `42` would represent an assignment to the
 fixture or head with ID 42. The assignment values they return are
 either a <<color#working-with-color,color>> object, a
 <<parameters#color-parameters,dynamic parameter>> which will resolve
@@ -305,10 +313,10 @@ different value in the show variable `:color-wheel-min-saturation`).
 [[pan-tilt-assigners]]
 === Pan/Tilt Assigners
 
-Pan/Tilt assigners have a `kind` of `:pan-tilt`, and their
-`target-id` is a keyword of the form `:i68` which would represent an
-assignment to the fixture or head with ID 68. The assignment values
-they return are either a `javax.vecmath.Vector2d`, a
+Pan/Tilt assigners have a `kind` of `:pan-tilt`, and their `target-id`
+is the head or fixture ID; `68` would represent an assignment to the
+fixture or head with ID 68. The assignment values they return are
+either a `javax.vecmath.Vector2d`, a
 <<parameters#direction-parameters,dynamic parameter>> which will
 resolve to a `Vector2d` object, or `nil`, meaning no assignment should
 take place.
@@ -332,9 +340,9 @@ that matter.
 === Direction Assigners
 
 Direction assigners have a `kind` of `:direction`, and their
-`target-id` is a keyword of the form `:i68` which would represent an
-assignment to the fixture or head with ID 68. The assignment values
-they return are either a `javax.vecmath.Vector3d`, a
+`target-id` is the head or fixture ID; `42` would represent an
+assignment to the the fixture or head with ID 42. The assignment
+values they return are either a `javax.vecmath.Vector3d`, a
 <<parameters#direction-parameters,dynamic parameter>> which will
 resolve to a `Vector3d` object, or `nil`, meaning no assignment should
 take place.
@@ -356,8 +364,8 @@ target, it will run later, so its effects will be the ones that matter.
 [[aim-assigners]]
 === Aim Assigners
 
-Aim assigners have a `kind` of `:aim`, and their `target-id` is a
-keyword of the form `:i17` which would represent an assignment to the
+Aim assigners have a `kind` of `:aim`, and their `target-id` is
+the head or fixture ID; `17` would represent an assignment to the
 fixture or head with ID 17. The assignment values they return are
 either a `javax.vecmath.Point3d`, a
 <<parameters#aim-parameters,dynamic parameter>> which will resolve to
@@ -395,7 +403,7 @@ value. The Beyond integration uses `:beyond-color` and `:beyond-cue`
 for `kind` values. `:beyond-color` is global, and thus uses a
 `target-id` that references the entire Beyond server instance. In
 contrast, more than one `:beyond-cue` can be active at once, so its
-`target-id` is composed of both the server ID and the cue number.
+`target-id` is composed of both the server ID and the cue coordinates.
 
 Afterglow needs to be told how to handle your new kinds of assigners.
 First, you need to establish the order in which they should be run by

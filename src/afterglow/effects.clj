@@ -17,15 +17,25 @@
   _PROTOCOLS_
   (do
 (defprotocol IAssigner
-  "Assign some attribute (color, attitude, channel value) to an
+  "Assign some attribute (color, direction, channel value) to an
   element of a light show at a given point in time. Any previous
   assignment to this element will be supplied as an argument, and may
   be tweaked or ignored as needs dictate. The target will be a subtree
-  of the show's fixtures, currently either a head or channel."
+  of the show's fixtures, currently either a head or channel, or
+  something defined by an extension to the rendering loop.."
   (assign [this show ^MetronomeSnapshot snapshot target previous-assignment]
-  "Calculate the value the show element should have at this moment in
-  time. Return a value appropriate for the kind of assignment, e.g.
-  color object, channel value."))
+  "Calculate the value the `show` element `target` should have at the
+  moment in time represented by `snapshot`. The `previous-assignment`
+  value is available order to support blending,
+  highest-takes-priority, and other types of assignment which can be
+  influenced by assigners which have run earlier (because they are
+  associaed with effects running at lower priority or which started
+  earlier). Returns a value appropriate for the kind of assignment,
+  e.g. color object, channel value.
+
+  See the [Assigner
+  documentation](https://github.com/brunchboy/afterglow/blob/master/doc/rendering_loop.adoc#assigners)
+  for more discussion."))
 
 ;; At each DMX frame generation, we will run through all the effects and ask them if they are still
 ;; active. If not, they will be removed from the list of active effects. For the remaining ones,
@@ -35,7 +45,9 @@
   It generates a list of assignments that should be in effect at a
   given moment in the show. It can end on its own, or be asked to end.
   When asked, it may end immediately, or after some final activity,
-  such as a fade."
+  such as a fade. See [The Effect
+  Lifecycle](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#the-effect-lifecycle)
+  for more discussion."
   (still-active? [this show snapshot]
   "An inquiry about whether this effect is finished, and can be
   cleaned up. A `false` return value will remove the effect from the
@@ -43,25 +55,25 @@
   (generate [this show snapshot]
   "List the asignments needed to implement the desired effect at this
   moment in time. Must return a sequence of
-  `afterglow.effects.Assigner` objects which will be merged into the
-  current frame based on their kind, target, and the effect's
-  priority. If the effect currently has nothing to contribute, it may
-  return an empty sequence.")
+  [[Assigner]] objects which will be merged into the current frame
+  based on their kind, target, and the effect's priority. If the
+  effect currently has nothing to contribute, it may return an empty
+  sequence.")
   (end [this show snapshot]
   "The effect has been asked to end. It should arrange to finish as
   soon as possible; return `true` if it can end immediately, and it
   will be removed from the show. Otherwise it will be allowed to
   continue running as it performs its graceful shutdown
-  until [[still-active?]] reuthrns `false`. If the user asks to end
-  the effect a second time during htis process, however, it will
-  simply be removed from the show at that time."))))
+  until [[still-active?]] returns `false`. If the user asks to end the
+  effect a second time during this process, however, it will simply be
+  removed from the show at that time."))))
 
 ;; See https://github.com/brunchboy/afterglow/blob/master/doc/rendering_loop.adoc#assigners
 ;;
 ;; Afterglow runs through the list of effects in priority order; each will spit out some
 ;; number of assigners, which are a tuple identifying what is to be assigned, and a function
 ;; that can do the assigning, when provided with the show and current metronome snapshot:
-(defrecord Assigner [^clojure.lang.Keyword kind ^clojure.lang.Keyword target-id target ^clojure.lang.IFn f]
+(defrecord Assigner [^clojure.lang.Keyword kind target-id target ^clojure.lang.IFn f]
   IAssigner
   (assign [this show snapshot target previous-assignment]
     (f show snapshot target previous-assignment)))
@@ -71,7 +83,7 @@
 ;; to be assigned, and the values are the priority-ordered list of assigners to run on that target.
 ;; On each DMX frame we will run through these lists in parallel, and determine the final assignment
 ;; value which results for each target:
-(defrecord Assignment [^clojure.lang.Keyword kind ^clojure.lang.Keyword target-id target value])
+(defrecord Assignment [^clojure.lang.Keyword kind target-id target value])
 
 ;; Finally, once that is done, the resulting assignments will be
 ;; resolved to DMX values by calling:
@@ -114,7 +126,7 @@
   "Returns an assigner of the specified type which applies the
   specified assignment function to the provided head or fixture."
   [kind head f]
-  (Assigner. kind (keyword (str "i" (:id head))) head f))
+  (Assigner. kind (:id head) head f))
 
 (defn build-head-assigners
   "Returns a list of assigners of the specified type which apply an

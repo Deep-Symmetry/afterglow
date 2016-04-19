@@ -195,6 +195,6 @@
                        (transform-fn resolved show snapshot nil)))))
         assigners (concat (fx/build-head-assigners :color heads f)
                           (when beyond-server
-                            [(Assigner. :beyond-color (keyword (str "s" (:id beyond-server))) beyond-server lf)]))]
+                            [(Assigner. :beyond-color (:id beyond-server) beyond-server lf)]))]
     (Effect. "Transform Colors" fx/always-active (fn [show snapshot] assigners) fx/end-immediately)))
 

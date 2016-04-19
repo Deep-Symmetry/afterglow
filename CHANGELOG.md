@@ -11,6 +11,9 @@ This change log follows the conventions of
 - Holding down Shift while pressing a scroll arrow on the Launchpad
   family of controllers now moves you as far as possible in that
   direction, as it did on the Push 2.
+- Head information is now available to channel effects (which include
+  dimmer effects), so they can use dynamic parameters with spatial
+  components, just like all the other kinds of effects can.
 
 ### Changed
 
@@ -26,6 +29,13 @@ This change log follows the conventions of
   Yes values, and the transition between values is animated, to make
   it easier to see what is happening, and to relate it to the encoder
   rotation.
+- Assigner target IDs can now have arbitrary structure appropriate to
+  the needs of the assigner implementation, rather than being forced
+  into keywords as they used to be. For the most part, they are
+  integers (head IDs), some are tuples (universe ID and channel pairs
+  for channel assigners, head ID and function keywords for head
+  function assigners, other things for extensions like Beyond laser
+  show assigners).
 
 
 ## [0.2.1] - 2016-04-03

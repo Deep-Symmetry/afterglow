@@ -158,7 +158,7 @@
            fx/always-active
            (fn [show snapshot]
              (let [resolved (params/resolve-unless-frame-dynamic color show snapshot)]
-               [(Assigner. :beyond-color (keyword (str "s" (:id server))) server
+               [(Assigner. :beyond-color (:id server) server
                             (fn [show snapshot target previous-assignment] resolved))]))
            fx/end-immediately))
 
@@ -168,7 +168,7 @@
   page are passed as arguments (and cannot be dynamic parameters)."
   [server page number]
   {:pre [(integer? page) (integer? number)]}
-  (let [assigners [(Assigner. :beyond-cue (keyword (str "s" (:id server) "-" page "-" number)) server
+  (let [assigners [(Assigner. :beyond-cue [(:id server) page number] server
                               (fn [show snapshot target previous-assignment] [page number]))]]
     (Effect. "Beyond Cue"
              fx/always-active

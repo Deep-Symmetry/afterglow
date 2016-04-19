@@ -43,7 +43,7 @@
 (defn build-channel-assigner
   "Returns an assigner which applies the specified assignment function to the supplied channel."
   [channel f]
-  (Assigner. :channel (keyword (str "u" (:universe channel) "a" (:address channel))) channel f))
+  (Assigner. :channel [(:universe channel) (:address channel)] channel f))
 
 (defn build-raw-channel-assigners
   "Returns a list of assigners which apply a channel assignment
@@ -122,7 +122,7 @@
   implement the specified named function. The head or fixture
   must (directly) have a channel implementing the named function."
   [function head assign-f]
-  (Assigner. :function (keyword (str "f" (:id head) "-" (name function))) head assign-f))
+  (Assigner. :function [(:id head) (keyword function)] head assign-f))
 
 (defn build-head-function-assigners
   "Returns a list of function assigners type which apply an assignment
@@ -231,8 +231,7 @@
   ;; Resolve in case it is frame dynamic
   (let [target (:target assignment)
         resolved (params/resolve-param (:value assignment) show snapshot target)
-        target-name (name (:target-id assignment))
-        function-key (keyword (subs target-name (inc (.indexOf target-name "-"))))
+        [_ function-key] (:target-id assignment)
         [channel function-spec] (function-key (:function-map target))]
     (apply-channel-value buffers channel (function-percentage-to-dmx resolved function-spec))))
 
