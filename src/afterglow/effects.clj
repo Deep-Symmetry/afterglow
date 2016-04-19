@@ -55,10 +55,10 @@
   (generate [this show snapshot]
   "List the asignments needed to implement the desired effect at this
   moment in time. Must return a sequence of
-  [[Assigner]] objects which will be merged into the current frame
-  based on their kind, target, and the effect's priority. If the
-  effect currently has nothing to contribute, it may return an empty
-  sequence.")
+  `afterglow.effects.Assigner` objects which will be merged into the
+  current frame based on their kind, target, and the effect's
+  priority. If the effect currently has nothing to contribute, it may
+  return an empty sequence.")
   (end [this show snapshot]
   "The effect has been asked to end. It should arrange to finish as
   soon as possible; return `true` if it can end immediately, and it
