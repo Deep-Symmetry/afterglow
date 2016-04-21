@@ -1173,9 +1173,8 @@
     (.setPaint graphics color)
     (.fill graphics path)))
 
-(defn- update-metronome-section
-  "Updates the sections of the interface related to metronome
-  control."
+(defn- render-metronome-section
+  "Draws the sections of the interface related to metronome control."
   [controller snapshot]
   (let [marker (rhythm/snapshot-marker snapshot)
         metronome-button (:metronome control-buttons)
@@ -1516,7 +1515,7 @@
   (let [color (colors/desaturate (colors/create-color :blue) 70)]
     (java.awt.Color. (colors/red color) (colors/green color) (colors/blue color))))
 
-(defn- update-effect-list
+(defn- render-effect-list
   "Display information about the four most recently activated
   effects (or three, if the metronome is taking up a slot)."
   [controller snapshot]
@@ -1621,7 +1620,7 @@
 
 (declare enter-stop-mode)
 
-(defn- update-scroll-arrows
+(defn- render-scroll-arrows
   "Activate the arrow buttons for directions in which scrolling is
   possible."
   [controller]
@@ -1647,7 +1646,7 @@
       (swap! (:next-text-buttons controller)
              assoc (:up-arrow control-buttons) dim-white-color))))
 
-(defn- update-mode-buttons
+(defn- render-mode-buttons
   "Illuminate the buttons which activate modes while they are held
   down. Make them dim when not held, and bright when held."
   [controller mode-buttons]
@@ -1680,17 +1679,17 @@
     (reset! (:next-touch-strip controller) [0 touch-strip-mode-sysex])
 
     (let [snapshot (rhythm/metro-snapshot (get-in controller [:show :metronome]))]
-      (update-effect-list controller snapshot)
-      (update-metronome-section controller snapshot)
+      (render-effect-list controller snapshot)
+      (render-metronome-section controller snapshot)
 
       ;; If the show has stopped without us noticing, enter stop mode
       (with-show (:show controller)
         (when-not (or (show/running?) (in-mode? controller :stop))
           (enter-stop-mode controller :already-stopped true)))
 
-      (update-mode-buttons controller [:shift :record])
+      (render-mode-buttons controller [:shift :record])
       (render-cue-grid controller snapshot)
-      (update-scroll-arrows controller)
+      (render-scroll-arrows controller)
 
       ;; Make the User button bright, since we live in User mode
       (swap! (:next-text-buttons controller) assoc (:user-mode control-buttons) white-color)
