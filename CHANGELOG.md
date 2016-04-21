@@ -8,6 +8,11 @@ This change log follows the conventions of
 
 ### Added
 
+- The CoreMIDI4J library is now embedded within Afterglow, so it does
+  not need to be separately installed by the user for MIDI to work
+  properly on Mac OS X. If you have a separate installation of
+  CoreMIDI4J in `/Library/Java/Extensions`, you should remove it to
+  avoid version conflicts with newer versions shipped with Afterglow.
 - Holding down Shift while pressing a scroll arrow on the Launchpad
   family of controllers now moves you as far as possible in that
   direction, as it did on the Push 2.
@@ -15,13 +20,16 @@ This change log follows the conventions of
   dimmer effects), so they can use dynamic parameters with spatial
   components, just like all the other kinds of effects can.
 
+### Fixed
+
+- When updating large sections of the cue grid colors, we no longer
+  send all of them at once, because this was overflowing buffers on
+  the Push 2 and losing some updates. Instead we send them in batches,
+  ending each batch with a query, and wait for the response so we know
+  the controller has caught up.
+
 ### Changed
 
-- The CoreMIDI4J library is now embedded within Afterglow, so it does
-  not need to be separately installed by the user for MIDI to work
-  properly on Mac OS X. If you have a separate installation of
-  CoreMIDI4J in `/Library/Java/Extensions`, you should remove it to
-  avoid version conflicts with newer versions shipped with Afterglow.
 - The hue and saturation gauges on the Push 2 are now drawn using a
   masking image so they can be anti-aliased to the same outline shape
   as the other gauges, and look much cleaner.

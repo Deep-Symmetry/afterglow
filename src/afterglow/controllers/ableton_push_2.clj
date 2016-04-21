@@ -146,12 +146,22 @@
       (request-led-palette-entry controller (inc index))
       (deliver gather-promise true))))
 
+(defonce ^:private ^{:doc "The currently active pad grid batch-update
+  function, if any. Will be called whenever we receive a display
+  backlight level Sysex response, which is our cue that the Push has
+  caught up in drawing LEDs."}
+  grid-batch-update-fn
+  (atom nil))
+
 (defn- sysex-received
   "Process a MIDI System Exclusive reply from the Push 2. The `msg`
   argument is the raw data we have just received. If
-  `gather-timestamp` and `gather-promise` were supplied, this reply
-  was received during startup when we are gathering LED palette
-  entries, so we should use them to record any palette response."
+  `gather-timestamp` and `gather-promise` were supplied, and we see an
+  LED palette reply, this reply was received during startup when we
+  are gathering LED palette entries, so we should use them to record
+  any palette response. If we see a display backlight reply, it means
+  the Push has caught up with our batch of pad grid LED color updates,
+  and we can start sending the next."
   ([controller msg]
    (sysex-received controller msg nil nil))
   ([controller msg gather-timestamp gather-promise]
@@ -163,6 +173,9 @@
          0x04 (if (some? gather-timestamp)
                 (save-led-palette-entry controller args gather-timestamp gather-promise)
                 (timbre/warn "Ignoring Push 2 LED palette response when not gathering palette."))
+
+         0x09 (when-let [f @grid-batch-update-fn]  ; Display backlight reply; ready for next grid update batch
+                (f))
 
          (timbre/warn "Ignoring SysEx message from Push 2 with command ID" command)))
      (timbre/warn "Received unrecognized SysEx message from Push 2 port." (vec (:data msg))))))
@@ -1293,9 +1306,72 @@
                            l-boost)))]
         (swap! (:next-grid-pads controller) assoc (+ x (* y 8)) (or color off-color))))))
 
+(defn cue-grid-updates
+  "See if any of the cue grid button states have changed, and list any
+  required updates as tuples of the pad x and y coordinates,
+  corresponding grid pad array index, and the new desired color."
+  [controller]
+  (filter identity (for [x (range 8)
+                         y (range 8)]
+                     (let [index (+ x (* y 8))
+                           color (get @(:next-grid-pads controller) index)]
+                       (when-not (= color (get @(:last-grid-pads controller) index))
+                         [x y index color])))))
+
+(def grid-update-chunk-size
+  "The number of cue grid LED updates that can be sent before we need
+  to wait and re-synch with the Push 2, to avoid overflowing buffers."
+  16)
+
+(defn update-cue-grid-chunk
+  "Given a list of needed cue grid updates, send at most
+  `grid-update-chunk-size` of them, and return the remaining list."
+  [controller updates]
+  (when (seq updates)
+    (loop [countdown (dec grid-update-chunk-size)
+           [x y index color] (first updates)
+           remaining (rest updates)]
+      (set-pad-color controller x y color)
+      (swap! (:last-grid-pads controller) assoc index color)
+      (if (or (zero? countdown) (empty? remaining))
+        remaining
+        (recur (dec countdown) (first remaining) (rest remaining))))))
+
 (defn- update-cue-grid
   "See if any of the cue grid button states have changed, and send any
-  required updates."
+  required updates in batches. At the end of each batch, send a Sysex
+  message asking what the display brightness is. We don't actually
+  care, but when the response comes back we will know this batch has
+  been processed, and we can send the next."
+  [controller]
+  (when-let [remaining (seq (update-cue-grid-chunk controller (cue-grid-updates controller)))]
+    (let [updates (atom remaining)]
+      (controllers/add-overlay (:overlays controller)
+                               (reify controllers/IOverlay
+                                 (captured-controls [this] #{})
+                                 (captured-notes [this] #{})
+                                 (adjust-interface [this _]
+                                   (when (seq @updates)
+                                     (reset! grid-batch-update-fn nil)
+                                     (reset! updates nil)
+                                     (timbre/warn "Reached next Push 2 frame while still updating cue grid!")))
+                                 (handle-control-change [this _])
+                                 (handle-note-on [this _])
+                                 (handle-note-off [this _])
+                                 (handle-aftertouch [this _])
+                                 (handle-pitch-bend [this _])))
+      (reset! grid-batch-update-fn
+              (fn []
+                (swap! updates #(update-cue-grid-chunk controller %))
+                (if (seq @updates)
+                  (send-sysex controller [0x09])  ; Response will trigger next chunk
+                  (reset! grid-batch-update-fn nil)))))  ; We are done
+    (send-sysex controller [0x09])))
+
+(defn- ^:deprecated update-cue-grid-unbatched
+  "See if any of the cue grid button states have changed, and send any
+  required updates. Deprecated until there is firmware that can keep
+  up with updating the entire grid at once."
   [controller]
   (doseq [x (range 8)
           y (range 8)]
