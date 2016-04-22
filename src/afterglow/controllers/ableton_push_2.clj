@@ -1346,26 +1346,14 @@
   [controller]
   (when-let [remaining (seq (update-cue-grid-chunk controller (cue-grid-updates controller)))]
     (let [updates (atom remaining)]
-      (controllers/add-overlay (:overlays controller)
-                               (reify controllers/IOverlay
-                                 (captured-controls [this] #{})
-                                 (captured-notes [this] #{})
-                                 (adjust-interface [this _]
-                                   (when (seq @updates)
-                                     (reset! grid-batch-update-fn nil)
-                                     (reset! updates nil)
-                                     (timbre/warn "Reached next Push 2 frame while still updating cue grid!")))
-                                 (handle-control-change [this _])
-                                 (handle-note-on [this _])
-                                 (handle-note-off [this _])
-                                 (handle-aftertouch [this _])
-                                 (handle-pitch-bend [this _])))
-      (reset! grid-batch-update-fn
-              (fn []
-                (swap! updates #(update-cue-grid-chunk controller %))
-                (if (seq @updates)
-                  (send-sysex controller [0x09])  ; Response will trigger next chunk
-                  (reset! grid-batch-update-fn nil)))))  ; We are done
+      (swap! grid-batch-update-fn
+             (fn [existing-fn]
+               (when (some? existing-fn) (timbre/warn "Reached next Push 2 frame while still updating cue grid!"))
+               (fn []
+                 (swap! updates #(update-cue-grid-chunk controller %))
+                 (if (seq @updates)
+                   (send-sysex controller [0x09])  ; Response will trigger next chunk
+                   (reset! grid-batch-update-fn nil))))))  ; We are done
     (send-sysex controller [0x09])))
 
 (defn- ^:deprecated update-cue-grid-unbatched
