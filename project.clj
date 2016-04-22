@@ -29,7 +29,7 @@
                  [selmer "1.0.4"]
                  [com.evocomputing/colors "1.0.3"]
                  [environ "1.0.2"]
-                 [camel-snake-kebab "0.3.2"]
+                 [camel-snake-kebab "0.4.0"]
                  [com.taoensso/timbre "4.3.1"]
                  [com.taoensso/tower "3.0.2"]
                  [com.taoensso/truss "1.2.0"]
