@@ -21,9 +21,9 @@
   sources (keyed on the address from which they transmit), set of
   active synced metronomes, and the future that processes packets."}
   state (atom {:socket nil
-               :watcher nil
                :sources-seen {}
-               :synced-metronomes #{}}))
+               :synced-metronomes #{}
+               :watcher nil}))
 
 (defn shut-down
   "Close the UDP server socket and terminate the packet processing
