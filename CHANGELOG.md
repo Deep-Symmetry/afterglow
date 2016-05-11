@@ -13,6 +13,10 @@ This change log follows the conventions of
   properly on Mac OS X. If you have a separate installation of
   CoreMIDI4J in `/Library/Java/Extensions`, you should remove it to
   avoid version conflicts with newer versions shipped with Afterglow.
+- Afterglow now uses the new beat-link library to synchronize with
+  Pioneer DJ Link equipment, which enables several new features such
+  as tracking the master player, synching to bars as well as beats,
+  and having the metronome reflect the current track position.
 - Holding down Shift while pressing a scroll arrow on the Launchpad
   family of controllers now moves you as far as possible in that
   direction, as it did on the Push 2.
