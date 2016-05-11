@@ -10,7 +10,8 @@
  [Open Lighting Architecture](https://www.openlighting.org/ola/) with
  the help of
  [ola-clojure](https://github.com/brunchboy/ola-clojure#ola-clojure),
- [wayang](https://github.com/brunchboy/wayang#wayang), and pieces of
+ [wayang](https://github.com/brunchboy/wayang#wayang),
+ [beat-link](https://github.com/brunchboy/beat-link), and pieces of
  the [Overtone](http://overtone.github.io) toolkit. Beyond building on
  pieces of Overtone, the entire Afterglow project was
  [inspired](https://vimeo.com/22798433) by it.
