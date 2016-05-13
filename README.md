@@ -91,7 +91,21 @@ are fully supported too):
   [Cycling ‘74’s Max](https://cycling74.com/) visual interactive
   environment.
 
-If any of this sounds interesting to you, here is how to get started:
+If any of this sounds interesting to you, read on to see how to get
+started!
+
+## Table of Contents
+
+  * [Why Explore Afterglow?](#why-explore-afterglow)
+  * [Installation](#installation)
+  * [Status](#status)
+  * [Usage](#usage)
+  * [Troubleshooting](#troubleshooting)
+  * [Bugs](#bugs)
+  * [What Next?](#what-next)
+  * [Release Checklist](#release-checklist)
+  * [Tasks](#tasks)
+  * [License](#license)
 
 ## Installation
 
