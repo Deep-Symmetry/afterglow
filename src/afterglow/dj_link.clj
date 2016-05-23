@@ -48,16 +48,18 @@
 (BeatFinder/addBeatListener beat-listener)
 
 (defn start
-  "Activate all the components of the beat-link library."
+  "Activate all the components of the beat-link library.
+  Runs in the background, since it can take a while to give up if
+  there are no DJ Link devices on the network."
   []
-  (try
-    (DeviceFinder/start)
-    (VirtualCdj/start)
-    (BeatFinder/start)
-    (catch Exception e
-      (timbre/warn e "Failed while trying to set up beat-finder DJ-Link integration.")
-      (shut-down))))
-
+  (future
+    (try
+      (DeviceFinder/start)
+      (VirtualCdj/start)
+      (BeatFinder/start)
+      (catch Exception e
+        (timbre/warn e "Failed while trying to set up beat-finder DJ-Link integration.")
+        (shut-down)))))
 
 ;; A simple object which supports syncing a metronome to Pro DJ Link beats
 ;; received from a particular source, optionally honoring the beat-within-bar
