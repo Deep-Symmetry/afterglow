@@ -6,6 +6,10 @@ This change log follows the conventions of
 
 ## [Unreleased][unreleased]
 
+Nothing so far.
+
+## [0.2.2] - 2016-05-30
+
 ### Added
 
 - The CoreMIDI4J library is now embedded within Afterglow, so it does
@@ -31,6 +35,9 @@ This change log follows the conventions of
   the Push 2 and losing some updates. Instead we send them in batches,
   ending each batch with a query, and wait for the response so we know
   the controller has caught up.
+- Updated to the latest release of the Wayang library for drawing on
+  the Push 2 display, which solves an issue that prevented the display
+  from working under Window.
 
 ### Changed
 
@@ -604,7 +611,8 @@ This change log follows the conventions of
 - Initial Public Release
 
 
-[unreleased]: https://github.com/brunchboy/afterglow/compare/v0.2.1...HEAD
+[unreleased]: https://github.com/brunchboy/afterglow/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/brunchboy/afterglow/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/brunchboy/afterglow/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/brunchboy/afterglow/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/brunchboy/afterglow/compare/v0.1.5...v0.1.6
