@@ -2859,8 +2859,10 @@
   environment, we need to be sure to bind only to the User port. This
   filter is used with [[filter-devices]] to screen out any port that
   does not seem to be the User port. If port names are assigned
-  differently on your operating system, you may need to change this."
-  "User Port")
+  differently on your operating system, you may need to change
+  this (and please open a Pull Request); this filter seems to work for
+  Mac OS X and Windows."
+  #".*(User|MIDIIN2).*")
 
 (defn- recognize
   "Returns the controller's device ID if `message` is a response
