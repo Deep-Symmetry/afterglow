@@ -2862,7 +2862,7 @@
   differently on your operating system, you may need to change
   this (and please open a Pull Request); this filter seems to work for
   Mac OS X and Windows."
-  #".*(User|MIDIIN2).*")
+  #".*(User|MIDI(IN|OUT)2).*")
 
 (defn- recognize
   "Returns the controller's device ID if `message` is a response
