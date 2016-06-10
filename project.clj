@@ -1,4 +1,4 @@
-(defproject afterglow "0.2.2"
+(defproject afterglow "0.2.3"
   :description "A live-coding environment for light shows, built on the Open Lighting Architecture, using bits of Overtone."
   :url "https://github.com/brunchboy/afterglow"
   :license {:name "Eclipse Public License"
@@ -37,7 +37,7 @@
                  [markdown-clj "0.9.89"]
                  [compojure "1.5.0" :exclusions [org.eclipse.jetty/jetty-server
                                                  clj-time]]
-                 [ring/ring-defaults "0.2.0"]
+                 [ring/ring-defaults "0.2.1"]
                  [ring/ring-session-timeout "0.1.0"]
                  [ring-middleware-format "0.7.0" :exclusions [ring/ring-jetty-adapter
                                                               org.clojure/tools.reader
@@ -62,7 +62,7 @@
   ;; :env {:repl-port 16002}
 
   :profiles {:dev {:dependencies [[ring-mock "0.1.5"]
-                                  [ring/ring-devel "1.4.0"]]
+                                  [ring/ring-devel "1.5.0"]]
                    :repl-options {:init-ns afterglow.examples
                                   :welcome (println "afterglow loaded.")}
                    :jvm-opts ["-XX:-OmitStackTraceInFastThrow" "-Dapple.awt.UIElement=true"]
