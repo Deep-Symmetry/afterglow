@@ -40,6 +40,21 @@
   auto-bind-thread
   (atom nil))
 
+(defn- match-input-output-pair
+  "Given a MIDI input or output port, returns a device filter that
+  will match both that port and the corresponding output port.
+  Trickier than it sounds because on Windows, when there are multiple
+  ports for a given device, the inputs and outputs are assigned names
+  that differ from each other, and the descriptions never match."
+  [port-in]
+  [port-in  ; We always match the input port
+   (if (clojure.string/starts-with? (clojure.string/lower-case (System/getProperty "os.name")) "windows")
+     (fn [port]  ; On Windows only look at the name, and transform as needed
+       (= (:name port) (clojure.string/replace-first (:name port-in) "MIDIIN" "MIDIOUT")))
+     (fn [port]  ; On other platforms, look for matching names and descriptions
+       (and (= (:name port) (:name port-in))
+            (= (:description port) (:description port-in)))))])
+
 (defn- bind-bottleneck
   "Takes potential auto-bind devices from the incoming queue one by
   one and tries binding to them. This is used to make sure that we are
@@ -59,9 +74,7 @@
     (when device
       (timbre/info "Attempting auto-binding to potential controller" device args)
       (try
-        (apply bind-to-show (concat [show (fn [port]
-                                            (and (= (:name port) (:name device))
-                                                 (= (:description port) (:description device))))]
+        (apply bind-to-show (concat [show (match-input-output-pair device)]
                                     (flatten (seq args))))
         (catch Exception e
           (timbre/error e "Problem binding to controller"))))

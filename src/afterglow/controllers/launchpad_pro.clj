@@ -657,8 +657,9 @@
   This filter is used with [[filter-devices]] to screen out any port
   that does not seem to be the Standalone port. If port names are
   assigned differently on your operating system, you may need to
-  change this."
-  "Standalone Port")
+  change this (and please open a Pull Request); this filter seems to
+  work for Mac OS X and Windows."
+  ["Standalone Port" "MIDIIN2" "MIDIOUT2"])
 
 (defn- recognize
   "Returns the controller's device ID if `message` is a response
