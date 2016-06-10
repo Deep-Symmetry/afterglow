@@ -827,6 +827,9 @@
     (= (type device-filter) :midi-device)
     (describe-device-filter (:info device-filter))
 
+    (vector? device-filter)
+    (clojure.string/join "or " (map describe-device-filter device-filter))
+
     (ifn? device-filter)
     (format "returning true when passed to %s " device-filter)
 
@@ -859,6 +862,9 @@
 
   * A `:midi-device` map, which will match only itself.
 
+  * A `vector` of device filters, which will match any device that
+  matches any filter.
+
   * A function, which will be called with each device, and the device
   will be included if the function returns a `true` value.
 
@@ -875,7 +881,10 @@
     (filter #(= (:info %) device-filter) devices)
 
     (= (type device-filter) :midi-device)
-    (filter #(= (@midi-device-key %) (@midi-device-key device-filter)) devices)
+    (filter #(= (:info %) (:info device-filter)) devices)
+
+    (vector? device-filter)
+    (filter (fn [device] (some seq (map #(filter-devices % [device]) device-filter))) devices)
 
     (ifn? device-filter)
     (filter device-filter devices)
