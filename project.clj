@@ -74,6 +74,6 @@
             [lein-environ "1.0.2"]]
 
   :codox {:output-path "api-doc"
-          :source-uri "https://github.com/brunchboy/afterglow/blob/master/{filepath}#L{line}"
+          :source-uri "https://github.com/brunchboy/afterglow/blob/v0.2.3/{filepath}#L{line}"
           :metadata {:doc/format :markdown}}
   :min-lein-version "2.0.0")

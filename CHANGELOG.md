@@ -8,6 +8,20 @@ This change log follows the conventions of
 
 Nothing so far.
 
+## [0.2.3] - 2016-06-09
+
+### Fixed
+
+- Rich controller bindings (Ableton Push and Novation Launchpad
+  families) were not being successfully auto-bound under Windows
+  because of significant differences in the way their port names were
+  assigned on that platform. Fixing that was surprisingly tricky, but
+  it has been done. I look forward to someone being able to help test
+  this under Linux now.
+- The graphical display on the Ableton Push 2 could not be connected
+  under Windows due to an issue in the Wayang library. That library
+  has been fixed, and the new version is embedded in this release.
+
 ## [0.2.2] - 2016-05-30
 
 ### Added
@@ -611,7 +625,8 @@ Nothing so far.
 - Initial Public Release
 
 
-[unreleased]: https://github.com/brunchboy/afterglow/compare/v0.2.2...HEAD
+[unreleased]: https://github.com/brunchboy/afterglow/compare/v0.2.3...HEAD
+[0.2.3]: https://github.com/brunchboy/afterglow/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/brunchboy/afterglow/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/brunchboy/afterglow/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/brunchboy/afterglow/compare/v0.1.6...v0.2.0
