@@ -6,6 +6,11 @@ This change log follows the conventions of
 
 ## [Unreleased][unreleased]
 
+### Fixed
+
+- The pixels of the Blizzard Pixellicious were flipped over the X
+  axis.
+
 Nothing so far.
 
 ## [0.2.3] - 2016-06-09

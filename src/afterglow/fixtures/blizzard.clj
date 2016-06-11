@@ -419,13 +419,15 @@
                               128 {:type :sound-active :var-label "Sensitivity" :range :variable})]})
 
 (defn pixellicious
-  "4x40 LED pixel tile in 480 channel mode."
+  "4x40 LED pixel tile in 480 channel mode. The default orientation is
+  facing the audience, with the long axis parallel to the X axis, and
+  the controls and LED panel right-side up on the back side."
   []
   {:name "Blizzard Pixellicious"
    :channels []
    :heads (for [i (range 160)]
             (let [x (+ (* (rem i 40) 0.025) -0.5)
-                  y (+ (* (quot i 40) 0.025) -0.05)
+                  y (+ (* (quot i 40) -0.025) 0.05)
                   c (+ (* i 3) 1)]
               {:channels [(chan/color c :red)
                           (chan/color (inc c) :green)
