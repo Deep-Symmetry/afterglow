@@ -1226,7 +1226,8 @@
                          (transform/transform-fixture-euler fixture x y z x-rotation y-rotation z-rotation))]
     (swap! (:fixtures *show*) #(patch-fixture-internal *show* % (keyword key)
                                                        (chan/patch-fixture positioned universe start-address next-id))))
-  (swap! (:dimensions *show*) (constantly (calculate-dimensions *show*))))
+  (reset! (:dimensions *show*) (calculate-dimensions *show*))
+  key) ; Don't return the dimensions, it is a deep recursive structure which causes print spasms.
 
 (defn patch-fixture-group!
   "*Deprecated until it supports positioning each fixture.*
