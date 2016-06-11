@@ -3,8 +3,8 @@ James Elliott <james@deepsymmetry.org>
 :icons: font
 :toc:
 :toc-placement: preamble
-:api-doc: http://cdn.rawgit.com/brunchboy/afterglow/v0.2.3/api-doc/
-:branch-base: https://github.com/brunchboy/afterglow/blob/v0.2.3/
+:api-doc: http://rawgit.com/brunchboy/afterglow/master/api-doc/
+:branch-base: https://github.com/brunchboy/afterglow/blob/master/
 
 // Set up support for relative links on GitHub; add more conditions
 // if you need to support other environments and extensions.
@@ -1125,7 +1125,7 @@ would result in the following Afterglow fixture definition file:
   Please flesh out this documentation if you are submitting this for
   inclusion into Afterglow. See, for example, the Blizzard fixture
   definitions:
-  http://cdn.rawgit.com/brunchboy/afterglow/v0.2.3/api-doc/afterglow.fixtures.blizzard.html"
+  http://rawgit.com/brunchboy/afterglow/master/api-doc/afterglow.fixtures.blizzard.html"
   []
   {:channels [(chan/color 1 :uv)  ; TODO: add :hue key if you want to color mix this
               (chan/fine-channel :strobing 2
