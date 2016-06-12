@@ -10,6 +10,13 @@ This change log follows the conventions of
 
 - The pixels of the Blizzard Pixellicious were flipped over the X
   axis.
+- The web interface needed to have the Beat Link `DeviceFinder`
+  started before trying to render the UI, or it would only partially
+  render because of an exception when trying to use it.
+- Calling `show/patch-fixture!` returned a huge recursive data
+  structure which would cause the REPL to choke trying to print it,
+  especially in an editor. Now it just returns the key identifying the
+  fixture that was patched.
 
 Nothing so far.
 

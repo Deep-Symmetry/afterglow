@@ -17,7 +17,8 @@
             [selmer.parser :as parser]
             [taoensso.timbre.appenders.3rd-party.rotor :as rotor]
             [taoensso.timbre :as timbre])
-  (:import [java.net InetAddress])
+  (:import [java.net InetAddress]
+           [org.deepsymmetry.beatlink DeviceFinder])
   (:gen-class))
 
 (defonce ^{:doc "Holds the running web UI server, if there is one, for later shutdown."}
@@ -209,8 +210,10 @@
    (start-web-server port false))
   ([port browser]
    (swap! web-server #(if %
-                       (timbre/warn "Not starting web server because it is already running.")
-                       (http-kit/run-server app {:port port})))
+                        (timbre/warn "Not starting web server because it is already running.")
+                        (do
+                          (DeviceFinder/start)  ; The web UI wants to know about DJ Link devices
+                          (http-kit/run-server app {:port port}))))
 
    ;;Start the expired session cleanup job if needed
    (swap! session-cleaner #(or % (session/start-cleanup-job!)))
