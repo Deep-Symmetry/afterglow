@@ -6,7 +6,7 @@
   :jvm-opts ["-Dapple.awt.UIElement=true"]  ; Suppress dock icon and focus stealing when compiling on a Mac.
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/core.cache "0.6.5"]
-                 [org.clojure/core.async "0.2.374" :exclusions [org.clojure/tools.reader]]
+                 [org.clojure/core.async "0.2.382" :exclusions [org.clojure/tools.reader]]
                  [org.clojure/data.json "0.2.6"]
                  [org.clojure/data.zip "0.1.2"]
                  [org.clojure/math.numeric-tower "0.0.4"]
@@ -31,9 +31,9 @@
                  [com.evocomputing/colors "1.0.3"]
                  [environ "1.0.3"]
                  [camel-snake-kebab "0.4.0"]
-                 [com.taoensso/timbre "4.3.1"]
+                 [com.taoensso/timbre "4.4.0"]
                  [com.taoensso/tower "3.0.2"]
-                 [com.taoensso/truss "1.2.0"]
+                 [com.taoensso/truss "1.3.3"]
                  [markdown-clj "0.9.89"]
                  [compojure "1.5.0" :exclusions [org.eclipse.jetty/jetty-server
                                                  clj-time]]
@@ -43,9 +43,9 @@
                                                               org.clojure/tools.reader
                                                               org.clojure/java.classpath
                                                               org.clojure/core.memoize]]
-                 [metosin/ring-http-response "0.6.5"]
+                 [metosin/ring-http-response "0.7.0"]
                  [prone "1.1.1"]
-                 [buddy "0.13.0"]
+                 [buddy "1.0.0"]
                  [instaparse "1.4.2"]
                  [http-kit "2.1.19"]]
   :main afterglow.core
