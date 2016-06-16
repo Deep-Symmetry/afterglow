@@ -65,7 +65,7 @@
   ;; enable to start the nREPL server when the application launches
   ;; :env {:repl-port 16002}
 
-  :profiles {:dev {:dependencies [[ring-mock "0.1.5"]
+  :profiles {:dev {:dependencies [[ring-mock "0.1.5" :exclusions [ring/ring-codec]]
                                   [ring/ring-devel "1.5.0"]]
                    :repl-options {:init-ns afterglow.examples
                                   :welcome (println "afterglow loaded.")}
