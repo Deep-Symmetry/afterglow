@@ -27,7 +27,7 @@
                  [com.climate/claypoole "1.1.2"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
                  [ola-clojure "0.1.7" :exclusions [org.clojure/tools.reader]]
-                 [selmer "1.0.4"]
+                 [selmer "1.0.4" :exclusions [cheshire]]
                  [com.evocomputing/colors "1.0.3"]
                  [environ "1.0.3"]
                  [camel-snake-kebab "0.4.0"]
@@ -36,13 +36,17 @@
                  [com.taoensso/truss "1.3.3"]
                  [markdown-clj "0.9.89"]
                  [compojure "1.5.0" :exclusions [org.eclipse.jetty/jetty-server
-                                                 clj-time]]
+                                                 clj-time
+                                                 ring/ring-core
+                                                 ring/ring-codec]]
                  [ring/ring-defaults "0.2.1"]
                  [ring/ring-session-timeout "0.1.0"]
                  [ring-middleware-format "0.7.0" :exclusions [ring/ring-jetty-adapter
+                                                              cheshire
                                                               org.clojure/tools.reader
                                                               org.clojure/java.classpath
-                                                              org.clojure/core.memoize]]
+                                                              org.clojure/core.memoize
+                                                              com.fasterxml.jackson.core/jackson-core]]
                  [metosin/ring-http-response "0.7.0"]
                  [prone "1.1.1"]
                  [buddy "1.0.0"]
