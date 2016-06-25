@@ -6,7 +6,7 @@
   :jvm-opts ["-Dapple.awt.UIElement=true"]  ; Suppress dock icon and focus stealing when compiling on a Mac.
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/core.cache "0.6.5"]
-                 [org.clojure/core.async "0.2.382" :exclusions [org.clojure/tools.reader]]
+                 [org.clojure/core.async "0.2.385" :exclusions [org.clojure/tools.reader]]
                  [org.clojure/data.json "0.2.6"]
                  [org.clojure/data.zip "0.1.2"]
                  [org.clojure/math.numeric-tower "0.0.4"]
@@ -22,12 +22,12 @@
                  [overtone/midi-clj "0.5.0"]
                  [overtone/osc-clj "0.9.0"]
                  [uk.co.xfactory-librarians/coremidi4j "0.7"]
-                 [amalloy/ring-buffer "1.2" :exclusions [org.clojure/tools.reader
-                                                         com.google.protobuf/protobuf-java]]
+                 [amalloy/ring-buffer "1.2.1" :exclusions [org.clojure/tools.reader
+                                                           com.google.protobuf/protobuf-java]]
                  [com.climate/claypoole "1.1.2"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
                  [ola-clojure "0.1.7" :exclusions [org.clojure/tools.reader]]
-                 [selmer "1.0.4" :exclusions [cheshire]]
+                 [selmer "1.0.6" :exclusions [cheshire]]
                  [com.evocomputing/colors "1.0.3"]
                  [environ "1.0.3"]
                  [camel-snake-kebab "0.4.0"]
@@ -35,7 +35,7 @@
                  [com.taoensso/tower "3.0.2"]
                  [com.taoensso/truss "1.3.3"]
                  [markdown-clj "0.9.89"]
-                 [compojure "1.5.0" :exclusions [org.eclipse.jetty/jetty-server
+                 [compojure "1.5.1" :exclusions [org.eclipse.jetty/jetty-server
                                                  clj-time
                                                  ring/ring-core
                                                  ring/ring-codec]]
