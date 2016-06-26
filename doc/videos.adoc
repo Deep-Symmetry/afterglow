@@ -22,3 +22,9 @@ says, “My first experience with lights, still a lot to accomplish.”
 And I say, there is a ton left to implement in the software too. But
 it is already fun to see https://vimeo.com/153492480[great video like
 this]!
+
+For a more wordy and nerdy introduction, there is a video of my
+https://youtu.be/mvNN0SMMZDQ[presentation and demonstration] at the
+June 2016
+http://www.meetup.com/Madison-Clojure-Meetup/events/229842513/[Madison
+Clojure Meetup].
