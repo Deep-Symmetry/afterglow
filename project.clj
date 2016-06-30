@@ -31,7 +31,7 @@
                  [com.evocomputing/colors "1.0.3"]
                  [environ "1.0.3"]
                  [camel-snake-kebab "0.4.0"]
-                 [com.taoensso/timbre "4.5.0"]
+                 [com.taoensso/timbre "4.5.1"]
                  [com.taoensso/tower "3.0.2"]
                  [com.taoensso/truss "1.3.3"]
                  [markdown-clj "0.9.89"]
