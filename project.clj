@@ -31,7 +31,7 @@
                  [com.evocomputing/colors "1.0.3"]
                  [environ "1.0.3"]
                  [camel-snake-kebab "0.4.0"]
-                 [com.taoensso/timbre "4.5.1"]
+                 [com.taoensso/timbre "4.6.0"]
                  [com.fzakaria/slf4j-timbre "0.3.2"]
                  [com.taoensso/tower "3.0.2"]
                  [com.taoensso/truss "1.3.3"]
@@ -52,7 +52,7 @@
                  [prone "1.1.1"]
                  [buddy "1.0.0"]
                  [instaparse "1.4.2"]
-                 [http-kit "2.1.19"]]
+                 [http-kit "2.2.0"]]
   :main afterglow.core
   :uberjar-name "afterglow.jar"
   :manifest {"Name" ~#(str (clojure.string/replace (:group %) "." "/")
