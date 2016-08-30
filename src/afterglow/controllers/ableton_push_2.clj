@@ -1766,7 +1766,7 @@
       (controllers/run-overlays (:overlays controller) snapshot))
 
     (update-cue-grid controller)
-    (Wayang/sendFrame)
+    (Wayang/sendFrameAsync)
     (update-top-pads controller)
     (update-text-buttons controller)
     (update-touch-strip controller)
@@ -2883,7 +2883,7 @@
 
 (defmethod controllers/bind-to-show-impl ::controller
   [kind show port-in port-out device & {:keys [refresh-interval display-name]
-                                        :or   {refresh-interval (/ 1000 15)
+                                        :or   {refresh-interval (/ 1000 20)
                                                display-name     "Ableton Push 2"}}]
   {:pre [(some? show)]}
   (load-fonts)
