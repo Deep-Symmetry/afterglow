@@ -34,7 +34,7 @@
                  [com.taoensso/timbre "4.7.4"]
                  [com.fzakaria/slf4j-timbre "0.3.2"]
                  [com.taoensso/tower "3.0.2"]
-                 [com.taoensso/truss "1.3.3"]
+                 [com.taoensso/truss "1.3.6"]
                  [markdown-clj "0.9.89"]
                  [compojure "1.5.1" :exclusions [org.eclipse.jetty/jetty-server
                                                  clj-time
