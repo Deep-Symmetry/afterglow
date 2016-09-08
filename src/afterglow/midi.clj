@@ -113,7 +113,15 @@
   threads that are directly dispatching MIDI events. Although we
   allocate a capacity of 100 elements, it is expected that the queue
   will be drained much more quickly than events arrive, and so it will
-  almost always be empty."} midi-queue
+  almost always be empty.
+
+  It's possible this queue is no longer necessary since embedding
+  CoreMidi4j into Afterglow directly, rather than using it as an
+  extension, but it may still be true that the CoreMidi4j threads have
+  an inadequate classloader, and we are also using the queue to report
+  MIDI environment changes, and... it works, so for now I'm leaving it
+  alone."}
+  midi-queue
   (LinkedBlockingDeque. 100))
 
 (defonce ^:private ^{:doc "The thread used to hand MIDI events from
