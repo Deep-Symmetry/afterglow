@@ -51,7 +51,7 @@
                  [metosin/ring-http-response "0.8.0"]
                  [prone "1.1.1"]
                  [buddy "1.1.0"]
-                 [instaparse "1.4.2"]
+                 [instaparse "1.4.3"]
                  [http-kit "2.2.0"]]
   :main afterglow.core
   :uberjar-name "afterglow.jar"
