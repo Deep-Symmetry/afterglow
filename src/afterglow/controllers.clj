@@ -562,7 +562,8 @@
            :doc "Keeps track of all controller elements that should
   receive beat feedback. A map whose keys are a tuple of [midi-device
   channel note kind], and whose values are [metronome on-value
-  off-value device-map disconnect-handler]."} beat-feedback
+  off-value device-map disconnect-handler]."}
+  beat-feedback
   (atom {}))
 
 (defonce ^{:private true
