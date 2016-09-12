@@ -6,7 +6,7 @@
   :jvm-opts ["-Dapple.awt.UIElement=true"]  ; Suppress dock icon and focus stealing when compiling on a Mac.
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/core.cache "0.6.5"]
-                 [org.clojure/core.async "0.2.385" :exclusions [org.clojure/tools.reader]]
+                 [org.clojure/core.async "0.2.391" :exclusions [org.clojure/tools.reader]]
                  [org.clojure/data.json "0.2.6"]
                  [org.clojure/data.zip "0.1.2"]
                  [org.clojure/math.numeric-tower "0.0.4"]
