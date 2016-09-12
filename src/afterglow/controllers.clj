@@ -76,8 +76,8 @@
       (try
         (apply bind-to-show (concat [show (match-input-output-pair device)]
                                     (flatten (seq args))))
-        (catch Exception e
-          (timbre/error e "Problem binding to controller"))))
+        (catch Throwable t
+          (timbre/error t "Problem binding to controller"))))
 
     ;; Wait for the next candidate device, unless we have been told to end
     (when-not (= args :done)
