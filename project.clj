@@ -49,7 +49,7 @@
                                                               org.clojure/core.memoize
                                                               com.fasterxml.jackson.core/jackson-core]]
                  [metosin/ring-http-response "0.8.0"]
-                 [prone "1.1.1"]
+                 [prone "1.1.2"]
                  [buddy "1.1.0"]
                  [instaparse "1.4.3"]
                  [http-kit "2.2.0"]]
