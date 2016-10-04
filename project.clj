@@ -27,7 +27,7 @@
                  [com.climate/claypoole "1.1.3"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
                  [ola-clojure "0.1.8-SNAPSHOT" :exclusions [org.clojure/tools.reader]]
-                 [selmer "1.0.7" :exclusions [cheshire]]
+                 [selmer "1.0.9" :exclusions [cheshire]]
                  [com.evocomputing/colors "1.0.3"]
                  [environ "1.1.0"]
                  [camel-snake-kebab "0.4.0"]
