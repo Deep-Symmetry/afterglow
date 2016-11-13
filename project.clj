@@ -6,14 +6,14 @@
   :jvm-opts ["-Dapple.awt.UIElement=true"]  ; Suppress dock icon and focus stealing when compiling on a Mac.
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/core.cache "0.6.5"]
-                 [org.clojure/core.async "0.2.391" :exclusions [org.clojure/tools.reader]]
+                 [org.clojure/core.async "0.2.395" :exclusions [org.clojure/tools.reader]]
                  [org.clojure/data.json "0.2.6"]
                  [org.clojure/data.zip "0.1.2"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.nrepl "0.2.12"]
                  [org.clojure/tools.reader "0.10.0"]
-                 [org.deepsymmetry/beat-link "0.1.8"]
+                 [org.deepsymmetry/beat-link "0.1.9"]
                  [org.deepsymmetry/wayang "0.1.7"]
                  [java3d/vecmath "1.3.1"]
                  [java3d/j3d-core "1.3.1"]
@@ -35,7 +35,7 @@
                  [com.fzakaria/slf4j-timbre "0.3.2"]
                  [com.taoensso/tower "3.0.2"]
                  [com.taoensso/truss "1.3.6"]
-                 [markdown-clj "0.9.89"]
+                 [markdown-clj "0.9.90"]
                  [compojure "1.5.1" :exclusions [org.eclipse.jetty/jetty-server
                                                  clj-time
                                                  ring/ring-core
