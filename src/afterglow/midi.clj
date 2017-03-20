@@ -1,6 +1,7 @@
 (ns afterglow.midi
   "Handles MIDI communication, including syncing a show metronome to MIDI clock pulses."
-  (:require [afterglow.rhythm :as rhythm]
+  (:require [clojure.reflect]
+            [afterglow.rhythm :as rhythm]
             [amalloy.ring-buffer :refer [ring-buffer]]
             [clojure.math.numeric-tower :as math]
             [overtone.at-at :refer [now]]

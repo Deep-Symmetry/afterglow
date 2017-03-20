@@ -32,6 +32,8 @@
   (swap! state assoc-in [:beats-seen (.getAddress beat)] beat)
   (doseq [listener (:synced-metronomes @state)]
     ;; TODO: Handle :master as a special virtual source
+    ;; TODO: Adjust for latency, and only nudge when our phase is outside our skew tolerance, like beat-link-trigger
+    ;;       does (that uses a value of 0.0166 of a beat).
     (when (= (:address (:source listener)) (.getAddress beat))
       (rhythm/metro-bpm (:metronome listener) (.getEffectiveTempo beat))
       (if (= (:level listener) :bar)

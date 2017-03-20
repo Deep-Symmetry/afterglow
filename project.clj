@@ -6,14 +6,14 @@
   :jvm-opts ["-Dapple.awt.UIElement=true"]  ; Suppress dock icon and focus stealing when compiling on a Mac.
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/core.cache "0.6.5"]
-                 [org.clojure/core.async "0.2.395" :exclusions [org.clojure/tools.reader]]
+                 [org.clojure/core.async "0.3.442" :exclusions [org.clojure/tools.reader]]
                  [org.clojure/data.json "0.2.6"]
                  [org.clojure/data.zip "0.1.2"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.nrepl "0.2.12"]
                  [org.clojure/tools.reader "0.10.0"]
-                 [org.deepsymmetry/beat-link "0.1.9"]
+                 [org.deepsymmetry/beat-link "0.2.1"]
                  [org.deepsymmetry/wayang "0.1.7"]
                  [java3d/vecmath "1.3.1"]
                  [java3d/j3d-core "1.3.1"]
@@ -24,34 +24,34 @@
                  [uk.co.xfactory-librarians/coremidi4j "0.9"]
                  [amalloy/ring-buffer "1.2.1" :exclusions [org.clojure/tools.reader
                                                            com.google.protobuf/protobuf-java]]
-                 [com.climate/claypoole "1.1.3"]
+                 [com.climate/claypoole "1.1.4"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
                  [ola-clojure "0.1.8-SNAPSHOT" :exclusions [org.clojure/tools.reader]]
-                 [selmer "1.10.0" :exclusions [cheshire]]
+                 [selmer "1.10.6" :exclusions [cheshire]]
                  [com.evocomputing/colors "1.0.3"]
                  [environ "1.1.0"]
                  [camel-snake-kebab "0.4.0"]
-                 [com.taoensso/timbre "4.7.4"]
-                 [com.fzakaria/slf4j-timbre "0.3.2"]
+                 [com.taoensso/timbre "4.8.0"]
+                 [com.fzakaria/slf4j-timbre "0.3.4"]
                  [com.taoensso/tower "3.0.2"]
-                 [com.taoensso/truss "1.3.6"]
-                 [markdown-clj "0.9.90"]
-                 [compojure "1.5.1" :exclusions [org.eclipse.jetty/jetty-server
+                 [com.taoensso/truss "1.3.7"]
+                 [markdown-clj "0.9.98"]
+                 [compojure "1.5.2" :exclusions [org.eclipse.jetty/jetty-server
                                                  clj-time
                                                  ring/ring-core
                                                  ring/ring-codec]]
-                 [ring/ring-defaults "0.2.1"]
-                 [ring/ring-session-timeout "0.1.0"]
-                 [ring-middleware-format "0.7.0" :exclusions [ring/ring-jetty-adapter
+                 [ring/ring-defaults "0.2.3"]
+                 [ring/ring-session-timeout "0.2.0"]
+                 [ring-middleware-format "0.7.2" :exclusions [ring/ring-jetty-adapter
                                                               cheshire
                                                               org.clojure/tools.reader
                                                               org.clojure/java.classpath
                                                               org.clojure/core.memoize
                                                               com.fasterxml.jackson.core/jackson-core]]
-                 [metosin/ring-http-response "0.8.0"]
-                 [prone "1.1.2"]
-                 [buddy "1.1.0"]
-                 [instaparse "1.4.3"]
+                 [metosin/ring-http-response "0.8.2"]
+                 [prone "1.1.4"]
+                 [buddy "1.3.0"]
+                 [instaparse "1.4.5"]
                  [http-kit "2.2.0"]]
   :main afterglow.core
   :uberjar-name "afterglow.jar"
@@ -67,7 +67,7 @@
   ;; :env {:repl-port 16002}
 
   :profiles {:dev {:dependencies [[ring-mock "0.1.5" :exclusions [ring/ring-codec]]
-                                  [ring/ring-devel "1.5.0"]]
+                                  [ring/ring-devel "1.5.1"]]
                    :repl-options {:init-ns afterglow.examples
                                   :welcome (println "afterglow loaded.")}
                    :jvm-opts ["-XX:-OmitStackTraceInFastThrow" "-Dapple.awt.UIElement=true"]
