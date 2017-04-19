@@ -26,7 +26,7 @@
                                                            com.google.protobuf/protobuf-java]]
                  [com.climate/claypoole "1.1.4"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
-                 [ola-clojure "0.1.8-SNAPSHOT" :exclusions [org.clojure/tools.reader]]
+                 [ola-clojure "0.1.8" :exclusions [org.clojure/tools.reader]]
                  [selmer "1.10.7" :exclusions [cheshire]]
                  [com.evocomputing/colors "1.0.3"]
                  [environ "1.1.0"]
