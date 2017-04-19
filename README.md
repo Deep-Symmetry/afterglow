@@ -186,13 +186,14 @@ can also bring it up as an executable jar, and run it using `java
 ```
 > java -jar afterglow.jar --help
 
-afterglow 0.1.4, a live-coding environment for light shows.
+afterglow 0.2.4-SNAPSHOT, a live-coding environment for light shows.
 Usage: afterglow [options] [init-file ...]
   Any init-files specified as arguments will be loaded at startup,
   in the order they are given, before creating any embedded servers.
 
 Options:
   -w, --web-port PORT     16000               Port number for web UI
+  -n, --no-browser                            Don't launch web browser
   -o, --osc-port PORT     16001               Port number for OSC server
   -r, --repl-port PORT                        Port number for REPL, if desired
   -l, --log-file PATH     logs/afterglow.log  File into which log is written

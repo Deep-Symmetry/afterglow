@@ -144,6 +144,7 @@
     :default (or (when-let [default (env :web-port)] (Integer/parseInt default)) 16000)
     :parse-fn #(Integer/parseInt %)
     :validate [#(< 0 % 0x10000) "Must be a number between 0 and 65536"]]
+   ["-n" "--no-browser" "Don't launch web browser"]
    ["-o" "--osc-port PORT" "Port number for OSC server"
     :default (or (when-let [default (env :osc-port)] (Integer/parseInt default)) 16001)
     :parse-fn #(Integer/parseInt %)
@@ -296,7 +297,7 @@
     (when-not (#{"localhost" "127.0.0.1"} @ola-client/olad-host) (ola-client/use-buffered-channel))
     (reset! ola-client/olad-port (:olad-port options))
     (timbre/info "Will find OLA daemon on host" @ola-client/olad-host ", port" @ola-client/olad-port)
-    (start-web-server (:web-port options) true)
+    (start-web-server (:web-port options) (not (:no-browser options)))
     (timbre/info "Web UI server on port:" (:web-port options))
     (start-osc-server (:osc-port options))
     (timbre/info "OSC server on port:" (:osc-port options))

@@ -18,7 +18,12 @@ This change log follows the conventions of
   especially in an editor. Now it just returns the key identifying the
   fixture that was patched.
 
-Nothing so far.
+### Added
+
+- A new command-line argument, `-n`, tells afterglow not to try to
+  launch a web browser when it is invoked from the command-line. This
+  is to enable headless operation on small servers which lack a
+  windowing environment.
 
 ## [0.2.3] - 2016-06-09
 
