@@ -24,7 +24,7 @@ This page provides an introduction in how to install and use
 Afterglow. The main
 [documentation](doc/README.adoc#afterglow-documentation) goes much
 deeper, and there is also
-[API documentation](http://rawgit.com/brunchboy/afterglow/master/api-doc/index.html).
+[API documentation](http://cdn.rawgit.com/brunchboy/afterglow/v0.2.4/api-doc/index.html).
 For more interactive help, the
 [Afterglow room on Gitter](https://gitter.im/brunchboy/afterglow) is
 the place to start, and if you want to see (or contribute to) more
@@ -186,7 +186,7 @@ can also bring it up as an executable jar, and run it using `java
 ```
 > java -jar afterglow.jar --help
 
-afterglow 0.2.4-SNAPSHOT, a live-coding environment for light shows.
+afterglow 0.2.4, a live-coding environment for light shows.
 Usage: afterglow [options] [init-file ...]
   Any init-files specified as arguments will be loaded at startup,
   in the order they are given, before creating any embedded servers.
@@ -361,7 +361,7 @@ tweak something quickly, you can use that:
 > when you are running from a jar rather than launching from a REPL,
 > you will often want to access a real REPL. You can accomplish that
 > with command-line arguments or by using the web console to invoke
-> [core/start-nrepl](http://rawgit.com/brunchboy/afterglow/master/api-doc/afterglow.core.html#var-start-nrepl)
+> [core/start-nrepl](http://cdn.rawgit.com/brunchboy/afterglow/v0.2.4/api-doc/afterglow.core.html#var-start-nrepl)
 > and then connecting your favorite REPL environment to the network
 > REPL port you created.
 
@@ -448,7 +448,7 @@ set up a Universe with ID 1.
 > will likely want to do something similar in setting up your own
 > shows, since a single show is the most common scenario. See the
 > `afterglow.show-context`
-> [API documentation](http://rawgit.com/brunchboy/afterglow/master/api-doc/afterglow.show-context.html)
+> [API documentation](http://cdn.rawgit.com/brunchboy/afterglow/v0.2.4/api-doc/afterglow.show-context.html)
 > for more details. The `show-context` namespace also defines the
 > dynamic variable `*show*` which you can use to refer to the current
 > default show when you need to mention it explicitly, as you will see
@@ -491,7 +491,7 @@ to the show’s dimmer grand master. Setting this to a value less than
 100 scales the dimmer values sent to the lights down by that amount.
 So the above command dims the lights to 80% of their possible
 brightness, no matter what else the cues are trying to do. See the
-[dimmer effects API documentation](http://rawgit.com/brunchboy/afterglow/master/api-doc/afterglow.effects.dimmer.html)
+[dimmer effects API documentation](http://cdn.rawgit.com/brunchboy/afterglow/v0.2.4/api-doc/afterglow.effects.dimmer.html)
 for more details. Here is an example of what I call right away when
 testing effects in my office with the little Korg nanoKONTROL 2
 plugged in:
