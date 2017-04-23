@@ -40,7 +40,8 @@
   Pangolin Beyond running alongside this light show, in order to
   affect laser cues."}
   laser-show
-  (afterglow.beyond/beyond-server "192.168.212.128" 16062))
+  #_(afterglow.beyond/beyond-server "172.16.1.255" 16062)
+  (afterglow.beyond/beyond-server "172.30.228.255" 16062))
 
 (defonce ^{:doc "Holds the sample show if it has been created,
   so it can be unregistered if it is being re-created."}
