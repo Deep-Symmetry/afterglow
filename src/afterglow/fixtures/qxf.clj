@@ -288,11 +288,13 @@
   conveniently be translated into an Afterglow fixture definition."
   [source]
   (let [doc (xml/parse source)
-        root (zip/xml-zip doc)]
+        root (zip/xml-zip doc)
+        expected-xml #{"http://qlcplus.sourceforge.net/FixtureDefinition" "http://www.qlcplus.org/FixtureDefinition"}]
     (when-not (= (:tag doc) :FixtureDefinition)
       (throw (Exception. "Root element is not FixtureDefinition")))
-    (when-not (= (get-in doc [:attrs :xmlns]) "http://qlcplus.sourceforge.net/FixtureDefinition")
-      (throw (Exception. "File does not use XML Namespace http://qlcplus.sourceforge.net/FixtureDefinition")))
+    (when-not (expected-xml (get-in doc [:attrs :xmlns]))
+      (throw (Exception.  "File does not use a supported XML Namespace, expecting one of:"
+                          (clojure.string/join ", " expected-xml))))
     (let [channels (mapv qxf-channel->map (zip-xml/xml-> root :Channel))]
       {:creator (qxf-creator->map (zip-xml/xml1-> root :Creator))
        :manufacturer (zip-xml/text (zip-xml/xml1-> root :Manufacturer))
