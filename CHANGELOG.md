@@ -6,7 +6,10 @@ This change log follows the conventions of
 
 ## [Unreleased][unreleased]
 
-Nothing so far.
+### Fixed
+
+- The built-in converter for QLC+ fixture definitions (`.qxf` files)
+  now supports the new XML schema used by QLC+.
 
 ## [0.2.4] - 2017-04-18
 
