@@ -36,11 +36,11 @@
                  [com.taoensso/tower "3.0.2"]
                  [com.taoensso/truss "1.5.0"]
                  [markdown-clj "0.9.99"]
-                 [compojure "1.5.2" :exclusions [org.eclipse.jetty/jetty-server
+                 [compojure "1.6.0" :exclusions [org.eclipse.jetty/jetty-server
                                                  clj-time
                                                  ring/ring-core
                                                  ring/ring-codec]]
-                 [ring/ring-defaults "0.2.3"]
+                 [ring/ring-defaults "0.3.0"]
                  [ring/ring-session-timeout "0.2.0"]
                  [ring-middleware-format "0.7.2" :exclusions [ring/ring-jetty-adapter
                                                               cheshire
@@ -67,7 +67,7 @@
   ;; :env {:repl-port 16002}
 
   :profiles {:dev {:dependencies [[ring-mock "0.1.5" :exclusions [ring/ring-codec]]
-                                  [ring/ring-devel "1.5.1"]]
+                                  [ring/ring-devel "1.6.0"]]
                    :repl-options {:init-ns afterglow.examples
                                   :welcome (println "afterglow loaded.")}
                    :jvm-opts ["-XX:-OmitStackTraceInFastThrow" "-Dapple.awt.UIElement=true"]
