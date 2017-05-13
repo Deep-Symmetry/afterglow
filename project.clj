@@ -36,6 +36,7 @@
                  [com.taoensso/tower "3.0.2"]
                  [com.taoensso/truss "1.5.0"]
                  [markdown-clj "0.9.99"]
+                 [ring/ring-core "1.6.1"]
                  [compojure "1.6.0" :exclusions [org.eclipse.jetty/jetty-server
                                                  clj-time
                                                  ring/ring-core
@@ -48,7 +49,7 @@
                                                               org.clojure/java.classpath
                                                               org.clojure/core.memoize
                                                               com.fasterxml.jackson.core/jackson-core]]
-                 [metosin/ring-http-response "0.8.2"]
+                 [metosin/ring-http-response "0.9.0"]
                  [prone "1.1.4"]
                  [buddy "1.3.0"]
                  [instaparse "1.4.5"]
@@ -67,7 +68,7 @@
   ;; :env {:repl-port 16002}
 
   :profiles {:dev {:dependencies [[ring-mock "0.1.5" :exclusions [ring/ring-codec]]
-                                  [ring/ring-devel "1.6.0"]]
+                                  [ring/ring-devel "1.6.1"]]
                    :repl-options {:init-ns afterglow.examples
                                   :welcome (println "afterglow loaded.")}
                    :jvm-opts ["-XX:-OmitStackTraceInFastThrow" "-Dapple.awt.UIElement=true"]
