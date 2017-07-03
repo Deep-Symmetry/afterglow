@@ -17,12 +17,25 @@
   state (atom {:synced-metronomes #{}
                :beats-seen {}}))
 
+(def beat-finder
+  "The class that tracks beats being played."
+  (BeatFinder/getInstance))
+
+(def virtual-cdj
+  "The class that gathers detailed player status information."
+  (VirtualCdj/getInstance))
+
+(def device-finder
+  "The class that monitors the presence of devices on the DJ Link
+  network."
+  (DeviceFinder/getInstance))
+
 (defn shut-down
   "Shut down the beat-link library."
   []
-  (BeatFinder/stop)
-  (VirtualCdj/stop)
-  (DeviceFinder/stop))
+  (.stop beat-finder)
+  (.stop virtual-cdj)
+  (.stop device-finder))
 
 (defn- apply-beat-to-synced-metronomes
   "When a beat notification is received, this function is called to
@@ -47,7 +60,7 @@
   (reify org.deepsymmetry.beatlink.BeatListener
     (newBeat [this beat]
       (apply-beat-to-synced-metronomes beat))))
-(BeatFinder/addBeatListener beat-listener)
+(.addBeatListener beat-finder beat-listener)
 
 (defn start
   "Activate all the components of the beat-link library.
@@ -56,9 +69,9 @@
   []
   (future
     (try
-      (DeviceFinder/start)
-      (VirtualCdj/start)
-      (BeatFinder/start)
+      (.start device-finder)
+      (.start virtual-cdj)
+      (.start beat-finder)
       (catch Exception e
         (timbre/warn e "Failed while trying to set up beat-finder DJ-Link integration.")
         (shut-down)))))
@@ -110,9 +123,9 @@
   which are currently visible on the network, summarized as maps
   containing the device name, player number, and IP address."
   []
-  (when-not (DeviceFinder/isActive)
+  (when-not (.isRunning device-finder)
     (start))
-  (set (for [device (DeviceFinder/currentDevices)]
+  (set (for [device (.getCurrentDevices device-finder)]
          {:name (.getName device)
           :player (.getNumber device)
           :address (.getAddress device)})))

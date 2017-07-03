@@ -213,7 +213,7 @@
    (swap! web-server #(if %
                         (timbre/warn "Not starting web server because it is already running.")
                         (do
-                          (DeviceFinder/start)  ; The web UI wants to know about DJ Link devices
+                          (.start (DeviceFinder/getInstance)) ; The web UI wants to know about DJ Link devices
                           (http-kit/run-server app {:port port}))))
 
    ;;Start the expired session cleanup job if needed
