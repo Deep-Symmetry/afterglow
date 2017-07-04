@@ -75,9 +75,9 @@
                    :env {:dev "true"}}
              :uberjar {:env {:production "true"}
                        :aot :all}}
-  :plugins [[lein-codox "0.9.4"]
-            [org.clojars.brunchboy/lein-dash "0.2.1-SNAPSHOT"]
-            [lein-environ "1.0.2"]]
+  :plugins [[lein-codox "0.10.3"]
+            [lein-dash "0.2.1"]
+            [lein-environ "1.1.0"]]
 
   :codox {:output-path "api-doc"
           :source-uri "https://github.com/brunchboy/afterglow/blob/master/{filepath}#L{line}"
