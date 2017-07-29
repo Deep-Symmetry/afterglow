@@ -12,8 +12,8 @@
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.nrepl "0.2.13"]
-                 [org.clojure/tools.reader "1.0.0"]
-                 [org.deepsymmetry/beat-link "0.3.0"]
+                 [org.clojure/tools.reader "1.0.3"]
+                 [org.deepsymmetry/beat-link "0.3.1"]
                  [org.deepsymmetry/wayang "0.1.7"]
                  [java3d/vecmath "1.3.1"]
                  [java3d/j3d-core "1.3.1"]
@@ -27,7 +27,7 @@
                  [com.climate/claypoole "1.1.4"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
                  [ola-clojure "0.1.8" :exclusions [org.clojure/tools.reader]]
-                 [selmer "1.10.8" :exclusions [cheshire]]
+                 [selmer "1.11.0" :exclusions [cheshire]]
                  [com.evocomputing/colors "1.0.3"]
                  [environ "1.1.0"]
                  [camel-snake-kebab "0.4.0"]
@@ -36,12 +36,12 @@
                  [com.taoensso/tower "3.0.2"]
                  [com.taoensso/truss "1.5.0"]
                  [markdown-clj "0.9.99"]
-                 [ring/ring-core "1.6.1"]
+                 [ring/ring-core "1.6.2"]
                  [compojure "1.6.0" :exclusions [org.eclipse.jetty/jetty-server
                                                  clj-time
                                                  ring/ring-core
                                                  ring/ring-codec]]
-                 [ring/ring-defaults "0.3.0"]
+                 [ring/ring-defaults "0.3.1"]
                  [ring/ring-session-timeout "0.2.0"]
                  [ring-middleware-format "0.7.2" :exclusions [ring/ring-jetty-adapter
                                                               cheshire
@@ -68,7 +68,7 @@
   ;; :env {:repl-port 16002}
 
   :profiles {:dev {:dependencies [[ring-mock "0.1.5" :exclusions [ring/ring-codec]]
-                                  [ring/ring-devel "1.6.1"]]
+                                  [ring/ring-devel "1.6.2"]]
                    :repl-options {:init-ns afterglow.examples
                                   :welcome (println "afterglow loaded.")}
                    :jvm-opts ["-XX:-OmitStackTraceInFastThrow" "-Dapple.awt.UIElement=true"]
