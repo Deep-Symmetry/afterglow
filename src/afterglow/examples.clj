@@ -567,7 +567,7 @@
 (defn make-strobe-cue
   "_This is no longer used in the sample cue set, but is left as an
   example in case you want to create a strobe cue that depends only on
-  numeric parameters, rather than the newer color paramter
+  numeric parameters, rather than the newer color parameter
   capabilities._
 
   Create a cue which strobes a set of fixtures as long
