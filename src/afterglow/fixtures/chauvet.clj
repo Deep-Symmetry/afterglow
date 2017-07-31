@@ -71,6 +71,425 @@
               (chan/dimmer 8)]
    :name "Chauvet Geyser RGB"})
 
+(defn gig-bar-2
+  "[GigBAR 2](https://www.chauvetdj.com/products/gigbar-2/) mobile DJ
+  lighting system. Even though this fixture does not move, if you want
+  to have its RGB pars participate in spatial effects, it is important
+  to patch it at the correct location and orientation, so Afterglow
+  can properly reason about the spatial relationships between the
+  heads. If you have rearranged the pods from their default
+  configuration, you will want to edit the head definitions
+  appropriately.
+
+  The fixture origin is in between the two center (par) pods, at the
+  center of the support pole, and centered vertically with the lenses
+  of the Par lights. The default orientation is with the pod mounting
+  bar parallel to the X axis, and the LED display and sockets all
+  facing away from the audience.
+
+  This fixture can be patched to use 3, 11, or 23 DMX channels. If you
+  do not specify a mode when patching it, `:23-channel` is assumed;
+  you can pass a value of `:3-channel` or `:11-channel` for `mode` if
+  you are using it that way.
+
+  This was created by Afterglow from the QLC+ Fixture Definintion
+  (.qxf) file, and revised by James Elliott.
+
+  The original fixture defintition was created by Freasy using Q Light
+  Controller Plus version 4.11.0. QLC+ Fixture Type: Effect.
+
+  When you pass a mode, you can also control whether the UV channels
+  are mixed in when creating colors by passing a boolean value with
+  `:mix-uv`. The default is `true`."
+  ([]
+   (gig-bar-2 :23-channels))
+  ([mode & {:keys [mix-uv] :or {mix-uv true}}]
+   (merge {:name "GigBAR 2"
+           :mode mode}
+          (case mode
+            :3-channels
+            {:channels [(chan/functions :led-operation 1
+                                        0 nil
+                                        10 {:type  :led-auto-mixed-mode-1
+                                            :label "Auto 1 fast>slow"
+                                            :range :variable}
+                                        120 {:type  :led-auto-mixed-mode-2
+                                             :label "Auto 2 fast>slow"
+                                             :range :variable}
+                                        230 {:type  :led-sound-mixed-mode-1
+                                             :label "Sound 1"
+                                             :range :fixed}
+                                        235 {:type  :led-sound-active
+                                             :label "Sound 2"
+                                             :range :fixed}
+                                        240 {:type  :led-show-setting
+                                             :label "Show, chan 2+3"
+                                             :range :fixed})
+                        (chan/functions :operation 2
+                                        0 {:type  :blackout
+                                           :label "Blackout"
+                                           :range :fixed}
+                                        10 {:type  :pars-only
+                                            :label "Pars only"
+                                            :range :fixed}
+                                        20 {:type  :derby-only
+                                            :label "Derby only"
+                                            :range :fixed}
+                                        30 {:type  :laser-only
+                                            :label "Laser only"
+                                            :range :fixed}
+                                        40 {:type  :strobes-only
+                                            :label "Strobes only"
+                                            :range :fixed}
+                                        50 {:type  :auto-pars-derby
+                                            :label "Auto pars derby"
+                                            :range :fixed}
+                                        60 {:type  :operation-pars-laser
+                                            :label "Auto pars laser"
+                                            :range :fixed}
+                                        70 {:type  :operation-auto-pars-and-strobes-only
+                                            :label "Auto pars strobes"
+                                            :range :fixed}
+                                        80 {:type  :auto-derby-laser
+                                            :label "Auto derby laser only"
+                                            :range :fixed}
+                                        90 {:type  :auto-strobes-derby
+                                            :label "Auto strobes derby only"
+                                            :range :fixed}
+                                        100 {:type  :pars-derby-laser
+                                             :label "Pars, derby, laser"
+                                             :range :fixed}
+                                        110 {:type  :pars-derby-strobes
+                                             :label "Pars, derby, strobes"
+                                             :range :fixed}
+                                        120 {:type  :pars-laser-strobes
+                                             :label "Pars, laser, strobes"
+                                             :range :fixed}
+                                        130 {:type  :derby-laser-strobes
+                                             :label "Derby, laser, strobes"
+                                             :range :fixed}
+                                        140 {:type  :par-sound-active
+                                             :label "Par Sound"
+                                             :range :fixed}
+                                        150 {:type  :derby-sound-active
+                                             :label "Derby Sound"
+                                             :range :fixed}
+                                        160 {:type  :laser-sound-active
+                                             :label "Laser Sound"
+                                             :range :fixed}
+                                        170 {:type  :strobe-sound-active
+                                             :label "Strobe Sound"
+                                             :range :fixed}
+                                        180 {:type  :par-derby-sound-active
+                                             :label "Par, Derby Sound"
+                                             :range :fixed}
+                                        190 {:type  :par-laser-sound-active
+                                             :label "Par, Laser Sound"
+                                             :range :fixed}
+                                        200 {:type  :par-strobe-sound-active
+                                             :label "Par, Strobe Sound"
+                                             :range :fixed}
+                                        210 {:type  :derby-laser-sound-active
+                                             :label "Derby, Laser Sound"
+                                             :range :fixed}
+                                        220 {:type  :derby-strobe-sound-active
+                                             :label "Derby, Strobe Sound"
+                                             :range :fixed}
+                                        230 {:type  :pars-derby-laser-sound-active
+                                             :label "Par, Derby, Laser Sound"
+                                             :range :fixed}
+                                        240 {:type  :pars-derby-strobes-sound-active
+                                             :label "Par, Derby, Strobe Sound"
+                                             :range :fixed}
+                                        245 {:type  :pars-laser-strobes-sound-active
+                                             :label "Par, Laser, Strobe Sound"
+                                             :range :fixed}
+                                        250 {:type  :derby-laser-strobes-sound-active
+                                             :label "Derby, Laser, Strobe Sound"
+                                             :range :fixed})
+                        (chan/fine-channel :auto-speed 3
+                                           :function-name "Auto Speed"
+                                           :var-label "Auto Speed")]}
+            :11-channels
+            {:channels [(chan/color 1 :red)
+                        (chan/color 2 :green)
+                        (chan/color 3 :blue)
+                        (chan/color 4 :uv :label "UV" :hue (when mix-uv 270))
+                        (chan/functions :pars-and-derby-strobe-controls 5
+                                        0 {:type  :dimmer
+                                           :label "Pars+Derbys Dimmer"
+                                           :range :variable}
+                                        128 {:type  :pars-derby-strobe-speed
+                                             :label "Pars+Derbys Strobe Speed"
+                                             :range :variable}
+                                        240 {:type  :pars-derby-sound-strobe
+                                             :label "Pars+Derbys Sound Strobe"
+                                             :range :variable}
+                                        250 {:type  :pars-derby-full-strobe
+                                             :label "Pars+Derbys Full Strobe"
+                                             :range :fixed})
+                        (chan/functions :derby-motor-rotation 6
+                                        0 nil
+                                        5 {:type  :derby-clockwise
+                                           :label "Derby CW, slow>fast"
+                                           :range :variable}
+                                        128 nil
+                                        134 {:type  :derby-counter-clockwise
+                                             :label "Derby CCW, slow>fast"
+                                             :range :variable})
+                        (chan/functions :red-laser-controls 7
+                                        0 nil
+                                        5 {:type  :red-laser-on
+                                           :label "Red laser on"
+                                           :range :fixed}
+                                        55 {:type  :red-laser-strobe-speed
+                                            :label "Red laser strobe speed"
+                                            :range :variable})
+                        (chan/functions :green-laser-controls 8
+                                        0 nil
+                                        5 {:type  :green-laser-on
+                                           :label "Green laser on"
+                                           :range :fixed}
+                                        55 {:type  :green-laser-strobe-speed
+                                            :label "Green laser strobe speed"
+                                            :range :variable})
+                        (chan/functions :laser-movement-speed 9
+                                        0 nil
+                                        5 {:type  :laser-clockwise
+                                           :label "Laser CW, slow>fast"
+                                           :range :variable}
+                                        128 nil
+                                        134 {:type  :laser-counter-clockwise
+                                             :label "Laser CCW, slow>fast"
+                                             :range :variable})
+                        (chan/functions :white-strobe 10  ; Cannot be used at the same time as 11
+                                        0 {:type  :dimmer
+                                           :label "White strobe dimmer"
+                                           :range :variable}
+                                        55 {:type  :white-strobe-speed
+                                            :label "White strobe speed"
+                                            :range :variable})
+                        (chan/functions :uv-strobe 11  ; Cannot be used at the same time as 10
+                                        0 {:type  :dimmer
+                                           :label "UV strobe dimmer"
+                                           :range :variable}
+                                        55 {:type  :uv-strobe-speed
+                                            :label "UV strobe speed"
+                                            :range :variable})]}
+            :23-channels
+            {:channels [(chan/functions :strobe-patterns 20
+                                        0 {:type  :strobe-auto-1
+                                           :label "Strobe Auto 1"
+                                           :range :fixed}
+                                        10 {:type  :strobe-auto-2
+                                            :label "Strobe Auto 2"
+                                            :range :fixed}
+                                        30 {:type  :strobe-auto-3
+                                            :label "Strobe Auto 3"
+                                            :range :fixed}
+                                        50 {:type  :strobe-auto-4
+                                            :label "Strobe Auto 4"
+                                            :range :fixed}
+                                        70 {:type  :strobe-auto-5
+                                            :label "Strobe Auto 5"
+                                            :range :fixed}
+                                        90 {:type  :strobe-auto-6
+                                            :label "Strobe Auto 6"
+                                            :range :fixed}
+                                        110 {:type  :strobe-auto-7
+                                             :label "Strobe Auto 7"
+                                             :range :fixed}
+                                        130 {:type  :strobe-auto-8
+                                             :label "Strobe Auto 8"
+                                             :range :fixed}
+                                        150 {:type  :strobe-auto-9
+                                             :label "Strobe Auto 9"
+                                             :range :fixed}
+                                        170 {:type  :strobe-auto-10
+                                             :label "Strobe Auto 10"
+                                             :range :fixed}
+                                        190 {:type  :strobe-speed
+                                             :label "Strobe Speed"
+                                             :range :variable}
+                                        210 {:type  :strobe-sound-active
+                                             :label "Strobe Sound"
+                                             :range :variable})
+                        (chan/fine-channel :strobe-speed 23
+                                           :function-name "Strobe Speed Slow to Fast"
+                                           :var-label "Strobe Slow>Fast")]
+             :heads    [{:x 0.5 :y -0.05 :z 0 ; TODO: Measure and fine-tune location
+                         :channels [(chan/functions :derby-control 11
+                                                    0 nil
+                                                    25 {:type  :derby-red
+                                                        :label "Derby 1 Red"
+                                                        :range :variable}
+                                                    50 {:type  :derby-green
+                                                        :label "Derby 1 Green"
+                                                        :range :variable}
+                                                    75 {:type  :derby-blue
+                                                        :label "Derby 1 Blue"
+                                                        :range :variable}
+                                                    100 {:type  :derby-red-green
+                                                         :label "Derby 1 RG"
+                                                         :range :variable}
+                                                    125 {:type  :derby-red-blue
+                                                         :label "Derby 1 RB"
+                                                         :range :variable}
+                                                    150 {:type  :derby-green-blue
+                                                         :label "Derby 1 GB"
+                                                         :range :variable}
+                                                    175 {:type  :derby-red-green-blue
+                                                         :label "Derby 1 RGB"
+                                                         :range :variable}
+                                                    200 {:type  :derby-auto-single-colors
+                                                         :label "Derby 1 Auto (1 color)"
+                                                         :range :variable}
+                                                    225 {:type  :derby--auto-two-colors
+                                                         :label "Derby 1 Auto (2 colors)"
+                                                         :range :variable})
+                                    (chan/functions :derby-strobe-speed 12
+                                                    0 nil
+                                                    10 {:type  :strobe-speed
+                                                        :label "Derby 1 Strobe, 0-30Hz"
+                                                        :range :variable}  ; TODO: add scale-fn?
+                                                    240 {:type  :strobe-sound
+                                                         :label "Derby 1 Strobe Sound"
+                                                         :range :variable})
+                                    (chan/functions :derby-rotation 13
+                                                    0 nil
+                                                    5 {:type  :derby-clockwise-slow-to-fast
+                                                       :label "Derby 1 CW Slow>Fast"
+                                                       :range :variable}
+                                                    128 nil
+                                                    134 {:type  :derby-counter-clockwise-slow-to-fast
+                                                         :label "Derby 1 CCW Slow>Fast"
+                                                         :range :variable})]}
+                        {:x 0.2 :y 0 :z 0 ; TODO: Measure and fine-tune location
+                         :channels [(chan/color 1 :red)
+                                    (chan/color 2 :green)
+                                    (chan/color 3 :blue)
+                                    (chan/color 4 :uv :label "UV" :hue (when mix-uv 270))
+                                    (chan/functions :par-dimmer-strobe 5
+                                                    0 {:type  :dimmer
+                                                       :label "Par 1 Dimmer"
+                                                       :range :variable}
+                                                    128 {:type  :strobe-speed
+                                                         :label "Par 1 Strobe Slow>Fast"
+                                                         :range :variable}
+                                                    240 {:type  :strobe-sound
+                                                         :label "Par 1 Strobe Sound"
+                                                         :range :variable}
+                                                    250 {:type  :full-on
+                                                         :label "Par 1 RGB 100%"
+                                                         :range :fixed})]}
+                        {:x        -0.2 :y 0 :z 0 ; TODO: Measure and fine-tune location
+                         :channels [(chan/color 6 :red)
+                                    (chan/color 7 :green)
+                                    (chan/color 8 :blue)
+                                    (chan/color 9 :uv :label "UV" :hue (when mix-uv 270))
+                                    (chan/functions :par-dimmer-strobe 10
+                                                    0 {:type  :dimmer
+                                                       :label "Par 2 Dimmer"
+                                                       :range :variable}
+                                                    128 {:type  :strobe-speed
+                                                         :label "Par 2 Strobe Slow>Fast"
+                                                         :range :variable}
+                                                    240 {:type  :strobe-sound
+                                                         :label "Par 2 Strobe sound"
+                                                         :range :variable}
+                                                    250 {:type  :full-on
+                                                         :label "Par 2 RGB 100%"
+                                                         :range :fixed})]}
+                        {:x -0.5 :y -0.05 :z 0 ; TODO: Measure and fine-tune location
+                         :channels [(chan/functions :derby-control 14
+                                                    0 nil
+                                                    25 {:type  :derby-red
+                                                        :label "Derby 2 Red"
+                                                        :range :variable}
+                                                    50 {:type  :derby-green
+                                                        :label "Derby 2 Green"
+                                                        :range :variable}
+                                                    75 {:type  :derby-blue
+                                                        :label "Derby 2 Blue"
+                                                        :range :variable}
+                                                    100 {:type  :derby-red-green
+                                                         :label "Derby 2 RG"
+                                                         :range :variable}
+                                                    125 {:type  :derby-red-blue
+                                                         :label "Derby 2 RB"
+                                                         :range :variable}
+                                                    150 {:type  :derby-green-blue
+                                                         :label "Derby 2 GB"
+                                                         :range :variable}
+                                                    175 {:type  :derby-red-green-blue
+                                                         :label "Derby 2 RGB"
+                                                         :range :variable}
+                                                    200 {:type  :derby-auto-single-colors
+                                                         :label "Derby 2 Auto (1 color)"
+                                                         :range :variable}
+                                                    225 {:type  :derby-auto-tfwo-colors
+                                                         :label "Derby 2 Auto (2 colors)"
+                                                         :range :variable})
+                                    (chan/functions :derby-strobe-speed 15
+                                                    0 nil
+                                                    10 {:type  :derby-strobe-rate-strobe-0-30-hz
+                                                        :label "Derby 2 Strobe, 0-30Hz"
+                                                        :range :variablepar-2-rgb-100}
+                                                    240 {:type  :derby-strobe-rate-strobe-to-sound
+                                                         :label "Derby 2 Strobe Sound"
+                                                         :range :variable})
+                                    (chan/functions :derby-rotation 16
+                                                    0 nil
+                                                    5 {:type  :derby-rotation-rotate-clockwise-slow-to-fast
+                                                       :label "Derby 2 CW Slow>Fast"
+                                                       :range :variable}
+                                                    128 nil
+                                                    134 {:type  :derby-rotation-rotate-counter-clockwise-slow-to-fast
+                                                         :label "Derby 2 CCW Slow>Fast"
+                                                         :range :variable})]}
+                        {:x 0.0 :y 0.25 :z 0 ; TODO: Measure and fine-tune location
+                         :channels [(chan/functions :laser-color 17
+                                                    0 nil
+                                                    40 {:type  :laser-red-on
+                                                        :label "Laser Red"
+                                                        :range :variable}
+                                                    80 {:type  :laser-green-on
+                                                        :label "Laser Green"
+                                                        :range :variable}
+                                                    120 {:type  :laser-red-green-on
+                                                         :label "Laser RG"
+                                                         :range :variable}
+                                                    160 {:type  :laser-red-on-green-strobe
+                                                         :label "Laser RGs"
+                                                         :range :variable}
+                                                    200 {:type  :laser-green-on-red-strobe
+                                                         :label "Laser RsG"
+                                                         :range :variable}
+                                                    240 {:type  :laser-red-green-alternate-strobe
+                                                         :label "Laser RsGs"
+                                                         :range :variable})
+                                    (chan/functions :laser-strobe 18
+                                                    0 nil
+                                                    10 {:type  :laser-strobe-strobe-speed-slow-to-fast
+                                                        :label "Laser Strobe Slow>Fast"
+                                                        :range :variable}
+                                                    240 {:type  :laser-strobe-strobe-to-sound
+                                                         :label "Laser Strobe Sound"
+                                                         :range :variable})
+                                    (chan/functions :laser-pattern 19
+                                                    0 nil
+                                                    5 {:type  :laser-clockwise-slow-to-fast
+                                                       :label "Laser CW Slow>Fast"
+                                                       :range :variable}
+                                                    128 nil
+                                                    134 {:type  :laser-counter-clockwise-slow-to-fast
+                                                         :label "Laser CCW Slow>Fast"
+                                                         :range :variable})]}
+                        {:x        0 :y 0.2 :z 0 ; TODO: Measure and fine-tune height?
+                         :channels [(chan/dimmer 21)]}  ; White strobe, cannot be used with channel 22
+                        {:x        0 :y 0.0 :z 0 ; TODO: Measure and fine-tune height?
+                         :channels [(chan/dimmer 22)]}]}))))  ; UV strobe, cannot be used with channel 21``
+
 (defn hurricane-1800-flex
   "[Hurricane 1800 Flex](http://www.chauvetlighting.com/hurricane-1800-flex.html) fogger."
   []
