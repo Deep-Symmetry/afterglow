@@ -276,6 +276,7 @@
                                         55 {:type  :uv-strobe-speed
                                             :label "UV strobe speed"
                                             :range :variable})]}
+            ;; TODO: Split 23-channels into individual heads, to be patched separately, for better semantic fit.
             :23-channels
             {:channels [(chan/functions :strobe-patterns 20
                                         0 {:type  :strobe-auto-1
@@ -349,7 +350,7 @@
                                                          :range :variable})
                                     (chan/functions :derby-strobe-speed 12
                                                     0 nil
-                                                    10 {:type  :strobe-speed
+                                                    10 {:type  :strobe
                                                         :label "Derby 1 Strobe, 0-30Hz"
                                                         :range :variable}  ; TODO: add scale-fn?
                                                     240 {:type  :strobe-sound
@@ -373,7 +374,7 @@
                                                     0 {:type  :dimmer
                                                        :label "Par 1 Dimmer"
                                                        :range :variable}
-                                                    128 {:type  :strobe-speed
+                                                    128 {:type  :strobe
                                                          :label "Par 1 Strobe Slow>Fast"
                                                          :range :variable}
                                                     240 {:type  :strobe-sound
@@ -391,7 +392,7 @@
                                                     0 {:type  :dimmer
                                                        :label "Par 2 Dimmer"
                                                        :range :variable}
-                                                    128 {:type  :strobe-speed
+                                                    128 {:type  :strobe
                                                          :label "Par 2 Strobe Slow>Fast"
                                                          :range :variable}
                                                     240 {:type  :strobe-sound
