@@ -377,7 +377,7 @@ you ask it to go out beyond what it has already figured out.
 
 Let's take a look at exactly how hard it is working, and start
 exploring some interesting ways we can calculate primes faster. If I
-quit the Clojure repl, then reload my functions, I can time how long
+quit the Clojure REPL, then reload my functions, I can time how long
 getting the ten-thousandth prime took using the `time` function.
 
 At first I was getting utterly bogus values by trying it directly like
