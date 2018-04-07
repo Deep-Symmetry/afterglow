@@ -479,7 +479,7 @@ these new helper functions:
 
 ```clojure
 (defn prime?
-  "Returns truthy if `n` is prime."
+  "Returns true if `n` is prime."
   [n]
   (and (integer? n)
        (> n 1)
@@ -528,7 +528,7 @@ Here is the full code in its final version, as promised:
   (take-while (partial half-or-less? n) primes))
 
 (defn prime?
-  "Returns truthy if `n` is prime."
+  "Returns true if `n` is prime."
   [n]
   (and (integer? n)
        (> n 1)
