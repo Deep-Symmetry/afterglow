@@ -4,23 +4,24 @@ My friend Andrew recently dicovered the joys of programming, and
 shared his cool Python code for testing numbers for primality. I
 wanted to encourage this enthusiasm, and make sure that he learned
 about functional programming before his mind got too stuck in the ruts
-of C-style imperative code, which makes up the bulk of examples out
-there, so I decided to play around with writing some of my own
+of C-style imperative code (which makes up the bulk of examples out
+there), so I decided to play around with writing some of my own
 examples for him.
 
 I think one of the best languages for exploring functional programming
 today is probably [Racket](https://racket-lang.org), but I haven't had
 time to learn that yet myself. The pinnacle in many ways is
-[Haskell](https://www.haskell.org) but that's not as approachable, and
-I would be even more lost trying to introduce someone there. But I
-have had the privilege of using [Clojure](https://clojure.org) for my
-professional work for the past several years, and find it a lovely,
-practical modern Lisp with a focus on simplicity and functional
-programming, and a great interoperability story for the Java Virtual
-Machine environment, which is the indutrial-strength platform we use
-to deliver our products. (It's also been perfect for my open-source
-projects in areas like [light show
-control](https://github.com/brunchboy/afterglow#afterglow) and [DJ performance
+[Haskell](https://www.haskell.org) but that's not nearly as
+approachable, and I would be even more lost trying to introduce
+someone there. But I have had the privilege of using
+[Clojure](https://clojure.org) for my professional work for the past
+several years, and find it a lovely, practical modern Lisp with a
+focus on simplicity and functional programming, and with a great
+interoperability story for the Java Virtual Machine environment, which
+is the indutrial-strength platform we use to deliver our products.
+(It's also been perfect for my open-source projects in areas like
+[light show control](https://github.com/brunchboy/afterglow#afterglow)
+and [DJ performance
 synchronization](https://github.com/brunchboy/beat-link-trigger#beat-link-trigger).)
 So I'm well equipped to guide a tour through finding prime numbers in
 Clojure!
@@ -109,7 +110,7 @@ as a function, using the `defn` macro:
 There is a little more structure to this than we've encountered so
 far, but hopefully it's still easy enough to figure out what is going
 on. We are defining a new function named `divides?`. The string that
-follows the funciton name is an optional "doc string", which helps
+follows the function name is an optional "doc string", which helps
 explain how to use the function, both when reading the definition, and
 also when you are typing at the REPL (this word comes from "Read,
 Eval, Print, Loop", the core of interactive programming with a Lisp
