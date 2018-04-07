@@ -132,7 +132,7 @@ which we name `numerator` and `denominator`. And then finally, the
 last line is the actual body of the function, which uses the `zero?`
 predicate and `rem` function as we did in our earlier examples. The
 return value we saw at the REPL simply reported that the function
-`divides?` had been creaed in the `user` namespace, which goes a bit
+`divides?` had been created in the `user` namespace, which goes a bit
 far afield from what we are talking about today.
 
 With this in place, we can try out our new function. It works just as
