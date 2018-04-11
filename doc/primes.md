@@ -57,7 +57,7 @@ at least not the kind I expected! In fact, Clojure is biased towards
 retaining as much precision as possible, so when you ask it to perform
 a division whose result does not have an exact integer representation,
 it returns a rational value which is exactly equal to what you wanted.
-You can continue to use that result in further mathemaical operations
+You can continue to use that result in further mathematical operations
 with no loss of precision, or you can tell Clojure you want a
 floating-point approximation of the result, like you would get in most
 languages, like so:
