@@ -586,7 +586,7 @@ function metronomeAdjustClicked( eventObject ) {
 var $doc = $(document);
 
 function cueCellClicked( eventObject ) {
-    if (event.which != 1) {
+    if (eventObject.originalEvent.which != 1) {
         return;  // Only respond to ordinary, left-button clicks.
     }
     var cell = this.id;
