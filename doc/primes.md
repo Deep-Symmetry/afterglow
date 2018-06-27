@@ -161,8 +161,8 @@ And now we are ready to build our prime-tester! As in Andrew's example
 I want to start by verifying that we were given a positive integer.
 There are two built-in predicates we can use for that, `integer?` and
 `pos?`. All that remains is to check whether there is any number
-ranging from two up to half of our candidate number that evenly
-divides it. If not, then we can be sure it is prime.
+ranging from two up to the square root of our candidate number that
+evenly divides it. If not, then we can be sure it is prime.
 
 While in imperative languages you do this kind of thing by writing an
 explicit loop that assigns a variable to hold each value you want to
@@ -171,21 +171,22 @@ values using predicates. So let's start by figuring out how to express
 the sequence of values we want to check. To test if ten is prime, the
 range of values we need to test if it is divisible by starts at two,
 and goes up to five (half of ten). There is a built-in function
-`range` that gives a range of values. If we try it out with half of
-our candidate value, we see it _almost_ gives us the numbers we want:
+`range` that gives a range of values. If we try it out with the square root of
+our candidate value, we see it seems _almost_ give us the numbers we want:
 
 ```clojure
-(range (/ 10 2))
+(range (Math/sqrt 10))
 ;; => (0 1 2 3 4)
 ```
 
 We have a couple of extra values at the beginning, because `range`
-defaults to starting with zero, and it doesn't go quite far enough,
-because it gives you values up to _but not including_ the upper bound
-you supply. We could use the `drop` function to get rid of the first
-two values, but if we check the `doc` for `range` we find that there
-is also another way to call it, which lets us supply the starting
-value too:
+defaults to starting with zero, and although it goes far enough in
+this case, because it gives you values up to _but not including_ the
+upper bound you supply, it would not work if we gave it a perfect
+square as its input. Let's tackle the first problem first: We could
+use the `drop` function to get rid of the first two values, but if we
+check the `doc` for `range` we find that there is also another way to
+call it, which lets us supply the starting value too:
 
 ```clojure
 (doc range)
@@ -198,13 +199,36 @@ clojure.core/range
 ;; =>   start. When start is equal to end, returns empty list.
 ```
 
-So `(range 2 (/ 10 2))` gets us almost there, but we also want to go
-one further, so we will use the `inc` function to increment the result
-of our division:
+So `(range 2 (Math/sqrt 10))` gets us almost there; it works great for ten:
 
 ```clojure
-(range 2 (inc (/ 10 2)))
-;; => (2 3 4 5)
+(range 2 (Math/sqrt 10))
+;; => (2 3)
+```
+
+But if we try it with 9, which is a perfect square, we don't get the
+value 3, which is its square root, and which we definitely do need to
+test as a factor:
+
+```clojure
+(range 2 (Math/sqrt 10))
+;; => (2)
+```
+
+To fix that, we will round the result of our square root operation
+down to the closest integer less than or equal to it, using the
+`Math/floor` function, and then add one to that:
+
+```clojure
+(range 2 (inc (Math/floor (Math/sqrt 9))))
+(2 3)
+```
+
+That slightly more complex formula also works for ten:
+
+```clojure
+(range 2 (inc (Math/floor (Math/sqrt 10))))
+(2 3)
 ```
 
 Ok, that gives us the numbers we want to check if ten is divisible by.
@@ -220,7 +244,7 @@ pieces fit together:
   [n]
   (and (integer? n)
        (pos? n)
-       (not-any? (partial divides? n) (range 2 (inc (/ n 2))))))
+       (not-any? (partial divides? n) (range 2 (inc (Math/floor (Math/sqrt n)))))))
 ```
 
 We already looked at `defn`, the doc string, and argument list. Our
@@ -236,13 +260,13 @@ we check are that `n` is a positive integer.
 That last line is where the rubber meets the road. And at first glance
 it might seem confusing. But notice that the second half, the `range`
 expression, we have already explored. That returns a sequence of
-integers ranging from 2 to half of `n`. It is used as the second
-argument of the `not-any?` function. `not-any?` takes a predicate and
-a collection, and returns `true` if no elements of the collection
-satisfy the predicate. The collection we gave it is the list of
-numbers we want to check as potential divisors of our candidate prime
-number. So we need a predicate that returns `true` if the potential
-divisor evenly divides `n`.
+integers ranging from 2 to the square root of `n`. It is used as the
+second argument of the `not-any?` function. `not-any?` takes a
+predicate and a collection, and returns `true` if no elements of the
+collection satisfy the predicate. The collection we gave it is the
+list of numbers we want to check as potential divisors of our
+candidate prime number. So we need a predicate that returns `true` if
+the potential divisor evenly divides `n`.
 
 In other words, we want a function that takes a single number, and
 returns `true` if that number evenly divides `n`, whatever `n`
@@ -432,28 +456,29 @@ First, a predicate that will tell us whether the prime factor we are
 considering is small enough that we need to test it:
 
 ```clojure
-(defn half-or-less?
-  "Returns true when `candidate` is less than or equal to half of
-  `n`."
+(defn sqrt-or-less?
+  "Returns true when `candidate` is less than or equal to the
+  square root of `n`."
   [n candidate]
-  (<= candidate (/ n 2)))
+  (<= candidate (Math/sqrt n)))
 ```
 
 Then, a function that returns the set of prime numbers we need to try
 dividing our number by, in order to see if it is prime. In other
-words, all prime numbers from 2 up to half of our number. Because this
-function is going to use our `primes` sequence, but we can't define
-`primes` until later because it needs to use this function, we have to
-promise the Clojure compiler that `primes` is a value we will define
-later on. Then we can write the new function using it:
+words, all prime numbers from 2 up to the square root of our number.
+Because this function is going to use our `primes` sequence, but we
+can't define `primes` until later because it needs to use this
+function, we have to promise the Clojure compiler that `primes` is a
+value we will define later on. Then we can write the new function
+using it:
 
 ```clojure
 (declare primes)
 
 (defn potential-prime-factors
-  "Returns the prime numbers from 2 up to half of `n`."
+  "Returns the prime numbers from 2 up to the square root of `n`."
   [n]
-  (take-while (partial half-or-less? n) primes))
+  (take-while (partial sqrt-or-less? n) primes))
 ```
 
 This introduces another new function, `take-while`, which is like
@@ -461,11 +486,11 @@ This introduces another new function, `take-while`, which is like
 can supply a predicate, and we will get back all the values up to the
 one for which that predicate is no longer true. The predicate we want
 is one that is true when the number is small enough to potentially be
-a prime factor of `n`, so that means it is less than or equal to half
-of `n`. We once again use the `partial` higher-order function to build
-that predicate, by "pre-filling" in the value of `n` as the first
-argument of our `half-or-less?` predicate, and then we keep feeding it
-prime numbers until we reach one that is too big.
+a prime factor of `n`, so that means it is less than or equal to the
+square root of `n`. We once again use the `partial` higher-order
+function to build that predicate, by "pre-filling" in the value of `n`
+as the first argument of our `sqrt-or-less?` predicate, and then we
+keep feeding it prime numbers until we reach one that is too big.
 
 > I could have done this next bit without adding those two new helper
 > functions, but that would require using Clojure's "function
@@ -492,18 +517,25 @@ Clojure REPL, load the code, and time it, I see...
 
 ```clojure
 (time (vec (take 1 (drop 9999 primes))))
-;; => "Elapsed time: 6053.395381 msecs"
+;; => "Elapsed time: 121.442485 msecs"
 ;; => [104729]
 ```
 
-Indeed! Six seconds is definitely faster than thirty. Nice. And what a
-fun exploration this has been. Thanks, Andrew! Even though I kind of
-knew where I was hoping to end up, I was impressed by just how
-perfectly lazy sequences fit this problem. I was able to define the
-prime number sequence using a function that depends on the prime
+Indeed! A tenth of a second is definitely faster than thirty. Nice.
+And what a fun exploration this has been. Thanks, Andrew! Even though
+I kind of knew where I was hoping to end up, I was impressed by just
+how perfectly lazy sequences fit this problem. I was able to define
+the prime number sequence using a function that depends on the prime
 number sequence, and since things are not evaluated until they are
 needed, that works perfectly, and only does work once, the first time
 it is needed.
+
+> When I first posted these examples, I had misremembered how big you
+> need to go when testing potential prime factors, and was going all
+> the way up to half of `n`, rather than to its square root. That
+> still saved time, taking just over six seconds, but a tenth of a
+> second is way better. Thanks to my newest coworker Sarah for
+> reminding me of this important fact.
 
 Here is the full code in its final version, as promised:
 
@@ -514,18 +546,18 @@ Here is the full code in its final version, as promised:
   [numerator denominator]
   (zero? (rem numerator denominator)))
 
-(defn half-or-less?
-  "Returns true when `candidate` is less than or equal to half of
-  `n`."
+(defn sqrt-or-less?
+  "Returns true when `candidate` is less than or equal to the
+  square root of `n`."
   [n candidate]
-  (<= candidate (/ n 2)))
+  (<= candidate (Math/sqrt n)))
 
 (declare primes)
 
 (defn potential-prime-factors
-  "Returns the prime numbers from 2 up to half of `n`."
+  "Returns the prime numbers from 2 up to the square root of `n`."
   [n]
-  (take-while (partial half-or-less? n) primes))
+  (take-while (partial sqrt-or-less? n) primes))
 
 (defn prime?
   "Returns true if `n` is prime."
