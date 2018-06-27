@@ -448,7 +448,7 @@ That was some very compact code that gave us a nice list of prime
 numbers. But we can do even better! Now that we have this sequence of
 prime numbers, we can make use of it in our definition of `prime?`
 itself, because it is actually redundant to try dividing `n` by
-_every_ number from `2` to `n/2`, we only need to test the _prime_
+_every_ number from `2` to `sqrt(n)`, we only need to test the _prime_
 numbers in that range.
 
 To make this convenient, let's define a couple of new functions.
