@@ -141,6 +141,7 @@
   `phrase-ratio` of 1 (the default if not provided) is equivalent
   to [[metro-phrase-phase]], 1/2 oscillates twice as fast as 1, 3/4
   oscillates 4 times every three bars... Phases range from [0-1).")
+
   (snapshot-bar-within-phrase [snapshot]
   "Returns the bar number within the snapshot relative to the start of
   the phrase: Ranges from 1 to the value returned by [[metro-bpp]] for
@@ -231,12 +232,12 @@
     (enhanced-phase phrase phrase-phase phrase-ratio))
 
   (snapshot-bar-within-phrase [snapshot]
-    (let [phrase-size (/ 1 bpp)]
-      (inc (int (floor (/ (snapshot-phrase-phase snapshot 1) phrase-size))))))
+    (let [bar-size (/ 1 bpp)]
+      (inc (int (floor (/ (snapshot-phrase-phase snapshot 1) bar-size))))))
 
   (snapshot-phrase-start? [snapshot]
-    (let [phrase-size (/ 1 bpp)]
-      (zero? (floor (/ (snapshot-phrase-phase snapshot 1) phrase-size)))))
+    (let [bar-size (/ 1 bpp)]
+      (zero? (floor (/ (snapshot-phrase-phase snapshot 1) bar-size)))))
 
   (snapshot-marker [snapshot]
     (str (:phrase snapshot) "." (snapshot-bar-within-phrase snapshot) "." (snapshot-beat-within-bar snapshot))))
