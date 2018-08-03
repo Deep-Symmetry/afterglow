@@ -173,7 +173,7 @@
   point (`start`, also in milliseconds), and the `interval` (also in
   milliseconds) between beats, bars, or phrases."
   [instant start interval]
-  (inc (long (/ (- instant start) interval))))
+  (inc (long (Math/floor (/ (- instant start) interval)))))
 
 (defn marker-phase
   "Helper function to calculate the beat, bar, or phrase phase at a
@@ -182,7 +182,7 @@
   or phrases."
   [instant start interval]
   (let [marker-ratio (/ (- instant start) interval)]
-    (- (double marker-ratio) (long marker-ratio))))
+    (- (double marker-ratio) (Math/floor marker-ratio))))
 
 (defn enhanced-phase
   "Calculate a phase with respect to multiples or fractions of a
