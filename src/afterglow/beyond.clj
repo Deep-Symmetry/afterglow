@@ -98,7 +98,7 @@
   its synchronized show. Has no effect if the server is not synced."
   [server]
   (when-let [show @(:synced-show server)]
-    (at-at/at (long (rhythm/metro-beat (:metronome show) (inc (rhythm/metro-beat (:metronome show)))))
+    (at-at/at (long (rhythm/metro-beat (:metronome show) (inc (inc (rhythm/metro-beat (:metronome show))))))
               #(send-command server "BeatResync") controllers/pool :desc "Resync Beyond's beat grid")))
 
 (defn- metronome-watch-key

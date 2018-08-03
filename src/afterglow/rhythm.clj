@@ -38,7 +38,7 @@
   "Returns the duration of one phrase in milliseconds.")
 
   (metro-beat [metro] [metro beat]
-  "Returns the next beat number or the timestamp (in milliseconds) of the
+  "Returns the current beat number or the timestamp (in milliseconds) of the
   given `beat`.")
 
   (metro-beat-phase [metro] [metro phase]
@@ -47,7 +47,7 @@
   one supplied.")
 
   (metro-bar [metro] [metro bar]
-  "Returns the next bar number or the timestamp (in milliseconds) of
+  "Returns the current bar number or the timestamp (in milliseconds) of
   the given `bar`.")
 
   (metro-bar-phase [metro] [metro phase]
@@ -56,7 +56,7 @@
   one supplied.")
 
   (metro-phrase [metro] [metro phrase]
-  "Returns the next phrase number or the timestamp (in milliseconds)
+  "Returns the current phrase number or the timestamp (in milliseconds)
   of the given `phrase`.")
 
   (metro-phrase-phase [metro] [metro phase]
@@ -304,7 +304,7 @@
   (metro-beat [metro b] (dosync
                          (ensure start)
                          (ensure bpm)
-                         (+ (* b (metro-tick metro)) @start)))
+                         (+ (* (dec b) (metro-tick metro)) @start)))
 
   (metro-beat-phase [metro]
     (dosync
@@ -332,7 +332,7 @@
      (ensure start)
      (ensure bpm)
      (ensure bpb)
-     (+ (* b (metro-tock metro)) @start)))
+     (+ (* (dec b) (metro-tock metro)) @start)))
 
   (metro-bar-phase [metro]
     (dosync
@@ -364,7 +364,7 @@
      (ensure bpm)
      (ensure bpb)
      (ensure bpp)
-     (+ (* p (metro-ding metro)) @start)))
+     (+ (* (dec p) (metro-ding metro)) @start)))
 
   (metro-phrase-phase [metro]
     (dosync
@@ -390,7 +390,7 @@
     (dosync
      (let [cur-beat (metro-beat metro)
            new-tick (beat-ms 1 new-bpm)
-           new-start (round (- (metro-beat metro cur-beat) (* new-tick cur-beat)))]
+           new-start (round (- (metro-beat metro cur-beat) (* new-tick (dec cur-beat))))]
        (ref-set start new-start)
        (ref-set bpm new-bpm)))
     [:bpm new-bpm])

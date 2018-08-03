@@ -10,6 +10,11 @@ This change log follows the conventions of
 
 - The built-in converter for QLC+ fixture definitions (`.qxf` files)
   now supports the new XML schema used by QLC+.
+- There were some off-by-one errors in the metronome, which canceled
+  each other out in the places they were used, but would have caused
+  problems in new situations. They were discovered while porting the
+  logic to Java for the
+  [electro](https://github.com/brunchboy/electro) library.
 - The metronome better handles negative time, and has some improved
   documentation.
 
