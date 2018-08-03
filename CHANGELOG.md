@@ -10,6 +10,8 @@ This change log follows the conventions of
 
 - The built-in converter for QLC+ fixture definitions (`.qxf` files)
   now supports the new XML schema used by QLC+.
+- The metronome better handles negative time, and has some improved
+  documentation.
 
 ## [0.2.4] - 2017-04-18
 

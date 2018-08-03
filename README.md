@@ -266,7 +266,7 @@ in a file `my-show.clj` and then invoke Afterglow as `java -jar afterglow.jar my
   (show/patch-fixture! :torrent-1 (blizzard/torrent-f3) 1 1
                        :x (tf/inches 44) :y (tf/inches 51.75) :z (tf/inches -4.75)
                        :y-rotation (tf/degrees 0))
-  
+
   ;; Return the show's symbol, rather than the actual map, which gets huge with
   ;; all the expanded, patched fixtures in it.
   '*show*)
@@ -598,7 +598,7 @@ When you are all done, you can terminate the effect handler thread...
 ```clojure
 (show/stop!)
 ```
-    
+
 And darken the universe you were playing with.
 
 ```clojure
@@ -1022,7 +1022,7 @@ though.
 
 <img align="right" alt="Deep Symmetry" src="doc/assets/DS-logo-bw-200-padded-left.png">
 
-Copyright © 2015-2016 [Deep Symmetry, LLC](http://deepsymmetry.org)
+Copyright © 2015-2018 [Deep Symmetry, LLC](http://deepsymmetry.org)
 
 Distributed under the
 [Eclipse Public License 1.0](http://opensource.org/licenses/eclipse-1.0.php),
