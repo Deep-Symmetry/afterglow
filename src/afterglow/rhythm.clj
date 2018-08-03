@@ -178,7 +178,8 @@
 (defn marker-phase
   "Helper function to calculate the beat, bar, or phrase phase at a
   given `instant` (in millseconds), given a `start` time (also in
-  milliseconds) and `interval` (in milliseconds)."
+  milliseconds) and `interval` (in milliseconds) between beats, bars,
+  or phrases."
   [instant start interval]
   (let [marker-ratio (/ (- instant start) interval)]
     (- (double marker-ratio) (long marker-ratio))))
