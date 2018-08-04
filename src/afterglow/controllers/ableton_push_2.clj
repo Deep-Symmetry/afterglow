@@ -516,7 +516,8 @@
 (defn- set-touch-strip-from-value
   "Display a value being adjusted in the touch strip."
   [controller value low high mode]
-  (let [full-range (- high low)]
+  (let [value      (min high (max low value))  ; Clip value to inside displayed range
+        full-range (- high low)]
     (reset! (:next-touch-strip controller) [(math/round (* 16383 (/ (- value low) full-range))) mode])))
 
 (defn- set-touch-strip-from-cue-var
