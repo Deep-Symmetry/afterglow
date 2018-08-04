@@ -726,9 +726,9 @@
   at the origin. For efficiency, the measure cannot be frame dynamic,
   and is evaluated when the effect is created."
   [fixtures & {:keys [color fraction measure]
-               :or {:color (colors/create-color :white)
-                    :fraction 0
-                    :measure (transform/build-distance-measure 0 0 0)}}]
+               :or {color (colors/create-color :white)
+                    fraction 0
+                    measure (transform/build-distance-measure 0 0 0)}}]
     (let [color (params/bind-keyword-param color :com.evocomputing.colors/color (colors/create-color :white))
           fraction (params/bind-keyword-param fraction Number 0)
           measure (params/resolve-param (params/bind-keyword-param measure :afterglow.transform/distance-measure
@@ -993,5 +993,3 @@
                           (fx/chase "Pinstripe" effects pin-step :beyond :loop)))
                       (range) stripes)]
       (apply fx/scene "Pinstripes" chases))))
-
-
