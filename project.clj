@@ -5,15 +5,16 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :jvm-opts ["-Dapple.awt.UIElement=true"]  ; Suppress dock icon and focus stealing when compiling on a Mac.
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/core.cache "0.6.5"]
-                 [org.clojure/core.async "0.3.443" :exclusions [org.clojure/tools.reader]]
+                 ;; TODO: Upgrade to clojure 1.9.0 once colors 1.0.4 is released
+                 [org.clojure/core.cache "0.7.1"]
+                 [org.clojure/core.async "0.4.474" :exclusions [org.clojure/tools.reader]]
                  [org.clojure/data.json "0.2.6"]
                  [org.clojure/data.zip "0.1.2"]
                  [org.clojure/math.numeric-tower "0.0.4"]
-                 [org.clojure/tools.cli "0.3.5"]
+                 [org.clojure/tools.cli "0.3.7"]
                  [org.clojure/tools.nrepl "0.2.13"]
-                 [org.clojure/tools.reader "1.1.0"]
-                 [org.deepsymmetry/beat-link "0.3.4"]
+                 [org.clojure/tools.reader "1.3.0"]
+                 [org.deepsymmetry/beat-link "0.3.7"]
                  [org.deepsymmetry/wayang "0.1.7"]
                  [java3d/vecmath "1.3.1"]
                  [java3d/j3d-core "1.3.1"]
@@ -27,21 +28,21 @@
                  [com.climate/claypoole "1.1.4"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
                  [ola-clojure "0.1.8" :exclusions [org.clojure/tools.reader]]
-                 [selmer "1.11.1" :exclusions [cheshire]]
-                 [com.evocomputing/colors "1.0.3"]
+                 [selmer "1.11.8" :exclusions [cheshire]]
+                 [com.evocomputing/colors "1.0.3"]  ; TODO: pull request pending for 1.0.4
                  [environ "1.1.0"]
                  [camel-snake-kebab "0.4.0"]
                  [com.taoensso/timbre "4.10.0"]
-                 [com.fzakaria/slf4j-timbre "0.3.7"]
+                 [com.fzakaria/slf4j-timbre "0.3.12"]
                  [com.taoensso/tower "3.0.2"]
                  [com.taoensso/truss "1.5.0"]
-                 [markdown-clj "1.0.1"]
-                 [ring/ring-core "1.6.2"]
-                 [compojure "1.6.0" :exclusions [org.eclipse.jetty/jetty-server
+                 [markdown-clj "1.0.2"]
+                 [ring/ring-core "1.6.3"]
+                 [compojure "1.6.1" :exclusions [org.eclipse.jetty/jetty-server
                                                  clj-time
                                                  ring/ring-core
                                                  ring/ring-codec]]
-                 [ring/ring-defaults "0.3.1"]
+                 [ring/ring-defaults "0.3.2"]
                  [ring/ring-session-timeout "0.2.0"]
                  [ring-middleware-format "0.7.2" :exclusions [ring/ring-jetty-adapter
                                                               cheshire
@@ -50,10 +51,10 @@
                                                               org.clojure/core.memoize
                                                               com.fasterxml.jackson.core/jackson-core]]
                  [metosin/ring-http-response "0.9.0"]
-                 [prone "1.1.4"]
-                 [buddy "1.3.0"]
-                 [instaparse "1.4.7"]
-                 [http-kit "2.2.0"]]
+                 [prone "1.6.0"]
+                 [buddy "2.0.0"]
+                 [instaparse "1.4.9"]
+                 [http-kit "2.3.0"]]
   :main afterglow.core
   :uberjar-name "afterglow.jar"
   :manifest {"Name" ~#(str (clojure.string/replace (:group %) "." "/")
@@ -68,14 +69,14 @@
   ;; :env {:repl-port 16002}
 
   :profiles {:dev {:dependencies [[ring-mock "0.1.5" :exclusions [ring/ring-codec]]
-                                  [ring/ring-devel "1.6.2"]]
+                                  [ring/ring-devel "1.6.3"]]
                    :repl-options {:init-ns afterglow.examples
                                   :welcome (println "afterglow loaded.")}
                    :jvm-opts ["-XX:-OmitStackTraceInFastThrow" "-Dapple.awt.UIElement=true"]
                    :env {:dev "true"}}
              :uberjar {:env {:production "true"}
                        :aot :all}}
-  :plugins [[lein-codox "0.10.3"]
+  :plugins [[lein-codox "0.10.4"]
             [lein-dash "0.2.1"]
             [lein-environ "1.1.0"]]
 
