@@ -388,9 +388,11 @@
 
   (metro-bpm [metro new-bpm]
     (dosync
-     (let [cur-beat (metro-beat metro)
-           new-tick (beat-ms 1 new-bpm)
-           new-start (round (- (metro-beat metro cur-beat) (* new-tick (dec cur-beat))))]
+     (let [instant   (now)
+           cur-beat  (marker-number instant @start (metro-tick metro))
+           cur-phase (marker-phase instant @start (metro-tick metro))
+           new-tick  (beat-ms 1 new-bpm)
+           new-start (round (- instant (* new-tick (+ (dec cur-beat) cur-phase))))]
        (ref-set start new-start)
        (ref-set bpm new-bpm)))
     [:bpm new-bpm])

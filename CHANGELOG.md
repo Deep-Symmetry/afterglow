@@ -15,6 +15,10 @@ This change log follows the conventions of
   problems in new situations. They were discovered while porting the
   logic to Java for the
   [electro](https://github.com/brunchboy/electro) library.
+- Abrupt tempo changes could cause the metronome to jump to the wrong
+  place, even the wrong beat. This is now prevented, leaving you at
+  the exact same place in the beat grid before and after any tempo
+  change.
 - The metronome better handles negative time, and has some improved
   documentation.
 
