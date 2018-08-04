@@ -264,8 +264,8 @@
     (dosync
      (ensure bpm)
      (ensure bpb)
-     (let [phase (metro-beat-phase metro)
-           shift (* (metro-tick metro) (if (> phase 0.5) (dec phase) phase))
+     (let [phase         (metro-beat-phase metro)
+           shift         (* (metro-tick metro) (if (> phase 0.5) (dec phase) phase))
            new-bar-start (round (- (now) shift (* (dec start-bar) (metro-tock metro))))]
        (ref-set start new-bar-start))))
 
@@ -274,8 +274,8 @@
      (ensure bpm)
      (ensure bpb)
      (ensure bpp)
-     (let [phase (metro-beat-phase metro)
-           shift (* (metro-tick metro) (if (> phase 0.5) (dec phase) phase))
+     (let [phase            (metro-beat-phase metro)
+           shift            (* (metro-tick metro) (if (> phase 0.5) (dec phase) phase))
            new-phrase-start (round (- (now) shift (* (dec start-phrase) (metro-ding metro))))]
        (ref-set start new-phrase-start))))
 
@@ -400,11 +400,11 @@
   (metro-bpb [metro new-bpb]
     (dosync
      (ensure bpm)
-     (let [cur-bar (metro-bar metro)
-           new-tock (beat-ms new-bpb @bpm)
+     (let [cur-bar   (metro-bar metro)
+           new-tock  (beat-ms new-bpb @bpm)
            new-start (- (now) (* new-tock (dec cur-bar)))
-           phase (metro-beat-phase metro)  ; Preserve beat phase
-           shift (* (metro-tick metro) phase)]
+           phase     (metro-beat-phase metro) ; Preserve beat phase
+           shift     (* (metro-tick metro) phase)]
        (ref-set start (round (- new-start shift)))
        (ref-set bpb new-bpb))))
 
@@ -415,10 +415,10 @@
      (ensure bpm)
      (ensure bpb)
      (let [cur-phrase (metro-phrase metro)
-           new-ding (beat-ms (* @bpb new-bpp) @bpm)
-           new-start (- (now) (* new-ding (dec cur-phrase)))
-           phase (metro-bar-phase metro)  ; Preserve beat & bar phase
-           shift (* (metro-tock metro) phase)]
+           new-ding   (beat-ms (* @bpb new-bpp) @bpm)
+           new-start  (- (now) (* new-ding (dec cur-phrase)))
+           phase      (metro-bar-phase metro) ; Preserve beat & bar phase
+           shift      (* (metro-tock metro) phase)]
        (ref-set start (round (- new-start shift)))
        (ref-set bpp new-bpp))))
 
@@ -431,11 +431,11 @@
      (ensure bpm)
      (ensure bpb)
      (ensure bpp)
-     (let [beat (marker-number instant @start (metro-tick metro))
-           bar (marker-number instant @start (metro-tock metro))
-           phrase (marker-number instant @start (metro-ding metro))
-           beat-phase (marker-phase instant @start (metro-tick metro))
-           bar-phase (marker-phase instant @start (metro-tock metro))
+     (let [beat         (marker-number instant @start (metro-tick metro))
+           bar          (marker-number instant @start (metro-tock metro))
+           phrase       (marker-number instant @start (metro-ding metro))
+           beat-phase   (marker-phase instant @start (metro-tick metro))
+           bar-phase    (marker-phase instant @start (metro-tock metro))
            phrase-phase (marker-phase instant @start (metro-ding metro))]
        (MetronomeSnapshot. @start @bpm @bpb @bpp instant beat bar phrase beat-phase bar-phase phrase-phase))))
 
