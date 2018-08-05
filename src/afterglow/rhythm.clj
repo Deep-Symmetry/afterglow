@@ -257,7 +257,7 @@
   (metro-start [metro start-beat]
     (dosync
      (ensure bpm)
-     (let [new-start (round (- (now) (* (dec start-beat) (metro-tick metro))))]
+     (let [new-start (- (now) (round (* (dec start-beat) (metro-tick metro))))]
        (ref-set start new-start))))
 
   (metro-bar-start [metro start-bar]
