@@ -4,8 +4,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :jvm-opts ["-Dapple.awt.UIElement=true"]  ; Suppress dock icon and focus stealing when compiling on a Mac.
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 ;; TODO: Upgrade to clojure 1.9.0 once colors 1.0.4 is released
+  :dependencies [[org.clojure/clojure "1.9.0"]
                  [org.clojure/core.cache "0.7.1"]
                  [org.clojure/core.async "0.4.474" :exclusions [org.clojure/tools.reader]]
                  [org.clojure/data.json "0.2.6"]
@@ -28,8 +27,8 @@
                  [com.climate/claypoole "1.1.4"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
                  [ola-clojure "0.1.8" :exclusions [org.clojure/tools.reader]]
-                 [selmer "1.11.8" :exclusions [cheshire]]
-                 [com.evocomputing/colors "1.0.3"]  ; TODO: pull request pending for 1.0.4
+                 [selmer "1.12.0" :exclusions [cheshire]]
+                 [com.evocomputing/colors "1.0.4"]
                  [environ "1.1.0"]
                  [camel-snake-kebab "0.4.0"]
                  [com.taoensso/timbre "4.10.0"]
