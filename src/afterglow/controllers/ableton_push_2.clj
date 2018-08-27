@@ -72,13 +72,18 @@
   [color]
   (colors/darken color 35))
 
+(defn dignify
+ "Return a version of a color that isn't actively offensive"
+ [color]
+ (-> color (colors/desaturate 30) (colors/lighten 3) (colors/adjust-hue 5)))
+
 (def off-color
   "The color of buttons that are completely off."
   (colors/create-color :black))
 
 (def amber-color
   "The color for bright amber buttons."
-  (colors/create-color :h 45 :s 100 :l 50))
+  (colors/create-color :h 45 :s 80 :l 50))
 
 (def dim-amber-color
   "The color for dim amber buttons."
@@ -86,7 +91,7 @@
 
 (def red-color
   "The color for bright red buttons."
-  (colors/create-color :red))
+  (dignify (colors/create-color :red)))
 
 (def dim-red-color
   "The color for dim red buttons."
@@ -94,7 +99,7 @@
 
 (def green-color
   "The color for bright green buttons."
-  (colors/create-color :green))
+  (dignify (colors/create-color :green)))
 
 (def dim-green-color
   "The color for dim green buttons."
@@ -102,7 +107,7 @@
 
 (def white-color
   "The color for bright white buttons."
-  (colors/create-color :white))
+  (colors/create-color :antiquewhite1))
 
 (def dim-white-color
   "The color for dim white buttons."
@@ -838,8 +843,8 @@
     ;; Then draw the larger knob at the current hue value
     (.setStroke graphics (java.awt.BasicStroke. 6.0 java.awt.BasicStroke/CAP_ROUND java.awt.BasicStroke/JOIN_ROUND))
     (if active?
-      (set-graphics-color graphics (colors/create-color :h value :s 100.0 :l 50.0))
-      (set-graphics-color graphics (colors/create-color :h value :s 100.0 :l 25.0)))
+      (set-graphics-color graphics (colors/create-color :h value :s 75.0 :l 55.0))
+      (set-graphics-color graphics (colors/create-color :h value :s 75.0 :l 25.0)))
     (.draw graphics arc)))
 
 (defn draw-saturation-gauge
@@ -2271,40 +2276,40 @@
     (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :moved))))
 
 (defn- control-change-received
-  "Process a control change message which was not handled by an
-  interface overlay."
+  "Process a control change message which was not handled by an interface overlay."
   [controller message]
-  (case (:note message)
+  (let [velocity (pos? (:velocity message))]
+   (case (:note message)
     3 ; Tap tempo button
-    (when (pos? (:velocity message))
+    (when velocity
       ((:tempo-tap-handler controller))
       (enter-metronome-showing controller))
 
     9 ; Metronome button
-    (when (pos? (:velocity message))
+    (when velocity
       (enter-metronome-showing controller))
 
     (20 22 24 26) ; Effect end/save pads
-    (when (pos? (:velocity message))
+    (when velocity
       (if (in-mode? controller :record)
         (handle-save-effect controller (:note message))
         (handle-end-effect controller (:note message))))
 
     (21 23 25 27) ; Effect cue variable scroll pads
-    (when (pos? (:velocity message))
+    (when velocity
       (handle-scroll-cue-vars controller (:note message)))
 
     ;; 28 ; Master button
 
     85 ; Play button
-    (when (pos? (:velocity message))
+    (when velocity
       (enter-stop-mode controller))
 
     (49 86) ; Shift or Record button
-    (update-mode! controller (:note message) (pos? (:velocity message)))
+    (update-mode! controller (:note message) velocity)
 
     62 ; Page left, scroll back to older effects
-    (when (pos? (:velocity message))
+    (when velocity
         (let [[offset max-offset room] (find-effect-offset-range controller)
               new-offset (if (in-mode? controller :shift)
                            max-offset
@@ -2313,23 +2318,23 @@
             (reset! (:effect-offset controller) new-offset)
             (add-button-held-feedback-overlay controller (:page-left control-buttons)))))
 
-    63 ; Page right, scroll forward to newer effects
-    (when (pos? (:velocity message))
-      (let [[offset _max-offset room] (find-effect-offset-range controller)
+    63; Page right, scroll forward to newer effects
+    (when velocity
+      (let [[offset max-offset room] (find-effect-offset-range controller)
             new-offset (if (in-mode? controller :shift) 0 (max 0 (- offset room)))]
         (when (not= offset new-offset)
           (reset! (:effect-offset controller) new-offset)
           (add-button-held-feedback-overlay controller (:page-right control-buttons)))))
 
     44 ; Left arrow, scroll left in cue grid
-    (when (pos? (:velocity message))
+    (when velocity
       (let [[x y] @(:origin controller)]
         (when (pos? x)
           (move-origin controller [(if (in-mode? controller :shift) 0 (max 0 (- x 8))) y])
           (add-button-held-feedback-overlay controller (:left-arrow control-buttons)))))
 
     45 ; Right arrow, scroll right in cue grid
-    (when (pos? (:velocity message))
+    (when velocity
       (let [[x y] @(:origin controller)
             width (max (controllers/grid-width (:cue-grid (:show controller))) 1)]
         (when (> (- width x) 7)
@@ -2337,7 +2342,7 @@
           (add-button-held-feedback-overlay controller (:right-arrow control-buttons)))))
 
     46 ; Up arrow, scroll up in cue grid
-    (when (pos? (:velocity message))
+    (when velocity
       (let [[x y] @(:origin controller)
             height (max (controllers/grid-height (:cue-grid (:show controller))) 1)]
         (when (> height 7)
@@ -2345,14 +2350,14 @@
           (add-button-held-feedback-overlay controller (:up-arrow control-buttons)))))
 
     47 ; Down arrow, scroll down in cue grid
-    (when (pos? (:velocity message))
+    (when velocity
       (let [[x y] @(:origin controller)]
         (when (pos? y)
           (move-origin controller [x (if (in-mode? controller :shift) 0 (max 0 (- y 8)))])
           (add-button-held-feedback-overlay controller (:down-arrow control-buttons)))))
 
     59 ; User mode button
-    (when (pos? (:velocity message))
+    (when velocity
       (leave-user-mode controller))
 
     ;; Something we don't explictly recognize; see if it's been registered as a custom control button.
