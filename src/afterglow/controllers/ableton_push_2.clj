@@ -2630,22 +2630,18 @@
 
 (def ^:private color-picker-grid
   (let [result (transient (vec (repeat 64 nil)))]
-    (doseq [i (range 16)]
-      (let [x (* 4 (quot i 8))
+    (doseq [i (range 32 #_16)]
+      (let [x (* 2 #_4 (quot i 8))
             y (- 7 (rem i 8))
             origin (+ x (* 8 y))
-            hue (* 360 (/ i 15))
-            base-color (colors/create-color :hue hue :saturation 100 :lightness 50)]
-        (-> result
-            (assoc! origin base-color)
-            (assoc! (inc origin) (colors/desaturate base-color 25))
-            (assoc! (+ origin 2) (colors/desaturate base-color 50))
-            (assoc! (+ origin 3) (colors/desaturate base-color 75)))))
-    (-> result
-        (assoc! 4 (colors/create-color :h 0 :s 0 :l 100))
-        (assoc! 5 (colors/create-color :h 0 :s 0 :l 50))
-        (assoc! 6 (colors/create-color :h 0 :s 0 :l 0))
-        persistent!)))
+            hue (+ 3 (* 350 (/ i 31 #_15)))
+            base-color (colors/create-color :hue hue :saturation 85 :lightness 55)]
+        (assoc! result origin base-color)
+        (assoc! result (inc origin) (colors/desaturate base-color 40))
+    (assoc! result 4 (colors/create-color :h 0 :s 0 :l 100))
+    (assoc! result 5 (colors/create-color :h 0 :s 0 :l 50))
+    (assoc! result 6 (colors/create-color :h 0 :s 0 :l 0))
+    (persistent! result)))
 
 (defn- build-color-adjustment-overlay
   "Create an overlay for adjusting a color cue parameter. `note`
