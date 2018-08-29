@@ -2642,7 +2642,7 @@
             hue (+ 3 (* 350 (/ i 31 #_15)))
             base-color (colors/create-color :hue hue :saturation 85 :lightness 55)]
         (assoc! result origin base-color)
-        (assoc! result (inc origin) (colors/desaturate base-color 40))
+        (assoc! result (inc origin) (colors/desaturate base-color 40))))
     (assoc! result 4 (colors/create-color :h 0 :s 0 :l 100))
     (assoc! result 5 (colors/create-color :h 0 :s 0 :l 50))
     (assoc! result 6 (colors/create-color :h 0 :s 0 :l 0))
