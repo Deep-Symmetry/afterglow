@@ -528,15 +528,6 @@ Link Pro traffic Afterglow has seen in the last few seconds, and will
 update as players and mixers start and stop sending clock or beat grid
 information.
 
-NOTE: Limitations in the standard Java MIDI drivers on the Mac
-currently require any MIDI devices, whether real or virtual, to be
-connected when Afterglow first starts in order for them to be visible.
-So if you are on a Mac, you will very much want to install
-https://github.com/DerekCook/CoreMidi4J/releases[CoreMIDI4J] as
-discussed on the
-https://github.com/brunchboy/afterglow/wiki/Questions#midi-from-java-on-the-mac[Afterglow
-Wiki].
-
 Once your sync is established, the `Tap Tempo` button changes. If you
 are using MIDI clock to sync the BPM, it becomes a `Tap Beat` button,
 which simply establishes where the beat falls. If you are locked in to
