@@ -4,9 +4,17 @@ James Elliott <james@deepsymmetry.org>
 :experimental:
 :api-doc: http://rawgit.com/brunchboy/afterglow/master/api-doc/
 
-// Set up support for relative links on GitHub; add more conditions
+// Set up support for relative links on GitHub, and give it
+// usable icons for admonitions, w00t! Add more conditions
 // if you need to support other environments and extensions.
-ifdef::env-github[:outfilesuffix: .adoc]
+ifdef::env-github[]
+:outfilesuffix: .adoc
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
 To keep page sizes manageable, this information is split into several
 pages. This page provides an <<introduction,introduction>> and
@@ -664,7 +672,7 @@ https://gitter.im/brunchboy/afterglow[Gitter chat]!
 ## License
 
 +++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
-Copyright © 2015-2016 http://deepsymmetry.org[Deep Symmetry, LLC]
+Copyright © 2015-2018 http://deepsymmetry.org[Deep Symmetry, LLC]
 
 Distributed under the
 http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
