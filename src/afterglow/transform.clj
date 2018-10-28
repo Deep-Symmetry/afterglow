@@ -9,7 +9,7 @@
   increasing from left to right, the Y axis passes through it
   increasing away from the floor, and the Z axis passes through it
   increasing towards the audience. (There is a diagram on the [Show
-  Space](https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space)
+  Space](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/show_space.adoc#show-space)
   documentation page.)
 
   Pick an origin when setting up your show; in our case it is easiest
@@ -415,4 +415,3 @@
   [measure fixtures]
   (let [all-heads (chan/expand-heads fixtures)]
     (apply max (map measure all-heads))))
-

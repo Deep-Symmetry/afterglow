@@ -25,20 +25,20 @@ else
 fi
 
 # Update codox source link
-sourceswap="s/\/github.com\/brunchboy\/afterglow\/blob${replace}/\/github.com\/brunchboy\/afterglow\/blob${version}/g"
+sourceswap="s/\/github.com\/Deep-Symmetry\/afterglow\/blob${replace}/\/github.com\/Deep-Symmetry\/afterglow\/blob${version}/g"
 mv project.clj project.clj.old
 sed "${sourceswap}" project.clj.old > project.clj
 rm -f project.clj.old
 
 # Update web interface documentation link
-webswap="s/\/github.com\/brunchboy\/afterglow\/tree${replace}/\/github.com\/brunchboy\/afterglow\/tree${version}/g"
+webswap="s/\/github.com\/Deep-Symmetry\/afterglow\/tree${replace}/\/github.com\/Deep-Symmetry\/afterglow\/tree${version}/g"
 mv resources/templates/home.html resources/templates/home.html.old
 sed "${webswap}" resources/templates/home.html.old > resources/templates/home.html
 rm -f resources/templates/home.html.old
 
 # Update API documentation links
 mv README.md README.md.old
-docswap="s/${replaceHost}brunchboy\/afterglow${replace}api-doc/${docHost}brunchboy\/afterglow${version}api-doc/g"
+docswap="s/${replaceHost}Deep-Symmetry\/afterglow${replace}api-doc/${docHost}Deep-Symmetry\/afterglow${version}api-doc/g"
 sed "${docswap}" README.md.old > README.md
 rm -f README.md.old
 

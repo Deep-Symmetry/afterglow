@@ -248,7 +248,7 @@
   snapshot that will be in effect when the next frame gets rendered,
   so that it can preconfigure anything needed for the rendering
   process. This is used, for example, to
-  allow [afterglow-max](https://github.com/brunchboy/afterglow-max#afterglow-max)
+  allow [afterglow-max](https://github.com/Deep-Symmetry/afterglow-max#afterglow-max)
   patchers to set show variables for the next frame, since they cannot
   be queried directly during the rendering process."
   [f]
@@ -311,7 +311,7 @@
   "The loop that calculate and sends frames of DMX values for the
   universes and effects run by this show, as described in
   [The Rendering
-  Loop](https://github.com/brunchboy/afterglow/blob/master/doc/rendering_loop.adoc#the-rendering-loop).
+  Loop](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/rendering_loop.adoc#the-rendering-loop).
   This runs forever, and so is executed on a future by [[start!]] and
   the future is canceled by [[stop!]]."
   [show buffers]
@@ -411,7 +411,7 @@
   milliseconds), which defaults to a frame rate of thirty times per
   second, but can be specified using the optional keyword argument
   `:refresh-interval`.
-  
+
   If a description is supplied with the `:description` argument, the
   show will be registered under that description for the user to
   choose in the embedded web interface. If you recreate the show
@@ -824,7 +824,7 @@
 (defn- vec-insert
   "Helper function which inserts an item at a specified index in a vector."
   [coll pos item]
-  (let [pieces (split-at pos coll)] 
+  (let [pieces (split-at pos coll)]
     (apply conj (vec (first pieces)) item (vec (fnext pieces)))))
 
 (defn- insert-key
@@ -1003,7 +1003,7 @@
   than the `:start` value specified in the cue for that variable when
   it is introduced as a cue variable. This is used by compound cues to
   launch their nested cues with customized values, and by
-  [afterglow-max](https://github.com/brunchboy/afterglow-max) to start
+  [afterglow-max](https://github.com/Deep-Symmetry/afterglow-max) to start
   cues with alternate values if its patchers have been configured to
   do so. If a `:var-override` is specified for a variable which is
   also configured as velocity sensitive, the override will win."
@@ -1155,7 +1155,7 @@
   fixtures.
 
   `fixture` is a [Fixture Definition
-  map](https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#fixture-definitions)
+  map](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/fixture_definitions.adoc#fixture-definitions)
   which specifies all the capabilities of the fixture and how
   Afterglow can control it.
 
@@ -1176,7 +1176,7 @@
   and `:z-rotation`, which all default to zero if not specified. All
   coordinates and rotations are interpreted with respect to the [show
   frame of
-  reference](https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space),
+  reference](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/show_space.adoc#show-space),
   and are in meters and radians. You can
   use [[transform/inches]], [[transform/feet]]
   and [[transform/degrees]] to convert those units for you if

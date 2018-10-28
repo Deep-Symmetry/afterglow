@@ -36,7 +36,7 @@
   intersection of the pan and tilt axes. That is the point that you
   need to reference when patching the fixture and telling Afterglow
   where it has been hung within [show
-  space](https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space). The
+  space](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/show_space.adoc#show-space). The
   image below shows this default orientation, and the axes, for the
   fixture. If it is hung with this side of the base facing the
   audience, right side up, then you do not need to specify any
@@ -44,7 +44,7 @@
   has been rotated around each of the axes when hanging:
 
   ![F3
-  axes](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/F3.png)
+  axes](https://raw.githubusercontent.com/Deep-Symmetry/afterglow/master/doc/assets/F3.png)
 
   The center pan value (aimed straight at the audience when hung in
   the default orientation described above), is defined as 85.5, half a
@@ -69,7 +69,7 @@
   (afterglow.effects.channel/function-effect
     \"Torrents Open\" :shutter-open 50
     (show/fixtures-named \"torrent\")))
-```" 
+```"
   []
   {:channels [(chan/pan 1 2) (chan/tilt 3 4)
               (chan/functions :color 5 0 "Color Wheel Open"
@@ -154,7 +154,7 @@
   intersection of the pan and tilt axes. That is the point that you
   need to reference when patching the fixture and telling Afterglow
   where it has been hung within [show
-  space](https://github.com/brunchboy/afterglow/blob/master/doc/show_space.adoc#show-space). The
+  space](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/show_space.adoc#show-space). The
   image below shows this default orientation, and the axes, for the
   fixture. If it is hung with this side of the base facing the
   audience, right side up, then you do not need to specify any
@@ -162,7 +162,7 @@
   has been rotated around each of the axes when hanging:
 
   ![Blade
-  axes](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/Blade.png)
+  axes](https://raw.githubusercontent.com/Deep-Symmetry/afterglow/master/doc/assets/Blade.png)
 
   If you are hanging the light at an odd angle, or for any reason it
   is harder to measure the exact axis location given where where you
@@ -327,7 +327,7 @@
   away from the audience.
 
   ![Weather System
-  axes](https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/WeatherSystem.jpg)
+  axes](https://raw.githubusercontent.com/Deep-Symmetry/afterglow/master/doc/assets/WeatherSystem.jpg)
 
   This fixture can be configured to use either 7 or 26 DMX channels.
   If you do not specify a mode when patching it, `:26-channel` is

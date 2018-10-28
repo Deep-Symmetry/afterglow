@@ -185,7 +185,7 @@
     "If you do not explicitly specify a log file, and Afterglow cannot write to"
     "the default log file path, logging will be silently suppressed."
     ""
-    "Please see https://github.com/brunchboy/afterglow for more information."]))
+    "Please see https://github.com/Deep-Symmetry/afterglow for more information."]))
 
 (defn error-msg
   "Format an error message related to command-line invocation."

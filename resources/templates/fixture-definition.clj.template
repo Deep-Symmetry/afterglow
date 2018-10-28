@@ -8,7 +8,7 @@
   fixture has pan/tilt channels, so you need to configure the scaling
   parameters (marked with TODO below), as described in Afterglow's
   Fixture Definitions documentation:
-  https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#fixture-definitions{% endif %}
+  https://github.com/Deep-Symmetry/afterglow/blob/master/doc/fixture_definitions.adoc#fixture-definitions{% endif %}
 
   If you have more than one fixture definition for this manufacturer,
   you can consolidate them into a single file if you like, with a
@@ -18,7 +18,7 @@
   Once you have completed the fixture definition, and are happy with
   the way everything is being controlled by Afterglow, please consider
   submitting it for inclusion with Afterglow, either as a Pull Request
-  at https://github.com/brunchboy/afterglow/pulls if you are
+  at https://github.com/Deep-Symmetry/afterglow/pulls if you are
   comfortable putting that together, or just on the Gitter chat if
   that's easier for you: https://gitter.im/brunchboy/afterglow
 
@@ -34,7 +34,7 @@
   Please flesh out this documentation if you are submitting this for
   inclusion into Afterglow. See, for example, the Blizzard fixture
   definitions:
-  http://cdn.rawgit.com/brunchboy/afterglow/master/api-doc/afterglow.fixtures.blizzard.html"
+  http://cdn.rawgit.com/Deep-Symmetry/afterglow/master/api-doc/afterglow.fixtures.blizzard.html"
   {% if modes|length < 2 %}[]
   {{open-curly}}{% if modes.0.has-pan-channel %}:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
    {% endif %}{% if modes.0.has-tilt-channel %}:tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values

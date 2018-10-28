@@ -34,7 +34,7 @@
   e.g. color object, channel value.
 
   See the [Assigner
-  documentation](https://github.com/brunchboy/afterglow/blob/master/doc/rendering_loop.adoc#assigners)
+  documentation](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/rendering_loop.adoc#assigners)
   for more discussion."))
 
 ;; At each DMX frame generation, we will run through all the effects and ask them if they are still
@@ -46,7 +46,7 @@
   given moment in the show. It can end on its own, or be asked to end.
   When asked, it may end immediately, or after some final activity,
   such as a fade. See [The Effect
-  Lifecycle](https://github.com/brunchboy/afterglow/blob/master/doc/effects.adoc#the-effect-lifecycle)
+  Lifecycle](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/effects.adoc#the-effect-lifecycle)
   for more discussion."
   (still-active? [this show snapshot]
   "An inquiry about whether this effect is finished, and can be
@@ -68,7 +68,7 @@
   effect a second time during this process, however, it will simply be
   removed from the show at that time."))))
 
-;; See https://github.com/brunchboy/afterglow/blob/master/doc/rendering_loop.adoc#assigners
+;; See https://github.com/Deep-Symmetry/afterglow/blob/master/doc/rendering_loop.adoc#assigners
 ;;
 ;; Afterglow runs through the list of effects in priority order; each will spit out some
 ;; number of assigners, which are a tuple identifying what is to be assigned, and a function

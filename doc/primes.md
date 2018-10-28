@@ -20,9 +20,9 @@ focus on simplicity and functional programming, and with a great
 interoperability story for the Java Virtual Machine environment, which
 is the indutrial-strength platform we use to deliver our products.
 (It's also been perfect for my open-source projects in areas like
-[light show control](https://github.com/brunchboy/afterglow#afterglow)
+[light show control](https://github.com/Deep-Symmetry/afterglow#afterglow)
 and [DJ performance
-synchronization](https://github.com/brunchboy/beat-link-trigger#beat-link-trigger).)
+synchronization](https://github.com/Deep-Symmetry/beat-link-trigger#beat-link-trigger).)
 So I'm well equipped to guide a tour through finding prime numbers in
 Clojure!
 

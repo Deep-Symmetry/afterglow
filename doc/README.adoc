@@ -2,7 +2,7 @@
 James Elliott <james@deepsymmetry.org>
 :icons: font
 :experimental:
-:api-doc: http://rawgit.com/brunchboy/afterglow/master/api-doc/
+:api-doc: http://rawgit.com/Deep-Symmetry/afterglow/master/api-doc/
 
 // Set up support for relative links on GitHub, and give it
 // usable icons for admonitions, w00t! Add more conditions
@@ -115,9 +115,9 @@ Afterglow communicates with the lighting hardware using the
 https://www.openlighting.org/ola/[Open Lighting Architecture], so it
 supports a wide variety of communication methods and interfaces.
 Information about
-https://github.com/brunchboy/afterglow#installation[installing OLA] is
+https://github.com/Deep-Symmetry/afterglow#installation[installing OLA] is
 included in the project
-https://github.com/brunchboy/afterglow[README].
+https://github.com/Deep-Symmetry/afterglow[README].
 
 [[overview]]
 == How Afterglow Works
@@ -167,7 +167,7 @@ _do_ create definitions for your lights, please contribute them to the
 project!
 
 To learn how to install Afterglow and the Open Lighting Architecture,
-see the project https://github.com/brunchboy/afterglow[README].
+see the project https://github.com/Deep-Symmetry/afterglow[README].
 
 Since Afterglow was developed to create light shows for electronic
 music events, it is deeply driven by the notion of musical time,
@@ -225,14 +225,14 @@ there will be no shows running. The Console can be used to change that:
 image:assets/Console.png[Web console]
 
 NOTE: As menioned in the main project
-https://github.com/brunchboy/afterglow#afterglow[Readme], the web
+https://github.com/Deep-Symmetry/afterglow#afterglow[Readme], the web
 console is there for quick hacks, and is no substitute for a rich
 Clojure development environment. For any real work you will want to
 either start Afterglow from your development REPL in the first place,
 or to connect it via `nrepl` if you have launched Afterglow
 independently, such as through a jar file. Afterglow can offer an
 embedded `nrepl` server, which can be brought up via either
-https://github.com/brunchboy/afterglow#usage[command-line arguments],
+https://github.com/Deep-Symmetry/afterglow#usage[command-line arguments],
 or by using the web console to invoke
 {api-doc}afterglow.core.html#var-start-nrepl[`core/start-nrepl`].
 
@@ -570,7 +570,7 @@ book under development which can be read in its entirety online.
 
 . Install Afterglow. For now the best way to do that is following the
 steps in the
-https://github.com/brunchboy/afterglow#installation[Installation]
+https://github.com/Deep-Symmetry/afterglow#installation[Installation]
 section on the main project page, to install the Open Lighting
 Architecture, then create a new Clojure project with Leiningen that
 includes Afterglow as a dependency.
@@ -596,11 +596,11 @@ own. The <<fixture_definitions#fixture-definitions,documentation>>
 explains how, and links to existing fixture definitions as examples.
 You can also ask for help on the
 https://gitter.im/brunchboy/afterglow[Gitter chat] or the
-https://github.com/brunchboy/afterglow/wiki/Questions[Wiki].
+https://github.com/Deep-Symmetry/afterglow/wiki/Questions[Wiki].
 +
 At this point you are almost certainly writing enough code that you
 want to save it for later reuse. The
-https://github.com/brunchboy/afterglow#usage[Usage] section of the
+https://github.com/Deep-Symmetry/afterglow#usage[Usage] section of the
 project page explains how you can have Afterglow load files when it
 starts up when you are running it as a standalone jar, which makes it
 easier to use your own configuration files.
@@ -671,5 +671,5 @@ http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
 are agreeing to be bound by the terms of this license. You must not
 remove this notice, or any other, from this software. A copy of the
 license can be found in
-https://rawgit.com/brunchboy/afterglow/master/resources/public/epl-v10.html[resources/public/epl-v10.html]
+https://rawgit.com/Deep-Symmetry/afterglow/master/resources/public/epl-v10.html[resources/public/epl-v10.html]
 within this project.

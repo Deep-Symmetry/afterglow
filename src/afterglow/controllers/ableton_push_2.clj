@@ -1,7 +1,7 @@
 (ns afterglow.controllers.ableton-push-2
   "Allows the Ableton Push 2 to be used as a control surface for
   Afterglow. Its features are described in the [online
-  documentation](https://github.com/brunchboy/afterglow/blob/master/doc/push2.adoc#using-ableton-push-2)."
+  documentation](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/push2.adoc#using-ableton-push-2)."
   {:author "James Elliott"}
   (:require [afterglow.controllers.ableton-push :as push :refer [set-pad-velocity]]
             [afterglow.controllers :as controllers]

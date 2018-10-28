@@ -3,7 +3,7 @@ James Elliott <james@deepsymmetry.org>
 :icons: font
 :toc:
 :toc-placement: preamble
-:api-doc: http://rawgit.com/brunchboy/afterglow/master/api-doc/
+:api-doc: http://rawgit.com/Deep-Symmetry/afterglow/master/api-doc/
 
 // Set up support for relative links on GitHub, and give it
 // usable icons for admonitions, w00t! Add more conditions
@@ -443,5 +443,5 @@ http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
 are agreeing to be bound by the terms of this license. You must not
 remove this notice, or any other, from this software. A copy of the
 license can be found in
-https://rawgit.com/brunchboy/afterglow/master/resources/public/epl-v10.html[resources/public/epl-v10.html]
+https://rawgit.com/Deep-Symmetry/afterglow/master/resources/public/epl-v10.html[resources/public/epl-v10.html]
 within this project.

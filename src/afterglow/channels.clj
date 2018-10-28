@@ -119,7 +119,7 @@
   offset followed `:fine-offset`.
 
   Automatically creates a [function
-  specification](https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#function-specifications)
+  specification](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/fixture_definitions.adoc#function-specifications)
   which spans all the legal DMX values for the channel. By default,
   the function type is taken to be the same as `chan-type`, but this
   can be changed by passing in a different keyword with
@@ -128,19 +128,19 @@
   Similarly, the name of the function created is, by default, a
   capitalized version of the function type (without its leading
   colon). Since this name is displayed in the [web
-  interface](https://github.com/brunchboy/afterglow/blob/master/doc/README.adoc#the-embedded-web-interface)
+  interface](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/README.adoc#the-embedded-web-interface)
   as the text label in the cue grid cell for [Function
-  Cues](https://github.com/brunchboy/afterglow/blob/master/doc/cues.adoc#creating-function-cues)
+  Cues](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/cues.adoc#creating-function-cues)
   created for the function, you may wish to specify a more readable
   name, which you can do by passing it with `:function-name`.
 
   Finally, you may specify a label to be used when creating a user
   interface for adjusting the value associated with this
   function. [Function
-  Cues](https://github.com/brunchboy/afterglow/blob/master/doc/cues.adoc#creating-function-cues)
+  Cues](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/cues.adoc#creating-function-cues)
   will use this as the label for the cue-local variable they create,
   and it will appear in places like the [Ableton Push Effect Control
-  interface](https://github.com/brunchboy/afterglow/blob/master/doc/push2.adoc#effect-control).
+  interface](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/push2.adoc#effect-control).
   You can specify what this variable label should be with
   `:var-label`; if you do not, the generic label `Level` will be
   used."
@@ -182,7 +182,7 @@
          :range :fixed
          :type :no-function
          :label "No function"}
-        
+
         (map? spec)
         (merge {:range :variable
                 :label (clojure.string/replace (csk/->Camel_Snake_Case (name (:type spec))) "_" " ")}
@@ -264,7 +264,7 @@
   ```
 
   See the [online
-  documentation](https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#function-channels)
+  documentation](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/fixture_definitions.adoc#function-channels)
   for more details and examples."
   [chan-type offset & functions]
   {:pre [(some? chan-type) (integer? offset) (<= 1 offset 512)]}
@@ -349,9 +349,9 @@
   By default, the function created for the channel uses the name of
   the `color` keyword as its function label. Since this label is
   displayed in the [web
-  interface](https://github.com/brunchboy/afterglow/blob/master/doc/README.adoc#the-embedded-web-interface)
+  interface](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/README.adoc#the-embedded-web-interface)
   as the text label in the cue grid cell for [Function
-  Cues](https://github.com/brunchboy/afterglow/blob/master/doc/cues.adoc#creating-function-cues)
+  Cues](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/cues.adoc#creating-function-cues)
   created for the function, you may wish to specify a more readable
   name, which you can do by passing it in with `:function-label`.
 

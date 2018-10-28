@@ -14,7 +14,7 @@ This change log follows the conventions of
   each other out in the places they were used, but would have caused
   problems in new situations. They were discovered while porting the
   logic to Java for the
-  [electro](https://github.com/brunchboy/electro) library.
+  [electro](https://github.com/Deep-Symmetry/electro) library.
 - Abrupt tempo changes could cause the metronome to jump to the wrong
   place, even the wrong beat. This is now prevented, leaving you at
   the exact same place in the beat grid before and after any tempo
@@ -391,7 +391,7 @@ This change log follows the conventions of
   device is connected. These also allow effortless recovery from a
   temporary disconnection from a device during a show.
 - Code cues, making it easy to trigger arbitrary activity from a cue
-  grid, [issue 34](https://github.com/brunchboy/afterglow/issues/34).
+  grid, [issue 34](https://github.com/Deep-Symmetry/afterglow/issues/34).
 - Links to graphs and expanded discussion in the oscillator API docs.
 - Dimmer effects can now work with dimmer function ranges on
   multipurpose channels as well as full dedicated dimmer channels.
@@ -405,14 +405,14 @@ This change log follows the conventions of
 - When mapping a MIDI control to a show variable, you can now supply a
   custom function to transform the incoming value into whatever you
   need it to be,
-  [issue 32](https://github.com/brunchboy/afterglow/issues/32).
+  [issue 32](https://github.com/Deep-Symmetry/afterglow/issues/32).
 - When mapping a midi control to launch a cue, if your controller
   supports velocity (and perhaps also aftertouch, or polyphonic key
   pressure), you can have those values affect cue variables which have
   been defined as velocity sensitive, in the same way that Ableton
   Push pads do.
 - A variation of the sparkle effect which uses dimmer channels,
-  [issue 35](https://github.com/brunchboy/afterglow/issues/35).
+  [issue 35](https://github.com/Deep-Symmetry/afterglow/issues/35).
 - Some more examples of how to get started working with Afterglow.
 - A variety of other documentation improvements.
 
@@ -421,7 +421,7 @@ This change log follows the conventions of
 - Oscillators have been completely redesigned in order to be more
   flexible and easy to create and work with, and to support dynamic
   parameters so their configuration can vary over time or location,
-  [issue 9](https://github.com/brunchboy/afterglow/issues/9). The old
+  [issue 9](https://github.com/Deep-Symmetry/afterglow/issues/9). The old
   oscillator and oscillated parameter functions have been deprecated,
   and are now stubs wich delegate to the new implementation. They will
   be removed in an upcoming release.
@@ -436,11 +436,11 @@ This change log follows the conventions of
 - The former `IHeadParam` interface has been eliminated, folding its
   semantics into the `IParam` interface, and simplifying the
   implementation of dynamic parameters,
-  [issue 20](https://github.com/brunchboy/afterglow/issues/20).
+  [issue 20](https://github.com/Deep-Symmetry/afterglow/issues/20).
 - The `:adjust-fn` parameter to `build-variable-param` has been
   renamed `:transform-fn` to be consistent with the equivalent
   mechanism added for MIDI control mappings in
-  [issue 32](https://github.com/brunchboy/afterglow/issues/32). The
+  [issue 32](https://github.com/Deep-Symmetry/afterglow/issues/32). The
   documentation has been improved a bit as well.
 - The maps which track MIDI bindings now use the underlying Java
   `MidiDevice` object for their keys, which allows for more efficent
@@ -462,20 +462,20 @@ This change log follows the conventions of
 
 - Clicking on the BPM slider in the web interface now updates the BPM
   (previously you had to actually drag it),
-  [issue 18](https://github.com/brunchboy/afterglow/issues/18).
+  [issue 18](https://github.com/Deep-Symmetry/afterglow/issues/18).
 - Launching `:held` cues from generic MIDI controllers, the Ableton
   Push, and the web interface, would not succeed if the previous
   effect created by the cue was still in the process of ending,
-  [issue 33](https://github.com/brunchboy/afterglow/issues/33).
+  [issue 33](https://github.com/Deep-Symmetry/afterglow/issues/33).
 - Make sure MIDI inputs are connected when `sync-to-midi-clock` is
   called,
-  [issue 10](https://github.com/brunchboy/afterglow/issues/10).
+  [issue 10](https://github.com/Deep-Symmetry/afterglow/issues/10).
 - Also make sure the MIDI inputs are opened when rendering the web UI,
   so that the sync button will be able to list available sources of
   MIDI clock messages.
 - Clarified that syncing to Traktor beat phase still requires Traktor
   to be configured to send MIDI clock,
-  [issue 37](https://github.com/brunchboy/afterglow/issues/37).
+  [issue 37](https://github.com/Deep-Symmetry/afterglow/issues/37).
 - Added more detail about how to safely import and configure the
   Afterglow Traktor device mapping.
 - A variety of issues ranging from questionable style through misplaced
@@ -518,7 +518,7 @@ This change log follows the conventions of
   control-change or note messages, which was preventing them from
   being detected or processed correctly. Afterglow now always looks
   for command-like messages via the `:command` key instead,
-  [issue 8](https://github.com/brunchboy/afterglow/issues/8).
+  [issue 8](https://github.com/Deep-Symmetry/afterglow/issues/8).
 - Fading colors in and out from nothing, as represented by a `nil`
   assignment value, was fading to a desaturated version of black,
   which does not lead to the kind of results people generally expect
@@ -601,14 +601,14 @@ This change log follows the conventions of
 
 ### Added
 - Ability to
-  [translate](https://github.com/brunchboy/afterglow/blob/master/doc/fixture_definitions.adoc#translating-qlc-fixture-definitions)
+  [translate](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/fixture_definitions.adoc#translating-qlc-fixture-definitions)
   fixture definitions from the format used by
   [QLC+](http://www.qlcplus.org/) to help people get started on
   defining fixtures.
 
 ### Changed
 - Separated OLA communication into its own project,
-  [ola-clojure](https://github.com/brunchboy/ola-clojure#ola-clojure).
+  [ola-clojure](https://github.com/Deep-Symmetry/ola-clojure#ola-clojure).
 
 ## [0.1.2] - 2015-08-09
 ### Added
@@ -639,7 +639,7 @@ This change log follows the conventions of
 ### Changed
 - Forked Protobuf related libraries to make them build Java 6
   compatible clases, so
-  [afterglow-max](https://github.com/brunchboy/afterglow-max) can run
+  [afterglow-max](https://github.com/Deep-Symmetry/afterglow-max) can run
   inside the Java environment provided by
   [Cycling ‘74’s Max](https://cycling74.com/).
 - Made the meaning of the `:start` attribute of cue variables simpler
@@ -660,15 +660,15 @@ This change log follows the conventions of
 - Initial Public Release
 
 
-[unreleased]: https://github.com/brunchboy/afterglow/compare/v0.2.4...HEAD
-[0.2.4]: https://github.com/brunchboy/afterglow/compare/v0.2.3...v0.2.4
-[0.2.3]: https://github.com/brunchboy/afterglow/compare/v0.2.2...v0.2.3
-[0.2.2]: https://github.com/brunchboy/afterglow/compare/v0.2.1...v0.2.2
-[0.2.1]: https://github.com/brunchboy/afterglow/compare/v0.2.0...v0.2.1
-[0.2.0]: https://github.com/brunchboy/afterglow/compare/v0.1.6...v0.2.0
-[0.1.6]: https://github.com/brunchboy/afterglow/compare/v0.1.5...v0.1.6
-[0.1.5]: https://github.com/brunchboy/afterglow/compare/v0.1.4...v0.1.5
-[0.1.4]: https://github.com/brunchboy/afterglow/compare/v0.1.3...v0.1.4
-[0.1.3]: https://github.com/brunchboy/afterglow/compare/v0.1.2...v0.1.3
-[0.1.2]: https://github.com/brunchboy/afterglow/compare/v0.1.1...v0.1.2
-[0.1.1]: https://github.com/brunchboy/afterglow/compare/v0.1.0...v0.1.1
+[unreleased]: https://github.com/Deep-Symmetry/afterglow/compare/v0.2.4...HEAD
+[0.2.4]: https://github.com/Deep-Symmetry/afterglow/compare/v0.2.3...v0.2.4
+[0.2.3]: https://github.com/Deep-Symmetry/afterglow/compare/v0.2.2...v0.2.3
+[0.2.2]: https://github.com/Deep-Symmetry/afterglow/compare/v0.2.1...v0.2.2
+[0.2.1]: https://github.com/Deep-Symmetry/afterglow/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/Deep-Symmetry/afterglow/compare/v0.1.6...v0.2.0
+[0.1.6]: https://github.com/Deep-Symmetry/afterglow/compare/v0.1.5...v0.1.6
+[0.1.5]: https://github.com/Deep-Symmetry/afterglow/compare/v0.1.4...v0.1.5
+[0.1.4]: https://github.com/Deep-Symmetry/afterglow/compare/v0.1.3...v0.1.4
+[0.1.3]: https://github.com/Deep-Symmetry/afterglow/compare/v0.1.2...v0.1.3
+[0.1.2]: https://github.com/Deep-Symmetry/afterglow/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/Deep-Symmetry/afterglow/compare/v0.1.0...v0.1.1

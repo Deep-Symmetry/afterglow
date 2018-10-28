@@ -3,8 +3,8 @@ James Elliott <james@deepsymmetry.org>
 :icons: font
 :toc:
 :toc-placement: preamble
-:api-doc: http://rawgit.com/brunchboy/afterglow/master/api-doc/
-:branch-base: https://github.com/brunchboy/afterglow/blob/master/
+:api-doc: http://rawgit.com/Deep-Symmetry/afterglow/master/api-doc/
+:branch-base: https://github.com/Deep-Symmetry/afterglow/blob/master/
 
 // Set up support for relative links on GitHub, and give it
 // usable icons for admonitions, w00t! Add more conditions
@@ -28,7 +28,7 @@ There are a vast number of fixture types out there, and at this early
 stage almost none of them are built in to Afterglow, so you will
 probably need to create your own. You can study the existing fixture
 definitions for examples of how it is done. You can also ask for help
-on the https://github.com/brunchboy/afterglow/wiki/Questions[wiki].
+on the https://github.com/Deep-Symmetry/afterglow/wiki/Questions[wiki].
 
 [TIP]
 ====
@@ -584,7 +584,7 @@ that range. Each map has the following content:
  The list of <<standard-function-types,standard function types>> is a
  good starting point. If you feel there is a common kind of function
  which should be added to that list, please open an
- https://github.com/brunchboy/afterglow/issues[issue] requesting it.
+ https://github.com/Deep-Symmetry/afterglow/issues[issue] requesting it.
 
 |:range
 
@@ -930,7 +930,7 @@ If your function does not fit into this list, make up a keyword that
 makes sense for it, following the style shown here. And also please
 consider (if the function type is likely to be present on other
 fixtures and useful to other people) opening an
-https://github.com/brunchboy/afterglow/issues[issue] requesting that
+https://github.com/Deep-Symmetry/afterglow/issues[issue] requesting that
 your new function type be added to this list so that when other people
 create definitions for similar fixtures, they can interoperate with
 yours.
@@ -1086,7 +1086,7 @@ definitions.
 
 Once you have downloaded the QLC+ fixture definition file, you can
 invoke Afterglow from the command line, as described in the
-https://github.com/brunchboy/afterglow#usage[Usage] section on the
+https://github.com/Deep-Symmetry/afterglow#usage[Usage] section on the
 project page, to translate it into an Afterglow fixture definition.
 For example, translating the definition for the
 https://github.com/mcallegari/qlcplus/blob/master/resources/fixtures/American-DJ-ECO-UV-BAR-DMX.qxf[American
@@ -1116,10 +1116,10 @@ would result in the following Afterglow fixture definition file:
   Once you have completed the fixture definition, and are happy with
   the way everything is being controlled by Afterglow, please consider
   submitting it for inclusion with Afterglow, either as a Pull Request
-  at https://github.com/brunchboy/afterglow/pulls if you are
+  at https://github.com/Deep-Symmetry/afterglow/pulls if you are
   comfortable putting that together, or just on the Wiki if that's
   easier for you:
-  https://github.com/brunchboy/afterglow/wiki/Questions#defining-fixtures
+  https://github.com/Deep-Symmetry/afterglow/wiki/Questions#defining-fixtures
 
   The original fixture defintition was created by Rob G.
   using Q Light Controller Plus version 5.0.0 GIT.
@@ -1133,7 +1133,7 @@ would result in the following Afterglow fixture definition file:
   Please flesh out this documentation if you are submitting this for
   inclusion into Afterglow. See, for example, the Blizzard fixture
   definitions:
-  http://rawgit.com/brunchboy/afterglow/master/api-doc/afterglow.fixtures.blizzard.html"
+  http://rawgit.com/Deep-Symmetry/afterglow/master/api-doc/afterglow.fixtures.blizzard.html"
   []
   {:channels [(chan/color 1 :uv)  ; TODO: add :hue key if you want to color mix this
               (chan/fine-channel :strobing 2
@@ -1169,9 +1169,9 @@ The new definition file will be written to the same directory as the
 the necessary directory hierarchy) that would enable it to be loaded
 using a normal Clojure `require` form, because it is intended to be
 loaded individualy using Afterglow's init-file mechanism, also
-described in https://github.com/brunchboy/afterglow#usage[Usage], and
+described in https://github.com/Deep-Symmetry/afterglow#usage[Usage], and
 within
-https://github.com/brunchboy/afterglow-max#afterglow-max[afterglow-max],
+https://github.com/Deep-Symmetry/afterglow-max#afterglow-max[afterglow-max],
 by the `load-init-file` function. If you are creating definitions for
 several fixtures from the same manufacturer, you are encouraged to
 combine them into a single file, as described in the API documentation
@@ -1314,14 +1314,14 @@ one at a time. And, as you do, remember that you can get help:
 
 Not all definitions have been tested with the translator, and there
 may be scenarios that it gets fundamentally wrong. If so, please raise
-an https://github.com/brunchboy/afterglow/issues[Issue], so we can see
+an https://github.com/Deep-Symmetry/afterglow/issues[Issue], so we can see
 if it is something that can be fixed, or a fundamental limitation of
 the translation approach that should be documented here.
 
 If you are having trouble figuring out the details of how to finish or
 use your fixture definition, please ask for help on the
 https://gitter.im/brunchboy/afterglow[gitter chat] or
-https://github.com/brunchboy/afterglow/wiki/Questions#defining-fixtures[Wiki].
+https://github.com/Deep-Symmetry/afterglow/wiki/Questions#defining-fixtures[Wiki].
 Not only will that hopefully get you going faster, but it might help
 others in the future, especially if it leads to improvements in the
 documentation or Afterglow itself.
@@ -1337,5 +1337,5 @@ http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
 are agreeing to be bound by the terms of this license. You must not
 remove this notice, or any other, from this software. A copy of the
 license can be found in
-https://rawgit.com/brunchboy/afterglow/master/resources/public/epl-v10.html[resources/public/epl-v10.html]
+https://rawgit.com/Deep-Symmetry/afterglow/master/resources/public/epl-v10.html[resources/public/epl-v10.html]
 within this project.

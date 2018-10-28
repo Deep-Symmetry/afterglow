@@ -3,7 +3,7 @@ James Elliott <james@deepsymmetry.org>
 :icons: font
 :toc:
 :toc-placement: preamble
-:api-doc: http://rawgit.com/brunchboy/afterglow/master/api-doc/
+:api-doc: http://rawgit.com/Deep-Symmetry/afterglow/master/api-doc/
 
 // Set up support for relative links on GitHub, and give it
 // usable icons for admonitions, w00t! Add more conditions
@@ -733,11 +733,11 @@ also want pass in the fixture head that you are asking about.
 Otherwise, you can leave that last parameter `nil`.
 
 The
-https://github.com/brunchboy/graphterglow#graphterglow[graphterglow]
+https://github.com/Deep-Symmetry/graphterglow#graphterglow[graphterglow]
 project includes a bunch of examples of doing this, and graphing the
 results. It is how the graphs of oscillators and step parameters in
 this documentation were created. Its
-https://github.com/brunchboy/graphterglow/blob/master/src/graphterglow/core.clj#L21-L31[build-test-snapshot
+https://github.com/Deep-Symmetry/graphterglow/blob/master/src/graphterglow/core.clj#L21-L31[build-test-snapshot
 and build-beat snapshot] functions show how to create a snapshot for a
 certain number of millseconds or beats since the start of the
 metronome. Using them to evaluate a parameter looks like this:
@@ -773,5 +773,5 @@ http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
 are agreeing to be bound by the terms of this license. You must not
 remove this notice, or any other, from this software. A copy of the
 license can be found in
-https://rawgit.com/brunchboy/afterglow/master/resources/public/epl-v10.html[resources/public/epl-v10.html]
+https://rawgit.com/Deep-Symmetry/afterglow/master/resources/public/epl-v10.html[resources/public/epl-v10.html]
 within this project.

@@ -10,7 +10,7 @@
 (defonce ^{:private true
            :doc "Stores thread-local bindings for each web REPL session."}
   repl-sessions (ref {}))
- 
+
 (defn- current-bindings
   "Wrap a new layer of bindings around the dynamically bound variables
   we want to isolate for each web REPL sessions, initializing a few we
@@ -30,7 +30,7 @@
             *3 nil
             *e nil]
     (get-thread-bindings)))
- 
+
 (defn- bindings-for
   "Look up the dynamic bindings specific to this web REPL session,
   creating fresh ones if this is the first time it is being used.
@@ -43,13 +43,13 @@
       (dosync
        (commute repl-sessions assoc session-key (current-bindings)))))
   (@repl-sessions session-key))
- 
+
 (defn- store-bindings-for
   "Store the dynamic bindings specific to this web REPL session."
  [session-key]
   (dosync
     (commute repl-sessions assoc session-key (current-bindings))))
- 
+
 (defmacro with-session
   "Wrap the body in a session-specific set of dynamic variable
   bindings."
@@ -58,11 +58,11 @@
     (let [r# ~@body]
       (store-bindings-for ~session-key)
       r#)))
- 
+
 (defn discard-bindings
   "Clean up the thread-local bindings stored for a non-web hosted repl
   session, such as those used by
-  [afterglow-max](https://github.com/brunchboy/afterglow-max#afterglow-max),
+  [afterglow-max](https://github.com/Deep-Symmetry/afterglow-max#afterglow-max),
   which are not automatically timed out. `session-key` is the unique,
   non-String key used to identify the REPL session to [[do-eval]]."
   [session-key]
@@ -72,8 +72,8 @@
 (defn do-eval
   "Evaluate an expression sent to the web REPL and return the result
   or an error description. Also supports evaluation of expressions in
-  non-web hosting contexts like 
-  [afterglow-max](https://github.com/brunchboy/afterglow-max#afterglow-max)
+  non-web hosting contexts like
+  [afterglow-max](https://github.com/Deep-Symmetry/afterglow-max#afterglow-max)
   by passing in a unique non-String value for `session-key`. In such
   cases the thread local bindings will not be automatically cleaned
   up, and it is the responsibility of the hosting implementation to
@@ -106,7 +106,7 @@
   non-expired web session, or is not a String, which means that it
   does not come from a web session at all, but rather a hosting
   environment like
-  [afterglow-max](https://github.com/brunchboy/afterglow-max#afterglow-max),
+  [afterglow-max](https://github.com/Deep-Symmetry/afterglow-max#afterglow-max),
   which does not expire."
   [web-sessions [id _]]
   (or (not (string? id))
@@ -117,7 +117,7 @@
   which have expired. Ignores bindings whose keys are not strings,
   because they do not come from web sessions, but from hosting
   environments like
-  [afterglow-max](https://github.com/brunchboy/afterglow-max#afterglow-max)
+  [afterglow-max](https://github.com/Deep-Symmetry/afterglow-max#afterglow-max)
   which do not expire."
   [web-sessions]
   (dosync

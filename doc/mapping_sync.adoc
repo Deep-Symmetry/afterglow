@@ -4,7 +4,7 @@ James Elliott <james@deepsymmetry.org>
 :experimental:
 :toc:
 :toc-placement: preamble
-:api-doc: http://rawgit.com/brunchboy/afterglow/master/api-doc/
+:api-doc: http://rawgit.com/Deep-Symmetry/afterglow/master/api-doc/
 
 // Set up support for relative links on GitHub, and give it
 // usable icons for admonitions, w00t! Add more conditions
@@ -217,7 +217,7 @@ device was not connected when you started Afterglow, be sure that you
 have installed
 https://github.com/DerekCook/CoreMidi4J/releases[CoreMIDI4J] as
 discussed on the
-https://github.com/brunchboy/afterglow/wiki/Questions#midi-from-java-on-the-mac[Afterglow
+https://github.com/Deep-Symmetry/afterglow/wiki/Questions#midi-from-java-on-the-mac[Afterglow
 Wiki].
 
 NOTE: These examples show how to perform low-level MIDI mapping. Over
@@ -578,7 +578,7 @@ grid synchronization.
 
 In order to do that, download and unzip the Afterglow Traktor
 Controller Mapping,
-https://raw.githubusercontent.com/brunchboy/afterglow/master/doc/assets/Afterglow.tsi.zip[Afterglow.tsi],
+https://raw.githubusercontent.com/Deep-Symmetry/afterglow/master/doc/assets/Afterglow.tsi.zip[Afterglow.tsi],
 and import it into Traktor.
 
 WARNING: Be sure to use the following steps to import the mapping,
@@ -948,5 +948,5 @@ http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
 are agreeing to be bound by the terms of this license. You must not
 remove this notice, or any other, from this software. A copy of the
 license can be found in
-https://rawgit.com/brunchboy/afterglow/master/resources/public/epl-v10.html[resources/public/epl-v10.html]
+https://rawgit.com/Deep-Symmetry/afterglow/master/resources/public/epl-v10.html[resources/public/epl-v10.html]
 within this project.
