@@ -50,6 +50,19 @@
   that will be passed in `head`. If no fixure context is available,
   `head` will be `nil`."))))
 
+(defrecord Param [^String name, ^Boolean dynamic, result-type
+                  ^clojure.lang.IFn resolve-fn, ^clojure.lang.IFn presolve-fn]
+  ;; :load-ns true
+  IParam
+  (evaluate [this show snapshot head]
+    (resolve-fn show snapshot head))
+  (frame-dynamic? [this]
+    dynamic)
+  (result-type [this]
+    result-type)
+  (resolve-non-frame-dynamic-elements [this show snapshot head]
+    ;; (presolve-fn this show snapshot head))) ;easiest keep this here i guess since so common to just pass on?
+    (presolve-fn show snapshot head)))
 
 (defn check-type
   "Ensure that a parameter is of a particular type, or that it
@@ -60,13 +73,14 @@
   {:pre [(some? value) (some? type-expected) (some? name)]}
   (cond (class? type-expected)
         (when-not (or (instance? type-expected value)
-                      (and (satisfies? IParam value)  (.isAssignableFrom type-expected (result-type value))))
-          (throw (IllegalArgumentException. (str "Variable " name " must be of type " type-expected))))
+                      (and (satisfies? IParam value)  (.isAssignableFrom type-expected (result-type value)))
+                      (= type-expected (:type value)))
+          (throw (IllegalArgumentException. (str "Class variable " name " must be " type-expected ", got " (:type value (type value))))))
 
         (keyword? type-expected)
         (when-not (or (= type-expected (type value))
                       (and (satisfies? IParam value) (= type-expected (result-type value))))
-          (throw (IllegalArgumentException. (str "Variable " name " must be of type " type-expected))))
+          (throw (IllegalArgumentException. (str "Keyword variable " name " must be " type-expected ", got " value))))
 
         :else
         (throw (IllegalArgumentException. (str "Do not know how to check for type " type-expected))))
