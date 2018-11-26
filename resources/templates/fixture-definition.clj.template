@@ -34,7 +34,7 @@
   Please flesh out this documentation if you are submitting this for
   inclusion into Afterglow. See, for example, the Blizzard fixture
   definitions:
-  http://cdn.rawgit.com/Deep-Symmetry/afterglow/master/api-doc/afterglow.fixtures.blizzard.html"
+  http://deepsymmetry.org/afterglow/api-doc/afterglow.fixtures.blizzard.html"
   {% if modes|length < 2 %}[]
   {{open-curly}}{% if modes.0.has-pan-channel %}:pan-center 128 :pan-half-circle 128 ; TODO: Fix these values
    {% endif %}{% if modes.0.has-tilt-channel %}:tilt-center 128 :tilt-half-circle 128 ; TODO: Fix these values

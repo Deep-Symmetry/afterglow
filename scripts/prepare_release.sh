@@ -5,14 +5,10 @@ if [[ $# -eq 0 ]] ; then
    echo "No version supplied, switching back to development on master branch"
    version="\/master\/"
    replace="\/v[0-9]*\.[0-9]*\.[0-9]*\/"
-   docHost="\/rawgit.com\/"
-   replaceHost="\/cdn.rawgit.com\/"
 elif [[ $# -eq 1 ]] ; then
     if [[ $1 =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] ; then
         version="\/$1\/"
         replace="\/master\/"
-        docHost="\/cdn.rawgit.com\/"
-        replaceHost="\/rawgit.com\/"
         echo "Preparing files to cut release with tag $1"
     else
         echo "Invalid version: $1 (must be of the form v0.0.0)"
@@ -35,16 +31,3 @@ webswap="s/\/github.com\/Deep-Symmetry\/afterglow\/tree${replace}/\/github.com\/
 mv resources/templates/home.html resources/templates/home.html.old
 sed "${webswap}" resources/templates/home.html.old > resources/templates/home.html
 rm -f resources/templates/home.html.old
-
-# Update API documentation links
-mv README.md README.md.old
-docswap="s/${replaceHost}Deep-Symmetry\/afterglow${replace}api-doc/${docHost}Deep-Symmetry\/afterglow${version}api-doc/g"
-sed "${docswap}" README.md.old > README.md
-rm -f README.md.old
-
-for fl in doc/*.adoc; do
-    mv $fl $fl.old
-    sed "${docswap}" $fl.old > $fl.middle
-    sed "${sourceswap}" $fl.middle > $fl
-    rm -f $fl.old $fl.middle
-done

@@ -24,7 +24,7 @@ This page provides an introduction in how to install and use
 Afterglow. The main
 [documentation](doc/README.adoc#afterglow-documentation) goes much
 deeper, and there is also
-[API documentation](http://rawgit.com/Deep-Symmetry/afterglow/master/api-doc/index.html).
+[API documentation](http://deepsymmetry.org/afterglow/api-doc/index.html).
 For more interactive help, the
 [Afterglow room on Gitter](https://gitter.im/brunchboy/afterglow) is
 the place to start, and if you want to see (or contribute to) more
@@ -361,7 +361,7 @@ tweak something quickly, you can use that:
 > when you are running from a jar rather than launching from a REPL,
 > you will often want to access a real REPL. You can accomplish that
 > with command-line arguments or by using the web console to invoke
-> [core/start-nrepl](http://rawgit.com/Deep-Symmetry/afterglow/master/api-doc/afterglow.core.html#var-start-nrepl)
+> [core/start-nrepl](http://deepsymmetry.org/afterglow/api-doc/afterglow.core.html#var-start-nrepl)
 > and then connecting your favorite REPL environment to the network
 > REPL port you created.
 
@@ -448,7 +448,7 @@ set up a Universe with ID 1.
 > will likely want to do something similar in setting up your own
 > shows, since a single show is the most common scenario. See the
 > `afterglow.show-context`
-> [API documentation](http://rawgit.com/Deep-Symmetry/afterglow/master/api-doc/afterglow.show-context.html)
+> [API documentation](http://deepsymmetry.org/afterglow/api-doc/afterglow.show-context.html)
 > for more details. The `show-context` namespace also defines the
 > dynamic variable `*show*` which you can use to refer to the current
 > default show when you need to mention it explicitly, as you will see
@@ -491,7 +491,7 @@ to the show’s dimmer grand master. Setting this to a value less than
 100 scales the dimmer values sent to the lights down by that amount.
 So the above command dims the lights to 80% of their possible
 brightness, no matter what else the cues are trying to do. See the
-[dimmer effects API documentation](http://rawgit.com/Deep-Symmetry/afterglow/master/api-doc/afterglow.effects.dimmer.html)
+[dimmer effects API documentation](http://deepsymmetry.org/afterglow/api-doc/afterglow.effects.dimmer.html)
 for more details. Here is an example of what I call right away when
 testing effects in my office with the little Korg nanoKONTROL 2
 plugged in:
@@ -589,7 +589,7 @@ Or, if you need to be woken up a bit,
 > [building effects](doc/effects.adoc#effect-examples), and
 > [mapping parameters](doc/mapping_sync.adoc#midi-mapping-and-beat-sync)
 > to MIDI controllers. There is also low-level
-> [API documentation](http://deepsymmetry.org/afterglow/doc), but the
+> [API documentation](http://deepsymmetry.org/afterglow/api-doc), but the
 > project documentation is the best starting point for a conceptual
 > overview and introduction.
 
@@ -1030,5 +1030,5 @@ the same as Clojure. By using this software in any fashion, you are
 agreeing to be bound by the terms of this license. You must not remove
 this notice, or any other, from this software. A copy of the license
 can be found in
-[resources/public/epl-v10.html](https://rawgit.com/Deep-Symmetry/afterglow/master/resources/public/epl-v10.html)
+[resources/public/epl-v10.html](https://github.com/Deep-Symmetry/afterglow/blob/master/resources/public/epl-v10.html)
 within this project.
