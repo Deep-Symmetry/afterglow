@@ -564,9 +564,12 @@ least a little. Luckily, it is a fantastic, helpful community, and an
 amazing language (the existence of Afterglow after a couple of months
 of spare time work is good proof of that)! The
 http://clojure.org/getting_started[Getting Started] page on
-clojure.org has links to some great resources. Don't miss
-http://www.braveclojure.com[Clojure for the Brave and True], a fun
-book under development which can be read in its entirety online.
+clojure.org has links to some great resources.
+https://www.maria.cloud[Maria] is an interactive, online workbook for
+beginners that provides progressive instruction in the language. And
+don't miss http://www.braveclojure.com[Clojure for the Brave and
+True], a fun book under development which can be read in its entirety
+online.
 
 . Install Afterglow. For now the best way to do that is following the
 steps in the
