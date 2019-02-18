@@ -361,7 +361,7 @@ to start diverging a bit.) Here is the revised version of `prime?`:
   [n]
   (and (integer? n)
        (> n 1)
-       (not-any? (partial divides? n) (range 2 (inc (/ n 2))))))
+       (not-any? (partial divides? n) (range 2 (inc (Math/floor (Math/sqrt n)))))))
 ```
 
 > I will include a complete copy of the final version of all this code
