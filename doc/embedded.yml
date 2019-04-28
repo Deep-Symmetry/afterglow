@@ -10,6 +10,8 @@ content:
 asciidoc:
   attributes:
     api-doc: http://deepsymmetry.org/afterglow/api-doc/
+    icons: font
+    experimental: ''
 ui:
   bundle:
     url: https://deepsymmetry.org/media/antora/ui-bundle.zip
