@@ -25,7 +25,7 @@ jumping to the section you want:
 
 ****
 
- <<effects,Effects>>::
+ <<effects#effects,Effects>>::
 The building blocks of a dynamic light show, which have a
 <<effects#the-effect-lifecycle,lifecyle>> worth understanding, and a few
 <<effects#effect-examples,examples>> to get you started.
@@ -34,35 +34,35 @@ The building blocks of a dynamic light show, which have a
 to your effects which change over time and space, enabling much more
 interesting and complex appearance and behavior.
 
-<<cues,Cues>>:: Provide a convenient way to organize and trigger
+<<cues#cues,Cues>>:: Provide a convenient way to organize and trigger
 effects. Allow you to build a user interface for your show, through a
 colorful cue grid in the web UI, on a supported grid controller, a
 basic MIDI controller, or a combination of several of these options.
 
-<<metronomes,Metronomes>>:: Keep track of musical time, in
+<<metronomes#metronomes,Metronomes>>:: Keep track of musical time, in
 terms of beats, bars, and phrases, and can be
 <<mapping_sync#midi-mapping-and-beat-sync,synced>> to DJ equipment and
 software.
 
-<<oscillators,Oscillators>>:: Convert show timing
+<<oscillators#oscillators,Oscillators>>:: Convert show timing
 information into waveforms that can drive your light show.
 
-<<fixture_definitions,Fixture Definitions>>:: Tell
+<<fixture_definitions#fixture-definitions,Fixture Definitions>>:: Tell
 Afterglow how to work with different lighting hardware.
 
-<<show_space,Show Space>>:: Explores how to measure
+<<show_space#show-space,Show Space>>:: Explores how to measure
 locations and orientations when hanging your lights so that Afterglow
 can properly calculate spatial and directional effects.
 
-<<color,Working with Color>>:: Introduces tools for
+<<color#working-with-color,Working with Color>>:: Introduces tools for
 expressing and manipulating color values when designing lighting
 effects.
 
-<<mapping_sync,Mapping and Sync>>:: Looks
+<<mapping_sync#midi-mapping-and-beat-sync,Mapping and Sync>>:: Looks
 at options for using MIDI controllers to run your show, and
 synchronizing its metronome with DJ equipment.
 
-<<rendering_loop,The Rendering Loop>>:: Explains in
+<<rendering_loop#the-rendering-loop,The Rendering Loop>>:: Explains in
 detail how a frame of lighting control data is calculated and sent to
 the lights in the show. This is advanced, low-level information for
 people who are ready to create their own custom effect algorithms.
@@ -73,7 +73,7 @@ and functions that make it work. The rest of the documentation
 sometimes links to related sections of the API documentation, and vice
 versa.
 
-<<videos,Videos>>:: Show examples of Afterglow in action.
+<<videos#videos,Videos>>:: Show examples of Afterglow in action.
 
 ****
 
