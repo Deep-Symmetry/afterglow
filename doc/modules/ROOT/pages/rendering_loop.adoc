@@ -1,20 +1,17 @@
 = The Rendering Loop
 James Elliott <james@deepsymmetry.org>
-:icons: font
 :toc:
 :toc-placement: preamble
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
 
-// Set up support for relative links on GitHub, and give it
-// usable icons for admonitions, w00t! Add more conditions
-// if you need to support other environments and extensions.
 ifdef::env-github[]
+// Set up support for relative links and images on GitHub, even though
+// the documentation is now designed for Antora. Also, need to add
+// the API doc path here, since Antora takes care of it outside of
+// GitHub. Hopefully we can eventually make this an include file, once
+// GitHub *finally* supports those.
 :outfilesuffix: .adoc
-:tip-caption: :bulb:
-:note-caption: :information_source:
-:important-caption: :heavy_exclamation_mark:
-:caution-caption: :fire:
-:warning-caption: :warning:
+:imagesdir: ../assets/images
+:api-doc: http://deepsymmetry.org/afterglow/api-doc/
 endif::[]
 
 This page contains advanced, low-level information for people who are
@@ -29,6 +26,7 @@ And once you are ready to really dive deep, you can learn how to
 completely new kinds of elements, such as integrating with Pangolin
 Beyond laser shows.
 
+[[frame-rendering-stages]]
 == Frame Rendering Stages
 
 When an afterglow show is running, that is, from when
@@ -390,6 +388,7 @@ If multiple fixtures or heads are assigned the same aiming point, they
 will all be aimed at exactly the same spot, regardless of the location
 and orientation with which they were hung.
 
+[[extensions]]
 == Extensions
 
 If you want Afterglow to control something that does not respond to
@@ -401,6 +400,7 @@ namespace, and another example in
 {api-doc}afterglow.effects.show-variable.html[`afterglow.effects.show-variable`],
 which creates effects that set show variables when they are run.
 
+[[new-assigner-types]]
 === Introducing New Assigner Types
 
 The first thing you need to do is identify the kinds of assigners that
@@ -432,6 +432,7 @@ of the
 multimethod, for your new assigner keyword. Again, the end of the
 Beyond integration provides a concrete example.
 
+[[customizing-fades]]
 === Customizing Fades for your Assigner Types
 
 If you want to support smooth fades between different values being
@@ -445,6 +446,7 @@ TIP: If you do not provide an implementation of
 the default implementation is used: it simply selects whichever
 assigner is on the side of the fade which is currently above 50%.
 
+[[frame-data]]
 === Buffering and Sending Your Frame Data
 
 Chances are good that your extension will need to do some sort of
@@ -473,16 +475,4 @@ documentation are at the <<rendering_loop#extensions,top>> of this
 section, and as always, the API docs have `view source` buttons which
 take you right to the code that makes them work.)
 
-==== License
-
-+++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
-Copyright © 2015-2018 http://deepsymmetry.org[Deep Symmetry, LLC]
-
-Distributed under the
-http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
-1.0], the same as Clojure. By using this software in any fashion, you
-are agreeing to be bound by the terms of this license. You must not
-remove this notice, or any other, from this software. A copy of the
-license can be found in
-https://deepsymmetry.org/afterglow/resources/public/epl-v10.html[resources/public/epl-v10.html]
-within this project.
+include::partial$Footer.adoc[]
