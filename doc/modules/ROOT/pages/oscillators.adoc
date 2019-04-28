@@ -1,20 +1,17 @@
 = Oscillators
 James Elliott <james@deepsymmetry.org>
-:icons: font
 :toc:
 :toc-placement: preamble
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
 
-// Set up support for relative links on GitHub, and give it
-// usable icons for admonitions, w00t! Add more conditions
-// if you need to support other environments and extensions.
 ifdef::env-github[]
+// Set up support for relative links and images on GitHub (even though
+// the documentation is now designed for Antora. Also, need to add
+// the API doc path here, since Antora takes care of it outside of
+// GitHub. Hopefully we can eventually make this an include file, once
+// GitHub *finally* supports those.
 :outfilesuffix: .adoc
-:tip-caption: :bulb:
-:note-caption: :information_source:
-:important-caption: :heavy_exclamation_mark:
-:caution-caption: :fire:
-:warning-caption: :warning:
+:imagesdir: ../assets/images
+:api-doc: http://deepsymmetry.org/afterglow/api-doc/
 endif::[]
 
 Oscillators in Afterglow are a flexible way of turning the timing
@@ -50,6 +47,7 @@ output are synchronized and share the same notion of the current state
 of the metronome, Afterglow takes a _snapshot_ of the metronome at the
 start of the frame, and the oscillators work from that.
 
+[[sawtooth-oscillators]]
 == Sawtooth Oscillators
 
 [source,clojure]
@@ -69,7 +67,7 @@ You can change the nature of the wave by using optional keyword
 parameters, and the values you use with them can be be
 <<parameters#dynamic-parameters,dynamic parameters>>:
 
-[cols=",,",options="header",]
+[cols="2,1,4",options="header",]
 |=======================================================================
 |Parameter |Default |Purpose
 |`:down?` |`false` |When `true` the wave starts at 1.0 and falls
@@ -98,6 +96,7 @@ As noted in the table, the direction of the wave can be reversed:
 image::sawtooth-beat-down.png[Downward
 Sawtooth Oscillator]
 
+[[ratios]]
 === Ratios
 
 All of the oscillators can be modified by supplying the
@@ -124,6 +123,7 @@ would complete three cycles every two beats.
 image::sawtooth-beat-ratio-2-3.png[Sawtooth Oscillator with
 Interval Ratio 2/3]
 
+[[phase-shifting]]
 === Phase Shifting
 
 All of the oscillators can be modified by supplying a `:phase` keyword
@@ -161,6 +161,7 @@ And to have it oscillate over each phrase:
 
 image::sawtooth-phrase.png[Sawtooth Phrase Oscillator]
 
+[[triangle-oscillators]]
 == Triangle Oscillators
 
 [source,clojure]
@@ -180,7 +181,7 @@ You can change the nature of the wave by using optional keyword
 parameters, and the values you use with them can be be
 <<parameters#dynamic-parameters,dynamic parameters>>:
 
-[cols=",,",options="header",]
+[cols="2,1,4",options="header",]
 |=======================================================================
 |Parameter |Default |Purpose
 |`:interval` |`:beat` |Change whether the oscillator cycles over each
@@ -220,6 +221,7 @@ And to have it oscillate over each phrase:
 
 image::triangle-phrase.png[Triangle Phrase Oscillator]
 
+[[sine-oscillators]]
 == Sine Oscillators
 
 Just like in musical synthesis, sine waves are the smoothest-feeling
@@ -245,7 +247,7 @@ You can change the nature of the wave by using optional keyword
 parameters, and the values you use with them can be be
 <<parameters#dynamic-parameters,dynamic parameters>>:
 
-[cols=",,",options="header",]
+[cols="2,1,4",options="header",]
 |=======================================================================
 |Parameter |Default |Purpose
 |`:interval` |`:beat` |Change whether the oscillator cycles over each
@@ -285,6 +287,7 @@ And to have it oscillate over each phrase:
 
 image::sine-phrase.png[Sine Phrase Oscillator]
 
+[[square-oscillators]]
 == Square Oscillators
 
 Square waves are good for abrupt transitions, like strobes, or switching
@@ -307,7 +310,7 @@ You can change the nature of the wave by using optional keyword
 parameters, and the values you use with them can be be
 <<parameters#dynamic-parameters,dynamic parameters>>:
 
-[cols=",,",options="header",]
+[cols="2,1,4",options="header",]
 |=======================================================================
 |Parameter |Default |Purpose
 |`:width` |`0.5` |Determines the phase at which the value changes from
@@ -330,6 +333,7 @@ discussed in more depth, and illustrated with graphs, in the
 documentation for the Sawtooth oscillator. You can jump to those
 sections using the links in the _Purpose_ section of the table.
 
+[[pulse-widths]]
 === Pulse Widths
 
 As shown in the above graph, the square oscillator normally spends
@@ -384,6 +388,7 @@ And to have it oscillate over each phrase:
 ----
 image::square-phrase.png[Square Phrase Oscillator]
 
+[[custom-oscillators]]
 == Custom Oscillators
 
 You can build your own oscillator with any shape waveform that you
@@ -405,6 +410,7 @@ and `:phase` arguments you've seen in all the oscillator functions.
 The core of `triangle` is setting up its shape function to create the
 triangle wave which makes it a triangle oscillator.
 
+[[shape-functions]]
 === Shape Functions
 
 The shape function is the first argument to `build-oscillator`, and it
@@ -432,16 +438,4 @@ Hopefully examining this example, as well as the source of the other
 oscillators, can inspire you to create your own interesting oscillator
 shapes.
 
-==== License
-
-+++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
-Copyright © 2015-2018 http://deepsymmetry.org[Deep Symmetry, LLC]
-
-Distributed under the
-http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
-1.0], the same as Clojure. By using this software in any fashion, you
-are agreeing to be bound by the terms of this license. You must not
-remove this notice, or any other, from this software. A copy of the
-license can be found in
-https://deepsymmetry.org/afterglow/resources/public/epl-v10.html[resources/public/epl-v10.html]
-within this project.
+include::partial$Footer.adoc[]
