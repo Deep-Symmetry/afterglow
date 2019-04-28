@@ -3,6 +3,17 @@ James Elliott <james@deepsymmetry.org>
 :toc:
 :toc-placement: preamble
 
+ifdef::env-github[]
+// Set up support for relative links and images on GitHub (even though
+// the documentation is now designed for Antora. Also, need to add
+// the API doc path here, since Antora takes care of it outside of
+// GitHub. Hopefully we can eventually make this an include file, once
+// GitHub *finally* supports those.
+:outfilesuffix: .adoc
+:imagesdir: ../assets/images
+:api-doc: http://deepsymmetry.org/afterglow/api-doc/
+endif::[]
+
 Effects determine what a light or group of lights are doing at a given
 moment in time.
 
@@ -69,6 +80,7 @@ how to build up <<complex-effects,special-purpose effects>>, which can
 be fun in themselves, and also serve as templates and inspiration for
 whole new kinds of effects you create on your own.
 
+[[basic-effect-types]]
 == Basic Effect Types
 
 Effects in afterglow are divided by the aspect of a light that they
@@ -142,6 +154,7 @@ to some visible level. And if the fixture has a shutter (either
 physical or electronic), you may need an effect running to open that
 as well.
 
+[[virtual-dimmers]]
 ==== Virtual Dimmers
 
 Although most RGB color-mixing fixtures have a dimmer channel which is
@@ -263,6 +276,7 @@ argument `:include-color-wheels?` to `color-effect`. Afterglow will
 try to find a color wheel position which is close enough to the
 desired color, and if one can be found, tell the light to use it.
 
+[[multiple-colors]]
 ==== Multiple Colors
 
 You can assign different color effects to different sets of fixtures
@@ -790,6 +804,7 @@ examples of how Afterglow can be used to create new things, and we
 hope that people will contribute their own effects for inclusion in
 future releases.
 
+[[color-cycle-chases]]
 ==== Color Cycle Chases
 
 This family of related effects are an excellent illustration of why
@@ -858,6 +873,7 @@ the heads which make them up.
   (afterglow.effects.fun/wipe-right-color-cycle-chase (show/all-fixtures)))
 ----
 
+[[sparkle]]
 ==== Sparkle
 
 Creates a random sparkling effect like a particle generator over the
@@ -895,6 +911,7 @@ the same time, you can combine these two effects with a
 ----
 
 
+[[strobe]]
 ==== Strobe
 
 A flexible strobe effect designed for intuitive tweaking via pressure-sensitive controllers like the Ableton Push.
@@ -908,6 +925,7 @@ documentation] for details.
   (afterglow.effects.fun/strobe "Strobe All" (show/all-fixtures) 50))
 ----
 
+[[metronome]]
 ==== Metronome
 
 The Metronome cue is a way to check the synchronization of the show
