@@ -1,6 +1,7 @@
 = Afterglow Documentation
 James Elliott <james@deepsymmetry.org>
 
+[[organization]]
 To keep page sizes manageable, this information is split into several
 pages. This page provides an <<introduction,introduction>> and
 <<overview,overview>>, explains the <<web-ui,built in web interface>>,
