@@ -10,7 +10,7 @@ ifdef::env-github[]
 // GitHub. Hopefully we can eventually make this an include file, once
 // GitHub *finally* supports those.
 :outfilesuffix: .adoc
-:imagesdir:../assets/images
+:imagesdir: ../assets/images
 :api-doc: http://deepsymmetry.org/afterglow/api-doc/
 endif::[]
 
