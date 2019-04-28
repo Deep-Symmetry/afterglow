@@ -196,7 +196,7 @@ unused port and type it instead. The `true` requests the browser
 window; it will be opened on whatever port you told the web interface
 to use.
 
-image::WebHome.png[Web interface]
+image::WebHome.png[Web interface,537,427]
 
 The home page offers some buttons which can take you to this
 documentation, the Open Lighting Architecture console in case you want
@@ -207,7 +207,7 @@ interface, however, is the show page, which is reached by a link in
 the Shows section. However, when you first start Afterglow on its own,
 there will be no shows running. The Console can be used to change that:
 
-image::Console.png[Web console]
+image::Console.png[Web console,850,690]
 
 NOTE: As menioned in the main project
 https://github.com/Deep-Symmetry/afterglow#afterglow[Readme], the web
@@ -221,6 +221,7 @@ https://github.com/Deep-Symmetry/afterglow#usage[command-line arguments],
 or by using the web console to invoke
 {api-doc}afterglow.core.html#var-start-nrepl[`core/start-nrepl`].
 
+[[show-control]]
 === Show Control
 
 Once you have the web interface open, and a show running, you will
@@ -228,7 +229,7 @@ spend most of your time on the show page. Here a look at the cue grid
 that gets created for the sample show by
 {api-doc}afterglow.examples.html#var-make-cues[`afterglow.examples/make-cues`]:
 
-image::ShowGrid.gif[Show control]
+image::ShowGrid.gif[Show control,998,912]
 
 There are a number of different things you can control from this page.
 The load indicator in the middle of the navigation bar gives you a
@@ -290,7 +291,7 @@ top of the list can override things done by those further down. Newly
 launched effects assigned a given priority appear above older ones
 with the same priority.)
 
-image::EffectList.png[The Effect List]
+image::EffectList.png[The Effect List,872,263]
 
 The name of the effect is shown, along with its prority (if it is
 anything other than the default of zero), when it was started, in
@@ -306,7 +307,7 @@ current color value appears as a swatch; clicking on that swatch opens
 a color picker interface which can be used to adjust the color
 parameter:
 
-image::EffectColor.png[Effect Color Parameter Adjustment]
+image::EffectColor.png[Effect Color Parameter Adjustment,872,299]
 
 Click anywhere outside the swatch and color picker to dismiss the
 color adjustment interface.
@@ -322,7 +323,7 @@ normally discarded when you end the cue; the next time it begins, it
 starts with the values that were configured in the show. You can
 change that by saving the cue's variables. In the effect list, any cues whose variables you've adjusted will have a green kbd:[Save] button on the right, like the `Color snowball` cue in the photo below:
 
-image::SavingCues.png[Saving Cues]
+image::SavingCues.png[Saving Cues,1002,246]
 
 After clicking kbd:[Save] in this situation, whenever you click the
 `Color snowball` cue in the cue grid, it will start out blue rather
@@ -356,7 +357,7 @@ want the macro to include, type a name for it, then click on any empty
 cell in the cue grid. A new cue will appear there with the name you
 have chosen.
 
-image::MakeMacro.png[Creating a Macro]
+image::MakeMacro.png[Creating a Macro,1002,383]
 
 Whenver you click that cue cell, it will start all of the cues that
 you included in the macro, with the variable settings they had at the
@@ -372,7 +373,7 @@ If you have created a macro and decide you don't want it any more, you
 can right-click on the cue cell and choose the `Delete` option that
 appears.
 
-image::DeletingCue.png[Deleting a Cue]
+image::DeletingCue.png[Deleting a Cue,313,284]
 
 WARNING: Be careful with this: You can delete any cue this way, and if
 it was not a macro, the only way to get it back is to re-run the code
@@ -386,8 +387,9 @@ color of the kbd:[End] button while it is in the process of ending,
 and the button becomes a kbd:[Kill] button which can be clicked to
 instantly terminate the ending effect:
 
-image::EffectEnding.png[An Ending Effect]
+image::EffectEnding.png[An Ending Effect,1002,246]
 
+[[scrolling-and-linked-controllers]]
 ==== Scrolling and Linked Controllers
 
 The show may have many more cues than fit on the screen at once; the
@@ -398,7 +400,8 @@ dimmed. Clicking an active arrow scrolls the view one page in that
 direction. In this grid, it is currently possible to scroll up and to
 the right.
 
-image::CueScrollLink.png[Cue scroll arrows and link menu,align="right"]
+[.right]
+image::CueScrollLink.png[Cue scroll arrows and link menu,365,167]
 
 If you hold down kbd:[Shift] while clicking a scroll arrow, it will
 scroll you as far as possible in the direction you clicked.
@@ -443,8 +446,9 @@ the maximum brightness that any dimmer cue can achieve. In the middle,
 all dimmer cues will be reduced by 50%, and all the way to the left,
 all dimmer cues will be zeroed out.
 
-image::GrandMaster.png[Dimmer Grand Master]
+image::GrandMaster.png[Dimmer Grand Master,319,172]
 
+[[metronome-control]]
 ==== Metronome Control
 
 The final section of the show control interface, left of the Dimmer
@@ -457,7 +461,7 @@ metronome, and the `Tap Tempo` button label flashes yellow at each
 beat. It also shows you the current phrase number, the bar within that
 phrase, and beat within that bar which has been reached.
 
-image::Metronome.png[Metronome]
+image::Metronome.png[Metronome,361,175]
 
 The most basic way of synchronizing the metronome is to click the `Tap
 Tempo` button at each beat of the music. Tapping the button aligns the
@@ -502,7 +506,7 @@ synchronization, click the `Sync` button once you have the MIDI clock,
 beat phase, or network Pro DJ Link signals reaching the machine
 running Afterglow, and choose the sync source you want to use.
 
-image::MetronomeSync.png[Metronome sync]
+image::MetronomeSync.png[Metronome sync,1040,800]
 
 TIP: When you are synchronizing with Pro DJ Link, you will almost
 always want to sync to the mixer, rather than one of the CDJs, so you
@@ -526,7 +530,7 @@ identified as Beat 1. In these sync modes you can also use the
 kbd:[Shift] key to align at the next bigger boundary: If tapping
 would normally move the bar, shift-tapping will move the phrase.
 
-image::MetronomeSynced.png[Metronome synced]
+image::MetronomeSynced.png[Metronome synced,355,156]
 
 The Sync button also turns green to indicate that sync is in effect.
 If something interrupts the sync process (such as the network link
