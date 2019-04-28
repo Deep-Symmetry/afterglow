@@ -1,27 +1,24 @@
 = Using the Novation Launchpad Family
 James Elliott <james@deepsymmetry.org>
-:icons: font
-:experimental:
 :toc:
 :toc-placement: preamble
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
 
-// Set up support for relative links on GitHub, and give it
-// usable icons for admonitions, w00t! Add more conditions
-// if you need to support other environments and extensions.
 ifdef::env-github[]
+// Set up support for relative links and images on GitHub, even though
+// the documentation is now designed for Antora. Also, need to add
+// the API doc path here, since Antora takes care of it outside of
+// GitHub. Hopefully we can eventually make this an include file, once
+// GitHub *finally* supports those.
 :outfilesuffix: .adoc
-:tip-caption: :bulb:
-:note-caption: :information_source:
-:important-caption: :heavy_exclamation_mark:
-:caution-caption: :fire:
-:warning-caption: :warning:
+:imagesdir: ../assets/images
+:api-doc: http://deepsymmetry.org/afterglow/api-doc/
 endif::[]
 
 Novation makes an entire family of grid controllers which can all be
 used with Afterglow, with differing capabilities. The most powerful is
 the Launchpad Pro, with pressure-sensitive RGB pads.
 
+[[binding-to-a-launchpad]]
 == Binding to a Launchpad
 
 Assuming you have a Launchpad family controller connected to the
@@ -34,6 +31,7 @@ show, or more details about how it works, see
 <<mapping_sync#setting-up-grid-controller-bindings,Setting Up Grid
 Controller Bindings>>.
 
+[[using-launchpad-pro]]
 == Using Launchpad Pro
 
 With its pressure-sensitive, RGB-capable 8&times;8 pad grid, the
@@ -48,8 +46,9 @@ Afterglow, and has its own custom
 
 Here is what the Launchpad Pro interface looks like:
 
-image::LaunchpadPro.jpg[Launchpad Pro interface]
+image::LaunchpadPro.jpg[Launchpad Pro interface,1000,1011]
 
+[[show-control]]
 === Show Control
 
 Once you have the Launchpad linked to a show, it becomes a helpful way
@@ -129,6 +128,7 @@ _replace_ the others, rather than running at the same time. (There are
 photos demonstrating this effect on the
 <<push2#numeric-cue-variables,Ableton Push page>>.)
 
+[[scrolling]]
 === Scrolling
 
 The show will likely have many more cues than fit on the pad grid; the
@@ -139,11 +139,12 @@ active arrow scrolls the view one &ldquo;page&rdquo; in that
 direction. In the photo below, it is currently possible to scroll down
 and to the left:
 
-image::LaunchpadPro-scroll.jpg[Launchpad Pro interface]
+image::LaunchpadPro-scroll.jpg[Launchpad Pro interface,800,539]
 
 If you hold down the kbd:[Shift] button, the arrows will scroll you as
 far as possible in the direction that you press.
 
+[[metronome-control]]
 === Metronome Control
 
 The kbd:[Click] button lets you monitor and adjust the Metronome that
@@ -196,6 +197,7 @@ you can also use the kbd:[Shift] button to align at the next bigger
 boundary: If tapping kbd:[Click] would normally move the bar,
 shift-tapping will move the phrase.
 
+[[sharing-the-launchpad-pro]]
 === Sharing the Launchpad Pro
 
 If you are using Afterglow at the same time as Ableton Live, you can
@@ -208,6 +210,7 @@ point Afterglow will light it up.
 NOTE: Future releases may take advantage of more of the buttons on the
 controller.
 
+[[using-launchpad-mk2]]
 == Using Launchpad Mk2
 
 The Launchpad Mk2 is very similar to the Pro, except that it lacks
@@ -221,6 +224,7 @@ Launchpad Mini and Launchpad S
 {api-doc}afterglow.controllers.launchpad-mk2.html[mapping] uses the
 same arrangement of round buttons as those controllers.
 
+[[using-launchpad-mini-and-launchpad-s]]
 == Using Launchpad Mini and Launchpad S
 
 These two controllers share the same
@@ -234,6 +238,7 @@ state.
 > The mapping of these controllers was made possible thanks to the
   kind loan of a Launchpad Mini for that purpose by Novation.
 
+[[cue-grid-colors]]
 === Launchpad Mini and S Cue Grid Colors
 
 Pads which have no cues associated with them are dark. If the pad has
@@ -250,7 +255,7 @@ buttons on the right side are used to adjust the metronome, and start
 or stop the show, as shown:
 
 [[launchpad-mini-image]]
-image::LaunchpadMini.jpg[Launchpad Mini interface]
+image::LaunchpadMini.jpg[Launchpad Mini interface,1186,1194]
 
 > The Tap Tempo button corresponds to the button labeled Volume on the
 Launchpad S (and on the decal which comes with the Launchpad Mini),
@@ -266,16 +271,4 @@ mappings, if you hold down the Shift button (the bottom right round
 button) while launching such a momentary cue, it will stay running
 even after you let it go, and in that case will be green.
 
-==== License
-
-+++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
-Copyright © 2015-2018 http://deepsymmetry.org[Deep Symmetry, LLC]
-
-Distributed under the
-http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
-1.0], the same as Clojure. By using this software in any fashion, you
-are agreeing to be bound by the terms of this license. You must not
-remove this notice, or any other, from this software. A copy of the
-license can be found in
-https://deepsymmetry.org/afterglow/resources/public/epl-v10.html[resources/public/epl-v10.html]
-within this project.
+include::partial$Footer.adoc[]

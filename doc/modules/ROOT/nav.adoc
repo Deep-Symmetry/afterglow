@@ -135,6 +135,18 @@
 *** xref:mapping_sync.adoc#using-novation-launchpad[Using Novation Launchpad]
 *** xref:mapping_sync.adoc#setting-up-grid-controller-bindings[Setting Up Grid Controller Bindings]
 
+
+* xref:launchpad.adoc[Using Novation Launchpad]
+** xref:launchpad.adoc#binding-to-a-launchpad[Binding]
+** xref:launchpad.adoc#using-launchpad-pro[Using Launchpad Pro]
+*** xref:launchpad.adoc#show-control[Show Control]
+*** xref:launchpad.adoc#scrolling[Scrolling]
+*** xref:launchpad.adoc#metronome-control[Metronome Control]
+*** xref:launchpad.adoc#sharing-the-launchpad-pro[Sharing with Live]
+** xref:launchpad.adoc#using-launchpad-mk2[Using Launchpad Mk2]
+** xref:launchpad.adoc#using-launchpad-mini-and-launchpad-s[Using Launchpad Mini and S]
+*** xref:launchpad.adoc#cue-grid-colors[Cue Grid Colors]
+
 * xref:rendering_loop.adoc[The Rendering Loop]
 ** xref:rendering_loop.adoc#frame-rendering-stages[Frame Rendering Stages]
 ** xref:rendering_loop.adoc#assigners[Assigners]
