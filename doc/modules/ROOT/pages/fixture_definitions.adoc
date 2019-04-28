@@ -323,19 +323,18 @@ Each channel specification map has the following content:
 |Purpose
 
 |:offset
-
-[[channel-offset]]
-|The number that identifies the channel. Each fixture listens to one
- or more channels, and is itself configured to a partcular DMX channel
- number (DMX channels range from 1 to 512). That configuration defines
- the _first_ channel the fixture listens to. The `:offset` value tells
- Afterglow how the current channel specification relates to the
- fixture's configured (starting) channel number. An offset of `1`
- corresponds to the first channel the fixture is listening to, which
- would be the channel number configured on the fixture's front panel
- (or via its DIP switches or jumpers if it is really old-school). The
- second channel would have offset `2`, and would correspond to the
- channel one greater than the fixture is configured to listen to.
+|[[channel-offset]]The number that identifies the channel. Each
+ fixture listens to one or more channels, and is itself configured to
+ a partcular DMX channel number (DMX channels range from 1 to 512).
+ That configuration defines the _first_ channel the fixture
+ listens to. The `:offset` value tells Afterglow how the current
+ channel specification relates to the fixture's configured (starting)
+ channel number. An offset of `1` corresponds to the first channel the
+ fixture is listening to, which would be the channel number configured
+ on the fixture's front panel (or via its DIP switches or jumpers if
+ it is really old-school). The second channel would have offset `2`,
+ and would correspond to the channel one greater than the fixture is
+ configured to listen to.
 
 Although it might seem more natural (at least to a programmer) to
 start the offset with `0`, because then you could calculate the actual
@@ -356,7 +355,6 @@ definition, although that is a reasonable practice, making it easier
 to match them up with the manual.
 
 |:fine-offset
-
 |There is one circumstance in which there _will_ be gaps in the
 `:offset` values for your channel definitions. Sometimes a pair of
 channels are used to express a single value, such as pan, tilt, or a
@@ -373,7 +371,6 @@ handy features which make it useful even when you are creating a
 channel specification that does not need a `:fine-offset` value).
 
 |:type
-
 |Tells afterglow the kind of channel this is. Special values include
  `:color` for a channel that contains a color intensity, `:dimmer` for
  controlling brightness independent of color, and `:pan` and `:tilt`
@@ -383,7 +380,6 @@ channel specification that does not need a `:fine-offset` value).
  sent is `:control`.
 
 |:color
-
 |When the channel `:type` is `:color`, this key is also present to
  tell Afterglow what color the channel controls the intensity of.
  Afterglow uses this information to enable color mixing using multiple
@@ -396,9 +392,7 @@ channel specification that does not need a `:fine-offset` value).
  Afterglow knows how to mix them in.
 
 |:hue
-
-[[hue-mixing]]
-|When the channel `:type` is `:color`, this key is optionally present
+|[[hue-mixing]]When the channel `:type` is `:color`, this key is optionally present
  to tell Afterglow the hue value of the LEDs controlled by the
  channel. This allows Afterglow to perform color mixing with
  non-standard LED colors. Its value is the numeric hue (expressed in
@@ -416,7 +410,6 @@ decide whether or not to include them for its amber and ultraviolet
 channels.
 
 |:functions
-
 |A list of <<function-specifications,Function Specifications>> which
  identify ranges of DMX values that can be sent to the channel, and
  which perform particular functions. Fixture manufacturers often use a
@@ -431,8 +424,7 @@ channels.
  function map even when you are creating a single-function channel.
 
 |:inverted-from
-
-[[inverted-channels]] |If this key is present, the value established
+|[[inverted-channels]]If this key is present, the value established
 by the channel's <<rendering_loop#channel-assigners,assigners>> will
 be
 {api-doc}afterglow.effects.channel.html#var-apply-channel-value[reversed]
@@ -465,7 +457,6 @@ following content:
 |Purpose
 
 |:channels
-
 | A list of channel specifications which tell Afterglow about the DMX
 channels that this individual head responds to. These have exactly the
 same structure as the channel specifications for the main fixture, as
@@ -475,7 +466,6 @@ should be in the main list; if it affects only a single head, it
 should be in that head's list.
 
 |:x
-
 |The offset along the fixture X axis, in meters, from the geometric
  center of the fixture (the point at which Afterglow is told the
  fixture is located when patching the fixture) and the geometric
@@ -486,7 +476,6 @@ should be in that head's list.
  meters.
 
 |:y
-
 |The offset along the fixture Y axis, in meters, from the geometric
  center of the fixture (the point at which Afterglow is told the
  fixture is located when patching the fixture) and the geometric
@@ -497,7 +486,6 @@ should be in that head's list.
  meters.
 
 |:z
-
 |The offset along the fixture Z axis, in meters, from the geometric
  center of the fixture (the point at which Afterglow is told the
  fixture is located when patching the fixture) and the geometric
@@ -508,7 +496,6 @@ should be in that head's list.
  meters.
 
 |:x-rotation
-
 |If this head aims in a different direction than the fixture as a
  whole, this value tells afterglow the angle in radians it is rotated
  around the X axis. The <<show_space#show-space,Show Space>> page
@@ -517,7 +504,6 @@ should be in that head's list.
  to radians.
 
 |:y-rotation
-
 |If this head aims in a different direction than the fixture as a
  whole, this value tells afterglow the angle in radians it is rotated
  around the Y axis. The <<show_space#show-space,Show Space>> page
@@ -526,7 +512,6 @@ should be in that head's list.
  to radians.
 
 |:z-rotation
-
 |If this head aims in a different direction than the fixture as a
  whole, this value tells afterglow the angle in radians it is rotated
  around the Z axis. The <<show_space#show-space,Show Space>> page
@@ -562,7 +547,6 @@ that range. Each map has the following content:
 |Purpose
 
 |:start
-
 |The beginning of the function range: the lowest DMX value which
  activates this function on the channel. Must be a legal DMX value,
  from `0` to `255`, and less than or equal to `:end`. Ranges must not
@@ -570,7 +554,6 @@ that range. Each map has the following content:
  other function range defined for the channel.
 
 |:end
-
 |The end of the function range: the highest DMX value which activates
  this function on the channel. Must be a legal DMX value, from `0` to
  `255`, and greater than or equal to `:start`. Ranges must not
@@ -578,7 +561,6 @@ that range. Each map has the following content:
  other function range defined for the channel.
 
 |:type
-
 |A keyword which identifies the nature of the function. This is how
  <<effects#function-effects,Function Effects>> and
  <<cues#creating-function-cues,Function Cues>> will find the effect,
@@ -589,7 +571,6 @@ that range. Each map has the following content:
  https://github.com/Deep-Symmetry/afterglow/issues[issue] requesting it.
 
 |:range
-
 |Tells Afterglow what kind of a function range this is. Some functions
  are simply either off or on, and even if multiple DMX values exist
  within the function range, the result of using any of them is no
@@ -602,7 +583,6 @@ that range. Each map has the following content:
  <<push2#effect-control,Ableton Push Effect Control interface>>.
 
 |:label
-
 |Specifies a label that should be used when creating a user interface
  that refers to this function. <<cues#creating-function-cues,Function
  Cues>> will use this as the label text in the grid cell they create
@@ -612,7 +592,6 @@ that range. Each map has the following content:
  something more readable.
 
 |:var-label
-
 |Specifies a label that should be used when creating a user interface
  for adjusting the value associated with this function (so it makes
  sense to set this only when `:range` is `:variable`).
@@ -623,7 +602,6 @@ that range. Each map has the following content:
  &ldquo;Level&rdquo; will be displayed under the encoder knob.
 
 |:scale-fn
-
 |A function that will be called to scale the function value being
  requested by an effect. For functions whose `:range` is `:variable`,
  Afterglow function effects can vary the value being sent to activate
@@ -1002,8 +980,7 @@ yours.
 
 |:strobe
 
-[[strobe-function]]
-|Causes the fixture to flash on and off abruptly (and usually
+|[[strobe-function]]Causes the fixture to flash on and off abruptly (and usually
  rapidly). This is typically a variable-range function, so different
  values within the function range cause the fixture to strobe at
  different speeds. If possible, use a `:scale-fn` function (with the
