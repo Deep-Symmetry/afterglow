@@ -9,6 +9,7 @@
 /.nrepl-port
 /checkouts
 /classes
+/doc/build
 /gh-pages
 /pom.xml
 /pom.xml.asc

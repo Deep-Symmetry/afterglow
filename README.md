@@ -2,7 +2,7 @@
 
 [![Gitter](https://img.shields.io/gitter/room/brunchboy/afterglow.svg)](https://gitter.im/brunchboy/afterglow)
  <image align="right" width="275"
- src="doc/assets/Afterglow-logo-padded-left.png"> <br/><br/> An
+ src="doc/modules/ROOT/assets/images/Afterglow-logo-padded-left.png"> <br/><br/> An
  environment supporting
  [live coding](https://en.wikipedia.org/wiki/Live_coding) for the
  creation of algorithmic light shows in [Clojure](http://clojure.org),
@@ -21,71 +21,76 @@
 ### Documentation Overview
 
 This page provides an introduction in how to install and use
-Afterglow. The main
-[documentation](doc/README.adoc#afterglow-documentation) goes much
-deeper, and there is also
-[API documentation](http://deepsymmetry.org/afterglow/api-doc/index.html).
-For more interactive help, the
-[Afterglow room on Gitter](https://gitter.im/brunchboy/afterglow) is
-the place to start, and if you want to see (or contribute to) more
-structured and lasting community-driven documentation, there is also a
-project [wiki](https://github.com/Deep-Symmetry/afterglow/wiki).
+Afterglow. The [Developer
+Guide](https://deepsymmetry.org/afterglow/guide/) goes much deeper,
+and there is also [API
+documentation](http://deepsymmetry.org/afterglow/api-doc/index.html).
+For more interactive help, the [Afterglow room on
+Gitter](https://gitter.im/brunchboy/afterglow) is the place to start,
+and if you want to see (or contribute to) more structured and lasting
+community-driven documentation, there is also a project
+[wiki](https://github.com/Deep-Symmetry/afterglow/wiki).
 
 ## Why Explore Afterglow?
 
 > tl;dr&mdash;show me? Check out the
-> [Show Control pics](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/README.adoc#show-control)
-> and [performance video](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/videos.adoc#videos).
+> [Show Control pics](https://deepsymmetry.org/afterglow/guide/afterglow/README.html#show-control)
+> and [performance video](https://deepsymmetry.org/afterglow/guide/afterglow/videos.html).
 
 As suggested by the live-coding orientation mentioned above, which is
 designed to let you inject your own code right into the frame
 rendering process, Afterglow takes a very different approach to
-controlling light shows than other software. It won&rsquo;t be right for
-everyone, but will be extremely compelling to a particular niche. The
-early stages of its
-[rendering loop](doc/rendering_loop.adoc#the-rendering-loop) can offer
-higher levels of abstraction than the usual DMX
-[channel value](doc/effects.adoc#channel-effects) or
-[fixture function](doc/effects.adoc#function-effects) (although those
-are fully supported too):
+controlling light shows than other software. It won&rsquo;t be right
+for everyone, but will be extremely compelling to a particular niche.
+The early stages of its [rendering
+loop](https://deepsymmetry.org/afterglow/guide/afterglow/rendering_loop.html#the-rendering-loop)
+can offer higher levels of abstraction than the usual DMX [channel
+value](https://deepsymmetry.org/afterglow/guide/afterglow/effects.html#channel-effects)
+or [fixture
+function](https://deepsymmetry.org/afterglow/guide/afterglow/effects.html#function-effects)
+(although those are fully supported too):
 
 * You can express your desired results in terms of an abstract
-  [color](doc/effects.adoc#color-effects), including support for the
-  hue-saturation-lightness model, which is great for algorithmic
-  looks, and have it translated to whatever color channels (or color
-  wheel) your fixture supports.
+  [color](https://deepsymmetry.org/afterglow/guide/afterglow/effects.html#color-effects),
+  including support for the hue-saturation-lightness model, which is
+  great for algorithmic looks, and have it translated to whatever
+  color channels (or color wheel) your fixture supports.
 
 * Groups of moving heads can be told to face particular
-  [directions](doc/effects.adoc#direction-effects) by specifying
-  parameterized vectors, or to [aim](doc/effects.adoc#aim-effects) at
-  a particular point in space, and Afterglow figures out how to
+  [directions](https://deepsymmetry.org/afterglow/guide/afterglow/effects.html#direction-effects)
+  by specifying parameterized vectors, or to
+  [aim](https://deepsymmetry.org/afterglow/guide/afterglow/effects.html#aim-effects)
+  at a particular point in space, and Afterglow figures out how to
   translate that into DMX control values given its understanding of
-  the [fixture](doc/fixture_definitions.adoc#fixture-definitions) and
-  [where](doc/show_space.adoc#show-space), and at what angle, you hung
-  it.
+  the
+  [fixture](https://deepsymmetry.org/afterglow/guide/afterglow/fixture_definitions.html)
+  and
+  [where](https://deepsymmetry.org/afterglow/guide/afterglow/show_space.html),
+  and at what angle, you hung it.
 
 * There are a variety of
-  [oscillators](doc/oscillators.adoc#oscillators) which can
-  efficiently drive effect parameters.
+  [oscillators](https://deepsymmetry.org/afterglow/guide/afterglow/oscillators.html)
+  which can efficiently drive effect parameters.
 
 * You can also create
-  [complex effects](doc/effects.adoc#complex-effects), with
-  [adjustable parameters](doc/parameters.adoc#dynamic-parameters) that
-  can be controlled through a rich binding to an
-  [Ableton Push](doc/push2.adoc#using-ableton-push-2) or
-  [Novation Launchpad family](doc/launchpad.adoc#using-the-novation-launchpad-family)
+  [complex effects](https://deepsymmetry.org/afterglow/guide/afterglow/effects.html#complex-effects),
+  with
+  [adjustable parameters](https://deepsymmetry.org/afterglow/guide/afterglow/parameters.html)
+  that can be controlled through a rich binding to an
+  [Ableton Push](https://deepsymmetry.org/afterglow/guide/afterglow/push2.html) or
+  [Novation Launchpad family](https://deepsymmetry.org/afterglow/guide/afterglow/launchpad.html)
   controller, or via
-  [Open Sound Control](doc/mapping_sync.adoc#open-sound-control)
+  [Open Sound Control](https://deepsymmetry.org/afterglow/guide/afterglow/mapping_sync.html#open-sound-control)
   (OSC)&mdash;even wirelessly from a tablet or smartphone.
 
 * The timing of effects is pervasively influenced by a deep notion of
-  [musical time](doc/metronomes.adoc#metronomes), with support for
-  synchronization via
-  [MIDI clock](doc/mapping_sync.adoc#syncing-to-midi-clock),
-  [Traktor Beat Phase](doc/mapping_sync.adoc#syncing-to-traktor-beat-phase),
+  [musical time](https://deepsymmetry.org/afterglow/guide/afterglow/metronomes.html),
+  with support for synchronization via
+  [MIDI clock](https://deepsymmetry.org/afterglow/guide/afterglow/mapping_sync.html#syncing-to-midi-clock),
+  [Traktor Beat Phase](https://deepsymmetry.org/afterglow/guide/afterglow/mapping_sync.html#syncing-to-traktor-beat-phase),
   or Pioneer
-  [Pro DJ Link](doc/mapping_sync.adoc#syncing-to-pro-dj-link) beat
-  grids.
+  [Pro DJ Link](https://deepsymmetry.org/afterglow/guide/afterglow/mapping_sync.html#syncing-to-pro-dj-link)
+  beat grids.
 
 * You can even host Afterglow within
   [Cycling ‘74’s Max](https://cycling74.com/) visual interactive
@@ -150,10 +155,10 @@ clarification or reinforcement).
 
 Most of the crazy ideas have panned out and been implemented, and I am
 fleshing out the basic details needed for everyday use. The examples
-are starting to be intriguing and informative, and the
-[documentation](doc/README.adoc#afterglow-documentation) is getting
-substantial. The modeling of fixtures, channels, etc. is coming
-together nicely, though there may be a few more changes.
+are starting to be intriguing and informative, and the [Developer
+Guide](https://deepsymmetry.org/afterglow/guide/afterglow/README.html)
+is getting substantial. The modeling of fixtures, channels, etc. is
+coming together nicely, though there may be a few more changes.
 
 There is now an embedded web application, which is growing into a show
 control interface for people who are not Clojure hackers, and a useful
@@ -176,8 +181,10 @@ if it sounds interesting!
 > The rest of this document primarily provides an introduction to the
 > configuration of Afterglow from the command line and text files. The
 > show control interface is explained in the
-> [web](doc/README.adoc#the-embedded-web-interface) and
-> [Push](doc/push2.adoc#using-ableton-push-2) sections.
+> [web](https://deepsymmetry.org/afterglow/guide/afterglow/README.html#web-ui)
+> and
+> [Push](https://deepsymmetry.org/afterglow/guide/afterglow/push2.html)
+> sections.
 
 Although you will often want to use Afterglow from a Clojure repl, you
 can also bring it up as an executable jar, and run it using `java
@@ -344,13 +351,13 @@ controls whether a browser window should be automatically opened):
 (core/start-web-server 16000 true)
 ```
 
-![Web interface](doc/assets/WebHome.png)
+![Web interface](doc/modules/ROOT/assets/images/WebHome.png)
 
 As noted at the bottom, the web interface provides a minimal console
 as well, so if you are running Afterglow from a jar and just want to
 tweak something quickly, you can use that:
 
-![Web console](doc/assets/Console.png)
+![Web console](doc/modules/ROOT/assets/images/Console.png)
 
 > However, this does not offer the valuable support you would have
 > from a dedicated REPL like
@@ -377,7 +384,7 @@ scroll around a larger grid than fits on the screen at one time
 (although it has reduced colors, frame rate, and quality when compared
 to the actual web interface):
 
-![Show control](doc/assets/ShowGrid.gif)
+![Show control](doc/modules/ROOT/assets/images/ShowGrid.gif)
 
 Here is the Ableton Push interface tied to the same cue grid. This
 physical control surface lets you trigger more than one cue at the
@@ -386,7 +393,7 @@ pressure sensitivity so your effect intensity, speed, color, or other
 parameters can be varied as you alter the pressure which you are
 applying to the pads:
 
-![Push interface](doc/assets/GrandMaster2.jpg)
+![Push interface](doc/modules/ROOT/assets/images/GrandMaster2.jpg)
 
 You can adjust running effects, scroll around the cue grid, and adjust
 or sync the show metronome from either interface. Other MIDI
@@ -502,21 +509,21 @@ plugged in:
 
 And then the last fader acts as my grand master dimmer, and I can
 quickly get relief from overly bright lights. (In a real performance
-context, you would want to use
-[this alternate approach](doc/mapping_sync.adoc#automatically-creating-bindings-when-a-device-connects)
+context, you would want to use [this alternate
+approach](https://deepsymmetry.org/afterglow/guide/afterglow/mapping_sync.html#automatic-bindings)
 to automatically set up your bindings whenever the controller is
 connected. That way, if someone trips over the controller cable, as
 soon as you plug it back in, you are good to go again.)
 
-> If you have an Ableton Push, it is even easier to have
-> [intutive control](doc/push2.adoc#show-control) over your show’s
-> grand master dimmer. As soon as you bind the Push to your show, the
-> Push Master encoder is automatically tied to the show master dimmer,
-> with nice graphical feedback in the text area. Plus you get deep
-> control over the show metronome as well, as shown in the photo
-> above. If you called `(use-sample-show)` as discussed above, as soon
-> as you connect and power on your Push, Afterglow will activate its
-> show control interface.
+> If you have an Ableton Push, it is even easier to have [intutive
+> control](https://deepsymmetry.org/afterglow/guide/afterglow/push2.html#show-control)
+> over your show’s grand master dimmer. As soon as you bind the Push
+> to your show, the Push Master encoder is automatically tied to the
+> show master dimmer, with nice graphical feedback in the text area.
+> Plus you get deep control over the show metronome as well, as shown
+> in the photo above. If you called `(use-sample-show)` as discussed
+> above, as soon as you connect and power on your Push, Afterglow will
+> activate its show control interface.
 
 Moving on, though... we can change the global color to orange:
 
@@ -560,9 +567,9 @@ Clojure seize control of your lights!
 
 If you have DJ software or a mixer sending you MIDI clock data, you
 can sync the show’s BPM to it (see the
-[docs](doc/mapping_sync.adoc#syncing-to-midi-clock) for details, and
-for a Traktor controller mapping file that lets you sync to its beat
-phase information as well):
+[docs](https://deepsymmetry.org/afterglow/guide/afterglow/mapping_sync.html#syncing-to-midi-clock)
+for details, and for a Traktor controller mapping file that lets you
+sync to its beat phase information as well):
 
 ```clojure
 (show/sync-to-external-clock (afterglow.midi/sync-to-midi-clock "traktor"))
@@ -584,12 +591,14 @@ Or, if you need to be woken up a bit,
   "Fast blast!" :strobe 100 (show/all-fixtures)))
 ```
 
-> The [project documentation](doc/README.adoc#afterglow-documentation)
-> has more examples of
-> [building effects](doc/effects.adoc#effect-examples), and
-> [mapping parameters](doc/mapping_sync.adoc#midi-mapping-and-beat-sync)
-> to MIDI controllers. There is also low-level
-> [API documentation](http://deepsymmetry.org/afterglow/api-doc), but the
+> The [Developer
+> Guide](https://deepsymmetry.org/afterglow/guide/afterglow/README.html)
+> has more examples of [building
+> effects](https://deepsymmetry.org/afterglow/guide/afterglow/effects.html#effect-examples),
+> and [mapping
+> parameters](https://deepsymmetry.org/afterglow/guide/afterglow/mapping_sync.html)
+> to MIDI controllers. There is also low-level [API
+> documentation](http://deepsymmetry.org/afterglow/api-doc), but the
 > project documentation is the best starting point for a conceptual
 > overview and introduction.
 
@@ -648,8 +657,9 @@ encounter them!
 Everything beyond this point in this document is written for people
 who are working on enhancing Afterglow itself.
 
-If you are trying to learn how to use it, jump to the main
-[documentation](doc/README.adoc#afterglow-documentation) page now!
+If you are trying to learn how to use it, jump to the main [Developer
+Guide](https://deepsymmetry.org/afterglow/guide/afterglow/README.html)
+page now!
 
 ## Release Checklist
 
@@ -1020,7 +1030,7 @@ though.
 
 ## License
 
-<img align="right" alt="Deep Symmetry" src="doc/assets/DS-logo-bw-200-padded-left.png">
+<img align="right" alt="Deep Symmetry" src="doc/modules/ROOT/assets/images/DS-logo-bw-200-padded-left.png">
 
 Copyright © 2015-2018 [Deep Symmetry, LLC](http://deepsymmetry.org)
 

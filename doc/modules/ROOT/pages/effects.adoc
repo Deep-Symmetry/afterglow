@@ -1,21 +1,7 @@
 = Effects
 James Elliott <james@deepsymmetry.org>
-:icons: font
 :toc:
 :toc-placement: preamble
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
-
-// Set up support for relative links on GitHub, and give it
-// usable icons for admonitions, w00t! Add more conditions
-// if you need to support other environments and extensions.
-ifdef::env-github[]
-:outfilesuffix: .adoc
-:tip-caption: :bulb:
-:note-caption: :information_source:
-:important-caption: :heavy_exclamation_mark:
-:caution-caption: :fire:
-:warning-caption: :warning:
-endif::[]
 
 Effects determine what a light or group of lights are doing at a given
 moment in time.
@@ -90,6 +76,7 @@ control. Not all fixtures have features which allow them to
 participate in all kinds of effects. Afterglow effects will
 simply ignore fixtures which are unable to reapond to them.
 
+[[dimmer-effects]]
 === Dimmer Effects
 
 Dimmer effects set the basic brightness level of a fixture. To create
@@ -215,6 +202,7 @@ limitations of fixtures that lack actual dimmer channels, and allow
 them to participate as nearly first-class citizens of Afterglow's
 dimmer effects.
 
+[[color-effects]]
 === Color Effects
 
 One of the most common basic effects you will be using to create the
@@ -306,6 +294,7 @@ combinations of those sets created using Clojure's rich
 http://clojure.github.io/clojure/clojure.set-api.html[set-manipulation
 API], to the effect-creation functions.
 
+[[direction-effects]]
 === Direction Effects
 
 Moving-head fixtures can create particularly exciting and dynamic shows.
@@ -356,6 +345,7 @@ unexpected jiggling or changes in direction. For such cases you may be
 better off using lower-level <<pan-tilt-effects,pan/tilt effects>>,
 which operate closer to the way the lights themselves do.
 
+[[aim-effects]]
 === Aim Effects
 
 These are very similar to <<direction-effects,direction effects>>,
@@ -391,6 +381,7 @@ will all face the same direction. If they are assigned the same aim
 effect, they will all face slightly different directions in order to
 aim at the same point in space.
 
+[[pan-tilt-effects]]
 === Pan/Tilt Effects
 
 These are essentially the same as <<direction-effects,direction
@@ -436,6 +427,7 @@ effect, they will all face the same direction. If they are assigned
 the same aim effect, they will all face slightly different directions
 in order to aim at the same point in space.
 
+[[function-effects]]
 === Function Effects
 
 Fixtures have a wide variety of different capabilities, often more
@@ -517,6 +509,7 @@ which is passed the value that the effect is trying to establish, and
 converts it to a position in that fixture’s range which attempts to
 approximate that strobing rate.
 
+[[channel-effects]]
 === Channel Effects
 
 When you just want to send a specific number to a particular DMX
@@ -551,12 +544,14 @@ types which Afterglow does not yet have a more sophisticated
 understanding, and then perhaps you will end up creating a whole new
 category of effects as your experimentation progresses.
 
+[[compound-effects]]
 == Compound Effects
 
 The most straightforward way to create interesting shows is to combine
 multiple simple effects in different ways. Compound effects are tools
 which enable that.
 
+[[scenes]]
 === Scenes
 
 The simplest way to build a compound effect is to combine a group of
@@ -581,6 +576,7 @@ you'll see all the lights turn blue, and a random pattern of white
 effect will end both underlying effects in a coordinated fashion (the
 blue color effect will linger as the last sparkles fade out).
 
+[[blank-effects]]
 === Blank Effects
 
 A blank effect does nothing at all. Although this might not
@@ -599,6 +595,7 @@ purpose is simply to provide a way to adjust a show variable. The
 <<color#colors-and-cues,Colors and Cues>> discussion provides an
 example of doing just that.
 
+[[fades]]
 === Fades
 
 A fade effect lets you smoothly transition from one effect to another,
@@ -653,6 +650,7 @@ turned. Switching either color effect to `(blank)` would insted fade
 to or from whatever color the fixtures were otherwise displaying at
 the time.
 
+[[chases]]
 === Chases
 
 Chase effects allow you to sequence a series of effects one after
@@ -712,6 +710,7 @@ them in the order 1 &rarr; 2 &rarr; 3 &rarr; 1 &rarr; 2 &rarr; 3
 &rarr; 1&hellip; while a value of `:bounce` would give you 1 &rarr; 2
 &rarr; 3 &rarr; 2 &rarr; 1 &rarr; 2 &rarr; 3 &rarr; 2&hellip;.
 
+[[conditional-effects]]
 === Conditional Effects
 
 The
@@ -742,6 +741,7 @@ running, by means of a Variable Effect, described in the next section.
                                  (beyond/laser-color-effect laser-show c))))
 ----
 
+[[variable-effects]]
 === Variable Effects
 
 The
@@ -781,6 +781,7 @@ This variable setting causes the Conditional Effects in scenes created
 by `global-color-effect` (as described in the preceding section) to
 also send commands to the laser show.
 
+[[complex-effects]]
 === Complex Effects
 
 These are effects which build on more than one of the capabilities
@@ -934,6 +935,7 @@ optional keyword parameters. See the
 {api-doc}afterglow.effects.fun.html#var-metronome-effect[API
 documentation] for details.
 
+[[the-effect-lifecycle]]
 == The Effect Lifecycle
 
 When an effect is added to a show via `(show/add-effect! :effect-key
@@ -991,6 +993,7 @@ If `end-effect!` is called a second time for an effect which was already
 asked to end, even if `force` is false, it will be removed forcibly at
 that point.
 
+[[effect-examples]]
 == Effect Examples
 
 Here are a few ways in which effects can be used and combined.
@@ -1000,6 +1003,7 @@ in the namespace `afterglow.examples`. This is the default namespace you
 get if you check out the project and run `lein repl`.
 
 
+[[oscillator-effects]]
 === Oscillator Effects
 
 Oscillators in Afterglow are a flexible way of turning the timing
@@ -1084,6 +1088,7 @@ Suddenly it is crazy fast!
 
 Back to a sedate fade.
 
+[[spatial-effects]]
 === Spatial Effects
 
 Rather than spreading the rainbow out in time, how about if we spread it
@@ -1125,6 +1130,7 @@ TIP: Looking at the source code of the <<complex-effects,complex
 effects>> is a great way to learn about how to create effects, and to
 get ideas for ways to vary or build on them.
 
+[[layering-effects]]
 === Layering Effects
 
 Rather than building separate effects for every combination of ideas,
@@ -1261,16 +1267,4 @@ And here is a complete, concrete example of how you can try out
 > This assigns a blue color to all the lights, and pulses them to
 white once per beat.
 
-#### License
-
-+++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
-Copyright © 2015-2018 http://deepsymmetry.org[Deep Symmetry, LLC]
-
-Distributed under the
-http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
-1.0], the same as Clojure. By using this software in any fashion, you
-are agreeing to be bound by the terms of this license. You must not
-remove this notice, or any other, from this software. A copy of the
-license can be found in
-https://deepsymmetry.org/afterglow/resources/public/epl-v10.html[resources/public/epl-v10.html]
-within this project.
+include::partial$Footer.adoc[]

@@ -1,22 +1,7 @@
 = MIDI Mapping and Beat Sync
 James Elliott <james@deepsymmetry.org>
-:icons: font
-:experimental:
 :toc:
 :toc-placement: preamble
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
-
-// Set up support for relative links on GitHub, and give it
-// usable icons for admonitions, w00t! Add more conditions
-// if you need to support other environments and extensions.
-ifdef::env-github[]
-:outfilesuffix: .adoc
-:tip-caption: :bulb:
-:note-caption: :information_source:
-:important-caption: :heavy_exclamation_mark:
-:caution-caption: :fire:
-:warning-caption: :warning:
-endif::[]
 
 Afterglow is designed to work with MIDI controllers and DJ equipment.
 You can bind physical controller elements to trigger cues and adjust
@@ -30,6 +15,7 @@ in the namespace `afterglow.examples`. This is the default namespace you
 get if you check out the project and run `lein repl`. The sample show is
 assumed to be running; if not, `(show/start!)`
 
+[[mapping-cues-to-a-controller]]
 == Mapping Cues to a Controller
 
 Although the most convenient and powerful way of running cues with
@@ -82,11 +68,10 @@ variable, because you will need to pass it to
 Or you can simply disconnect the controller from your system, and
 Afterglow will clean up any mappings that had been assigned to it.
 
-Also be sure to see the section
-<<automatically-creating-bindings-when-a-device-connects,below>>
-that explains how you can arrange to have afterglow automatically call
-the relevant MIDI mapping functions to set up your device whenever it
-is connected.
+Also be sure to see the section <<automatic-bindings,below>> that
+explains how you can arrange to have afterglow automatically call the
+relevant MIDI mapping functions to set up your device whenever it is
+connected.
 
 NOTE: If you are mapping a cue that is set up with velocity sensitive
 variables, and your controller is not actually velocity-sensitive, you
@@ -171,11 +156,10 @@ variable, because you will need to pass it to
 Or you can simply disconnect the controller from your system, and
 Afterglow will clean up any mappings that had been assigned to it.
 
-Also be sure to see the section
-<<automatically-creating-bindings-when-a-device-connects,below>>
-that explains how you can arrange to have afterglow automatically call
-the relevant MIDI mapping functions to set up your device whenever it
-is connected.
+Also be sure to see the section <<automatic-bindings,below>> that
+explains how you can arrange to have afterglow automatically call the
+relevant MIDI mapping functions to set up your device whenever it is
+connected.
 
 == Finding Mapping Details
 
@@ -229,6 +213,7 @@ examples can still help explain how your controller's binding works,
 or encourage you to write and share a binding for a new controller
 that you happen to have.
 
+[[automatic-bindings]]
 == Automatically Creating Bindings When a Device Connects
 
 You can tell Afterglow to watch for a particular device to be
@@ -482,6 +467,7 @@ to remove MIDI mappings. This would undo what we did above:
 Simply detaching the MIDI controller also automatically removes any
 mappings that were created for it.
 
+[[syncing-to-midi-clock]]
 == Syncing to MIDI Clock
 
 Many DJ mixers automatically send MIDI clock pulses to help synchronize
@@ -567,6 +553,7 @@ sync source:
 ; -> {:type :manual}
 ----
 
+[[syncing-to-traktor-beat-phase]]
 == Syncing to Traktor Beat Phase
 
 If you are using Traktor as your source of MIDI clock synchronization,
@@ -650,6 +637,7 @@ device as a source of Traktor beat-phase synchronization, and if it is
 <<syncing-to-midi-clock,synchronizing a metronome>> with the MIDI
 clock messages on that port, will also synchronize the beats.
 
+[[syncing-to-pro-dj-link]]
 == Syncing to Pro DJ Link
 
 If you are working with Pioneer club gear, such as the Nexus line of
@@ -787,6 +775,7 @@ or even black things out:
 (show/clear-effects!)
 ----
 
+[[open-sound-control]]
 == Open Sound Control
 
 Afterglow also embeds https://github.com/rosejn/osc-clj[osc-clj] so
@@ -937,16 +926,4 @@ above. Or you can just turn off or unplug the controllers. Since
 auto-binding is not active, that will permanently remove them from
 Afterglow's control (at least until you explicitly re-bind them).
 
-==== License
-
-+++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
-Copyright © 2015-2018 http://deepsymmetry.org[Deep Symmetry, LLC]
-
-Distributed under the
-http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
-1.0], the same as Clojure. By using this software in any fashion, you
-are agreeing to be bound by the terms of this license. You must not
-remove this notice, or any other, from this software. A copy of the
-license can be found in
-https://deepsymmetry.org/afterglow/resources/public/epl-v10.html[resources/public/epl-v10.html]
-within this project.
+include::partial$Footer.adoc[]
