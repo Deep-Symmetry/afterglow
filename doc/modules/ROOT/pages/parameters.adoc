@@ -3,18 +3,16 @@ James Elliott <james@deepsymmetry.org>
 :icons: font
 :toc:
 :toc-placement: preamble
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
 
-// Set up support for relative links on GitHub, and give it
-// usable icons for admonitions, w00t! Add more conditions
-// if you need to support other environments and extensions.
 ifdef::env-github[]
+// Set up support for relative links and images on GitHub (even though
+// the documentation is now designed for Antora. Also, need to add
+// the API doc path here, since Antora takes care of it outside of
+// GitHub. Hopefully we can eventually make this an include file, once
+// GitHub *finally* supports those.
 :outfilesuffix: .adoc
-:tip-caption: :bulb:
-:note-caption: :information_source:
-:important-caption: :heavy_exclamation_mark:
-:caution-caption: :fire:
-:warning-caption: :warning:
+:imagesdir: ../assets/images
+:api-doc: http://deepsymmetry.org/afterglow/api-doc/
 endif::[]
 
 Dynamic parameters provide a way to turn a simple cue into something
@@ -22,6 +20,7 @@ which changes over time and space, or reacts to operator input. Most
 cues which take simple values can also take dynamic parameters which
 evaluate to those values.
 
+[[frame-dynamic-parameters]]
 == Frame Dynamic Parameters
 
 When creating a dynamic parameter, you can control _how_ dynamic it is.
@@ -31,6 +30,7 @@ other hand, you want the value to be calculated when the effect is
 started, and then stay constant, you can create the parameter with a
 `false` value for `frame-dynamic?`
 
+[[variable-parameters]]
 == Variable Parameters
 
 Parameters can get their values from a __show variable__. Any number of
@@ -72,7 +72,7 @@ The most common reason you might want to use the explicit creation
 function is that you can control details about the binding by passing
 in optional keyword parameters:
 
-[cols=",,",options="header",]
+[cols="1,1,4",options="header",]
 |=======================================================================
 |Parameter |Default |Purpose
 |`:type` |`Number` |The type of value that is expected in the variable
@@ -120,6 +120,7 @@ which it oscillates, you would write something like this:
               :my-interval :type clojure.lang.Keyword :default :beat))
 ----
 
+[[oscillated-parameters]]
 == Oscillated Parameters
 
 Oscillated parameters vary over time, at a speed controlled by a
@@ -149,7 +150,7 @@ which, as described above, determines how to react to the time
 information provided by the metronome. Additionally, you can supply
 one of the following optional keyword parameters:
 
-[cols=",,",options="header",]
+[cols="1,1,4",options="header",]
 |=======================================================================
 |Parameter |Default |Purpose
 |`:min` |`0` |The smallest value that the oscillated parameter will be
@@ -174,6 +175,7 @@ oscillated parameter being created.
 NOTE: If `:min` ever evaluates greater than or equal to `:max`, the
 oscillator will be pinned to the value of `:min`.
 
+[[step-parameters]]
 == Step Parameters
 
 Like oscillated parameters (above), step parameters vary over time, at
@@ -310,6 +312,7 @@ can themselves be dynamic parameters from the show. If none of them
 are, a more efficient version of the step parameter is built,
 precalculating as much as possible.
 
+[[color-parameters]]
 == Color Parameters
 
 Color parameters are an extremely flexible way of dynamically assigning
@@ -325,7 +328,7 @@ By itself this call would simply return a non-dynamic black color.
 However, you will use one or more of the following optional keyword
 parameters to get the dynamic color you want:
 
-[cols=",,",options="header",]
+[cols="2,1,4",options="header",]
 |=======================================================================
 |Parameter |Default |Purpose
 |`:color` |black |The base, starting color of this dynamic color
@@ -397,11 +400,13 @@ fixed color. But you can easily use frame-dynamic oscillated
 parameters and get lovely shifting rainbow cues, as shown in the
 <<effects#oscillator-effects,effect examples>>.
 
+[[movement]]
 == Movement
 
 There are three different kinds of parameters which tell fixtures how
 to move. They differ in the way that you express direction or aim.
 
+[[direction-parameters]]
 === Direction Parameters
 
 Direction parameters are one way to tell a group of fixtures to point
@@ -424,7 +429,7 @@ fixtures to point directly at the audience. However, you will use one or
 more of the following optional keyword parameters to get the dynamic
 direction you want:
 
-[cols=",,",options="header",]
+[cols="2,1,4",options="header",]
 |=======================================================================
 |Parameter |Default |Purpose
 |`:x` |`0` |The amount the light should point towards audience’s right
@@ -455,6 +460,7 @@ dynamic parameters, such as show <<variable-parameters,variables>>
 the show variable was stored) or <<oscillated-parameters,oscillated
 parameters>>.
 
+[[aim-parameters]]
 === Aim Parameters
 
 Aim parameters are a way to tell a group of fixtures to aim at a
@@ -473,7 +479,7 @@ two meters towards the audience. However, you will use one or more of
 the following optional keyword parameters to get the dynamic target
 point you want:
 
-[cols=",,",options="header",]
+[cols="2,1,4",options="header",]
 |=======================================================================
 |Parameter |Default |Purpose
 |`:x` |`0` |How many meters along the X axis the target point is found
@@ -505,7 +511,8 @@ dynamic parameters, such as show <<variable-parameters,variables>>
 the show variable was stored) or <<oscillated-parameters,oscillated
 parameters>>.
 
-=== Pan Tilt Parameters
+[[pan-tilt-parameters]]
+=== Pan/Tilt Parameters
 
 A more traditional way of aiming fixtures (in contrast to
 <<parameters#direction-parameters,Direction Parameters>>) involves
@@ -526,7 +533,7 @@ parameter telling fixtures to point directly at the audience. However,
 you will use one or more of the following optional keyword parameters
 to get the dynamic angles you want:
 
-[cols=",,",options="header",]
+[cols="2,1,5",options="header",]
 |=======================================================================
 |Parameter |Default |Purpose
 |`:pan` |`0` |How many degrees counter-clockwise should the light turn
@@ -576,6 +583,7 @@ to create a normal direction parameter starting from the same pan/tilt
 parameters described above.
 
 
+[[spatial-parameters]]
 == Spatial Parameters
 
 Spatial parameters allow you to base an effect parameter on the physical
@@ -601,7 +609,7 @@ scaling with a default minimum value of `0`, and passing a value for
 only `:min` activates scaling with a default maximum value of `255`.
 The maximum value must be larger than the minimum value.
 
-[cols=",,",options="header",]
+[cols="2,1,6",options="header",]
 |=======================================================================
 |Parameter |Default |Purpose
 |`:min` | n/a | If present, activates result scaling, and establishes
@@ -629,6 +637,7 @@ excellent building blocks for <<color-parameters,color>>,
 parameters, as shown in the
 <<effects#spatial-effects,effect examples>>.
 
+[[combining-parameters]]
 == Combining Parameters
 
 Sometimes you want to build a cue parameter by combining some other
@@ -673,6 +682,7 @@ applies a transformation parameter to an aim parameter. The function
 in the `examples` namespace shows one way to use these.
 
 
+[[debugging-dynamic-parameters]]
 == Debugging Dynamic Parameters
 
 Since dynamic parameters are such a source of flexibility, they can
@@ -681,6 +691,7 @@ external systems via MIDI events. Here are a few tips on how you can
 check whether the parameter is doing what you expect, and how it is
 feeding into the effects you are creating with it.
 
+[[checking-variable-parameters]]
 === Checking Variable Parameters
 
 If you are using a show variable to hold values as the basis of your
@@ -715,6 +726,7 @@ prints the new values of the variable named `:key` each time it is changed.
 ; prints ":key set to 10"
 ----
 
+[[evaulating-other-parameters]]
 === Evaluating Other Parameters
 
 For all the other kinds of dynamic parameters, there isn't a place
@@ -762,16 +774,4 @@ For more details, see the
 {api-doc}afterglow.effects.params.html[API
 documentation].
 
-==== License
-
-+++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
-Copyright © 2015-2018 http://deepsymmetry.org[Deep Symmetry, LLC]
-
-Distributed under the
-http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
-1.0], the same as Clojure. By using this software in any fashion, you
-are agreeing to be bound by the terms of this license. You must not
-remove this notice, or any other, from this software. A copy of the
-license can be found in
-https://deepsymmetry.org/afterglow/resources/public/epl-v10.html[resources/public/epl-v10.html]
-within this project.
+include::partial$Footer.adoc[]
