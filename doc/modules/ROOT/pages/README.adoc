@@ -247,6 +247,7 @@ Architecture daemon, the status indicator will show Error, and there
 will be a `Details` button you can click to get more information about
 the problem Afterglow is encountering.
 
+[[cues]]
 ==== Cues
 
 The majority of the page is taken up by an 8&times;8 window on to the
@@ -281,6 +282,7 @@ _replace_ the others, rather than running at the same time. The
 into more details about the relationships between cues illustrated in
 the above animation.
 
+[[effect-control]]
 ==== Effect Control
 
 When any effects are running, whether they were launched by a cue
@@ -434,6 +436,7 @@ buttons of your controller, while simultaneously being able to control
 others via the screen and mouse. To do that, simply use the link menu
 to turn off the link.
 
+[[brightness-control]]
 ==== Brightness Control
 
 In the center of the interface below the cue grid is a slider that
