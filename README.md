@@ -1,7 +1,7 @@
 # Afterglow
 
 [![Gitter](https://img.shields.io/gitter/room/brunchboy/afterglow.svg)](https://gitter.im/brunchboy/afterglow)
- <image align="right" width="275"
+ <image align="right" width="275" height="255"
  src="doc/modules/ROOT/assets/images/Afterglow-logo-padded-left.png"> <br/><br/> An
  environment supporting
  [live coding](https://en.wikipedia.org/wiki/Live_coding) for the
@@ -351,13 +351,17 @@ controls whether a browser window should be automatically opened):
 (core/start-web-server 16000 true)
 ```
 
-![Web interface](doc/modules/ROOT/assets/images/WebHome.png)
+<img alt="Web Interface"
+src="doc/modules/ROOT/assets/images/WebHome.png" width="1074"
+height="854">
 
 As noted at the bottom, the web interface provides a minimal console
 as well, so if you are running Afterglow from a jar and just want to
 tweak something quickly, you can use that:
 
-![Web console](doc/modules/ROOT/assets/images/Console.png)
+<img alt="Web Console"
+src="doc/modules/ROOT/assets/images/Console.png" width="850"
+height="690">
 
 > However, this does not offer the valuable support you would have
 > from a dedicated REPL like
@@ -384,7 +388,9 @@ scroll around a larger grid than fits on the screen at one time
 (although it has reduced colors, frame rate, and quality when compared
 to the actual web interface):
 
-![Show control](doc/modules/ROOT/assets/images/ShowGrid.gif)
+<img alt="Show Control"
+src="doc/modules/ROOT/assets/images/ShowGrid.gif" width="998"
+height="912">
 
 Here is the Ableton Push interface tied to the same cue grid. This
 physical control surface lets you trigger more than one cue at the
@@ -393,7 +399,9 @@ pressure sensitivity so your effect intensity, speed, color, or other
 parameters can be varied as you alter the pressure which you are
 applying to the pads:
 
-![Push interface](doc/modules/ROOT/assets/images/GrandMaster2.jpg)
+<img alt="Push Interface"
+src="doc/modules/ROOT/assets/images/GrandMaster2.jpg" width="1200"
+height="978">
 
 You can adjust running effects, scroll around the cue grid, and adjust
 or sync the show metronome from either interface. Other MIDI
@@ -1030,7 +1038,9 @@ though.
 
 ## License
 
-<img align="right" alt="Deep Symmetry" src="doc/modules/ROOT/assets/images/DS-logo-bw-200-padded-left.png">
+<img align="right" alt="Deep Symmetry"
+ src="doc/modules/ROOT/assets/images/DS-logo-bw-200-padded-left.png"
+ width="216" height="123">
 
 Copyright © 2015-2019 [Deep Symmetry, LLC](http://deepsymmetry.org)
 
