@@ -566,8 +566,8 @@ Clojure seize control of your lights!
 ### Further Experiments
 
 If you have DJ software or a mixer sending you MIDI clock data, you
-can sync the show’s BPM to it (see the
-[docs](https://deepsymmetry.org/afterglow/guide/afterglow/mapping_sync.html#syncing-to-midi-clock)
+can sync the show’s BPM to it (see the [Developer
+Guide](https://deepsymmetry.org/afterglow/guide/afterglow/mapping_sync.html#syncing-to-midi-clock)
 for details, and for a Traktor controller mapping file that lets you
 sync to its beat phase information as well):
 
@@ -1032,7 +1032,7 @@ though.
 
 <img align="right" alt="Deep Symmetry" src="doc/modules/ROOT/assets/images/DS-logo-bw-200-padded-left.png">
 
-Copyright © 2015-2018 [Deep Symmetry, LLC](http://deepsymmetry.org)
+Copyright © 2015-2019 [Deep Symmetry, LLC](http://deepsymmetry.org)
 
 Distributed under the
 [Eclipse Public License 1.0](http://opensource.org/licenses/eclipse-1.0.php),
@@ -1040,5 +1040,5 @@ the same as Clojure. By using this software in any fashion, you are
 agreeing to be bound by the terms of this license. You must not remove
 this notice, or any other, from this software. A copy of the license
 can be found in
-[resources/public/epl-v10.html](https://github.com/Deep-Symmetry/afterglow/blob/master/resources/public/epl-v10.html)
+https://github.com/Deep-Symmetry/afterglow/blob/master/LICENSE[LICENSE]
 within this project.
