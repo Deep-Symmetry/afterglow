@@ -352,8 +352,8 @@ controls whether a browser window should be automatically opened):
 ```
 
 <img alt="Web Interface"
-src="doc/modules/ROOT/assets/images/WebHome.png" width="1074"
-height="854">
+src="doc/modules/ROOT/assets/images/WebHome.png" width="537"
+height="427">
 
 As noted at the bottom, the web interface provides a minimal console
 as well, so if you are running Afterglow from a jar and just want to
