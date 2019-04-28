@@ -3,6 +3,17 @@ James Elliott <james@deepsymmetry.org>
 :toc:
 :toc-placement: preamble
 
+ifdef::env-github[]
+// Set up support for relative links and images on GitHub (even though
+// the documentation is now designed for Antora. Also, need to add
+// the API doc path here, since Antora takes care of it outside of
+// GitHub. Hopefully we can eventually make this an include file, once
+// GitHub *finally* supports those.
+:outfilesuffix: .adoc
+:imagesdir: ../assets/images
+:api-doc: http://deepsymmetry.org/afterglow/api-doc/
+endif::[]
+
 Afterglow is designed to work with MIDI controllers and DJ equipment.
 You can bind physical controller elements to trigger cues and adjust
 show variables, and sync the BPM of the show master metronome to MIDI
@@ -84,6 +95,7 @@ mapping to act as if the button was pressed with the velocity you
 specified here, allowing you to choose the values with which the cue
 gets activated.
 
+[[mapping-a-control-to-a-variable]]
 == Mapping a Control to a Variable
 
 You can also tie an encoder or fader on a MIDI control surface to a
@@ -161,6 +173,7 @@ explains how you can arrange to have afterglow automatically call the
 relevant MIDI mapping functions to set up your device whenever it is
 connected.
 
+[[finding-mapping-details]]
 == Finding Mapping Details
 
 In the all-too likely event you don’t have all your MIDI port names and
@@ -256,6 +269,7 @@ automatically does that whenever a device is disconnected, but if you
 have set up any of your own state that you would like to remove, you
 can use this mechanism to do so.
 
+[[mapping-a-control-to-a-color-component]]
 == Mapping a Control to a Color Component
 
 When you are working with colors for cues, Afterglow lets you put a
@@ -302,6 +316,7 @@ see the colors of the strobe cues in the web interface and on the
 Ableton Push and Novation Launchpad grids changing (and on the lights
 themselves if any strobe cue is running at the time).
 
+[[mapping-dimmer-masters]]
 == Mapping a Control to a Dimmer Master
 
 The web interface and Ableton Push mapping have dedicated interfaces
@@ -329,6 +344,7 @@ of the fact that the show dimmer grand master is the default master if
 you don't pass one in with `:master`.
 
 
+[[mapping-metronome-control]]
 == Mapping Metronome Control
 
 The rich grid controller bindings created for the Ableton Push and
@@ -674,6 +690,7 @@ network troubleshooting hat, and figure out why UDP broadcast packets
 to port 50001 from the mixer are not making it to the machine running
 Afterglow.
 
+[[midi-over-networks]]
 == Sending MIDI Over a Network
 
 You can sync MIDI clock and respond to MIDI controller messages from
@@ -696,6 +713,7 @@ site also has a nice
 http://hexler.net/docs/touchosc-setup-coremidi-network[illustrated
 walk-through] of setting up network MIDI communication.
 
+[[local-midi-ports]]
 == Connecting to MIDI Ports on the Same Machine
 
 To achive MIDI routing on a single machine, you need to set up a
@@ -704,6 +722,7 @@ and on Windows you could use the MIDI Yoke utility. You can find
 https://www.ableton.com/en/help/article/using-virtual-MIDI-buses-live/[a
 good tutorial] about the needed steps on the Ableton Live website.
 
+[[checking-sync]]
 == Checking your Sync
 
 An easy way to see how well your show is syncing the beat is to use the
@@ -795,6 +814,7 @@ to work well enough that they will be fleshed out a bit and moved into
 a new OSC-support namespace in a future release of Afterglow. But for
 now, you can use them and tweak them as they are.
 
+[[rich-grid-controller-mappings]]
 == Rich Grid Controller Mappings
 
 Afterglow ships with built-in mappings that take advantage of several
@@ -803,6 +823,7 @@ And if you don't, reading about these capabilities may tempt you to
 buy one, or write a mapping for one that you own that is not yet
 supported.
 
+[[using-ableton-push]]
 === Using Ableton Push
 
 Perhaps the best way to control Afterglow is using the fluid, tactile
@@ -810,6 +831,7 @@ interface offered by the Ableton Push. There's enough to say about
 that now that it has been moved to its own
 <<push2#using-ableton-push-2,page>>.
 
+[[using-novation-launchpad]]
 === Using the Novation Launchpad Family
 
 Novation also makes a great line of grid controllers, some of which
@@ -818,6 +840,7 @@ and graphical displays (at least so far), Afterglow uses them well
 enough that they get their own
 <<launchpad#using-the-novation-launchpad-family,page>>.
 
+[[setting-up-grid-controller-bindings]]
 === Setting Up Grid Controller Bindings
 
 When you set up the sample show by calling `(use-sample-show)` in the
