@@ -1050,5 +1050,5 @@ the same as Clojure. By using this software in any fashion, you are
 agreeing to be bound by the terms of this license. You must not remove
 this notice, or any other, from this software. A copy of the license
 can be found in
-https://github.com/Deep-Symmetry/afterglow/blob/master/LICENSE[LICENSE]
+[LICENSE](https://github.com/Deep-Symmetry/afterglow/blob/master/LICENSE)
 within this project.
