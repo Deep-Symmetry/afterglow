@@ -1,27 +1,23 @@
 = Videos
 James Elliott <james@deepsymmetry.org>
-:icons: font
 
-// Set up support for relative links on GitHub, and give it
-// usable icons for admonitions, w00t! Add more conditions
-// if you need to support other environments and extensions.
 ifdef::env-github[]
+// Set up support for relative links and images on GitHub, even though
+// the documentation is now designed for Antora. Also, need to add
+// the API doc path here, since Antora takes care of it outside of
+// GitHub. Hopefully we can eventually make this an include file, once
+// GitHub *finally* supports those.
 :outfilesuffix: .adoc
-:tip-caption: :bulb:
-:note-caption: :information_source:
-:important-caption: :heavy_exclamation_mark:
-:caution-caption: :fire:
-:warning-caption: :warning:
+:imagesdir: ../assets/images
+:api-doc: http://deepsymmetry.org/afterglow/api-doc/
 endif::[]
 
 This page collects performance videos that highlight Afterglow in
 action. If you have any to share, please post them to the
 https://gitter.im/brunchboy/afterglow[Afterglow room on Gitter]!
 
-+++<a href="https://vimeo.com/153492480"><img
-src="assets/Deepower-2015.png" align="right" alt="Deepower Live
-Report"></a>+++ Since I have been too busy working on the software to
-get out and perform with it, I am deeply grateful to
+Since I have been too busy working on the software to get out and
+perform with it, I am deeply grateful to
 https://github.com/dandaka[Vlad Rafeev] for getting this page started
 by sharing a video of a
 https://www.facebook.com/deepowerband/[Deepower audiovisual] show he
@@ -36,3 +32,5 @@ https://youtu.be/mvNN0SMMZDQ[presentation and demonstration] at the
 June 2016
 http://www.meetup.com/Madison-Clojure-Meetup/events/229842513/[Madison
 Clojure Meetup].
+
+include::partial$Footer.adoc[]

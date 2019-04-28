@@ -148,3 +148,5 @@
 *** xref:rendering_loop.adoc#new-assigner-types[New Assigner Types]
 *** xref:rendering_loop.adoc#customizing-fades[Customizing Fades]
 *** xref:rendering_loop.adoc#frame-data[Frame Data]
+
+* xref:videos.adoc[Videos]
