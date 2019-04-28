@@ -1,0 +1,6 @@
+name: afterglow
+title: Afterglow
+version: 'master'
+start_page: ROOT:README.adoc
+nav:
+- modules/ROOT/nav.adoc

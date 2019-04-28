@@ -1,0 +1,14 @@
+site:
+  title: Afterglow Developer Guide
+  url: https://deepsymmetry.org/afterglow/guide
+  start_page: afterglow::README.adoc
+content:
+  sources:
+  - url: https://github.com/Deep-Symmetry/afterglow.git
+    branches: port-doc-to-antora #master
+    tags: va*
+    start_path: doc
+ui:
+  bundle:
+    url: https://deepsymmetry.org/media/antora/ui-bundle.zip
+    snapshot: true

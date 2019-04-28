@@ -2,7 +2,6 @@
 James Elliott <james@deepsymmetry.org>
 :icons: font
 :experimental:
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
 
 // Set up support for relative links on GitHub, and give it
 // usable icons for admonitions, w00t! Add more conditions
@@ -663,16 +662,4 @@ namespace hierarchy. And if you are just tinkering with something new
 and experimental, please post about it on the
 https://gitter.im/brunchboy/afterglow[Gitter chat]!
 
-## License
-
-+++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
-Copyright © 2015-2018 http://deepsymmetry.org[Deep Symmetry, LLC]
-
-Distributed under the
-http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
-1.0], the same as Clojure. By using this software in any fashion, you
-are agreeing to be bound by the terms of this license. You must not
-remove this notice, or any other, from this software. A copy of the
-license can be found in
-https://deepsymmetry.org/afterglow/resources/public/epl-v10.html[resources/public/epl-v10.html]
-within this project.
+include::partial$Footer.adoc[]
