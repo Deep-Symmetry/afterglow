@@ -60,3 +60,5 @@
 ** xref:parameters.adoc#debugging-dynamic-parameters[Debugging Dynamic Parameters]
 *** xref:parameters.adoc#checking-variable-parameters[Checking Variable Parameters]
 *** xref:parameters.adoc#evaulating-other-parameters[Evaluating Other Parameters]
+* xref:metronomes.adoc[Metronomes]
+** xref:metronomes.adoc#watching-metronomes[Watching Metronomes]

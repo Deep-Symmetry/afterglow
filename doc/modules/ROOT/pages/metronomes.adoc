@@ -1,18 +1,15 @@
 = Metronomes
 James Elliott <james@deepsymmetry.org>
-:icons: font
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
 
-// Set up support for relative links on GitHub, and give it
-// usable icons for admonitions, w00t! Add more conditions
-// if you need to support other environments and extensions.
 ifdef::env-github[]
+// Set up support for relative links and images on GitHub (even though
+// the documentation is now designed for Antora. Also, need to add
+// the API doc path here, since Antora takes care of it outside of
+// GitHub. Hopefully we can eventually make this an include file, once
+// GitHub *finally* supports those.
 :outfilesuffix: .adoc
-:tip-caption: :bulb:
-:note-caption: :information_source:
-:important-caption: :heavy_exclamation_mark:
-:caution-caption: :fire:
-:warning-caption: :warning:
+:imagesdir: ../assets/images
+:api-doc: http://deepsymmetry.org/afterglow/api-doc/
 endif::[]
 
 Metronomes play a fundamental role in coordinating the timing of
@@ -59,7 +56,7 @@ The `bpm` parameter tells the metronome what tempo to use, that is, how
 many beats happen per minute. You can also adjust the number of beats
 which make up a bar (or measure), and how many bars make up a phrase:
 
-[cols=",,",options="header",]
+[cols="1,1,2",options="header",]
 |===================================================
 |Parameter |Default |Purpose
 |`:bpb` |`4` |How many beats make up a bar (measure)
@@ -177,6 +174,7 @@ protocols in
 {api-doc}afterglow.rhythm.html[`afterglow.rhythm`]
 specify and describe them.
 
+[[watching-metronomes]]
 == Watching Metronomes
 
 To help get a feeling for exactly what your metronome is doing, there is
@@ -219,16 +217,4 @@ ____
 ...and now they are almost seizure-worthy!
 ____
 
-## License
-
-+++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
-Copyright © 2015-2018 http://deepsymmetry.org[Deep Symmetry, LLC]
-
-Distributed under the
-http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
-1.0], the same as Clojure. By using this software in any fashion, you
-are agreeing to be bound by the terms of this license. You must not
-remove this notice, or any other, from this software. A copy of the
-license can be found in
-https://deepsymmetry.org/afterglow/resources/public/epl-v10.html[resources/public/epl-v10.html]
-within this project.
+include::partial$Footer.adoc[]
