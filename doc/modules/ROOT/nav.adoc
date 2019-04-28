@@ -107,3 +107,10 @@
 **** xref:fixture_definitions.adoc#no-geometric-information[Geometric Information]
 *** xref:fixture_definitions.adoc#dont-panic[Don't Panic!]
 *** xref:fixture_definitions.adoc#when-things-go-awry[When Things Go Awry]
+
+* xref:show_space.adoc[Show Space]
+
+* xref:color.adoc[Working with Color]
+** xref:color.adoc#thinking-in-hsl[Thinking in H, S, L]
+** xref:color.adoc#modifying-colors[Modifying Colors]
+** xref:color.adoc#colors-and-cues[Colors and Cues]
