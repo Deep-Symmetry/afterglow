@@ -41,7 +41,7 @@ decrease as you move down. The Z axis extends directly towards the
 audience, increasing in that direction from zero at the origin,
 decreasing as you move towards the back of the show.
 
-image:assets/Show-Space.png[Afterglow show axes]
+image::Show-Space.png[Afterglow show axes]
 
 Distance units are in meters, but if you find it easier to measure
 inches or feet, you can call

@@ -44,7 +44,7 @@ Controller Bindings>>.
 
 Here is an overview of how the Push mapping works:
 
-image::assets/PushNoEffects.jpg[Push interface]
+image::PushNoEffects.jpg[Push interface]
 
 
 == Show Control
@@ -67,7 +67,7 @@ the show. As soon as you touch the encoder, the current Grand Master
 level will appear, and be updated as you turn the encoder. When you
 release it, the display returns to showing whatever it was before.
 
-image::assets/GrandMaster.jpg[Grand Master adjustment]
+image::GrandMaster.jpg[Grand Master adjustment]
 
 As with other numeric values that you can adjust, while you are
 adjusting the Grand Master, the touch strip on the left hand side of
@@ -79,7 +79,7 @@ The red kbd:[Stop] button to the right of the top of the cue grid can be
 used to temporarily shut down the show, blacking out all universes
 that it controls, and suspending the processing of its effects.
 
-image::assets/ShowStop.jpg[Show stopped]
+image::ShowStop.jpg[Show stopped]
 
 Pressing it again restarts the show where it would
 have been had it not stopped.
@@ -111,7 +111,7 @@ encoders above them. The `chance` value is changing rapidly because it
 is configured to also be adjusted through the pressure sensitive cue
 pad that was used to launch it.
 
-image::assets/SparklePressure.jpg[Sparkle effect, ajusting chance variable]
+image::SparklePressure.jpg[Sparkle effect, ajusting chance variable]
 
 To stop a running cue, press its pad again, or press the red kbd:[End]
 pad underneath its effect entry in the text area. Some cues will end
@@ -166,7 +166,7 @@ active arrow scrolls the view one &ldquo;page&rdquo; in that
 direction. In the photo below, it is currently possible to scroll up
 and to the right:
 
-image:assets/PushScroll.jpg[Push scroll diamond,300,337]
+image::PushScroll.jpg[Push scroll diamond,300,337]
 
 If you hold down the kbd:[Shift] button, the arrows gain a different
 purpose, allowing you to scroll the text display left and right, to
@@ -198,7 +198,7 @@ touch the encoder knob associated with a variable, a graphical
 representation of the current value replaces its name, and updates as
 you turn the encoder to change the value.
 
-image::assets/AdjustingFade.jpg[Adjusting Fade variable]
+image::AdjustingFade.jpg[Adjusting Fade variable]
 
 While you are adjusting the variable, the large touch strip on the
 left hand side of the Push lights up to show you where you are in the
@@ -213,7 +213,7 @@ entire effect area, and you can use either encoder to adjust it, as
 when adjusting a Focus <<cues#creating-function-cues,function cue>>
 for the Torrent moving head spot:
 
-image::assets/AdjustingFocus.jpg[Adjusting Focus cue]
+image::AdjustingFocus.jpg[Adjusting Focus cue]
 
 When you release the encoder knob, the adjustment graph disappears,
 and the variable name reappears.
@@ -236,7 +236,7 @@ dimmed to hint that pressing them would replace the active cue.
 This dimming can also be seen in the web interface view of the cue grid:
 
 [[gobo-photo]]
-image::assets/GoboCues.png[Gobo cues]
+image::GoboCues.png[Gobo cues]
 
 ==== Boolean Cue Variables
 
@@ -247,7 +247,7 @@ at which point you will see the two options with an arrow pointing at
 the currently-chosen one. Rotate the encoder towards the option you
 want to choose and the variable will be updated:
 
-image::assets/AdjustingDown.jpg[Adjusting a Down? cue variable]
+image::AdjustingDown.jpg[Adjusting a Down? cue variable]
 
 When you release the encoder knob, the choices disappear and the
 variable name reappears.
@@ -265,13 +265,13 @@ bit red, green, and blue representation of the color value, #rrggbb.
 In this photo, a cue with a color variable that starts out white has
 just been launched:
 
-image::assets/ColorParam.jpg[Cue with color variable]
+image::ColorParam.jpg[Cue with color variable]
 
 When an effect is displaying a color cue variable, touching the
 associated encoder will open up a special color selection interface,
 which takes over the entire cue grid, as well as the effect cell:
 
-image::assets/ColorPalette.jpg[Color adjustment palette]
+image::ColorPalette.jpg[Color adjustment palette]
 
 In addition to adjusting the color's hue and saturation using the
 encoders above the effect, you can instantly jump to a color by
@@ -302,7 +302,7 @@ Whenever there are too many to fit, the rightmost pad just below the
 effect display will be lit with an amber color and labeled kbd:[More
 ->] as shown below:
 
-image::assets/MoreVars.jpg[More than Two Cue Variables]
+image::MoreVars.jpg[More than Two Cue Variables]
 
 Each time you press the kbd:[More ->] button, you will see the next
 two variables assigned to the cue. Once you reach the end of the list,
@@ -319,7 +319,7 @@ starts with the values that were configured in the show. You can
 change that by saving the cue's variables. To begin, hold down the
 kbd:[&#9711;] button near the bottom left of the Push:
 
-image::assets/Saving1.jpg[Saving Cue Variables]
+image::Saving1.jpg[Saving Cue Variables]
 
 While this button is held down, the red kbd:[End] buttons beneath the
 effect list disappear, and are replaced with the cue saving interface.
@@ -374,7 +374,7 @@ visible in the text area). The metronome section also shows you the
 current phrase number, the bar within that phrase, and the beat within
 that bar which has been reached.
 
-image:assets/PushMetronome.jpg[Metronome section]
+image::PushMetronome.jpg[Metronome section]
 
 The most basic way of synchronizing the metronome is to tap the
 kbd:[Tap Tempo] button at each beat of the music. Tapping the button
@@ -393,7 +393,7 @@ Afterglow that the moment when you tapped the button is the down beat
 You can also adjust the BPM by turning the BPM encoder, which is the
 rightmost encoder below the Metronome button:
 
-image:assets/PushBPM.jpg[BPM encoder]
+image::PushBPM.jpg[BPM encoder]
 
 While you are holding this encoder, the symbol `&uparrow;` appears below
 the BPM value as a visual reminder of what value you are adjusting.
@@ -420,7 +420,7 @@ number `1`. In addition to using kbd:[Shift] with kbd:[Tap Tempo] to
 set the down beat, you can adjust the current beat number using the
 beat encoder, the leftmost encoder below the metronome button:
 
-image:assets/PushBeat.jpg[Beat encoder]
+image::PushBeat.jpg[Beat encoder]
 
 While you are holding this encoder, the symbol `&uparrow;` appears
 below the beat number as a visual reminder of what value you are
@@ -443,7 +443,7 @@ While kbd:[Shift] is down, the `&uparrow;` will point at the bar
 instead of the beat, and turning the encoder will jump that value
 forwards or backwards:
 
-image:assets/PushBar.jpg[Bar jumping]
+image::PushBar.jpg[Bar jumping]
 
 If you know a phrase is about to begin, you can press the red Reset
 pad in the metronome section right as it does. This will reset the

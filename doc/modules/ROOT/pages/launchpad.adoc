@@ -48,7 +48,7 @@ Afterglow, and has its own custom
 
 Here is what the Launchpad Pro interface looks like:
 
-image::assets/LaunchpadPro.jpg[Launchpad Pro interface]
+image::LaunchpadPro.jpg[Launchpad Pro interface]
 
 === Show Control
 
@@ -139,7 +139,7 @@ active arrow scrolls the view one &ldquo;page&rdquo; in that
 direction. In the photo below, it is currently possible to scroll down
 and to the left:
 
-image::assets/LaunchpadPro-scroll.jpg[Launchpad Pro interface]
+image::LaunchpadPro-scroll.jpg[Launchpad Pro interface]
 
 If you hold down the kbd:[Shift] button, the arrows will scroll you as
 far as possible in the direction that you press.
@@ -250,7 +250,7 @@ buttons on the right side are used to adjust the metronome, and start
 or stop the show, as shown:
 
 [[launchpad-mini-image]]
-image::assets/LaunchpadMini.jpg[Launchpad Mini interface]
+image::LaunchpadMini.jpg[Launchpad Mini interface]
 
 > The Tap Tempo button corresponds to the button labeled Volume on the
 Launchpad S (and on the decal which comes with the Launchpad Mini),
