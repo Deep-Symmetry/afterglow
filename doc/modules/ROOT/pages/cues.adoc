@@ -22,12 +22,12 @@ Cues are designed to support creating user interfaces for controlling
 effects. They provide a convenient way to organize, identify, trigger,
 adjust, and monitor effects. Each {api-doc}afterglow.show.html[`show`]
 in Afterglow maintains a cue grid, which can be viewed and interacted
-with through the <<README#the-embedded-web-interface,embedded web
-interface>> and MIDI controller mapping implementations which can be
+with through the <<README#web-ui,embedded web interface>> and MIDI
+controller mapping implementations which can be
 {api-doc}afterglow.show.html#var-register-grid-controller[registered
-as grid controllers], like the
-<<push2#using-ableton-push-2,Ableton Push>> and
-<<launchpad#using-the-novation-launchpad-family,Novation Launchpad family>>.
+as grid controllers], like the <<push2#using-ableton-push-2,Ableton
+Push>> and <<launchpad#using-the-novation-launchpad-family,Novation
+Launchpad family>>.
 
 == The Cue Grid
 

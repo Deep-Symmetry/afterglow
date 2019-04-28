@@ -17,17 +17,16 @@ endif::[]
 
 To keep page sizes manageable, this information is split into several
 pages. This page provides an <<introduction,introduction>> and
-<<overview,overview>>, explains the <<the-embedded-web-interface,built
-in web interface>>, and links to other sections as needed. It is worth
-reading through this whole page once if you are new to Afterglow,
-because the orientation it provides will be helpful, and it ends with
-a <<getting-started,guide>> to help you get started on your way to
+<<overview,overview>>, explains the <<web-ui,built in web interface>>,
+and links to other sections as needed. It is worth reading through
+this whole page once if you are new to Afterglow, because the
+orientation it provides will be helpful, and it ends with a
+<<getting-started,guide>> to help you get started on your way to
 creating your own light show. Once you know what you are looking for,
 you can also dive right into it by jumping to the page you want:
 
 ****
 
-[horizontal]
  <<effects#effects,Effects>>::
 The building blocks of a dynamic light show, which have a
 <<effects#the-effect-lifecycle,lifecyle>> worth understanding, and a few
@@ -106,9 +105,9 @@ but that is not currently planned. For now the focus is on building
 rich user interfaces for controlling shows, such as the
 <<push2#using-ableton-push-2,Ableton Push>> and
 <<launchpad#using-the-novation-launchpad-family,Novation Launchpad
-family>> mappings and the <<README#the-embedded-web-interface,embedded
-web interface>>, while using the concise expressive power of Clojure
-for writing the fixture definitions, effects, and cues.
+family>> mappings and the <<README#web-ui,embedded web interface>>,
+while using the concise expressive power of Clojure for writing the
+fixture definitions, effects, and cues.
 
 Afterglow communicates with the lighting hardware using the
 https://www.openlighting.org/ola/[Open Lighting Architecture], so it
@@ -183,6 +182,7 @@ of running a light show, so Afterglow shows incorporate a grid of
 through the embedded web interface described below, and with dedicated
 physical grid controllers or simpler MIDI controllers.
 
+[[web-ui]]
 == The Embedded Web Interface
 
 Although a physical grid controller (especially one as well-designed
@@ -549,6 +549,7 @@ off), the button will turn red to warn you that it is not working.
 Pressing the Sync button again will give you more information to
 troubleshoot the problem.
 
+[[getting-started]]
 == Getting Started
 
 There is a lot to Afterglow, and already a lot of documentation. In an
@@ -637,9 +638,8 @@ faders to trigger cues and adjust variables used by the cues.
 
 . Run the show! With or without a physical controller, you can create
 your show by calling the function you wrote modeled on
-`use-sample-show`, then bring up the
-<<README#the-embedded-web-interface,embedded web interface>> to
-trigger your cues and watch the results.
+`use-sample-show`, then bring up the <<README#web-ui,embedded web
+interface>> to trigger your cues and watch the results.
 
 . Create your own custom effects if you want to be fancy. Once you
 feel constrained by the limits of the <<effects#effects,effects>> that

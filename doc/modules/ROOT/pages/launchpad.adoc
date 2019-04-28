@@ -67,11 +67,10 @@ Most of the space on the interface is dedicated to an 8&times;8 grid
 of color coded cue trigger pads, which provide a window onto the
 show's overall <<cues#cues,cue grid>>. The Launchpad can be
 <<README#scrolling-and-linked-controllers,linked>> to the
-<<README#the-embedded-web-interface,web interface>> so that both
-always display the same section of the cue grid, and the web interface
-can remind you of the names of the cues you are looking at, or it can
-be scrolled independently, allowing you access to more cues at the
-same time.
+<<README#web-ui,web interface>> so that both always display the same
+section of the cue grid, and the web interface can remind you of the
+names of the cues you are looking at, or it can be scrolled
+independently, allowing you access to more cues at the same time.
 
 TIP: If you have more than one compatible grid controller, you can
 have Afterglow using all of them at the same time; each can be
