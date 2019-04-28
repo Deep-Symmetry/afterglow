@@ -1,21 +1,19 @@
 = Fixture Definitions
 James Elliott <james@deepsymmetry.org>
-:icons: font
 :toc:
 :toc-placement: preamble
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
+// TODO: Can the following be defived from Antora, or just eliminated?
 :branch-base: https://github.com/Deep-Symmetry/afterglow/blob/master/
 
-// Set up support for relative links on GitHub, and give it
-// usable icons for admonitions, w00t! Add more conditions
-// if you need to support other environments and extensions.
 ifdef::env-github[]
+// Set up support for relative links and images on GitHub (even though
+// the documentation is now designed for Antora. Also, need to add
+// the API doc path here, since Antora takes care of it outside of
+// GitHub. Hopefully we can eventually make this an include file, once
+// GitHub *finally* supports those.
 :outfilesuffix: .adoc
-:tip-caption: :bulb:
-:note-caption: :information_source:
-:important-caption: :heavy_exclamation_mark:
-:caution-caption: :fire:
-:warning-caption: :warning:
+:imagesdir: ../assets/images
+:api-doc: http://deepsymmetry.org/afterglow/api-doc/
 endif::[]
 
 Fixture definitions tell Afterglow what capabilities a given piece of
@@ -81,6 +79,7 @@ The namespace
 {api-doc}afterglow.fixtures.chauvet.html[`afterglow.fixtures.chauvet`]
 is for fixtures made by Chauvet.
 
+[[structure]]
 == Structure of a Fixture Definition
 
 Once created, a fixture definition is simply a Clojure map with keys
@@ -302,6 +301,7 @@ different axes. Tilt motions are rotations around the fixture X axis.
 
 |===
 
+[[channel-specifications]]
 === Channel Specifications
 
 The `:channels` entry for a fixture or head definition map tells
@@ -443,6 +443,7 @@ specification.
 
 |===
 
+[[head-specifications]]
 === Head Specifications
 
 As described above, the `:heads` entry in a fixture definition map is
@@ -535,6 +536,7 @@ should be in that head's list.
 
 |===
 
+[[function-specifications]]
 === Function Specifications
 
 Function specifications allow a single channel to be broken up into a
@@ -646,6 +648,7 @@ Channels>> section below explains this further.
 
 |===
 
+[[channel-creation-functions]]
 === Channel Creation Functions
 
 The
@@ -655,6 +658,7 @@ specifications in your fixture definitions. You will see these used
 all over the place in the fixture definitions which ship with
 Afterglow; here is an introduction to how they work.
 
+[[color-channels]]
 ==== Color Channels
 
 {api-doc}afterglow.channels.html#var-color[`afterglow.channels/color`]
@@ -685,6 +689,7 @@ keyword is hyphenated, and you want the label to use a space), specify
 your desired label with the optional keyword argument
 `:function-label`.
 
+[[dimmer-channels]]
 ==== Dimmer Channels
 
 {api-doc}afterglow.channels.html#var-dimmer[`afterglow.channels/dimmer`]
@@ -706,6 +711,7 @@ and darken as the value approaches 255 would be specified as
 maximum brightness at 1, then dim as the value grows towards 255 would
 be specified as `:inverted-from 1`.
 
+[[focus-channels]]
 ==== Focus Channels
 
 {api-doc}afterglow.channels.html#var-focus[`afterglow.channels/focus`]
@@ -718,6 +724,7 @@ the channel that controls the most-significant byte as the `offset`
 argument, and pass the offset of the channel that controls the
 least-significant byte as the second argument, `fine-offset`.
 
+[[frost-channels]]
 ==== Frost Channels
 
 {api-doc}afterglow.channels.html#var-frost[`afterglow.channels/frost`]
@@ -730,6 +737,7 @@ controls the most-significant byte as the `offset` argument, and pass
 the offset of the channel that controls the least-significant byte as
 the second argument, `fine-offset`.
 
+[[iris-channels]]
 ==== Iris Channels
 
 {api-doc}afterglow.channels.html#var-iris[`afterglow.channels/iris`]
@@ -742,6 +750,7 @@ channel that controls the most-significant byte as the `offset`
 argument, and pass the offset of the channel that controls the
 least-significant byte as the second argument, `fine-offset`.
 
+[[pan-channels]]
 ==== Pan Channels
 
 {api-doc}afterglow.channels.html#var-pan[`afterglow.channels/pan`]
@@ -754,6 +763,7 @@ the most-significant byte as the `offset` argument, and pass the
 offset of the channel that controls the least-significant byte as the
 second argument, `fine-offset`.
 
+[[tilt-channels]]
 ==== Tilt Channels
 
 {api-doc}afterglow.channels.html#var-tilt[`afterglow.channels/tilt`]
@@ -766,6 +776,7 @@ the most-significant byte as the `offset` argument, and pass the
 offset of the channel that controls the least-significant byte as the
 second argument, `fine-offset`.
 
+[[zoom-channels]]
 ==== Zoom Channels
 
 {api-doc}afterglow.channels.html#var-zoom[`afterglow.channels/zoom`]
@@ -778,6 +789,7 @@ channel that controls the most-significant byte as the `offset`
 argument, and pass the offset of the channel that controls the
 least-significant byte as the second argument, `fine-offset`.
 
+[[function-channels]]
 ==== Function Channels
 
 {api-doc}afterglow.channels.html#var-functions[`afterglow.channels/functions`]
@@ -865,6 +877,7 @@ function. Another valid approach for handling the redundant later
 ranges would have been to pass `nil` after the number to tell
 Afterglow to not create a function for them.
 
+[[generic-channels]]
 ==== Generic Channels
 
 If none of the above functions match the channel you are creating, you
@@ -897,11 +910,13 @@ keyword is hyphenated, and you want the label to use a space), specify
 your desired label with the optional keyword argument
 `:var-label`.
 
+[[function-creation-functions]]
 === Function Creation Functions
 
 There are also functions to help you create function specifications in
 your channel definitions.
 
+[[color-wheel-hue]]
 ==== Color Wheel Hue
 
 {api-doc}afterglow.channels.html#var-color-wheel-hue[`afterglow.channels/color-wheel-hue`]
@@ -913,7 +928,8 @@ documentation] for more details, and the
 {api-doc}afterglow.fixtures.blizzard.html#var-torrent-f3[Torrent
 F3] fixture definition source for an example of its use.
 
-## Standard Function Types
+[[standard-function-types]]
+== Standard Function Types
 
 <<effects#function-effects,Function Effects>> and
 <<cues#creating-function-cues,Function Cues>> trigger and control
@@ -1054,7 +1070,8 @@ reaching around ten times per second at the maximum function value of
 
 |===
 
-## Translating QLC+ Fixture Definitions
+[[translating-qlc-fixture-definitions]]
+== Translating QLC+ Fixture Definitions
 
 http://www.qlcplus.org[QLC+] is an established and powerful free and
 open-source lighting control system aimed at more traditional
@@ -1186,7 +1203,8 @@ loaded, is as simple as calling
 `(afterglow.fixtures.american-dj/eco-uv-bar-dmx)` within
 {api-doc}afterglow.show.html#var-patch-fixture.21[`show/patch-fixture!`].
 
-### What's Missing from Translated Fixture Definitions
+[[lost-in-translation]]
+=== What's Missing from Translated Fixture Definitions
 
 As mentioned in the introduction, there are some things that Afterglow
 simply cannot guess from translated fixture definitions. Even in
@@ -1194,7 +1212,8 @@ simple cases like this example, you will find things that you can make
 better by hand-editing the results based on your understanding of the
 fixture, after reading its manual or working with it for a bit.
 
-#### Function Specifications
+[[no-function-specifications]]
+==== Function Specifications
 
 First off, all fixture function ranges are created as `:variable`,
 meaning that they do slightly different things along the range of
@@ -1220,7 +1239,8 @@ case with strobe cues, for example. Compare the translated definitions
 with some that ship with Afterglow as you are starting to get a feel
 for these issues.)
 
-#### Channel Types
+[[no-channel-types]]
+==== Channel Types
 
 Afterglow tries to guess what kinds of channels it finds, based on
 their name, and aspects of their structure. For simple cases it will
@@ -1231,7 +1251,8 @@ they are properly detected, since only then will they participate in
 you don't want inappropriate channels to be mapped as dimmer channels
 for the opposite reason.)
 
-#### Dimmer Channels
+[[no-dimmer-channels]]
+==== Dimmer Channels
 
 In addition to the possibility that a dimmer channel might be
 misidentified, as described above, some fixtures have _inverted_
@@ -1240,7 +1261,8 @@ The `.qxf` file does not record this information, so you will need to
 manually add it to the
 <<fixture_definitions#dimmer-channels,specification>>.
 
-#### Color Channels
+[[no-color-channels]]
+==== Color Channels
 
 Colors are fairly well represented and identified in the QLC+ format,
 and if you have a channel controlling a red, green, blue, or white
@@ -1256,7 +1278,8 @@ that ships with Afterglow contains a nice example of doing this for
 its amber and UV channels, and shows how to make this extended color
 mixing an optional feature when using the fixture definition.
 
-#### Two-Byte Channels
+[[no-two-byte-channels]]
+==== Two-Byte Channels
 
 DMX parameter values are integers which only range from 0-255. That is
 not enough to achieve precise pan and tilt movements, and some
@@ -1277,7 +1300,8 @@ value for the channel specification of the most-significant byte, as
 documented in the <<channel-creation-functions,Channel Creation
 Functions>> section.
 
-#### Geometric Information
+[[no-geometric-information]]
+==== Geometric Information
 
 If the fixture includes a Pan or Tilt channel, you will see additional
 `TODO:` comments telling you that you need to add information about
@@ -1285,7 +1309,7 @@ how the channel actually physically rotates the fixture, in order for
 Afterglow to be able to accurately calculate
 <<effects#direction-effects,Direction>> and
 <<effects#aim-effects,Aim>> effects with it. The
-<<structure-of-a-fixture-definition,Structure section above>>
+<<structure,Structure section above>>
 describes the `:pan-center`, `:pan-half-circle`, `:tilt-center`, and
 `:tilt-half-circle` values that you will need to figure out
 experimentally.
@@ -1299,7 +1323,8 @@ entries where you need to fill in their
 fixture itself, so that <<parameters#spatial-parameters,Spatial
 Parameters>> can work properly with them.
 
-### Don't Panic!
+[[dont-panic]]
+=== Don't Panic!
 
 Even though this sounds like a lot of things that can go wrong trying
 to build an Afterglow fixture definition, most of the problem areas
@@ -1310,7 +1335,8 @@ away. So try that, and gain some confidence, as you gradually explore
 the areas where it isn't quite doing what you want, and tackle those
 one at a time. And, as you do, remember that you can get help:
 
-### When Things Go Awry
+[[when-things-go-awry]]
+=== When Things Go Awry
 
 Not all definitions have been tested with the translator, and there
 may be scenarios that it gets fundamentally wrong. If so, please raise
@@ -1326,16 +1352,4 @@ Not only will that hopefully get you going faster, but it might help
 others in the future, especially if it leads to improvements in the
 documentation or Afterglow itself.
 
-#### License
-
-+++<a href="http://deepsymmetry.org"><img src="assets/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo"></a>+++
-Copyright © 2015-2018 http://deepsymmetry.org[Deep Symmetry, LLC]
-
-Distributed under the
-http://opensource.org/licenses/eclipse-1.0.php[Eclipse Public License
-1.0], the same as Clojure. By using this software in any fashion, you
-are agreeing to be bound by the terms of this license. You must not
-remove this notice, or any other, from this software. A copy of the
-license can be found in
-https://deepsymmetry.org/afterglow/resources/public/epl-v10.html[resources/public/epl-v10.html]
-within this project.
+include::partial$Footer.adoc[]
