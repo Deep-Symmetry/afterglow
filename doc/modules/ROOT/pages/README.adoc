@@ -1,4 +1,4 @@
-= Afterglow Documentation
+= Afterglow Developer Guide
 James Elliott <james@deepsymmetry.org>
 
 [[organization]]
