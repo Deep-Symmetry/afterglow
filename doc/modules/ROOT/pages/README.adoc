@@ -12,16 +12,16 @@ ifdef::env-github[]
 :api-doc: http://deepsymmetry.org/afterglow/api-doc/
 endif::[]
 
-[[organization]]
-To keep page sizes manageable, this information is split into several
-pages. This page provides an <<introduction,introduction>> and
-<<overview,overview>>, explains the <<web-ui,built in web interface>>,
-and links to other sections as needed. It is worth reading through
-this whole page once if you are new to Afterglow, because the
-orientation it provides will be helpful, and it ends with a
-<<getting-started,guide>> to help you get started on your way to
-creating your own light show. Once you know what you are looking for,
-you can also dive right into it by jumping to the page you want:
+[[organization]] This section provides an
+<<introduction,introduction>> describing this guide and an
+<<overview,overview>> of the Afterglow environment. It then explains
+the <<web-ui,built in web interface>>, and links to other sections
+that go into more detail. It is worth reading through this whole page
+once if you are new to Afterglow, because the orientation it provides
+will be helpful, and it ends with a <<getting-started,walkthrough>> to
+help you get started on your way to creating your own light show. Once
+you know what you are looking for, you can also dive right into it by
+jumping to the section you want:
 
 ****
 
