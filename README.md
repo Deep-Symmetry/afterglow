@@ -690,8 +690,15 @@ Here is the set of tasks needed to cut a new release:
   associated with the release, to update all of the documentation
   links to point at the appropriate version-specific tag: `bash
   scripts/prepare_release.sh v0.2.0`.
-- [ ] Build the codox documentation, with the release project version
-  and tagged source and documentation links: `lein codox`.
+- [ ] Build both versions of the codox documentation, with the release
+  project version and tagged source and documentation links: `lein
+  repl` will do the trick.
+- [ ] Publish the hosted version of the API docs: `rsync -avz target/api_doc/
+  slice:/var/www/ds/afterglow/api-doc`
+- [ ] Build the hosted version of the Developer Guide: `antora --fetch
+  doc/ds.yml`
+- [ ] Publish the hosted Developer Guide: `rsync -avz doc/build/site/
+  slice:/var/www/ds/afterglow/guide`
 - [ ] Update [`CHANGELOG.md`](CHANGELOG.md) to reflect the release:
   make sure nothing is missing, and rename the sections to reflect the
   fact that the unreleased code is now released, and there is nothing
