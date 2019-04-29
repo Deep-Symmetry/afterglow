@@ -128,11 +128,11 @@
   Similarly, the name of the function created is, by default, a
   capitalized version of the function type (without its leading
   colon). Since this name is displayed in the [web
-  interface]({{guide-url}}README.html#the-embedded-web-interface)
-  as the text label in the cue grid cell for [Function
-  Cues]({{guide-url}}cues.html#creating-function-cues)
-  created for the function, you may wish to specify a more readable
-  name, which you can do by passing it with `:function-name`.
+  interface]({{guide-url}}README.html#web-ui) as the text label in the
+  cue grid cell for [Function
+  Cues]({{guide-url}}cues.html#creating-function-cues) created for the
+  function, you may wish to specify a more readable name, which you
+  can do by passing it with `:function-name`.
 
   Finally, you may specify a label to be used when creating a user
   interface for adjusting the value associated with this
@@ -348,12 +348,11 @@
 
   By default, the function created for the channel uses the name of
   the `color` keyword as its function label. Since this label is
-  displayed in the [web
-  interface]({{guide-url}}README.html#the-embedded-web-interface)
-  as the text label in the cue grid cell for [Function
-  Cues]({{guide-url}}cues.html#creating-function-cues)
-  created for the function, you may wish to specify a more readable
-  name, which you can do by passing it in with `:function-label`.
+  displayed in the [web interface]({{guide-url}}README.html#web-ui) as
+  the text label in the cue grid cell for [Function
+  Cues]({{guide-url}}cues.html#creating-function-cues) created for the
+  function, you may wish to specify a more readable name, which you
+  can do by passing it in with `:function-label`.
 
   If the fixture uses two-byte values for this color component, pass
   the offset of the channel containing the most-significant byte in
