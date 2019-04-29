@@ -3,6 +3,17 @@ James Elliott <james@deepsymmetry.org>
 :toc:
 :toc-placement: preamble
 
+ifdef::env-github[]
+// Set up support for relative links and images on GitHub, even though
+// the documentation is now designed for Antora. Also, need to add
+// the API doc path here, since Antora takes care of it outside of
+// GitHub. Hopefully we can eventually make this an include file, once
+// GitHub *finally* supports those.
+:outfilesuffix: .adoc
+:imagesdir: ../assets/images
+:api-doc: http://deepsymmetry.org/afterglow/api-doc/
+endif::[]
+
 Some controllers have such rich capabilities that they deserve their
 own custom mapping implementations to exploit their capabilities as a
 show control interface. The Push 2 called out for such treatment, and
@@ -20,6 +31,7 @@ controller, with a graphical display, there is also a page describing
 the <<push#using-ableton-push,original Push mapping>>, which is still
 fully supported.
 
+[[binding-to-the-push-2]]
 ## Binding to the Push 2
 
 Assuming you have an Ableton Push 2 connected to the machine running
@@ -35,13 +47,13 @@ Controller Bindings>>.
 Here is an overview of how the Push 2 mapping works, with details
 explained in the upcoming sections:
 
-image::Push2NoEffects.jpg[Push 2 interface]
+image::Push2NoEffects.jpg[Push 2 interface,1200,977]
 
 The most exciting innovation that the Push 2 adds to the already
 excellent Push experience is the color graphic display, and Afterglow
 can take full advantage of it, as this example shows:
 
-image::Example.gif[Afterglow graphic animation]
+image::Example.gif[Afterglow graphic animation,960,160]
 
 [[show-control]]
 == Show Control
@@ -66,7 +78,7 @@ maximum level is currently in effect, and both will be updated as you
 turn the encoder. When you release it, the display returns to showing
 whatever it was before.
 
-image::GrandMaster2.jpg[Grand Master adjustment]
+image::GrandMaster2.jpg[Grand Master adjustment,1200,978]
 
 As with other numeric values that you can adjust, while you are
 adjusting the Grand Master, the touch strip on the left hand side of
@@ -79,12 +91,13 @@ can be used to temporarily shut down the show, blacking out all
 universes that it controls, and suspending the processing of its
 effects.
 
-image::ShowStop2.jpg[Show stopped]
+image::ShowStop2.jpg[Show stopped,1000,1008]
 
 Whenever the show is stopped, the kbd:[&#9655;] button turns green to
 represent “Play”. Pressing it in this state restarts the show where it
 would have been had it not stopped.
 
+[[cues]]
 == Cues
 
 Most of the space on the interface is dedicated to an 8&times;8 grid
@@ -114,7 +127,7 @@ encoders above them. The `chance` value is changing because it is
 configured to also be adjusted through the pressure sensitive cue pad
 that was used to launch it.
 
-image::SparklePressure2.jpg[Sparkle effect, ajusting chance variable]
+image::SparklePressure2.jpg[Sparkle effect adjusting chance variable,600,624]
 
 To stop a running cue, press its pad again, or press the red kbd:[End]
 pad underneath its effect entry in the display. Some cues will end
@@ -162,6 +175,7 @@ time. In the photo <<gobo-photo,below>>, the rest of the
 Torrent 1 fixed gobo cues (the leftmost blue cues) are dimmed because
 they would replace the running &ldquo;T1 atom shake&rdquo; cue.
 
+[[scrolling]]
 == Scrolling
 
 The show will likely have many more cues than fit on the pad grid; the
@@ -172,7 +186,7 @@ is dark. Pressing an active arrow scrolls the view one
 &ldquo;page&rdquo; in that direction. In the photo below, it is
 currently possible to scroll up and to the right:
 
-image::PushScroll2.jpg[Push 2 scroll diamond,286]
+image::PushScroll2.jpg[Push 2 scroll diamond,286,244]
 
 If you hold down the kbd:[Shift] button, the arrows will scroll you as
 far as possible in the direction that you press.
@@ -194,8 +208,9 @@ there are effects off the screen in that direction, Afterglow draws
 `<` and `>` markers below the effect name labels at the corresponding
 edge of the screen.)
 
-image::Push2Page.jpg[Push 2 page arrows]
+image::Push2Page.jpg[Push 2 page arrows,1000,832]
 
+[[effect-control]]
 == Effect Control
 
 Effects, whether created by cues or other code, appear in the display
@@ -203,6 +218,7 @@ area, and can be scrolled through and ended by pressing the
 corresponding red kbd:[End] pad which appears underneath them. There
 are many ways you can interact with running effects:
 
+[[numeric-cue-variables]]
 === Numeric Cue Variables
 
 If the effect was created by a cue that has numeric variables assigned
@@ -217,35 +233,35 @@ adjusting it, and updates as you turn the encoder to change the value.
 In the photo below, the `Confetti Dance` cue's `Min Last` variable is
 being adjusted.
 
-image::AdjustingConfetti.jpg[Adjusting Min Last variable,693]
+image::AdjustingConfetti.jpg[Adjusting Min Last variable,693,566]
 
 And here is how the effect's display section updates while the value
 is being adjusted:
 
-image::min-last.gif[Adjusting Min Last Animation]
+image::min-last.gif[Adjusting Min Last Animation,240,160]
 
 While you are adjusting the variable, the large touch strip on the
 left hand side of the Push lights up to show you where you are in the
 variable range, and you can touch and drag on the strip to instantly
 set the variable to another value.
 
-image::AdjustingConfetti2.jpg[Adjusting and touch strip]
+image::AdjustingConfetti2.jpg[Adjusting and touch strip,800,646]
 
 Most numeric variables will have values that grow from the bottom of
 the touch strip, but variables marked as `:centered` when created,
 like Pan and Tilt, grow from the center up or down. (Their graphical
 gauges grow from the center as well.)
 
-image::AdjustingCentered2.jpg[Adjusting centered cue variables]
+image::AdjustingCentered2.jpg[Adjusting centered cue variables,800,807]
 
-image::pan-tilt.gif[Adjusting centered variable animation]
+image::pan-tilt.gif[Adjusting centered variable animation,241,160]
 
 If an effect has only one adjustable variable, it will take up the
 entire effect area, and you can use either encoder to adjust it, as
 when adjusting a gobo shaking <<cues#creating-function-cues,function
 cue>> for the Torrent moving head spot:
 
-image::AdjustingShake.jpg[Adjusting gobo shake cue]
+image::AdjustingShake.jpg[Adjusting gobo shake cue,800,926]
 
 When you release the encoder knob, the adjustment graph returns to its
 normal brightness, and the touch strip deactivates.
@@ -261,8 +277,9 @@ replace the active cue.
 This dimming can also be seen in the web interface view of the cue grid:
 
 [[gobo-photo]]
-image::GoboCues.png[Gobo cues]
+image::GoboCues.png[Gobo cues,1100,769]
 
+[[boolean-cue-variables]]
 === Boolean Cue Variables
 
 If a cue has Boolean variables assigned to it, they will also appear
@@ -271,7 +288,7 @@ above the effect name, with the current value showing as `Yes` or
 With a Boolean value, the adjustment graph is always half full, and
 you rotate it to the left for No, or right for Yes:
 
-image::AdjustingDown2.jpg[Adjusting a Down? cue variable]
+image::AdjustingDown2.jpg[Adjusting a Down? cue variable,700,475]
 
 NOTE: The `Blade Saw` cue in the photo is also an example of a cue
 that defines a custom visualization. Underneath its variable gauges,
@@ -282,17 +299,19 @@ that the cue will establish at each point in time. As you adjust the
 cue variables, the visualization instantly updates to reflect your
 changes, helping you understand how they affect it.
 
-image::blade-saw.gif[Cue visualization animation]
+image::blade-saw.gif[Cue visualization animation,240,160]
 
 You can also use the touch strip when setting a Boolean variable;
 touching the top half sets it to `Yes`, while the bottom half sets it to
 `No`.
 
-image::AdjustingDown2Strip.jpg[Adjusting a Down? cue with the touch strip visible]
+image::AdjustingDown2Strip.jpg[Adjusting a Down? cue with the touch
+strip visible,800,748]
 
 NOTE: The `Rainbow Pulse` cue to the left of the one being adjusted is
 an example of a cue with no variables to adjust.
 
+[[color-cue-variables]]
 === Color Cue Variables
 
 If a cue has color variables assigned to it, they will also appear
@@ -302,7 +321,7 @@ the eight bit red, green, and blue representation of the color value,
 #rrggbb. In this photo, a `Color all` cue with a color variable that
 starts out white has just been launched:
 
-image::ColorParam2.jpg[Cue with color variable]
+image::ColorParam2.jpg[Cue with color variable,1200,941]
 
 When an effect is displaying a color cue variable, the gauges beneath
 it represent hue and saturation values. (If the cue has only one
@@ -315,7 +334,7 @@ Touching the associated encoder will open up a special color selection
 interface, which takes over the entire cue grid, as well as the effect
 cell:
 
-image::ColorPalette2.jpg[Color adjustment palette]
+image::ColorPalette2.jpg[Color adjustment palette,1000,891]
 
 In addition to adjusting the color's hue and saturation using the
 encoders above the effect, you can instantly jump to a color by
@@ -335,11 +354,12 @@ If both encoders are being held, the touch pad allows you to select
 saturations, since the touch pads already give you an easy interface
 for selecting hues.
 
-image::color-all.gif[Color selection animation]
+image::color-all.gif[Color selection animation,240,160]
 
 As soon as you let go of both the hue and saturation encoders, the
 palette disappears and the normal cue grid returns.
 
+[[scrolling-through-cue-variables]]
 === Scrolling Through Cue Variables
 
 If a cue has more than two variables, even though you can only see two
@@ -347,7 +367,7 @@ at a time on the Push, you can still check and adjust all of them.
 Whenever there are too many to fit, the rightmost pad just below the
 effect display will be lit white and labeled kbd:[Next Vars >] as shown below:
 
-image::MoreVars2.jpg[More than Two Cue Variables]
+image::MoreVars2.jpg[More than Two Cue Variables,600,389]
 
 In the photo, the `Torrent Sine` and `Blade Triangle` cues have more
 variables than are being displayed, while the `Color all` cue does
@@ -361,6 +381,7 @@ beneath it. (While you are holding encoders to adjust an effect's
 variables, its kbd:[Next Vars >] button will be blacked out and
 disabled.)
 
+[[saving-cues]]
 === Saving Cues
 
 If you have made any adjustments to cue variable values, these are
@@ -369,7 +390,7 @@ starts with the values that were configured in the show. You can
 change that by saving the cue's variables. To begin, hold down the
 kbd:[&#9711;] button near the bottom left of the Push 2:
 
-image::Saving2.jpg[Saving Cue Variables]
+image::Saving2.jpg[Saving Cue Variables,1000,821]
 
 While this button is held down, the red kbd:[End] buttons beneath the
 effect list disappear, and are replaced with the cue saving interface.
@@ -404,8 +425,9 @@ buttons.
 Once you release the kbd:[&#9711;] button, the save interface goes
 away, and the effect kbd:[End] buttons return.
 
-image::save-clear.gif[Save interface animation]
+image::save-clear.gif[Save interface animation,960,160]
 
+[[metronome-control]]
 == Metronome Control
 
 The top left section of the Push lets you view and adjust the
@@ -426,7 +448,7 @@ visible in the text area). The metronome section also shows you the
 current phrase number, the bar within that phrase, and the beat within
 that bar which has been reached.
 
-image::Metronome2.png[Metronome section]
+image::Metronome2.png[Metronome section,414,302]
 
 Finally, below the beat and BPM displays, there is a visualization of
 the passing beats, bars, and phrases. The beats are drawn in white,
@@ -437,7 +459,7 @@ visualization with a stationary line to mark it, and there is room for
 one measure before and after the line. A full phrase doesn't fit, but
 you can see its phase gradually growing until it ends.
 
-image::metronome-phrase.gif[One phrase of metronome animation]
+image::metronome-phrase.gif[One phrase of metronome animation,239,160]
 
 The most basic way of synchronizing the metronome is to tap the
 kbd:[Tap Tempo] button at each beat of the music. Tapping the button
@@ -456,7 +478,7 @@ Afterglow that the moment when you tapped the button is the down beat
 You can also adjust the BPM by turning the BPM encoder, which is the
 encoder right above the kbd:[Metronome] button:
 
-image::Push2BPM.jpg[BPM encoder]
+image::Push2BPM.jpg[BPM encoder,800,663]
 
 While you are holding this encoder, the BPM gauge brightens, along
 with the BPM digit after the decimal point, as a visual reminder of
@@ -476,7 +498,7 @@ quickly when you turn it. You can switch back and forth in the middle
 of your adjustments by pressing and releasing the shift key at any
 time.
 
-image::bpm-adjustment.gif[BPM adjustment animation]
+image::bpm-adjustment.gif[BPM adjustment animation,240,160]
 
 In order to make longer chases and effects line up properly with the
 music, you will also want to make sure the count is right, that the
@@ -486,7 +508,7 @@ number `1`. In addition to using kbd:[Shift] with kbd:[Tap Tempo] to
 set the down beat, you can adjust the current beat number using the
 beat encoder, the encoder above the kbd:[Tap Tempo] button:
 
-image::Push2Beat.jpg[Beat encoder]
+image::Push2Beat.jpg[Beat encoder,800,459]
 
 While you are holding this encoder, an endless circular gauge appears
 below the beat information, and the beat number is brightened, as a
@@ -510,7 +532,7 @@ While kbd:[Shift] is down, the bar will be brightened instead of the
 beat, and turning the encoder will jump that value forwards or
 backwards:
 
-image::beat-adjustment.gif[Beat adjustment animation]
+image::beat-adjustment.gif[Beat adjustment animation,240,160]
 
 If you know a phrase is about to begin, you can press the red
 kbd:[Reset] button in the metronome section right as it does. This
@@ -555,6 +577,7 @@ If you try to adjust the BPM encoder while sync is active, it will
 have no effect, and Afterglow will point at the sync mode to explain
 why it is ignoring your adjustments.
 
+[[sharing-the-push]]
 === Sharing the Push 2
 
 If you are using Afterglow at the same time as Ableton Live, you can
