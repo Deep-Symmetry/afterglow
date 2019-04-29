@@ -1,6 +1,6 @@
 site:
   title: Afterglow Developer Guide
-  url: http://127.0.0.1:16000/guide
+  url: http:/guide
   start_page: afterglow::README.adoc
 content:
   sources:
