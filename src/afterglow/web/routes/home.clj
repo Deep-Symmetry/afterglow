@@ -36,6 +36,8 @@
   (compojure/POST "/console" [:as req] (web-repl/handle-command req))
   (compojure/GET "/guide" [] (response/redirect "/guide/index.html"))
   (route/resources "/guide/" {:root "developer_guide"})
+  (compojure/GET "/api-doc" [] (response/redirect "/api-doc/index.html"))
+  (route/resources "/api-doc/" {:root "api_doc"})
   (compojure/GET "/about" [] (about-page))
   (compojure/GET "/visualizer/:id" [id] (visualizer/page id))
   (compojure/GET "/visualizer-update/:id" [id] (visualizer/update-preview id))

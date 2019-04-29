@@ -76,11 +76,19 @@
              :uberjar {:env {:production "true"}
                        :aot :all}}
   :plugins [[lein-codox "0.10.6"]
-            [lein-dash "0.2.1"]
-            [lein-environ "1.1.0"]]
+            [lein-environ "1.1.0"]
+            [lein-shell "0.5.0"]]
 
-  :codox {:output-path "api-doc"
+  :codox {:output-path "target/classes/api_doc"
           :doc-files   []
           :source-uri  "https://github.com/Deep-Symmetry/afterglow/blob/master/{filepath}#L{line}"
           :metadata    {:doc/format :markdown}}
+
+  ;; Perform the tasks which embed the developer guide and api docs before compilation,
+  ;; so they will be available both in development, and in the distributed archive.
+  :prep-tasks [["shell" "antora" "doc/embedded.yml"]
+               "codox"
+               "javac"
+               "compile"]
+
   :min-lein-version "2.0.0")

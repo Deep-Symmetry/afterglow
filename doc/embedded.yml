@@ -1,6 +1,6 @@
 site:
   title: Afterglow Developer Guide
-  url: http://127.0.0.1:9889/guide
+  url: http://127.0.0.1:16000/guide
   start_page: afterglow::README.adoc
 content:
   sources:
@@ -9,7 +9,7 @@ content:
     start_path: doc
 asciidoc:
   attributes:
-    api-doc: http://deepsymmetry.org/afterglow/api-doc/
+    api-doc: link:../../api-doc/
     icons: font
     experimental: ''
 ui:
