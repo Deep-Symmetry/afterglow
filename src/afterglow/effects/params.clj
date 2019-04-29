@@ -309,7 +309,7 @@
 (defn build-step-param
   "Returns a number parameter that increases over time, ideal for
   convenient control
-  of [chases](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/effects.adoc#chases).
+  of [chases]({{guide-url}}effects.html#chases).
 
   With no arguments, the parameter will evaluate to one at the beat
   closest when it was created, and will increase by one for each beat
@@ -320,7 +320,7 @@
   relates to bars or phrases. Supplying a value with `:interval-ratio`
   will run the step parameter at the specified fraction or multiple of
   the chosen interval (beat, bar, or phrase), as illustrated in
-  the [Ratios](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/oscillators.adoc#ratios)
+  the [Ratios]({{guide-url}}oscillators.html#ratios)
   section of the Oscillator documentation.
 
   If fading between steps is desired, the optional keyword argument
@@ -329,7 +329,7 @@
   involved in fading to or from the next value.
 
   > See the graphs in the Step Parameters
-  > [documentation](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/parameters.adoc#step-parameters)
+  > [documentation]({{guide-url}}parameters.html#step-parameters)
   > for a visual illustration of how these parameters work.
 
   A fade fraction of `0` provides the default behavior of an instant
@@ -348,7 +348,7 @@
   A smoother look can be obtained by using a sine curve to smooth the
   start and end of each fade, by passing the optional keyword argument
   `:fade-curve` with the value `:sine`. (Again, see
-  the [graphs](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/parameters.adoc#step-parameters)
+  the [graphs]({{guide-url}}parameters.html#step-parameters)
   to get a visual feel for what this does.)
 
   If the timing should start at an instant other than when the step
@@ -357,7 +357,7 @@
   `:starting`.
 
   All incoming parameters may
-  be [dynamic](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters).
+  be [dynamic]({{guide-url}}parameters.html#dynamic-parameters).
   Step parameters are always frame-dynamic."
   [& {:keys [interval interval-ratio fade-fraction fade-curve starting]
       :or {interval :beat interval-ratio 1 fade-fraction 0 fade-curve :linear
@@ -556,7 +556,7 @@
   static direction facing directly out towards the audience. Keywords
   `:x`, `:y`, and `:z` can be used to specify a vector in the [frame
   of
-  reference](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/show_space.adoc#show-space)
+  reference]({{guide-url}}show_space.html#show-space)
   of the light show.
 
   All incoming parameter values may be literal or dynamic, and may be
@@ -677,7 +677,7 @@
   be used to specify angles to turn around the Y and X axes
   respectively
   (see [show
-  space](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/show_space.adoc#show-space)
+  space]({{guide-url}}show_space.html#show-space)
   for a diagram of these axes). For human friendliness, the angles are
   assumed to be in degrees unless keyword `:radians` is supplied with
   a true value.
@@ -730,7 +730,7 @@
   Keywords `:pan` and `:tilt` can be used to specify angles to turn
   around the Y and X axes respectively
   (see [show
-  space](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/show_space.adoc#show-space)
+  space]({{guide-url}}show_space.html#show-space)
   for a diagram of these axes). For human friendliness, the angles are
   assumed to be in degrees unless keyword `:radians` is supplied with
   a true value.
@@ -785,7 +785,7 @@
   towards a spot on the floor two meters towards the audience from the
   center of the light show. Keywords `:x`, `:y`, and `:z` can be used
   to specify a target point in the [frame of
-  reference](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/show_space.adoc#show-space)
+  reference]({{guide-url}}show_space.html#show-space)
   of the light show.
 
   All incoming parameter values may be literal or dynamic, and may be
@@ -938,7 +938,7 @@
   excellent building blocks
   for [color](#var-build-color-param), [direction](#var-build-direction-param)
   and [aim](#var-build-aim-param) parameters, as shown in the [effect
-  examples](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/effects.adoc#spatial-effects).
+  examples]({{guide-url}}effects.html#spatial-effects).
 
   If you do not specify an explicit value for `:frame-dynamic`, this
   spatial parameter will be frame dynamic if any values returned by

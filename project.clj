@@ -76,19 +76,28 @@
              :uberjar {:env {:production "true"}
                        :aot :all}}
   :plugins [[lein-codox "0.10.6"]
+            [lein-resource "17.06.1"]
             [lein-environ "1.1.0"]
             [lein-shell "0.5.0"]]
 
-  :codox {:output-path "target/classes/api_doc"
+  :codox {:output-path "target/codox"
           :doc-files   []
           :source-uri  "https://github.com/Deep-Symmetry/afterglow/blob/master/{filepath}#L{line}"
           :metadata    {:doc/format :markdown}}
+
+  :resource {:resource-paths [["target/codox"
+                               {:target-path "target/classes/api_doc"  ; For embedded use
+                                :extra-values {:guide-url "http:/guide/afterglow/"}}]
+                              ["target/codox"
+                               {:target-path "target/api_doc"  ; For hosting on deepsymmetry.org
+                                :extra-values {:guide-url "https://deepsymmetry.org/afterglow/guide/afterglow/"}}]]}
 
   ;; Perform the tasks which embed the developer guide and api docs before compilation,
   ;; so they will be available both in development, and in the distributed archive.
   :prep-tasks [["shell" "antora" "doc/embedded.yml"]
                "codox"
                "javac"
-               "compile"]
+               "compile"
+               "resource"]
 
   :min-lein-version "2.0.0")

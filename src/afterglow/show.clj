@@ -311,7 +311,7 @@
   "The loop that calculate and sends frames of DMX values for the
   universes and effects run by this show, as described in
   [The Rendering
-  Loop](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/rendering_loop.adoc#the-rendering-loop).
+  Loop]({{guide-url}}rendering_loop.html#the-rendering-loop).
   This runs forever, and so is executed on a future by [[start!]] and
   the future is canceled by [[stop!]]."
   [show buffers]
@@ -1155,7 +1155,7 @@
   fixtures.
 
   `fixture` is a [Fixture Definition
-  map](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/fixture_definitions.adoc#fixture-definitions)
+  map]({{guide-url}}fixture_definitions.html#fixture-definitions)
   which specifies all the capabilities of the fixture and how
   Afterglow can control it.
 
@@ -1176,7 +1176,7 @@
   and `:z-rotation`, which all default to zero if not specified. All
   coordinates and rotations are interpreted with respect to the [show
   frame of
-  reference](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/show_space.adoc#show-space),
+  reference]({{guide-url}}show_space.html#show-space),
   and are in meters and radians. You can
   use [[transform/inches]], [[transform/feet]]
   and [[transform/degrees]] to convert those units for you if

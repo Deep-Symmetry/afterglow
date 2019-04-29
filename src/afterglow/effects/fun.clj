@@ -183,10 +183,10 @@
   `:fade-time`.
 
   As with other [dimmer
-  effects](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/effects.adoc#dimmer-effects),
-  the maximum level to which the dimmer can be set is limited by a
-  dimmer master chain. You can pass one in explicitly with `:master`.
-  If you do not, the show's grand master is used.
+  effects]({{guide-url}}effects.html#dimmer-effects), the maximum
+  level to which the dimmer can be set is limited by a dimmer master
+  chain. You can pass one in explicitly with `:master`. If you do not,
+  the show's grand master is used.
 
   By default this effect ignores fixtures that can perform RGB color
   mixing, because you are better off using the regular [[sparkle]]

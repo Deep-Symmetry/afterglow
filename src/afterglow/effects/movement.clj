@@ -164,9 +164,8 @@
   fixtures supplied when invoked. The pan and tilt values represent
   angles in the frame of reference of the show, telling how far the
   head should move away from facing directly along the `z`
-  axis. (see [show
-  space](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/show_space.adoc#show-space)
-  for a diagram of the axes).
+  axis. (see [show space]({{guide-url}}show_space.html) for a diagram
+  of the axes).
 
   If a [[direction-effect]] or [[aim-effect]] is simultaneously
   running on the same fixture, they will win and override whatever

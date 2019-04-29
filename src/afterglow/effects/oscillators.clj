@@ -21,8 +21,8 @@
   show. In addition to the metronome snapshot, the show and (if
   applicable) fixture head must be passed in case any oscillator
   configuration arguments rely
-  on [dynamic](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters)
-  or [spatial](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/parameters.adoc#spatial-parameters)
+  on [dynamic]({{guide-url}}parameters.html#dynamic-parameters)
+  or [spatial]({{guide-url}}parameters.html#spatial-parameters)
   parameters.")
   (resolve-non-frame-dynamic-elements [this show snapshot head]
   "Called when an effect is created using this oscillator. Returns a
@@ -155,7 +155,7 @@
 
   If the shape of the oscillator needs to be able to change over time
   depending on the value of a [dynamic
-  parameter](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters),
+  parameter]({{guide-url}}parameters.html#dynamic-parameters),
   then `shape-fn` will instead implement [[IVariableShape]] in order
   to be able to resolve those parameters.
 
@@ -182,11 +182,11 @@
   the specified fraction or multiple of the chosen interval (beat,
   bar, or phrase), and supplying a `:phase` will offset the oscillator
   from the underlying metronome phase by that amount. (See the
-  [documentation](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/oscillators.adoc#sawtooth-oscillators)
+  [documentation]({{guide-url}}oscillators.html#sawtooth-oscillators)
   for an expanded explanation illustrated with graphs.)
 
   The arguments after `shape-fn` can be [dynamic
-  parameters](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters)."
+  parameters]({{guide-url}}parameters.html#dynamic-parameters)."
   [shape-fn & {:keys [interval interval-ratio phase] :or {interval :beat interval-ratio 1 phase 0.0}}]
   {:pre [(or (ifn? shape-fn) (satisfies? IVariableShape shape-fn))]}
   (params/validate-param-type interval clojure.lang.Keyword)
@@ -223,11 +223,11 @@
   the specified fraction or multiple of the chosen interval (beat,
   bar, or phrase), and supplying a `:phase` will offset the oscillator
   from the underlying metronome phase by that amount. (See the
-  [documentation](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/oscillators.adoc#sawtooth-oscillators)
+  [documentation]({{guide-url}}oscillators.html#sawtooth-oscillators)
   for an expanded explanation illustrated with graphs.)
 
   The arguments can be [dynamic
-  parameters](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters)."
+  parameters]({{guide-url}}parameters.html#dynamic-parameters)."
   [& {:keys [down? interval interval-ratio phase] :or {down? false interval :beat interval-ratio 1 phase 0.0}}]
   (let [down? (params/bind-keyword-param down? Boolean false)
         shape-fn (if (params/param? down?)
@@ -259,11 +259,11 @@
   the specified fraction or multiple of the chosen interval (beat,
   bar, or phrase), and supplying a `:phase` will offset the oscillator
   from the underlying metronome phase by that amount. (See the
-  [documentation](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/oscillators.adoc#triangle-oscillators)
+  [documentation]({{guide-url}}oscillators.html#triangle-oscillators)
   for an expanded explanation illustrated with graphs.)
 
   All the arguments can be [dynamic
-  parameters](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters)."
+  parameters]({{guide-url}}parameters.html#dynamic-parameters)."
   [& {:keys [interval interval-ratio phase] :or {interval :beat interval-ratio 1 phase 0.0}}]
   (build-oscillator (fn [phase]
                       (if (< phase 0.5)
@@ -298,11 +298,11 @@
   the specified fraction or multiple of a beat, and supplying a
   `:phase` will offset the oscillator from the underlying metronome
   phase by that amount. (See the
-  [documentation](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/oscillators.adoc#square-oscillators)
+  [documentation]({{guide-url}}oscillators.html#square-oscillators)
   for an expanded explanation illustrated with graphs.)
 
   The arguments can be [dynamic
-  parameters](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters)."
+  parameters]({{guide-url}}parameters.html#dynamic-parameters)."
   [& {:keys [width interval interval-ratio phase] :or {width 0.5 interval :beat interval-ratio 1 phase 0.0}}]
   (let [width (params/bind-keyword-param width Number 0.5)
         shape-fn (if (params/param? width)
@@ -337,11 +337,11 @@
   or phrase), and supplying a `:phase` will offset the oscillator from
   the underlying metronome phase by that amount.
   (See the
-  [documentation](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/oscillators.adoc#sine-oscillators)
+  [documentation]({{guide-url}}oscillators.html#sine-oscillators)
   for an expanded explanation illustrated with graphs.)
 
   All the arguments can be [dynamic
-  parameters](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/parameters.adoc#dynamic-parameters)."
+  parameters]({{guide-url}}parameters.html#dynamic-parameters)."
   [& {:keys [interval interval-ratio phase] :or {interval :beat interval-ratio 1 phase 0.0}}]
   (let [two-pi (* 2.0 Math/PI)]
     (build-oscillator (fn [phase]
@@ -360,13 +360,13 @@
 
 (defn build-oscillated-param
   "Returns a number parameter that is driven by
-  an [oscillator](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/oscillators.adoc#oscillators).
+  an [oscillator]({{guide-url}}oscillators.html#oscillators).
   By default will be frame-dynamic, since it oscillates, but if you
   pass a `false` value for `:frame-dynamic`, the value will be fixed
   once it is assigned to an effect, acting like a random number
   generator with the oscillator's range. If you don't specify a
   `:metronome` to use, the
-  main [metronome](https://github.com/Deep-Symmetry/afterglow/blob/master/doc/metronomes.adoc#metronomes)
+  main [metronome]({{guide-url}}metronomes.html#metronomes)
   in [[*show*]] will be used.
 
   The values returned by the oscillator will be mapped onto the range
