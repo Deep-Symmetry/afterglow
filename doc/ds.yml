@@ -5,7 +5,7 @@ site:
 content:
   sources:
   - url: https://github.com/Deep-Symmetry/afterglow.git
-    branches: port-doc-to-antora #master
+    branches: master
     tags: va*
     start_path: doc
 asciidoc:
