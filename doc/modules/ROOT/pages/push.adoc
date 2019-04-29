@@ -109,8 +109,7 @@ encoders above them. The `chance` value is changing rapidly because it
 is configured to also be adjusted through the pressure sensitive cue
 pad that was used to launch it.
 
-image::SparklePressure.jpg[Sparkle effect ajusting chance
-variable,814,452]
+image::SparklePressure.jpg[Sparkle effect ajusting chance variable,814,452]
 
 To stop a running cue, press its pad again, or press the red kbd:[End]
 pad underneath its effect entry in the text area. Some cues will end

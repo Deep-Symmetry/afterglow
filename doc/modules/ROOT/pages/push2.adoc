@@ -305,8 +305,7 @@ You can also use the touch strip when setting a Boolean variable;
 touching the top half sets it to `Yes`, while the bottom half sets it to
 `No`.
 
-image::AdjustingDown2Strip.jpg[Adjusting a Down? cue with the touch
-strip visible,800,748]
+image::AdjustingDown2Strip.jpg[Adjusting a Down? cue with the touch strip visible,800,748]
 
 NOTE: The `Rainbow Pulse` cue to the left of the one being adjusted is
 an example of a cue with no variables to adjust.
