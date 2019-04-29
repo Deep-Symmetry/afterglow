@@ -93,8 +93,7 @@ As noted in the table, the direction of the wave can be reversed:
 (afterglow.effects.oscillators/sawtooth :down? true)
 ----
 
-image::sawtooth-beat-down.png[Downward
-Sawtooth Oscillator,500,378]
+image::sawtooth-beat-down.png[Downward Sawtooth Oscillator,500,378]
 
 [[ratios]]
 === Ratios
@@ -107,21 +106,18 @@ normally goes through its entire wave shape once per beat. If you
 supply an `:interval-ratio` of `2`, it will run half as fast, taking
 two beats to go through its waveform.
 
-image::sawtooth-beat-ratio-2.png[Sawtooth
-Beat Oscillator with Beat Ratio 2,500,378]
+image::sawtooth-beat-ratio-2.png[Sawtooth Beat Oscillator with Beat Ratio 2,500,378]
 
 An `:interval-ratio` of `1/3` speeds it up so that it only takes
 one-third of a beat to go through its oscillation, and will finish
 three complete cycles each beat.
 
-image::sawtooth-beat-ratio-1-3.png[Sawtooth Oscillator with
-Interval Ratio 1/3,500,378]
+image::sawtooth-beat-ratio-1-3.png[Sawtooth Oscillator with Interval Ratio 1/3,500,378]
 
 These can be combined, of course, so an `:interval-ratio` of `2/3`
 would complete three cycles every two beats.
 
-image::sawtooth-beat-ratio-2-3.png[Sawtooth Oscillator with
-Interval Ratio 2/3,500,378]
+image::sawtooth-beat-ratio-2-3.png[Sawtooth Oscillator with Interval Ratio 2/3,500,378]
 
 [[phase-shifting]]
 === Phase Shifting
@@ -138,8 +134,7 @@ no functional difference from staying within the current interval. In
 other words, passing in exactly 1.0 (or 2.0, etc.) is the same as
 passing in 0.0, and will have no effect on the oscillator.
 
-image::sawtooth-beat-phase.png[Sawtooth
-Oscillator with Phase 0.25,500,378]
+image::sawtooth-beat-phase.png[Sawtooth Oscillator with Phase 0.25,500,378]
 
 As noted in the table above, to have the oscillator work with
 intervals other than beats, you use the optional keyword argument
