@@ -22,6 +22,14 @@ This change log follows the conventions of
 - The metronome better handles negative time, and has some improved
   documentation.
 
+### Added
+
+- The detailed documentation has been reorganized as a Developer Guide
+  and is now built by [Antora](http://antora.org) to provide easier
+  navigation and a more readable presentation.
+- The Developer Guide is now available through the built-in web server
+  even if you do not have a connection to the internet.
+
 ## [0.2.4] - 2017-04-18
 
 ### Fixed

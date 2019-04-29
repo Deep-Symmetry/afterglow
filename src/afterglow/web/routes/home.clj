@@ -6,9 +6,10 @@
             [afterglow.web.routes.visualizer :as visualizer]
             [afterglow.web.routes.web-repl :as web-repl]
             [clojure.java.io :as io]
-            [compojure.core :refer [defroutes GET POST]]
+            [compojure.core :as compojure]
+            [compojure.route :as route]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
-            [ring.util.http-response :refer [ok]]))
+            [ring.util.response :as response]))
 
 (defn home-page []
   (let [shows (map (fn [[show description]]
@@ -26,18 +27,17 @@
 (defn visualizer-page []
   (layout/render "visualizer.html" {:csrf-token *anti-forgery-token*}))
 
-(defroutes home-routes
-  (GET "/" [] (home-page))
-  (GET "/show/:id" [id] (show-control/show-page id))
-  (GET "/ui-updates/:id" [id] (show-control/get-ui-updates id))
-  (POST "/ui-event/:id/:kind" [id kind :as req] (show-control/post-ui-event id kind req))
-  (GET "/console" [] (web-repl/page))
-  (POST "/console" [:as req] (web-repl/handle-command req))
-  (GET "/about" [] (about-page))
-  (GET "/visualizer/:id" [id] (visualizer/page id))
-  (GET "/visualizer-update/:id" [id] (visualizer/update-preview id))
-  (GET "/shaders/:id/fragment.glsl" [id] (visualizer/shader id)))
-
-
-
-
+(compojure/defroutes home-routes
+  (compojure/GET "/" [] (home-page))
+  (compojure/GET "/show/:id" [id] (show-control/show-page id))
+  (compojure/GET "/ui-updates/:id" [id] (show-control/get-ui-updates id))
+  (compojure/POST "/ui-event/:id/:kind" [id kind :as req] (show-control/post-ui-event id kind req))
+  (compojure/GET "/console" [] (web-repl/page))
+  (compojure/POST "/console" [:as req] (web-repl/handle-command req))
+  (compojure/GET "/guide" [] (response/redirect "/guide/index.html"))
+  (route/resources "/guide/" {:root "developer_guide"})
+  (compojure/GET "/about" [] (about-page))
+  (compojure/GET "/visualizer/:id" [id] (visualizer/page id))
+  (compojure/GET "/visualizer-update/:id" [id] (visualizer/update-preview id))
+  (compojure/GET "/shaders/:id/fragment.glsl" [id] (visualizer/shader id))
+  (route/not-found "<p>Page not found.</p>"))

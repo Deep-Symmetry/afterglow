@@ -23,6 +23,9 @@
             {% if show %}<li {% ifequal page "visualizer.html" %} class="active"{% endifequal %}>
               <a href="{{servlet-context}}/visualizer/{{show.id}}">Visualizer</a>
             </li>{% endif %}
+            <li>
+              <a href="{{servlet-context}}/guide" target="dev-guide">Guide</a>
+            </li>
             <li {% ifequal page "about.html" %} class="active"{% endifequal %}>
               <a href="{{servlet-context}}/about">About</a>
             </li>{% endifunequal %}
@@ -52,4 +55,3 @@
     {% endblock %}
   </body>
 </html>
-
