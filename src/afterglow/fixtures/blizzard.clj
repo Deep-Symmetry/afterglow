@@ -43,8 +43,7 @@
   rotations when you patch it. Otherwise, tell Afterglow how far it
   has been rotated around each of the axes when hanging:
 
-  ![F3
-  axes](https://raw.githubusercontent.com/Deep-Symmetry/afterglow/master/doc/assets/F3.png)
+  ![F3 axes]({{guide-url}}_images/F3.png)
 
   The center pan value (aimed straight at the audience when hung in
   the default orientation described above), is defined as 85.5, half a
@@ -161,8 +160,7 @@
   rotations when you patch it. Otherwise, tell Afterglow how far it
   has been rotated around each of the axes when hanging:
 
-  ![Blade
-  axes](https://raw.githubusercontent.com/Deep-Symmetry/afterglow/master/doc/assets/Blade.png)
+  ![Blade axes]({{guide-url}}_images/Blade.png)
 
   If you are hanging the light at an odd angle, or for any reason it
   is harder to measure the exact axis location given where where you
@@ -326,8 +324,7 @@
   parallel to the X axis, and the LED display and sockets all facing
   away from the audience.
 
-  ![Weather System
-  axes](https://raw.githubusercontent.com/Deep-Symmetry/afterglow/master/doc/assets/WeatherSystem.jpg)
+  ![Weather System axes]({{guide-url}}_images/WeatherSystem.jpg)
 
   This fixture can be configured to use either 7 or 26 DMX channels.
   If you do not specify a mode when patching it, `:26-channel` is
