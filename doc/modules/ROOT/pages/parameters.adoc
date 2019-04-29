@@ -195,7 +195,7 @@ With no arguments, this creates a step parameter that starts out with
 the value `1` for the duration of the beat closest to when you created
 it, and the value will jump up by one as each subsequent beat occurs:
 
-image::step-fade-0.png[Default Step Parameter]
+image::step-fade-0.png[Default Step Parameter,500,378]
 
 If a less-abrupt transition between stages in the chase is desired, a
 fade can be added between them by passing a value with the optional
@@ -212,7 +212,7 @@ beat, as shown in the following graph:
 (afterglow.effects.params/build-step-param :fade-fraction 0.2)
 ----
 
-image::step-fade-0-2.png[Step Parameter with fade fraction 0.2]
+image::step-fade-0-2.png[Step Parameter with fade fraction 0.2,500,378]
 
 The graph shows that most of each beat is spent with the step
 parameter steady at its expected value, but the first and last tenths
@@ -225,7 +225,7 @@ sitting at the beat's assigned value:
 (afterglow.effects.params/build-step-param :fade-fraction 0.5)
 ----
 
-image::step-fade-0-5.png[Step Parameter with fade fraction 0.5]
+image::step-fade-0-5.png[Step Parameter with fade fraction 0.5,500,378]
 
 That trend continues until the maximum possible fade-fraction value of
 `1` is used, which causes all of each beat to be spent fading, so the
@@ -238,7 +238,7 @@ assigned to a given beat at the midpoint of that beat:
 (afterglow.effects.params/build-step-param :fade-fraction 1)
 ----
 
-image::step-fade-1.png[Step Parameter with fade fraction 1]
+image::step-fade-1.png[Step Parameter with fade fraction 1,500,378]
 
 In addition to linear fades, you can smooth out the start and end of
 the fades by using a sine-shaped fade curve, by passing the optional
@@ -250,7 +250,7 @@ that looks like with a continuous fade:
 (afterglow.effects.params/build-step-param :fade-curve :sine :fade-fraction 1)
 ----
 
-image::step-sine-fade-1.png[Step Parameter with sine curve and fade fraction 1]
+image::step-sine-fade-1.png[Step Parameter with sine curve and fade fraction 1,500,378]
 
 The smoothing effect of the sine curve option becomes even more
 evident when you configure the step parameter to fade for only part of
@@ -261,7 +261,7 @@ the beat:
 (afterglow.effects.params/build-step-param :fade-curve :sine :fade-fraction 0.5)
 ----
 
-image::step-sine-fade-0-5.png[Step Parameter with sine curve and fade fraction 0.5]
+image::step-sine-fade-0-5.png[Step Parameter with sine curve and fade fraction 0.5,500,378]
 
 Of course, as the amount of time spent fading gets compressed, the
 smoothing is less obvious, although it is still there. Dropping back
@@ -273,7 +273,7 @@ this:
 (afterglow.effects.params/build-step-param :fade-curve :sine :fade-fraction 0.2)
 ----
 
-image::step-sine-fade-0-2.png[Step Parameter with sine curve and fade fraction 0.2]
+image::step-sine-fade-0-2.png[Step Parameter with sine curve and fade fraction 0.2,500,378]
 
 When the fade fraction is `0`, it does not matter what the fade curve
 is, because no fading takes place.
@@ -298,7 +298,8 @@ step parameter increases every half of a beat:
                                            :fade-curve :sine :fade-fraction 0.2)
 ----
 
-image::step-sine-fade-0-2-half.png[Step Parameter with sine curve, fade fraction 0.2, interval ratio 1/2]
+image::step-sine-fade-0-2-half.png[Step Parameter with sine curve,
+fade fraction 0.2, interval ratio 1/2,500,378]
 
 
 Finally, if you would like the beat numbers to be counted from a time

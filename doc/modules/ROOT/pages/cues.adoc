@@ -40,7 +40,7 @@ same way, so the browser window can act as documentation to help the
 user learn the cue names associated with each available cue pad on the
 controller.
 
-image::ShowGrid.gif[Web interface]
+image::ShowGrid.gif[Web interface,998,912]
 
 In addition to names, cues can be assigned colors in the grid, and the
 web interface will honor those colors, as will the physical grid
@@ -67,7 +67,7 @@ slightly older version of the same cues are shown on the Ableton Push
 below, so you can see how the color relationships help with learning
 the cue names.
 
-image::AbletonInterface.jpg[Ableton Push interface]
+image::AbletonInterface.jpg[Ableton Push interface,800,637]
 
 To trigger a cue, simply press the corresponding pad on a physical
 interface, or click within the grid cell in the web interface. The
@@ -333,7 +333,7 @@ The example dimmer oscillator cues like
 {api-doc}afterglow.examples.html#var-make-sawtooth-dimmer-cue[make-sawtooth-dimmer-cue]
 show how this can be used effectively.
 
-image::blade-saw.gif[Visualizer function in action]
+image::blade-saw.gif[Visualizer function in action,240,160]
 
 |===
 

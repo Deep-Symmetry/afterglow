@@ -61,7 +61,7 @@ the phase of the current beat. At the start of the beat, the value will
 be 0.0, and at the end of the beat, the value will have grown linearly
 to 1.0.
 
-image::sawtooth-beat.png[Default Sawtooth Oscillator]
+image::sawtooth-beat.png[Default Sawtooth Oscillator,500,378]
 
 You can change the nature of the wave by using optional keyword
 parameters, and the values you use with them can be be
@@ -94,7 +94,7 @@ As noted in the table, the direction of the wave can be reversed:
 ----
 
 image::sawtooth-beat-down.png[Downward
-Sawtooth Oscillator]
+Sawtooth Oscillator,500,378]
 
 [[ratios]]
 === Ratios
@@ -108,20 +108,20 @@ supply an `:interval-ratio` of `2`, it will run half as fast, taking
 two beats to go through its waveform.
 
 image::sawtooth-beat-ratio-2.png[Sawtooth
-Beat Oscillator with Beat Ratio 2]
+Beat Oscillator with Beat Ratio 2,500,378]
 
 An `:interval-ratio` of `1/3` speeds it up so that it only takes
 one-third of a beat to go through its oscillation, and will finish
 three complete cycles each beat.
 
 image::sawtooth-beat-ratio-1-3.png[Sawtooth Oscillator with
-Interval Ratio 1/3]
+Interval Ratio 1/3,500,378]
 
 These can be combined, of course, so an `:interval-ratio` of `2/3`
 would complete three cycles every two beats.
 
 image::sawtooth-beat-ratio-2-3.png[Sawtooth Oscillator with
-Interval Ratio 2/3]
+Interval Ratio 2/3,500,378]
 
 [[phase-shifting]]
 === Phase Shifting
@@ -139,7 +139,7 @@ other words, passing in exactly 1.0 (or 2.0, etc.) is the same as
 passing in 0.0, and will have no effect on the oscillator.
 
 image::sawtooth-beat-phase.png[Sawtooth
-Oscillator with Phase 0.25]
+Oscillator with Phase 0.25,500,378]
 
 As noted in the table above, to have the oscillator work with
 intervals other than beats, you use the optional keyword argument
@@ -150,7 +150,7 @@ intervals other than beats, you use the optional keyword argument
 (afterglow.effects.oscillators/sawtooth :interval :bar)
 ----
 
-image::sawtooth-bar.png[Sawtooth Bar Oscillator]
+image::sawtooth-bar.png[Sawtooth Bar Oscillator,500,378]
 
 And to have it oscillate over each phrase:
 
@@ -159,7 +159,7 @@ And to have it oscillate over each phrase:
 (afterglow.effects.oscillators/sawtooth :interval :phrase)
 ----
 
-image::sawtooth-phrase.png[Sawtooth Phrase Oscillator]
+image::sawtooth-phrase.png[Sawtooth Phrase Oscillator,500,378]
 
 [[triangle-oscillators]]
 == Triangle Oscillators
@@ -175,7 +175,7 @@ the phase of the current beat. At the start of the beat, the value will
 be 0.0, at the midpoint, the value will have grown linearly to 1.0, and
 at the end of the beat it will have returned to 0.0.
 
-image::triangle-beat.png[Default Triangle Oscillator]
+image::triangle-beat.png[Default Triangle Oscillator,500,378]
 
 You can change the nature of the wave by using optional keyword
 parameters, and the values you use with them can be be
@@ -210,7 +210,7 @@ intervals other than beats, you use the optional keyword argument
 (afterglow.effects.oscillators/triangle :interval :bar)
 ----
 
-image::triangle-bar.png[Triangle Bar Oscillator]
+image::triangle-bar.png[Triangle Bar Oscillator,500,378]
 
 And to have it oscillate over each phrase:
 
@@ -219,7 +219,7 @@ And to have it oscillate over each phrase:
 (afterglow.effects.oscillators/triangle :interval :phrase)
 ----
 
-image::triangle-phrase.png[Triangle Phrase Oscillator]
+image::triangle-phrase.png[Triangle Phrase Oscillator,500,378]
 
 [[sine-oscillators]]
 == Sine Oscillators
@@ -241,7 +241,7 @@ again as it approaches the midpoint. At the midpoint, the value will
 reach 1.0 and begin falling slowly, again picking up speed, and at the
 end of the beat it will have returned to 0.0.
 
-image::sine-beat.png[Default Sine Oscillator]
+image::sine-beat.png[Default Sine Oscillator,500,378]
 
 You can change the nature of the wave by using optional keyword
 parameters, and the values you use with them can be be
@@ -276,7 +276,7 @@ intervals other than beats, you use the optional keyword argument
 (afterglow.effects.oscillators/sine :interval :bar)
 ----
 
-image::sine-bar.png[Sine Bar Oscillator]
+image::sine-bar.png[Sine Bar Oscillator,500,378]
 
 And to have it oscillate over each phrase:
 
@@ -285,7 +285,7 @@ And to have it oscillate over each phrase:
 (afterglow.effects.oscillators/sine :interval :phrase)
 ----
 
-image::sine-phrase.png[Sine Phrase Oscillator]
+image::sine-phrase.png[Sine Phrase Oscillator,500,378]
 
 [[square-oscillators]]
 == Square Oscillators
@@ -304,7 +304,7 @@ phase of the current beat. At the start of the beat, the value will be
 1.0. At the midpoint, it will instantly drop to 0.0, where it will stay
 until the end of the beat.
 
-image::square-beat.png[Square Beat Oscillator]
+image::square-beat.png[Square Beat Oscillator,500,378]
 
 You can change the nature of the wave by using optional keyword
 parameters, and the values you use with them can be be
@@ -348,7 +348,7 @@ to be on. For example, with the value `0.8`, it is on 4/5 of the time:
 (afterglow.effects.oscillators/square :width 0.8)
 ----
 
-image::square-beat-width-8.png[Square Oscillator with Width 0.8]
+image::square-beat-width-8.png[Square Oscillator with Width 0.8,500,378]
 
 Alternately, using a `:width` of `0.1` causes the oscillator to be on
 for only one tenth of each beat:
@@ -358,7 +358,7 @@ for only one tenth of each beat:
 (afterglow.effects.oscillators/square :width 0.1)
 ----
 
-image::square-beat-width-1.png[Square Oscillator with Width 0.1]
+image::square-beat-width-1.png[Square Oscillator with Width 0.1,500,378]
 
 You can shift where within the beat the transitions take place using
 the `:phase` argument, as with all oscillators, in the manner
@@ -378,7 +378,7 @@ intervals other than beats, you use the optional keyword argument
 (afterglow.effects.oscillators/square :interval :bar)
 ----
 
-image::square-bar.png[Square Bar Oscillator]
+image::square-bar.png[Square Bar Oscillator,500,378]
 
 And to have it oscillate over each phrase:
 
@@ -386,7 +386,7 @@ And to have it oscillate over each phrase:
 ----
 (afterglow.effects.oscillators/square :interval :phrase)
 ----
-image::square-phrase.png[Square Phrase Oscillator]
+image::square-phrase.png[Square Phrase Oscillator,500,378]
 
 [[custom-oscillators]]
 == Custom Oscillators

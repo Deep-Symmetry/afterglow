@@ -596,12 +596,12 @@ replace--rather than add to--your settings.
 
 3. Click the `Add...` button in the `Device Setup` section at the top:
 +
-image::TraktorAddMapping.png[Traktor Add Device Mapping]
+image::TraktorAddMapping.png[Traktor Add Device Mapping,654,431]
 
 4. Choose `Import TSI` in the menu which pops up, and `Import
 Other...` at the bottom of the menu which that opens:
 +
-image::TraktorImport.png[Traktor Import Other TSI]
+image::TraktorImport.png[Traktor Import Other TSI,659,429]
 
 5. Navigate to the folder containing the `Afterglow.tsi` file you
 downloaded, and open it.
@@ -609,7 +609,7 @@ downloaded, and open it.
 Following this procedure will create a Device named `Clock,
 Afterglow` within the Traktor Controller Manager:
 
-image::TraktorMapping.png[Afterglow Traktor Device Mapping]
+image::TraktorMapping.png[Afterglow Traktor Device Mapping,996,774]
 
 Select and use that rather than the Generic MIDI device you would
 create in the process described in the Traktor Knowledge Base article
@@ -804,7 +804,7 @@ http://hexler.net/software/touchosc[TouchOSC]. The sample show in the
 `afterglow.examples` namespace uses this capability to offer wireless
 graphical X-Y-Z aiming of groups of moving heads:
 
-image::TouchOSC.jpg[TouchOSC interface]
+image::TouchOSC.jpg[TouchOSC interface,1024,1366]
 
 The functions
 {api-doc}afterglow.examples.html#var-add-osc-cue-binding[`add-osc-cue-binding`] and
