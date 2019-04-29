@@ -1,7 +1,7 @@
 (ns afterglow.controllers.ableton-push
   "Allows the Ableton Push to be used as a control surface for
-  Afterglow. Its features are described in the [online
-  documentation]({{guide-url}}push.html)."
+  Afterglow. Its features are described in the [Developer
+  Guide]({{guide-url}}push.html)."
   {:author "James Elliott"}
   (:require [afterglow.controllers :as controllers]
             [afterglow.controllers.tempo :as tempo]

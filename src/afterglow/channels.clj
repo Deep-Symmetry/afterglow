@@ -263,9 +263,9 @@
              20 :strobe)
   ```
 
-  See the [online
-  documentation]({{guide-url}}fixture_definitions.html#function-channels)
-  for more details and examples."
+  See the [Developer
+  Guide]({{guide-url}}fixture_definitions.html#function-channels) for
+  more details and examples."
   [chan-type offset & functions]
   {:pre [(some? chan-type) (integer? offset) (<= 1 offset 512)]}
   (let [chan-type (keyword chan-type)]
