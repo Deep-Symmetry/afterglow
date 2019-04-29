@@ -298,8 +298,7 @@ step parameter increases every half of a beat:
                                            :fade-curve :sine :fade-fraction 0.2)
 ----
 
-image::step-sine-fade-0-2-half.png[alt="Step Parameter with sine curve,
-fade fraction 0.2, interval ratio 1/2",width=500,height=378]
+image::step-sine-fade-0-2-half.png[alt="Step Parameter with sine curve, fade fraction 0.2, interval ratio 1/2",width=500,height=378]
 
 
 Finally, if you would like the beat numbers to be counted from a time
