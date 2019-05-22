@@ -2,7 +2,7 @@
   "Cues for Sallie's birthday/housewarming party. Useful as an example
   of how an actual small show was put together early in Afterglow's
   development, and also as a source of effects that may want to make
-  there way into a more central place."
+  their way into a more central place."
   {:author "James Elliott"}
   (:require [afterglow.beyond :as beyond]
             [afterglow.controllers.ableton-push :as push]
@@ -123,7 +123,7 @@
   strobe color by varying the pressure they are applying to the pad on
   controllers which support pressure sensitivity."
   [name fixtures x y]
-  (ct/set-cue! (:cue-grid *show*) x y	
+  (ct/set-cue! (:cue-grid *show*) x y
                (cues/cue (keyword (str "strobe-" (clojure.string/replace (clojure.string/lower-case name) " " "-")))
                          (fn [var-map] (fun/strobe (str "Strobe " name) fixtures
                                                    (:level var-map 50) (:lightness var-map 100)))
