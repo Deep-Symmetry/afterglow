@@ -62,7 +62,7 @@
          (when (:visualizer-visible % true) [%]))
       fixtures-or-heads))
 
-(defn generic-dimmmer
+(defn generic-dimmer
   "A fixture definition where a single channel controls the power
   level of a socket to which an incandescent light source can be
   connected. If you are using a product such as the [Chauvet
