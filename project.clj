@@ -90,7 +90,7 @@
                                {:target-path  "target/classes/api_doc" ; For embedded use
                                 :extra-values {:guide-url "http:/guide/afterglow/"}}]
                               ["target/codox"
-                               {:target-path  "doc/build/site/api_doc" ; For hosting on netlify
+                               {:target-path  "doc/build/site/api" ; For hosting on netlify
                                 :extra-values {:guide-url "https://afterglow-guide.deepsymmetry.org/afterglow/"}}]]}
 
   ;; Perform the tasks which embed the developer guide and api docs before compilation,

@@ -9,7 +9,7 @@ content:
     start_path: doc
 asciidoc:
   attributes:
-    api-doc: http://afterglow-guide.deepsymmetry.org/api-doc/
+    api-doc: https://afterglow-guide.deepsymmetry.org/api/
     icons: font
     experimental: ''
 ui:
