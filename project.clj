@@ -75,7 +75,7 @@
                        :env          {:dev "true"}}
              :uberjar {:env {:production "true"}
                        :aot :all}}
-  :plugins [[lein-codox "0.10.6"]
+  :plugins [[lein-codox "0.10.7"]
             [lein-resource "17.06.1"]
             [lein-environ "1.1.0"]
             [lein-shell "0.5.0"]]
