@@ -26,7 +26,7 @@
   achieve the closest approximation available on an Ableton Push
   pad, using the thoughtful hue palette provided by Ableton:
 
-  ![Push pad palette](http://deepsymmetry.org/afterglow/research/PushColors.jpg)"
+  ![Push pad palette](https://deepsymmetry.org/afterglow/research/PushColors.jpg)"
   [color]
   {:pre [(= (type color) :com.evocomputing.colors/color)]}
   ;; Each hue section starts with a lightened version
