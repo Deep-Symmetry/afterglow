@@ -74,7 +74,8 @@
                        :jvm-opts     ["-XX:-OmitStackTraceInFastThrow" "-Dapple.awt.UIElement=true"]
                        :env          {:dev "true"}}
              :uberjar {:env {:production "true"}
-                       :aot :all}}
+                       :aot :all}
+             :netlify {:prep-tasks ^:replace []}}
   :plugins [[lein-codox "0.10.7"]
             [lein-resource "17.06.1"]
             [lein-environ "1.1.0"]
@@ -86,10 +87,10 @@
           :metadata    {:doc/format :markdown}}
 
   :resource {:resource-paths [["target/codox"
-                               {:target-path "target/classes/api_doc"  ; For embedded use
+                               {:target-path  "target/classes/api_doc" ; For embedded use
                                 :extra-values {:guide-url "http:/guide/afterglow/"}}]
                               ["target/codox"
-                               {:target-path "doc/build/site/api_doc"  ; For hosting on netlify
+                               {:target-path  "doc/build/site/api_doc" ; For hosting on netlify
                                 :extra-values {:guide-url "https://afterglow-guide.deepsymmetry.org/afterglow/"}}]]}
 
   ;; Perform the tasks which embed the developer guide and api docs before compilation,
