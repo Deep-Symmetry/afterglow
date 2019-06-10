@@ -4,7 +4,7 @@
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :jvm-opts ["-Dapple.awt.UIElement=true"]  ; Suppress dock icon and focus stealing when compiling on a Mac.
-  :dependencies [[org.clojure/clojure "1.10.0"]
+  :dependencies [[org.clojure/clojure "1.10.1"]
                  [org.clojure/core.cache "0.7.2"]
                  [org.clojure/core.async "0.4.490" :exclusions [org.clojure/tools.reader]]
                  [org.clojure/data.json "0.2.6"]
