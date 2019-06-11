@@ -22,10 +22,10 @@
 
 This page provides an introduction in how to install and use
 Afterglow. The [Developer
-Guide](https://deepsymmetry.org/afterglow/guide/) goes much deeper,
+Guide](https://afterglow-guide.deepsymmetry.org/) goes much deeper,
 and there is also [API
-documentation](http://deepsymmetry.org/afterglow/api-doc/index.html).
-For more interactive help, the [Afterglow room on
+documentation](http://afterglow-guide.deepsymmetry.org/api/). For more
+interactive help, the [Afterglow room on
 Gitter](https://gitter.im/brunchboy/afterglow) is the place to start,
 and if you want to see (or contribute to) more structured and lasting
 community-driven documentation, there is also a project
@@ -34,8 +34,8 @@ community-driven documentation, there is also a project
 ## Why Explore Afterglow?
 
 > tl;dr&mdash;show me? Check out the
-> [Show Control pics](https://deepsymmetry.org/afterglow/guide/afterglow/README.html#show-control)
-> and [performance video](https://deepsymmetry.org/afterglow/guide/afterglow/videos.html).
+> [Show Control pics](https://afterglow-guide.deepsymmetry.org/afterglow/README.html#show-control)
+> and [performance video](https://afterglow-guide.deepsymmetry.org/afterglow/videos.html).
 
 As suggested by the live-coding orientation mentioned above, which is
 designed to let you inject your own code right into the frame
@@ -43,53 +43,53 @@ rendering process, Afterglow takes a very different approach to
 controlling light shows than other software. It won&rsquo;t be right
 for everyone, but will be extremely compelling to a particular niche.
 The early stages of its [rendering
-loop](https://deepsymmetry.org/afterglow/guide/afterglow/rendering_loop.html#the-rendering-loop)
+loop](https://afterglow-guide.deepsymmetry.org/afterglow/rendering_loop.html#the-rendering-loop)
 can offer higher levels of abstraction than the usual DMX [channel
-value](https://deepsymmetry.org/afterglow/guide/afterglow/effects.html#channel-effects)
+value](https://afterglow-guide.deepsymmetry.org/afterglow/effects.html#channel-effects)
 or [fixture
-function](https://deepsymmetry.org/afterglow/guide/afterglow/effects.html#function-effects)
+function](https://afterglow-guide.deepsymmetry.org/afterglow/effects.html#function-effects)
 (although those are fully supported too):
 
 * You can express your desired results in terms of an abstract
-  [color](https://deepsymmetry.org/afterglow/guide/afterglow/effects.html#color-effects),
+  [color](https://afterglow-guide.deepsymmetry.org/afterglow/effects.html#color-effects),
   including support for the hue-saturation-lightness model, which is
   great for algorithmic looks, and have it translated to whatever
   color channels (or color wheel) your fixture supports.
 
 * Groups of moving heads can be told to face particular
-  [directions](https://deepsymmetry.org/afterglow/guide/afterglow/effects.html#direction-effects)
+  [directions](https://afterglow-guide.deepsymmetry.org/afterglow/effects.html#direction-effects)
   by specifying parameterized vectors, or to
-  [aim](https://deepsymmetry.org/afterglow/guide/afterglow/effects.html#aim-effects)
+  [aim](https://afterglow-guide.deepsymmetry.org/afterglow/effects.html#aim-effects)
   at a particular point in space, and Afterglow figures out how to
   translate that into DMX control values given its understanding of
   the
-  [fixture](https://deepsymmetry.org/afterglow/guide/afterglow/fixture_definitions.html)
+  [fixture](https://afterglow-guide.deepsymmetry.org/afterglow/fixture_definitions.html)
   and
-  [where](https://deepsymmetry.org/afterglow/guide/afterglow/show_space.html),
+  [where](https://afterglow-guide.deepsymmetry.org/afterglow/show_space.html),
   and at what angle, you hung it.
 
 * There are a variety of
-  [oscillators](https://deepsymmetry.org/afterglow/guide/afterglow/oscillators.html)
+  [oscillators](https://afterglow-guide.deepsymmetry.org/afterglow/oscillators.html)
   which can efficiently drive effect parameters.
 
 * You can also create
-  [complex effects](https://deepsymmetry.org/afterglow/guide/afterglow/effects.html#complex-effects),
+  [complex effects](https://afterglow-guide.deepsymmetry.org/afterglow/effects.html#complex-effects),
   with
-  [adjustable parameters](https://deepsymmetry.org/afterglow/guide/afterglow/parameters.html)
+  [adjustable parameters](https://afterglow-guide.deepsymmetry.org/afterglow/parameters.html)
   that can be controlled through a rich binding to an
-  [Ableton Push](https://deepsymmetry.org/afterglow/guide/afterglow/push2.html) or
-  [Novation Launchpad family](https://deepsymmetry.org/afterglow/guide/afterglow/launchpad.html)
+  [Ableton Push](https://afterglow-guide.deepsymmetry.org/afterglow/push2.html) or
+  [Novation Launchpad family](https://afterglow-guide.deepsymmetry.org/afterglow/launchpad.html)
   controller, or via
-  [Open Sound Control](https://deepsymmetry.org/afterglow/guide/afterglow/mapping_sync.html#open-sound-control)
+  [Open Sound Control](https://afterglow-guide.deepsymmetry.org/afterglow/mapping_sync.html#open-sound-control)
   (OSC)&mdash;even wirelessly from a tablet or smartphone.
 
 * The timing of effects is pervasively influenced by a deep notion of
-  [musical time](https://deepsymmetry.org/afterglow/guide/afterglow/metronomes.html),
+  [musical time](https://afterglow-guide.deepsymmetry.org/afterglow/metronomes.html),
   with support for synchronization via
-  [MIDI clock](https://deepsymmetry.org/afterglow/guide/afterglow/mapping_sync.html#syncing-to-midi-clock),
-  [Traktor Beat Phase](https://deepsymmetry.org/afterglow/guide/afterglow/mapping_sync.html#syncing-to-traktor-beat-phase),
+  [MIDI clock](https://afterglow-guide.deepsymmetry.org/afterglow/mapping_sync.html#syncing-to-midi-clock),
+  [Traktor Beat Phase](https://afterglow-guide.deepsymmetry.org/afterglow/mapping_sync.html#syncing-to-traktor-beat-phase),
   or Pioneer
-  [Pro DJ Link](https://deepsymmetry.org/afterglow/guide/afterglow/mapping_sync.html#syncing-to-pro-dj-link)
+  [Pro DJ Link](https://afterglow-guide.deepsymmetry.org/afterglow/mapping_sync.html#syncing-to-pro-dj-link)
   beat grids.
 
 * You can even host Afterglow within
@@ -156,7 +156,7 @@ clarification or reinforcement).
 Most of the crazy ideas have panned out and been implemented, and I am
 fleshing out the basic details needed for everyday use. The examples
 are starting to be intriguing and informative, and the [Developer
-Guide](https://deepsymmetry.org/afterglow/guide/afterglow/README.html)
+Guide](https://afterglow-guide.deepsymmetry.org/afterglow/README.html)
 is getting substantial. The modeling of fixtures, channels, etc. is
 coming together nicely, though there may be a few more changes.
 
@@ -181,9 +181,9 @@ if it sounds interesting!
 > The rest of this document primarily provides an introduction to the
 > configuration of Afterglow from the command line and text files. The
 > show control interface is explained in the
-> [web](https://deepsymmetry.org/afterglow/guide/afterglow/README.html#web-ui)
+> [web](https://afterglow-guide.deepsymmetry.org/afterglow/README.html#web-ui)
 > and
-> [Push](https://deepsymmetry.org/afterglow/guide/afterglow/push2.html)
+> [Push](https://afterglow-guide.deepsymmetry.org/afterglow/push2.html)
 > sections.
 
 Although you will often want to use Afterglow from a Clojure repl, you
@@ -518,13 +518,13 @@ plugged in:
 And then the last fader acts as my grand master dimmer, and I can
 quickly get relief from overly bright lights. (In a real performance
 context, you would want to use [this alternate
-approach](https://deepsymmetry.org/afterglow/guide/afterglow/mapping_sync.html#automatic-bindings)
+approach](https://afterglow-guide.deepsymmetry.org/afterglow/mapping_sync.html#automatic-bindings)
 to automatically set up your bindings whenever the controller is
 connected. That way, if someone trips over the controller cable, as
 soon as you plug it back in, you are good to go again.)
 
 > If you have an Ableton Push, it is even easier to have [intutive
-> control](https://deepsymmetry.org/afterglow/guide/afterglow/push2.html#show-control)
+> control](https://afterglow-guide.deepsymmetry.org/afterglow/push2.html#show-control)
 > over your show’s grand master dimmer. As soon as you bind the Push
 > to your show, the Push Master encoder is automatically tied to the
 > show master dimmer, with nice graphical feedback in the text area.
@@ -575,7 +575,7 @@ Clojure seize control of your lights!
 
 If you have DJ software or a mixer sending you MIDI clock data, you
 can sync the show’s BPM to it (see the [Developer
-Guide](https://deepsymmetry.org/afterglow/guide/afterglow/mapping_sync.html#syncing-to-midi-clock)
+Guide](https://afterglow-guide.deepsymmetry.org/afterglow/mapping_sync.html#syncing-to-midi-clock)
 for details, and for a Traktor controller mapping file that lets you
 sync to its beat phase information as well):
 
@@ -600,11 +600,11 @@ Or, if you need to be woken up a bit,
 ```
 
 > The [Developer
-> Guide](https://deepsymmetry.org/afterglow/guide/afterglow/README.html)
+> Guide](https://afterglow-guide.deepsymmetry.org/afterglow/README.html)
 > has more examples of [building
-> effects](https://deepsymmetry.org/afterglow/guide/afterglow/effects.html#effect-examples),
+> effects](https://afterglow-guide.deepsymmetry.org/afterglow/effects.html#effect-examples),
 > and [mapping
-> parameters](https://deepsymmetry.org/afterglow/guide/afterglow/mapping_sync.html)
+> parameters](https://afterglow-guide.deepsymmetry.org/afterglow/mapping_sync.html)
 > to MIDI controllers. There is also low-level [API
 > documentation](http://deepsymmetry.org/afterglow/api-doc), but the
 > project documentation is the best starting point for a conceptual
@@ -666,7 +666,7 @@ Everything beyond this point in this document is written for people
 who are working on enhancing Afterglow itself.
 
 If you are trying to learn how to use it, jump to the main [Developer
-Guide](https://deepsymmetry.org/afterglow/guide/afterglow/README.html)
+Guide](https://afterglow-guide.deepsymmetry.org/afterglow/README.html)
 page now!
 
 ## Release Checklist
@@ -692,13 +692,9 @@ Here is the set of tasks needed to cut a new release:
   scripts/prepare_release.sh v0.2.0`.
 - [ ] Build both versions of the codox documentation, with the release
   project version and tagged source and documentation links: `lein
-  repl` will do the trick.
-- [ ] Publish the hosted version of the API docs: `rsync -avz target/api_doc/
-  slice:/var/www/ds/afterglow/api-doc`
-- [ ] Build the hosted version of the Developer Guide: `antora --fetch
-  doc/ds.yml`
-- [ ] Publish the hosted Developer Guide: `rsync -avz doc/build/site/
-  slice:/var/www/ds/afterglow/guide`
+  repl` will do the trick. (Perhaps no longer relevant! But look into
+  changing to use the Beat Link Trigger approach of versioning builds
+  that no longer rely on lein-env.)
 - [ ] Update [`CHANGELOG.md`](CHANGELOG.md) to reflect the release:
   make sure nothing is missing, and rename the sections to reflect the
   fact that the unreleased code is now released, and there is nothing

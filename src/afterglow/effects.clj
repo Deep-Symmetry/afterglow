@@ -68,7 +68,7 @@
   effect a second time during this process, however, it will simply be
   removed from the show at that time."))))
 
-;; See https://deepsymmetry.org/afterglow/guide/afterglow/rendering_loop.html#assigners
+;; See https://afterglow-guide.deepsymmetry.org/afterglow/rendering_loop.html#assigners
 ;;
 ;; Afterglow runs through the list of effects in priority order; each will spit out some
 ;; number of assigners, which are a tuple identifying what is to be assigned, and a function

@@ -8,9 +8,9 @@ Afterglow now uses [Antora](https://antora.org) to build its Developer
 Guide. this folder hosts the documentation module and playbooks used
 to build it. `embedded.yml` is used to create the self-hosted version
 which is served out of Afterglow itself, so it can be used even
-without an Internet connection, and `ds.yml` is used to build the
-[online version](https://deepsymmetry.org/afterglow/guide/)
-that is hosted on the Deep Symmetry web site.
+without an Internet connection, and `netlify.yml` is used to build the
+[online version](https://afterglow-guide.deepsymmetry.org/) that is
+managed by [netlify](https://www.netlify.com).
 
 The Leiningen project in the root of this repository automatically
 invokes Antora to build the embedded version as an early build step.
