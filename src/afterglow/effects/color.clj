@@ -23,10 +23,9 @@
   the highest green component, and the highest blue component."
   [previous current]
   (if (some? previous)
-    (let [red (max (colors/red previous) (colors/red current))
-          green (max (colors/green previous) (colors/green current))
-          blue (max (colors/blue previous) (colors/blue current))]
-      (colors/create-color :r red :g green :b blue))
+    (let [[r g b] (map #(max (% previous) (% current))
+                       [colors/red colors/green colors/blue])]
+      (colors/create-color :r r :g g :b b)) ;what about white thoooo
     current))
 
 (defn build-htp-color-assigner
@@ -40,13 +39,13 @@
   assignment held the highest."
   [head param show snapshot]
   (let [resolved (params/resolve-unless-frame-dynamic param show snapshot head)]
-    (fx/build-head-assigner :color head
-                            (fn [show snapshot target previous-assignment]
-                              (if (some? previous-assignment)
-                                (let [current (params/resolve-param resolved show snapshot head)
-                                      previous (params/resolve-param previous-assignment show snapshot head)]
-                                  (htp-merge previous current))
-                                resolved)))))
+    (fx/build-head-assigner
+     :color head
+     (fn [show snapshot target previous-assignment]
+       (if (some? previous-assignment)
+         (apply htp-merge (map #(params/resolve-param % show snapshot head)
+                               [previous-assignment resolved])))
+       resolved))))
 
 (defn build-htp-color-assigners
   "Returns a list of assigners which apply highest-takes-precedence
@@ -70,7 +69,7 @@
   (let [heads (channels/find-rgb-heads fixtures include-color-wheels?)
         assigners (if htp?
                     (build-htp-color-assigners heads color *show*)
-                    (fx/build-head-parameter-assigners :color heads color *show*))]
+                    (fx/build-head-parameter-assigners :color heads color *show*))] ;wont support multiple shows like this right?
     (Effect. name fx/always-active (fn [show snapshot] assigners) fx/end-immediately)))
 
 ;;; Multimethod implementations to support color effects
@@ -85,18 +84,14 @@
 ;; saturation must also be at least 40% for the color wheel to be
 ;; considered; that minimum can be adjusted by setting a value in the
 ;; show variable :color-wheel-min-saturation.
-(defmethod fx/resolve-assignment :color [assignment show snapshot buffers]
+(defmethod fx/resolve-assignment :color [{:keys [target value] :as assignment} show snapshot buffers]
   ;; Resolve in case assignment is still frame dynamic
-  (let [target (:target assignment)
-        resolved (params/resolve-param (:value assignment) show snapshot target)
+  (let [resolved (params/resolve-param value show snapshot target)
         color-key (keyword (str "color-" (:id target)))]
     ;; Start with RGB mixing
-    (doseq [c (filter #(= (:color %) :red) (:channels target))]
-      (chan-fx/apply-channel-value buffers c (colors/red resolved)))
-    (doseq [c (filter #(= (:color %) :green) (:channels target))]
-      (chan-fx/apply-channel-value buffers c (colors/green resolved)))
-    (doseq [c (filter #(= (:color %) :blue) (:channels target))]
-      (chan-fx/apply-channel-value buffers c (colors/blue resolved)))
+    (doseq [[rgb-key f] {:red colors/red :green colors/green :blue colors/blue}
+            c (filter #(= (:color %) rgb-key) (:channels target))]
+      (chan-fx/apply-channel-value buffers c (f resolved)))
     (swap! (:movement *show*) #(assoc-in % [:current color-key] resolved))
     ;; Expermental: Does this work well in bringing in the white channel?
     (when-let [whites (filter #(= (:color %) :white) (:channels target))]
