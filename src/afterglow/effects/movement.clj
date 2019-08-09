@@ -55,7 +55,7 @@
       (chan-fx/apply-channel-value buffers c tilt))
     (swap! (:movement *show*) #(assoc-in % [:current direction-key] [pan tilt]))))
 
-(defn current-rotation
+(defn current-rotation ;XXX just store the rotations instead - this will always be slower and sometimes solutions will vary...
   "Given a head and DMX pan and tilt values, calculate a
   transformation that represents the current orientation of the head
   as compared to the default orientation of facing directly towards
@@ -63,14 +63,14 @@
   [head pan tilt]
   (let [rotation (Transform3D. (:rotation head))]
     (when-let [pan-scale (:pan-half-circle head)]
-      (let [dmx-pan (/ (- pan (:pan-center head)) pan-scale)
+      (let [pan-half-rotations (/ (- pan (:pan-center head)) pan-scale)
             adjust (Transform3D.)]
-        (.rotY adjust (* Math/PI dmx-pan))
+        (.rotY adjust (* Math/PI 0.5 pan-half-rotations))
         (.mul rotation adjust)))
     (when-let [tilt-scale (:tilt-half-circle head)]
-      (let [dmx-tilt (/ (- tilt (:tilt-center head)) tilt-scale)
+      (let [tilt-half-rotations (/ (- tilt (:tilt-center head)) tilt-scale)
             adjust (Transform3D.)]
-        (.rotX adjust (* Math/PI dmx-tilt))
+        (.rotX adjust (* Math/PI 0.5 tilt-half-rotations))
         (.mul rotation adjust)))
     rotation))
 
