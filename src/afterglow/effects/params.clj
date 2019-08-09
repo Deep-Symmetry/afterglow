@@ -51,18 +51,18 @@
   `head` will be `nil`."))))
 
 (defrecord Param [^String name, ^Boolean dynamic, result-type
-                  ^clojure.lang.IFn resolve-fn, ^clojure.lang.IFn presolve-fn]
-  ;; :load-ns true
+                  ^clojure.lang.IFn eval-fn, ^clojure.lang.IFn resolve-fn]
   IParam
   (evaluate [this show snapshot head]
-    (resolve-fn show snapshot head))
+    (eval-fn show snapshot head))
   (frame-dynamic? [this]
     dynamic)
   (result-type [this]
     result-type)
   (resolve-non-frame-dynamic-elements [this show snapshot head]
-    ;; (presolve-fn this show snapshot head))) ;easiest keep this here i guess since so common to just pass on?
-    (presolve-fn show snapshot head)))
+     (resolve-fn show snapshot head)))
+
+(declare param?)
 
 (defn check-type
   "Ensure that a parameter is of a particular type, or that it
@@ -73,13 +73,13 @@
   {:pre [(some? value) (some? type-expected) (some? name)]}
   (cond (class? type-expected)
         (when-not (or (instance? type-expected value)
-                      (and (satisfies? IParam value)  (.isAssignableFrom type-expected (result-type value)))
+                      (and (param? value)  (.isAssignableFrom type-expected (result-type value)))
                       (= type-expected (:type value)))
           (throw (IllegalArgumentException. (str "Class variable " name " must be " type-expected ", got " (:type value (type value))))))
 
         (keyword? type-expected)
         (when-not (or (= type-expected (type value))
-                      (and (satisfies? IParam value) (= type-expected (result-type value))))
+                      (and (param? value) (= type-expected (result-type value))))
           (throw (IllegalArgumentException. (str "Keyword variable " name " must be " type-expected ", got " value))))
 
         :else
@@ -109,7 +109,11 @@
 (defn param?
   "Checks whether the argument is an [[IParam]]."
   [arg]
-  (satisfies? IParam arg))
+  (if (nil? arg) false
+    (case (type arg)
+      [Number Boolean color-type] false
+      (or (instance? Param arg)
+          (satisfies? IParam arg))))) ;the poison pill, slows things down 100x
 
 (defn resolve-param
   "Takes an argument which may be a raw value, or may be an [[IParam]].
@@ -119,15 +123,15 @@
   ([arg show snapshot]
    (resolve-param arg show snapshot nil))
   ([arg show snapshot head]
-   (if (satisfies? IParam arg)
-     (recur (evaluate arg show snapshot head) show snapshot head)
+   (if (param? arg)
+     (evaluate arg show snapshot head)
      arg)))
 
 (defn frame-dynamic-param?
   "Checks whether the argument is an [[IParam]] which is dynamic to
   the frame level."
   [arg]
-  (and (satisfies? IParam arg) (frame-dynamic? arg)))
+  (and (param? arg) (frame-dynamic? arg)))
 
 (defn resolve-unless-frame-dynamic
   "If the first argument is an [[IParam]] which is not dynamic all the
@@ -140,7 +144,7 @@
    (resolve-unless-frame-dynamic arg show snapshot nil))
   ([arg show snapshot head]
    {:pre [(some? show)]}
-   (if (satisfies? IParam arg)
+   (if (param? arg)
      (if-not (frame-dynamic? arg)
        (resolve-param arg show snapshot head)
        (resolve-non-frame-dynamic-elements arg show snapshot head))
