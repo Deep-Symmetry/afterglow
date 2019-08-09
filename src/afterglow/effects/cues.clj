@@ -609,7 +609,7 @@
   cue based on the value of a dynamic parameter. If the parameter
   evaluates to `nil`, the non-dynamic cue color is returned."
   [param]
-  (params/validate-param-type param :com.evocomputing.colors/color)
+  (params/validate-param-type param thi.ng.color.core.HSLA)
   (fn [cue active show snapshot]
     (or (params/evaluate param show snapshot nil) (:color cue))))
 

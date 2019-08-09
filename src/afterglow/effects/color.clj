@@ -10,8 +10,11 @@
             [afterglow.rhythm :as rhythm]
             [afterglow.show-context :refer [*show*]]
             [afterglow.util :as util]
+            [afterglow.transform :as tf]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
+            [thi.ng.color.core :as clr]
+            [thi.ng.math.core :as cmath]
             [taoensso.timbre :as timbre]
             [taoensso.tufte :as tufte])
   (:import (afterglow.effects Assigner Effect)))
@@ -23,9 +26,10 @@
   the highest green component, and the highest blue component."
   [previous current]
   (if (some? previous)
-    (let [[r g b] (map #(max (% previous) (% current))
-                       [colors/red colors/green colors/blue])]
-      (colors/create-color :r r :g g :b b)) ;what about white thoooo
+    (->> (map clr/as-rgba [previous current])
+         (map deref)
+         (apply map max)
+         (apply clr/rgba)) ;get alpha support for free (when we dont need it)! but what about white
     current))
 
 (defn build-htp-color-assigner
@@ -65,7 +69,7 @@
   assigned to the affected fixtures."
   [name color fixtures & {:keys [include-color-wheels? htp?]}]
   {:pre [(some? *show*) (some? name) (sequential? fixtures)]}
-  (params/validate-param-type color :com.evocomputing.colors/color)
+  (params/validate-param-type color thi.ng.color.core.HSLA)
   (let [heads (channels/find-rgb-heads fixtures include-color-wheels?)
         assigners (if htp?
                     (build-htp-color-assigners heads color *show*)
@@ -86,43 +90,47 @@
 ;; show variable :color-wheel-min-saturation.
 (defmethod fx/resolve-assignment :color [{:keys [target value] :as assignment} show snapshot buffers]
   ;; Resolve in case assignment is still frame dynamic
-  (let [resolved (params/resolve-param value show snapshot target)
-        color-key (keyword (str "color-" (:id target)))]
+  (let [resolved (pspy :resolve-color (params/resolve-param value show snapshot target)) ;hmm should've saved some snapshots. will check revert once in git
+        color-key (keyword (str "color-" (:id target)))
+        channels (:channels target)
+        vs (mapv #(int (* 255 %)) @(clr/as-rgba resolved))] ;@(clr/as-int24 resolved)
+    ;so, resolving param and scaling color is only tiny bit of time spent in fn
     ;; Start with RGB mixing
-    (doseq [[rgb-key f] {:red colors/red :green colors/green :blue colors/blue}
-            c (filter #(= (:color %) rgb-key) (:channels target))]
-      (chan-fx/apply-channel-value buffers c (f resolved)))
-    (swap! (:movement *show*) #(assoc-in % [:current color-key] resolved))
+  (pspy :color-to-buffer
+        (doseq [[rgb-key i] {:red 0 :green 1 :blue 2} ;this is quick enough...
+                ch (filter #(= (:color %) rgb-key) channels)]
+          (chan-fx/apply-channel-value-simple buffers ch (vs i)))) ;this is still slow!!!
+
+  (swap! (:movement *show*) #(assoc-in % [:current color-key] resolved)) ;quick enough
     ;; Expermental: Does this work well in bringing in the white channel?
-    (when-let [whites (filter #(= (:color %) :white) (:channels target))]
-      (let [l (/ (colors/lightness resolved) 100)
-            s (/ (colors/saturation resolved) 100)
+  (when-let [whites (filter #(= (:color %) :white) channels)] ;whiteS multiple?
+      (let [[l s] (map #(% resolved) [clr/luminance clr/saturation])
             s-scale (if (< l 0.5) 1.0 (- 1.0 (* 2.0 (- l 0.5))))
-            level (* 255.0 l (- 1.0 (* s s-scale)))]
-        (doseq [c whites]
-          (chan-fx/apply-channel-value buffers c level))))
+            level (int (* 255 l (- 1.0 (* s s-scale))))]
+        (doseq [ch whites]
+          (chan-fx/apply-channel-value-simple buffers ch level))))
     ;; Even more experimental: Support other arbitrary color channels
-    (doseq [c (filter :hue (:channels target))]
-      (let [as-if-red (colors/adjust-hue resolved (- (:hue c)))]
-        (chan-fx/apply-channel-value buffers c (colors/red as-if-red))))
+  (doseq [ch (filter :hue channels)]
+      (let [as-if-red (clr/rotate-hue resolved (- (tf/degrees (:hue ch))))]
+        (chan-fx/apply-channel-value-simple buffers ch (int (* 255 (clr/red as-if-red))))))
     ;; Finally, see if there is a color wheel color close enough to select
-    (when (and (seq (:color-wheel-hue-map target))
-               (>= (colors/saturation resolved) (:color-wheel-min-saturation @(:variables show) 40)))
-      (let [found (util/find-closest-key (:color-wheel-hue-map target) (colors/hue resolved))
-            [channel function-spec] (get (:color-wheel-hue-map target) found)]
-        (when (< (math/abs (- (colors/hue resolved) found)) (:color-wheel-hue-tolerance @(:variables show) 60))
+  (when (and (seq (:color-wheel-hue-map target))
+               (>= (clr/saturation resolved) (:color-wheel-min-saturation @(:variables show) 40)))
+      (let [found (util/find-closest-key (:color-wheel-hue-map target) (clr/hue resolved))
+            [channel function-spec] ((:color-wheel-hue-map target) found)]
+        (when (< (math/abs (- (clr/hue resolved) found)) (:color-wheel-hue-tolerance @(:variables show) 60))
           (chan-fx/apply-channel-value buffers channel (chan-fx/function-percentage-to-dmx 50 function-spec)))))))
 
 (def ^:private default-color
   "The color to mix with when fading from a non-assignment."
-  (colors/create-color :black))
+  (clr/as-hsla (apply clr/rgba (map #(/ % 255) (:rgba (colors/create-color :black))))))
 
 (defn- blackened-color
   "Determine the color to fade to when one side of a fade is nil;
   return the fully darkened version of the other color in the fade, if
   there is one, or a default black if both were nil."
   [color]
-  (if color (colors/darken color 100.0) default-color))
+  (if color (clr/adjust-luminance color -1.0) default-color)) ;does nothing on this lib it resets hue but maybe someday
 
 (defn fade-colors
   "Calculate a weighted HSL blend between two colors, which may be
@@ -132,18 +140,17 @@
   ;; Resolve any remaining dynamic parameters now, and make sure fraction really
   ;; does only range between 0 and 1, then convert it to the percentage wanted by
   ;; the colors library.
-  (let [from (params/resolve-param from show snapshot target)
-        to (params/resolve-param to show snapshot target)
-        weight (* 100 (colors/clamp-unit-float fraction))]
+  (let [[from to] (map #(params/resolve-param % show snapshot target) [from to])
+        weight (cmath/clamp fraction 0.0 1.0)]
     ;; Weight goes in the opposite direction you might expect, so the following order works:
-    (colors/mix-hsl (or to (blackened-color from)) (or from (blackened-color to)) weight)))
+    (cmath/mix (or from (blackened-color to)) (or to (blackened-color from)) weight))) ;;nvm comment above
 
 ;; Fades between two color assignments to a fixture or head.
 (defmethod fx/fade-between-assignments :color [from-assignment to-assignment fraction show snapshot]
   (cond (<= fraction 0) from-assignment
         (>= fraction 1) to-assignment
         :else (merge from-assignment {:value (fade-colors (:value from-assignment) (:value to-assignment) fraction
-                                                          show snapshot (:target from-assignment))})))
+                                                          show snapshot (:target from-assignment))}))) ;shouldnt target/head be to-assignment??
 
 ;;; Effects which transform other color effects
 
@@ -157,8 +164,8 @@
   parameter with the `:param` optional keyword argument."
   [& {:keys [param] :or {param (osc/build-oscillated-param (osc/sawtooth :down? true) :max 100)}}]
   (fn [color show snapshot head]
-    (let [saturation (colors/clamp-percent-float (params/resolve-param param show snapshot head))]
-      (colors/create-color {:h (colors/hue color) :s saturation :l (colors/lightness color)}))))
+    (let [saturation (cmath/clamp (params/resolve-param param show snapshot head) 0.0 1.0)]
+      (clr/hsla (clr/hue color) saturation (clr/luminance color) (clr/alpha color)))))
 
 (defn transform-colors
   "Creates an effect which modifies any effect that is currently

@@ -2,7 +2,7 @@
   "Utility functions that are likely to be widely useful"
   {:author "James Elliott"}
   (:require [clojure.math.numeric-tower :as math]
-            [com.evocomputing.colors :as colors]))
+            [thi.ng.color.core :as clr]))
 
 (defn ubyte
   "Convert small integer to its signed byte equivalent. Necessary for convenient handling of DMX values
@@ -99,10 +99,10 @@
   [color]
   (if (and color
            ;; Calculate the perceived brightness of the color.
-           (let [[r g b] (map #(/ % 255) [(colors/red color) (colors/green color) (colors/blue color)])]
+           (let [[r g b] @(clr/as-rgba color)]
              (> (Math/sqrt (+ (* 0.299 r r) (* 0.587 g g) (* 0.114 b b))) 0.6)))
-    "#000"
-    "#fff"))
+    "#222"
+    "#edc"))
 
 (defn normalize-cue-variable-value
   "Given a raw value that has been looked up for a cue variable,
