@@ -68,7 +68,7 @@
         (.rotY adjust (* Math/PI dmx-pan))
         (.mul rotation adjust)))
     (when-let [tilt-scale (:tilt-half-circle head)]
-      (let [dmx-tilt (/ (- tilt (:tilt-center head) tilt-scale))
+      (let [dmx-tilt (/ (- tilt (:tilt-center head)) tilt-scale)
             adjust (Transform3D.)]
         (.rotX adjust (* Math/PI dmx-tilt))
         (.mul rotation adjust)))
