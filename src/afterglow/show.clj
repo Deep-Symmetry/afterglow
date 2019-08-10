@@ -326,14 +326,14 @@
     (when (and @still-running @(:pool show))  ; We have not been shut down
       (let [ended (at-at/now)
             duration (- ended (:instant snapshot))
-            sleep-time (math/round (max 1 (- (:refresh-interval show) duration)))
-            next-frame-snapshot (rhythm/metro-snapshot (:metronome show) (+ ended sleep-time))]
+            sleep-time (math/round (max 0 (- (:refresh-interval show) duration))) ;;if ends late, sleep-time is 0 (was 1) so next frame was actually attempted insanely early? if duration 10 sleep-time 15 it works, but duration 30 sleep-time 1 = 0, 30, 31...
+            next-frame-snapshot (rhythm/metro-snapshot (:metronome show) (+ ended (:refresh-interval show)))] ;or (+ ended (- (:refresh-interval show) duration)) to stay fully on clock... but unlikely to randomly manage to render next frame like, twice as fast as current. will have to judge what's feasible based on recent stats, active effects etc, and set a time
         (doseq [f @(:frame-fns show)]
           (try
             (f next-frame-snapshot)
             (catch Throwable t
               (error t "Problem trying to call frame-notification function"))))
-        (Thread/sleep sleep-time)
+        (when-not (zero? sleep-time) (Thread/sleep sleep-time))
         (when @(:pool show) (recur next-frame-snapshot still-running))))))
 
 (defonce ^{:doc "Keeps track of all running shows."
