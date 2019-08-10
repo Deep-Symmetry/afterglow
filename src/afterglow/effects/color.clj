@@ -90,16 +90,15 @@
 ;; show variable :color-wheel-min-saturation.
 (defmethod fx/resolve-assignment :color [{:keys [target value] :as assignment} show snapshot buffers]
   ;; Resolve in case assignment is still frame dynamic
-  (let [resolved (pspy :resolve-color (params/resolve-param value show snapshot target)) ;hmm should've saved some snapshots. will check revert once in git
+  (let [resolved (params/resolve-param value show snapshot target) ;only taking 0.5 us now...
         color-key (keyword (str "color-" (:id target)))
         channels (:channels target)
         vs (mapv #(int (* 255 %)) @(clr/as-rgba resolved))] ;@(clr/as-int24 resolved)
-    ;so, resolving param and scaling color is only tiny bit of time spent in fn
     ;; Start with RGB mixing
-  (pspy :color-to-buffer
+  (pspy :color-to-buffer ;down to ~10us with aset-byte
         (doseq [[rgb-key i] {:red 0 :green 1 :blue 2} ;this is quick enough...
                 ch (filter #(= (:color %) rgb-key) channels)]
-          (chan-fx/apply-channel-value-simple buffers ch (vs i)))) ;this is still slow!!!
+          (chan-fx/apply-channel-value buffers ch (vs i)))) ;this is still slow!!!
 
   (swap! (:movement *show*) #(assoc-in % [:current color-key] resolved)) ;quick enough
     ;; Expermental: Does this work well in bringing in the white channel?
@@ -108,11 +107,11 @@
             s-scale (if (< l 0.5) 1.0 (- 1.0 (* 2.0 (- l 0.5))))
             level (int (* 255 l (- 1.0 (* s s-scale))))]
         (doseq [ch whites]
-          (chan-fx/apply-channel-value-simple buffers ch level))))
+          (chan-fx/apply-channel-value buffers ch level))))
     ;; Even more experimental: Support other arbitrary color channels
   (doseq [ch (filter :hue channels)]
       (let [as-if-red (clr/rotate-hue resolved (- (tf/degrees (:hue ch))))]
-        (chan-fx/apply-channel-value-simple buffers ch (int (* 255 (clr/red as-if-red))))))
+        (chan-fx/apply-channel-value buffers ch (int (* 255 (clr/red as-if-red))))))
     ;; Finally, see if there is a color wheel color close enough to select
   (when (and (seq (:color-wheel-hue-map target))
                (>= (clr/saturation resolved) (:color-wheel-min-saturation @(:variables show) 40)))
