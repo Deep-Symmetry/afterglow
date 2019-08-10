@@ -127,7 +127,7 @@
 (def ^:private frame-count-for-load
   "The number of frames to keep track of for calculating the current
   load on the show."
-  30)
+  200)
 
 (defn- update-stats
   "Update the count of how many frames have been sent, total and
@@ -138,14 +138,14 @@
         total-time (+ duration (:total-time stats 0))
         frames-sent (inc (:frames-sent stats 0))
         average-duration (double (/ total-time frames-sent))
-        recent (:recent stats (ring-buffer 30))
+        recent (:recent stats (ring-buffer frame-count-for-load))
         discarding (if (< (count recent) frame-count-for-load) 0 (- (peek recent)))
         recent (conj recent duration)
         recent-total (+ (:recent-total stats 0) duration discarding)
         recent-average (double (/ recent-total (count recent)))]
     (when (> duration refresh-interval)
-      (taoensso.timbre/warn "Frame took" duration "ms to generate, refresh interval is" refresh-interval "ms."))
-    (assoc stats :total-time total-time :frames-sent frames-sent :average-duration average-duration
+      (taoensso.timbre/warn "Frame took" duration "ms," (- duration refresh-interval) "ms overdue."))
+    (assoc stats :total-time total-time :frames-sent frames-sent :average-duration average-duration :discarding discarding
            :recent recent :recent-total recent-total :recent-average recent-average)))
 
 (defn current-load
