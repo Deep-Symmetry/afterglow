@@ -110,10 +110,11 @@
   "Checks whether the argument is an [[IParam]]."
   [arg]
   (if (nil? arg) false
-    (case (type arg)
-      [Number Boolean color-type] false
+    (condp = (type arg)
+      Number false color-type false Boolean false
       (or (instance? Param arg)
-          (satisfies? IParam arg))))) ;the poison pill, slows things down 100x
+          (instance? afterglow.effects.params.IParam arg) ;works with IParam and old color param in tolglow.param... ONLY with full name
+          #_(satisfies? IParam arg))))) ;the poison pill, slows things down 100x
 
 (defn resolve-param
   "Takes an argument which may be a raw value, or may be an [[IParam]].
