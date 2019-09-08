@@ -21,7 +21,7 @@
                  [overtone/at-at "1.2.0"]
                  [overtone/midi-clj "0.5.0"]
                  [overtone/osc-clj "0.9.0"]
-                 [uk.co.xfactory-librarians/coremidi4j "1.1"]
+                 [uk.co.xfactory-librarians/coremidi4j "1.2"]
                  [amalloy/ring-buffer "1.3.0" :exclusions [org.clojure/tools.reader
                                                            com.google.protobuf/protobuf-java]]
                  [com.climate/claypoole "1.1.4"]
