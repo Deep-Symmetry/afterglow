@@ -22,7 +22,7 @@
 
 This page provides an introduction in how to install and use
 Afterglow. The [Developer
-Guide](https://afterglow-guide.deepsymmetry.org/) goes much deeper,
+Guide](https://afterglow-guide.deepsymmetry.org) goes much deeper,
 and there is also [API
 documentation](http://afterglow-guide.deepsymmetry.org/api/). For more
 interactive help, the [Afterglow room on
@@ -156,9 +156,9 @@ clarification or reinforcement).
 Most of the crazy ideas have panned out and been implemented, and I am
 fleshing out the basic details needed for everyday use. The examples
 are starting to be intriguing and informative, and the [Developer
-Guide](https://afterglow-guide.deepsymmetry.org/afterglow/README.html)
-is getting substantial. The modeling of fixtures, channels, etc. is
-coming together nicely, though there may be a few more changes.
+Guide](https://afterglow-guide.deepsymmetry.org) is getting
+substantial. The modeling of fixtures, channels, etc. is coming
+together nicely, though there may be a few more changes.
 
 There is now an embedded web application, which is growing into a show
 control interface for people who are not Clojure hackers, and a useful
@@ -599,9 +599,8 @@ Or, if you need to be woken up a bit,
   "Fast blast!" :strobe 100 (show/all-fixtures)))
 ```
 
-> The [Developer
-> Guide](https://afterglow-guide.deepsymmetry.org/afterglow/README.html)
-> has more examples of [building
+> The [Developer Guide](https://afterglow-guide.deepsymmetry.org) has
+> more examples of [building
 > effects](https://afterglow-guide.deepsymmetry.org/afterglow/effects.html#effect-examples),
 > and [mapping
 > parameters](https://afterglow-guide.deepsymmetry.org/afterglow/mapping_sync.html)
@@ -666,8 +665,7 @@ Everything beyond this point in this document is written for people
 who are working on enhancing Afterglow itself.
 
 If you are trying to learn how to use it, jump to the main [Developer
-Guide](https://afterglow-guide.deepsymmetry.org/afterglow/README.html)
-page now!
+Guide](https://afterglow-guide.deepsymmetry.org) page now!
 
 ## Release Checklist
 
@@ -1055,3 +1053,15 @@ this notice, or any other, from this software. A copy of the license
 can be found in
 [LICENSE](https://github.com/Deep-Symmetry/afterglow/blob/master/LICENSE)
 within this project.
+
+<a href="https://www.netlify.com">
+  <img align="right" src="https://www.netlify.com/img/global/badges/netlify-color-accent.svg"/>
+</a>
+
+### [Antora](https://antora.org)
+
+Antora is used to build the [Developer
+Guide](https://afterglow-guide.deepsymmetry.org), for embedding inside
+the application, and hosting on [Netlify](https://www.netlify.com).
+Antora is licensed under the [Mozilla Public License Version
+2.0](https://www.mozilla.org/en-US/MPL/2.0/) (MPL-2.0).
