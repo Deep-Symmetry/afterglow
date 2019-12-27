@@ -1,8 +1,8 @@
 (defproject afterglow "0.2.5-SNAPSHOT"
   :description "A live-coding environment for light shows, built on the Open Lighting Architecture, using bits of Overtone."
   :url "https://github.com/Deep-Symmetry/afterglow"
-  :license {:name "Eclipse Public License"
-            :url  "http://www.eclipse.org/legal/epl-v10.html"}
+  :license {:name "Eclipse Public License 2.0"
+            :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :jvm-opts ["-Dapple.awt.UIElement=true"]  ; Suppress dock icon and focus stealing when compiling on a Mac.
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [org.clojure/core.cache "0.8.1"]

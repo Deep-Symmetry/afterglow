@@ -16,7 +16,7 @@
  pieces of Overtone, the entire Afterglow project was
  [inspired](https://vimeo.com/22798433) by it.
 
-[![License](https://img.shields.io/badge/License-Eclipse%20Public%20License%201.0-blue.svg)](#license)
+[![License](https://img.shields.io/badge/License-Eclipse%20Public%20License%202.0-blue.svg)](#license)
 
 ### Documentation Overview
 
@@ -1045,12 +1045,11 @@ though.
 
 Copyright © 2015-2019 [Deep Symmetry, LLC](http://deepsymmetry.org)
 
-Distributed under the
-[Eclipse Public License 1.0](http://opensource.org/licenses/eclipse-1.0.php),
-the same as Clojure. By using this software in any fashion, you are
-agreeing to be bound by the terms of this license. You must not remove
-this notice, or any other, from this software. A copy of the license
-can be found in
+Distributed under the [Eclipse Public License
+2.0](https://opensource.org/licenses/EPL-2.0). By using this software
+in any fashion, you are agreeing to be bound by the terms of this
+license. You must not remove this notice, or any other, from this
+software. A copy of the license can be found in
 [LICENSE](https://github.com/Deep-Symmetry/afterglow/blob/master/LICENSE)
 within this project.
 
