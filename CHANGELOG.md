@@ -30,6 +30,10 @@ This change log follows the conventions of
 - The Developer Guide is now available through the built-in web server
   even if you do not have a connection to the internet.
 
+### Changed
+
+- Upgraded to version 2.0 of the Eclipse Publice License.
+
 ## [0.2.4] - 2017-04-18
 
 ### Fixed
