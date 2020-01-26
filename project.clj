@@ -54,6 +54,7 @@
                  [buddy "2.0.0"]
                  [instaparse "1.4.10"]
                  [http-kit "2.3.0"]]
+  :repositories {"sonatype-snapshots" "https://oss.sonatype.org/content/repositories/snapshots"}
   :main afterglow.core
   :uberjar-name "afterglow.jar"
   :manifest {"Name"                  ~#(str (clojure.string/replace (:group %) "." "/")
