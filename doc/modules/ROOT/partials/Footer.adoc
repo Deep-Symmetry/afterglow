@@ -1,7 +1,7 @@
 == License
 
 +++<a href="http://deepsymmetry.org"><img src="_images/DS-logo-bw-200-padded-left.png" align="right" alt="Deep Symmetry logo" width="216" height="123"></a>+++
-Copyright © 2015&ndash;2019 http://deepsymmetry.org[Deep Symmetry, LLC]
+Copyright © 2015&ndash;2020 http://deepsymmetry.org[Deep Symmetry, LLC]
 
 Distributed under the https://opensource.org/licenses/EPL-2.0[Eclipse
 Public License 2.0]. By using this software in any fashion, you are
