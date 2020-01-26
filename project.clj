@@ -5,40 +5,40 @@
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :jvm-opts ["-Dapple.awt.UIElement=true"]  ; Suppress dock icon and focus stealing when compiling on a Mac.
   :dependencies [[org.clojure/clojure "1.10.1"]
-                 [org.clojure/core.cache "0.8.1"]
-                 [org.clojure/core.async "0.4.500" :exclusions [org.clojure/tools.reader]]
-                 [org.clojure/data.json "0.2.6"]
+                 [org.clojure/core.cache "0.8.2"]
+                 [org.clojure/core.async "0.7.559" :exclusions [org.clojure/tools.reader]]
+                 [org.clojure/data.json "0.2.7"]
                  [org.clojure/data.zip "0.1.3"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/tools.cli "0.4.2"]
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]
-                 [org.deepsymmetry/beat-link "0.5.2"]
-                 [org.deepsymmetry/wayang "0.1.7"]
+                 [org.deepsymmetry/beat-link "0.6.1-SNAPSHOT"]
+                 [org.deepsymmetry/wayang "0.1.8"]
                  [java3d/vecmath "1.3.1"]
                  [java3d/j3d-core "1.3.1"]
                  [java3d/j3d-core-utils "1.3.1"]
                  [overtone/at-at "1.2.0"]
                  [overtone/midi-clj "0.5.0"]
                  [overtone/osc-clj "0.9.0"]
-                 [uk.co.xfactory-librarians/coremidi4j "1.2"]
-                 [amalloy/ring-buffer "1.3.0" :exclusions [org.clojure/tools.reader
+                 [uk.co.xfactory-librarians/coremidi4j "1.3"]
+                 [amalloy/ring-buffer "1.3.1" :exclusions [org.clojure/tools.reader
                                                            com.google.protobuf/protobuf-java]]
                  [com.climate/claypoole "1.1.4"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
                  [ola-clojure "0.1.8" :exclusions [org.clojure/tools.reader]]
-                 [selmer "1.12.17" :exclusions [cheshire]]
-                 [com.evocomputing/colors "1.0.4"]
+                 [selmer "1.12.18" :exclusions [cheshire]]
+                 [com.evocomputing/colors "1.0.6"]
                  [environ "1.1.0"]
-                 [camel-snake-kebab "0.4.0"]
+                 [camel-snake-kebab "0.4.1"]
                  [com.taoensso/timbre "4.10.0"]
-                 [com.fzakaria/slf4j-timbre "0.3.14"]
+                 [com.fzakaria/slf4j-timbre "0.3.18"]
                  [com.taoensso/tower "3.0.2"]
                  [com.taoensso/truss "1.5.0"]
-                 [markdown-clj "1.10.0"]
-                 [ring/ring-core "1.7.1"]
+                 [markdown-clj "1.10.1"]
+                 [ring/ring-core "1.8.0"]
+                 [clj-time "0.15.2"]
                  [compojure "1.6.1" :exclusions [org.eclipse.jetty/jetty-server
-                                                 clj-time
                                                  ring/ring-core
                                                  ring/ring-codec]]
                  [ring/ring-defaults "0.3.2"]
@@ -50,7 +50,7 @@
                                                               org.clojure/core.memoize
                                                               com.fasterxml.jackson.core/jackson-core]]
                  [metosin/ring-http-response "0.9.1"]
-                 [prone "2019-07-08"]
+                 [prone "2020-01-17"]
                  [buddy "2.0.0"]
                  [instaparse "1.4.10"]
                  [http-kit "2.3.0"]]
@@ -68,7 +68,7 @@
   ;; :env {:repl-port 16002}
 
   :profiles {:dev     {:dependencies [[ring-mock "0.1.5" :exclusions [ring/ring-codec]]
-                                      [ring/ring-devel "1.7.1"]]
+                                      [ring/ring-devel "1.8.0"]]
                        :repl-options {:init-ns afterglow.examples
                                       :welcome (println "afterglow loaded.")}
                        :jvm-opts     ["-XX:-OmitStackTraceInFastThrow" "-Dapple.awt.UIElement=true"]
