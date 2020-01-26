@@ -1043,7 +1043,7 @@ though.
  src="doc/modules/ROOT/assets/images/DS-logo-bw-200-padded-left.png"
  width="216" height="123">
 
-Copyright © 2015-2019 [Deep Symmetry, LLC](http://deepsymmetry.org)
+Copyright © 2015-2020 [Deep Symmetry, LLC](http://deepsymmetry.org)
 
 Distributed under the [Eclipse Public License
 2.0](https://opensource.org/licenses/EPL-2.0). By using this software
