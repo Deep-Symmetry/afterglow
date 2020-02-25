@@ -13,7 +13,7 @@
                  [org.clojure/tools.cli "0.4.2"]
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]
-                 [org.deepsymmetry/beat-link "0.6.1-SNAPSHOT"]
+                 [org.deepsymmetry/beat-link "0.6.1"]
                  [org.deepsymmetry/wayang "0.1.8"]
                  [java3d/vecmath "1.3.1"]
                  [java3d/j3d-core "1.3.1"]
