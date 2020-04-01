@@ -1,7 +1,5 @@
 = The Rendering Loop
 James Elliott <james@deepsymmetry.org>
-:toc:
-:toc-placement: preamble
 
 ifdef::env-github[]
 // Set up support for relative links and images on GitHub, even though

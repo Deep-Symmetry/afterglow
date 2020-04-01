@@ -1,7 +1,6 @@
 = Fixture Definitions
 James Elliott <james@deepsymmetry.org>
-:toc:
-:toc-placement: preamble
+
 // TODO: Can the following be defived from Antora, or just eliminated?
 :branch-base: https://github.com/Deep-Symmetry/afterglow/blob/master/
 

@@ -1,8 +1,6 @@
 = Dynamic Parameters
 James Elliott <james@deepsymmetry.org>
 :icons: font
-:toc:
-:toc-placement: preamble
 
 ifdef::env-github[]
 // Set up support for relative links and images on GitHub (even though
