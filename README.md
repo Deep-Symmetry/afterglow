@@ -1,7 +1,7 @@
 # Afterglow
 
 [![Gitter](https://img.shields.io/gitter/room/brunchboy/afterglow.svg)](https://gitter.im/brunchboy/afterglow)
- <image align="right" width="275" height="255"
+ <image style="float:right" width="275" height="255"
  src="doc/modules/ROOT/assets/images/Afterglow-logo-padded-left.png"> <br/><br/> An
  environment supporting
  [live coding](https://en.wikipedia.org/wiki/Live_coding) for the
@@ -1039,7 +1039,7 @@ though.
 
 ## License
 
-<img align="right" alt="Deep Symmetry"
+<img style="float:right" alt="Deep Symmetry"
  src="doc/modules/ROOT/assets/images/DS-logo-bw-200-padded-left.png"
  width="216" height="123">
 
@@ -1054,7 +1054,7 @@ software. A copy of the license can be found in
 within this project.
 
 <a href="https://www.netlify.com">
-  <img align="right" src="https://www.netlify.com/img/global/badges/netlify-color-accent.svg"/>
+  <img style="float:right" src="https://www.netlify.com/img/global/badges/netlify-color-accent.svg"/>
 </a>
 
 ### [Antora](https://antora.org)

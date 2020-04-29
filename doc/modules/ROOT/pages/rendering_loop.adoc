@@ -1,17 +1,6 @@
 = The Rendering Loop
 James Elliott <james@deepsymmetry.org>
 
-ifdef::env-github[]
-// Set up support for relative links and images on GitHub, even though
-// the documentation is now designed for Antora. Also, need to add
-// the API doc path here, since Antora takes care of it outside of
-// GitHub. Hopefully we can eventually make this an include file, once
-// GitHub *finally* supports those.
-:outfilesuffix: .adoc
-:imagesdir: ../assets/images
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
-endif::[]
-
 This page contains advanced, low-level information for people who are
 ready to create their own custom effect algorithms. Not to scare you
 off, but don't be discouraged if you are new to Afterglow, and this
@@ -472,5 +461,3 @@ extension in a completely new direction! (Links to the namespaces' API
 documentation are at the <<rendering_loop#extensions,top>> of this
 section, and as always, the API docs have `view source` buttons which
 take you right to the code that makes them work.)
-
-include::partial$Footer.adoc[]

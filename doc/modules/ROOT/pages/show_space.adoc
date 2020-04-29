@@ -1,17 +1,6 @@
 = Show Space
 James Elliott <james@deepsymmetry.org>
 
-ifdef::env-github[]
-// Set up support for relative links and images on GitHub (even though
-// the documentation is now designed for Antora. Also, need to add
-// the API doc path here, since Antora takes care of it outside of
-// GitHub. Hopefully we can eventually make this an include file, once
-// GitHub *finally* supports those.
-:outfilesuffix: .adoc
-:imagesdir: ../assets/images
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
-endif::[]
-
 In order to be able to create spatial effects, from lighting gradients
 spread across your grid, to aiming moving heads in a precise and
 coordinated way with respect to each other or people or objects near
@@ -78,5 +67,3 @@ spots on the floor, having the Y axis start at floor level is handy.
 That is what I have found most convenient in setting up shows so far:
 my X and Z origins are in the center of the lighting rig, and Y is 0
 at the floor.
-
-include::partial$Footer.adoc[]

@@ -1,17 +1,6 @@
 = Metronomes
 James Elliott <james@deepsymmetry.org>
 
-ifdef::env-github[]
-// Set up support for relative links and images on GitHub (even though
-// the documentation is now designed for Antora. Also, need to add
-// the API doc path here, since Antora takes care of it outside of
-// GitHub. Hopefully we can eventually make this an include file, once
-// GitHub *finally* supports those.
-:outfilesuffix: .adoc
-:imagesdir: ../assets/images
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
-endif::[]
-
 Metronomes play a fundamental role in coordinating the timing of
 Afterglow’s effects, and helping them relate to musical structure. They
 keep track of musical time relative to some starting point, in terms of
@@ -216,5 +205,3 @@ ____
 ____
 ...and now they are almost seizure-worthy!
 ____
-
-include::partial$Footer.adoc[]

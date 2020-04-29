@@ -81,7 +81,7 @@ Afterglow is primarily maintained by [@brunchboy][brunchboy].
 
 ## License
 
-<a href="http://deepsymmetry.org"><img align="right" alt="Deep Symmetry"
+<a href="http://deepsymmetry.org"><img style="float:right" alt="Deep Symmetry"
  src="doc/modules/ROOT/assets/images/DS-logo-bw-200-padded-left.png" width="216" height="123"></a>
 
 Copyright © 2016&ndash;2019 [Deep Symmetry, LLC](http://deepsymmetry.org)

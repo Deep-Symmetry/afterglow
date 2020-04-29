@@ -1,17 +1,6 @@
 = Effects
 James Elliott <james@deepsymmetry.org>
 
-ifdef::env-github[]
-// Set up support for relative links and images on GitHub (even though
-// the documentation is now designed for Antora. Also, need to add
-// the API doc path here, since Antora takes care of it outside of
-// GitHub. Hopefully we can eventually make this an include file, once
-// GitHub *finally* supports those.
-:outfilesuffix: .adoc
-:imagesdir: ../assets/images
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
-endif::[]
-
 Effects determine what a light or group of lights are doing at a given
 moment in time.
 
@@ -40,10 +29,9 @@ fixtures add other LED colors, such as amber, white, and even
 ultraviolet. Other fixtures simply use a rotating color wheel to pick
 from a fixed set of colors, using a single channel. Regardless of how
 the color is finally produced, at most stages of effect processing,
-Afterglow works in terms of the
-<<working_with_color#working-with-color,color itself>>, allowing you
-to blend, lighten, darken, shift hue, and the like so you can produce
-interesting looks, without regard to details of fixture
+Afterglow works in terms of the <<color#working-with-color,color itself>>,
+allowing you to blend, lighten, darken, shift hue, and the like so you
+can produce interesting looks, without regard to details of fixture
 implementation. It is only at the
 <<rendering_loop#the-rendering-loop,final rendering stage>> that the
 color is broken down into channel assignments.
@@ -1282,5 +1270,3 @@ And here is a complete, concrete example of how you can try out
 
 > This assigns a blue color to all the lights, and pulses them to
 white once per beat.
-
-include::partial$Footer.adoc[]

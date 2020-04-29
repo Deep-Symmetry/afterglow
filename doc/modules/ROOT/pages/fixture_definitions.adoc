@@ -4,17 +4,6 @@ James Elliott <james@deepsymmetry.org>
 // TODO: Can the following be defived from Antora, or just eliminated?
 :branch-base: https://github.com/Deep-Symmetry/afterglow/blob/master/
 
-ifdef::env-github[]
-// Set up support for relative links and images on GitHub (even though
-// the documentation is now designed for Antora. Also, need to add
-// the API doc path here, since Antora takes care of it outside of
-// GitHub. Hopefully we can eventually make this an include file, once
-// GitHub *finally* supports those.
-:outfilesuffix: .adoc
-:imagesdir: ../assets/images
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
-endif::[]
-
 Fixture definitions tell Afterglow what capabilities a given piece of
 lighting hardware has, and how to control it to get the effects that are
 being requested.
@@ -1327,5 +1316,3 @@ https://github.com/Deep-Symmetry/afterglow/wiki/Questions#defining-fixtures[Wiki
 Not only will that hopefully get you going faster, but it might help
 others in the future, especially if it leads to improvements in the
 documentation or Afterglow itself.
-
-include::partial$Footer.adoc[]

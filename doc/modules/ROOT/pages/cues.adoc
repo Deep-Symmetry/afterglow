@@ -1,17 +1,6 @@
 = Cues
 James Elliott <james@deepsymmetry.org>
 
-ifdef::env-github[]
-// Set up support for relative links and images on GitHub, even though
-// the documentation is now designed for Antora. Also, need to add
-// the API doc path here, since Antora takes care of it outside of
-// GitHub. Hopefully we can eventually make this an include file, once
-// GitHub *finally* supports those.
-:outfilesuffix: .adoc
-:imagesdir: ../assets/images
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
-endif::[]
-
 Cues are designed to support creating user interfaces for controlling
 effects. They provide a convenient way to organize, identify, trigger,
 adjust, and monitor effects. Each {api-doc}afterglow.show.html[`show`]
@@ -876,5 +865,3 @@ The rest of the functions in the `afterglow.controllers` namespace are used by
 controller implementations and running shows to mediate their
 interactions with the cue grid; dig into them if you are writing code
 in those spaces.
-
-include::partial$Footer.adoc[]

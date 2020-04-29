@@ -1,17 +1,6 @@
 = Using the Novation Launchpad Family
 James Elliott <james@deepsymmetry.org>
 
-ifdef::env-github[]
-// Set up support for relative links and images on GitHub, even though
-// the documentation is now designed for Antora. Also, need to add
-// the API doc path here, since Antora takes care of it outside of
-// GitHub. Hopefully we can eventually make this an include file, once
-// GitHub *finally* supports those.
-:outfilesuffix: .adoc
-:imagesdir: ../assets/images
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
-endif::[]
-
 Novation makes an entire family of grid controllers which can all be
 used with Afterglow, with differing capabilities. The most powerful is
 the Launchpad Pro, with pressure-sensitive RGB pads.
@@ -268,5 +257,3 @@ they will end as soon as you release the pad. As with other controller
 mappings, if you hold down the Shift button (the bottom right round
 button) while launching such a momentary cue, it will stay running
 even after you let it go, and in that case will be green.
-
-include::partial$Footer.adoc[]

@@ -1,17 +1,6 @@
 = Oscillators
 James Elliott <james@deepsymmetry.org>
 
-ifdef::env-github[]
-// Set up support for relative links and images on GitHub (even though
-// the documentation is now designed for Antora. Also, need to add
-// the API doc path here, since Antora takes care of it outside of
-// GitHub. Hopefully we can eventually make this an include file, once
-// GitHub *finally* supports those.
-:outfilesuffix: .adoc
-:imagesdir: ../assets/images
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
-endif::[]
-
 Oscillators in Afterglow are a flexible way of turning the timing
 information tracked by <<metronomes#metronomes,metronomes>> into
 waveforms that can be used to make lights do interesting things. They
@@ -430,5 +419,3 @@ triangle oscillator behavior you can use in your shows.
 Hopefully examining this example, as well as the source of the other
 oscillators, can inspire you to create your own interesting oscillator
 shapes.
-
-include::partial$Footer.adoc[]

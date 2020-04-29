@@ -1,17 +1,6 @@
 = MIDI Mapping and Beat Sync
 James Elliott <james@deepsymmetry.org>
 
-ifdef::env-github[]
-// Set up support for relative links and images on GitHub (even though
-// the documentation is now designed for Antora. Also, need to add
-// the API doc path here, since Antora takes care of it outside of
-// GitHub. Hopefully we can eventually make this an include file, once
-// GitHub *finally* supports those.
-:outfilesuffix: .adoc
-:imagesdir: ../assets/images
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
-endif::[]
-
 Afterglow is designed to work with MIDI controllers and DJ equipment.
 You can bind physical controller elements to trigger cues and adjust
 show variables, and sync the BPM of the show master metronome to MIDI
@@ -946,5 +935,3 @@ all bindings, you can still use `(ct/deactivate-all)` as described
 above. Or you can just turn off or unplug the controllers. Since
 auto-binding is not active, that will permanently remove them from
 Afterglow's control (at least until you explicitly re-bind them).
-
-include::partial$Footer.adoc[]

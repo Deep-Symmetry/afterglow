@@ -1,17 +1,6 @@
 = Afterglow Developer Guide
 James Elliott <james@deepsymmetry.org>
 
-ifdef::env-github[]
-// Set up support for relative links and images on GitHub (even though
-// the documentation is now designed for Antora. Also, need to add
-// the API doc path here, since Antora takes care of it outside of
-// GitHub. Hopefully we can eventually make this an include file, once
-// GitHub *finally* supports those.
-:outfilesuffix: .adoc
-:imagesdir: ../assets/images
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
-endif::[]
-
 [[organization]] This section provides an
 <<introduction,introduction>> describing this guide and an
 <<overview,overview>> of the Afterglow environment. It then explains
@@ -77,7 +66,7 @@ versa.
 
 ****
 
-image::Afterglow-logo.png[Afterglow logo,128,127,align="center"]
+image::Afterglow-logo.png[Afterglow logo,128,127,style="vertical-align:middle"]
 
 [[introduction]]
 == What is Afterglow?
@@ -666,5 +655,3 @@ consider a pull request to add it somewhere within the effects
 namespace hierarchy. And if you are just tinkering with something new
 and experimental, please post about it on the
 https://gitter.im/brunchboy/afterglow[Gitter chat]!
-
-include::partial$Footer.adoc[]

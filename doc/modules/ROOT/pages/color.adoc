@@ -1,17 +1,6 @@
 = Working with Color
 James Elliott <james@deepsymmetry.org>
 
-ifdef::env-github[]
-// Set up support for relative links and images on GitHub (even though
-// the documentation is now designed for Antora. Also, need to add
-// the API doc path here, since Antora takes care of it outside of
-// GitHub. Hopefully we can eventually make this an include file, once
-// GitHub *finally* supports those.
-:outfilesuffix: .adoc
-:imagesdir: ../assets/images
-:api-doc: http://deepsymmetry.org/afterglow/api-doc/
-endif::[]
-
 Cues that assign color to lights are designed to leverage the
 https://github.com/jolby/colors[jolby/colors] library. In addition to
 creating colors by name, as in the Usage examples, you can create them
@@ -143,5 +132,3 @@ This example also shows how to use the cue `:color-fn` key to
 configure the cue grid to display the cue using the current value of
 the color variable associated with it, as an additional aid to the
 show operator.
-
-include::partial$Footer.adoc[]

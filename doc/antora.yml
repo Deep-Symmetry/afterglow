@@ -2,5 +2,11 @@ name: afterglow
 title: Afterglow
 version: 'master'
 start_page: ROOT:README.adoc
+asciidoc:
+  attributes:
+    icons: font
+    experimental: ''
+    page-copyright: 2015–2020
+    page-pagination: ''
 nav:
 - modules/ROOT/nav.adoc
