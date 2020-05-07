@@ -29,16 +29,16 @@ function:
 ----
 
 TIP: In addition to manually setting values in show variables, you can
-use <<mapping_sync#mapping-a-control-to-a-variable,MIDI mappings>> to
+use <<mapping_sync.adoc#mapping-a-control-to-a-variable,MIDI mappings>> to
 have them set by turning a knob or sliding a fader on a MIDI control
-surface. <<cues.adoc#cues,Cues>> can also set variables, and can bind
+surface. <<cues.adoc#,Cues>> can also set variables, and can bind
 them to encoders or pressure sensitive pads on controllers like the
-<<push2#using-ableton-push-2,Ableton Push>> and
-<<launchpad#using-launchpad-pro,Novation Launchpad Pro>>.
+<<push2.adoc#,Ableton Push>> and
+<<launchpad.adoc#,Novation Launchpad Pro>>.
 
 You can then refer to that stored value whenever you are building a
 dynamic parameter (for example when you are passing in the `:hue`
-parameter for a <<parameters.adoc#color-parameters,Color Parameter>>
+parameter for a <<color-parameters,Color Parameter>>
 as described below), by simply using the keyword (in this example,
 `:key`), and the current value stored in the show variable will be
 used.
@@ -110,11 +110,11 @@ which it oscillates, you would write something like this:
 == Oscillated Parameters
 
 Oscillated parameters vary over time, at a speed controlled by a
-<<metronomes#metronomes,Metronome>> (usually the main show metronome,
+<<metronomes.adoc#,Metronome>> (usually the main show metronome,
 synced to DJ equipment) and so can make the lights appear to be
 reacting intelligently to the music being played. The timing
 information produced by the metronome is fed into an
-<<oscillators#oscillators,Oscillator>>, which determines the shape of
+<<oscillators.adoc#,Oscillator>>, which determines the shape of
 the wave that controls its value, and the frequency at which it
 oscillates, related to beats, bars, or phrases of the underlying
 metronome. The resulting value can then be scaled to meet the needs of
@@ -129,7 +129,7 @@ rotation). Oscillated parameters are created by calling
 ----
 
 The `oscillator` parameter is an
-<<oscillators#oscillators,Oscillator>> created by one of the functions
+<<oscillators.adoc#,Oscillator>> created by one of the functions
 in
 {api-doc}afterglow.effects.oscillators.html[`afterglow.effects.oscillators`]
 which, as described above, determines how to react to the time
@@ -165,11 +165,11 @@ oscillator will be pinned to the value of `:min`.
 == Step Parameters
 
 Like oscillated parameters (above), step parameters vary over time, at
-a speed controlled by a <<metronomes#metronomes,Metronome>> (usually
+a speed controlled by a <<metronomes.adoc#,Metronome>> (usually
 the main show metronome, synced to DJ equipment). But rather than
 moving back and forth, step parameters increase steadily over time,
 because they are designed to control the progression of a
-<<effects#chases,chase>>. Step parameters are created by calling
+<<effects.adoc#chases,chase>>. Step parameters are created by calling
 {api-doc}afterglow.effects.params.html#var-build-step-param[`afterglow.effects.params/build-step-param`].
 
 [source,clojure]
@@ -270,7 +270,7 @@ rather than each beat, by passing the optional keyword argument
 oscillators, you can use the optional keyword argument
 `:interval-ratio` to have the parameter run at the specified fraction
 or multiple of the chosen interval. The way that `:interval-ratio`
-works is illustrated in the <<oscillators#ratios,Ratios>> section of
+works is illustrated in the <<oscillators.adoc#ratios,Ratios>> section of
 the oscillator documentation.
 
 As one example of `:inteval-ratio` specifically applied to step
@@ -348,10 +348,10 @@ dynamic parameters, such as show <<variable-parameters,variables>>
 the show variable was stored) or <<oscillated-parameters,oscillated
 parameters>>.
 
-Refer to <<color#working-with-color,Working with Color>> for a
-refresher on the meaning of the basic color components. It would not
-make sense to pass all of these parameters, because some will override
-others, but here is how they are evaluated:
+Refer to <<color.adoc#,Working with Color>> for a refresher on the
+meaning of the basic color components. It would not make sense to pass
+all of these parameters, because some will override others, but here
+is how they are evaluated:
 
 . The base color is established by the `:color` parameter.
 
@@ -384,7 +384,7 @@ possible, and do as much calculation as it can when the parameter is
 created. If there are no frame dynamic parameters, it will return a
 fixed color. But you can easily use frame-dynamic oscillated
 parameters and get lovely shifting rainbow cues, as shown in the
-<<effects#oscillator-effects,effect examples>>.
+<<effects.adoc#oscillator-effects,effect examples>>.
 
 [[movement]]
 == Movement
@@ -397,9 +397,9 @@ to move. They differ in the way that you express direction or aim.
 
 Direction parameters are one way to tell a group of fixtures to point
 in a particular _direction_, or move in unison or in a coordinated
-pattern. They are used with <<effects#direction-effects,Direction
-Effects>>. (<<parameters#pan-tilt-parameters,Pan Tilt Parameters>> and
-<<effects#pan-tilt-effects,Pan/Tilt Effects>> are the other way to
+pattern. They are used with <<effects.adoc#direction-effects,Direction
+Effects>>. (<<pan-tilt-parameters,Pan Tilt Parameters>> and
+<<effects.adoc#pan-tilt-effects,Pan/Tilt Effects>> are the other way to
 achieve that result.) The basic way to create a direction parameter is
 to call
 {api-doc}afterglow.effects.params.html#var-build-direction-param[`afterglow.effects.params/build-direction-param`].
@@ -429,7 +429,7 @@ every frame, or just once
 |=======================================================================
 
 Collectively, `x`, `y`, and `z` specify a three-dimensional vector in
-the light show’s <<show_space#show-space,frame of reference>> telling
+the light show’s <<show_space.adoc#,frame of reference>> telling
 the lights which direction they should point. The absolute magnitudes
 of the values are not important, it is their relative sizes that
 matter. The default of `[0, 0, 1]` means the lights point neither left
@@ -437,7 +437,7 @@ nor right, neither up nor down, and straight towards the audience.
 `[1, 0, 0]` would be straight right, `[-1, 0, 0]` straight left, `[0,
 1, 0]` straight up, and `[0, 1, -1]` up and away from the audience at
 a 45° angle. When this vector is supplied to a
-<<effects#direction-effects,Direction Effect>>, it causes the attached
+<<effects.adoc#direction-effects,Direction Effect>>, it causes the attached
 lights to make the specified movement, if they are capable.
 
 All of these parameters, except for `frame-dynamic`, can themselves be
@@ -451,7 +451,7 @@ parameters>>.
 
 Aim parameters are a way to tell a group of fixtures to aim at a
 particular _point_ in space, or track something in unison or in a
-coordinated pattern. They are used with <<effects#aim-effects,Aim
+coordinated pattern. They are used with <<effects.adoc#aim-effects,Aim
 Effects>>. The basic way to create one is to call:
 
 [source,clojure]
@@ -480,9 +480,9 @@ every frame, or just once
 |=======================================================================
 
 Collectively, `x`, `y`, and `z` specify a three-dimensional point
-within the light show’s <<show_space#show-space,frame of reference>> telling the
+within the light show’s <<show_space.adoc#,frame of reference>> telling the
 lights where to aim. When this vector is supplied to an
-<<effects#aim-effects,Aim Effect>>, it causes the attached lights to
+<<effects.adoc#aim-effects,Aim Effect>>, it causes the attached lights to
 make the specified movement, if they are capable.
 
 If you need to convert inches or feet to meters, which are the
@@ -501,12 +501,12 @@ parameters>>.
 === Pan/Tilt Parameters
 
 A more traditional way of aiming fixtures (in contrast to
-<<parameters#direction-parameters,Direction Parameters>>) involves
+<<direction-parameters,Direction Parameters>>) involves
 setting pan and tilt angles. Afterglow supports this approach as well,
 although even in this case you use angles expressed in the standard
-show <<show_space#show-space,frame of reference>> regardless of how
+show <<show_space.adoc#,frame of reference>> regardless of how
 the individual fixtures are hung. Pan Tilt parameters work with
-<<effects#pan-tilt-effects,Pan/Tilt Effects>>. The basic way to
+<<effects.adoc#pan-tilt-effects,Pan/Tilt Effects>>. The basic way to
 create one is to call:
 
 [source,clojure]
@@ -539,9 +539,9 @@ every frame, or just once
 The rotations requested by `pan` and `tilt` jointly identify the
 direction the light should turn away from the audience. The result of
 the parameter is a pair of pan and tilt angles away from the `z` axis
-of the light show’s <<show_space#show-space,frame of reference>>
+of the light show’s <<show_space#,frame of reference>>
 telling the lights which direction they should point. When this parameter
-is supplied to a <<effects#pan-tilt-effects,Pan/Tilt Effect>>, it
+is supplied to a <<effects.adoc#pan-tilt-effects,Pan/Tilt Effect>>, it
 causes the attached lights to make the specified movement, if they are
 capable.
 
@@ -559,7 +559,7 @@ the show variable was stored) or <<oscillated-parameters,oscillated
 parameters>>.
 
 NOTE: You can also create a direction parameter using pan and tilt
-angles if you want to work with <<effects#direction-effects,Direction
+angles if you want to work with <<effects.adoc#direction-effects,Direction
 Effects>> in those terms. This can be helpful, for example, when you
 want to fade between a specific direction that is easiest to express
 as a spatial vector, and one that is easiest to express in terms of
@@ -621,7 +621,7 @@ gradients across all or part of a show. Spatial parameters make
 excellent building blocks for <<color-parameters,color>>,
 <<direction-parameters,direction>> and <<aim-parameters,aim>>
 parameters, as shown in the
-<<effects#spatial-effects,effect examples>>.
+<<effects.adoc#spatial-effects,effect examples>>.
 
 [[combining-parameters]]
 == Combining Parameters
@@ -663,9 +663,7 @@ object which will be used to transform it. Both can by dynamic
 parameters, including keywords that will be looked up as show
 variables. Similarly,
 {api-doc}afterglow.effects.params.html#var-build-aim-transformer[`build-aim-transformer`]
-applies a transformation parameter to an aim parameter. The function
-{api-doc}afterglow.examples.html#var-build-direction-cue[`build-direction-cue`]
-in the `examples` namespace shows one way to use these.
+applies a transformation parameter to an aim parameter.
 
 
 [[debugging-dynamic-parameters]]
@@ -682,7 +680,7 @@ feeding into the effects you are creating with it.
 
 If you are using a show variable to hold values as the basis of your
 dynamic parameter, perhaps by
-<<mapping_sync#mapping-a-control-to-a-variable,mapping>> incoming MIDI
+<<mapping_sync.adoc#mapping-a-control-to-a-variable,mapping>> incoming MIDI
 events to it, can check the current value of the variable at any time
 like this:
 

@@ -21,7 +21,7 @@
   show. In addition to the metronome snapshot, the show and (if
   applicable) fixture head must be passed in case any oscillator
   configuration arguments rely
-  on [dynamic]({{guide-url}}parameters.html#dynamic-parameters)
+  on [dynamic]({{guide-url}}parameters.html)
   or [spatial]({{guide-url}}parameters.html#spatial-parameters)
   parameters.")
   (resolve-non-frame-dynamic-elements [this show snapshot head]
@@ -155,9 +155,9 @@
 
   If the shape of the oscillator needs to be able to change over time
   depending on the value of a [dynamic
-  parameter]({{guide-url}}parameters.html#dynamic-parameters),
-  then `shape-fn` will instead implement [[IVariableShape]] in order
-  to be able to resolve those parameters.
+  parameter]({{guide-url}}parameters.html), then `shape-fn` will
+  instead implement [[IVariableShape]] in order to be able to resolve
+  those parameters.
 
   All of the standard oscillators provided by Afterglow are built in
   this way. For example, an upwards-sloping sawtooth wave would be
@@ -186,7 +186,7 @@
   for an expanded explanation illustrated with graphs.)
 
   The arguments after `shape-fn` can be [dynamic
-  parameters]({{guide-url}}parameters.html#dynamic-parameters)."
+  parameters]({{guide-url}}parameters.html)."
   [shape-fn & {:keys [interval interval-ratio phase] :or {interval :beat interval-ratio 1 phase 0.0}}]
   {:pre [(or (ifn? shape-fn) (satisfies? IVariableShape shape-fn))]}
   (params/validate-param-type interval clojure.lang.Keyword)
@@ -227,7 +227,7 @@
   for an expanded explanation illustrated with graphs.)
 
   The arguments can be [dynamic
-  parameters]({{guide-url}}parameters.html#dynamic-parameters)."
+  parameters]({{guide-url}}parameters.html)."
   [& {:keys [down? interval interval-ratio phase] :or {down? false interval :beat interval-ratio 1 phase 0.0}}]
   (let [down? (params/bind-keyword-param down? Boolean false)
         shape-fn (if (params/param? down?)
@@ -263,7 +263,7 @@
   for an expanded explanation illustrated with graphs.)
 
   All the arguments can be [dynamic
-  parameters]({{guide-url}}parameters.html#dynamic-parameters)."
+  parameters]({{guide-url}}parameters.html)."
   [& {:keys [interval interval-ratio phase] :or {interval :beat interval-ratio 1 phase 0.0}}]
   (build-oscillator (fn [phase]
                       (if (< phase 0.5)
@@ -302,7 +302,7 @@
   for an expanded explanation illustrated with graphs.)
 
   The arguments can be [dynamic
-  parameters]({{guide-url}}parameters.html#dynamic-parameters)."
+  parameters]({{guide-url}}parameters.html)."
   [& {:keys [width interval interval-ratio phase] :or {width 0.5 interval :beat interval-ratio 1 phase 0.0}}]
   (let [width (params/bind-keyword-param width Number 0.5)
         shape-fn (if (params/param? width)
@@ -341,7 +341,7 @@
   for an expanded explanation illustrated with graphs.)
 
   All the arguments can be [dynamic
-  parameters]({{guide-url}}parameters.html#dynamic-parameters)."
+  parameters]({{guide-url}}parameters.html)."
   [& {:keys [interval interval-ratio phase] :or {interval :beat interval-ratio 1 phase 0.0}}]
   (let [two-pi (* 2.0 Math/PI)]
     (build-oscillator (fn [phase]
@@ -360,13 +360,13 @@
 
 (defn build-oscillated-param
   "Returns a number parameter that is driven by
-  an [oscillator]({{guide-url}}oscillators.html#oscillators).
+  an [oscillator]({{guide-url}}oscillators.html).
   By default will be frame-dynamic, since it oscillates, but if you
   pass a `false` value for `:frame-dynamic`, the value will be fixed
   once it is assigned to an effect, acting like a random number
   generator with the oscillator's range. If you don't specify a
   `:metronome` to use, the
-  main [metronome]({{guide-url}}metronomes.html#metronomes)
+  main [metronome]({{guide-url}}metronomes.html)
   in [[*show*]] will be used.
 
   The values returned by the oscillator will be mapped onto the range

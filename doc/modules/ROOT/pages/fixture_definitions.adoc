@@ -202,8 +202,8 @@ in detail <<channel-specifications,below>>.
  explain what this default orientation is, so that people patching
  your fixture can figure out the proper angle information to tell
  Afterglow if they hung it in a different orientation, as explained in
- <<show_space#show-space,Show Space>>.) The `:pan-center` value should
- pan the light so it is aimed exactly along the show Z axis when also
+ <<show_space.adoc#,Show Space>>.) The `:pan-center` value should pan
+ the light so it is aimed exactly along the show Z axis when also
  tilted to `:tilt-center`.
 
 Many fixtures can pan more than once around a full circle, so you may
@@ -236,8 +236,8 @@ out and use the legal movements that the fixture is capable of.
  negative if the fixture turns clockwise when the pan value is
  increased in its default hanging orientation.)
 
-The <<show_space#show-space,Show Space>> page explains how to figure
-out which rotations are clockwise or counterclockwise with respect to
+The <<show_space.adoc#,Show Space>> page explains how to figure out
+which rotations are clockwise or counterclockwise with respect to
 different axes. Pan motions are rotations around the fixture Y axis.
 
 |:tilt-center
@@ -249,8 +249,8 @@ different axes. Pan motions are rotations around the fixture Y axis.
  definition needs to explain what this default orientation is, so that
  people patching your fixture can figure out the proper angle
  information to tell Afterglow if they hung it in a different
- orientation, as explained in <<show_space#show-space,Show Space>>.)
- The `:tilt-center` value should tilt the light so it is aimed exactly
+ orientation, as explained in <<show_space.adoc#,Show Space>>.) The
+ `:tilt-center` value should tilt the light so it is aimed exactly
  along the show Z axis when also panned to `:pan-center`.
 
 Some fixtures can tilt more than once around a full circle, so you may
@@ -283,8 +283,8 @@ out and use the legal movements that the fixture is capable of.
  negative if the fixture turns clockwise when the tilt value is
  increased in its default hanging orientation.)
 
-The <<show_space#show-space,Show Space>> page explains how to figure
-out which rotations are clockwise or counterclockwise with respect to
+The <<show_space.adoc#,Show Space>> page explains how to figure out
+which rotations are clockwise or counterclockwise with respect to
 different axes. Tilt motions are rotations around the fixture X axis.
 
 |===
@@ -413,12 +413,12 @@ channels.
 
 |:inverted-from
 |[[inverted-channels]]If this key is present, the value established
-by the channel's <<rendering_loop#channel-assigners,assigners>> will
+by the channel's <<rendering_loop.adoc#channel-assigners,assigners>> will
 be
 {api-doc}afterglow.effects.channel.html#var-apply-channel-value[reversed]
 when it is sent to the fixture. This is necessary to support fixtures
 which have inverted dimmer channels, and can be configured when
-<<fixture_definitions#dimmer-channels,creating>> the dimmer channel
+<<dimmer-channels,creating>> the dimmer channel
 specification.
 
 |===
@@ -459,7 +459,7 @@ should be in that head's list.
  fixture is located when patching the fixture) and the geometric
  center of this head. If this head is centered along the fixture X
  axis, you can omit this value or you can supply it with a value of
- 0.0. The <<show_space#show-space,Show Space>> page illustrates the
+ 0.0. The <<show_space.adoc#,Show Space>> page illustrates the
  axes and links to a function you can use for converting inches to
  meters.
 
@@ -469,7 +469,7 @@ should be in that head's list.
  fixture is located when patching the fixture) and the geometric
  center of this head. If this head is centered along the fixture Y
  axis, you can omit this value or you can supply it with a value of
- 0.0. The <<show_space#show-space,Show Space>> page illustrates the
+ 0.0. The <<show_space.adoc#,Show Space>> page illustrates the
  axes and links to a function you can use for converting inches to
  meters.
 
@@ -479,14 +479,14 @@ should be in that head's list.
  fixture is located when patching the fixture) and the geometric
  center of this head. If this head is centered along the fixture X
  axis, you can omit this value or you can supply it with a value of
- 0.0. The <<show_space#show-space,Show Space>> page illustrates the
+ 0.0. The <<show_space.adoc#,Show Space>> page illustrates the
  axes and links to a function you can use for converting inches to
  meters.
 
 |:x-rotation
 |If this head aims in a different direction than the fixture as a
  whole, this value tells afterglow the angle in radians it is rotated
- around the X axis. The <<show_space#show-space,Show Space>> page
+ around the X axis. The <<show_space.adoc#,Show Space>> page
  illustrates the axes, explains how to calculate the sign of a
  rotation, and links to a function you can use for converting degrees
  to radians.
@@ -494,7 +494,7 @@ should be in that head's list.
 |:y-rotation
 |If this head aims in a different direction than the fixture as a
  whole, this value tells afterglow the angle in radians it is rotated
- around the Y axis. The <<show_space#show-space,Show Space>> page
+ around the Y axis. The <<show_space.adoc#,Show Space>> page
  illustrates the axes, explains how to calculate the sign of a
  rotation, and links to a function you can use for converting degrees
  to radians.
@@ -502,7 +502,7 @@ should be in that head's list.
 |:z-rotation
 |If this head aims in a different direction than the fixture as a
  whole, this value tells afterglow the angle in radians it is rotated
- around the Z axis. The <<show_space#show-space,Show Space>> page
+ around the Z axis. The <<show_space.adoc#,Show Space>> page
  illustrates the axes, explains how to calculate the sign of a
  rotation, and links to a function you can use for converting degrees
  to radians.
@@ -522,12 +522,12 @@ gobo wheel, it makes great sense.
 
 The `:functions` entry in a channel specification map lists all the
 functions that a given channel offers. In order to work well with
-<<effects#function-effects,Function Effects>> and
-<<cues#creating-function-cues,Function Cues>> it is best to provide a
-function list even for channels which only perform a single function.
-A function list is a list of maps, each of which identifies a range of
-values that do something when the channel is set to a value within
-that range. Each map has the following content:
+<<effects.adoc#function-effects,Function Effects>> and
+<<cues.adoc#creating-function-cues,Function Cues>> it is best to
+provide a function list even for channels which only perform a single
+function. A function list is a list of maps, each of which identifies
+a range of values that do something when the channel is set to a value
+within that range. Each map has the following content:
 
 [cols="2l,5a", options="header"]
 |===
@@ -550,8 +550,8 @@ that range. Each map has the following content:
 
 |:type
 |A keyword which identifies the nature of the function. This is how
- <<effects#function-effects,Function Effects>> and
- <<cues#creating-function-cues,Function Cues>> will find the effect,
+ <<effects.adoc#function-effects,Function Effects>> and
+ <<cues.adoc#creating-function-cues,Function Cues>> will find the effect,
  so it is important to be consistent when assigning function types.
  The list of <<standard-function-types,standard function types>> is a
  good starting point. If you feel there is a common kind of function
@@ -567,14 +567,14 @@ that range. Each map has the following content:
  or focus, will have different effects for every value in the range,
  and are identified by a `:range` type of `:variable`. This helps
  Afterglow build an appropriate user interface for interacting with
- <<effects#function-effects,Function Effects>> in places like the
- <<push2#effect-control,Ableton Push Effect Control interface>>.
+ <<effects.adoc#function-effects,Function Effects>> in places like the
+ <<push2.adoc#effect-control,Ableton Push Effect Control interface>>.
 
 |:label
 |Specifies a label that should be used when creating a user interface
- that refers to this function. <<cues#creating-function-cues,Function
+ that refers to this function. <<cues.adoc#creating-function-cues,Function
  Cues>> will use this as the label text in the grid cell they create
- in the <<README#web-ui,web interface>>. If omitted, a capitalzed
+ in the <<README.adoc#web-ui,web interface>>. If omitted, a capitalzed
  version of the value of the `:type` keyword (without its leading
  colon) is used as the label; this entry allows you to specify
  something more readable.
@@ -583,9 +583,9 @@ that range. Each map has the following content:
 |Specifies a label that should be used when creating a user interface
  for adjusting the value associated with this function (so it makes
  sense to set this only when `:range` is `:variable`).
- <<cues#creating-function-cues,Function Cues>> will use this as the
+ <<cues.adoc#creating-function-cues,Function Cues>> will use this as the
  label for the cue-local variable they create, and it will appear in
- places like the <<push2#effect-control,Ableton Push Effect
+ places like the <<push2.adoc#effect-control,Ableton Push Effect
  Control interface>>. If omitted, the generic label
  &ldquo;Level&rdquo; will be displayed under the encoder knob.
 
@@ -635,7 +635,7 @@ reported in the fixture manual, assuming they are numbered starting
 with `1` as described <<channel-offset,above>>), and the `color`, a
 keyword naming the color. The standard colors `:red`, `:green`,
 `:blue`, and `:white` will automatically participate in Afterglow's
-color mixing for <<effects#color-effects,Color Effects>>. If your
+color mixing for <<effects.adoc#color-effects,Color Effects>>. If your
 fixture has other color channels, and you would like them to
 participate in color mixing as well, pass the hue value of the color
 channel with the optional keyword argument `:hue`. (See the discussion
@@ -649,8 +649,8 @@ argument `:fine-offset`.
 
 If you want to use a label which differs from the name of the `color`
 keyword in the user interface when
-<<push2#effect-control,adjusting>>
-<<cues#creating-function-cues,Function Cues>> (for example, if the
+<<push2.adoc#effect-control,adjusting>>
+<<cues.adoc#creating-function-cues,Function Cues>> (for example, if the
 keyword is hyphenated, and you want the label to use a space), specify
 your desired label with the optional keyword argument
 `:function-label`.
@@ -870,8 +870,8 @@ argument `:function-type`.
 
 If you want to use a variable label which differs from the name of the
 channel's function type keyword in the user interface when
-<<push2#effect-control,adjusting>>
-<<cues#creating-function-cues,Function Cues>> (for example, if the
+<<push2.adoc#effect-control,adjusting>>
+<<cues.adoc#creating-function-cues,Function Cues>> (for example, if the
 keyword is hyphenated, and you want the label to use a space), specify
 your desired label with the optional keyword argument
 `:var-label`.
@@ -897,8 +897,8 @@ F3] fixture definition source for an example of its use.
 [[standard-function-types]]
 == Standard Function Types
 
-<<effects#function-effects,Function Effects>> and
-<<cues#creating-function-cues,Function Cues>> trigger and control
+<<effects.adoc#function-effects,Function Effects>> and
+<<cues.adoc#creating-function-cues,Function Cues>> trigger and control
 specific functions, potentially across a range of different fixture
 types from different manufacturers. In order for that to work, the
 <<function-specifications,Function Specifications>> must be created
@@ -927,7 +927,7 @@ yours.
 |Controls the overall brightness of the fixture or head, independent
  of any color intensity channels which might also affect it. This is
  also a fundamental channel type in Afterglow, and has a category of
- <<effects#dimmer-effects,Dimmer Effects>> to work with it. Dimmer
+ <<effects.adoc#dimmer-effects,Dimmer Effects>> to work with it. Dimmer
  effects can work with either fully dedicated dimmer channels (in
  which case the channel itself has a `:type` of `:dimmer`, and the
  entire DMX range is used for dimming), or multipurpose channels in
@@ -953,7 +953,7 @@ yours.
  the channel.) Color channels are fundamental channel types in
  Afterglow, and the colors `:red`, `:green`, `:blue`, and `:white`
  will automatically participate in the color mixing Afterglow performs
- with <<effects#color-effects,Color Effects>>. The others can too if,
+ with <<effects.adoc#color-effects,Color Effects>>. The others can too if,
  as described <<hue-mixing,above>>, the `:color` channel has a `:hue`
  entry.
 
@@ -963,8 +963,8 @@ yours.
 |Rotates the fixture about its Y (in the case of `:pan`) or X (in the
  case of `:tilt`) axis. These are also fundamental channel types in
  Afterglow, and have categories of
- <<effects#direction-effects,Direction Effects>> and
- <<effects#aim-effects,Aim Effects>> to work with them.
+ <<effects.adoc#direction-effects,Direction Effects>> and
+ <<effects.adoc#aim-effects,Aim Effects>> to work with them.
 
 |:strobe
 
@@ -1212,7 +1212,7 @@ their name, and aspects of their structure. For simple cases it will
 get it right, and save you time, but it might be wrong. This is
 especially important to double-check for dimmer channels, to make sure
 they are properly detected, since only then will they participate in
-<<effects#dimmer-effects,Dimmer Effects>> and the Master chain. (And
+<<effects.adoc#dimmer-effects,Dimmer Effects>> and the Master chain. (And
 you don't want inappropriate channels to be mapped as dimmer channels
 for the opposite reason.)
 
@@ -1223,8 +1223,7 @@ In addition to the possibility that a dimmer channel might be
 misidentified, as described above, some fixtures have _inverted_
 dimmer channels, which do not get brighter as the DMX value increases.
 The `.qxf` file does not record this information, so you will need to
-manually add it to the
-<<fixture_definitions#dimmer-channels,specification>>.
+manually add it to the <<dimmer-channels,specification>>.
 
 [[no-color-channels]]
 ==== Color Channels
@@ -1272,8 +1271,8 @@ If the fixture includes a Pan or Tilt channel, you will see additional
 `TODO:` comments telling you that you need to add information about
 how the channel actually physically rotates the fixture, in order for
 Afterglow to be able to accurately calculate
-<<effects#direction-effects,Direction>> and
-<<effects#aim-effects,Aim>> effects with it. The
+<<effects.adoc#direction-effects,Direction>> and
+<<effects.adoc#aim-effects,Aim>> effects with it. The
 <<structure,Structure section above>>
 describes the `:pan-center`, `:pan-half-circle`, `:tilt-center`, and
 `:tilt-half-circle` values that you will need to figure out
@@ -1285,7 +1284,7 @@ experimentally.
 Similarly, if the fixture has multiple heads, you will see `TODO:`
 entries where you need to fill in their
 <<head-specifications,locations>> relative to the origin of the
-fixture itself, so that <<parameters#spatial-parameters,Spatial
+fixture itself, so that <<parameters.adoc#spatial-parameters,Spatial
 Parameters>> can work properly with them.
 
 [[dont-panic]]

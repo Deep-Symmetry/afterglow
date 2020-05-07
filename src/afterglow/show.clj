@@ -1155,7 +1155,7 @@
   fixtures.
 
   `fixture` is a [Fixture Definition
-  map]({{guide-url}}fixture_definitions.html#fixture-definitions)
+  map]({{guide-url}}fixture_definitions.html)
   which specifies all the capabilities of the fixture and how
   Afterglow can control it.
 
@@ -1176,7 +1176,7 @@
   and `:z-rotation`, which all default to zero if not specified. All
   coordinates and rotations are interpreted with respect to the [show
   frame of
-  reference]({{guide-url}}show_space.html#show-space),
+  reference]({{guide-url}}show_space.html),
   and are in meters and radians. You can
   use [[transform/inches]], [[transform/feet]]
   and [[transform/degrees]] to convert those units for you if
@@ -1256,7 +1256,7 @@
 (defn fixtures-named
   "Returns all fixtures patched into [[*show*]] whose key matches the
   specified name, with an optional number following it, as would be
-  assigned to a fixture group by [[patch-fixtures!]]"
+  assigned to a fixture group by [[patch-fixture-group!]]"
   [n]
   {:pre [(some? *show*) (some? n)]}
   (let [pattern (re-pattern (str (name n) "(-\\d+)?"))]

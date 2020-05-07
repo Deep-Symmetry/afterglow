@@ -25,11 +25,11 @@ You can add lighten it up by changing to something like `:l 70` in the
 `build-color-param` call, darken it a bunch with `:l 20` or desaturate
 it a touch with `:s 80`... For more options and ideas, delve into the
 colors library http://jolby.github.io/colors/[API documentation],
-and the various <<oscillators#oscillators,oscillators>> that Afterglow
+and the various <<oscillators.adoc#,oscillators>> that Afterglow
 makes available to you.
 
 Since working with colors is so fundamental to creating light shows,
-the mechanism for creating <<parameters#color-parameters,dynamic color
+the mechanism for creating <<parameters.adoc#color-parameters,dynamic color
 parameters>> is very well developed, and worth getting familiar with.
 You can often avoid having to write your own function entirely by
 clever combinations of oscillated parameters for creating dynamic
@@ -76,8 +76,8 @@ Lightness::
 You can also create a variety of layered looks by building effects
 that work with each other, rather than having to create a separate
 effect for each combination. The discussion on
-<<effects#layering-effects,layering effects>> explains how to do this
-and points at a sample implementation that ships with Afterglow.
+<<effects.adoc#layering-effects,layering effects>> explains how to do
+this and points at a sample implementation that ships with Afterglow.
 
 [[colors-and-cues]]
 == Colors and Cues
@@ -85,13 +85,13 @@ and points at a sample implementation that ships with Afterglow.
 When you create a cue that assigns a color to a group of lights, you
 can take advantage of Afterglow's rich user interfaces for picking
 colors to let the operator tweak that color during the show, simply by
-making the color a <<cues#cue-variables,cue variable>>.
+making the color a <<cues.adoc#cue-variables,cue variable>>.
 
 Even if you are creating a cue to simply assign a fixed color to a
 group of lights, it is worth setting that color up as a cue variable,
 because it will allow the show operator to adjust the color in a very
 convenient way when running the show. The
-{api-doc}afterglow.examples.html#var-global-color-cue[`global-color-cue`]
+{api-doc}afterglow.examples.html#var-global-color-effect[`global-color-effect`]
 function in the `examples` namespace provides an example of how to do
 this (click the kbd:[view source] link below the description to see
 how it is done).

@@ -36,7 +36,7 @@
   intersection of the pan and tilt axes. That is the point that you
   need to reference when patching the fixture and telling Afterglow
   where it has been hung within [show
-  space]({{guide-url}}show_space.html#show-space). The
+  space]({{guide-url}}show_space.html). The
   image below shows this default orientation, and the axes, for the
   fixture. If it is hung with this side of the base facing the
   audience, right side up, then you do not need to specify any
@@ -153,7 +153,7 @@
   intersection of the pan and tilt axes. That is the point that you
   need to reference when patching the fixture and telling Afterglow
   where it has been hung within [show
-  space]({{guide-url}}show_space.html#show-space). The
+  space]({{guide-url}}show_space.html). The
   image below shows this default orientation, and the axes, for the
   fixture. If it is hung with this side of the base facing the
   audience, right side up, then you do not need to specify any

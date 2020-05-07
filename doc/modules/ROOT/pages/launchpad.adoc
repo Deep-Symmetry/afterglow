@@ -15,7 +15,7 @@ animation, and Afterglow's appropriate Launchpad interface will start.
 
 TIP: For information about how to set up bindings without the sample
 show, or more details about how it works, see
-<<mapping_sync#setting-up-grid-controller-bindings,Setting Up Grid
+<<mapping_sync.adoc#setting-up-grid-controller-bindings,Setting Up Grid
 Controller Bindings>>.
 
 [[using-launchpad-pro]]
@@ -51,9 +51,9 @@ again.
 
 Most of the space on the interface is dedicated to an 8&times;8 grid
 of color coded cue trigger pads, which provide a window onto the
-show's overall <<cues#cues,cue grid>>. The Launchpad can be
-<<README#scrolling-and-linked-controllers,linked>> to the
-<<README#web-ui,web interface>> so that both always display the same
+show's overall <<cues.adoc#,cue grid>>. The Launchpad can be
+<<README.adoc#scrolling-and-linked-controllers,linked>> to the
+<<README.adoc#web-ui,web interface>> so that both always display the same
 section of the cue grid, and the web interface can remind you of the
 names of the cues you are looking at, or it can be scrolled
 independently, allowing you access to more cues at the same time.
@@ -113,7 +113,7 @@ when you activate one, the other cues which use the same keyword are
 dimmed. This is a hint that when you activate one of them, it will
 _replace_ the others, rather than running at the same time. (There are
 photos demonstrating this effect on the
-<<push2#numeric-cue-variables,Ableton Push page>>.)
+<<push2.adoc#numeric-cue-variables,Ableton Push page>>.)
 
 [[scrolling]]
 === Scrolling
@@ -163,14 +163,14 @@ Afterglow that the moment when you tapped the button is the down beat
 Trying to keep up with tempo changes during dynamic shows can be
 tedious, so you will hopefully be able to take advantage of
 Afterglow's metronome synchronization features. If the DJ can send you
-<<mapping_sync#syncing-to-midi-clock,MIDI clock pulses>>, or you can
+<<mapping_sync.adoc#syncing-to-midi-clock,MIDI clock pulses>>, or you can
 connect via a Local Area Network to Pioneer professional DJ gear to
 lock into the beat grid established by
-<<mapping_sync#syncing-to-pro-dj-link,Pro DJ Link>>, Afterglow can
+<<mapping_sync.adoc#syncing-to-pro-dj-link,Pro DJ Link>>, Afterglow can
 keep the BPM (with MIDI) and even the beats (with Pro DJ Link and the
 Traktor Afterglow Beat Phase
-<<mapping_sync#syncing-to-traktor-beat-phase,controller mapping>>)
-synchronized for you. You can use the <<README#metronome-control,web
+<<mapping_sync.adoc#syncing-to-traktor-beat-phase,controller mapping>>)
+synchronized for you. You can use the <<README.adoc#metronome-control,web
 interface>> to configure metronome sync.
 
 Once your sync is established, the meaning of the kbd:[Click] button

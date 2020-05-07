@@ -13,14 +13,13 @@ to group and sequence these building blocks into a show that evolves
 over time, driven by the show's metronome.
 
 When creating an effect, you assign one or more
-<<fixture_definitions#fixture-definitions,Fixtures>> to it, and it
-will generate control values for only those fixtures. The fixture
-channels that will be manipulated by the effect depend on the kind of
-effect it is, and are grouped into several primary categories. The
-simplest kinds of effects apply to a single channel per fixture, or
-perhaps per head, if the fixture has multiple independent
-light-emitting heads. A very common single-channel effect is the
-<<dimmer-effects,dimmer effect>>.
+<<fixture_definitions.adoc#,Fixtures>> to it, and it will generate
+control values for only those fixtures. The fixture channels that will
+be manipulated by the effect depend on the kind of effect it is, and
+are grouped into several primary categories. The simplest kinds of
+effects apply to a single channel per fixture, or perhaps per head, if
+the fixture has multiple independent light-emitting heads. A very
+common single-channel effect is the <<dimmer-effects,dimmer effect>>.
 
 Many effects assign <<color-effects,colors>> to lights, which often
 involves multiple channels. RGB fixtures will use three channels, one
@@ -29,17 +28,17 @@ fixtures add other LED colors, such as amber, white, and even
 ultraviolet. Other fixtures simply use a rotating color wheel to pick
 from a fixed set of colors, using a single channel. Regardless of how
 the color is finally produced, at most stages of effect processing,
-Afterglow works in terms of the <<color#working-with-color,color itself>>,
-allowing you to blend, lighten, darken, shift hue, and the like so you
-can produce interesting looks, without regard to details of fixture
-implementation. It is only at the
-<<rendering_loop#the-rendering-loop,final rendering stage>> that the
-color is broken down into channel assignments.
+Afterglow works in terms of the <<color.adoc#,color itself>>, allowing
+you to blend, lighten, darken, shift hue, and the like so you can
+produce interesting looks, without regard to details of fixture
+implementation. It is only at the <<rendering_loop.adoc#,final
+rendering stage>> that the color is broken down into channel
+assignments.
 
 Another important category of effects control the
 <<direction-effects,direction>> of moving-head fixtures. These work in
 terms of a desired 3D direction vector or <<aim-effects,target point>>
-with respect to the <<show_space#show-space,show frame of reference>>,
+with respect to the <<show_space.adoc#,show frame of reference>>,
 and at the last stage of rendering, convert that to pan and tilt
 channel values, with reference to the angle at which the fixture has
 actually been hung.
@@ -126,13 +125,13 @@ the dimmer is also set to 50% brightness, the final red output will be
 at 25% brightness.
 
 In addition to passing in a literal number for the `level` parameter,
-you can pass a <<parameters#dynamic-parameters,Dynamic Parameter>>
-whose value depends on a <<metronomes#metronomes,Metronome>>, the
-physical location or orientation of the head, or a show variable,
-perhaps <<mapping_sync#mapping-a-control-to-a-variable,bound>> to a
-MIDI control surface. It often makes sense to use
-<<parameters#oscillated-parameters,oscillated parameters>> with dimmer
-cues.
+you can pass a <<parameters.adoc#,Dynamic Parameter>> whose value
+depends on a <<metronomes.adoc#,Metronome>>, the physical location or
+orientation of the head, or a show variable, perhaps
+<<mapping_sync.adoc#mapping-a-control-to-a-variable,bound>> to a MIDI
+control surface. It often makes sense to use
+<<parameters.adoc#oscillated-parameters,oscillated parameters>> with
+dimmer cues.
 
 TIP: If you have color effects running for a light and you aren’t
 seeing anything, make sure you have a dimmer effect setting the dimmer
@@ -226,19 +225,20 @@ many cases.
 The `color` parameter is where you specify the color to assign to the
 lights. It should be a color object returned by one of the factories
 in the https://github.com/jolby/colors[jolby/colors] library, as
-described in <<color#working-with-color,Working with Color>>.
+described in <<color#,Working with Color>>.
 
-In addition to passing in a color for the `color` parameter,
-you can pass a <<parameters#dynamic-parameters,Dynamic Parameter>>
-whose value depends on a <<metronomes#metronomes,Metronome>>, the
-physical location or orientation of the head, or a show variable,
-perhaps <<mapping_sync#mapping-a-control-to-a-variable,bound>> to a
-MIDI control surface. The flexibility offered by
-<<parameters#color-parameters,dynamic color parameters>> is huge,
+In addition to passing in a color for the `color` parameter, you can
+pass a <<parameters.adoc#,Dynamic Parameter>> whose value depends on a
+<<metronomes.adoc#,Metronome>>, the physical location or orientation
+of the head, or a show variable, perhaps
+<<mapping_sync.adoc#mapping-a-control-to-a-variable,bound>> to a MIDI
+control surface. The flexibility offered by
+<<parameters.adoc#color-parameters,dynamic color parameters>> is huge,
 especially when combined with
-<<parameters#oscillated-parameters,oscillated parameters>>. Learning
-how to effectively leverage these in combination with each other will
-enable you to create most of the basic lighting looks you need.
+<<parameters.adoc#oscillated-parameters,oscillated parameters>>.
+Learning how to effectively leverage these in combination with each
+other will enable you to create most of the basic lighting looks you
+need.
 
 The following code creates a effect that assigns a pure red color to
 all fixtures with RGB channels, then adds it to the current show under
@@ -267,7 +267,7 @@ desired color, and if one can be found, tell the light to use it.
 
 You can assign different color effects to different sets of fixtures
 even just using simple single-color effects, by combining them into a
-<<effects#scenes,scene>>, which is explained more fully below, but worth
+<<scenes,scene>>, which is explained more fully below, but worth
 mentioning now. Here is an example of how to assign a red color to odd
 fixtures and blue to even fixtures (assuming you have named the
 fixtures even-_number_ and odd-_number_):
@@ -281,13 +281,13 @@ fixtures even-_number_ and odd-_number_):
     "Plain Blue" (create-color "blue") (show/fixtures-named "even"))))
 ----
 
-The Cues documentation <<cues#a-cue-example,extends this example>> to
+The Cues documentation <<cues.adoc#a-cue-example,extends this example>> to
 show how to wrap this scene into a cue, for easy control by a light
 show operator.
 
 TIP: There are many other ways to achieve multi-colored effects,
-ranging from <<effects#spatial-effects,Spatial Effects>> up to writing
-your own custom <<effects#complex-effects,Complex Effects>>. You can
+ranging from <<spatial-effects,Spatial Effects>> up to writing
+your own custom <<complex-effects,Complex Effects>>. You can
 also group fixtures any way you want, independently of how you name
 them, by storing sets of them in variables and passing those sets, or
 combinations of those sets created using Clojure's rich
@@ -312,17 +312,18 @@ effect, and shows up when examining the created effect.
 The `direction` parameter is where you specify the direction the
 lights should be pointing. It is a `javax.vector.Vector3d` pointing in
 the direction the lights should face, with respect to the show’s
-<<show_space#show-space,frame of reference>>. An easy way to create
-one is to call
-{api-doc}afterglow.effects.params.html#var-build-direction-param[`afterglow.effects.params/build-direction-param`] or
+<<show_space.adoc#,frame of reference>>. An easy way to create one is
+to call
+{api-doc}afterglow.effects.params.html#var-build-direction-param[`afterglow.effects.params/build-direction-param`]
+or
 {api-doc}afterglow.effects.params.html#var-build-direction-param-from-pan-tilt[`afterglow.effects.params/build-direction-param-from-pan-tilt`].
 These can create static vectors for you, but can also create
-<<parameters#dynamic-parameters,Dynamic Parameters>> whose value
-depends on a <<metronomes#metronomes,Metronome>>, the physical
-location or orientation of the head, or a show variable, perhaps
-<<mapping_sync#mapping-a-control-to-a-variable,bound>>
-to a MIDI control surface. Building dynamic direction parameters with
-<<parameters#oscillated-parameters,oscillated parameters>> can
+<<parameters.adoc#,Dynamic Parameters>> whose value depends on a
+<<metronomes.adoc#,Metronome>>, the physical location or orientation
+of the head, or a show variable, perhaps
+<<mapping_sync.adoc#mapping-a-control-to-a-variable,bound>> to a MIDI
+control surface. Building dynamic direction parameters with
+<<parameters.adoc#oscillated-parameters,oscillated parameters>> can
 create fascinating motions.
 
 If a group of fixtures is assigned the same direction effect, they
@@ -364,14 +365,14 @@ effect, and shows up when examining the created effect.
 
 The `target-point` parameter is where you specify the point at which
 the lights should be aiming. It is a `javax.vector.Point3d`
-identifying a point within the show’s <<show_space#show-space,frame of
+identifying a point within the show’s <<show_space.adoc#,frame of
 reference>>. An easy way to create one is to call
 {api-doc}afterglow.effects.params.html#var-build-aim-param[`afterglow.effects.params/build-aim-param`].
 This can create static points for you, but can also create
-<<parameters#dynamic-parameters,Dynamic Parameters>> whose value
-depends on a <<metronomes#metronomes,Metronome>>, the physical
-location or orientation of the head, or a show variable, perhaps
-<<mapping_sync#mapping-a-control-to-a-variable,bound>> to a MIDI
+<<parameters.adoc#,Dynamic Parameters>> whose value depends on a
+<<metronomes.adoc#,Metronome>>, the physical location or orientation
+of the head, or a show variable, perhaps
+<<mapping_sync.adoc#mapping-a-control-to-a-variable,bound>> to a MIDI
 control surface. Using a tablet with an OSC or midi interface that
 lets you drag an aiming point around a map of the stage is one fun
 possibility.
@@ -405,16 +406,15 @@ lights should be aiming. It is a `javax.vector.Vector2d` whose `x`
 component contains the `pan` angle, and whose `y` component contains
 the `tilt` angle. These angles tell the fixture how far, in radians,
 it should rotate away from pointing straight out at the audience
-(along the `z` axis of the show’s <<show_space#show-space,frame of
+(along the `z` axis of the show’s <<show_space.adoc#,frame of
 reference>>). An easy way to create the pan-tilt vector is to call
 {api-doc}afterglow.effects.params.html#var-build-pan-tilt-param[`afterglow.effects.params/build-pan-tilt-param`].
 This function also allows you to work in degrees rather than radians,
 if that is more convenient. It can create static angle vectors for
-you, but can also create <<parameters#dynamic-parameters,Dynamic
-Parameters>> whose value depends on a
-<<metronomes#metronomes,Metronome>>, the physical location or
-orientation of the head, or a show variable, perhaps
-<<mapping_sync#mapping-a-control-to-a-variable,bound>> to a MIDI
+you, but can also create <<parameters.adoc#,Dynamic Parameters>> whose
+value depends on a <<metronomes.adoc#,Metronome>>, the physical
+location or orientation of the head, or a show variable, perhaps
+<<mapping_sync.adoc#mapping-a-control-to-a-variable,bound>> to a MIDI
 control surface.
 
 Because when you fade between pan-tilt effects, the angles always
@@ -434,10 +434,10 @@ Fixtures have a wide variety of different capabilities, often more
 than would be reasonable to assign a separate DMX channel for each,
 especially when it does not make sense to activate or control some at
 the same time. Afterglow can be told about these in the
-<<fixture_definitions#fixture-definitions,fixture definition>>, and
-you can control them using function effects, by specifying the name of
-the function you want to activate, and a _percentage_ (a value between
-`0` and `100`) by which you want it activated. (The percentage will be
+<<fixture_definitions.adoc#,fixture definition>>, and you can control
+them using function effects, by specifying the name of the function
+you want to activate, and a _percentage_ (a value between `0` and
+`100`) by which you want it activated. (The percentage will be
 translated to the corresponding value within that function’s valid DMX
 range that Afterglow should send).
 
@@ -481,12 +481,12 @@ blurry; focus can be adjusted like so:
 ----
 
 The functions available for a fixture, their names, channels, and
-ranges, are specified by the
-<<fixture_definitions#fixture-definitions,fixture definition>>, so
-reading over those can be helpful. (And carefully crafting and testing
-them is important when defining a new fixture.) Trying to maintain
-consistency in function naming is valuable in allowing functions to be
-conveniently applied to groups of different fixtures.
+ranges, are specified by the <<fixture_definitions.adoc#,fixture
+definition>>, so reading over those can be helpful. (And carefully
+crafting and testing them is important when defining a new fixture.)
+Trying to maintain consistency in function naming is valuable in
+allowing functions to be conveniently applied to groups of different
+fixtures.
 
 Functions which do not vary in their effect for different DMX values
 within the legal range are described as `:range :fixed` in the fixture
@@ -572,7 +572,7 @@ and returns an effect which combines them all under that name:
 
 Assuming you are running the sample show and have the dimmers up,
 you'll see all the lights turn blue, and a random pattern of white
-<<effects#sparkle,sparkles>> twinkling across them. Ending the scene
+<<sparkle,sparkles>> twinkling across them. Ending the scene
 effect will end both underlying effects in a coordinated fashion (the
 blue color effect will linger as the last sparkles fade out).
 
@@ -581,7 +581,7 @@ blue color effect will linger as the last sparkles fade out).
 
 A blank effect does nothing at all. Although this might not
 immediately seem useful, assigning a blank effect to one side or the
-other of a <<effects#fades,fade>> (below) lets you fade an effect in
+other of a <<fades,fade>> (below) lets you fade an effect in
 or out, from or to nothing. In such cases the fade also takes care
 that as it fades towards the blank effect, whatever effects were being
 replaced by the fade are restored.
@@ -592,7 +592,7 @@ function in the `afterglow.effects` namespace.
 
 You might also want to create a blank effect as part of a cue whose
 purpose is simply to provide a way to adjust a show variable. The
-<<color#colors-and-cues,Colors and Cues>> discussion provides an
+<<color.adoc#colors-and-cues,Colors and Cues>> discussion provides an
 example of doing just that.
 
 [[fades]]
@@ -615,8 +615,8 @@ identical to `to-effect`. When `phase` falls somewhere between `0` and
 the same amount.
 
 Either or both of the effects being faded between can be a
-<<effects#scenes,scene>>, which groups many other effects, or one can
-be a <<effects#blank-effects,blank effect>>, which will simply fade
+<<scenes,scene>>, which groups many other effects, or one can
+be a <<blank-effects,blank effect>>, which will simply fade
 the other effect in or out of existence (allowing any earlier or
 lower-priority effects to show through). When fading between two
 non-blank effects, if they include different groups of fixtures (or
@@ -626,8 +626,8 @@ the side which is controlling a particular fixture or feature is faded
 out.
 
 The `phase` parameter can (and usually will) be a dynamic parameter,
-probably a <<parameters#variable-parameters,variable parameter>> or
-<<parameters#oscillated-parameters,oscillated parameter>>, so the fade
+probably a <<parameters.adoc#variable-parameters,variable parameter>> or
+<<parameters.adoc#oscillated-parameters,oscillated parameter>>, so the fade
 will take place over time, or under the control of an operator using a
 control surface.
 
@@ -654,12 +654,12 @@ the time.
 === Chases
 
 Chase effects allow you to sequence a series of effects one after
-another, with optional <<effects#fades,fades>> between them. They are
+another, with optional <<fades,fades>> between them. They are
 built using the
 {api-doc}afterglow.effects.html#var-chase[`chase`]
 function in the `afterglow.effects` namespace. Of course each effect
-within the chase can itself be a <<effects#scenes,scene>>, which
-groups many other effects, or a <<effects#blank-effects,blank
+within the chase can itself be a <<scenes,scene>>, which
+groups many other effects, or a <<blank-effects,blank
 effect>>, which will simply fade the chase temporarily out of
 existence (allowing any earlier or lower-priority effects to show
 through). When fading between two non-blank effects, if they include
@@ -677,7 +677,7 @@ active; `2` causes the second to be seen, and so on. Non-integer
 values are how fades are accomplished, they result in a linear blend
 between the corresponding effects. In order to make the chase evolve
 over time, `position` needs to be a dynamic variable parameter, and
-<<parameters#step-parameters,Step Parameters>>, created by the
+<<parameters.adoc#step-parameters,Step Parameters>>, created by the
 function
 {api-doc}afterglow.effects.params.html#var-build-step-param[`afterglow.effects.params/build-step-param`],
 are designed specifically to work with chases.
@@ -717,8 +717,8 @@ The
 {api-doc}afterglow.effects.html#var-conditional-effect[`conditional-effect`]
 function in the `afterglow.effects` namespace wraps another effect,
 allowing it to run only when the value of some dynamic parameter (most
-likely a <<parameters#variable-parameters,variable parameter>> or
-<<parameters#oscillated-parameters,oscillated parameter>>) is not
+likely a <<parameters.adoc#variable-parameters,variable parameter>> or
+<<parameters.adoc#oscillated-parameters,oscillated parameter>>) is not
 zero.
 {api-doc}afterglow.shows.sallie.html#var-global-color-effect[`afterglow.shows.sallie/global-color-effect`]
 shows an example of using it within a scene to optionally have the
@@ -748,7 +748,7 @@ The
 {api-doc}afterglow.effects.show-variable.html#var-create-for-show[`variable-effect`]
 function in the `afterglow.effects.show-variable` namespace creates an
 effect which does not set any DMX values. Instead, it makes use of the
-rendering loop <<rendering_loop#extensions,extension mechanism>> to
+rendering loop <<rendering_loop.adoc#extensions,extension mechanism>> to
 set a show variable while the effect is active. This dovetails very
 nicely with Conditional Effects, described above.
 
@@ -808,7 +808,7 @@ Out] color cycle chase changes the color of a group of fixtures to a
 different color for each bar of a phrase of music. During the down
 beat of each new bar, the color spreads over the participating
 fixtures starting at their geometric center in the x-y plane of
-<<show_space#show-space,show space>>, and spreading in an expanding
+<<show_space.adoc#,show space>>, and spreading in an expanding
 circle until reaching the furthest heads at the end of the down beat.
 
 [source,clojure]
@@ -886,7 +886,7 @@ capabilities.
 
 And if you want to run a sparkle effect on both kinds of fixtures at
 the same time, you can combine these two effects with a
-<<effects.adoc#scenes,Scene>>.
+<<scenes,Scene>>.
 
 [source,clojure]
 ----
@@ -946,14 +946,14 @@ When an effect is added to a show via `(show/add-effect! :effect-key
 effect)` it immediately replaces any other effect which had been
 previously added with the same keyword. The former effect does not get
 a chance to gracefully finish its effects, it is simply gone. The new
-effect is added to the <<rendering_loop#the-rendering-loop,rendering
-loop>> in a position determined by the priority value, if any,
-specified after the optional `:priority` keyword argument. If no
-priority argument is supplied, a priority of zero is used. The new
-effect is added after any other existing effects of the same (or
-lower) priority, but before any existing effects with higher priority.
-Since later effects get a chance to override earlier effects, this
-means that higher-priority effects, and effects added later, win.
+effect is added to the <<rendering_loop.adoc#,rendering loop>> in a
+position determined by the priority value, if any, specified after the
+optional `:priority` keyword argument. If no priority argument is
+supplied, a priority of zero is used. The new effect is added after
+any other existing effects of the same (or lower) priority, but before
+any existing effects with higher priority. Since later effects get a
+chance to override earlier effects, this means that higher-priority
+effects, and effects added later, win.
 
 All effects implement the
 {api-doc}afterglow.effects.html#var-IEffect[`afterglow.effects/IEffect`]
@@ -971,8 +971,8 @@ end, and their graceful ending has completed.
 
 Assuming the effect has not reported completion, its `(generate [this
 show snapshot])` function will be called, as described in the
-<<rendering_loop#the-rendering-loop,rendering loop>> section, to
-create the effect it represents at this point in time.
+<<rendering_loop.adoc#,rendering loop>> section, to create the effect
+it represents at this point in time.
 
 At some point, the show operator may indicate a desire for the effect
 to end, by calling `(show/end-effect! :effect-key force)`. If `force`
@@ -1017,9 +1017,8 @@ bars of the metronome, or multiples or fractions thereof, and can be
 sawtooth, triangle, square, or sine waves.
 http://en.wikipedia.org/wiki/Sawtooth_wave[Wikipedia] has a nice
 introduction to these waveforms. The namespace
-`afterglow.effects.oscillator` has
-<<oscillators#oscillators,functions>> for creating lots of variations
-on them.
+`afterglow.effects.oscillator` has <<oscillators.adoc#,functions>> for
+creating lots of variations on them.
 
 Here is one way to create a basic oscillated hue effect which cycles
 through all colors over one bar of the show metronome:
@@ -1127,7 +1126,7 @@ combine them? Oh, but we can!
 NOTE: Now the rainbow drifts across the whole lighting rig. We left out color
 wheels this time, since the color is continually shifting.
 
-The <<effect-types,Effect Types>> section goes into more
+The <<basic-effect-types,Basic Effect Types>> section goes into more
 detail about how these effects work.
 
 TIP: Looking at the source code of the <<complex-effects,complex
@@ -1146,11 +1145,11 @@ dimmer oscillator, to make them pulse in a particular way with the
 beat, along with a color effect, and perhaps an aim or direction
 chase. Varying these effects can give you quite a palette of looks.
 
-The Afterglow <<rendering_loop#the-rendering-loop,rendering loop>> is
-designed to let you be even more flexible than that, though: you can
-combine multiple effects which work on the same channels of the same
-fixtures, because of the way that later (and higher priority) effects
-can see what earlier effects have done, and modify the results.
+The Afterglow <<rendering_loop.adoc#,rendering loop>> is designed to
+let you be even more flexible than that, though: you can combine
+multiple effects which work on the same channels of the same fixtures,
+because of the way that later (and higher priority) effects can see
+what earlier effects have done, and modify the results.
 
 The
 {api-doc}afterglow.effects.color.html#var-transform-colors[`transform-colors`]
@@ -1202,7 +1201,7 @@ Loop and `transform-colors`.
 This particular function takes an optional variable
 parameter to control what the current saturation should be (if you
 don't provide one, it creates an
-<<parameters#oscillated-parameters,oscillated parameter>> which
+<<parameters.adoc#oscillated-parameters,oscillated parameter>> which
 implements the desaturate-over-each-beat behavior described above:
 
 [source,clojure]
@@ -1226,18 +1225,17 @@ assigned to the light (in `color`), and the current `show`, metronome
 can be used with an oscillated variable parameter as seen here to
 generate smoothly changing, rhythmically-driven values), and the light
 `head` this is being sent to (which can be used to perform
-<<effects.adoc#spatial-effects,spatial>> calculations as described
-above). The function returns a new color to replace the former
-assignment (or it could return `nil` to suppress coloring the light
-entirely).
+<<spatial-effects,spatial>> calculations as described above). The
+function returns a new color to replace the former assignment (or it
+could return `nil` to suppress coloring the light entirely).
 
 Having all this information at hand, and the flexible power of
-<<oscillators#oscillators,oscillators>> and
-<<parameters#dynamic-parameters,dynamic>>,
-<<parameters#oscillated-parameters,oscillated>>, and
-<<parameters#spatial-parameters,spatial>> variable parameters, makes
-it possible to write straightforward, concise transformation functions
-like this one.
+<<oscillators.adoc#,oscillators>> and
+<<parameters.adoc#,dynamic>>,
+<<parameters.adoc#oscillated-parameters,oscillated>>, and
+<<parameters.adoc#spatial-parameters,spatial>> variable parameters,
+makes it possible to write straightforward, concise transformation
+functions like this one.
 
 And of course you can change things other than
 saturation; take a look at the source and try writing your own

@@ -6,11 +6,10 @@ spread across your grid, to aiming moving heads in a precise and
 coordinated way with respect to each other or people or objects near
 them, Afterglow needs to know where everything is, and how it is
 oriented in space. This means you need to be able to specify these
-things. When mounting a
-<<fixture_definitions#fixture-definitions,fixture>>, you specify where
-it is and where it is facing. When creating a
-<<effects#direction-effects,direction>> or
-<<effects#aim-effects,aim>> cue, you specify a direction for
+things. When mounting a <<fixture_definitions.adoc#,fixture>>, you
+specify where it is and where it is facing. When creating a
+<<effects.adoc#direction-effects,direction>> or
+<<effects.adoc#aim-effects,aim>> cue, you specify a direction for
 lights to face, or a point for them to aim at. In order to be able to
 communicate such concepts, Afterglow has a standard frame of reference
 for the light show. The entire show has an __origin__, the zero point
@@ -38,9 +37,8 @@ to convert them to meters for you.
 
 To express rotations, the same frame of reference is used. If a light
 has been hung upside down compared to its standard orientation (which
-should be documented in the
-<<fixture_definitions#fixture-definitions,fixture definition>>), you
-need to account for that when calling
+should be documented in the <<fixture_definitions.adoc#,fixture
+definition>>), you need to account for that when calling
 {api-doc}afterglow.show.html#var-patch-fixture.21[`show/patch-fixture`].
 Rotations are expressed in terms of the axes as well. For example, if
 a fixture has been tumbled towards the audience by a quarter rotation,

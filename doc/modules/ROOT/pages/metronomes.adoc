@@ -13,8 +13,8 @@ interval, and grows towards, but never quite reaches, 1.0, because at
 that point you have moved on to phase 0.0 of the following interval.
 
 Metronomes are generally combined with
-<<oscillators#oscillators,Oscillators>> to generate wave shapes which
-drive the parameters sent to lights, creating color shifts, brightness
+<<oscillators.adoc#,Oscillators>> to generate wave shapes which drive
+the parameters sent to lights, creating color shifts, brightness
 pulses, or movements.
 
 Since they are so important, there is always a metronome associated
@@ -23,11 +23,11 @@ and is used for the show’s timing unless you create a separate
 metronome and explicitly tell an effect to use it (which you might
 want to do if that effect is to run at a very different speed than the
 music). The main show metronome can be
-<<mapping_sync#midi-mapping-and-beat-sync,synchronized>> to external
-timing sources, such as DJ controllers and mixers, to keep the light
-show tightly in time with the music being played. You can access the
-the main show’s metronome through the `:metronome` keyword in the show
-map, for example:
+<<mapping_sync.adoc#,synchronized>> to external timing sources, such
+as DJ controllers and mixers, to keep the light show tightly in time
+with the music being played. You can access the the main show’s
+metronome through the `:metronome` keyword in the show map, for
+example:
 
 [source,clojure]
 ----
@@ -61,7 +61,7 @@ can ask it for all the counts as a string by calling:
 ; -> "15.1.4"
 ----
 
-TIP: This is used by the <<push2#metronome-control,Ableton
+TIP: This is used by the <<push2.adoc#metronome-control,Ableton
 Push controller mapping>> to display the metronome state and support
 beat jumping.
 

@@ -23,10 +23,9 @@ grid of the web interface) you can still accomplish a great deal with
 a simple controller with a few buttons. You will still want to start
 by creating the cues in the show cue grid, not only so you can see and
 manipulate them with the web interface, but also because that is how
-they can be mapped to MIDI controllers. (The rich
-<<push2#using-ableton-push-2,Push>> and
-<<launchpad#using-the-novation-launchpad-family,Launchpad family>>
-mappings are described in detail on their own pages.)
+they can be mapped to MIDI controllers. (The rich <<push2.adoc#,Push>>
+and <<launchpad.adoc#,Launchpad family>> mappings are described in
+detail on their own pages.)
 
 First you need to identify the MIDI messages that the controller sends
 when you press and release the interface element you want to assign
@@ -88,7 +87,7 @@ gets activated.
 You can also tie an encoder or fader on a MIDI control surface to a
 show variable, so that turning the encoder or sliding the fader
 changes the value of the variable. If you have set up cues to look at
-that variable, through <<cues#cue-variables,cue-specific variable
+that variable, through <<cues.adoc#cue-variables,cue-specific variable
 bindings>>, the control surface can then vary the look of the effect
 created by the cue, both before the cue is launched, and while it is
 running.
@@ -207,11 +206,11 @@ Wiki].
 NOTE: These examples show how to perform low-level MIDI mapping. Over
 time, you might find that someone has written a rich user interface
 binding for your controller, as has been done for the
-<<push2#using-ableton-push-2,Ableton Push>>, which would let you
-jump right in without having to worry about such details. These
-examples can still help explain how your controller's binding works,
-or encourage you to write and share a binding for a new controller
-that you happen to have.
+<<push2.adoc#,Ableton Push>>, which would let you jump right in
+without having to worry about such details. These examples can still
+help explain how your controller's binding works, or encourage you to
+write and share a binding for a new controller that you happen to
+have.
 
 [[automatic-bindings]]
 == Automatically Creating Bindings When a Device Connects
@@ -260,12 +259,12 @@ can use this mechanism to do so.
 == Mapping a Control to a Color Component
 
 When you are working with colors for cues, Afterglow lets you put a
-<<color.adoc#working-with-color,color object>> in a show variable or
-cue parameter, rather than simply storing individual numeric
-components like the hue. Doing this lets the web and Ableton Push
-interfaces give the user a rich color picker interface for adjusting
-that variable or parameter, so it is usually a better approach than
-just storing the numbers that make up the color.
+<<color.adoc#,color object>> in a show variable or cue parameter,
+rather than simply storing individual numeric components like the hue.
+Doing this lets the web and Ableton Push interfaces give the user a
+rich color picker interface for adjusting that variable or parameter,
+so it is usually a better approach than just storing the numbers that
+make up the color.
 
 When you do that, you can still use any MIDI controller to adjust
 components of that color, using
@@ -522,7 +521,7 @@ explains the other kinds of device filter you can use.
 NOTE: This section describes the low-level mechanisms available for
 establishing MIDI sync from code and the REPL. A much easier way is to
 just click the Sync button in the Metronome section at the bottom of
-the <<README#web-ui,embedded Web interface>>.
+the <<README.adoc#web-ui,embedded Web interface>>.
 
 From then on, as the BPM of that device changes, Afterglow will track it
 automatically. To check on the sync status, you can invoke:
@@ -795,7 +794,7 @@ image::TouchOSC.jpg[TouchOSC interface,1024,1366]
 
 The functions
 {api-doc}afterglow.examples.html#var-add-osc-cue-binding[`add-osc-cue-binding`] and
-{api-doc}afterglow.examples.html#add-osc-var-binding[`add-osc-var-binding`], and
+{api-doc}afterglow.examples.html#var-add-osc-var-binding[`add-osc-var-binding`], and
 the ones near them in the namespace, show how this was done. They seem
 to work well enough that they will be fleshed out a bit and moved into
 a new OSC-support namespace in a future release of Afterglow. But for
@@ -816,7 +815,7 @@ supported.
 Perhaps the best way to control Afterglow is using the fluid, tactile
 interface offered by the Ableton Push. There's enough to say about
 that now that it has been moved to its own
-<<push2#using-ableton-push-2,page>>.
+<<push2.adoc#,page>>.
 
 [[using-novation-launchpad]]
 === Using the Novation Launchpad Family
@@ -824,8 +823,7 @@ that now that it has been moved to its own
 Novation also makes a great line of grid controllers, some of which
 offer touch-sensitivity as well. Even though they lack built-in text
 and graphical displays (at least so far), Afterglow uses them well
-enough that they get their own
-<<launchpad#using-the-novation-launchpad-family,page>>.
+enough that they get their own <<launchpad.adoc#,page>>.
 
 [[setting-up-grid-controller-bindings]]
 === Setting Up Grid Controller Bindings

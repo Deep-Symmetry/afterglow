@@ -6,12 +6,12 @@ own custom mapping implementations to exploit their capabilities as a
 show control interface. The Ableton Push is one, and a powerful
 {api-doc}afterglow.controllers.ableton-push.html[mapping] is being
 created. You can already use it to do most of the things that you
-would use the <<README#web-ui,web interface>> for, and often with
+would use the <<README.adoc#web-ui,web interface>> for, and often with
 deeper control, since you can press multiple cue trigger pads at the
 same time, and they respond to variations in pressure.
 
 NOTE: This page describes the mapping for the original Ableton Push.
-There is also a <<push2#using-ableton-push-2,Push 2 mapping>>.
+There is also a <<push2.adoc#,Push 2 mapping>>.
 
 [[binding-to-the-push]]
 ## Binding to the Push
@@ -23,7 +23,7 @@ Afterglow's Push interface will start.
 
 TIP: For information about how to set up bindings without the sample
 show, or more details about how it works, see
-<<mapping_sync#setting-up-grid-controller-bindings,Setting Up Grid
+<<mapping_sync.adoc#setting-up-grid-controller-bindings,Setting Up Grid
 Controller Bindings>>.
 
 Here is an overview of how the Push mapping works:
@@ -73,9 +73,9 @@ have been had it not stopped.
 
 Most of the space on the interface is dedicated to an 8&times;8 grid
 of color coded cue trigger pads, which provide a window onto the
-show's overall <<cues#cues,cue grid>>. The Push can be
-<<README#scrolling-and-linked-controllers,linked>> to the
-<<README#web-ui,web interface>> so that both always display the same
+show's overall <<cues.adoc#,cue grid>>. The Push can be
+<<README.adoc#scrolling-and-linked-controllers,linked>> to the
+<<README.adoc#web-ui,web interface>> so that both always display the same
 section of the cue grid, and the web interface can remind you of the
 names of the cues you are looking at, or it can be scrolled
 independently, allowing you access to more cues at the same time.
@@ -198,7 +198,7 @@ center up or down.
 
 If an effect has only one adjustable variable, it will take up the
 entire effect area, and you can use either encoder to adjust it, as
-when adjusting a Focus <<cues#creating-function-cues,function cue>>
+when adjusting a Focus <<cues.adoc#creating-function-cues,function cue>>
 for the Torrent moving head spot:
 
 image::AdjustingFocus.jpg[Adjusting Focus cue,1000,922]
@@ -445,17 +445,17 @@ count to Phrase 1, Bar 1, Beat 1.
 Trying to keep up with tempo changes during dynamic shows can be
 tedious, so you will hopefully be able to take advantage of
 Afterglow's metronome synchronization features. If the DJ can send you
-<<mapping_sync#syncing-to-midi-clock,MIDI clock pulses>>, or you can
+<<mapping_sync.adoc#syncing-to-midi-clock,MIDI clock pulses>>, or you can
 connect via a Local Area Network to Pioneer professional DJ gear to
 lock into the beat grid established by
-<<mapping_sync#syncing-to-pro-dj-link,Pro DJ Link>>, Afterglow can
+<<mapping_sync.adoc#syncing-to-pro-dj-link,Pro DJ Link>>, Afterglow can
 keep the BPM (with MIDI) and even the beats (with Pro DJ Link and the
 Traktor Afterglow Beat Phase
-<<mapping_sync#syncing-to-traktor-beat-phase,controller mapping>>)
+<<mapping_sync.adoc#syncing-to-traktor-beat-phase,controller mapping>>)
 synchronized for you. The Sync pad in the Metronome section (showing
 `Manual` sync in these photos) will eventually allow you to set this
 up, but that is not yet implemented, so for now you will need to use
-the <<README#metronome-control,web interface>> to configure it.
+the <<README.adoc#metronome-control,web interface>> to configure it.
 
 NOTE: The pad does already change color to let you know the sync
 status: amber means manual, green means successful automatic sync, and

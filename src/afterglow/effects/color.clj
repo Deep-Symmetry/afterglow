@@ -156,10 +156,10 @@
   "Creates a color transformation for use with [[transform-colors]]
   which changes the saturation based on a variable parameter. If no
   parameter is supplied, the default is to use an oscillated parameter
-  based on [[sawtooth-beat]] with `:down?` set to `true` so the color
-  is fully saturated at the start of the beat, and fully desaturated
-  by the end. A different pattern can be created by supplying a
-  different parameter with the `:param` optional keyword argument."
+  based on [[sawtooth]] with `:down?` set to `true` so the color is
+  fully saturated at the start of the beat, and fully desaturated by
+  the end. A different pattern can be created by supplying a different
+  parameter with the `:param` optional keyword argument."
   [& {:keys [param] :or {param (osc/build-oscillated-param (osc/sawtooth :down? true) :max 100)}}]
   (fn [color show snapshot head]
     (let [saturation (colors/clamp-percent-float (params/resolve-param param show snapshot head))]
@@ -197,4 +197,3 @@
                           (when beyond-server
                             [(Assigner. :beyond-color (:id beyond-server) beyond-server lf)]))]
     (Effect. "Transform Colors" fx/always-active (fn [show snapshot] assigners) fx/end-immediately)))
-

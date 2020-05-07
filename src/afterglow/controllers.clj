@@ -166,10 +166,10 @@
   (adjust-interface [this snapshot]
   "Set values for the next frame of the controller interface, however
   that may be done; return a falsey value if the overlay is finished
-  and should be removed. The `snapshot` is an [[IMetroSnapshot]] that
-  specifies the instant in musical time at which the interface is
-  being rendered, so this overlay can be drawn in sync with the rest
-  of the interface.")
+  and should be removed. The `snapshot` is
+  an [[afterglow.rhythm/ISnapshot]] that specifies the instant in
+  musical time at which the interface is being rendered, so this
+  overlay can be drawn in sync with the rest of the interface.")
   (handle-control-change [this message]
   "Called when a MIDI control-change event matching the
   captured-controls lists has been received. Return a truthy value if
@@ -501,11 +501,11 @@
                  (handle-aftertouch [this message]))))
 
 (defn run-overlays
-  "Add any contributions from interface overlays, removing them if
-  they report being finished. Most recent and higher priority overlays
-  run last, having the opportunity to override older ones. `state`
-  must be a value created by [[create-overlay-state]] and tracked by
-  the controller. The `snapshot` is an [[IMetroSnapshot]] that
+  "Add any contributions from interface overlays, removing them if they
+  report being finished. Most recent and higher priority overlays run
+  last, having the opportunity to override older ones. `state` must be
+  a value created by [[create-overlay-state]] and tracked by the
+  controller. The `snapshot` is an [[afterglow.rhythm/ISnapshot]] that
   captures the instant in time at which the interface is being
   rendered, and is passed in to the overlay so it can be rendered in
   sync with all other interface elements."
@@ -682,7 +682,7 @@
 
   All rich controller binding implementations should honor the
   `:display-name` and `:refresh-interval` optional keyword arguments
-  described in [[bind-rich-controller]]. They may also support
+  described in [[bind-to-show]]. They may also support
   additional optional keyword arguments specific to the details of
   their implementation, which the caller can supply when they know
   they are binding to such a controller."

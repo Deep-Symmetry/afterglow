@@ -20,3 +20,6 @@ logs/*.log*
 *.iml
 *.ipr
 *.iws
+
+# Local Netlify folder
+.netlify

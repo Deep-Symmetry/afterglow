@@ -14,44 +14,43 @@ jumping to the section you want:
 
 ****
 
-<<effects#effects,Effects>>::
+<<effects.adoc#,Effects>>::
 The building blocks of a dynamic light show, which have a
-<<effects#the-effect-lifecycle,lifecyle>> worth understanding, and a few
-<<effects#effect-examples,examples>> to get you started.
+<<effects.adoc#the-effect-lifecycle,lifecyle>> worth understanding, and a few
+<<effects.adoc#effect-examples,examples>> to get you started.
 
-<<parameters#dynamic-parameters,Dynamic Parameters>>:: Provide inputs
-to your effects which change over time and space, enabling much more
+<<parameters.adoc#,Dynamic Parameters>>:: Provide inputs to your
+effects which change over time and space, enabling much more
 interesting and complex appearance and behavior.
 
-<<cues#cues,Cues>>:: Provide a convenient way to organize and trigger
+<<cues.adoc#,Cues>>:: Provide a convenient way to organize and trigger
 effects. Allow you to build a user interface for your show, through a
 colorful cue grid in the web UI, on a supported grid controller, a
 basic MIDI controller, or a combination of several of these options.
 
-<<metronomes#metronomes,Metronomes>>:: Keep track of musical time, in
-terms of beats, bars, and phrases, and can be
-<<mapping_sync#midi-mapping-and-beat-sync,synced>> to DJ equipment and
-software.
+<<metronomes.adoc#,Metronomes>>:: Keep track of musical time, in terms
+of beats, bars, and phrases, and can be <<mapping_sync.adoc#,synced>>
+to DJ equipment and software.
 
-<<oscillators#oscillators,Oscillators>>:: Convert show timing
+<<oscillators.adoc#,Oscillators>>:: Convert show timing
 information into waveforms that can drive your light show.
 
-<<fixture_definitions#fixture-definitions,Fixture Definitions>>:: Tell
+<<fixture_definitions.adoc#,Fixture Definitions>>:: Tell
 Afterglow how to work with different lighting hardware.
 
-<<show_space#show-space,Show Space>>:: Explores how to measure
+<<show_space.adoc#,Show Space>>:: Explores how to measure
 locations and orientations when hanging your lights so that Afterglow
 can properly calculate spatial and directional effects.
 
-<<color#working-with-color,Working with Color>>:: Introduces tools for
+<<color.adoc#,Working with Color>>:: Introduces tools for
 expressing and manipulating color values when designing lighting
 effects.
 
-<<mapping_sync#midi-mapping-and-beat-sync,Mapping and Sync>>:: Looks
-at options for using MIDI controllers to run your show, and
-synchronizing its metronome with DJ equipment.
+<<mapping_sync.adoc#,Mapping and Sync>>:: Looks at options for using
+MIDI controllers to run your show, and synchronizing its metronome
+with DJ equipment.
 
-<<rendering_loop#the-rendering-loop,The Rendering Loop>>:: Explains in
+<<rendering_loop.adoc#,The Rendering Loop>>:: Explains in
 detail how a frame of lighting control data is calculated and sent to
 the lights in the show. This is advanced, low-level information for
 people who are ready to create their own custom effect algorithms.
@@ -62,7 +61,7 @@ and functions that make it work. The rest of the documentation
 sometimes links to related sections of the API documentation, and vice
 versa.
 
-<<videos#videos,Videos>>:: Show examples of Afterglow in action.
+<<videos.adoc#,Videos>>:: Show examples of Afterglow in action.
 
 ****
 
@@ -78,8 +77,8 @@ spectacular and highly customizable light shows using modern stage and
 effect lighting, and which are related in deep ways to the phrasing of
 music being played. (Its http://deepsymmetry.org[creator] is a DJ and
 producer of light and laser shows by avocation.) Currently, the
-<<effects#effects,lighting effects>> and
-<<fixture_definitions#fixture-definitions,fixture definitions>> are
+<<effects.adoc#,lighting effects>> and
+<<fixture_definitions.adoc#,fixture definitions>> are
 written and organized through Clojure code, so you will either need to
 learn Clojure or work with a Clojure programmer to create new ones,
 but they are controlled through MIDI control surfaces or Open Sound
@@ -90,9 +89,9 @@ Someday a user interface for building shows and fixture definitions
 may be created, either within Afterglow, or as a companion project,
 but that is not currently planned. For now the focus is on building
 rich user interfaces for controlling shows, such as the
-<<push2#using-ableton-push-2,Ableton Push>> and
-<<launchpad#using-the-novation-launchpad-family,Novation Launchpad
-family>> mappings and the <<README#web-ui,embedded web interface>>,
+<<push2.adoc#,Ableton Push>> and
+<<launchpad.adoc#,Novation Launchpad
+family>> mappings and the <<web-ui,embedded web interface>>,
 while using the concise expressive power of Clojure for writing the
 fixture definitions, effects, and cues.
 
@@ -122,7 +121,7 @@ second, but the interval is configurable within the show, and should
 be decided based on the fastest refresh rate of any physical
 interfaces you have hooked up to Afterglow. This is described in more
 detail in the
-<<rendering_loop#the-rendering-loop,Rendering Loop>> section.
+<<rendering_loop.adoc#,Rendering Loop>> section.
 
 TIP: In principle you could have more than one show running at a time, each
 controlling a different set of OLA universes, but most people will not
@@ -130,19 +129,19 @@ need this capability.
 
 When you just create a show and call `(show/start!)`, Afterglow will
 send a bunch of zero values to the show’s universes. To make
-interesting things happen you add
-<<effects#effects,Effects>> to the show. The default
-namespace you are put into when you launch the Afterglow project using
-`lein repl` has some <<effects#effect-examples,example
-effects>> that can help get a feel for this concept. To get a full
-understanding of how to use (and create) effects, learn about
-the <<effects#the-effect-lifecycle,Effect Lifecycle>>.
+interesting things happen you add <<effects.adoc#,Effects>> to the
+show. The default namespace you are put into when you launch the
+Afterglow project using `lein repl` has some
+<<effects.adoc#effect-examples,example effects>> that can help get a
+feel for this concept. To get a full understanding of how to use (and
+create) effects, learn about the
+<<effects.adoc#the-effect-lifecycle,Effect Lifecycle>>.
 
 The effects need to know what lights they are supposed to control,
 what capabilities they have, and how they are connected (what
 universe, what channels), as well as how they are arranged in space.
 This is accomplished by patching
-<<fixture_definitions#fixture-definitions,Fixture Definitions>> to the
+<<fixture_definitions.adoc#,Fixture Definitions>> to the
 show. To work with the actual lights you have available, you will need
 to create fixture definitions for them, unless they happen to be ones
 already available in the Afterglow project. Since there are so many
@@ -156,16 +155,16 @@ see the project https://github.com/Deep-Symmetry/afterglow[README].
 
 Since Afterglow was developed to create light shows for electronic
 music events, it is deeply driven by the notion of musical time,
-through its <<metronomes#metronomes,Metronomes>>, so
-it is worth learning how to configure and interact with them. It is
-also designed to work with MIDI controllers, both to trigger effects,
-and to synchronize with music, as described in
-<<mapping_sync#midi-mapping-and-beat-sync,MIDI Mapping and Beat Sync>>.
+through its <<metronomes.adoc#,Metronomes>>, so it is worth learning
+how to configure and interact with them. It is also designed to work
+with MIDI controllers, both to trigger effects, and to synchronize
+with music, as described in <<mapping_sync.adoc#,MIDI Mapping and Beat
+Sync>>.
 
 Of course, you are not going to want to have to type and evaluate
 Clojure expressions to create your effects in the heat of the moment
 of running a light show, so Afterglow shows incorporate a grid of
-<<cues#cues,Cues>> that you can trigger and adjust quickly, both
+<<cues.adoc#,Cues>> that you can trigger and adjust quickly, both
 through the embedded web interface described below, and with dedicated
 physical grid controllers or simpler MIDI controllers.
 
@@ -173,14 +172,14 @@ physical grid controllers or simpler MIDI controllers.
 == The Embedded Web Interface
 
 Although a physical grid controller (especially one as well-designed
-as the <<push2#using-ableton-push-2,Ableton Push>> or
-<<launchpad#using-launchpad-pro,Novation Launchpad Pro>>) offers
-the ideal control surface for running a light show, you can do a lot
-with just the web interface built in to Afterglow. And even when you
-have a Push or other grid controller, the web interface makes it all
-the more powerful by adding at-a-glance documentation of cue names, as
-well as alternate ways of doing things, or the opportunity to interact
-with more than one section of the cue grid at once.
+as the <<push2.adoc#,Ableton Push>> or <<launchpad.adoc#,Novation
+Launchpad Pro>>) offers the ideal control surface for running a light
+show, you can do a lot with just the web interface built in to
+Afterglow. And even when you have a Push or other grid controller, the
+web interface makes it all the more powerful by adding at-a-glance
+documentation of cue names, as well as alternate ways of doing things,
+or the opportunity to interact with more than one section of the cue
+grid at once.
 
 If you have started Afterglow by running the jar file, it will have
 opened a browser window on the web interface by default. Otherwise,
@@ -252,7 +251,7 @@ the problem Afterglow is encountering.
 ==== Cues
 
 The majority of the page is taken up by an 8&times;8 window on to the
-<<cues#cues,Cue grid>> attached to the show. You can activate any cue
+<<cues.adoc#,Cue grid>> attached to the show. You can activate any cue
 shown by clicking on it; running cues will light up, and darken again
 when they end. To stop a running cue, click it again. Some cues will
 end immediately, others will continue to run until they reach what
@@ -279,7 +278,7 @@ the show, or specifying other effect keys in their `:end-keys` list),
 when you activate one, the other cues which use the same keyword are
 darkened. This is a hint that when you activate one of them, it will
 _replace_ the others, rather than running at the same time. The
-<<cues#the-cue-grid,Cue Grid section>> of the Cues documentation goes
+<<cues.adoc#the-cue-grid,Cue Grid section>> of the Cues documentation goes
 into more details about the relationships between cues illustrated in
 the above animation.
 
@@ -418,8 +417,8 @@ watching for them to be connected as soon as you called
 `(use-sample-show)`. If you are defining your own show and want to
 learn more about how that works, or lower-level ways of binding to a
 specific controller, see the
-<<mapping_sync#rich-grid-controller-mappings,details>> in the Mapping
-and Sync section.
+<<mapping_sync.adoc#rich-grid-controller-mappings,details>> in the
+Mapping and Sync section.
 
 With auto-binding active, whenever a compatible grid controller is
 connected and powered on, you will see a link menu appear next to the
@@ -499,13 +498,13 @@ Phrase 1, Bar 1, Beat 1.
 Trying to keep up with tempo changes during dynamic shows can be
 tedious, so you will hopefully be able to take advantage of
 Afterglow's metronome synchronization features. If you can get the DJ
-to feed you <<mapping_sync#syncing-to-midi-clock,MIDI clock pulses>>
-or <<mapping_sync#syncing-to-traktor-beat-phase,Traktor Beat Phase>>,
-or connect via a Local Area Network to Pioneer professional DJ gear to
-lock into the beat grid established by
-<<mapping_sync#syncing-to-pro-dj-link,Pro DJ Link>>, Afterglow can
-keep the BPM (with MIDI) and even the beats (with Traktor Beat Phase
-or Pro DJ Link) synchronized for you. To configure that
+to feed you <<mapping_sync.adoc#syncing-to-midi-clock,MIDI clock
+pulses>> or <<mapping_sync.adoc#syncing-to-traktor-beat-phase,Traktor
+Beat Phase>>, or connect via a Local Area Network to Pioneer
+professional DJ gear to lock into the beat grid established by
+<<mapping_sync.adoc#syncing-to-pro-dj-link,Pro DJ Link>>, Afterglow
+can keep the BPM (with MIDI) and even the beats (with Traktor Beat
+Phase or Pro DJ Link) synchronized for you. To configure that
 synchronization, click the `Sync` button once you have the MIDI clock,
 beat phase, or network Pro DJ Link signals reaching the machine
 running Afterglow, and choose the sync source you want to use.
@@ -583,33 +582,29 @@ the beta new UI, much more convenient and easy to learn. With a
 default installation, once you have `olad` running, you can find that
 at http://localhost:9090/new/[http://localhost:9090/new/].
 
-. Find or create <<fixture_definitions#fixture-definitions,fixture
-definitions>>. Once you are able to get your lights to do things by
-manipulating the Faders section of the OLA web interface, it is time
-to get Afterglow ready to talk to them. There are a vast number of
-fixture types out there, and at this early stage almost none of them
-are built in to Afterglow, so you will probably need to create your
-own. The <<fixture_definitions#fixture-definitions,documentation>>
-explains how, and links to existing fixture definitions as examples.
-You can also ask for help on the
-https://gitter.im/brunchboy/afterglow[Gitter chat] or the
-https://github.com/Deep-Symmetry/afterglow/wiki/Questions[Wiki].
-+
-At this point you are almost certainly writing enough code that you
-want to save it for later reuse. The
+. Find or create <<fixture_definitions.adoc#,fixture definitions>>.
+Once you are able to get your lights to do things by manipulating the
+Faders section of the OLA web interface, it is time to get Afterglow
+ready to talk to them. There are a vast number of fixture types out
+there, and at this early stage almost none of them are built in to
+Afterglow, so you will probably need to create your own. The
+<<fixture_definitions.adoc#,documentation>> explains how, and links to
+existing fixture definitions as examples. You can also ask for help on
+the https://gitter.im/brunchboy/afterglow[Gitter chat] or the
+https://github.com/Deep-Symmetry/afterglow/wiki/Questions[Wiki]. + At
+this point you are almost certainly writing enough code that you want
+to save it for later reuse. The
 https://github.com/Deep-Symmetry/afterglow#usage[Usage] section of the
 project page explains how you can have Afterglow load files when it
 starts up when you are running it as a standalone jar, which makes it
-easier to use your own configuration files.
-+
-. Patch your actual fixture channels and locations. Once you have
-working definitions for your fixtures, you will want to create a show
-that tells Afterglow what fixtures you have, and the DMX universes and
-channels you have them connected to, and how you have them arranged in
-physical space. You will want to create a namespace for your show
-along the lines of
-{api-doc}afterglow.examples.html[`afterglow.examples`],
-and a function like
+easier to use your own configuration files. + . Patch your actual
+fixture channels and locations. Once you have working definitions for
+your fixtures, you will want to create a show that tells Afterglow
+what fixtures you have, and the DMX universes and channels you have
+them connected to, and how you have them arranged in physical space.
+You will want to create a namespace for your show along the lines of
+{api-doc}afterglow.examples.html[`afterglow.examples`], and a function
+like
 {api-doc}afterglow.examples.html#var-use-sample-show[`use-sample-show`]
 which sets up your own show.
 
@@ -622,21 +617,19 @@ arranged, labeled, and colored in a way that makes sense to you.
 
 . Map some cues to a controller, if you have one. If you have an
 Ableton Push, you are in luck because you will be able to take
-advantage of the built in <<push2#using-ableton-push-2,support>>
-Afterglow offers. Or perhaps a
-<<launchpad#using-the-novation-launchpad-family,Novation Launchpad>>?
-But even if you just have a simple MIDI controller with a few buttons
-and faders, or even a keyboard, you can
-<<mapping_sync#midi-mapping-and-beat-sync,map>> keys, buttons, and
-faders to trigger cues and adjust variables used by the cues.
+advantage of the built in <<push2.adoc#,support>> Afterglow offers. Or
+perhaps a <<launchpad.adoc#,Novation Launchpad>>? But even if you just
+have a simple MIDI controller with a few buttons and faders, or even a
+keyboard, you can <<mapping_sync.adoc#,map>> keys, buttons, and faders
+to trigger cues and adjust variables used by the cues.
 
 . Run the show! With or without a physical controller, you can create
 your show by calling the function you wrote modeled on
-`use-sample-show`, then bring up the <<README#web-ui,embedded web
-interface>> to trigger your cues and watch the results.
+`use-sample-show`, then bring up the <<web-ui,embedded web interface>>
+to trigger your cues and watch the results.
 
 . Create your own custom effects if you want to be fancy. Once you
-feel constrained by the limits of the <<effects#effects,effects>> that
+feel constrained by the limits of the <<effects.adoc#,effects>> that
 are built in to the current release of Afterglow, the whole point of
 the environment it offers is to enable people to imagine and create
 brand new effects. You have the full power of the language used to

@@ -5,12 +5,11 @@ Cues are designed to support creating user interfaces for controlling
 effects. They provide a convenient way to organize, identify, trigger,
 adjust, and monitor effects. Each {api-doc}afterglow.show.html[`show`]
 in Afterglow maintains a cue grid, which can be viewed and interacted
-with through the <<README#web-ui,embedded web interface>> and MIDI
-controller mapping implementations which can be
+with through the <<README.adoc#web-ui,embedded web interface>> and
+MIDI controller mapping implementations which can be
 {api-doc}afterglow.show.html#var-register-grid-controller[registered
-as grid controllers], like the <<push2#using-ableton-push-2,Ableton
-Push>> and <<launchpad#using-the-novation-launchpad-family,Novation
-Launchpad family>>.
+as grid controllers], like the <<push2.adoc#,Ableton Push>> and
+<<launchpad.adoc#,Novation Launchpad family>>.
 
 [[the-cue-grid]]
 == The Cue Grid
@@ -152,26 +151,25 @@ configuration tools to enable this kind of external control.
 [[creating-cues]]
 == Creating Cues
 
-The
-{api-doc}afterglow.effects.cues.html[`afterglow.effects.cues`]
+The {api-doc}afterglow.effects.cues.html[`afterglow.effects.cues`]
 namespace provides functions for creating cues. Unsurprisingly, the
-{api-doc}afterglow.effects.cues.html#var-cue[`cue`]
-function creates a cue. At its most basic, you pass in two parameters,
-`show-key` which is the keyword that will be used to add the cue's
-effect to the show when the cue is triggered, ending any other effect
-running under that same keyword, and `effect-fn`, which is a function
-that will be called when the cue is triggered, and whose
-responsibility is to create and return the effect that the cue should
-add to the show. This is done so that a fresh instance of the effect
-is used each time the cue is triggered, in case the effect is complex
-and maintains its own state. `effect-fn` will be passed a map
-containing any <<cues#cue-variables,cue-specific variable bindings>>.
+{api-doc}afterglow.effects.cues.html#var-cue[`cue`] function creates a
+cue. At its most basic, you pass in two parameters, `show-key` which
+is the keyword that will be used to add the cue's effect to the show
+when the cue is triggered, ending any other effect running under that
+same keyword, and `effect-fn`, which is a function that will be called
+when the cue is triggered, and whose responsibility is to create and
+return the effect that the cue should add to the show. This is done so
+that a fresh instance of the effect is used each time the cue is
+triggered, in case the effect is complex and maintains its own state.
+`effect-fn` will be passed a map containing any
+<<cue-variables,cue-specific variable bindings>>.
 
 NOTE: For the very common case of wanting to create a cue to activate
 a fixture-specific _function_ (capability), and perhaps adjust the
 function's activation level while it runs, you can instead call the
 special-purpose `function-cue` described
-<<cues#creating-function-cues,below>>.
+<<creating-function-cues,below>>.
 
 There are a number of optional keyword parameters which can be used to
 modify the cue that is created. Remember that you can also consult the
@@ -263,24 +261,23 @@ alone.
 
 |Sets the effect priority used when adding the cue's effect to the
 show. This can be used to make sure the effect runs before or after
-other effects in the <<rendering_loop#the-rendering-loop,rendering
-loop>>. Effects are run in order, and later effects can modify or
-override the results of earlier ones, like the way the Sparkle effect
-in
-{api-doc}afterglow.examples.html#var-make-cues[`make-cues`]
-is assigned a priority of 100 so it sorts after any chase which may be
+other effects in the <<rendering_loop.adoc#,rendering loop>>. Effects
+are run in order, and later effects can modify or override the results
+of earlier ones, like the way the Sparkle effect in
+{api-doc}afterglow.examples.html#var-make-cues[`make-cues`] is
+assigned a priority of 100 so it sorts after any chase which may be
 running, and its sparkles can lighten the color which would otherwise
 be present in their fixtures.
 
 |`:held`
 |`false`
 
-|As described <<cues#held-flag,above>>, causes the cue's effect to run
-only as long as the corresponding controller button or pad is held
-down, if the controller supports that capability. All current
-controller implementations, including the web interface, the
-<<push2#using-ableton-push-2,Ableton Push mapping>>, and mappings
-to generic MIDI controllers created using
+|As described <<held-flag,above>>, causes the cue's effect to run only
+as long as the corresponding controller button or pad is held down, if
+the controller supports that capability. All current controller
+implementations, including the web interface, the
+<<push2.adoc#,Ableton Push mapping>>, and mappings to generic MIDI
+controllers created using
 {api-doc}afterglow.effects.cues.html#var-add-midi-to-cue-mapping[`afterglow.effects.cues/add-midi-to-cue-mapping`]
 do honor this setting. The web interface and controllers like the
 Push, which can vary the color of cue grid cells, will provide
@@ -302,7 +299,7 @@ is described in the following table. These specifications are used to
 create any necessary new variables, and a `var-map` describing any
 cue-local variables is passed to the `effect-fn` function when the cue
 is triggered, so they can be used as needed when creating the cue's
-effect. See <<Cue Variables>> below for many more details.
+effect. See <<cue-variables>> below for many more details.
 
 |`:visualizer`
 |none
@@ -346,18 +343,18 @@ As noted above, a cue can contain a map under the key `:variables`
 which assigns variables to the cue. These variables allow the cue to
 be adjusted by the show operator in convenient and powerful ways,
 either through the interfaces automatically presented by the Effect
-Control sections of the <<README#effect-control,embedded Web
-interface>> or <<push2#effect-control,Ableton Push mapping>>,
+Control sections of the <<README.adoc#effect-control,embedded Web
+interface>> or <<push2.adoc#effect-control,Ableton Push mapping>>,
 through velocity-sensitive grid controllers like the Push or
-<<launchpad#using-launchpad-pro,Launchpad Pro>>, or a binding to
-<<mapping_sync#mapping-cues-to-a-controller,any velocity-sensitive
-MIDI controller>>.
+<<launchpad.adoc#,Launchpad Pro>>, or a binding to
+<<mapping_sync.adoc#mapping-cues-to-a-controller,any
+velocity-sensitive MIDI controller>>.
 
 Cue Variables can either be numeric (adjusted by sliders in the web
 UI, or rotary encoders and faders on MIDI controllers), boolean (with
 corresponding simple Web and Push interfaces) or they can store
 colors, in which case both the web UI and
-<<push2#color-cue-variables,Push mapping>> provide a powerful
+<<push2.adoc#color-cue-variables,Push mapping>> provide a powerful
 interface for picking and adjusting the color.
 
 They can also be temporary, lasting only the duration of the cue, or
@@ -365,7 +362,7 @@ tied to a {api-doc}afterglow.show.html#var-set-variable.21[show
 variable], so they can be shared between cues, and have values which
 last between activations of the cue. Color variables which are stored
 as show variables can be adjusted by
-<<mapping_sync#mapping-a-control-to-a-color-component,any MIDI
+<<mapping_sync.adoc#mapping-a-control-to-a-color-component,any MIDI
 controller>>.
 
 [cols="1a,1a,5a", options="header"]
@@ -548,10 +545,11 @@ passing in the cue variables (and their values) as the keyword
 arguments and values that configure the effect.
 
 
+[[a-cue-example]]
 ==== A Cue Example
 
 As a simple illustration, here is how to wrap the blue and red scene
-from the <<effects#multiple-colors,Multiple Colors example>> into a
+from the <<effects.adoc#multiple-colors,Multiple Colors example>> into a
 cue, and add it to the show grid, so it can be started and stopped
 from a grid controller or the web interface. This cue has no
 variables, so the effect-creation function ignores its argument (this
@@ -582,7 +580,7 @@ make it easy to work with such fixture capabilities, the
 `afterglow.effects.cues` namespace also offers the
 {api-doc}afterglow.effects.cues.html#var-function-cue[`function-cue`]
 function. It is quite similar to the `cue` function described
-<<cues#creating-cues,above>>, but it takes care of creating the effect
+<<cues.adoc#creating-cues,above>>, but it takes care of creating the effect
 for you, given the function name you want to apply to a fixture or set
 of fixtures. You can even apply the function to fixtures from
 different manufactures, regardless of whether they implement it on
@@ -593,13 +591,13 @@ values to each fixture.
 
 NOTE: Function cues are able to figure out how to do the right thing
 for each fixture because they can scan the fixture definitions for
-<<fixture_definitions#function-specifications,Function Specifications>>
-matching the keyword you gave when creating the cue. When you patch a
-fixture into a show, Afterglow indexes its function ranges in order to
-make this efficient.
+<<fixture_definitions.adoc#function-specifications,Function
+Specifications>> matching the keyword you gave when creating the cue.
+When you patch a fixture into a show, Afterglow indexes its function
+ranges in order to make this efficient.
 
 `function-cue` also automatically creates a temporary cue-local
-variable for <<push2#effect-control,adjusting>> the function
+variable for <<push2.adoc#effect-control,adjusting>> the function
 level if the function is not fixed over its range. This makes it
 essentially a one-liner to create a button in your cue grid which
 activates a function and then, via the web interface or if your
@@ -731,24 +729,23 @@ alone.
 
 |Sets the effect priority used when adding the cue's effect to the
 show. This can be used to make sure the effect runs before or after
-other effects in the <<rendering_loop#the-rendering-loop,rendering
-loop>>. Effects are run in order, and later effects can modify or
-override the results of earlier ones, like the way the Sparkle effect
-in
-{api-doc}afterglow.examples.html#var-make-cues[`make-cues`]
-is assigned a priority of 100 so it sorts after any chase which may be
+other effects in the <<rendering_loop.adoc#,rendering loop>>. Effects
+are run in order, and later effects can modify or override the results
+of earlier ones, like the way the Sparkle effect in
+{api-doc}afterglow.examples.html#var-make-cues[`make-cues`] is
+assigned a priority of 100 so it sorts after any chase which may be
 running, and its sparkles can lighten the color which would otherwise
 be present in their fixtures.
 
 |`:held`
 |`false`
 
-|As described <<cues#held-flag,above>>, causes the cue's effect to run
-only as long as the corresponding controller button or pad is held
-down, if the controller supports that capability. All current
+|As described <<cues.adoc#held-flag,above>>, causes the cue's effect
+to run only as long as the corresponding controller button or pad is
+held down, if the controller supports that capability. All current
 controller implementations, including the web interface, the
-<<push2#using-ableton-push-2,Ableton Push mapping>>, and mappings
-to generic MIDI controllers created using
+<<push2.adoc#,Ableton Push mapping>>, and mappings to
+generic MIDI controllers created using
 {api-doc}afterglow.effects.cues.html#var-add-midi-to-cue-mapping[`afterglow.effects.cues/add-midi-to-cue-mapping`]
 do honor this setting. The web interface and controllers like the
 Push, which can vary the color of cue grid cells, will provide
@@ -836,10 +833,9 @@ The {api-doc}afterglow.controllers.html[`afterglow.controllers`]
 namespace defines some helpful functions for working with cues, and
 defines a {api-doc}afterglow.controllers.html#var-IGridController[grid
 controller protocol] which rich controller mappings, like the ones for
-the <<push2#using-ableton-push-2,Ableton Push>> and
-<<launchpad#using-the-novation-launchpad-family,Novation Launchpad family>>, use to
-attach themselves to a running show, and synchronize with the web
-interface.
+the <<push2.adoc#,Ableton Push>> and <<launchpad.adoc#,Novation
+Launchpad family>>, use to attach themselves to a running show, and
+synchronize with the web interface.
 
 If you are implementing a new grid controller mapping, you will want
 to study that protocol, and will likely find the Novation Launchpad

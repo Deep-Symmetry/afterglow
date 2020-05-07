@@ -357,7 +357,7 @@
   `:starting`.
 
   All incoming parameters may
-  be [dynamic]({{guide-url}}parameters.html#dynamic-parameters).
+  be [dynamic]({{guide-url}}parameters.html).
   Step parameters are always frame-dynamic."
   [& {:keys [interval interval-ratio fade-fraction fade-curve starting]
       :or {interval :beat interval-ratio 1 fade-fraction 0 fade-curve :linear
@@ -555,9 +555,7 @@
   with [[direction-effect]]. If no arguments are supplied, returns a
   static direction facing directly out towards the audience. Keywords
   `:x`, `:y`, and `:z` can be used to specify a vector in the [frame
-  of
-  reference]({{guide-url}}show_space.html#show-space)
-  of the light show.
+  of reference]({{guide-url}}show_space.html) of the light show.
 
   All incoming parameter values may be literal or dynamic, and may be
   keywords, which will be dynamically bound to variables
@@ -676,11 +674,9 @@
   directly out towards the audience. Keywords `:pan` and `:tilt` can
   be used to specify angles to turn around the Y and X axes
   respectively
-  (see [show
-  space]({{guide-url}}show_space.html#show-space)
-  for a diagram of these axes). For human friendliness, the angles are
-  assumed to be in degrees unless keyword `:radians` is supplied with
-  a true value.
+  (see [show space]({{guide-url}}show_space.html) for a diagram of
+  these axes). For human friendliness, the angles are assumed to be in
+  degrees unless keyword `:radians` is supplied with a true value.
 
   The values passed for `:pan` and `:tilt` may be dynamic, or may be
   keywords, which will be dynamically bound to variables
@@ -729,11 +725,9 @@
   static orientation facing directly out towards the audience.
   Keywords `:pan` and `:tilt` can be used to specify angles to turn
   around the Y and X axes respectively
-  (see [show
-  space]({{guide-url}}show_space.html#show-space)
-  for a diagram of these axes). For human friendliness, the angles are
-  assumed to be in degrees unless keyword `:radians` is supplied with
-  a true value.
+  (see [show space]({{guide-url}}show_space.html) for a diagram of
+  these axes). For human friendliness, the angles are assumed to be in
+  degrees unless keyword `:radians` is supplied with a true value.
 
   The values passed for `:pan` and `:tilt` may be dynamic, or may be
   keywords, which will be dynamically bound to variables
@@ -785,7 +779,7 @@
   towards a spot on the floor two meters towards the audience from the
   center of the light show. Keywords `:x`, `:y`, and `:z` can be used
   to specify a target point in the [frame of
-  reference]({{guide-url}}show_space.html#show-space)
+  reference]({{guide-url}}show_space.html)
   of the light show.
 
   All incoming parameter values may be literal or dynamic, and may be

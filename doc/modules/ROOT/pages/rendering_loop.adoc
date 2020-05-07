@@ -9,9 +9,9 @@ and by the time you need this information, it will make much more
 sense!
 
 And once you are ready to really dive deep, you can learn how to
-<<rendering_loop#extensions,extend>> the rendering loop to incorporate
-completely new kinds of elements, such as integrating with Pangolin
-Beyond laser shows.
+<<extensions,extend>> the rendering loop to incorporate completely new
+kinds of elements, such as integrating with Pangolin Beyond laser
+shows.
 
 [[frame-rendering-stages]]
 == Frame Rendering Stages
@@ -70,7 +70,7 @@ show’s patched fixtures, this is what happens:
 . The first thing Afterglow does is take a
 {api-doc}afterglow.rhythm.html#var-ISnapshot[snapshot]
 of the show
-<<metronomes#metronomes,metronome>> to
+<<metronomes.adoc#,metronome>> to
 identify a common point in time for all the effects to use in deciding
 how they should look. This enables a consistent, coordinated appearance
 for everything in the frame.
@@ -80,34 +80,30 @@ DMX data for each universe, so that if no effect tries to set a value
 for a particular channel on this frame, a zero value will be sent for
 it.
 
-. Then Afterglow loops over all
-<<effects#effects,Effects>> that are currently active
-for the show, and asks if any are ready to end, as described in the
-<<effects#the-effect-lifecycle,Effect Lifecycle>> section. If any are,
-they are removed from the list of active effects.
+. Then Afterglow loops over all <<effects.adoc#,Effects>> that are
+currently active for the show, and asks if any are ready to end, as
+described in the <<effects.adoc#the-effect-lifecycle,Effect
+Lifecycle>> section. If any are, they are removed from the list of
+active effects.
 
 . Then it makes another loop over any effects that did not end, to see
 how they want to affect the lights. It does this by calling, in order,
-each effect’s
-{api-doc}afterglow.effects.html#var-generate[`generate`]
+each effect’s {api-doc}afterglow.effects.html#var-generate[`generate`]
 function, passing in the show and the metronome snapshot. In order to
 make the lights do things, each effect returns a list of
-<<rendering_loop#assigners,Assigners>> specifying the things it wants
-to happen. These are gathered in the order they were returned by each
-effect.
+<<assigners,Assigners>> specifying the things it wants to happen.
+These are gathered in the order they were returned by each effect.
 
 . While being gathered, the assigners are separated into individual
 lists, divided first by the `kind` value of the assigner (`:channel`,
 `:function`, `:color`, `:pan-tilt`, `:direction`, or `:aim`, or some
-other value added by a rendering loop
-<<rendering_loop#extensions,extension>>), and within each kind,
-further divided into lists based on the target ID that the assigner
-wants to affect. The structure of a target ID is up to the Assigner
-kind, and may be a simple number or tuple, depending on the needs of
-the Assigner implementation; the important thing from the Show's
-perspective is that if two target IDs are equal to each other, the
-assigners are affecting the same element of the show.
-+
+other value added by a rendering loop <<extensions,extension>>), and
+within each kind, further divided into lists based on the target ID
+that the assigner wants to affect. The structure of a target ID is up
+to the Assigner kind, and may be a simple number or tuple, depending
+on the needs of the Assigner implementation; the important thing from
+the Show's perspective is that if two target IDs are equal to each
+other, the assigners are affecting the same element of the show. +
 Since the effects are run in priority order (lower priority first,
 with effects of the same priority running in the order in which they
 were added to the show), higher-priority and more recent effects’
@@ -147,7 +143,7 @@ can also veto any previous assignment and say that nothing should
 happen by returning an assignment with `nil` for its value.
 +
 The input to `assign` might be a
-<<parameters#dynamic-parameters,Dynamic Parameter>>, and the resulting
+<<parameters.adoc#,Dynamic Parameter>>, and the resulting
 value may be as well, or the assigner may choose to resolve it into a
 non-dynamic value, in order to decide between or blend competing
 assignments.
@@ -220,17 +216,17 @@ Channel assigners have a `kind` of `:channel`, and their `target-id`
 is a tuple of universe ID and channel address, so `[1 234]` would
 represent an assignment to universe `1`, address `234`. The assignment
 values they return are either a valid DMX data value (see next
-paragraph), a <<parameters#dynamic-parameters,dynamic parameter>>
-which will resolve to a valid DMX data value, or `nil`, meaning no
-assignment should take place.
+paragraph), a <<parameters.adoc#,dynamic parameter>> which will
+resolve to a valid DMX data value, or `nil`, meaning no assignment
+should take place.
 
 
 [[dmx-values]] The DMX data value is a number in the range `[0-256)`.
 In other words, it can take any value from zero up to but not reaching
 256. Non-integer values are supported, because the channel might be a
-<<fixture_definitions#generic-channels,fine-channel>> which uses two
-bytes to offer more precision in control than a single byte can offer.
-In that case, the integer portion of the value is sent as the
+<<fixture_definitions.adoc#generic-channels,fine-channel>> which uses
+two bytes to offer more precision in control than a single byte can
+offer. In that case, the integer portion of the value is sent as the
 most-significant byte on the main channel, and the fractional portion
 is converted to a least-significant byte and sent on the fine channel.
 If the channel does not have a fine channel attached to it, any
@@ -240,8 +236,8 @@ Channels can also be _inverted_, which means the DMX values are
 reversed from the value being assigned. This is needed to support some
 fixtures which have inverted dimmers, is established by the presence
 of an `:inverted-from` entry in the
-<<fixture_definitions#inverted-channels,channel specification>>, and
-taken care of by
+<<fixture_definitions.adoc#inverted-channels,channel specification>>,
+and taken care of by
 {api-doc}afterglow.effects.channel.html#var-apply-channel-value[`apply-channel-value`],
 which is invoked by the channel assignment resolver, so channel
 assigners do not need to worry about this detail, and can always work
@@ -258,11 +254,10 @@ Function assigners have a `kind` of `:function`, and their `target-id`
 is a tuple of the head or fixture ID and the function keyword, so `[3
 :strobe]` would represent an assignment to the fixture or head with ID
 3, setting the value of that head's `:strobe`
-<<fixture_definitions#function-specifications,function>>. The
+<<fixture_definitions.adoc#function-specifications,function>>. The
 assignment values they return are either a percentage value, a
-<<parameters#dynamic-parameters,dynamic parameter>> which will resolve
-to a percentage value, or `nil`, meaning no assignment should take
-place.
+<<parameters.adoc#,dynamic parameter>> which will resolve to a
+percentage value, or `nil`, meaning no assignment should take place.
 
 When the assignment is resolved, the percentage is translated to an
 actual DMX value along the range defined in each fixture's function
@@ -277,27 +272,28 @@ was 50.0, then the assignment for that fixture would send a value of
 Color assigners have a `kind` of `:color`, and their `target-id` is
 the head or fixture ID; `42` would represent an assignment to the
 fixture or head with ID 42. The assignment values they return are
-either a <<color#working-with-color,color>> object, a
-<<parameters#color-parameters,dynamic parameter>> which will resolve
-to a color object, or `nil`, meaning no assignment should take place.
+either a <<color.adoc#,color>> object, a
+<<parameters.adoc#color-parameters,dynamic parameter>> which will
+resolve to a color object, or `nil`, meaning no assignment should take
+place.
 
 When the assignment is resolved, Afterglow uses all available color
 channels in the target head to mix the specified color. It is
 automatically able to use `:color` intensity channels of type `:red`,
 `:green`, `:blue`, and `:white`. It will also use any other `:color`
 channels whose hue has been
-<<fixture_definitions#hue-mixing,specified>> in the fixture
+<<fixture_definitions.adoc#hue-mixing,specified>> in the fixture
 definition.
 
 If the head or fixture uses a color wheel to make colors, rather than
 trying to mix colors using channel intensities, Afterglow will find
-the <<fixture_definitions#color-wheel-hue,color wheel hue>> closest to
-the hue of the color being assigned, and send the function value
-needed to set the color wheel to that position. The color wheel hue
-has to be &ldquo;close enough&rdquo; to the assigned hue for Afterglow
-to use it. By default, as long as the hue values are within 60&deg; of
-each other (which is very lenient), Afterglow will use it. You can
-adjust this tolerance by setting a different value in the show
+the <<fixture_definitions.adoc#color-wheel-hue,color wheel hue>>
+closest to the hue of the color being assigned, and send the function
+value needed to set the color wheel to that position. The color wheel
+hue has to be &ldquo;close enough&rdquo; to the assigned hue for
+Afterglow to use it. By default, as long as the hue values are within
+60&deg; of each other (which is very lenient), Afterglow will use it.
+You can adjust this tolerance by setting a different value in the show
 variable `:color-wheel-hue-tolerance`. The color being assigned must
 also have a saturation of at least 40% for the color wheel to be
 considered (this minimum saturation can be adjusted by setting a
@@ -310,12 +306,12 @@ Pan/Tilt assigners have a `kind` of `:pan-tilt`, and their `target-id`
 is the head or fixture ID; `68` would represent an assignment to the
 fixture or head with ID 68. The assignment values they return are
 either a `javax.vecmath.Vector2d`, a
-<<parameters#direction-parameters,dynamic parameter>> which will
+<<parameters.adoc#direction-parameters,dynamic parameter>> which will
 resolve to a `Vector2d` object, or `nil`, meaning no assignment should
 take place.
 
 When the assignment is resolved, the vector indicates the pan and tilt
-angles away from the `z` axis of the <<show_space#show-space,frame of
+angles away from the `z` axis of the <<show_space.adoc#,frame of
 reference of the show>> to aim the fixture or head. Afterglow
 translates this vector to the appropriate values to send to the
 fixture's pan and tilt channels to aim it in the specified direction,
@@ -336,16 +332,16 @@ Direction assigners have a `kind` of `:direction`, and their
 `target-id` is the head or fixture ID; `42` would represent an
 assignment to the the fixture or head with ID 42. The assignment
 values they return are either a `javax.vecmath.Vector3d`, a
-<<parameters#direction-parameters,dynamic parameter>> which will
+<<parameters.adoc#direction-parameters,dynamic parameter>> which will
 resolve to a `Vector3d` object, or `nil`, meaning no assignment should
 take place.
 
 When the assignment is resolved, the vector indicates the direction in
-the <<show_space#show-space,frame of reference of the show>> to aim
-the fixture or head. Afterglow translates this vector to the
-appropriate values to send to the fixture's pan and tilt channels to
-aim it in the specified direction, if possible. Otherwise it gets as
-close as the fixture allows.
+the <<show_space.adoc#,frame of reference of the show>> to aim the
+fixture or head. Afterglow translates this vector to the appropriate
+values to send to the fixture's pan and tilt channels to aim it in the
+specified direction, if possible. Otherwise it gets as close as the
+fixture allows.
 
 If multiple fixtures or heads are assigned the same direction vector,
 they will all be aimed in exactly the same direction, regardless of
@@ -357,19 +353,19 @@ target, it will run later, so its effects will be the ones that matter.
 [[aim-assigners]]
 === Aim Assigners
 
-Aim assigners have a `kind` of `:aim`, and their `target-id` is
-the head or fixture ID; `17` would represent an assignment to the
-fixture or head with ID 17. The assignment values they return are
-either a `javax.vecmath.Point3d`, a
-<<parameters#aim-parameters,dynamic parameter>> which will resolve to
-a `Point3d` object, or `nil`, meaning no assignment should take place.
+Aim assigners have a `kind` of `:aim`, and their `target-id` is the
+head or fixture ID; `17` would represent an assignment to the fixture
+or head with ID 17. The assignment values they return are either a
+`javax.vecmath.Point3d`, a <<parameters.adoc#aim-parameters,dynamic
+parameter>> which will resolve to a `Point3d` object, or `nil`,
+meaning no assignment should take place.
 
 When the assignment is resolved, the point identifies the precise
-location in the <<show_space#show-space,frame of reference of the
-show>> to aim the fixture or head. Afterglow translates this point to
-the appropriate values to send to the fixture's pan and tilt channels
-to aim it at that exact spot, if possible. Otherwise it gets as close
-as the fixture allows.
+location in the <<show_space.adoc#,frame of reference of the show>> to
+aim the fixture or head. Afterglow translates this point to the
+appropriate values to send to the fixture's pan and tilt channels to
+aim it at that exact spot, if possible. Otherwise it gets as close as
+the fixture allows.
 
 If multiple fixtures or heads are assigned the same aiming point, they
 will all be aimed at exactly the same spot, regardless of the location
@@ -458,6 +454,6 @@ lights, as well as effects which simply set show variables so that
 other effects can respond to the fact that they are running. Perhaps
 looking at these example implementations can help inspire your own
 extension in a completely new direction! (Links to the namespaces' API
-documentation are at the <<rendering_loop#extensions,top>> of this
-section, and as always, the API docs have `view source` buttons which
-take you right to the code that makes them work.)
+documentation are at the <<extensions,top>> of this section, and as
+always, the API docs have `view source` buttons which take you right
+to the code that makes them work.)
