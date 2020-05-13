@@ -4,7 +4,7 @@
 # Antora site hosting the developer guide.
 
 npm i @antora/cli antora-site-generator-lunr
-DOCSEARCH_ENABLED=true DOCSEARCH_ENGINE=lunr $(npm bin)/antora --fetch --generator antora-site-generator-lunr \
-  doc/netlify.yml
+DOCSEARCH_ENABLED=true DOCSEARCH_ENGINE=lunr DOCSEARCH_INDEX_VERSION=latest \
+  npx antora --fetch --generator antora-site-generator-lunr doc/netlify.yml
 
 lein with-profile netlify do codox, resource
