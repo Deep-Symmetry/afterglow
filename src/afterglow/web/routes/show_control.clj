@@ -11,12 +11,9 @@
             [afterglow.util :as util]
             [afterglow.web.layout :as layout]
             (clj-time core format coerce)
-            [clojure.data.json :refer [read-json write-str]]
             [com.evocomputing.colors :as colors]
-            [org.httpkit.server :refer [with-channel on-receive on-close]]
-            [overtone.at-at :refer [now after]]
+            [overtone.at-at :refer [now]]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
-            [ring.util.http-response :refer [ok]]
             [ring.util.response :refer [response]]
             [selmer.parser :as parser]
             [taoensso.timbre :as timbre :refer [warn error]]))
