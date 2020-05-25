@@ -1,5 +1,6 @@
 (ns afterglow.web.layout
-  (:require [environ.core :refer [env]]
+  (:require [clojure.java.io]
+            [environ.core :refer [env]]
             [markdown.core :refer [md-to-html-string]]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]
