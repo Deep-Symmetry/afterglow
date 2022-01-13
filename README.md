@@ -690,9 +690,7 @@ Here is the set of tasks needed to cut a new release:
   scripts/prepare_release.sh v0.2.0`.
 - [ ] Build both versions of the codox documentation, with the release
   project version and tagged source and documentation links: `lein
-  repl` will do the trick. (Perhaps no longer relevant! But look into
-  changing to use the Beat Link Trigger approach of versioning builds
-  that no longer rely on lein-env.)
+  repl` will do the trick.
 - [ ] Update [`CHANGELOG.md`](CHANGELOG.md) to reflect the release:
   make sure nothing is missing, and rename the sections to reflect the
   fact that the unreleased code is now released, and there is nothing
@@ -1043,7 +1041,7 @@ though.
  src="doc/modules/ROOT/assets/images/DS-logo-bw-200-padded-left.png"
  width="216" height="123">
 
-Copyright © 2015-2020 [Deep Symmetry, LLC](http://deepsymmetry.org)
+Copyright © 2015-2022 [Deep Symmetry, LLC](http://deepsymmetry.org)
 
 Distributed under the [Eclipse Public License
 2.0](https://opensource.org/licenses/EPL-2.0). By using this software

@@ -11,6 +11,7 @@
 /classes
 /doc/build
 /gh-pages
+/node_modules
 /pom.xml
 /pom.xml.asc
 /research

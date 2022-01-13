@@ -50,13 +50,9 @@
   protected by the delay below to insure it happens only once."
   []
   (timbre/set-config!
+   ;; See http://ptaoussanis.github.io/timbre/taoensso.timbre.html#var-*config* for more details.
    {:level :info  ; #{:trace :debug :info :warn :error :fatal :report}
     :enabled? true
-
-    ;; Control log filtering by namespaces/patterns. Useful for turning off
-    ;; logging in noisy libraries, etc.:
-    :ns-whitelist  [] #_["my-app.foo-ns"]
-    :ns-blacklist  [] #_["taoensso.*"]
 
     :middleware [] ; (fns [data]) -> ?data, applied left->right
 
@@ -72,7 +68,7 @@
    {:appenders @appenders})
 
   ;; Disable Selmer's template cache in development mode
-  (if (Boolean/valueOf (env :dev)) (parser/cache-off!)))
+  (when (Boolean/valueOf (env :dev)) (parser/cache-off!)))
 
 (defonce ^{:private true
            :doc "Used to ensure log initialization takes place exactly once."}
