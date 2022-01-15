@@ -9,7 +9,8 @@ This change log follows the conventions of
 ### Fixed
 
 - Afterglow would crash when told to convert a QLC+ fixture definition
-  in the current working directory (with no path component), #72
+  in the current working directory (with no path component),
+  [#72](https://github.com/Deep-Symmetry/afterglow/issues/72).
 
 
 ## [0.2.5] - 2022-01-12
