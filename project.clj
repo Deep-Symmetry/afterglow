@@ -1,4 +1,4 @@
-(defproject afterglow "0.2.5"
+(defproject afterglow "0.2.6-SNAPSHOT"
   :description "A live-coding environment for light shows, built on the Open Lighting Architecture, using bits of Overtone."
   :url "https://github.com/Deep-Symmetry/afterglow"
   :license {:name "Eclipse Public License 2.0"

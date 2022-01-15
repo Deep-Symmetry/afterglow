@@ -311,7 +311,7 @@
   it that can be used as the starting point of an Afterglow fixture
   definition. Returns an exit status and message for the user."
   [path]
-  (let [source (io/file path)
+  (let [source (.getCanonicalFile (io/file path))
         qxf (parse-qxf source)
         dest (io/file (.getParent source) (str (csk/->kebab-case (:model qxf)) ".clj"))]
     (cond
