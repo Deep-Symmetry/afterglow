@@ -5,6 +5,11 @@
  (:require [clojure.math.numeric-tower :refer [round floor]]
            [overtone.at-at :refer [now]]))
 
+;; TODO: This should be swapped out for the version in Electro,
+;; https://github.com/Deep-Symmetry/electro
+;; https://github.com/Deep-Symmetry/electro/blob/main/src/main/java/org/deepsymmetry/electro/Metronome.java
+;; so there is a single shared notion of musical time between Afterglow and Beat Link.
+
 (defonce
   ^{:private true
     :doc "Protect protocols against namespace reloads."}

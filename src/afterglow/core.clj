@@ -51,13 +51,13 @@
   []
   (timbre/set-config!
    ;; See http://ptaoussanis.github.io/timbre/taoensso.timbre.html#var-*config* for more details.
-   {:level :info  ; #{:trace :debug :info :warn :error :fatal :report}
-    :enabled? true
+   {:min-level :info ; #{:trace :debug :info :warn :error :fatal :report}
+    :enabled?  true
 
     :middleware [] ; (fns [data]) -> ?data, applied left->right
 
-    :timestamp-opts {:pattern "yyyy-MMM-dd HH:mm:ss"
-                     :locale :jvm-default
+    :timestamp-opts {:pattern  "yyyy-MMM-dd HH:mm:ss"
+                     :locale   :jvm-default
                      :timezone (java.util.TimeZone/getDefault)}
 
     :output-fn timbre/default-output-fn ; (fn [data]) -> string

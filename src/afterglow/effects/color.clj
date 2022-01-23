@@ -13,7 +13,7 @@
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
             [taoensso.timbre :as timbre]
-            [taoensso.timbre.profiling :refer [pspy]])
+            [taoensso.tufte :as tufte])
   (:import (afterglow.effects Assigner Effect)))
 
 (defn htp-merge
@@ -185,14 +185,14 @@
                                                        beyond-server nil}}]
   (let [heads (channels/find-rgb-heads fixtures)
         f (fn [show snapshot target previous-assignment]  ;; Assigners for regular light colors; have heads
-            (pspy :transform-colors
-                  (when-let [resolved (params/resolve-param previous-assignment show snapshot target)]
-                    (transform-fn resolved show snapshot target))))
+            (tufte/p ::transform-colors
+                     (when-let [resolved (params/resolve-param previous-assignment show snapshot target)]
+                       (transform-fn resolved show snapshot target))))
         lf (when beyond-server
              (fn [show snapshot target previous-assignment]  ;; Assigner for laser show colors; no head
-               (pspy :transform-colors
-                     (when-let [resolved (params/resolve-param previous-assignment show snapshot)]
-                       (transform-fn resolved show snapshot nil)))))
+               (tufte/p ::transform-colors
+                        (when-let [resolved (params/resolve-param previous-assignment show snapshot)]
+                          (transform-fn resolved show snapshot nil)))))
         assigners (concat (fx/build-head-assigners :color heads f)
                           (when beyond-server
                             [(Assigner. :beyond-color (:id beyond-server) beyond-server lf)]))]

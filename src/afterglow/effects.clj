@@ -1,14 +1,13 @@
 (ns afterglow.effects
   "Support functions for building the effects pipeline."
   {:author "James Elliott"}
-  (:require [afterglow.channels :as channels]
-            [afterglow.effects.params :as params]
+  (:require [afterglow.effects.params :as params]
             [afterglow.rhythm :as rhythm]
             [afterglow.show-context :refer [*show*]]
             [afterglow.util :as util]
             [clojure.math.numeric-tower :as math]
             [taoensso.timbre :as timbre]
-            [taoensso.timbre.profiling :as profiling :refer [pspy profile]])
+            [taoensso.tufte :as tufte])
   (:import [afterglow.rhythm MetronomeSnapshot]))
 
 (defonce
@@ -331,13 +330,13 @@
   ([show snapshot assigners]
    (run-assigners show snapshot assigners nil))
   ([show snapshot assigners previous-assignment]
-   (pspy :run-assigners
-         (when (seq assigners)
-           (let [{:keys [kind target-id target]} (first assigners)
-                 assignment (reduce (fn [result assigner]
-                                      (assign assigner show snapshot target result))
-                                    previous-assignment assigners)]
-             (Assignment. kind target-id target assignment))))))
+   (tufte/p ::run-assigners
+            (when (seq assigners)
+              (let [{:keys [kind target-id target]} (first assigners)
+                    assignment (reduce (fn [result assigner]
+                                         (assign assigner show snapshot target result))
+                                       previous-assignment assigners)]
+                (Assignment. kind target-id target assignment))))))
 
 (defn- with-default-assignment
   "If the current assignment is empty, but there was a previous

@@ -34,7 +34,6 @@
             [afterglow.util :refer [valid-dmx-value?]]
             [com.evocomputing.colors :as colors :refer [clamp-percent-float
                                                         clamp-rgb-int]]
-            [taoensso.timbre.profiling :refer [pspy]]
             [taoensso.timbre :as timbre])
   (:import (afterglow.effects Effect)))
 
@@ -206,4 +205,3 @@
           label (if (params/param? level) "<dynamic>" level)]
       (build-parameterized-dimmer-effect (or effect-name (str "Dimmers=" label (when htp? " (HTP)")))
                                          level *show* full-channels function-heads virtual-heads htp? master))))
-

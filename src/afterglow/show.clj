@@ -42,7 +42,7 @@
             [overtone.at-at :as at-at]
             overtone.midi
             [taoensso.timbre :as timbre :refer [error]]
-            [taoensso.timbre.profiling :refer [profile pspy]])
+            [taoensso.tufte :as tufte])
   (:import [afterglow.effects Effect Assignment]
            afterglow.effects.dimmer.Master
            afterglow.rhythm.Metronome
@@ -118,9 +118,9 @@
   moment in the show, organized by type and the unique ID of the
   element they affect, sorted in priority order under those keys."
   [show snapshot]
-  (pspy :gather-assigners
-        (group-assigners (apply concat (cp/pmap @(:pool show) #(fx/generate % show snapshot)
-                                                (:effects @(:active-effects show)))))))
+  (tufte/p ::gather-assigners
+           (group-assigners (apply concat (cp/pmap @(:pool show) #(fx/generate % show snapshot)
+                                                   (:effects @(:active-effects show)))))))
 
 (declare end-effect!)
 
@@ -221,20 +221,20 @@
   Pangolin [[beyond-server]] laser show integration), they are called
   at the appropriate points."
   [show buffers snapshot]
-  (pspy :clear-buffers
-        (let [dmx-future (cp/future @(:pool show) (clear-dmx-buffers show buffers))
-              extensions-future (cp/future @(:pool show) (clear-extension-buffers show))]
-       @dmx-future @extensions-future))
-  (pspy :clean-finished-effects
-        (clean-finished-effects show snapshot))
+  (tufte/p ::clear-buffers
+           (let [dmx-future (cp/future @(:pool show) (clear-dmx-buffers show buffers))
+                 extensions-future (cp/future @(:pool show) (clear-extension-buffers show))]
+             @dmx-future @extensions-future))
+  (tufte/p ::clean-finished-effects
+           (clean-finished-effects show snapshot))
   (let [all-assigners (gather-assigners show snapshot)]
     (doseq [kind (concat resolution-order (apply concat (vals @extension-resolution-orders)))]
-      (pspy kind
-            (cp/pdoseq @(:pool show) [assigners (vals (get all-assigners kind))]
-                       (let [assignment (fx/run-assigners show snapshot assigners nil)]
-                         (when (some? (:value assignment)) ; If assigner returned nil value, it wants to be skipped
-                           (pspy :resolve-value (fx/resolve-assignment assignment show snapshot buffers))))))))
-  (pspy :send-frame-data
+      (tufte/p (keyword "afterglow.show" (name kind))
+               (cp/pdoseq @(:pool show) [assigners (vals (get all-assigners kind))]
+                          (let [assignment (fx/run-assigners show snapshot assigners nil)]
+                            (when (some? (:value assignment)) ; If assigner returned nil value, it wants to be skipped
+                              (tufte/p ::resolve-value (fx/resolve-assignment assignment show snapshot buffers))))))))
+  (tufte/p ::send-frame-data
         (let [dmx-future (cp/future @(:pool show) (send-dmx-buffers show buffers))
               extensions-future (cp/future @(:pool show) (send-extension-buffers show))]
           @dmx-future @extensions-future))
@@ -1288,9 +1288,10 @@
   {:pre [(some? *show*) (integer? iterations) (pos? iterations) (nil? @(:pool *show*))]}
   (reset! (:pool *show*) (if serial? :serial :builtin))
   (let [buffers (create-buffers *show*)]
-    (profile :info :Frame (dotimes [i iterations]
-                            (let [snapshot (rhythm/metro-snapshot (:metronome *show*))]
-                              (send-frame *show* buffers snapshot)))))
+    (tufte/profile {}
+                   (dotimes [_i iterations]
+                     (let [snapshot (rhythm/metro-snapshot (:metronome *show*))]
+                       (send-frame *show* buffers snapshot)))))
   (reset! (:pool *show*) nil))
 
 (defn register-grid-controller

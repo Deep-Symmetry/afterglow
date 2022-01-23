@@ -31,12 +31,13 @@
                  [com.evocomputing/colors "1.0.6"]
                  [environ "1.2.0"]
                  [camel-snake-kebab "0.4.2"]
-                 [com.taoensso/timbre "4.10.0"]
-                 [com.fzakaria/slf4j-timbre "0.3.18"]
+                 [com.taoensso/timbre "5.1.2"]
+                 [com.taoensso/tufte "2.2.0"]
+                 [com.fzakaria/slf4j-timbre "0.3.21"]
                  [com.taoensso/tower "3.0.2"]
                  [com.taoensso/truss "1.6.0"]
                  [markdown-clj "1.10.8"]
-                 [ring/ring-core "1.9.4"]
+                 [ring/ring-core "1.9.5"]
                  [clj-time "0.15.2"]
                  [compojure "1.6.2" :exclusions [org.eclipse.jetty/jetty-server
                                                  ring/ring-core
@@ -69,7 +70,7 @@
   ;; :env {:repl-port 16002}
 
   :profiles {:dev     {:dependencies [[ring-mock "0.1.5" :exclusions [ring/ring-codec]]
-                                      [ring/ring-devel "1.9.4"]]
+                                      [ring/ring-devel "1.9.5"]]
                        :repl-options {:init-ns afterglow.examples
                                       :welcome (println "afterglow loaded.")}
                        :jvm-opts     ["-XX:-OmitStackTraceInFastThrow" "-Dapple.awt.UIElement=true"]

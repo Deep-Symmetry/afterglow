@@ -11,7 +11,6 @@
             [afterglow.transform :as transform]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
-            [taoensso.timbre.profiling :refer [pspy]]
             [taoensso.timbre :as timbre :refer [debug]])
   (:import [afterglow.effects Assigner Effect]
            [javax.media.j3d Transform3D]
@@ -39,7 +38,7 @@
   (params/validate-param-type direction Vector3d)
   (let [heads (find-moving-heads fixtures)
         assigners (fx/build-head-parameter-assigners :direction heads direction *show*)]
-    (Effect. name fx/always-active (fn [show snapshot] assigners) fx/end-immediately)))
+    (Effect. name fx/always-active (fn [_show _snapshot] assigners) fx/end-immediately)))
 
 ;; Resolves the assignment of a direction to a fixture or a head.
 (defmethod fx/resolve-assignment :direction [assignment show snapshot buffers]

@@ -16,8 +16,8 @@
             [afterglow.transform :as transform]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
-            [taoensso.timbre.profiling :refer [pspy]]
-            [taoensso.timbre :as timbre])
+            [taoensso.timbre :as timbre]
+            [taoensso.tufte :as tufte])
   (:import (afterglow.effects Effect)
            (afterglow.effects.dimmer Master)
            (afterglow.rhythm Metronome)
@@ -70,15 +70,15 @@
           other-beat-color (params/resolve-unless-frame-dynamic other-beat-color *show* snapshot)
           local-snapshot (atom nil)  ; Need to set up a snapshot at start of each run for all assigners
           f (fn [show snapshot target previous-assignment]
-              (pspy :metronome-effect
-                    (let [raw-intensity (* 2 (- (/ 1 2) (rhythm/snapshot-beat-phase @local-snapshot 1)))
-                          intensity (if (neg? raw-intensity) 0 raw-intensity)
-                          base-color (if (rhythm/snapshot-down-beat? @local-snapshot)
-                                       (params/resolve-param down-beat-color show @local-snapshot)
-                                       (params/resolve-param other-beat-color show @local-snapshot))]
-                      (colors/create-color {:h (colors/hue base-color)
-                                            :s (colors/saturation base-color)
-                                            :l (* (colors/lightness base-color) intensity)}))))
+              (tufte/p ::metronome-effect
+                       (let [raw-intensity (* 2 (- (/ 1 2) (rhythm/snapshot-beat-phase @local-snapshot 1)))
+                             intensity (if (neg? raw-intensity) 0 raw-intensity)
+                             base-color (if (rhythm/snapshot-down-beat? @local-snapshot)
+                                          (params/resolve-param down-beat-color show @local-snapshot)
+                                          (params/resolve-param other-beat-color show @local-snapshot))]
+                         (colors/create-color {:h (colors/hue base-color)
+                                               :s (colors/saturation base-color)
+                                               :l (* (colors/lightness base-color) intensity)}))))
           assigners (fx/build-head-assigners :color heads f)]
       (Effect. "Metronome"
                (fn [show snapshot]  ;; Continue running until the end of a measure
@@ -99,16 +99,16 @@
   time. `sparkles` is a map from head to the timestamp at which the
   sparkle was created."
   [sparkles show snapshot fade-time]
-  (pspy :remove-finished-sparkles
-        (let [now (:instant snapshot)
-              fade-time (params/resolve-param fade-time show snapshot)]
-          (reduce
-           (fn [result [where creation-time]]
-             (if (< (- now creation-time) fade-time)
-               (assoc result where creation-time)
-               result))
-           {}
-           sparkles))))
+  (tufte/p ::remove-finished-sparkles
+           (let [now (:instant snapshot)
+                 fade-time (params/resolve-param fade-time show snapshot)]
+             (reduce
+              (fn [result [where creation-time]]
+                (if (< (- now creation-time) fade-time)
+                  (assoc result where creation-time)
+                  result))
+              {}
+              sparkles))))
 
 ;; TODO: add off-beat-penalty that slopes the chance downwards as the beat passes,
 ;; same for off-bar-penalty, so can prioritize beats and bars, perhaps pass an oscillator
@@ -146,26 +146,26 @@
                 (swap! sparkles remove-finished-sparkles show snapshot fade-time)
                 (or @running (seq @sparkles)))
               (fn [show snapshot]
-                (pspy :sparkle
-                      ;; See if we create any new sparkles (unless we've been asked to end).
-                      (when @running
-                        (doseq [head heads]
-                          (let [chance (params/resolve-param chance show snapshot head)]
-                            (when (< (rand) chance)
-                              (swap! sparkles assoc head (:instant snapshot))))))
-                      ;; Build assigners for all active sparkles.
-                      (let [now (:instant snapshot)]
-                        (for [[head creation-time] @sparkles]
-                          (let [color (params/resolve-param color show snapshot head)
-                                fade-time (max 10 (params/resolve-param fade-time show snapshot head))
-                                fraction (/ (- now creation-time) fade-time)
-                                faded (colors/darken color (* fraction (colors/lightness color)))]
-                            (fx/build-head-assigner :color head
-                                                 (fn [show snapshot target previous-assignment]
-                                                   (color-fx/htp-merge (params/resolve-param previous-assignment
-                                                                                             show snapshot head)
-                                                                       faded))))))))
-              (fn [show snapshot]
+                (tufte/p ::sparkle
+                         ;; See if we create any new sparkles (unless we've been asked to end).
+                         (when @running
+                           (doseq [head heads]
+                             (let [chance (params/resolve-param chance show snapshot head)]
+                               (when (< (rand) chance)
+                                 (swap! sparkles assoc head (:instant snapshot))))))
+                         ;; Build assigners for all active sparkles.
+                         (let [now (:instant snapshot)]
+                           (for [[head creation-time] @sparkles]
+                             (let [color (params/resolve-param color show snapshot head)
+                                   fade-time (max 10 (params/resolve-param fade-time show snapshot head))
+                                   fraction (/ (- now creation-time) fade-time)
+                                   faded (colors/darken color (* fraction (colors/lightness color)))]
+                               (fx/build-head-assigner :color head
+                                                       (fn [show snapshot _target previous-assignment]
+                                                         (color-fx/htp-merge (params/resolve-param previous-assignment
+                                                                                                   show snapshot head)
+                                                                             faded))))))))
+              (fn [_show _snapshot]
                 ;; Arrange to shut down once all existing sparkles fade out.
                 (reset! running false))))))
 
@@ -194,21 +194,21 @@
   dimmers as well, you can pass a `true` value with
   `:include-rgb-fixtures?`."
   [fixtures & {:keys [chance fade-time master include-rgb-fixtures?]
-               :or {chance 0.001 fade-time 500 master (:grand-master *show*) include-rgb-fixtures? false}}]
+               :or   {chance 0.001 fade-time 500 master (:grand-master *show*) include-rgb-fixtures? false}}]
   {:pre [(some? *show*)]}
-  (let [chance (params/bind-keyword-param chance Number 0.001)
+  (let [chance    (params/bind-keyword-param chance Number 0.001)
         fade-time (params/bind-keyword-param fade-time Number 500)
-        master (params/bind-keyword-param master Master (:grand-master *show*))
-        fixtures (if include-rgb-fixtures? fixtures (remove channels/has-rgb-heads? fixtures))]
-    (let [full-channels (dimmer-fx/gather-dimmer-channels fixtures)
+        master    (params/bind-keyword-param master Master (:grand-master *show*))
+        fixtures  (if include-rgb-fixtures? fixtures (remove channels/has-rgb-heads? fixtures))]
+    (let [full-channels  (dimmer-fx/gather-dimmer-channels fixtures)
           function-heads (dimmer-fx/gather-partial-dimmer-function-heads fixtures)
-          running (atom true)
-          full-sparkles (atom {})  ; Map from channel to creation time for active sparkles on full-dimmer channels
-          func-sparkles (atom {})  ; Map from head to creation time for active sparkles on partial-dimmer channels
-          snapshot (rhythm/metro-snapshot (:metronome *show*))
-          chance (params/resolve-unless-frame-dynamic chance *show* snapshot)
-          fade-time (params/resolve-unless-frame-dynamic fade-time *show* snapshot)
-          master (params/resolve-unless-frame-dynamic master *show* snapshot)]
+          running        (atom true)
+          full-sparkles  (atom {}) ; Map from channel to creation time for active sparkles on full-dimmer channels
+          func-sparkles  (atom {}) ; Map from head to creation time for active sparkles on partial-dimmer channels
+          snapshot       (rhythm/metro-snapshot (:metronome *show*))
+          chance         (params/resolve-unless-frame-dynamic chance *show* snapshot)
+          fade-time      (params/resolve-unless-frame-dynamic fade-time *show* snapshot)
+          master         (params/resolve-unless-frame-dynamic master *show* snapshot)]
       (Effect. "Dimmer Sparkle"
               (fn [show snapshot]
                 ;; Continue running until all existing sparkles fade
@@ -216,37 +216,37 @@
                 (swap! func-sparkles remove-finished-sparkles show snapshot fade-time)
                 (or @running (seq @full-sparkles) (seq @func-sparkles)))
               (fn [show snapshot]
-                (pspy :sparkle
-                      ;; See if we create any new sparkles (unless we've been asked to end).
-                      (when @running
-                        (let [chance  (params/resolve-param chance show snapshot)]
-                          (doseq [chan full-channels]
-                            (when (< (rand) chance)
-                              (swap! full-sparkles assoc chan (:instant snapshot))))
-                          (doseq [head function-heads]
-                            (when (< (rand) chance)
-                              (swap! func-sparkles assoc head (:instant snapshot))))))
-                      ;; Build assigners for all active sparkles.
-                      (let [now (:instant snapshot)
-                            fade-time (max 10 (params/resolve-param fade-time show snapshot))]
-                        (concat
-                         (for [[chan creation-time] @full-sparkles]
-                           (let [fraction (/ (- now creation-time) fade-time)
-                                 faded (- 255 (* fraction 255))]  ; Fade from maximum dimmer level
-                             (chan-fx/build-channel-assigner
-                              chan
-                              (fn [show snapshot target previous-assignment]
+                (tufte/p ::dimmer-sparkle
+                         ;; See if we create any new sparkles (unless we've been asked to end).
+                         (when @running
+                           (let [chance (params/resolve-param chance show snapshot)]
+                             (doseq [chan full-channels]
+                               (when (< (rand) chance)
+                                 (swap! full-sparkles assoc chan (:instant snapshot))))
+                             (doseq [head function-heads]
+                               (when (< (rand) chance)
+                                 (swap! func-sparkles assoc head (:instant snapshot))))))
+                         ;; Build assigners for all active sparkles.
+                         (let [now       (:instant snapshot)
+                               fade-time (max 10 (params/resolve-param fade-time show snapshot))]
+                           (concat
+                            (for [[chan creation-time] @full-sparkles]
+                              (let [fraction (/ (- now creation-time) fade-time)
+                                    faded    (- 255 (* fraction 255))]  ; Fade from maximum dimmer level
+                                (chan-fx/build-channel-assigner
+                                 chan
+                              (fn [_show _snapshot _target previous-assignment]
                                 (colors/clamp-rgb-int (max (dimmer-fx/master-scale master faded)
                                                            (or previous-assignment 0)))))))
-                         (for [[head creation-time] @func-sparkles]
-                           (let [fraction (/ (- now creation-time) fade-time)
-                                 faded (- 100 (* fraction 100))]  ; Functions use percentages rather than DMX values
-                             (chan-fx/build-head-function-assigner
-                              head
-                              (fn [show snapshot target previous-assignment]
-                                (colors/clamp-percent-float (max (dimmer-fx/master-scale master faded)
-                                                                 (or previous-assignment 0)))))))))))
-              (fn [show snapshot]
+                            (for [[head creation-time] @func-sparkles]
+                              (let [fraction (/ (- now creation-time) fade-time)
+                                    faded    (- 100 (* fraction 100))]  ; Functions use % rather than DMX values
+                                (chan-fx/build-head-function-assigner
+                                 head
+                                 (fn [_show _snapshot _target previous-assignment]
+                                   (colors/clamp-percent-float (max (dimmer-fx/master-scale master faded)
+                                                                    (or previous-assignment 0)))))))))))
+              (fn [_show _snapshot]
                 ;; Arrange to shut down once all existing sparkles fade out.
                 (reset! running false))))))
 
@@ -468,16 +468,16 @@
           ending (atom nil)
           color-cycle (map #(params/resolve-unless-frame-dynamic % *show* (rhythm/metro-snapshot (:metronome *show*)))
                            color-cycle)
-          f (fn [show snapshot target previous-assignment]
-              (pspy :color-cycle-chase-effect
-                    ;; Determine whether this head is covered by the current state of the transition
-                    (let [transition-progress (transition-phase-function snapshot)]
-                      (cond
-                        (< transition-progress 0.0) @previous-color
-                        (>= transition-progress 1.0) @current-color
-                        :else (if (>= transition-progress (/ (measure target) max-distance))
-                                @current-color
-                                @previous-color)))))
+          f (fn [_show snapshot target _previous-assignment]
+              (tufte/p ::color-cycle-chase-effect
+                       ;; Determine whether this head is covered by the current state of the transition
+                       (let [transition-progress (transition-phase-function snapshot)]
+                         (cond
+                           (< transition-progress 0.0) @previous-color
+                           (>= transition-progress 1.0) @current-color
+                           :else (if (>= transition-progress (/ (measure target) max-distance))
+                                   @current-color
+                                   @previous-color)))))
           assigners (fx/build-head-assigners :color heads f)]
       (Effect. effect-name
                (fn [show snapshot]  ;; Continue running until the next color would appear
@@ -764,16 +764,16 @@
   containing the step value after which the flake will end, followed
   by color and potentially aim information."
   [flakes show snapshot step]
-  (pspy :remove-finished-flakes
-        (let [now (math/round (params/resolve-param step show snapshot))]
-          (reduce
-           (fn [result [where info]]
-             (let [final-step (first info)]
-               (if (<= now final-step)
-                 (assoc result where info)
-                 result)))
-           {}
-           flakes))))
+  (tufte/p ::remove-finished-flakes
+           (let [now (math/round (params/resolve-param step show snapshot))]
+             (reduce
+              (fn [result [where info]]
+                (let [final-step (first info)]
+                  (if (<= now final-step)
+                    (assoc result where info)
+                    result)))
+              {}
+              flakes))))
 
 (defn- add-flakes
   "Create new flakes of a shared random color and individual random
@@ -888,33 +888,33 @@
                   (alter flakes remove-finished-flakes show snapshot step)
                   (or @running (seq @flakes))))
                (fn [show snapshot]
-                 (pspy :confetti
-                       ;; See how many flakes to create (unless we've been asked to end).
-                       (dosync
-                        (when @running
-                          (let [now (math/round (params/resolve-param step show snapshot))]
-                            (when (not= now @current-step)
-                              (ref-set current-step now)
-                              (let [min-added (max 0 (math/round (params/resolve-param min-added show snapshot)))
-                                    max-added (max min-added (math/round
-                                                              (params/resolve-param max-added show snapshot)))
-                                    add (+ min-added (rand-int (inc (- max-added min-added))))
-                                    new-flakes (add-flakes (take add (shuffle heads)) show snapshot
-                                                           now min-duration max-duration min-saturation)
-                                    aimed-flakes (if aim?
-                                                   (aim-flakes new-flakes show snapshot
-                                                               min-x max-x min-y max-y min-z max-z)
-                                                   new-flakes)]
-                                (alter flakes merge aimed-flakes)))))
-                        ;; Build assigners for all active flakes.
-                        (concat (for [[head [_ color]] @flakes]
-                                  (fx/build-head-assigner :color head (fn [_ _ _ _] color)))
-                                (when aim?
-                                  (filter identity
-                                          (for [[head [_ _ point]] @flakes]
-                                            (when (seq (movement/find-moving-heads [head]))
-                                              (fx/build-head-assigner :aim head (fn [_ _ _ _] point))))))))))
-               (fn [show snapshot]
+                 (tufte/p ::confetti
+                          ;; See how many flakes to create (unless we've been asked to end).
+                          (dosync
+                           (when @running
+                             (let [now (math/round (params/resolve-param step show snapshot))]
+                               (when (not= now @current-step)
+                                 (ref-set current-step now)
+                                 (let [min-added (max 0 (math/round (params/resolve-param min-added show snapshot)))
+                                       max-added (max min-added (math/round
+                                                                 (params/resolve-param max-added show snapshot)))
+                                       add (+ min-added (rand-int (inc (- max-added min-added))))
+                                       new-flakes (add-flakes (take add (shuffle heads)) show snapshot
+                                                              now min-duration max-duration min-saturation)
+                                       aimed-flakes (if aim?
+                                                      (aim-flakes new-flakes show snapshot
+                                                                  min-x max-x min-y max-y min-z max-z)
+                                                      new-flakes)]
+                                   (alter flakes merge aimed-flakes)))))
+                           ;; Build assigners for all active flakes.
+                           (concat (for [[head [_ color]] @flakes]
+                                     (fx/build-head-assigner :color head (fn [_ _ _ _] color)))
+                                   (when aim?
+                                     (filter identity
+                                             (for [[head [_ _ point]] @flakes]
+                                               (when (seq (movement/find-moving-heads [head]))
+                                                 (fx/build-head-assigner :aim head (fn [_ _ _ _] point))))))))))
+               (fn [_show _snapshot]
                  ;; Stop making new sparkles and arrange to shut down once all existing ones fade out.
                  (dosync (ref-set running false)))))))
 
@@ -928,7 +928,7 @@
   colors by the pinstripes effect."
   [heads group-fn num-colors]
   (let [head-groups (partition-all num-colors (sort-by #(:x (first %)) (vals (group-by group-fn (sort-by :x heads)))))
-        stripe-groups (for [i (range num-colors)] [])]
+        stripe-groups (for [_i (range num-colors)] [])]
     (loop [remaining-groups head-groups
            result stripe-groups]
       (let [current-group (first remaining-groups)
