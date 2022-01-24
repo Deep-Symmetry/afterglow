@@ -1,6 +1,22 @@
 {
-  "dependencies": {
-    "antora": "^3.0.1",
+  "private": true,
+  "description": "Used to build the documentation site, not the project itself.",
+  "dependencies": {},
+  "devDependencies": {
+    "@antora/cli": "^2.3.4",
+    "@antora/site-generator-default": "^2.3.4",
     "antora-site-generator-lunr": "^0.6.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Deep-Symmetry/afterglow.git"
+  },
+ "author": {
+    "name": "James Elliott",
+    "email": "james@deepsymmetry.org"
+  },
+  "bugs": {
+    "url": "https://github.com/Deep-Symmetry/aferglow/issues"
+  },
+  "homepage": "https://github.com/Deep-Symmetry/afterglow#readme"
 }
