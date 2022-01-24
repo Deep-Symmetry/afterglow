@@ -1,6 +1,7 @@
 (ns afterglow.web.routes.show-control
   (:require [afterglow.controllers :as controllers]
             [afterglow.controllers.tempo :as tempo]
+            [afterglow.carabiner :as carabiner]
             [afterglow.dj-link :as dj-link]
             [afterglow.effects.cues :as cues]
             [afterglow.effects.dimmer :as dimmer]
@@ -475,14 +476,18 @@
   available sources of metronome synchronization, with the current
   selection, if any, properly identified."
   [page-id]
-  (let [page-info (get @clients page-id)
-        known-midi (:known (:midi-sync page-info))
-        known-dj (:known (:dj-link-sync page-info))
+  (let [page-info          (get @clients page-id)
+        known-midi         (:known (:midi-sync page-info))
+        known-dj           (:known (:dj-link-sync page-info))
         traktor-beat-phase (amidi/current-traktor-beat-phase-sources)]
     (with-show (:show page-info)
-      (concat [{:label "Manual (no automatic sync)."
-                :value "manual"
+      (concat [{:label    "Manual (no automatic sync)."
+                :value    "manual"
                 :selected (= :manual (:type (show/sync-status)))}]
+              (when (carabiner/active?)
+                [{:label "Ableton Link"
+                  :value "ableton"
+                  :selected (= :ableton (:type (show/sync-status)))}])
               (build-sync-list known-midi :midi #(str (:name %)
                                                       (if (traktor-beat-phase %)
                                                         " (Traktor, sync BPM and beat phase)."
