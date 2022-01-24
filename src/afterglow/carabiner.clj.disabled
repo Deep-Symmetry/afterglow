@@ -373,3 +373,5 @@ shutting down."
 ;;   [x] Always offer Ableton Link as a sync option if Carabiner connected successfully. (done!)
 ;;   [ ] Figure out where that menu gets handled and implement the request to sync to Ableton.
 ;;   [ ] Start Carabiner if possible when starting up a show.
+
+;; TODO: Is there an interface for choosing sync on the Push? If so add support there too.

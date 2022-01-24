@@ -1,7 +1,7 @@
 (ns afterglow.web.routes.show-control
   (:require [afterglow.controllers :as controllers]
             [afterglow.controllers.tempo :as tempo]
-            [afterglow.carabiner :as carabiner]
+            #_[afterglow.carabiner :as carabiner]  ; Can't use until Netlify Java 9 support issue resolved.
             [afterglow.dj-link :as dj-link]
             [afterglow.effects.cues :as cues]
             [afterglow.effects.dimmer :as dimmer]
@@ -484,7 +484,7 @@
       (concat [{:label    "Manual (no automatic sync)."
                 :value    "manual"
                 :selected (= :manual (:type (show/sync-status)))}]
-              (when (carabiner/active?)
+              #_(when (carabiner/active?)  ; Can't use until Netlify Java 9 compatibility issue resolved.
                 [{:label "Ableton Link"
                   :value "ableton"
                   :selected (= :ableton (:type (show/sync-status)))}])
