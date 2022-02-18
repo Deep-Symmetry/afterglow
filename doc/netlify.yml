@@ -5,8 +5,12 @@ site:
 content:
   sources:
   - url: https://github.com/Deep-Symmetry/afterglow.git
-    branches: [master, guide*]
+    branches: [main, guide*]
     start_path: doc
+antora:
+  extensions:
+  - require: '@antora/lunr-extension'
+    index_latest_only: true
 asciidoc:
   attributes:
     api-doc: https://afterglow-guide.deepsymmetry.org/api/
@@ -14,5 +18,6 @@ asciidoc:
     experimental: ''
 ui:
   bundle:
-    url: https://deepsymmetry.org/media/antora/ui-bundle.zip
+    url: https://deepsymmetry.org/media/antora/ui-bundle-3.zip
     snapshot: true
+  supplemental_files: ./../node_modules/@antora/lunr-extension/supplemental_ui

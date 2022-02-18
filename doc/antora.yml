@@ -1,6 +1,8 @@
 name: afterglow
 title: Afterglow
-version: 'master'
+version: ~
+display_version: 'main'
+prerelease: true
 start_page: ROOT:README.adoc
 asciidoc:
   attributes:

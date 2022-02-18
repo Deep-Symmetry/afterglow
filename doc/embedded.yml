@@ -8,6 +8,9 @@ content:
   - url: ./..
     branches: HEAD
     start_path: doc
+antora:
+  extensions:
+  - '@antora/lunr-extension'
 asciidoc:
   attributes:
     api-doc: link:../../api-doc/
@@ -15,7 +18,8 @@ asciidoc:
     experimental: ''
 ui:
   bundle:
-    url: https://deepsymmetry.org/media/antora/ui-bundle.zip
+    url: https://deepsymmetry.org/media/antora/ui-bundle-3.zip
     snapshot: true
+  supplemental_files: ./../node_modules/@antora/lunr-extension/supplemental_ui
 output:
   dir: ./../target/classes/developer_guide
