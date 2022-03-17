@@ -1,6 +1,6 @@
 # Afterglow
 
-[![Gitter](https://img.shields.io/badge/chat-on%20zulip-brightgreen)](https://deep-symmetry.zulipchat.com/#narrow/stream/318697-afterglow)
+[![project chat](https://img.shields.io/badge/chat-on%20zulip-brightgreen)](https://deep-symmetry.zulipchat.com/#narrow/stream/318697-afterglow)
  <image align="right" width="275" height="255"
  src="doc/modules/ROOT/assets/images/Afterglow-logo-padded-left.png"> <br/><br/> An
  environment supporting
