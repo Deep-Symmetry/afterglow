@@ -1,6 +1,6 @@
 # Afterglow
 
-[![Gitter](https://img.shields.io/gitter/room/brunchboy/afterglow.svg)](https://gitter.im/brunchboy/afterglow)
+[![Gitter](https://img.shields.io/badge/chat-on%20zulip-brightgreen)](https://deep-symmetry.zulipchat.com/#narrow/stream/318697-afterglow)
  <image align="right" width="275" height="255"
  src="doc/modules/ROOT/assets/images/Afterglow-logo-padded-left.png"> <br/><br/> An
  environment supporting
@@ -25,8 +25,8 @@ Afterglow. The [Developer
 Guide](https://afterglow-guide.deepsymmetry.org) goes much deeper,
 and there is also [API
 documentation](http://afterglow-guide.deepsymmetry.org/api/). For more
-interactive help, the [Afterglow room on
-Gitter](https://gitter.im/brunchboy/afterglow) is the place to start,
+interactive help, the [Afterglow stream on
+Zulip](https://deep-symmetry.zulipchat.com/#narrow/stream/318697-afterglow) is the place to start,
 and if you want to see (or contribute to) more structured and lasting
 community-driven documentation, there is also a project
 [wiki](https://github.com/Deep-Symmetry/afterglow/wiki).

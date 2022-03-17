@@ -3,7 +3,8 @@ James Elliott <james@deepsymmetry.org>
 
 This page collects performance videos that highlight Afterglow in
 action. If you have any to share, please post them to the
-https://gitter.im/brunchboy/afterglow[Afterglow room on Gitter]!
+https://deep-symmetry.zulipchat.com/#narrow/stream/318697-afterglow[Afterglow
+stream on Zulip]!
 
 Since I have been too busy working on the software to get out and
 perform with it, I am deeply grateful to

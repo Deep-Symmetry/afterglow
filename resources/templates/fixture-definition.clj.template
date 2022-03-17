@@ -19,8 +19,9 @@
   the way everything is being controlled by Afterglow, please consider
   submitting it for inclusion with Afterglow, either as a Pull Request
   at https://github.com/Deep-Symmetry/afterglow/pulls if you are
-  comfortable putting that together, or just on the Gitter chat if
-  that's easier for you: https://gitter.im/brunchboy/afterglow
+  comfortable putting that together, or just on the Zulip chat if
+  that's easier for you:
+  https://deep-symmetry.zulipchat.com/#narrow/stream/318697-afterglow
 
   The original fixture defintition was created by {{creator.author}}
   using {{creator.name}} version {{creator.version}}.

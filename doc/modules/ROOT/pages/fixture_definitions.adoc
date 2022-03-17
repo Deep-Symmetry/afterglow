@@ -1310,7 +1310,7 @@ the translation approach that should be documented here.
 
 If you are having trouble figuring out the details of how to finish or
 use your fixture definition, please ask for help on the
-https://gitter.im/brunchboy/afterglow[gitter chat] or
+https://deep-symmetry.zulipchat.com/#narrow/stream/318697-afterglow[Zulip chat] or
 https://github.com/Deep-Symmetry/afterglow/wiki/Questions#defining-fixtures[Wiki].
 Not only will that hopefully get you going faster, but it might help
 others in the future, especially if it leads to improvements in the

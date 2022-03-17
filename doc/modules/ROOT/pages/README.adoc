@@ -590,7 +590,7 @@ there, and at this early stage almost none of them are built in to
 Afterglow, so you will probably need to create your own. The
 <<fixture_definitions.adoc#,documentation>> explains how, and links to
 existing fixture definitions as examples. You can also ask for help on
-the https://gitter.im/brunchboy/afterglow[Gitter chat] or the
+the https://deep-symmetry.zulipchat.com/#narrow/stream/318697-afterglow[Zulip chat] or the
 https://github.com/Deep-Symmetry/afterglow/wiki/Questions[Wiki]. + At
 this point you are almost certainly writing enough code that you want
 to save it for later reuse. The
@@ -647,4 +647,5 @@ Similarly, if you have created an awesome new kind of effect, please
 consider a pull request to add it somewhere within the effects
 namespace hierarchy. And if you are just tinkering with something new
 and experimental, please post about it on the
-https://gitter.im/brunchboy/afterglow[Gitter chat]!
+https://deep-symmetry.zulipchat.com/#narrow/stream/318697-afterglow[Zulip
+chat]!
