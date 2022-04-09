@@ -98,10 +98,7 @@
 
   ;; Perform the tasks which embed the developer guide and api docs before compilation,
   ;; so they will be available both in development, and in the distributed archive.
-  :shell {:env {"DOCSEARCH_ENABLED" "true"
-                "DOCSEARCH_ENGINE"  "lunr"}}
-  :prep-tasks [["shell" "npx" "antora" "--fetch" "doc/embedded.yml"
-                "--generator" "antora-site-generator-lunr"]
+  :prep-tasks [["shell" "npx" "antora" "--fetch" "doc/embedded.yml"]
                "codox"
                "javac"
                "compile"
