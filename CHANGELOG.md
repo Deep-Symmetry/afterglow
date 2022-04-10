@@ -12,6 +12,12 @@ This change log follows the conventions of
   in the current working directory (with no path component),
   [#72](https://github.com/Deep-Symmetry/afterglow/issues/72).
 
+### Added
+
+- A new effect builder, `wrap-fade-in-out`, to make it easy to build
+  effects that fade in when you start them, and out when you tell them
+  to end.
+
 
 ## [0.2.5] - 2022-01-12
 
