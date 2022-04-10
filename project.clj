@@ -3,8 +3,7 @@
   :url "https://github.com/Deep-Symmetry/afterglow"
   :license {:name "Eclipse Public License 2.0"
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
-  :jvm-opts ["--add-opens" "java.base/java.lang=ALL-UNNAMED"  ; Work around Codox issue on Java 16 and later.
-             "-Dapple.awt.UIElement=true"]  ; Suppress dock icon and focus stealing when compiling on a Mac.
+  :jvm-opts ["-Dapple.awt.UIElement=true"]  ; Suppress dock icon and focus stealing when compiling on a Mac.
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [org.clojure/core.cache "1.0.225"]
                  [org.clojure/core.async "1.5.648" :exclusions [org.clojure/tools.reader]]
@@ -80,9 +79,9 @@
              :uberjar {:env {:production "true"}
                        :aot :all}
              :netlify {:prep-tasks ^:replace []}}
-  :plugins [[lein-codox "0.10.7"]
+  :plugins [[lein-codox "0.10.8"]
             [lein-resource "17.06.1"]
-            [lein-environ "1.1.0"]
+            [lein-environ "1.2.0"]
             [lein-shell "0.5.0"]]
 
   :codox {:output-path "target/codox"
