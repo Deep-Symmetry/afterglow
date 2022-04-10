@@ -108,8 +108,8 @@
 ;; TODO: Need to take into account dimmers, and someday be based on raw DMX
 ;;       values rather than the current higher-level abstractions.
 (defn active?
-  "Check whether the given fixture (represented as a tuple of `\[id
-  spec\]`, as found in a show's :visualizer-visible map) should be
+  "Check whether the given fixture (represented as a tuple of `id` and
+  `spec`, as found in a show's :visualizer-visible map) should be
   included in the current visualizer frame, because it is emitting
   light."
   [show [id fixture-or-head]]

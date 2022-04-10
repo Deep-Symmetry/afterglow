@@ -47,8 +47,8 @@
   "Returns a nested structure of rows of cue information starting at the
   specified origin, with the specified width and height. Ideal for
   looping over and rendering in textual form, such as in a HTML table.
-  Each cell contains a tuple `\[cue effect\]`, the cue assigned to
-  that grid location, and the currently-running effect, if any,
+  Each cell contains a tuple of `cue` and `effect`, the cue assigned
+  to that grid location, and the currently-running effect, if any,
   launched from that cue. Cells which do not have associated cues
   still be assigned a unique cue ID (identifying page-relative
   coordinates, with zero at the lower left) so they can be updated if
