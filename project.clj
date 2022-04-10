@@ -86,7 +86,7 @@
 
   :codox {:output-path "target/codox"
           :doc-files   []
-          :source-uri  "https://github.com/Deep-Symmetry/afterglow/blob/v0.2.5/{filepath}#L{line}"
+          :source-uri  "https://github.com/Deep-Symmetry/afterglow/blob/main/{filepath}#L{line}"
           :metadata    {:doc/format :markdown}}
 
   :resource {:resource-paths [["target/codox"

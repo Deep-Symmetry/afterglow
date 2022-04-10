@@ -36,7 +36,7 @@
   (value-for-phase [this phase show snapshot head]
   "Calculate the value of the oscillator's waveform at the specified
   phase, with support for resolving dynamic parameters that it may
-  depend on. [phase] ranges from `0` to `1`, and so must the return
+  depend on. `phase` ranges from `0` to `1`, and so must the return
   value from this function.")
   (simplify-unless-frame-dynamic [this show snapshot head]
   "If none of the dynamic parameters used by the shape function are

@@ -2,13 +2,13 @@
 
 # See if we were given a version tag.
 if [[ $# -eq 0 ]] ; then
-   echo "No version supplied, switching back to development on master branch"
-   version="\/master\/"
+   echo "No version supplied, switching back to development on main branch"
+   version="\/main\/"
    replace="\/a?v[0-9]*\.[0-9]*\.[0-9]*\/"
 elif [[ $# -eq 1 ]] ; then
     if [[ $1 =~ ^a?v[0-9]+\.[0-9]+\.[0-9]+$ ]] ; then
         version="\/$1\/"
-        replace="\/master\/"
+        replace="\/main\/"
         echo "Preparing files to cut release with tag $1"
     else
         echo "Invalid version: $1 (must be of the form v0.0.0 or av0.0.0)"

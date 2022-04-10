@@ -204,7 +204,7 @@
 (defn cue-grid
   "Return a two dimensional arrangement for launching and monitoring
   cues, suitable for both a web interface and control surfaces with a
-  pad grid. Cues are laid out with [0, 0] being the bottom left
+  pad grid. Cues are laid out with (0, 0) being the bottom left
   corner. The width of the grid is the highest x coordinate of a cue,
   and the height is the highest y coordinate."
   []

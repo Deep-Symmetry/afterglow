@@ -923,7 +923,7 @@
   parameter, any dynamic number parameters are evaluated, and the
   resulting numbers are scaled as a group (after evaluating `f` for
   every participating head or fixture) so they fall within the
-  range [`:start`-`:end`].
+  range \[`:start`-`:end`\].
 
   Useful things that `f` can do include calculating the distance of
   the head from some point, either in 3D or along an axis, its angle

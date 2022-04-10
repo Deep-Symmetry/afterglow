@@ -54,14 +54,14 @@
 (defn shader-offsets
   "Determine the values to add to the coordinates of scaled light positions
   to move them inside the shader's bounding cube, whose origin is
-  [-0.5, -0.25, 0]."
+  (-0.5, -0.25, 0)."
   [show scale]
   (into {} (for [[axis origin available-span] [["x" -0.5 1.0] ["y" -0.25 0.5] ["z" 0 0.5]]]
              (axis-shift show axis origin available-span scale))))
 
 (defn adjusted-positions
   "Move the spotlights so they all fit within the shader's bounding
-  cube, which extends from [-0.5, 0.25, 0.5] to [0.5, -0.25, 0]."
+  cube, which extends from (-0.5, 0.25, 0.5) to (0.5, -0.25, 0)."
   [lights show scale]
   (let [offsets (shader-offsets show scale)]
     (partition 3 (for [[_ head] lights
@@ -97,7 +97,7 @@
     ;; default perspectve of the visualizer.
     (.rotX visualizer-perspective (/ Math/PI 2))
     (.mul rotation visualizer-perspective)
-    
+
     (.transform rotation direction)
     (let [rot-y (Math/atan2 (.x direction) (.z direction)) ;; Get pan
           new-direction (Vector3d. direction)] ;; Determine aiming vector after pan
@@ -108,8 +108,8 @@
 ;; TODO: Need to take into account dimmers, and someday be based on raw DMX
 ;;       values rather than the current higher-level abstractions.
 (defn active?
-  "Check whether the given fixture (represented as a tuple of [id
-  spec], as found in a show's :visualizer-visible map) should be
+  "Check whether the given fixture (represented as a tuple of `\[id
+  spec\]`, as found in a show's :visualizer-visible map) should be
   included in the current visualizer frame, because it is emitting
   light."
   [show [id fixture-or-head]]
