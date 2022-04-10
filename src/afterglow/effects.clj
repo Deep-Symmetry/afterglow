@@ -528,3 +528,40 @@
                      (generate-fade first-effect next-effect fraction show snapshot)))))
              (fn [show snapshot]  ; Ask any remaining active effects to end, record and report results
                (every? false? (swap! active end-still-active effects show snapshot))))))
+
+(defn wrap-fade-in-out
+  "Create an effect which achieves the common goal of having another
+  effect fade in when it starts, and then fade out again when it is
+  asked to end.
+
+  By default the fade-in and fade-out both occur smoothly over a
+  single beat, but you can adjust this by passing values for `step-in`
+  and `step-out`. Each of these should be maps of arguments that will
+  be merged on top of the default value `{:fade-fraction 1.0}` and
+  then passed as arguments to [[build-step-param]]. The arguments you
+  will most likely want to use are `:interval` (to fade over a bar or
+  phrase), or `:interval-ratio` to fade in over fractional or multiple
+  beats/bars/phrases."
+  [effect-name effect & {:keys [step-in step-out]}]
+  {:pre [(some? *show*) (some? effect-name) (satisfies? IEffect effect)]}
+  (let [step-in  (flatten (seq (merge {:fade-fraction 1.0} step-in)))
+        step-out (flatten (seq (merge {:fade-fraction 1.0} step-out)))
+        position (params/build-param-formula Number #(- % 0.5) (apply params/build-step-param step-in))
+        state    (atom {:fade (fade (str effect-name " fade in") blank-effect effect position)})]
+    (Effect. effect-name
+             (fn [show snapshot]
+               ;; Run until we've been asked to end and reached the end of the fade-out
+               (let [current @state]
+                 (or (not (:ending current))
+                     (< (params/resolve-param (:ending current) show snapshot) 1.0))))
+             (fn [show snapshot]
+               ;; While running, we just generate the current fade (which will be our fade-in until asked to end).
+               (generate (:fade @state) show snapshot))
+             (fn [_show _snapshot]
+               ;; When we are asked to end, we build and switch to our fade-out, and store the associated step
+               ;; parameter as `:ending` in our state, so the still-running check can tell we are ending, and
+               ;; use the step parameter to tell when we have faded out, and thus finished.
+               (let [position (params/build-param-formula Number #(- % 0.5) (apply params/build-step-param step-out))]
+                 (swap! state assoc :fade (fade (str effect-name " fade out") effect blank-effect position)
+                        :ending position)
+                 false)))))

@@ -2245,4 +2245,13 @@
                                                (global-color-effect :white :fixtures (show/all-fixtures))]
                                               @step-param :beyond :loop))
                            :color :magenta))
-)
+  #_(show/set-cue!
+ 7 0
+ (cues/cue :dimmer
+           (fn [var-map]
+             (fx/wrap-fade-in-out "Fade Test"
+                                  (dimmer-effect (params/bind-keyword-param (:level var-map 255) Number 255)
+                                                 (show/fixtures-named :ws))
+                                  :step-in {:interval-ratio 2}
+                                  :step-out {:interval-ratio (/ 1 2)}))
+           :variables [{:key "level" :min 0 :max 255 :start 255}])))

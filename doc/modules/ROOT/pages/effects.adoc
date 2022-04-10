@@ -607,6 +607,10 @@ a name for the fade to be created, followed by `from-effect` and
 parameter which controls how much of each effect is seen. It returns
 the blended effect.
 
+TIP: For the common case of wanting to fade in an effect when you
+start it, and then fade it back out when you tell it to end, see
+<<#fading-in-and-out,Fading In and Out>>.
+
 When the value of `phase` is `0` (or less), the fade acts as if it is
 simply `from-effect`. When `phase` is `1` (or more), the fade behaves
 identical to `to-effect`. When `phase` falls somewhere between `0` and
@@ -635,20 +639,68 @@ Here is an example of a very simple fade cue from the sample show:
 
 [source,clojure]
 ----
-(ct/set-cue! (:cue-grid *show*) 4 7
-             (cues/cue :color-fade
-                       (fn [var-map]
-                           (fx/fade "Color Fade"
-                                    (global-color-effect :red :include-color-wheels? true)
-                                    (global-color-effect :green :include-color-wheels? true)
-                                    (params/bind-keyword-param (:phase var-map 0) Number 0)))
-                       :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]))
+(show/set-cue!
+ 4 7
+ (cues/cue :color-fade
+           (fn [var-map]
+               (fx/fade "Color Fade"
+                        (global-color-effect :red :include-color-wheels? true)
+                        (global-color-effect :green :include-color-wheels? true)
+                        (params/bind-keyword-param (:phase var-map 0) Number 0)))
+           :variables [{:key "phase" :min 0.0 :max 1.0 :start 0.0 :name "Fade"}]))
 ----
 
 This fades all the lights from red to green as the cue's encoder is
 turned. Switching either color effect to `(blank)` would insted fade
 to or from whatever color the fixtures were otherwise displaying at
 the time.
+
+[[fading-in-and-out]]
+=== Fading In and Out
+
+Sometimes you would like an open-ended effect to fade in when you
+launch it, and then fade out when you ask it to end. To facilitate
+this, Afterglow includes a special compound effect you can wrap around
+any other effect to implement this behavior, building on the fade
+mechanism described <<#fades,above>>. This is built using the
+{api-doc}afterglow.effects.html#var-wrap-fade-in-out[`wrap-fade-in-out`]
+function in the `afterglow.effects` namespace.
+
+This function takes a name for the wrapped effect, and the effect you
+want to wrap with fade-in and fade-out behavior. By default it will
+fade in and out over a beat, but you can change that by passing
+keyword arguments `:step-in` and/or `:step-out` to configure the
+<<parameters.adoc#step-parameters,Step Parameters>> that will be used
+to manage the two fades. The values you pass with these arguments are
+maps that will be merged onto `{:fade-fraction 1.0}` and then passed to
+{api-doc}afterglow.effects.params.html#var-build-step-param[`afterglow.effects.params/build-step-param`]
+to build the step functions that control the fade in and fade out process.
+The most likely arguments you would want to use to adjust these fades are
+`:interval` and `:interval-ratio`.
+
+Here is an example of how, in the sample show, you could wrap a dimmer
+cue so that it fades in over two beats, and fades out over half a
+beat:
+
+[source,clojure]
+----
+(show/set-cue!
+ 7 0
+ (cues/cue :dimmer
+           (fn [var-map]
+             (fx/wrap-fade-in-out
+              "Fade Test"
+              (dimmer-effect
+               (params/bind-keyword-param (:level var-map 255) Number 255)
+               (show/fixtures-named :ws))
+              :step-in {:interval-ratio 2}
+              :step-out {:interval-ratio (/ 1 2)}))
+           :variables [{:key "level" :min 0 :max 255 :start 255}]))
+----
+
+> You can omit the `:step-in` and `:step-out` lines if the default of
+> fading over a single beat is what you want.
+
 
 [[chases]]
 === Chases
