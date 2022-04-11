@@ -619,4 +619,4 @@
   Useful when creating an effect with optional keyword arguments whose
   values are being set by cue variables bound to the appropriate
   keys."
-  [var-map f & args] `(apply ~f ~@args (flatten (seq ~var-map))))
+  [var-map f & args] `(apply ~f ~@args (apply concat ~var-map)))
