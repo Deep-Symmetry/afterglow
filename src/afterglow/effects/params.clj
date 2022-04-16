@@ -146,7 +146,7 @@
   `:type`, (in which case a new type-compatible `:default` value must
   be specified).
 
-  If the named show variable already holds a dyamic parameter at the
+  If the named show variable already holds a dynamic parameter at the
   time this variable parameter is created, the binding is
   short-circuited to return that existing parameter rather than
   creating a new one, so the type must be compatible. If `:transform-fn`
