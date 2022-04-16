@@ -3,12 +3,11 @@
   are running. Pair well with [[conditional-effect]] to modify the
   behavior of scenes based on the activation of other cues."
   {:author "James Elliott"}
-  (:require [afterglow.controllers :as controllers]
-            [afterglow.effects :as fx]
+  (:require [afterglow.effects :as fx]
             [afterglow.effects.params :as params]
             [afterglow.show :as show]
             [afterglow.show-context :refer [with-show]]
-            [taoensso.timbre :as timbre])
+            [clojure.set :as set])
   (:import [afterglow.effects Effect Assigner]))
 
 (defn- empty-buffer
@@ -28,7 +27,7 @@
     (let [previous-vars (set (keys @last-frame))
           current-vars (set (keys @frame-buffer))]
       ;; Restore the values of any variables which are no longer being affected.
-      (doseq [v (clojure.set/difference previous-vars current-vars)]
+      (doseq [v (set/difference previous-vars current-vars)]
         (let [[orig-val _] (get @last-frame v)]
           (show/set-variable! v orig-val)))
       ;; Set any variables that are newly assigned, or whose assignment value has changed.
@@ -83,7 +82,7 @@
            (fn [show snapshot]
              (let [resolved (params/resolve-unless-frame-dynamic v show snapshot)]
                [(Assigner. :show-variable (keyword k) binding
-                            (fn [show snapshot target previous-assignment] resolved))]))
+                            (fn [_show _snapshot _target _previous-assignment] resolved))]))
            fx/end-immediately))
 
 ;; Tell Afterglow about our assigners and the order in which they should be run.
@@ -102,4 +101,3 @@
                             (with-show (:show target)
                               (show/get-variable target-id)))]
        (alter (:frame-buffer target) assoc target-id [original-value resolved])))))
-
