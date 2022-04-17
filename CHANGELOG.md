@@ -17,6 +17,13 @@ This change log follows the conventions of
 - A new effect builder, `wrap-fade-in-out`, to make it easy to build
   effects that fade in when you start them, and out when you tell them
   to end.
+- When resolving dynamic parameters, resolution will be repeated if
+  the result was still a dynamic parameter. This allows, for example,
+  oscillated parameters to be stored in show variable parameters and
+  swapped out during the lifetime of a cue. Resolving the variable
+  parameter will first obtain the oscillated parameter, which will be
+  resolved again for the appropriate number based on the show
+  metronome snapshot.
 
 
 ## [0.2.5] - 2022-01-12

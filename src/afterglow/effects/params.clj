@@ -98,15 +98,15 @@
   (satisfies? IParam arg))
 
 (defn resolve-param
-  "Takes an argument which may be a raw value, or may be
-  an [[IParam]]. If it is the latter, evaluates it and returns the
-  resulting value. Otherwise just returns the value that was passed
-  in."
+  "Takes an argument which may be a raw value, or may be an [[IParam]].
+  If it is the latter, evaluates it and returns the resulting value,
+  recursively resolving again if we still have an [[IParam]].
+  Otherwise just returns the value that was passed in."
   ([arg show snapshot]
    (resolve-param arg show snapshot nil))
   ([arg show snapshot head]
    (if (satisfies? IParam arg)
-     (evaluate arg show snapshot head)
+     (recur (evaluate arg show snapshot head) show snapshot head)
      arg)))
 
 (defn frame-dynamic-param?
@@ -145,57 +145,50 @@
   `:type`, (in which case a new type-compatible `:default` value must
   be specified).
 
-  If the named show variable already holds a dynamic parameter at the
-  time this variable parameter is created, the binding is
-  short-circuited to return that existing parameter rather than
-  creating a new one, so the type must be compatible. If `:transform-fn`
-  is supplied, it will be called with the value of the variable and
-  its return value will be used as the value of the dynamic parameter.
-  It must return a compatible type or its result will be discarded."
-  [variable & {:keys [frame-dynamic type default transform-fn] :or {frame-dynamic true type Number default 0}}]
+  If `:transform-fn` is supplied, it will be called with the value of
+  the variable and its return value will be used as the value of the
+  dynamic parameter. It must return a compatible type or its result
+  will be discarded."
+  [variable & {:keys [frame-dynamic type default transform-fn] :or {frame-dynamic true
+                                                                    type          Number
+                                                                    default       0}}]
   {:pre [(some? *show*)]}
   (validate-param-type default type)
-  (let [key (keyword variable)
-        current (get @(:variables *show*) key)]
-    (if (and (some? current) (param? current))
-      ;; Found a parameter at the named variable, try to bind now.
-      (do (validate-param-type current type key)
-          current)  ; Binding succeeded; return underlying parameter
-      ;; Did not find parameter, defer binding via variable
-      (let [eval-fn (fn [show] (if (nil? transform-fn)
-                                 (let [candidate (get @(:variables show) key default)]
+  (let [key     (keyword variable)
+        eval-fn (fn [show] (if (nil? transform-fn)
+                             (let [candidate (get @(:variables show) key default)]
+                               (try
+                                 (validate-param-type candidate type)
+                                 candidate
+                                 (catch Throwable _
+                                   (error (str "Unable to use value of variable " key ", value " candidate
+                                               " is not of type " type ". Using default " default))
+                                   default)))
+                             (let [candidate (get @(:variables show) key default)]
+                               (try
+                                 (validate-param-type candidate type)
+                                 (let [transformed (transform-fn candidate)]
                                    (try
-                                     (validate-param-type candidate type)
-                                     candidate
+                                     (validate-param-type transformed type)
+                                     transformed
                                      (catch Throwable _
-                                       (error (str "Unable to use value of variable " key ", value " candidate
-                                                   " is not of type " type ". Using default " default))
-                                       default)))
-                                 (let [candidate (get @(:variables show) key default)]
-                                   (try
-                                     (validate-param-type candidate type)
-                                     (let [transformed (transform-fn candidate)]
-                                       (try
-                                         (validate-param-type transformed type)
-                                         transformed
-                                         (catch Throwable _
-                                           (error (str "Unable to use transform-fn result for variable " variable
-                                                       ", value " transformed " is not of type " type
-                                                       ". Using untransformed value " candidate))
-                                           candidate)))
-                                     (catch Throwable _
-                                       (error (str "Unable to use value of variable " key ", value " candidate
-                                                   " is not of type " type ". Using default " default))
-                                       default)))))]
-        (reify IParam
-          (evaluate [_this show _ _]
-            (eval-fn show))
-          (frame-dynamic? [_this]
-            frame-dynamic)
-          (result-type [_this]
-            type)
-          (resolve-non-frame-dynamic-elements [this _ _ _]  ; Nothing to resolve, return self
-            this))))))
+                                       (error (str "Unable to use transform-fn result for variable " variable
+                                                   ", value " transformed " is not of type " type
+                                                   ". Using untransformed value " candidate))
+                                       candidate)))
+                                 (catch Throwable _
+                                   (error (str "Unable to use value of variable " key ", value " candidate
+                                               " is not of type " type ". Using default " default))
+                                   default)))))]
+    (reify IParam
+      (evaluate [_this show _ _]
+        (eval-fn show))
+      (frame-dynamic? [_this]
+        frame-dynamic)
+      (result-type [_this]
+        type)
+      (resolve-non-frame-dynamic-elements [this _ _ _]  ; Nothing to resolve, return self
+        this))))
 
 (defn bind-keyword-param*
   "Helper function that does the work of the [[bind-keyword-param]]
