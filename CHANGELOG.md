@@ -24,6 +24,11 @@ This change log follows the conventions of
   parameter will first obtain the oscillated parameter, which will be
   resolved again for the appropriate number based on the show
   metronome snapshot.
+- The `variable-effect` function now takes optional keyword arguments
+  which allow a more meaningful effect name to be specified, and can
+  suppress the resolution of dynamic parameters, allowing the raw
+  parameter itself to be set into a show variable while the effect is
+  active, so that it can be used by other effects.
 
 
 ## [0.2.5] - 2022-01-12

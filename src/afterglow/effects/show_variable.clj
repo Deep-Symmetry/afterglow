@@ -50,14 +50,15 @@
   and establishes the binding to the show."
   [show]
   (let [frame-buffer (ref nil)
-        last-frame (ref nil)
-        empty-fn #(empty-buffer frame-buffer last-frame)
-        send-fn #(send-buffer show frame-buffer last-frame)
-        binding {:show show
-                 :frame-buffer frame-buffer
-                 :last-frame last-frame
-                 :empty-fn empty-fn
-                 :send-fn send-fn}]
+        last-frame   (ref nil)
+        empty-fn     #(empty-buffer frame-buffer last-frame)
+        send-fn      #(send-buffer show frame-buffer last-frame)
+        binding      {:show         show
+                      :frame-buffer frame-buffer
+                      :last-frame   last-frame
+                      :empty-fn     empty-fn
+                      :send-fn      send-fn
+                      :no-resolve   (atom #{})}]
     (bind binding)
     binding))
 
@@ -75,25 +76,44 @@
   "An effect which sets the show variable with the specified key to
   match the parameter passed in, and restores its original value when
   ended. Often combined with [[conditional-effect]] to enable
-  cross-effect relationships."
-  [binding k v]
-  (Effect. (str "Set " (name k))
+  cross-effect relationships.
+
+  By default this effect will be named \"Set \" followed by the name
+  of the show variable passed in `k`, but you can give it a more
+  meaningful title to appear in the effects list using the optional
+  keyword argument `:name`.
+
+  Any dynamic parameter passed in `v` will be resolved to its
+  underlying value, (at the level of each frame at which the effect is
+  active if the parameter is frame-dynamic). If you don't want this to
+  happen (because you want to use this effect to store the dynamic
+  parameter itself in a show variable, for use by other effects), pass
+  the optional keyword argument `:resolve?` along with a `false`
+  value."
+  [binding k v & {:keys [name resolve?] :or {name     (str "Set " (clojure.core/name k))
+                                             resolve? true}}]
+  (Effect. name
            fx/always-active
            (fn [show snapshot]
-             (let [resolved (params/resolve-unless-frame-dynamic v show snapshot)]
+             (when-not resolve? (swap! (:no-resolve binding) conj k))
+             (let [resolved (if resolve? (params/resolve-unless-frame-dynamic v show snapshot) v)]
                [(Assigner. :show-variable (keyword k) binding
                             (fn [_show _snapshot _target _previous-assignment] resolved))]))
-           fx/end-immediately))
+           (fn [_show _snapshot]
+             (swap! (:no-resolve binding) disj k)
+             true)))
 
 ;; Tell Afterglow about our assigners and the order in which they should be run.
 (show/set-extension-resolution-order! :afterglow.show-variable [:show-variable])
 
 ;; Set up the resolution handler for the show variable assigner.
 (defmethod fx/resolve-assignment :show-variable [assignment show snapshot _]
-  (let [target (:target assignment)  ; Find the binding associated with this assignment.
+  (let [target    (:target assignment) ; Find the binding associated with this assignment.
         target-id (:target-id assignment)
         ;; Resolve the assignment value in case it is still frame dynamic.
-        resolved (params/resolve-param (:value assignment) show snapshot target)]
+        resolved  (if (contains? @(:no-resolve target) target-id)
+                    (:value assignment)
+                    (params/resolve-param (:value assignment) show snapshot target))]
     ;; Store it in our frame buffer so it can be set when the lights are being updated.
     (dosync
      (let [original-value (if-let [earlier-assignment (target-id @(:last-frame target))]
