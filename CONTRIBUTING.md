@@ -57,6 +57,14 @@ At that point you can follow along with the example flow on the main
 project page, and start diving into exploring and changing the source
 code.
 
+> :wrench: If you are just building Afterglow to work around the
+> current [issue](https://github.com/clojars/clojars-web/issues/195)
+> preventing current versions from being available through Clojars, at
+> this point you can run `lein install`, which will build and install
+> the library in your local Maven repository, so other projects can
+> depend on the version that you just built without needing to find it
+> on Clojars.
+
 Of course to do any serious work, you will want some sort of editor
 with embedded REPL support, and ideally structural editing support for
 Lisp s-expressions. We find [GNU Emacs][emacs] with [CIDER][cider] to
