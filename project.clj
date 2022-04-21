@@ -100,8 +100,6 @@
   ;; so they will be available both in development, and in the distributed archive.
   :prep-tasks [["shell" "npx" "antora" "--fetch" "doc/embedded.yml"]
                "codox"
-               "javac"
-               "compile"
                "resource"]
 
   :min-lein-version "2.0.0")
