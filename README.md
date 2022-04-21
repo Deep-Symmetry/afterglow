@@ -131,16 +131,6 @@ started!
 3. Add this project as a dependency:
    [![Clojars Project](https://img.shields.io/clojars/v/afterglow.svg)](http://clojars.org/afterglow)
 
-> :warning: The above is an outdated version of Afterglow.
-> Unfortunately, newer versions have grown too large to be uploaded to
-> Clojars. Unless this
-> [issue](https://github.com/clojars/clojars-web/issues/195) can be
-> resolved, you are going to need to clone the Git repository and
-> build and install Afterglow to your local Maven repository in order
-> to access current versions. The Contributing page has
-> [instructions](https://github.com/Deep-Symmetry/afterglow/blob/main/CONTRIBUTING.md#getting-started)
-> explaining how to do this.
-
 > :wrench: If you were using older releases of Afterglow and installed
 > [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J) in
 > `/Library/Java/Extensions`, you need to remove it, because Afterglow
