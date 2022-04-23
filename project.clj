@@ -76,8 +76,10 @@
                                       :welcome (println "afterglow loaded.")}
                        :jvm-opts     ["-XX:-OmitStackTraceInFastThrow" "-Dapple.awt.UIElement=true"]
                        :env          {:dev "true"}}
-             :uberjar {:env {:production "true"}
-                       :aot :all}
+             :uberjar {:env        {:production "true"}
+                       :prep-tasks ["javac"
+                                    "compile"]
+                       :aot        :all}
              :netlify {:prep-tasks ^:replace []}}
   :plugins [[lein-codox "0.10.8"]
             [lein-resource "17.06.1"]
