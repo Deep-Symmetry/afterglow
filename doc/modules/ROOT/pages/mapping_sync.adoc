@@ -567,7 +567,7 @@ grid synchronization.
 
 In order to do that, download and unzip the Afterglow Traktor
 Controller Mapping,
-https://raw.githubusercontent.com/Deep-Symmetry/afterglow/master/doc/assets/Afterglow.tsi.zip[Afterglow.tsi],
+https://github.com/Deep-Symmetry/afterglow/raw/main/doc/modules/ROOT/assets/attachments/Afterglow.tsi.zip[Afterglow.tsi],
 and import it into Traktor.
 
 WARNING: Be sure to use the following steps to import the mapping,
