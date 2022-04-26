@@ -20,7 +20,7 @@
        names))
 
 (defn color-strip
-  "[ColorStrip](http://www.chauvetlighting.com/colorstrip.html) LED fixture.
+  "[ColorStrip](https://www.chauvetdj.com/products/colorstrip/) LED fixture.
   Also works with the ColorStrip Mini.
 
   This was created by Afterglow from the QLC+ Fixture Definintion
@@ -51,7 +51,8 @@
    :name "Chauvet ColorStrip"})
 
 (defn geyser-rgb
-  "[Geyser RGB](http://www.chauvetlighting.com/geyser-rgb.html) illuminated effect fogger."
+  "[Geyser RGB](https://www.chauvetdj.com/products/geyser-rgb/)
+  illuminated effect fogger."
   []
   {:channels [(chan/functions :fog 1
                               0 nil
@@ -492,7 +493,9 @@
                          :channels [(chan/dimmer 22)]}]}))))  ; UV strobe, cannot be used with channel 21``
 
 (defn hurricane-1800-flex
-  "[Hurricane 1800 Flex](http://www.chauvetlighting.com/hurricane-1800-flex.html) fogger."
+  "[Hurricane 1800
+  Flex](https://www.chauvetdj.com/products/hurricane-1800-flex/)
+  fogger."
   []
   {:channels [(chan/functions :fog 1
                               0 nil
@@ -500,7 +503,9 @@
    :name "Chauvet Hurricane 1800 Flex"})
 
 (defn intimidator-scan-led-300
-  "[Intimidator Scan LED 300](http://www.chauvetlighting.com/intimidator-scan-led-300.html) compact scanner.
+  "[Intimidator Scan LED
+  300](https://www.chauvetdj.com/products/intimidator-scan-led-300/)
+  compact scanner.
 
   This fixture can be configured to use either 8 or 11 DMX channels.
   If you do not specify a mode when patching it, `:11-channel` is
@@ -636,7 +641,9 @@
                             (chan/focus 8)]}))))))
 
 (defn intimidator-spot-led-150
-  "[Intimidator Spot LED 150](http://www.chauvetlighting.com/intimidator-spot-led-150.html) moving yoke.
+  "[Intimidator Spot LED
+  150](https://www.chauvetdj.com/products/intimidator-spot-led-150/)
+  moving yoke.
 
   This fixture can be configured to use either 6 or 11 DMX channels.
   If you do not specify a mode when patching it, `:11-channel` is
@@ -748,7 +755,9 @@
                             (build-gobo-wheel 6)]}))))))
 
 (defn kinta-x
-  "[Kinta X](http://www.chauvetlighting.com/kinta-x.html) derby effect."
+  "[Kinta
+  X](https://www.chauvetdj.com/news/kinta-x-becomes-an-led-powerhouse/)
+  derby effect."
   []
   {:channels [(chan/functions :control 1
                               0 "LEDs off"
@@ -762,7 +771,7 @@
    :name "Chauvet Kinta X"})
 
 (defn led-techno-strobe
-  "[LED Techno Strobe](http://www.chauvetlighting.com/led-techno-strobe.html)
+  "[LED Techno Strobe](https://www.chauvetdj.com/products/led-techno-strobe/)
   strobe light."
   []
   {:channels [(chan/functions :control 1
@@ -775,7 +784,7 @@
    :name "Chauvet LED Techno Strobe"})
 
 (defn led-techno-strobe-rgb
-  "[LED Techno Strobe RGB](http://www.chauvetlighting.com/led-techno-strobe-rgb.html)
+  "[LED Techno Strobe RGB](https://www.chauvetdj.com/products/led-techno-strobe-rgb/)
   color mixing strobe light.
 
   This was created by Afterglow from the QLC+ Fixture Definintion
@@ -799,7 +808,7 @@
    :name "Chauvet LED Techno Strobe RGB"})
 
 (defn scorpion-storm-fx-rgb
-  "[Scorpion Storm FX RGB](http://www.chauvetlighting.com/scorpion-storm-fx-rgb.html)
+  "[Scorpion Storm FX RGB](https://www.chauvetdj.com/products/scorpion-storm-fx-rgb/)
    grid effect laser.
 
   This fixture can be patched to use either 7 or 2 DMX channels. If
@@ -897,7 +906,7 @@
                                             217 "Beam Red Green Blue")]}))))
 
 (defn scorpion-storm-rgx
-  "[Scorpion Storm RGX](http://www.chauvetlighting.com/products/manuals/Scorpion_Storm_RGX_UM_Rev03_WO.pdf)
+  "[Scorpion Storm RGX](https://www.chauvetdj.com/news/the-x-stands-for-extras-in-the-new-scorpion-storm-rgx/)
   grid effect laser."
   []
   {:channels [(chan/functions :control 1
@@ -1035,7 +1044,7 @@
                             (build-control-channel 9)]}))))))
 
 (defn slimpar-hex3-irc
-  "[SlimPAR HEX 3 IRC](http://www.chauvetlighting.com/slimpar-hex3irc.html)
+  "[SlimPAR HEX 3 IRC](https://www.chauvetdj.com/products/slimpar-hex-3-irc/)
   six-color low-profile LED PAR.
 
   This fixture can be configured to use either 6, 8 or 12 DMX
@@ -1077,4 +1086,3 @@
                                    (chan/color 6 :uv :label "UV" :hue (when mix-uv 270))]})
           :name "Chauvet SlimPAR Hex 3 IRC"
           :mode mode)))
-

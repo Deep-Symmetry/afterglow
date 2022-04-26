@@ -1,3 +1,5 @@
 DirectoryPath: "doc/build/site"
 IgnoreURLs:
 - "github.com/Deep-Symmetry/afterglow/blob/"
+- "support.native-instruments.com/hc/"
+- "help.ableton.com/hc/"

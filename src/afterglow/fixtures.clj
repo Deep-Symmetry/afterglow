@@ -63,10 +63,10 @@
       fixtures-or-heads))
 
 (defn generic-dimmer
-  "A fixture definition where a single channel controls the power
-  level of a socket to which an incandescent light source can be
-  connected. If you are using a product such as the [Chauvet
-  DMX-4](http://www.chauvetlighting.com/dmx-4.html), its channels can
+  "A fixture definition where a single channel controls the power level
+  of a socket to which an incandescent light source can be connected.
+  If you are using a product such as the [Chauvet
+  DMX-4](https://www.chauvetdj.com/products/dmx-4/), its channels can
   be patched as four of these, or four [[generic-switch]], or some
   combination."
   []
@@ -74,11 +74,11 @@
    :name "Generic dimmer"})
 
 (defn generic-switch
-  "A fixture definition where a single channel turns on or off the
-  power at a socket to which an incandescent light source or other
+  "A fixture definition where a single channel turns on or off the power
+  at a socket to which an incandescent light source or other
   non-DMX-enabled equipment can be connected. If you are using a
   product such as the [Chauvet
-  DMX-4](http://www.chauvetlighting.com/dmx-4.html), its channels can
+  DMX-4](https://www.chauvetdj.com/products/dmx-4/), its channels can
   be patched as four of these, or four [[generic-dimmer]], or some
   combination."
   []

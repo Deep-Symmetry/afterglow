@@ -2087,13 +2087,9 @@
 
   Initializes the display, and starts the UI updater thread. Since
   SysEx messages are required for updating the display, if you are on
-  a Mac, you must
-  install [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J) to
-  provide a working implementation. (If you need to work with Java
-  1.6, you can instead
-  use [mmj](http://www.humatic.de/htools/mmj.htm), but that is no
-  longer developed, and does not support connecting or disconnecting
-  MIDI devices after Java has started.)
+  a Mac, Afterglow
+  embeds [CoreMIDI4J](https://github.com/DerekCook/CoreMidi4J) to
+  provide a working implementation.
 
   If you have more than one Ableton Push connected, or have renamed
   how it appears in your list of MIDI devices, you need to supply a

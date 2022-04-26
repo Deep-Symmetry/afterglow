@@ -143,7 +143,7 @@
 
 (defn blade-rgbw
   "[Blade
-  RGBW](http://www.blizzardlighting.com/products/moving-head-lights/item/163-blade-rgbw)
+  RGBW](https://www.blizzardpro.com/products/blade-rgbw)
   moving head. The default patching orientation is sitting on its feet
   with the LCD and control panel right side up and facing the
   audience. In this orientation, at a pan of 0, the beam is straight
@@ -313,7 +313,7 @@
 
 (defn weather-system
   "[Weather
-  System](http://www.blizzardlighting.com/products/all-in-one-lighting-systems/item/209-weather-system)
+  System](https://www.blizzardpro.com/products/weather-system)
   8-fixture LED bar. Even though this fixture does not move, it is
   important to patch it at the correct orientation, so Afterglow can
   properly reason about the spatial relationships between the eight
@@ -368,7 +368,7 @@
 
 (defn snowbank
   "[Snow
-  Bank](http://www.blizzardlighting.com/products/led-effects/item/212-snowbank)
+  Bank](https://www.blizzardpro.com/products/snowbank)
   RGB Blinder / LED Pixel Effect."
   ([]
    (snowbank :26-channel))
@@ -395,7 +395,7 @@
           :mode mode)))
 
 (defn snowball
-  "[Snowball](http://www.blizzardlighting.com/products/led-effects/item/210-snowball)
+  "[Snowball](https://www.blizzardpro.com/products/snowball-rgbw)
   multi-beam moonflower effect light."
   []
   {:name "Blizzard Snowball"
