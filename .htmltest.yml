@@ -1,0 +1,3 @@
+DirectoryPath: "doc/build/site"
+IgnoreURLs:
+- "github.com/Deep-Symmetry/afterglow/blob/"

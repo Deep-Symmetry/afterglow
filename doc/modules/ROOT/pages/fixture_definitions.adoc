@@ -1071,7 +1071,7 @@ invoke Afterglow from the command line, as described in the
 https://github.com/Deep-Symmetry/afterglow#usage[Usage] section on the
 project page, to translate it into an Afterglow fixture definition.
 For example, translating the definition for the
-https://github.com/mcallegari/qlcplus/blob/master/resources/fixtures/American-DJ-ECO-UV-BAR-DMX.qxf[American
+https://github.com/mcallegari/qlcplus/blob/master/resources/fixtures/American_DJ/American-DJ-ECO-UV-BAR-DMX.qxf[American
 DJ Eco UV Bar], like so:
 
 ```

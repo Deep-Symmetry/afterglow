@@ -7,15 +7,15 @@ https://deep-symmetry.zulipchat.com/#narrow/stream/318697-afterglow[Afterglow
 stream on Zulip]!
 
 Since I have been too busy working on the software to get out and
-perform with it, I am deeply grateful to
+perform with it, I was deeply grateful to
 https://github.com/dandaka[Vlad Rafeev] for getting this page started
 by sharing a video of a
 https://www.facebook.com/deepowerband/[Deepower audiovisual] show he
 lit using Afterglow in Kaliningrad, in December, 2015. He modestly
 says, “My first experience with lights, still a lot to accomplish.”
 And I say, there is a ton left to implement in the software too. But
-it is already fun to see https://vimeo.com/153492480[great video like
-this]!
+it was fun to see the great video he shared, but it is sadly no longer
+online.
 
 For a more wordy and nerdy introduction, there is a video of my
 https://youtu.be/mvNN0SMMZDQ[presentation and demonstration] at the

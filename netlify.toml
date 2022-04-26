@@ -19,37 +19,39 @@
 
 
 [[plugins]]
-package = "netlify-plugin-checklinks"
+package = "./netlify-plugins/cache-htmltest"
 
-  [plugins.inputs]
-  # An array of glob patterns for pages on your site
-  # Recursive traversal will start from these
-  entryPoints = [
-    "*.html",
-  ]
+# package = "netlify-plugin-checklinks"
 
-  # Recurse through all the links and asset references on your page, starting
-  # at the entrypoints
-  recursive = true
+#   [plugins.inputs]
+#   # An array of glob patterns for pages on your site
+#   # Recursive traversal will start from these
+#   entryPoints = [
+#     "*.html",
+#   ]
 
-  # Checklinks outputs TAP (https://testanything.org/tap-version-13-specification.html)
-  # by default. Enabling pretty mode makes the output easier on the eyes.
-  pretty = true
+#   # Recurse through all the links and asset references on your page, starting
+#   # at the entrypoints
+#   recursive = true
 
-  # You can mark some check as skipped, which will block checklinks
-  # from ever attempting to execute them.
-  # skipPatterns is an array of strings you can match against failing reports
-  skipPatterns = []
+#   # Checklinks outputs TAP (https://testanything.org/tap-version-13-specification.html)
+#   # by default. Enabling pretty mode makes the output easier on the eyes.
+#   pretty = true
 
-  # You can mark some check as todo, which will execute the check, but allow failures.
-  # todoPatterns is an array of strings you can match against failing reports
-  todoPatterns = []
+#   # You can mark some check as skipped, which will block checklinks
+#   # from ever attempting to execute them.
+#   # skipPatterns is an array of strings you can match against failing reports
+#   skipPatterns = []
 
-  # Report on all broken links to external pages.
-  # Enabling this will make your tests more brittle, since you can't control
-  # external pages.
-  checkExternal = true
+#   # You can mark some check as todo, which will execute the check, but allow failures.
+#   # todoPatterns is an array of strings you can match against failing reports
+#   todoPatterns = []
 
-  # Enable to check references to source maps, source map sources etc.
-  # Many build tools don't emit working references, so this is disabled by default
-  followSourceMaps = false
+#   # Report on all broken links to external pages.
+#   # Enabling this will make your tests more brittle, since you can't control
+#   # external pages.
+#   checkExternal = true
+
+#   # Enable to check references to source maps, source map sources etc.
+#   # Many build tools don't emit working references, so this is disabled by default
+#   followSourceMaps = false

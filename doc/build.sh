@@ -6,3 +6,6 @@
 npx antora --fetch doc/netlify.yml
 
 lein with-profile netlify do codox, resource
+
+curl https://htmltest.wjdp.uk | bash
+bin/htmltest

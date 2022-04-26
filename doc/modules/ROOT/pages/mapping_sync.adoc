@@ -485,7 +485,7 @@ advantage of it.
 
 TIP: Native Instruments has an informative Knowledge Base article
 which
-http://www.native-instruments.com/en/support/knowledge-base/show/750/how-to-send-a-midi-clock-sync-signal-in-traktor/[explains]
+https://support.native-instruments.com/hc/en-us/articles/209590629-How-to-Send-a-MIDI-Clock-Sync-Signal-in-TRAKTOR[explains]
 how to configure Traktor to send the MIDI clock pulses that Afterglow
 can sync to. Also see
 <<syncing-to-traktor-beat-phase,below>> for how to sync
@@ -613,7 +613,7 @@ Clock section above, be sure to delete it, and leave only the
 Afterglow Traktor controller mapping.
 
 You must still follow the instructions in the Traktor
-http://www.native-instruments.com/en/support/knowledge-base/show/750/how-to-send-a-midi-clock-sync-signal-in-traktor/[Knowledge
+https://support.native-instruments.com/hc/en-us/articles/209590629-How-to-Send-a-MIDI-Clock-Sync-Signal-in-TRAKTOR[Knowledge
 Base article], starting with step 3.2, to ensure that the `Clock,
 Afterglow` device is configured to send MIDI messages to the
 appropriate MIDI output port, and step 4, which configures Traktor to
@@ -705,7 +705,7 @@ walk-through] of setting up network MIDI communication.
 To achive MIDI routing on a single machine, you need to set up a
 virtual MIDI bus. On the Mac you can use Core MIDI's built-in IAC bus,
 and on Windows you could use the MIDI Yoke utility. You can find
-https://www.ableton.com/en/help/article/using-virtual-MIDI-buses-live/[a
+https://help.ableton.com/hc/en-us/articles/209774225-Setting-up-a-virtual-MIDI-bus[a
 good tutorial] about the needed steps on the Ableton Live website.
 
 [[checking-sync]]
