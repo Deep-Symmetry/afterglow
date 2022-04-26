@@ -11,6 +11,12 @@ This change log follows the conventions of
 - Afterglow would crash when told to convert a QLC+ fixture definition
   in the current working directory (with no path component),
   [#72](https://github.com/Deep-Symmetry/afterglow/issues/72).
+- External links were not being checked in the developer guide, but
+  even so the link checker plugin ended up failing. Switched to
+  htmltest, which is used on other Deep Symmetry projects, enabled
+  external link checking (although not yet for GitHub source links
+  because they are hitting rate limits, there are so many of them),
+  and fixed a great many broken/stale links.
 
 ### Added
 
