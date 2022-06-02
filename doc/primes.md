@@ -170,9 +170,10 @@ consider, in a functional language you instead filter sequences of
 values using predicates. So let's start by figuring out how to express
 the sequence of values we want to check. To test if ten is prime, the
 range of values we need to test if it is divisible by starts at two,
-and goes up to five (half of ten). There is a built-in function
-`range` that gives a range of values. If we try it out with the square root of
-our candidate value, we see it seems _almost_ give us the numbers we want:
+and goes up to three (the largest integer that is less than the square
+root of ten). There is a built-in function `range` that gives a range
+of values. If we try it out with the square root of our candidate
+value, we see it seems _almost_ give us the numbers we want:
 
 ```clojure
 (range (Math/sqrt 10))
@@ -289,10 +290,10 @@ whether that value evenly divides `n`. We can do exactly that:
 `(partial divides? n)` creates a new function that calls `divides?`
 with the values `n` and whatever you pass to this new function. So
 that is exactly what we need as a predicate for `not-any?` to use. Our
-`prime?` function will return `true` if no integer from 2 to half of
-`n` can evenly divide `n`. And in so few words! The explanation is far
-bigger than the code itself, even counting the doc strings. Let's try
-it out!
+`prime?` function will return `true` if no integer from 2 to the
+square root of `n` can evenly divide `n`. And in so few words! The
+explanation is far bigger than the code itself, even counting the doc
+strings. Let's try it out!
 
 ```clojure
 (prime? 10)
