@@ -207,7 +207,7 @@
                           (when (and active (:held cue))
                             (show/end-effect! (:key cue)))))))))
 
-(defn- clear-osc-cue-bindings
+(defn clear-osc-cue-bindings
   "Clear out any OSC cue bindings which have been established."
   []
   (doseq [[x y f path] @osc-cue-bindings]
@@ -254,7 +254,7 @@
                           (fn [msg]
                             (show/set-variable! var-key (first (:args msg)))))))))
 
-(defn- clear-osc-var-bindings
+(defn clear-osc-var-bindings
   "Clear out any OSC var bindings which have been established."
   []
   (doseq [[k f path have-receiver] @osc-var-bindings]
