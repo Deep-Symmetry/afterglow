@@ -556,6 +556,14 @@
   (show/patch-fixture! :puck-1 (blizzard/puck-fab5) universe 97 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 52))
   (show/patch-fixture! :puck-2 (blizzard/puck-fab5) universe 113 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 40))
 
+  ;; Turn on the OSC server, and clear any variable and cue bindings that might have been around from previous runs.
+  ;; Some of the example cues we use depend on this being available.
+  (when (nil? @core/osc-server)
+    (core/start-osc-server 16010))
+  (ex/clear-osc-var-bindings)
+  (ex/clear-osc-cue-bindings)
+
+
   (make-cues)
 
   (reset! var-binder (var-fx/create-for-show *show*))
