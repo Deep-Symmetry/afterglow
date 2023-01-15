@@ -1201,7 +1201,8 @@
 
 (defn make-ambient-cues
   "Create a page of cues for controlling lasers, and ambient effects
-  like the H2O LED and black light.
+  like the H2O LED and black light. Also adds copies of the important
+  cue for opening Torrent shutters and resetting their motors.
 
   Also holds cues for turning on sound active mode when the show
   operator wants to let things take care of themselves for a while,
@@ -1210,6 +1211,12 @@
   [page-x page-y]
   (let [x-base (* page-x 8)
         y-base (* page-y 8)]
+
+    (show/set-cue! x-base (+ y-base 7)
+                   (cues/function-cue :torrent-shutter :shutter-open (show/fixtures-named "torrent")))
+    (show/set-cue! (inc x-base) (+ y-base 7)
+                   (cues/function-cue :torrent-reset :motor-reset (show/fixtures-named "torrent")
+                                      :color (create-color :red) :held true))
 
     ;; Various ultraviolet options. Start by defining the pair of effects needed to turn the hex fixtures on
     ;; in full UV mode.
@@ -1856,13 +1863,13 @@
                                  (when isolated? {:start 2.0}))]
               :color color :priority 1)))
 
-(defn- make-main-aim-cues
+(defn make-main-aim-cues
   "Create a page of cues for aiming lights in particular points,
   individually and in groups."
   [page-x page-y]
   (let [x-base (* page-x 8)
         y-base (* page-y 8)
-        fixtures [:torrent-1 :torrent-2 :blade-1 :blade-2 :blade-3 :blade-4 :blade-5]
+        fixtures [:torrent-1 :torrent-2 :blade-1 :blade-2 :blade-3 :blade-4]
         transform (Transform3D.)
         width (- right-wall left-wall)
         depth (- house-rear-wall stage-wall)]
@@ -2066,13 +2073,13 @@
                         {:key "tilt-phase" :name "Tilt phase" :min 0.0 :max 1.0 :start 0.0}]
             :color :green :priority 1))
 
-(defn- make-main-direction-cues
+(defn make-main-direction-cues
   "Create a page of cues for aiming lights in particular directions,
   individually and in groups."
   [page-x page-y]
   (let [x-base (* page-x 8)
         y-base (* page-y 8)
-        fixtures [:torrent-1 :torrent-2 :blade-1 :blade-2 :blade-3 :blade-4 :blade-5]
+        fixtures [:torrent-1 :torrent-2 :blade-1 :blade-2 :blade-3 :blade-4]
         transform (Transform3D.)]
 
     ;; Set up default shared direction coordinates
@@ -2255,3 +2262,12 @@
                                   :step-in {:interval-ratio 2}
                                   :step-out {:interval-ratio (/ 1 2)}))
            :variables [{:key "level" :min 0 :max 255 :start 255}])))
+
+(defn use-chris-show
+  "Set up the show laid out for Chris. By default it will create the
+  show to use universe 1, but if you want to use a different
+  universe (for example, a dummy universe on ID 0, because your DMX
+  interface isn't handy right now), you can override that by supplying
+  a different ID after :universe."
+  [& {:keys [universe] :or {universe 1}}]
+  ((requiring-resolve 'afterglow.shows.chris/use-chris-show) :universe universe))
