@@ -57,8 +57,8 @@
                              :variables [{:key "x-scale" :min -5 :max 5 :start 1 :name "X Scale"}
                                          {:key "y-scale" :min -10 :max 10 :start 5 :name "Y Scale"}
                                          {:key "z" :min 0 :max 20 :start 4}
-                                       {:key "y" :min -10 :max 10 :start ex/rig-height}
-                                       {:key "x" :min -10 :max 10 :start 0.0}]
+                                         {:key "y" :min -10 :max 10 :start ex/rig-height}
+                                         {:key "x" :min -10 :max 10 :start 0.0}]
                            :color :blue :end-keys [:move-blades :move-torrents]))
 
     (show/set-cue! (+ x-base 2) (+ y-base 2)
@@ -80,16 +80,16 @@
                              :variables [{:key "bars" :name "Bars" :min 1 :max 8 :type :integer :start 2}
                                          {:key "cycles" :name "Cycles" :min 1 :max 8 :type :integer :start 1}
                                          {:key "stagger" :name "Stagger" :min 0 :max 4 :start 0}
-                                         {:key "spread" :name "Spread" :min -45 :max 45
-                                          :centered true :resolution 0.25 :start 0}
-                                         {:key "pan-min" :name "Pan min" :min -180 :max 180
-                                          :centered true :resolution 0.5 :start -75}
-                                         {:key "pan-max" :name "Pan max" :min -180 :max 180
-                                          :centered true :resolution 0.5 :start 90}
-                                         {:key "tilt-min" :name "Tilt min" :min -180 :max 180
-                                          :centered true :resolution 0.5 :start -10}
-                                         {:key "tilt-max" :name "Tilt max" :min -180 :max 180
-                                          :centered true :resolution 0.5 :start 75}]
+                                         {:key      "spread" :name       "Spread" :min   -45 :max 45
+                                          :centered true     :resolution 0.25     :start 0}
+                                         {:key      "pan-min" :name       "Pan min" :min   -180 :max 180
+                                          :centered true      :resolution 0.5       :start -75}
+                                         {:key      "pan-max" :name       "Pan max" :min   -180 :max 180
+                                          :centered true      :resolution 0.5       :start 90}
+                                         {:key      "tilt-min" :name       "Tilt min" :min   -180 :max 180
+                                          :centered true       :resolution 0.5        :start -10}
+                                         {:key      "tilt-max" :name       "Tilt max" :min   -180 :max 180
+                                          :centered true       :resolution 0.5        :start 75}]
                              :color :yellow :end-keys [:movement]))
 
     (show/set-cue! (+ x-base 3) (+ y-base 3)
@@ -98,16 +98,16 @@
                              :variables [{:key "bars" :name "Bars" :min 1 :max 8 :type :integer :start 1}
                                          {:key "cycles" :name "Cycles" :min 1 :max 8 :type :integer :start 1}
                                          {:key "stagger" :name "Stagger" :min 0 :max 4 :start 0.5}
-                                         {:key "spread" :name "Spread" :min -45 :max 45
-                                          :centered true :resolution 0.25 :start 0}
-                                         {:key "pan-min" :name "Pan min" :min -180 :max 180
-                                          :centered true :resolution 0.5 :start 0}
-                                         {:key "pan-max" :name "Pan max" :min -180 :max 180
-                                          :centered true :resolution 0.5 :start 0}
-                                         {:key "tilt-min" :name "Tilt min" :min -180 :max 180
-                                          :centered true :resolution 0.5 :start -60}
-                                         {:key "tilt-max" :name "Tilt max" :min -180 :max 180
-                                          :centered true :resolution 0.5 :start 100}]
+                                         {:key      "spread" :name       "Spread" :min   -45 :max 45
+                                          :centered true     :resolution 0.25     :start 0}
+                                         {:key      "pan-min" :name       "Pan min" :min   -180 :max 180
+                                          :centered true      :resolution 0.5       :start 0}
+                                         {:key      "pan-max" :name       "Pan max" :min   -180 :max 180
+                                          :centered true      :resolution 0.5       :start 0}
+                                         {:key      "tilt-min" :name       "Tilt min" :min   -180 :max 180
+                                          :centered true       :resolution 0.5        :start -60}
+                                         {:key      "tilt-max" :name       "Tilt max" :min   -180 :max 180
+                                          :centered true       :resolution 0.5        :start 100}]
                              :color :yellow :end-keys [:movement]))
 
     (show/set-cue! (+ x-base 3) (+ y-base 4)
@@ -115,9 +115,9 @@
                              (fn [var-map] (cues/apply-merging-var-map var-map ex/circle-chain
                                                                        (show/fixtures-named :blade) true))
                              :variables [{:key "bars" :name "Bars" :min 1 :max 8 :type :integer :start 2}
-                                         {:key "radius" :name "Radius" :min 0.1 :max 2
-                                          :resolution 0.1 :start 1.0}
-                                         {:key "stagger" :name "Stagger" :min 0 :max 2 :start 0
+                                         {:key        "radius" :name  "Radius" :min 0.1 :max 2
+                                          :resolution 0.1      :start 1.0}
+                                         {:key        "stagger" :name "Stagger" :min 0 :max 2 :start 0
                                           :resolution 0.1}]
                              :short-name "Blade Circles" :color :green :priority 4))
 
@@ -126,9 +126,9 @@
                              (fn [var-map] (cues/apply-merging-var-map var-map ex/circle-chain
                                                                        (show/fixtures-named :torrent) false))
                              :variables [{:key "bars" :name "Bars" :min 1 :max 8 :type :integer :start 2}
-                                         {:key "radius" :name "Radius" :min 0.1 :max 2
-                                          :resolution 0.1 :start 1.0}
-                                         {:key "stagger" :name "Stagger" :min 0 :max 2 :start 0
+                                         {:key        "radius" :name  "Radius" :min 0.1 :max 2
+                                          :resolution 0.1      :start 1.0}
+                                         {:key        "stagger" :name "Stagger" :min 0 :max 2 :start 0
                                           :resolution 0.1}]
                              :short-name "Torrent Circles" :color :green :priority 4))
 
@@ -137,11 +137,119 @@
                    (cues/cue :crossover (fn [var-map] (cues/apply-merging-var-map var-map ex/crossover-chase))
                              :variables [{:key "beats" :min 1 :max 8 :start 2 :type :integer :name "Beats"}
                                          {:key "fade-fraction" :min 0 :max 1 :start 0 :name "Fade"}
-                                         {:key "cross-color" :type :color :start (colors/create-color :red)
+                                         {:key  "cross-color" :type :color :start (colors/create-color :red)
                                           :name "X Color"}
-                                         {:key "end-color" :type :color :start (colors/create-color :yellow)
+                                         {:key  "end-color" :type :color :start (colors/create-color :yellow)
                                           :name "End Color"}]
-                             :color :cyan :priority 5))))
+                             :color :cyan :priority 5))
+
+    ;; Some macros based on the pan/tilt oscillator cues
+    (show/set-cue! (+ x-base 7) (inc y-base)
+                   (cues/cue :move-torrents
+                             (fn [_] (cues/compound-cues-effect
+                                      "Torrent Nod" *show*
+                                      [[17 7 {:pan-min  90.0  :pan-max  179.0 :pan-bars  2  :pan-phase  0.0
+                                              :tilt-min 148.0 :tilt-max 255.0 :tilt-bars 1, :tilt-phase 0.0}]
+                                       [16 7 {:pan-min  77.0  :pan-max  164.0  :pan-bars  2  :pan-phase  0.0
+                                              :tilt-min 148.0 :tilt-max 255.0, :tilt-bars 1, :tilt-phase 0.0}]]))
+                             :end-keys [:movement]))
+
+    (show/set-cue! (+ x-base 7) (+ y-base 2)
+                   (cues/cue :move-torrents
+                             (fn [_] (cues/compound-cues-effect
+                                      "Torrent Cross Nod" *show*
+                                      [[16 7 {:pan-min  77.0,  :pan-max  164.0, :pan-bars  2, :pan-phase  0.5,
+                                              :tilt-min 148.0, :tilt-max 255.0, :tilt-bars 1, :tilt-phase 0.25}]
+                                       [17 7 {:pan-min  90.0,  :pan-max  179.0, :pan-bars  2, :pan-phase  0.0,
+                                              :tilt-min 148.0, :tilt-max 255.0, :tilt-bars 1, :tilt-phase 0.0}]]))
+                             :end-keys [:movement]))
+
+    (show/set-cue! (+ x-base 6) (inc y-base)
+                   (cues/cue :move-blades
+                             (fn [_] (cues/compound-cues-effect
+                                      "Sync Can Can" *show*
+                                      [[22 7 {:pan-min  39.0, :pan-max  39.0,  :pan-bars  1, :pan-phase  0.0,
+                                              :tilt-min 73.0, :tilt-max 248.0, :tilt-bars 1, :tilt-phase 0.0}]
+                                       [21 7 {:pan-min  42.0, :pan-max  42.0,  :pan-bars  1, :pan-phase  0.0,
+                                              :tilt-min 0.0,  :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.0}]
+                                       [20 7 {:pan-min  42.0, :pan-max  42.0,  :pan-bars  1, :pan-phase  0.0,
+                                              :tilt-min 0.0,  :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.0}]
+                                       [19 7 {:pan-min  42.0, :pan-max  42.0,  :pan-bars  1, :pan-phase  0.0,
+                                              :tilt-min 0.0,  :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.0}]
+                                       [18 7 {:pan-min  42.0, :pan-max  42.0,  :pan-bars  1, :pan-phase  0.0,
+                                              :tilt-min 0.0,  :tilt-max 216.0, :tilt-bars 1, :tilt-phase 0.0}]]))
+                             :end-keys [:movement]))
+
+    (show/set-cue! (+ x-base 6) (+ y-base 2)
+                   (cues/cue :move-blades
+                             (fn [_] (cues/compound-cues-effect
+                                      "Spread Can Can" *show*
+                                      [[18 7 {:pan-min  42.0, :pan-max  42.0,  :pan-bars  1, :pan-phase  0.0,
+                                              :tilt-min 0.0,  :tilt-max 216.0, :tilt-bars 1, :tilt-phase 0.0}]
+                                       [19 7 {:pan-min  42.0, :pan-max  42.0,  :pan-bars  1, :pan-phase  0.0,
+                                              :tilt-min 0.0,  :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.2}]
+                                       [20 7 {:pan-min  42.0, :pan-max  42.0,  :pan-bars  1, :pan-phase  0.0,
+                                              :tilt-min 0.0,  :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.4}]
+                                       [21 7 {:pan-min  42.0, :pan-max  42.0,  :pan-bars  1, :pan-phase  0.0,
+                                              :tilt-min 0.0,  :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.6}]
+                                       [22 7 {:pan-min  39.0, :pan-max  39.0,  :pan-bars  1, :pan-phase  0.0,
+                                              :tilt-min 73.0, :tilt-max 248.0, :tilt-bars 1, :tilt-phase 0.8}]]))
+                             :end-keys [:movement]))
+
+    (show/set-cue! (+ x-base 6) (+ y-base 3)
+                   (cues/cue :move-blades
+                             (fn [_] (cues/compound-cues-effect
+                                      "Swing Can Can" *show*
+                                      [[22 7 {:pan-min  24.0, :pan-max  64.0,  :pan-bars  4, :pan-phase  0.0,
+                                              :tilt-min 73.0, :tilt-max 248.0, :tilt-bars 1, :tilt-phase 0.8}]
+                                       [21 7 {:pan-min  24.0, :pan-max  64.0,  :pan-bars  4, :pan-phase  0.0,
+                                              :tilt-min 0.0,  :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.6}]
+                                       [20 7 {:pan-min  23.0, :pan-max  64.0,  :pan-bars  4, :pan-phase  0.0,
+                                              :tilt-min 0.0,  :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.4}]
+                                       [19 7 {:pan-min  23.0, :pan-max  64.0,  :pan-bars  4, :pan-phase  0.0,
+                                              :tilt-min 0.0,  :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.2}]
+                                       [18 7 {:pan-min  23.0, :pan-max  64.0,  :pan-bars  4, :pan-phase  0.0,
+                                              :tilt-min 0.0,  :tilt-max 216.0, :tilt-bars 1, :tilt-phase 0.0}]]))
+                             :end-keys [:movement]))
+
+    (show/set-cue! (+ x-base 6) (+ y-base 7)
+                   (cues/cue :center-rebel
+                             (fn [_] (cues/compound-cues-effect
+                                      "Center Rebel" *show*
+                                      [[22 7 {:pan-min  12.0, :pan-max  64.0,  :pan-bars  4, :pan-phase  0.0,
+                                              :tilt-min 56.0, :tilt-max 182.0, :tilt-bars 1, :tilt-phase 0.8}]]))))
+
+    (show/set-cue! (+ x-base 6) (+ y-base 6)
+                   (cues/cue :move-blades
+                             (fn [_] (cues/compound-cues-effect
+                                      "Slow Ceiling LR" *show*
+                                      [[18 7 {:pan-min  12.0,  :pan-max  66.0,  :pan-bars  4, :pan-phase  0.0,
+                                              :tilt-min 170.0, :tilt-max 170.0, :tilt-bars 1, :tilt-phase 0.0}]
+                                       [19 7 {:pan-min  12.0,  :pan-max  66.0,  :pan-bars  4, :pan-phase  0.0,
+                                              :tilt-min 170.0, :tilt-max 170.0, :tilt-bars 1, :tilt-phase 0.2}]
+                                       [20 7 {:pan-min  12.0,  :pan-max  66.0,  :pan-bars  4, :pan-phase  0.0,
+                                              :tilt-min 170.0, :tilt-max 170.0, :tilt-bars 1, :tilt-phase 0.4}]
+                                       [21 7 {:pan-min  12.0,  :pan-max  66.0,  :pan-bars  4, :pan-phase  0.0,
+                                              :tilt-min 170.0, :tilt-max 170.0, :tilt-bars 1, :tilt-phase 0.6}]
+                                       [22 7 {:pan-min  12.0,  :pan-max  66.0,  :pan-bars  4, :pan-phase  0.0,
+                                              :tilt-min 230.0, :tilt-max 230.0, :tilt-bars 1, :tilt-phase 0.8}]]))
+                             :end-keys [:movement]))
+
+    (show/set-cue! (+ x-base 6) (+ y-base 5)
+                   (cues/cue :move-blades
+                             (fn [_] (cues/compound-cues-effect
+                                      "Slow Scan LR" *show*
+                                      [[22 7 {:pan-min  12.0,  :pan-max  66.0,  :pan-bars  4, :pan-phase  0.0,
+                                              :tilt-min 182.0, :tilt-max 182.0, :tilt-bars 1, :tilt-phase 0.8}]
+                                       [21 7 {:pan-min  12.0,  :pan-max  66.0,  :pan-bars  4, :pan-phase  0.4,
+                                              :tilt-min 130.0, :tilt-max 130.0, :tilt-bars 1, :tilt-phase 0.6}]
+                                       [20 7 {:pan-min  12.0,  :pan-max  66.0,  :pan-bars  4, :pan-phase  0.8,
+                                              :tilt-min 130.0, :tilt-max 130.0, :tilt-bars 1, :tilt-phase 0.4}]
+                                       [19 7 {:pan-min  12.0,  :pan-max  66.0,  :pan-bars  4, :pan-phase  0.2,
+                                              :tilt-min 130.0, :tilt-max 130.0, :tilt-bars 1, :tilt-phase 0.2}]
+                                       [18 7 {:pan-min  12.0,  :pan-max  66.0,  :pan-bars  4, :pan-phase  0.6,
+                                              :tilt-min 162.0, :tilt-max 162.0, :tilt-bars 1, :tilt-phase 0.0}]]))
+                             :end-keys [:movement]))))
 
 (defn misc-movement-cues
   "some miscellany which I'm not totally sure what to do with.
