@@ -423,35 +423,42 @@
   of [[afterglow.examples/use-sample-show]] (click the `view source`
   link below the description to see the `sample-show` atom and `swap!`
   invocation within `set-default-show!` it uses to make sure there is
-  only ever one version registered)."
-  [& {:keys [universes base-metronome refresh-interval description]
-      :or {universes [1] base-metronome (rhythm/metronome 120) refresh-interval default-refresh-interval}}]
+  only ever one version registered).
+
+  If `grid-controller-listener` is supplied, it will be called
+  whenever a grid controller is registered to the show with the
+  arguments `:register` and the `IGridController` implementation, and
+  whenever one is unregistered with the arguments `:unregister` and
+  the implementation."
+  [& {:keys [universes base-metronome refresh-interval description grid-controller-listener]
+      :or   {universes [1] base-metronome (rhythm/metronome 120) refresh-interval default-refresh-interval}}]
   {:pre [(sequential? universes) (pos? (count universes)) (every? integer? universes) (not-any? neg? universes)
          (satisfies? rhythm/IMetronome base-metronome) (number? refresh-interval) (pos? refresh-interval)]}
   (let [result (with-meta
-                 {:id (swap! show-counter inc)
-                  :metronome base-metronome
-                  :sync (atom nil)
-                  :refresh-interval refresh-interval
-                  :universes (set universes)
-                  :next-id (atom 0)
-                  :active-effects (atom {:effects []
-                                         :indices {}
-                                         :meta []
-                                         :ending #{}})
-                  :variables (atom {})
-                  :grand-master (master nil) ; Only the grand master can have no show, or parent.
-                  :fixtures (atom {})
-                  :movement (atom {}) ; Used to smooth head motion between frames
-                  :statistics (atom { :afterglow-version (version/tag) :afterglow-title (version/title)})
-                  :dimensions (atom {})
-                  :grid-controllers (atom #{})
-                  :frame-fns (atom #{})
-                  :empty-buffer-fns (atom #{})
-                  :send-buffer-fns (atom #{})
-                  :task (atom nil)
-                  :pool (atom nil)
-                  :cue-grid (controllers/cue-grid)}
+                 {:id                       (swap! show-counter inc)
+                  :metronome                base-metronome
+                  :sync                     (atom nil)
+                  :refresh-interval         refresh-interval
+                  :universes                (set universes)
+                  :next-id                  (atom 0)
+                  :active-effects           (atom {:effects []
+                                                   :indices {}
+                                                   :meta    []
+                                                   :ending  #{}})
+                  :variables                (atom {})
+                  :grand-master             (master nil) ; Only the grand master can have no show, or parent.
+                  :fixtures                 (atom {})
+                  :movement                 (atom {})    ; Used to smooth head motion between frames
+                  :statistics               (atom { :afterglow-version (version/tag) :afterglow-title (version/title)})
+                  :dimensions               (atom {})
+                  :grid-controllers         (atom #{})
+                  :grid-controller-listener grid-controller-listener
+                  :frame-fns                (atom #{})
+                  :empty-buffer-fns         (atom #{})
+                  :send-buffer-fns          (atom #{})
+                  :task                     (atom nil)
+                  :pool                     (atom nil)
+                  :cue-grid                 (controllers/cue-grid)}
                  {:type :show})]
     (when-not (clojure.string/blank? description)
       (register-show result description))
@@ -1300,11 +1307,15 @@
   protocol."
   [controller]
   {:pre [(some? *show*) (satisfies? controllers/IGridController controller)]}
-  (swap! (:grid-controllers *show*) conj controller))
+  (swap! (:grid-controllers *show*) conj controller)
+  (when-let [listener (:grid-controller-listener *show*)]
+    (listener :register controller)))
 
 (defn unregister-grid-controller
   "Remove a cue grid controller from the list available for linking in the
   web interface."
   [controller]
   {:pre [(some? *show*) (satisfies? controllers/IGridController controller)]}
-  (swap! (:grid-controllers *show*) disj controller))
+  (swap! (:grid-controllers *show*) disj controller)
+  (when-let [listener (:grid-controller-listener *show*)]
+    (listener :unregister controller)))

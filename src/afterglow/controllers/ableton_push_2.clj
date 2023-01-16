@@ -3,8 +3,7 @@
   Afterglow. Its features are described in the [Developer
   Guide]({{guide-url}}push2.html)."
   {:author "James Elliott"}
-  (:require [afterglow.controllers.ableton-push :as push :refer [set-pad-velocity]]
-            [afterglow.controllers :as controllers]
+  (:require [afterglow.controllers :as controllers]
             [afterglow.controllers.tempo :as tempo]
             [afterglow.effects.cues :as cues]
             [afterglow.effects.dimmer :refer [master-get-level master-set-level]]
@@ -14,15 +13,17 @@
             [afterglow.show-context :refer [with-show]]
             [afterglow.util :as util]
             [afterglow.version :as version]
+            [clojure.java.io :as io]
             [clojure.math.numeric-tower :as math]
+            [clojure.set :as set]
+            [clojure.string :as str]
             [com.evocomputing.colors :as colors]
             [overtone.at-at :as at-at]
             [overtone.midi :as midi]
             [taoensso.timbre :as timbre])
   (:import [afterglow.effects Effect]
            [org.deepsymmetry Wayang]
-           [java.util Arrays]
-           [java.awt GraphicsEnvironment Graphics2D Font AlphaComposite RenderingHints]
+           [java.awt GraphicsEnvironment Font AlphaComposite RenderingHints]
            [javax.sound.midi ShortMessage]))
 
 (defonce fonts-loaded
@@ -503,7 +504,7 @@
               message (ShortMessage.)]
           (when (not= mode last-mode)
             (set-touch-strip-mode controller mode)
-            (if (= mode touch-strip-mode-sysex)  ; We want the touch strip fully dark
+            (when (= mode touch-strip-mode-sysex)  ; We want the touch strip fully dark
               (clear-all-touch-strip-leds controller)))
           (when (not= mode touch-strip-mode-sysex)  ; We are actually displaying values
             (.setMessage message ShortMessage/PITCH_BEND 0 (rem value 128) (quot value 128))
@@ -575,11 +576,11 @@
   "Truncates a string (appending an ellipsis) enough to fit within a
   given pixel width."
   [text font render-context max-width]
-  (if (or (clojure.string/blank? text) (<= (string-width text font render-context) max-width))
+  (if (or (str/blank? text) (<= (string-width text font render-context) max-width))
     text
     (loop [truncated (subs text 0 (dec (count text)))]
       (let [result (str truncated "…")]
-        (if (or (clojure.string/blank? truncated) (<= (string-width result font render-context) max-width))
+        (if (or (str/blank? truncated) (<= (string-width result font render-context) max-width))
           result
           (recur (subs truncated 0 (dec (count truncated)))))))))
 
@@ -657,7 +658,6 @@
   etc. Assumes the value will fit in the allocated space."
   [controller index encoder-count attributed-string color]
   (let [graphics (create-graphics controller)
-        space (space-for-encoder-button-label encoder-count)
         context (.getFontRenderContext graphics)
         iterator (.getIterator attributed-string)
         measurer (java.awt.font.LineBreakMeasurer. iterator context)
@@ -976,9 +976,8 @@
                                   touch-strip-mode-level))
 
     ;; Display the sync mode in red to explain why we are not adjusting it.
-    (let [graphics (create-graphics controller)]
-      (draw-bottom-button-label controller 1 (metronome-sync-label controller) red-color
-                                :background-color metronome-background))))
+    (draw-bottom-button-label controller 1 (metronome-sync-label controller) red-color
+                              :background-color metronome-background)))
 
 (defn sign-velocity
   "Convert a midi velocity to its signed equivalent, to translate
@@ -1008,22 +1007,22 @@
   [controller]
   (controllers/add-overlay (:overlays controller)
                (reify controllers/IOverlay
-                 (captured-controls [this] #{72})
-                 (captured-notes [this] #{1 9})
-                 (adjust-interface [this snapshot]
+                 (captured-controls [_this] #{72})
+                 (captured-notes [_this] #{1 9})
+                 (adjust-interface [_this snapshot]
                    (bpm-adjusting-interface controller snapshot)
                    true)
-                 (handle-control-change [this message]
+                 (handle-control-change [_this message]
                    (adjust-bpm-from-encoder controller message))
-                 (handle-note-on [this  message]
+                 (handle-note-on [_this _message]
                    ;; Suppress the actual BPM encoder while we are active.
                    true)
-                 (handle-note-off [this message]
+                 (handle-note-off [_this message]
                    (when (= (:note message) 1)
                      ;; They released us, end the overlay.
                      :done))
-                 (handle-aftertouch [this message])
-                 (handle-pitch-bend [this message]
+                 (handle-aftertouch [_this _message])
+                 (handle-pitch-bend [_this message]
                    (let [full-range (- controllers/maximum-bpm controllers/minimum-bpm)
                          fraction (/ (+ (* (:data2 message) 128) (:data1 message)) 16383)
                          adjusted (double (+ controllers/minimum-bpm (* fraction full-range)))
@@ -1074,21 +1073,21 @@
   [controller]
   (controllers/add-overlay (:overlays controller)
                (reify controllers/IOverlay
-                 (captured-controls [this] #{71})
-                 (captured-notes [this] #{0 10})
-                 (adjust-interface [this snapshot]
+                 (captured-controls [_this] #{71})
+                 (captured-notes [_this] #{0 10})
+                 (adjust-interface [_this snapshot]
                    (beat-adjusting-interface controller snapshot))
-                 (handle-control-change [this message]
+                 (handle-control-change [_this message]
                    (adjust-beat-from-encoder controller message))
-                 (handle-note-on [this message]
+                 (handle-note-on [_this _message]
                    ;; Suppress the actual beat encoder while we are active.
                    true)
-                 (handle-note-off [this message]
+                 (handle-note-off [_this message]
                    (when (zero? (:note message))
                      ;; They released us, end the overlay.
                      :done))
-                 (handle-aftertouch [this message])
-                 (handle-pitch-bend [this message]))))
+                 (handle-aftertouch [_this _message])
+                 (handle-pitch-bend [_this _message]))))
 
 (defn- enter-metronome-showing
   "Activate the persistent metronome display, with sync and reset pads
@@ -1097,9 +1096,9 @@
   (swap! (:metronome-mode controller) assoc :showing true)
   (controllers/add-overlay (:overlays controller)
                (reify controllers/IOverlay
-                 (captured-controls [this] #{3 9 20 21})
-                 (captured-notes [this] #{0 1})
-                 (adjust-interface [this _]
+                 (captured-controls [_this] #{3 9 20 21})
+                 (captured-notes [_this] #{0 1})
+                 (adjust-interface [_this _snapshot]
                    ;; Make the metronome button bright, since its information is active
                    (swap! (:next-text-buttons controller)
                           assoc (:metronome control-buttons)
@@ -1111,7 +1110,7 @@
                                              (metronome-sync-color controller) :background-color metronome-background)
                    (swap! (:next-top-pads controller) assoc 0 dim-red-color)
                    (swap! (:next-top-pads controller) assoc 1 (dim (metronome-sync-color controller))))
-                 (handle-control-change [this message]
+                 (handle-control-change [_this message]
                    (case (:note message)
                      3 ; Tap tempo button
                      (when (pos? (:velocity message))
@@ -1138,16 +1137,16 @@
                         (:overlays controller) 21 (fn [_] (swap! (:next-top-pads controller)
                                                                  assoc 1 (metronome-sync-color controller))))
                        true)))
-                 (handle-note-on [this message]
+                 (handle-note-on [_this message]
                    ;; Whoops, user grabbed encoder closest to beat or BPM display
                    (case (:note message)
                      0 (encoder-above-beat-touched controller)
                      1 (encoder-above-bpm-touched controller))
                    true)
-                 (handle-note-off [this message]
+                 (handle-note-off [_this _message]
                    false)
-                 (handle-aftertouch [this message])
-                 (handle-pitch-bend [this message]))))
+                 (handle-aftertouch [_this _message])
+                 (handle-pitch-bend [_this _message]))))
 
 (defn- new-beat?
   "Returns true if the metronome is reporting a different marker
@@ -1303,7 +1302,7 @@
                                (if (> (rhythm/snapshot-beat-phase snapshot) 0.4) 4 22)
                                55)
                              (if (or (active-keys (:key cue))
-                                     (seq (clojure.set/intersection active-keys (set (:end-keys cue))))) 4 22))
+                                     (seq (set/intersection active-keys (set (:end-keys cue))))) 4 22))
                            l-boost)))]
         (swap! (:next-grid-pads controller) assoc (+ x (* y 8)) (or color off-color))))))
 
@@ -1357,7 +1356,7 @@
                    (reset! grid-batch-update-fn nil))))))  ; We are done
     (send-sysex controller [0x09])))
 
-(defn- ^:deprecated update-cue-grid-unbatched
+#_(defn- ^:deprecated update-cue-grid-unbatched
   "See if any of the cue grid button states have changed, and send any
   required updates. Deprecated until there is firmware that can keep
   up with updating the entire grid at once."
@@ -1602,8 +1601,7 @@
       (do (loop [fx      (take room (drop num-skipped fx))
                  fx-meta (take room (drop num-skipped fx-meta))
                  x       first-cell]
-            (let [effect      (:effect (first fx))
-                  info        (first fx-meta)
+            (let [info        (first fx-meta)
                   ending      ((:key info) (:ending fx-info))
                   cue         (:cue info)
                   base-color       (if cue
@@ -1732,6 +1730,15 @@
   off."
   (vec (repeat 64 off-color)))
 
+(defn light-custom-buttons
+  "Light any custom buttons that have been configured to make it clear
+  they are active. (If the button already has a lightness value, it
+  was not appropriate for it to have been configured as a custom
+  button, so leave it alone.)"
+  [controller]
+  (doseq [custom (vals @(:custom-control-buttons controller))]
+    (swap! (:next-text-buttons controller) update (:button custom) #(or % dim-white-color))))
+
 (defn- update-interface
   "Determine the desired current state of the interface, and send any
   changes needed to get it to that state."
@@ -1761,6 +1768,9 @@
 
       ;; Make the play button red, indicating it will stop the show
       (swap! (:next-text-buttons controller) assoc (:stop control-buttons) dim-red-color)
+
+      ;; Light up any custom buttons that have been configured.
+      (light-custom-buttons controller)
 
       ;; Add any contributions from interface overlays, removing them
       ;; if they report being finished.
@@ -1929,9 +1939,9 @@
   [controller]
   (controllers/add-overlay (:overlays controller)
                            (reify controllers/IOverlay
-                             (captured-controls [this] #{79})
-                             (captured-notes [this] #{8 7})
-                             (adjust-interface [this _]
+                             (captured-controls [_this] #{79})
+                             (captured-notes [_this] #{8 7})
+                             (adjust-interface [_this _]
                                (let [level (master-get-level (get-in controller [:show :grand-master]))
                                      graphics (create-graphics controller)]
                                  (set-graphics-color graphics master-background)
@@ -1950,19 +1960,19 @@
                                              :active-color master-content)
                                  (set-touch-strip-from-value controller level 0 100 touch-strip-mode-level))
                                true)
-                             (handle-control-change [this message]
+                             (handle-control-change [_this message]
                                ;; Adjust the BPM based on how the encoder was twisted
                                (let [delta (/ (sign-velocity (:velocity message)) 2)
                                      level (master-get-level (get-in controller [:show :grand-master]))]
                                  (master-set-level (get-in controller [:show :grand-master]) (+ level delta))
                                  true))
-                             (handle-note-on [this message]
+                             (handle-note-on [_this _message]
                                true) ; Suppress activation of the encoder above our overlay
-                             (handle-note-off [this message]
+                             (handle-note-off [_this message]
                                ;; Exit the overlay if it was our own encoder being released
                                (when (= (:note message) 8) :done))
-                             (handle-aftertouch [this message])
-                             (handle-pitch-bend [this message]
+                             (handle-aftertouch [_this _message])
+                             (handle-pitch-bend [_this message]
                                (master-set-level (get-in controller [:show :grand-master])
                                                  (value-from-touch-strip message 0 100))))))
 
@@ -1974,25 +1984,25 @@
   (swap! (:metronome-mode controller) assoc :adjusting-bpm :true)
   (controllers/add-overlay (:overlays controller)
                            (reify controllers/IOverlay
-                             (captured-controls [this] #{15})
-                             (captured-notes [this] #{9 1})
-                             (adjust-interface [this snapshot]
+                             (captured-controls [_this] #{15})
+                             (captured-notes [_this] #{9 1})
+                             (adjust-interface [_this snapshot]
                                (bpm-adjusting-interface controller snapshot)
                                true)
-                             (handle-control-change [this message]
+                             (handle-control-change [_this message]
                                (adjust-bpm-from-encoder controller message))
-                             (handle-note-on [this message]
+                             (handle-note-on [_this _message]
                                ;; Suppress the extra encoder above the BPM display.
                                ;; We can't get a note on for the BPM encoder, because
                                ;; that was the event that created this overlay.
                                true)
-                             (handle-note-off [this message]
+                             (handle-note-off [_this message]
                                (when (= (:note message) 9)
                                  ;; They released us, end the overlay
                                  (swap! (:metronome-mode controller) dissoc :adjusting-bpm)
                                  :done))
-                             (handle-aftertouch [this message])
-                             (handle-pitch-bend [this message]
+                             (handle-aftertouch [_this _message])
+                             (handle-pitch-bend [_this message]
                                (rhythm/metro-bpm (:metronome (:show controller))
                                                  (value-from-touch-strip message controllers/minimum-bpm
                                                                          controllers/maximum-bpm))))))
@@ -2005,24 +2015,24 @@
   (swap! (:metronome-mode controller) assoc :adjusting-beat :true)
   (controllers/add-overlay (:overlays controller)
                            (reify controllers/IOverlay
-                             (captured-controls [this] #{14})
-                             (captured-notes [this] #{10 0})
-                             (adjust-interface [this snapshot]
+                             (captured-controls [_this] #{14})
+                             (captured-notes [_this] #{10 0})
+                             (adjust-interface [_this snapshot]
                                (beat-adjusting-interface controller snapshot))
-                             (handle-control-change [this message]
+                             (handle-control-change [_this message]
                                (adjust-beat-from-encoder controller message))
-                             (handle-note-on [this message]
+                             (handle-note-on [_this _message]
                                ;; Suppress the extra encoder above the beat display.
                                ;; We can't get a note on for the beat encoder, because
                                ;; that was the event that created this overlay.
                                true)
-                             (handle-note-off [this message]
+                             (handle-note-off [_this message]
                                (when (= (:note message) 10)
                                  ;; They released us, exit the overlay
                                  (swap! (:metronome-mode controller) dissoc :adjusting-beat)
                                  :done))
-                             (handle-aftertouch [this message])
-                             (handle-pitch-bend [this message]))))
+                             (handle-aftertouch [_this _message])
+                             (handle-pitch-bend [_this _message]))))
 
 (defn- leave-user-mode
   "The user has asked to exit user mode, so suspend our display
@@ -2039,11 +2049,11 @@
   (set-button-color controller (:user-mode control-buttons) dim-white-color)
   (controllers/add-overlay (:overlays controller)
                            (reify controllers/IOverlay
-                             (captured-controls [this] #{59})
-                             (captured-notes [this] #{})
-                             (adjust-interface [this _]
+                             (captured-controls [_this] #{59})
+                             (captured-notes [_this] #{})
+                             (adjust-interface [_this _snapshot]
                                true)
-                             (handle-control-change [this message]
+                             (handle-control-change [_this message]
                                (when (pos? (:velocity message))
                                  ;; We are returning to user mode, restore display
                                  (clear-interface controller)
@@ -2053,10 +2063,10 @@
                                                                          :initial-delay 250
                                                                          :desc "Push interface update"))
                                  :done))
-                             (handle-note-on [this message])
-                             (handle-note-off [this message])
-                             (handle-aftertouch [this message])
-                             (handle-pitch-bend [this message]))))
+                             (handle-note-on [_this _message])
+                             (handle-note-off [_this _message])
+                             (handle-aftertouch [_this _message])
+                             (handle-pitch-bend [_this _message]))))
 
 (def stop-indicator
   "The overlay drawn on top of the effects when the show is stopped."
@@ -2080,9 +2090,9 @@
         saved-composite (.getComposite graphics)]
     (controllers/add-overlay (:overlays controller)
                              (reify controllers/IOverlay
-                               (captured-controls [this] #{85})
-                               (captured-notes [this] #{})
-                               (adjust-interface [this _]
+                               (captured-controls [_this] #{85})
+                               (captured-notes [_this] #{})
+                               (adjust-interface [_this _snapshot]
                                  (if @end-counter
                                    ;; Draw an ending animation frame, returning false once finished to end the overlay
                                    (do
@@ -2121,7 +2131,7 @@
                                            (update-mode! controller :stop false)
                                            (swap! end-counter #(or % (- 8 @start-counter))))
                                          true)))))  ; Give the ending animation a chance to run
-                               (handle-control-change [this message]
+                               (handle-control-change [_this message]
                                  #_(timbre/info "Stop message" message)
                                  (when (pos? (:velocity message))
                                    ;; End stop mode and start the ending animation if it isn't already
@@ -2129,10 +2139,10 @@
                                      (show/start!))
                                    (update-mode! controller :stop false)
                                    (swap! end-counter #(or % (- 8 @start-counter)))))
-                               (handle-note-on [this message])
-                               (handle-note-off [this message])
-                               (handle-aftertouch [this message])
-                               (handle-pitch-bend [this message]))
+                               (handle-note-on [_this _message])
+                               (handle-note-off [_this _message])
+                               (handle-aftertouch [_this _message])
+                               (handle-pitch-bend [_this _message]))
                              :priority 100))) ; Draw the stop overlay after all others.
 
 (defn add-button-held-feedback-overlay
@@ -2198,25 +2208,24 @@
         x (quot (- note 20) 2)
         index (- x offset)]
     (when (and (seq fx) (< index (count fx)))
-      (let [effect (get fx index)
-            info (get fx-meta index)]
+      (let [info (get fx-meta index)]
         (with-show (:show controller)
           (show/end-effect! (:key info) :when-id (:id info)))
         (controllers/add-overlay (:overlays controller)
                                  (reify controllers/IOverlay
-                                   (captured-controls [this] #{note (inc note)})
-                                   (captured-notes [this] #{})
-                                   (adjust-interface [this _]
+                                   (captured-controls [_this] #{note (inc note)})
+                                   (captured-notes [_this] #{})
+                                   (adjust-interface [_this _]
                                      (swap! (:next-top-pads controller) assoc (* 2 x) red-color)
                                      (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
                                      true)
-                                   (handle-control-change [this message]
+                                   (handle-control-change [_this message]
                                      (when (and (= (:note message) note) (zero? (:velocity message)))
                                        :done))
-                                   (handle-note-on [this message])
-                                   (handle-note-off [this message])
-                                   (handle-aftertouch [this message])
-                                   (handle-pitch-bend [this message])))))))
+                                   (handle-note-on [_this _message])
+                                   (handle-note-off [_this _message])
+                                   (handle-aftertouch [_this _message])
+                                   (handle-pitch-bend [_this _message])))))))
 
 (defn- handle-scroll-cue-vars
   "Process a tap on one of the pads which indicate the user wants to
@@ -2233,26 +2242,25 @@
         x (quot (- note 21) 2)
         index (- x offset)]
     (when (and (seq fx) (< index (count fx)))
-      (let [effect (get fx index)
-            info (get fx-meta index)
+      (let [info (get fx-meta index)
             cue (:cue info)
             var-count (count (:variables cue))]
         (when (> var-count 2)
           (swap! (:cue-var-offsets controller) update-in [(:id info)] #(mod (+ 2 (or % 0)) var-count))
           (controllers/add-overlay (:overlays controller)
                                    (reify controllers/IOverlay
-                                     (captured-controls [this] #{note})
-                                     (captured-notes [this] #{})
-                                     (adjust-interface [this _]
+                                     (captured-controls [_this] #{note})
+                                     (captured-notes [_this] #{})
+                                     (adjust-interface [_this _]
                                        (swap! (:next-top-pads controller) assoc (inc (* 2 x)) white-color)
                                        true)
-                                     (handle-control-change [this message]
+                                     (handle-control-change [_this message]
                                        (when (and (= (:note message) note) (zero? (:velocity message)))
                                          :done))
-                                     (handle-note-on [this message])
-                                     (handle-note-off [this message])
-                                     (handle-aftertouch [this message])
-                                     (handle-pitch-bend [this message]))))))))
+                                     (handle-note-on [_this _message])
+                                     (handle-note-off [_this _message])
+                                     (handle-aftertouch [_this _message])
+                                     (handle-pitch-bend [_this _message]))))))))
 
 (defn- move-origin
   "Changes the origin of the controller, notifying any registered
@@ -2305,9 +2313,9 @@
             (reset! (:effect-offset controller) new-offset)
             (add-button-held-feedback-overlay controller (:page-left control-buttons)))))
 
-    63; Page right, scroll forward to newer effects
+    63 ; Page right, scroll forward to newer effects
     (when (pos? (:velocity message))
-      (let [[offset max-offset room] (find-effect-offset-range controller)
+      (let [[offset _max-offset room] (find-effect-offset-range controller)
             new-offset (if (in-mode? controller :shift) 0 (max 0 (- offset room)))]
         (when (not= offset new-offset)
           (reset! (:effect-offset controller) new-offset)
@@ -2347,8 +2355,32 @@
     (when (pos? (:velocity message))
       (leave-user-mode controller))
 
-    ;; Something we don't care about
-    nil))
+    ;; Something we don't explictly recognize; see if it's been registered as a custom control button.
+    (when-let [custom (get @(:custom-control-buttons controller) (:note message))]
+      (when (pos? (:velocity message))
+        (try
+          ((:press custom))
+          (catch Throwable t
+            (timbre/error t "Problem running custom control button press function.")))
+        (controllers/add-overlay
+         (:overlays controller)
+         (reify controllers/IOverlay
+           (captured-controls [_this] #{(:note message)})
+           (captured-notes [_this] #{})
+           (adjust-interface [_this _snapshot]
+             (swap! (:next-text-buttons controller) assoc (:button custom) white-color))
+           (handle-control-change [_this message]
+             (when (and (= (:note message) (get-in custom [:button :control]))
+                        (zero? (:velocity message)))
+               (try
+                 ((:release custom))
+                 (catch Throwable t
+                   (timbre/error t "Problem running custom control button release function.")))
+               :done))
+           (handle-note-on [_this _message])
+           (handle-note-off [_this _message])
+           (handle-aftertouch [_this _message])
+           (handle-pitch-bend [_this _message])))))))
 
 (defn- note-to-cue-coordinates
   "Translate the MIDI note associated with an incoming message to its
@@ -2376,9 +2408,9 @@
                   (controllers/add-overlay
                    (:overlays controller)
                    (reify controllers/IOverlay
-                     (captured-controls [this] #{})
-                     (captured-notes [this] #{note})
-                     (adjust-interface [this snapshot]
+                     (captured-controls [_this] #{})
+                     (captured-notes [_this] #{note})
+                     (adjust-interface [_this snapshot]
                        (when holding
                          (let [active (show/find-effect (:key cue))
                                base-color (cues/current-cue-color cue active (:show controller) snapshot)
@@ -2388,14 +2420,14 @@
                                       :l 75)]
                            (swap! (:next-grid-pads controller) assoc (+ pad-x (* pad-y 8)) color)))
                        true)
-                     (handle-control-change [this message])
-                     (handle-note-on [this message])
-                     (handle-note-off [this message]
+                     (handle-control-change [_this _message])
+                     (handle-note-on [_this _message])
+                     (handle-note-off [_this _message]
                        (when holding
                          (with-show (:show controller)
                            (show/end-effect! (:key cue) :when-id id)))
                        :done)
-                     (handle-aftertouch [this message]
+                     (handle-aftertouch [_this message]
                        (if (zero? (:velocity message))
                          (do (when holding
                                (with-show (:show controller)
@@ -2406,7 +2438,7 @@
                              (cues/set-cue-variable! cue v
                                                      (controllers/value-for-velocity v (:velocity message))
                                                      :show (:show controller) :when-id id)))))
-                     (handle-pitch-bend [this message])))))))))
+                     (handle-pitch-bend [_this _message])))))))))
 
 (defn- control-for-top-encoder-note
   "Return the control number on which rotation of the encoder whose
@@ -2467,16 +2499,15 @@
 
   Also suppresses the ability to scroll through the cue variables
   while the encoder is being held."
-  [controller note cue v effect info]
+  [controller note cue v _effect info]
   (let [x (quot note 2)
-        var-index (rem note 2)
         fraction (atom nil)]
     (if (> (count (:variables cue)) 1)
       ;; More than one variable, adjust whichever's encoder was touched
       (reify controllers/IOverlay
-        (captured-controls [this] #{(control-for-top-encoder-note note) (+ 21 (* 2 x))})
-        (captured-notes [this] #{note})
-        (adjust-interface [this _]
+        (captured-controls [_this] #{(control-for-top-encoder-note note) (+ 21 (* 2 x))})
+        (captured-notes [_this] #{note})
+        (adjust-interface [_this _]
           (when (same-effect-active controller cue (:id info))
             (let [cur-val (or (cues/get-cue-variable cue v :show (:show controller) :when-id (:id info)) false)]
               (draw-boolean-gauge controller note 1 cur-val :active? true :fraction (or @fraction 1.0))
@@ -2484,18 +2515,18 @@
             (swap! fraction (fn [v] (when v (let [result (+ v 0.25)] (when (< result 1.0) result)))))
             (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
             true))
-        (handle-control-change [this message]
+        (handle-control-change [_this message]
           (when (= (:note message) (control-for-top-encoder-note note))
             (let [cur-val (or (cues/get-cue-variable cue v :show (:show controller) :when-id (:id info)) false)]
               (adjust-boolean-value controller message cue v (:id info))
               (when (not= cur-val (cues/get-cue-variable cue v :show (:show controller) :when-id (:id info)))
                 (swap! fraction (fn [v] (if (nil? v) 0.25 (- 1.0 v)))))))
           true)
-        (handle-note-on [this message])
-        (handle-note-off [this message]
+        (handle-note-on [_this _message])
+        (handle-note-off [_this _message]
           :done)
-        (handle-aftertouch [this message])
-        (handle-pitch-bend [this message]
+        (handle-aftertouch [_this _message])
+        (handle-pitch-bend [_this message]
           (cues/set-cue-variable! cue v (true? (>= (value-from-touch-strip message 0 100) 50))
                                   :show (:show controller) :when-id (:id info))
           (reset! fraction nil)))
@@ -2504,26 +2535,26 @@
       ;; suppress the other one.
       (let [paired-note (if (odd? note) (dec note) (inc note))]
         (reify controllers/IOverlay
-          (captured-controls [this] #{(control-for-top-encoder-note note) (+ 21 (* 2 x))})
-          (captured-notes [this] #{note paired-note})
-          (adjust-interface [this _]
+          (captured-controls [_this] #{(control-for-top-encoder-note note) (+ 21 (* 2 x))})
+          (captured-notes [_this] #{note paired-note})
+          (adjust-interface [_this _]
             (when (same-effect-active controller cue (:id info))
               (let [cur-val (or (cues/get-cue-variable cue v :show (:show controller) :when-id (:id info)) false)]
                 (draw-boolean-gauge controller (* 2 x) 2 cur-val :active? true)
                 (set-touch-strip-from-value controller (if cur-val 1 0) 0 1 touch-strip-mode-pan))
               (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
               true))
-          (handle-control-change [this message]
+          (handle-control-change [_this message]
             (when (= (:note message) (control-for-top-encoder-note note))
               (adjust-boolean-value controller message cue v (:id info)))
             true)
-          (handle-note-on [this message]
+          (handle-note-on [_this _message]
             true)
-          (handle-note-off [this message]
+          (handle-note-off [_this message]
             (when (= (:note message) note)
               :done))
-          (handle-aftertouch [this message])
-          (handle-pitch-bend [this message]
+          (handle-aftertouch [_this _message])
+          (handle-pitch-bend [_this message]
             (cues/set-cue-variable! cue v (true? (>= (value-from-touch-strip message 0 100) 50))
                                   :show (:show controller) :when-id (:id info))))))))
 
@@ -2536,15 +2567,14 @@
 
   Also suppresses the ability to scroll through the cue variables
   while the encoder is being held."
-  [controller note cue cue-var effect info]
-  (let [x (quot note 2)
-        var-index (rem note 2)]
+  [controller note cue cue-var _effect info]
+  (let [x (quot note 2)]
     (if (> (count (:variables cue)) 1)
       ;; More than one variable, adjust whichever's encoder was touched
       (reify controllers/IOverlay
-        (captured-controls [this] #{(control-for-top-encoder-note note) (+ 21 (* 2 x))})
-        (captured-notes [this] #{note})
-        (adjust-interface [this _]
+        (captured-controls [_this] #{(control-for-top-encoder-note note) (+ 21 (* 2 x))})
+        (captured-notes [_this] #{note})
+        (adjust-interface [_this _]
           (when (same-effect-active controller cue (:id info))
             (let [cur-val (or (cues/get-cue-variable cue cue-var :show (:show controller) :when-id (:id info)) 0)]
               (if (:centered cue-var)
@@ -2555,15 +2585,15 @@
             (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
             (set-touch-strip-from-cue-var controller cue cue-var (:id info))
             true))
-        (handle-control-change [this message]
+        (handle-control-change [_this message]
           (when (= (:note message) (control-for-top-encoder-note note))
             (adjust-variable-value controller message cue cue-var (:id info)))
           true)
-        (handle-note-on [this message])
-        (handle-note-off [this message]
+        (handle-note-on [_this _message])
+        (handle-note-off [_this _message]
           :done)
-        (handle-aftertouch [this message])
-        (handle-pitch-bend [this message]
+        (handle-aftertouch [_this _message])
+        (handle-pitch-bend [_this message]
           (bend-variable-value controller message cue cue-var (:id info))
           true))
 
@@ -2571,9 +2601,9 @@
       ;; suppress the other one.
       (let [paired-note (if (odd? note) (dec note) (inc note))]
         (reify controllers/IOverlay
-          (captured-controls [this] #{(control-for-top-encoder-note note) (+ 21 (* 2 x))})
-          (captured-notes [this] #{note paired-note})
-          (adjust-interface [this _]
+          (captured-controls [_this] #{(control-for-top-encoder-note note) (+ 21 (* 2 x))})
+          (captured-notes [_this] #{note paired-note})
+          (adjust-interface [_this _]
             (when (same-effect-active controller cue (:id info))
               (let [cur-val (or (cues/get-cue-variable cue cue-var :show (:show controller) :when-id (:id info)) 0)]
                 (if (:centered cue-var)
@@ -2584,17 +2614,17 @@
               (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
               (set-touch-strip-from-cue-var controller cue cue-var (:id info))
               true))
-          (handle-control-change [this message]
+          (handle-control-change [_this message]
             (when (= (:note message) (control-for-top-encoder-note note))
               (adjust-variable-value controller message cue cue-var (:id info)))
             true)
-          (handle-note-on [this message]
+          (handle-note-on [_this _message]
             true)
-          (handle-note-off [this message]
+          (handle-note-off [_this message]
             (when (= (:note message) note)
               :done))
-          (handle-aftertouch [this message])
-          (handle-pitch-bend [this message]
+          (handle-aftertouch [_this _message])
+          (handle-pitch-bend [_this message]
             (bend-variable-value controller message cue cue-var (:id info))
             true))))))
 
@@ -2606,14 +2636,16 @@
             origin (+ x (* 8 y))
             hue (* 360 (/ i 15))
             base-color (colors/create-color :hue hue :saturation 100 :lightness 50)]
-        (assoc! result origin base-color)
-        (assoc! result (inc origin) (colors/desaturate base-color 25))
-        (assoc! result (+ origin 2) (colors/desaturate base-color 50))
-        (assoc! result (+ origin 3) (colors/desaturate base-color 75))))
-    (assoc! result 4 (colors/create-color :h 0 :s 0 :l 100))
-    (assoc! result 5 (colors/create-color :h 0 :s 0 :l 50))
-    (assoc! result 6 (colors/create-color :h 0 :s 0 :l 0))
-    (persistent! result)))
+        (-> result
+            (assoc! origin base-color)
+            (assoc! (inc origin) (colors/desaturate base-color 25))
+            (assoc! (+ origin 2) (colors/desaturate base-color 50))
+            (assoc! (+ origin 3) (colors/desaturate base-color 75)))))
+    (-> result
+        (assoc! 4 (colors/create-color :h 0 :s 0 :l 100))
+        (assoc! 5 (colors/create-color :h 0 :s 0 :l 50))
+        (assoc! 6 (colors/create-color :h 0 :s 0 :l 0))
+        persistent!)))
 
 (defn- build-color-adjustment-overlay
   "Create an overlay for adjusting a color cue parameter. `note`
@@ -2624,105 +2656,104 @@
 
   Also suppresses the ability to scroll through the cue variables
   while the encoder is being held."
-  [controller note cue v effect info]
-  (let [anchors (atom #{note})  ; Track which encoders are keeping the overlay active
-        x (quot note 2)
-        effect-id (:id info)]
-    ;; Take full cell, using both encoders to adjust hue and saturation.
-    (let [[hue-note sat-note] (if (odd? note) [(dec note) note] [note (inc note)])
-          [hue-control sat-control] (map control-for-top-encoder-note [hue-note sat-note])
-          graphics (create-graphics controller)]
-      (reify controllers/IOverlay
-        (captured-controls [this] #{hue-control sat-control (+ 21 (* 2 x))})
-        (captured-notes [this] (clojure.set/union #{hue-note sat-note} (set (drop 36 (range 100)))))
-        (adjust-interface [this _]
-          (when (same-effect-active controller cue (:id info))
-            ;; Draw the color picker grid
-            (reset! (:next-grid-pads controller) color-picker-grid)
-            (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
-                                    white-color)
-                  hue (colors/hue current-color)
-                  sat (colors/saturation current-color)]
-              ;; Show the preview color at the bottom right
-              (swap! (:next-grid-pads controller) assoc 7 current-color)
-
-              ;; Blink any pad which matches the currently selected color
-              (when (< (rhythm/metro-beat-phase (:metronome (:show controller))) 0.3)
-                (doseq [i (range 64)]
-                  (when (and (not= i 7) (colors/color= current-color (get @(:next-grid-pads controller) i)))
-                    (swap! (:next-grid-pads controller) assoc i (if (= i 4)
-                                                                  (colors/darken current-color 20)
-                                                                  (colors/lighten current-color 20))))))
-
-              ;; Replace the cue's variable value section with a hue and saturation editor.
-              (set-graphics-color graphics off-color)
-              (.fillRect graphics (* x 2 button-cell-width) 0 (* 2 button-cell-width) 100)
-              (draw-encoder-button-label controller (* x 2) 1 "Hue" white-color)
-              (draw-cue-variable-value controller (* x 2) 1 (format "%.1f" hue) white-color)
-              (draw-encoder-button-label controller (inc (* x 2)) 1 "Saturation" white-color)
-              (draw-cue-variable-value controller (inc (* x 2)) 1 (format "%.1f" sat) white-color)
-
-              ;; Add a larger color swatch between the gauges
-              (set-graphics-color graphics current-color)
-              (.fillRect graphics (- (* (inc (* x 2)) button-cell-width) 20) 50 40 40)
-
-              ;; Display the hue and saturation gauges
-              (draw-hue-gauge controller (* 2 x) 1 hue (@anchors hue-note))
-              (draw-saturation-gauge controller (inc (* 2 x)) 1 hue sat (@anchors sat-note))
-
-              ;; Put the touch pad into the appropriate state
-              (if (@anchors hue-note)
-                (set-touch-strip-from-value controller hue 0 360 touch-strip-mode-hue)
-                (set-touch-strip-from-value controller sat 0 100 touch-strip-mode-level))
-
-              ;; Darken the cue var scroll button if it was going to be lit
-              (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
-              true)))
-        (handle-control-change [this message]
-          ;; Adjust hue or saturation depending on controller; ignore if it was the cue var scroll button
-          (when (#{hue-control sat-control} (:note message))
-            (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
-                                    white-color)
-                  current-color (colors/create-color :h (colors/hue current-color) :s (colors/saturation current-color)
-                                                     :l 50)
-                  delta (* (sign-velocity (:velocity message)) 0.5)]
-              (cues/set-cue-variable! cue v
-                                      (if (= (:note message) hue-control)
-                                        (colors/adjust-hue current-color delta)
-                                        (colors/saturate current-color delta))
-                                      :show (:show controller) :when-id effect-id)))
-          true)
-        (handle-note-on [this message]
-          (let [note (:note message)]
-            (if (#{hue-note sat-note} note)
-              ;; The user has grabbed another of our controllers, stay active until it is released.
-              (swap! anchors conj note)
-
-              ;; It's a grid pad. Set the color based on the selected note, unless it's the preview pad.
-              (when-not (= note 43)
-                (let [chosen-color (get color-picker-grid (- note 36))]
-                  (cues/set-cue-variable! cue v chosen-color :show (:show controller) :when-id effect-id)))))
-          true)
-        (handle-note-off [this message]
-          (swap! anchors disj (:note message))
-          (when (empty? @anchors)
-            :done))
-        (handle-aftertouch [this message])
-        (handle-pitch-bend [this message]
+  [controller note cue v _effect info]
+  (let [anchors                   (atom #{note}) ; Track which encoders are keeping the overlay active
+        x                         (quot note 2)
+        effect-id                 (:id info)
+        ;; Take full cell, using both encoders to adjust hue and saturation.
+        [hue-note sat-note]       (if (odd? note) [(dec note) note] [note (inc note)])
+        [hue-control sat-control] (map control-for-top-encoder-note [hue-note sat-note])
+        graphics                  (create-graphics controller)]
+    (reify controllers/IOverlay
+      (captured-controls [_this] #{hue-control sat-control (+ 21 (* 2 x))})
+      (captured-notes [_this] (clojure.set/union #{hue-note sat-note} (set (drop 36 (range 100)))))
+      (adjust-interface [_this _]
+        (when (same-effect-active controller cue (:id info))
+          ;; Draw the color picker grid
+          (reset! (:next-grid-pads controller) color-picker-grid)
           (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
                                   white-color)
-                fraction (value-from-touch-strip message 0 1)
-                new-hue (if (@anchors hue-note) (* fraction 360) (colors/hue current-color))
-                new-sat (if (@anchors sat-note) (* fraction 100) (colors/saturation current-color))]
-            (cues/set-cue-variable! cue v (colors/create-color :h new-hue :s new-sat :l 50)
-                                    :when-id effect-id)))))))
+                hue           (colors/hue current-color)
+                sat           (colors/saturation current-color)]
+            ;; Show the preview color at the bottom right
+            (swap! (:next-grid-pads controller) assoc 7 current-color)
+
+            ;; Blink any pad which matches the currently selected color
+            (when (< (rhythm/metro-beat-phase (:metronome (:show controller))) 0.3)
+              (doseq [i (range 64)]
+                (when (and (not= i 7) (colors/color= current-color (get @(:next-grid-pads controller) i)))
+                  (swap! (:next-grid-pads controller) assoc i (if (= i 4)
+                                                                (colors/darken current-color 20)
+                                                                (colors/lighten current-color 20))))))
+
+            ;; Replace the cue's variable value section with a hue and saturation editor.
+            (set-graphics-color graphics off-color)
+            (.fillRect graphics (* x 2 button-cell-width) 0 (* 2 button-cell-width) 100)
+            (draw-encoder-button-label controller (* x 2) 1 "Hue" white-color)
+            (draw-cue-variable-value controller (* x 2) 1 (format "%.1f" hue) white-color)
+            (draw-encoder-button-label controller (inc (* x 2)) 1 "Saturation" white-color)
+            (draw-cue-variable-value controller (inc (* x 2)) 1 (format "%.1f" sat) white-color)
+
+            ;; Add a larger color swatch between the gauges
+            (set-graphics-color graphics current-color)
+            (.fillRect graphics (- (* (inc (* x 2)) button-cell-width) 20) 50 40 40)
+
+            ;; Display the hue and saturation gauges
+            (draw-hue-gauge controller (* 2 x) 1 hue (@anchors hue-note))
+            (draw-saturation-gauge controller (inc (* 2 x)) 1 hue sat (@anchors sat-note))
+
+            ;; Put the touch pad into the appropriate state
+            (if (@anchors hue-note)
+              (set-touch-strip-from-value controller hue 0 360 touch-strip-mode-hue)
+              (set-touch-strip-from-value controller sat 0 100 touch-strip-mode-level))
+
+            ;; Darken the cue var scroll button if it was going to be lit
+            (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
+            true)))
+      (handle-control-change [_this message]
+        ;; Adjust hue or saturation depending on controller; ignore if it was the cue var scroll button
+        (when (#{hue-control sat-control} (:note message))
+          (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
+                                  white-color)
+                current-color (colors/create-color :h (colors/hue current-color) :s (colors/saturation current-color)
+                                                   :l 50)
+                delta         (* (sign-velocity (:velocity message)) 0.5)]
+            (cues/set-cue-variable! cue v
+                                    (if (= (:note message) hue-control)
+                                      (colors/adjust-hue current-color delta)
+                                      (colors/saturate current-color delta))
+                                    :show (:show controller) :when-id effect-id)))
+        true)
+      (handle-note-on [_this message]
+        (let [note (:note message)]
+          (if (#{hue-note sat-note} note)
+            ;; The user has grabbed another of our controllers, stay active until it is released.
+            (swap! anchors conj note)
+
+            ;; It's a grid pad. Set the color based on the selected note, unless it's the preview pad.
+            (when-not (= note 43)
+              (let [chosen-color (get color-picker-grid (- note 36))]
+                (cues/set-cue-variable! cue v chosen-color :show (:show controller) :when-id effect-id)))))
+        true)
+      (handle-note-off [_this message]
+        (swap! anchors disj (:note message))
+        (when (empty? @anchors)
+          :done))
+      (handle-aftertouch [_this _message])
+      (handle-pitch-bend [_this message]
+        (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
+                                white-color)
+              fraction      (value-from-touch-strip message 0 1)
+              new-hue       (if (@anchors hue-note) (* fraction 360) (colors/hue current-color))
+              new-sat       (if (@anchors sat-note) (* fraction 100) (colors/saturation current-color))]
+          (cues/set-cue-variable! cue v (colors/create-color :h new-hue :s new-sat :l 50)
+                                  :when-id effect-id))))))
 
 (defn- display-encoder-touched
   "One of the eight encoders above the text display was touched."
   [controller note]
   (let [room (room-for-effects controller)
         fx-info @(:active-effects (:show controller))
-        fx (:effects fx-info)
         fx-meta (:meta fx-info)
         num-skipped (- (count fx-meta) room @(:effect-offset controller))
         fx (vec (drop num-skipped (:effects fx-info)))
@@ -2784,7 +2815,7 @@
 (defn- note-off-received
   "Process a note-off message which was not handled by an interface
   overlay."
-  [controller message]
+  [_controller message]
   (case (:note message)
 
     ;; Something we don't care about
@@ -2794,7 +2825,6 @@
   "Called whenever a MIDI message is received from the controller
   while the mapping is active; takes whatever action is appropriate."
   [controller message]
-  #_(timbre/info message)
   (try
     (when-not (controllers/overlay-handled? (:overlays controller) message)
       (cond
@@ -2811,6 +2841,18 @@
         (sysex-received controller message)))
     (catch Exception e
       (timbre/error e "Problem processing incoming MIDI message:" message))))
+
+(defn add-custom-control-button
+  "Activates an otherwise-unused button which responds to a control
+  message, causing it to run custom code when pressed and released."
+  [controller button press-fn release-fn]
+  (if-let [button-info (get control-buttons button)]
+    (swap! (:custom-control-buttons controller) assoc (:control button-info)
+           {:key    button
+            :button button-info
+            :press press-fn
+            :release release-fn})
+    (throw (IllegalArgumentException. (str "Unrecognized control button: " button)))))
 
 (defn deactivate
   "Deactivates a controller interface, killing its update thread and
@@ -2883,57 +2925,59 @@
   (deactivate controller :disconnected disconnected))
 
 (defmethod controllers/bind-to-show-impl ::controller
-  [kind show port-in port-out device & {:keys [refresh-interval display-name]
-                                        :or   {refresh-interval (/ 1000 20)
-                                               display-name     "Ableton Push 2"}}]
+  [_kind show port-in port-out device & {:keys [refresh-interval display-name]
+                                         :or   {refresh-interval (/ 1000 20)
+                                                display-name     "Ableton Push 2"}}]
   {:pre [(some? show)]}
   (load-fonts)
   (let [modes (atom #{})
         controller
         (with-meta
-          {:display-name         display-name
-           :device-id            device
-           :show                 show
-           :origin               (atom [0 0])
-           :effect-offset        (atom 0)
-           :cue-var-offsets      (atom {})
-           :refresh-interval     refresh-interval
-           :port-in              port-in
-           :port-out             port-out
-           :task                 (atom nil)
-           :led-palettes         (atom {})
-           :display-buffer       (Wayang/open)
-           :last-text-buttons    (atom {})
-           :next-text-buttons    (atom {})
-           :last-top-pads        (atom empty-top-pads)
-           :next-top-pads        (atom empty-top-pads)
-           :last-grid-pads       (atom empty-grid-pads)
-           :next-grid-pads       (atom empty-grid-pads)
-           :metronome-mode       (atom {})
-           :last-marker          (atom nil)
-           :modes                modes
-           :last-touch-strip     (atom nil)
-           :next-touch-strip     (atom nil)
-           :midi-handler         (atom nil)
-           :tempo-tap-handler    (tempo/create-show-tempo-tap-handler
-                                  show :shift-fn (fn [] (get @modes (get-in control-buttons [:shift :control]))))
-           :overlays             (controllers/create-overlay-state)
-           :move-listeners       (atom #{})
-           :grid-controller-impl (atom nil)}
+          {:display-name           display-name
+           :device-id              device
+           :show                   show
+           :origin                 (atom [0 0])
+           :effect-offset          (atom 0)
+           :cue-var-offsets        (atom {})
+           :refresh-interval       refresh-interval
+           :port-in                port-in
+           :port-out               port-out
+           :task                   (atom nil)
+           :led-palettes           (atom {})
+           :display-buffer         (Wayang/open)
+           :last-text-buttons      (atom {})
+           :next-text-buttons      (atom {})
+           :last-top-pads          (atom empty-top-pads)
+           :next-top-pads          (atom empty-top-pads)
+           :last-grid-pads         (atom empty-grid-pads)
+           :next-grid-pads         (atom empty-grid-pads)
+           :metronome-mode         (atom {})
+           :last-marker            (atom nil)
+           :modes                  modes
+           :last-touch-strip       (atom nil)
+           :next-touch-strip       (atom nil)
+           :midi-handler           (atom nil)
+           :tempo-tap-handler      (tempo/create-show-tempo-tap-handler
+                                    show :shift-fn (fn [] (get @modes (get-in control-buttons [:shift :control]))))
+           :overlays               (controllers/create-overlay-state)
+           :custom-control-buttons (atom {})
+           :move-listeners         (atom #{})
+           :grid-controller-impl   (atom nil)}
           {:type ::controller})]
     (when (gather-led-palettes controller)
       (reset! (:midi-handler controller) (partial midi-received controller))
       (reset! (:grid-controller-impl controller)
               (reify controllers/IGridController
-                (display-name [this] (:display-name controller))
-                (physical-height [this] 8)
-                (physical-width [this] 8)
-                (current-bottom [this] (@(:origin controller) 1))
-                (current-bottom [this y] (move-origin controller (assoc @(:origin controller) 1 y)))
-                (current-left [this] (@(:origin controller) 0))
-                (current-left [this x] (move-origin controller (assoc @(:origin controller) 0 x)))
-                (add-move-listener [this f] (swap! (:move-listeners controller) conj f))
-                (remove-move-listener [this f] (swap! (:move-listeners controller) disj f))))
+                (display-name [_this] (:display-name controller))
+                (controller [_this] controller)
+                (physical-height [_this] 8)
+                (physical-width [_this] 8)
+                (current-bottom [_this] (@(:origin controller) 1))
+                (current-bottom [_this y] (move-origin controller (assoc @(:origin controller) 1 y)))
+                (current-left [_this] (@(:origin controller) 0))
+                (current-left [_this x] (move-origin controller (assoc @(:origin controller) 0 x)))
+                (add-move-listener [_this f] (swap! (:move-listeners controller) conj f))
+                (remove-move-listener [_this f] (swap! (:move-listeners controller) disj f))))
 
       ;; Set controller in User mode
       (send-sysex controller [0x0a 1])
@@ -2958,23 +3002,23 @@
   override that by passing `false` with the optional keyword argument
   `:loop`."
   [controller path & {:keys [loop] :or {loop true}}]
-  (let [output (javax.imageio.stream.FileImageOutputStream. (clojure.java.io/file path))
+  (let [output (javax.imageio.stream.FileImageOutputStream. (io/file path))
         writer (org.deepsymmetry.GifSequenceWriter. output (:display-buffer controller)
                                                     (int (:refresh-interval controller)) loop)
         running (atom true)]
     (controllers/add-overlay (:overlays controller)
                              (reify controllers/IOverlay
-                               (captured-controls [this] #{})
-                               (captured-notes [this] #{})
-                               (adjust-interface [this _]
+                               (captured-controls [_this] #{})
+                               (captured-notes [_this] #{})
+                               (adjust-interface [_this _snapshot]
                                  (when @running
                                    (.writeToSequence writer (:display-buffer controller))
                                    true))
-                               (handle-control-change [this message])
-                               (handle-note-on [this  message])
-                               (handle-note-off [this message])
-                               (handle-aftertouch [this message])
-                               (handle-pitch-bend [this message]))
+                               (handle-control-change [_this _message])
+                               (handle-note-on [_this  _message])
+                               (handle-note-off [_this _message])
+                               (handle-aftertouch [_this _message])
+                               (handle-pitch-bend [_this _message]))
                              :priority 1000000)  ; Make sure we run last, so we can capture what each overlay drew
     (fn []
       (when @running

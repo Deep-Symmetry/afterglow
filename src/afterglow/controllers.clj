@@ -134,6 +134,9 @@
   (display-name [this]
   "Returns the name by which the controller can be identified in
   user interfaces.")
+  (controller [this]
+    "Returns the underlying controller implementation, in case the show can
+  do fancier things with certain kinds of controllers.")
   (physical-height [this]
   "Returns the height of the cue grid on the controller.")
   (physical-width [this]
@@ -899,9 +902,9 @@
             ([device]
              (connection-handler device true))
             ([device new-connection]
-             (if (and (pos? (:sources device))  ; Respond only to input ports, since controllers will have both
-                      (seq (amidi/filter-devices device-filter [device]))  ; Apply any user-desired filter
-                      (not (already-bound? device)))  ; Ignore devices that already have active bindings
+             (when (and (pos? (:sources device))  ; Respond only to input ports, since controllers will have both
+                        (seq (amidi/filter-devices device-filter [device]))  ; Apply any user-desired filter
+                        (not (already-bound? device)))  ; Ignore devices that already have active bindings
                ;; Looks good, queue it for an auto-bind attempt
                (.add bind-queue [device show (merge (dissoc args :device-filter)
                                                     {:auto-binding   true

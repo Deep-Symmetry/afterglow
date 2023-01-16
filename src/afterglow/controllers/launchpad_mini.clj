@@ -168,7 +168,7 @@
   ;; And record the new state for next time
   (reset! (:last-control-buttons controller) @(:next-control-buttons controller))
   (reset! (:last-note-buttons controller) @(:next-note-buttons controller)))
-  
+
 (defn- render-cue-grid
   "Figure out how the cue grid pads should be illuminated, based on
   the currently active cues and a metronome snapshot identifying the
@@ -652,15 +652,16 @@
     (reset! (:midi-handler controller) (partial midi-received controller))
     (reset! (:grid-controller-impl controller)
             (reify controllers/IGridController
-              (display-name [this] (:display-name controller))
-              (physical-height [this] 8)
-              (physical-width [this] 8)
-              (current-bottom [this] (@(:origin controller) 1))
-              (current-bottom [this y] (move-origin controller (assoc @(:origin controller) 1 y)))
-              (current-left [this] (@(:origin controller) 0))
-              (current-left [this x] (move-origin controller (assoc @(:origin controller) 0 x)))
-              (add-move-listener [this f] (swap! (:move-listeners controller) conj f))
-              (remove-move-listener [this f] (swap! (:move-listeners controller) disj f))))
+              (display-name [_this] (:display-name controller))
+              (controller [_this] controller)
+              (physical-height [_this] 8)
+              (physical-width [_this] 8)
+              (current-bottom [_this] (@(:origin controller) 1))
+              (current-bottom [_this y] (move-origin controller (assoc @(:origin controller) 1 y)))
+              (current-left [_this] (@(:origin controller) 0))
+              (current-left [_this x] (move-origin controller (assoc @(:origin controller) 0 x)))
+              (add-move-listener [_this f] (swap! (:move-listeners controller) conj f))
+              (remove-move-listener [_this f] (swap! (:move-listeners controller) disj f))))
     (if new-connection
       (at-at/after 3000 (fn []
                           (clear-interface controller)

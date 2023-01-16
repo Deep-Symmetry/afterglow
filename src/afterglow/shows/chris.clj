@@ -5,6 +5,7 @@
   (:require [afterglow.beyond :as beyond]
             [afterglow.channels :as chan]
             [afterglow.controllers :as ct]
+            [afterglow.controllers.ableton-push-2 :as push-2]
             [afterglow.controllers.tempo]
             [afterglow.core :as core]
             [afterglow.effects :as fx]
@@ -168,9 +169,7 @@
                    (cues/cue :move-blades
                              (fn [_] (cues/compound-cues-effect
                                       "Sync Can Can" *show*
-                                      [[22 7 {:pan-min  39.0, :pan-max  39.0,  :pan-bars  1, :pan-phase  0.0,
-                                              :tilt-min 73.0, :tilt-max 248.0, :tilt-bars 1, :tilt-phase 0.0}]
-                                       [21 7 {:pan-min  42.0, :pan-max  42.0,  :pan-bars  1, :pan-phase  0.0,
+                                      [[21 7 {:pan-min  42.0, :pan-max  42.0,  :pan-bars  1, :pan-phase  0.0,
                                               :tilt-min 0.0,  :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.0}]
                                        [20 7 {:pan-min  42.0, :pan-max  42.0,  :pan-bars  1, :pan-phase  0.0,
                                               :tilt-min 0.0,  :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.0}]
@@ -191,18 +190,14 @@
                                        [20 7 {:pan-min  42.0, :pan-max  42.0,  :pan-bars  1, :pan-phase  0.0,
                                               :tilt-min 0.0,  :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.4}]
                                        [21 7 {:pan-min  42.0, :pan-max  42.0,  :pan-bars  1, :pan-phase  0.0,
-                                              :tilt-min 0.0,  :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.6}]
-                                       [22 7 {:pan-min  39.0, :pan-max  39.0,  :pan-bars  1, :pan-phase  0.0,
-                                              :tilt-min 73.0, :tilt-max 248.0, :tilt-bars 1, :tilt-phase 0.8}]]))
+                                              :tilt-min 0.0,  :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.6}]]))
                              :end-keys [:movement]))
 
     (show/set-cue! (+ x-base 6) (+ y-base 3)
                    (cues/cue :move-blades
                              (fn [_] (cues/compound-cues-effect
                                       "Swing Can Can" *show*
-                                      [[22 7 {:pan-min  24.0, :pan-max  64.0,  :pan-bars  4, :pan-phase  0.0,
-                                              :tilt-min 73.0, :tilt-max 248.0, :tilt-bars 1, :tilt-phase 0.8}]
-                                       [21 7 {:pan-min  24.0, :pan-max  64.0,  :pan-bars  4, :pan-phase  0.0,
+                                      [[21 7 {:pan-min  24.0, :pan-max  64.0,  :pan-bars  4, :pan-phase  0.0,
                                               :tilt-min 0.0,  :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.6}]
                                        [20 7 {:pan-min  23.0, :pan-max  64.0,  :pan-bars  4, :pan-phase  0.0,
                                               :tilt-min 0.0,  :tilt-max 197.0, :tilt-bars 1, :tilt-phase 0.4}]
@@ -211,13 +206,6 @@
                                        [18 7 {:pan-min  23.0, :pan-max  64.0,  :pan-bars  4, :pan-phase  0.0,
                                               :tilt-min 0.0,  :tilt-max 216.0, :tilt-bars 1, :tilt-phase 0.0}]]))
                              :end-keys [:movement]))
-
-    (show/set-cue! (+ x-base 6) (+ y-base 7)
-                   (cues/cue :center-rebel
-                             (fn [_] (cues/compound-cues-effect
-                                      "Center Rebel" *show*
-                                      [[22 7 {:pan-min  12.0, :pan-max  64.0,  :pan-bars  4, :pan-phase  0.0,
-                                              :tilt-min 56.0, :tilt-max 182.0, :tilt-bars 1, :tilt-phase 0.8}]]))))
 
     (show/set-cue! (+ x-base 6) (+ y-base 6)
                    (cues/cue :move-blades
@@ -230,18 +218,14 @@
                                        [20 7 {:pan-min  12.0,  :pan-max  66.0,  :pan-bars  4, :pan-phase  0.0,
                                               :tilt-min 170.0, :tilt-max 170.0, :tilt-bars 1, :tilt-phase 0.4}]
                                        [21 7 {:pan-min  12.0,  :pan-max  66.0,  :pan-bars  4, :pan-phase  0.0,
-                                              :tilt-min 170.0, :tilt-max 170.0, :tilt-bars 1, :tilt-phase 0.6}]
-                                       [22 7 {:pan-min  12.0,  :pan-max  66.0,  :pan-bars  4, :pan-phase  0.0,
-                                              :tilt-min 230.0, :tilt-max 230.0, :tilt-bars 1, :tilt-phase 0.8}]]))
+                                              :tilt-min 170.0, :tilt-max 170.0, :tilt-bars 1, :tilt-phase 0.6}]]))
                              :end-keys [:movement]))
 
     (show/set-cue! (+ x-base 6) (+ y-base 5)
                    (cues/cue :move-blades
                              (fn [_] (cues/compound-cues-effect
                                       "Slow Scan LR" *show*
-                                      [[22 7 {:pan-min  12.0,  :pan-max  66.0,  :pan-bars  4, :pan-phase  0.0,
-                                              :tilt-min 182.0, :tilt-max 182.0, :tilt-bars 1, :tilt-phase 0.8}]
-                                       [21 7 {:pan-min  12.0,  :pan-max  66.0,  :pan-bars  4, :pan-phase  0.4,
+                                      [[21 7 {:pan-min  12.0,  :pan-max  66.0,  :pan-bars  4, :pan-phase  0.4,
                                               :tilt-min 130.0, :tilt-max 130.0, :tilt-bars 1, :tilt-phase 0.6}]
                                        [20 7 {:pan-min  12.0,  :pan-max  66.0,  :pan-bars  4, :pan-phase  0.8,
                                               :tilt-min 130.0, :tilt-max 130.0, :tilt-bars 1, :tilt-phase 0.4}]
@@ -637,6 +621,32 @@
   (make-main-color-cues 0 3 false)
   (more-color-cues 1 3))
 
+(def quantize-id
+  "Keeps track of the ID of the strobe effect launched by pressing the
+  quantize button, so we can safely end it when releasing the button."
+  (atom nil))
+
+(defn quantize-pushed
+  "We register this to be called when the quantize button is pressed on a
+  push, to trigger our strobe-all effect."
+  []
+  (reset! quantize-id (show/add-effect-from-cue-grid! 0 23)))
+
+(defn quantize-released
+  "We register this to be called when the quantize button is released on a
+  push, to end the strobe-all effect if it's still running from when
+  the quantize button was pressed."
+  []
+  (show/end-effect! :strobe-all :when-id @quantize-id))
+
+(defn grid-controller-listener
+  "Called whenever grid controllers are added to or removed from the show."
+  [event grid-controller]
+  (when (= :register event)
+    (let [controller (ct/controller grid-controller)]
+      (when (= (:type (meta controller)) :afterglow.controllers.ableton-push-2/controller)
+        (push-2/add-custom-control-button controller :quantize quantize-pushed quantize-released)))))
+
 (defn use-chris-show
   "Set up the show for Chris. By default it will create the
   show to use universe 1, but if you want to use a different
@@ -655,7 +665,9 @@
                                          (when s
                                            (show/unregister-show s)
                                            (with-show s (show/stop!)))
-                                         (show/show :universes [universe] :description "Chris Show"))))
+                                         (show/show :universes [universe]
+                                                    :description "Chris Show"
+                                                    :grid-controller-listener grid-controller-listener))))
 
   (ex/patch-lighting-rig :universe universe :y ex/rig-height
                          :blade-3-angle (tf/degrees 71.2) :blade-4-angle (tf/degrees 78.7))
