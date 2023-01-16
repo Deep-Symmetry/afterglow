@@ -567,4 +567,8 @@
 
   (make-cues)
 
+  ;; Automatically bind the show to any compatible grid controllers that are connected now
+  ;; or in the future.
+  (ct/auto-bind *show*)
+
   '*show*)
