@@ -2159,13 +2159,13 @@
         x       (quot (- note 20) 2)
         index   (- x offset)]
     (when (and (seq fx) (< index (count fx)))
-      (let [effect      (get fx index)
-            info        (get fx-meta index)
+      (let [info        (get fx-meta index)
             cue         (:cue info)
             cur-vals    (cues/snapshot-cue-variables cue (:id info) :show (:show controller))
             saved-vals  (controllers/cue-vars-saved-at (:cue-grid (:show controller)) (:x info) (:y info))
             save-action (when (seq cur-vals)
-                          (if (= cur-vals saved-vals) :clear :save))
+                          (if (= cur-vals saved-vals) :clear
+                              (when (not= cur-vals (:starting-vars info)) :save)))
             save-color (case save-action
                          :save  green-color
                          :clear amber-color)]
