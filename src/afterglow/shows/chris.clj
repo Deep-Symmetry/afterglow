@@ -5,6 +5,7 @@
   (:require [afterglow.beyond :as beyond]
             [afterglow.channels :as chan]
             [afterglow.controllers :as ct]
+            [afterglow.controllers.ableton-push :as push]
             [afterglow.controllers.ableton-push-2 :as push-2]
             [afterglow.controllers.tempo]
             [afterglow.core :as core]
@@ -639,13 +640,28 @@
   []
   (show/end-effect! :strobe-all :when-id @quantize-id))
 
+(defn master-pushed
+  "We register this function to be called when the master button is
+  pressed on a push, to jump to our dimmer cues page."
+  [grid-controller]
+  (ct/current-left grid-controller 0)
+  (ct/current-bottom grid-controller 16))
+
 (defn grid-controller-listener
-  "Called whenever grid controllers are added to or removed from the show."
+  "Called whenever grid controllers are added to or removed from the
+show. Sets up our custom buttons on any Ableton Push controllers that
+get attached."
   [event grid-controller]
   (when (= :register event)
     (let [controller (ct/controller grid-controller)]
       (when (= (:type (meta controller)) :afterglow.controllers.ableton-push-2/controller)
-        (push-2/add-custom-control-button controller :quantize quantize-pushed quantize-released)))))
+        (push-2/add-custom-control-button controller :quantize quantize-pushed quantize-released)
+        (push-2/add-custom-control-button controller :master (partial master-pushed grid-controller)
+                                          (constantly nil)))
+      (when (= (:type (meta controller)) :afterglow.controllers.ableton-push/controller)
+        (push/add-custom-control-button controller :quantize quantize-pushed quantize-released)
+        (push/add-custom-control-button controller :master (partial master-pushed grid-controller)
+                                          (constantly nil))))))
 
 (defn use-chris-show
   "Set up the show for Chris. By default it will create the
