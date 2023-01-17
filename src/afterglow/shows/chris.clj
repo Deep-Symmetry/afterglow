@@ -388,36 +388,56 @@
   (let [x-base (* page-x 8)
         y-base (* page-y 8)]
 
-    (show/set-cue! (+ x-base 7) (+ y-base 7)
-                   (cues/function-cue :strobe-all :strobe (show/all-fixtures) :effect-name "Raw Strobe"))
-
     ;; Dimmer cues to turn on and set brightness of groups of lights
-    (ex/make-dimmer-cue nil x-base (+ y-base 2) :yellow)
-    (doall (map-indexed (fn [i group] (ex/make-dimmer-cue group (+ x-base (inc i)) (+ y-base 2) :yellow))
+    (ex/make-dimmer-cue nil x-base (+ y-base 1) :yellow)
+    (doall (map-indexed (fn [i group] (ex/make-dimmer-cue group (+ x-base (inc i)) (+ y-base 1) :yellow))
                         ex/light-groups))
 
     ;; Dimmer oscillator cues: Sawtooth
-    (ex/make-sawtooth-dimmer-cue nil x-base (+ y-base 3) :yellow)
+    (ex/make-sawtooth-dimmer-cue nil x-base (+ y-base 2) :yellow)
     (doall (map-indexed (fn [i group]
-                          (ex/make-sawtooth-dimmer-cue group (+ x-base (inc i)) (+ y-base 3) :orange))
+                          (ex/make-sawtooth-dimmer-cue group (+ x-base (inc i)) (+ y-base 2) :orange))
                         ex/light-groups))
 
     ;; Dimmer oscillator cues: Triangle
-    (ex/make-triangle-dimmer-cue nil x-base (+ y-base 4) :orange)
+    (ex/make-triangle-dimmer-cue nil x-base (+ y-base 3) :orange)
     (doall (map-indexed (fn [i group]
-                          (ex/make-triangle-dimmer-cue group (+ x-base (inc i)) (+ y-base 4) :red)) ex/light-groups))
+                          (ex/make-triangle-dimmer-cue group (+ x-base (inc i)) (+ y-base 3) :red)) ex/light-groups))
 
     ;; Dimmer oscillator cues: Sine
-    (ex/make-sine-dimmer-cue nil x-base (+ y-base 5) :cyan)
+    (ex/make-sine-dimmer-cue nil x-base (+ y-base 4) :cyan)
     (doall (map-indexed (fn [i group]
-                          (ex/make-sine-dimmer-cue group (+ x-base (inc i)) (+ y-base 5) :blue)) ex/light-groups))
+                          (ex/make-sine-dimmer-cue group (+ x-base (inc i)) (+ y-base 4) :blue)) ex/light-groups))
 
     ;; Dimmer oscillator cues: Square
-    (ex/make-square-dimmer-cue nil x-base (+ y-base 6) :cyan)
+    (ex/make-square-dimmer-cue nil x-base (+ y-base 5) :cyan)
     (doall (map-indexed (fn [i group]
-                          (ex/make-square-dimmer-cue group (+ x-base (inc i)) (+ y-base 6) :green)) ex/light-groups))
+                          (ex/make-square-dimmer-cue group (+ x-base (inc i)) (+ y-base 5) :green)) ex/light-groups))
 
-    ;; Strobe cues
+    ;; Strobe cues, first raw strobes.
+    (show/set-cue! x-base (+ y-base 6)
+                   (cues/function-cue :strobe-all :strobe (show/all-fixtures) :held true
+                                      :effect-name "Raw All"))
+    (show/set-cue! (inc x-base) (+ y-base 6)
+                   (cues/function-cue :strobe-torrents :strobe (show/fixtures-named "torrent") :held true
+                                      :effect-name "Raw Torrents"))
+    (show/set-cue! (+ x-base 2) (+ y-base 6)
+                   (cues/function-cue :strobe-blades :strobe (show/fixtures-named "blade") :held true
+                                      :effect-name "Raw Blades"))
+    (show/set-cue! (+ x-base 3) (+ y-base 6)
+                   (cues/function-cue :strobe-weather-systems :strobe (show/fixtures-named "ws") :held true
+                                      :effect-name "Raw Weather Systems"))
+    (show/set-cue! (+ x-base 4) (+ y-base 6)
+                   (cues/function-cue :strobe-hexes :strobe (show/fixtures-named "hex") :held true
+                                      :effect-name "Raw Hex"))
+    (show/set-cue! (+ x-base 5) (+ y-base 6)
+                   (cues/function-cue :strobe-pucks :strobe (show/fixtures-named "puck") :held true
+                                      :effect-name "Raw Pucks"))
+    (show/set-cue! (+ x-base 6) (+ y-base 6)
+                   (cues/function-cue :strobe-snowball :strobe (show/fixtures-named "snowball") :held true
+                                      :effect-name "Raw Snowball"))
+
+    ;; Then colorized, pressure-sensitive strobes.
     (ex/make-strobe-cue-2 "All" (show/all-fixtures) x-base (+ y-base 7))
     (ex/make-strobe-cue-2 "Torrents" (show/fixtures-named "torrent") (inc x-base) (+ y-base 7))
     (ex/make-strobe-cue-2 "Blades" (show/fixtures-named "blade") (+ x-base 2) (+ y-base 7))
@@ -432,13 +452,7 @@
                                                          :color-fn (cues/color-fn-from-cue-var color-var)
                                                          :variables [color-var])))
 
-    ;; This was the old way of adjusting strobe cues with only numeric parameters. The above
-    ;; cue shows how to do it with the newer color parameter approach.
-    #_(show/set-cue! (+ x-base 7) (+ y-base 6)
-                     (cues/cue :adjust-strobe (fn [_] (fun/adjust-strobe))
-                               :color :purple
-                               :variables [{:key :strobe-hue :min 0 :max 360 :name "Hue" :centered true}
-                                           {:key :strobe-saturation :min 0 :max 100 :name "Saturatn"}]))))
+))
 
 (defn more-color-cues
   "Some miscellany which I'm not totally sure what to do with."
@@ -631,7 +645,7 @@
   "We register this to be called when the quantize button is pressed on a
   push, to trigger our strobe-all effect."
   []
-  (reset! quantize-id (show/add-effect-from-cue-grid! 0 23)))
+  (reset! quantize-id (show/add-effect-from-cue-grid! 0 22)))
 
 (defn quantize-released
   "We register this to be called when the quantize button is released on a
