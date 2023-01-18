@@ -657,6 +657,14 @@
   (ct/current-left grid-controller 0)
   (ct/current-bottom grid-controller 16))
 
+(defn delete-pushed
+  "We register this function to be called when the delete button is
+  pressed on a push, to kill all cues and then restart the torrent
+  shutter open cue."
+  []
+  (show/clear-effects!)
+  (show/add-effect-from-cue-grid! 0 15))
+
 (defn grid-controller-listener
   "Called whenever grid controllers are added to or removed from the
   show. Sets up our custom buttons on any Ableton Push controllers
@@ -664,14 +672,12 @@
   [event grid-controller]
   (when (= :register event)
     (let [controller (ct/controller grid-controller)]
-      (when (= (:type (meta controller)) :afterglow.controllers.ableton-push-2/controller)
-        (push-2/add-custom-control-button controller :quantize quantize-pushed quantize-released)
-        (push-2/add-custom-control-button controller :master (partial master-pushed grid-controller)
-                                          (constantly nil)))
-      (when (= (:type (meta controller)) :afterglow.controllers.ableton-push/controller)
+      (when (#{:afterglow.controllers.ableton-push/controller
+               :afterglow.controllers.ableton-push-2/controller} (:type (meta controller)))
         (push/add-custom-control-button controller :quantize quantize-pushed quantize-released)
         (push/add-custom-control-button controller :master (partial master-pushed grid-controller)
-                                          (constantly nil))))))
+                                        (constantly nil))
+        (push/add-custom-control-button controller :delete delete-pushed (constantly nil))))))
 
 (defn use-chris-show
   "Set up the show for Chris. By default it will create the
@@ -707,5 +713,8 @@
   ;; Automatically bind the show to any compatible grid controllers that are connected now
   ;; or in the future.
   (ct/auto-bind *show*)
+
+  ;; Start the torrent shutter open cue, which we always want to have running.
+  (show/add-effect-from-cue-grid! 0 15)
 
   '*show*)
