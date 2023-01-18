@@ -27,20 +27,14 @@
             [afterglow.show :as show]
             [afterglow.show-context :refer [*show* with-show set-default-show!]]
             [afterglow.transform :as tf]
-            [amalloy.ring-buffer :refer [ring-buffer]]
             [clojure.math.numeric-tower :as math]
             [clojure.set :as set]
             [com.evocomputing.colors :as colors :refer [color-name create-color hue adjust-hue]]
-            [overtone.osc :as osc]
             [taoensso.timbre :as timbre]))
 
 (defonce ^{:doc "Holds the show if it has been created,
   so it can be unregistered if it is being re-created."}
   chris-show
-  (atom nil))
-
-(defonce ^{:doc "Allows effects to set variables in the running show."}
-  var-binder
   (atom nil))
 
 (defn make-movement-cues
@@ -626,15 +620,17 @@
 (defn make-cues
   "Set up the pages of cues."
   []
-  (make-movement-cues 0 0)
-  (misc-movement-cues 1 0)
-  (ex/make-main-direction-cues 2 0)
-  (ex/make-main-aim-cues 3 0)
-  (ex/make-torrent-cues 0 1)
-  (make-main-dimmer-cues 0 2)
-  (ex/make-ambient-cues 1 2)
-  (make-main-color-cues 0 3 false)
-  (more-color-cues 1 3))
+  ;; Enable cues whose purpose is to set show variable values while they run.
+  (let [var-binder (atom (var-fx/create-for-show *show*))]
+    (make-movement-cues 0 0)
+    (misc-movement-cues 1 0)
+    (ex/make-main-direction-cues 2 0 var-binder)
+    (ex/make-main-aim-cues 3 0 var-binder false)
+    (ex/make-torrent-cues 0 1)
+    (make-main-dimmer-cues 0 2)
+    (ex/make-ambient-cues 1 2)
+    (make-main-color-cues 0 3 false)
+    (more-color-cues 1 3)))
 
 (def quantize-id
   "Keeps track of the ID of the strobe effect launched by pressing the
@@ -663,8 +659,8 @@
 
 (defn grid-controller-listener
   "Called whenever grid controllers are added to or removed from the
-show. Sets up our custom buttons on any Ableton Push controllers that
-get attached."
+  show. Sets up our custom buttons on any Ableton Push controllers
+  that get attached."
   [event grid-controller]
   (when (= :register event)
     (let [controller (ct/controller grid-controller)]
@@ -705,15 +701,6 @@ get attached."
   (show/patch-fixture! :ws-2 (blizzard/weather-system) universe 187 :x -2.2 :y 1.33 :z -1.1 :y-rotation 0.0)
   (show/patch-fixture! :puck-1 (blizzard/puck-fab5) universe 97 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 52))
   (show/patch-fixture! :puck-2 (blizzard/puck-fab5) universe 113 :x (tf/inches -76) :y (tf/inches 8) :z (tf/inches 40))
-
-  (reset! var-binder (var-fx/create-for-show *show*))
-
-  ;; Turn on the OSC server, and clear any variable and cue bindings that might have been around from previous runs.
-  ;; Some of the example cues we use depend on this being available.
-  (when (nil? @core/osc-server)
-    (core/start-osc-server 16010))
-  (ex/clear-osc-var-bindings)
-  (ex/clear-osc-cue-bindings)
 
   (make-cues)
 
