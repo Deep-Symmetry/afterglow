@@ -27,6 +27,7 @@
             [afterglow.show :as show]
             [afterglow.show-context :refer [*show* with-show set-default-show!]]
             [afterglow.transform :as tf]
+            [afterglow.web.routes.show-control]
             [clojure.math.numeric-tower :as math]
             [clojure.set :as set]
             [com.evocomputing.colors :as colors :refer [color-name create-color hue adjust-hue]]
@@ -727,6 +728,10 @@
   ;; Start the torrent shutter open cue, which we always want to have running.
   (show/add-effect-from-cue-grid! 0 15)
 
+  ;; Open the web browser interface
   (core/start-web-server 16000 true)
+
+  ;; Save any macros Chris records so we can add them to the show if we want to.
+  (reset! afterglow.web.routes.show-control/macro-record-file "/Users/Zim/macros.clj")
 
   '*show*)

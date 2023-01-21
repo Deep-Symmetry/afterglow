@@ -12,6 +12,7 @@
             [afterglow.util :as util]
             [afterglow.web.layout :as layout]
             (clj-time core format coerce)
+            [clojure.string :as string]
             [com.evocomputing.colors :as colors]
             [overtone.at-at :refer [now]]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
@@ -601,32 +602,40 @@
   "Process a request to create a macro from running effects."
   [page-info x y macro-name macro-effects]
   (with-show (:show page-info)
-    (let [cues (map #(controllers/cue-at (:cue-grid (:show page-info)) (:x %) (:y %)) macro-effects)
-          cue-errors (filter identity (map (fn [cue effect]
-                                             (when (nil? cue) (str "No cue found at [" (:x effect) (:y effect) "].")))
-                                           cues macro-effects))
+    (let [cues           (map #(controllers/cue-at (:cue-grid (:show page-info)) (:x %) (:y %)) macro-effects)
+          cue-errors     (filter identity (map (fn [cue effect]
+                                                 (when (nil? cue) (str "No cue found at [" (:x effect) (:y effect) "].")))
+                                               cues macro-effects))
           cues-with-vars (when (empty? cue-errors)
                            (vec (map (fn [cue effect]
                                        [(:x effect) (:y effect) (cues/snapshot-cue-variables cue (:id effect))])
                                      cues macro-effects)))
-          errors (concat cue-errors (when (clojure.string/blank? macro-name) "No macro name provided."))]
+          errors         (concat cue-errors (when (clojure.string/blank? macro-name) ["No macro name provided."]))]
       (if (seq errors)
         {:error (clojure.string/join " " errors)}
-        (let [macro-key (keyword (str "macro-" (swap! macro-counter inc)))]
+        (let [macro-key (keyword (str "macro-" (swap! macro-counter inc)))
+              save-err  (atom nil)]
           (when-let [file @macro-record-file]
-            (spit file (with-out-str
-                          (println)
-                          (println "(show/set-cue!" x  y)
-                          (println "  (cues/cue" macro-key)
-                          (println (str "    (fn [_] (cues/compound-cues-effect \"" macro-name "\" *show*"))
-                          (print "           " (reformat-colors-for-saving cues-with-vars))
-                         (println "))))"))
-                  :append true))
+            (try
+              (spit file (with-out-str
+                           (println)
+                           (println ";; Macro recorded" (java.util.Date.))
+                           (println "(show/set-cue!" x  y)
+                           (println "  (cues/cue" macro-key)
+                           (println (str "    (fn [_] (cues/compound-cues-effect \"" macro-name "\" *show*"))
+                           (print "           " (reformat-colors-for-saving cues-with-vars))
+                           (println "))))"))
+                    :append true)
+              (catch Throwable t
+                (reset! save-err t))))
           (controllers/set-cue! (:cue-grid (:show page-info)) x y
                                 (cues/cue macro-key
                                           (fn [_] (cues/compound-cues-effect macro-name (:show page-info)
                                                                              cues-with-vars))))
-          {:macro-created macro-key})))))
+          (if (nil? @save-err)
+            {:macro-created macro-key}
+            {:error (str "Macro saved to cue grid, but unable to write to file " @macro-record-file ": "
+                         @save-err)}))))))
 
 (defn- handle-cue-click-event
   "Process a mouse down on a cue grid cell."

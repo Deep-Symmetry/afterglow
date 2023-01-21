@@ -611,6 +611,9 @@ function cueCellClicked( eventObject ) {
         data: $.toJSON(props),
         success: function(data) {
             //console.log(data);
+            if ('error' in data) {
+              alert("Problem creating macro: " + data['error']);
+            }
             if ('macro-created' in data) {
                 if (makingMacro) {
                     makeMacroChosen(null);
