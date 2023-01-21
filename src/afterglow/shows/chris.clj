@@ -617,6 +617,14 @@
                                          {:key "fade-fraction" :min 0 :max 1 :start 0 :name "Fade"}]
                              :color :orange :short-name "Pin 4"))))
 
+(defn restore-macros
+  "Adds the macros Chris created while figuring out how to use the show."
+  []
+  (show/set-cue! 6 4
+  (cues/cue :macro-19
+    (fn [_] (cues/compound-cues-effect "figure 8 Blades" *show*
+            [[21 7 {:pan-min 12.0, :pan-max 66.0, :pan-bars 4, :pan-phase 0.0, :tilt-min 76.0, :tilt-max 170.0, :tilt-bars 6, :tilt-phase 0.6}] [20 7 {:pan-min 12.0, :pan-max 66.0, :pan-bars 4, :pan-phase 0.0, :tilt-min 48.0, :tilt-max 170.0, :tilt-bars 6, :tilt-phase 0.4}] [19 7 {:pan-min 12.0, :pan-max 66.0, :pan-bars 4, :pan-phase 0.0, :tilt-min 49.0, :tilt-max 170.0, :tilt-bars 6, :tilt-phase 0.2}] [18 7 {:pan-min 12.0, :pan-max 66.0, :pan-bars 4, :pan-phase 0.0, :tilt-min 76.0, :tilt-max 170.0, :tilt-bars 6, :tilt-phase 0.0}] [18 4 {:direction-group-b-pan 0.0, :direction-group-b-tilt 0.0}]])))))
+
 (defn make-cues
   "Set up the pages of cues."
   []
@@ -630,7 +638,8 @@
     (make-main-dimmer-cues 0 2)
     (ex/make-ambient-cues 1 2)
     (make-main-color-cues 0 3 false)
-    (more-color-cues 1 3)))
+    (more-color-cues 1 3)
+    (restore-macros)))
 
 (def quantize-id
   "Keeps track of the ID of the strobe effect launched by pressing the
@@ -641,7 +650,8 @@
   "We register this to be called when the quantize button is pressed on a
   push, to trigger our strobe-all effect."
   []
-  (reset! quantize-id (show/add-effect-from-cue-grid! 0 22)))
+  (show/set-variable! :strobe-color (colors/create-color :white))
+  (reset! quantize-id (show/add-effect-from-cue-grid! 0 23)))
 
 (defn quantize-released
   "We register this to be called when the quantize button is released on a
@@ -716,5 +726,7 @@
 
   ;; Start the torrent shutter open cue, which we always want to have running.
   (show/add-effect-from-cue-grid! 0 15)
+
+  (core/start-web-server 16000 true)
 
   '*show*)
