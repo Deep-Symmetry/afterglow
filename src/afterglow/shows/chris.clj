@@ -411,26 +411,26 @@
 
     ;; Strobe cues, first raw strobes.
     (show/set-cue! x-base (+ y-base 6)
-                   (cues/function-cue :strobe-all :strobe (show/all-fixtures) :held true
+                   (cues/function-cue :strobe-all :strobe (show/all-fixtures) :held true :velocity true
                                       :effect-name "Raw All"))
     (show/set-cue! (inc x-base) (+ y-base 6)
                    (cues/function-cue :strobe-torrents :strobe (show/fixtures-named "torrent") :held true
-                                      :effect-name "Raw Torrents"))
+                                      :velocity true :effect-name "Raw Torrents"))
     (show/set-cue! (+ x-base 2) (+ y-base 6)
                    (cues/function-cue :strobe-blades :strobe (show/fixtures-named "blade") :held true
-                                      :effect-name "Raw Blades"))
+                                      :velocity true :effect-name "Raw Blades"))
     (show/set-cue! (+ x-base 3) (+ y-base 6)
                    (cues/function-cue :strobe-weather-systems :strobe (show/fixtures-named "ws") :held true
-                                      :effect-name "Raw Weather Systems"))
+                                      :velocity true :effect-name "Raw Weather Systems"))
     (show/set-cue! (+ x-base 4) (+ y-base 6)
                    (cues/function-cue :strobe-hexes :strobe (show/fixtures-named "hex") :held true
-                                      :effect-name "Raw Hex"))
+                                      :velocity true :effect-name "Raw Hex"))
     (show/set-cue! (+ x-base 5) (+ y-base 6)
                    (cues/function-cue :strobe-pucks :strobe (show/fixtures-named "puck") :held true
-                                      :effect-name "Raw Pucks"))
+                                      :velocity true :effect-name "Raw Pucks"))
     (show/set-cue! (+ x-base 6) (+ y-base 6)
                    (cues/function-cue :strobe-snowball :strobe (show/fixtures-named "snowball") :held true
-                                      :effect-name "Raw Snowball"))
+                                      :velocity true :effect-name "Raw Snowball"))
 
     ;; Then colorized, pressure-sensitive strobes.
     (ex/make-strobe-cue-2 "All" (show/all-fixtures) x-base (+ y-base 7))
