@@ -2,6 +2,11 @@ site:
   title: Afterglow Developer Guide
   url: https://afterglow-guide/deepsymmetry.org/
   start_page: afterglow::README.adoc
+  robots: allow
+  keys:
+    google_analytics: G-ZNLRY347Y7
+urls:
+  redirect_facility: netlify
 content:
   sources:
   - url: https://github.com/Deep-Symmetry/afterglow.git
