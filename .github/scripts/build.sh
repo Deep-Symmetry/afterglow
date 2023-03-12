@@ -4,7 +4,7 @@
 # This script is run by GitHub Actions to build the cross-platform uberjar.
 
 # If this is a full release, tweak the project to generate the correct API doc source links.
-if [[ $release_snapshot != "false" ]]
+if [[ $release_snapshot == "false" ]]
 then
     # Update codox source link
     prefix="\/github.com\/Deep-Symmetry\/afterglow\/blob\/"
