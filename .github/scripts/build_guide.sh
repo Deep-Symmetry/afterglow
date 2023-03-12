@@ -11,13 +11,11 @@ if [ "$GUIDE_SSH_KEY" != "" ]; then
     # Set up node dependencies; probably redundant thanks to main workflow, but just in case...
     npm install
 
-    # Build the cloud version of the documentation site.
+    # Build the cloud version of the documentation site. Note that the API docs are already
+    # built in, from the stage of building the uberjar.
     npm run hosted-docs
 
-    # Build the API documentation into the documentation site
-    lein with-profile netlify do codox, resource
-
-        # Make sure there are no broken links in the versions we care about.
+    # Make sure there are no broken links in the versions we care about.
     curl https://htmltest.wjdp.uk | bash
     bin/htmltest
 

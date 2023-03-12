@@ -1,6 +1,6 @@
 site:
   title: Afterglow Developer Guide
-  url: https://afterglow-guide/deepsymmetry.org/
+  url: https://afterglow-guide.deepsymmetry.org/
   start_page: afterglow::README.adoc
   robots: allow
   keys:
