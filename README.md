@@ -104,6 +104,7 @@ started!
   * [Why Explore Afterglow?](#why-explore-afterglow)
   * [Installation](#installation)
   * [Status](#status)
+  * [Getting Help](#getting-help)
   * [Usage](#usage)
   * [Troubleshooting](#troubleshooting)
   * [Bugs](#bugs)
@@ -175,6 +176,20 @@ knows OpenGL programming to build a more scalable preview (albeit one
 that probably doesn’t look quite so photo-realistic with beams
 impacting drifting fog). This is an area where I would love some help
 if it sounds interesting!
+
+## Getting Help
+
+<a href="http://zulip.com"><img align="right" alt="Zulip logo"
+ src="doc/modules/ROOT/assets/images/zulip-icon-circle.svg"
+ width="128" height="128"></a>
+
+Deep Symmetry's projects are generously sponsored with hosting by <a
+href="https://zulip.com">Zulip</a>, an open-source modern team chat
+app designed to keep both live and asynchronous conversations
+organized. Thanks to them, you can <a
+href="https://deep-symmetry.zulipchat.com/#narrow/stream/318697-afterglow">chat
+with our community</a>, ask questions, get inspiration, and share your
+own ideas.
 
 ## Usage
 
@@ -1040,7 +1055,7 @@ though.
 <a href="http://deepsymmetry.org"><img align="right" alt="Deep Symmetry"
  src="doc/modules/ROOT/assets/images/DS-logo-github.png" width="250" height="150"></a>
 
-Copyright © 2015-2022 [Deep Symmetry, LLC](http://deepsymmetry.org)
+Copyright © 2015-2023 [Deep Symmetry, LLC](http://deepsymmetry.org)
 
 Distributed under the [Eclipse Public License
 2.0](https://opensource.org/licenses/EPL-2.0). By using this software
