@@ -16,6 +16,7 @@
 /pom.xml.asc
 /research
 /target
+/resources/afterglow/version.edn
 logs/*.log*
 .idea/
 *.iml

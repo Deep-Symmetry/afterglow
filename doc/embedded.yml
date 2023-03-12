@@ -18,7 +18,7 @@ asciidoc:
     experimental: ''
 ui:
   bundle:
-    url: https://deepsymmetry.org/media/antora/ui-bundle-3.zip
+    url: https://deepsymmetry.org/media/antora/ui-bundle-3-self.zip
     snapshot: true
 output:
   dir: ./../target/classes/developer_guide

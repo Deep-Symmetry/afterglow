@@ -1,4 +1,4 @@
-(defproject afterglow "0.2.6-SNAPSHOT"
+(defproject afterglow :lein-v
   :description "A live-coding environment for light shows, built on the Open Lighting Architecture, using bits of Overtone."
   :url "https://github.com/Deep-Symmetry/afterglow"
   :license {:name "Eclipse Public License 2.0"
@@ -59,6 +59,8 @@
   :repositories {"sonatype-snapshots" "https://oss.sonatype.org/content/repositories/snapshots"}
   :main afterglow.core
   :uberjar-name "afterglow.jar"
+
+  ;; Add project name and version information to jar file manifest
   :manifest {"Name"                  ~#(str (clojure.string/replace (:group %) "." "/")
                                             "/" (:name %) "/")
              "Package"               ~#(str (:group %) "." (:name %))
@@ -80,11 +82,14 @@
                        :prep-tasks ["javac"
                                     "compile"]
                        :aot        :all}
-             :netlify {:prep-tasks ^:replace []}}
+             :web-docs {:prep-tasks ^:replace []}}
   :plugins [[lein-codox "0.10.8"]
             [lein-resource "17.06.1"]
             [lein-environ "1.2.0"]
-            [lein-shell "0.5.0"]]
+            [lein-shell "0.5.0"]
+            [com.roomkey/lein-v "7.2.0"]]
+
+  :middleware [lein-v.plugin/middleware]
 
   :codox {:output-path "target/codox"
           :doc-files   []
@@ -95,13 +100,14 @@
                                {:target-path  "target/classes/api_doc" ; For embedded use
                                 :extra-values {:guide-url "http:/guide/afterglow/"}}]
                               ["target/codox"
-                               {:target-path  "doc/build/site/api" ; For hosting on netlify
+                               {:target-path  "doc/build/site/api" ; For hosting on the web
                                 :extra-values {:guide-url "https://afterglow-guide.deepsymmetry.org/afterglow/"}}]]}
 
   ;; Perform the tasks which embed the developer guide and api docs before compilation,
   ;; so they will be available both in development, and in the distributed archive.
-  :prep-tasks [["shell" "npx" "antora" "--fetch" "doc/embedded.yml"]
+  :prep-tasks [["shell" "npm" "run" "local-docs" ]
                "codox"
-               "resource"]
+               "resource"
+               ["v" "cache" "resources/afterglow" "edn"]]
 
   :min-lein-version "2.0.0")

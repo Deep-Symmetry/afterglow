@@ -6,7 +6,7 @@ site:
   keys:
     google_analytics: G-ZNLRY347Y7
 urls:
-  redirect_facility: netlify
+  redirect_facility: httpd
 content:
   sources:
   - url: https://github.com/Deep-Symmetry/afterglow.git
@@ -23,5 +23,5 @@ asciidoc:
     experimental: ''
 ui:
   bundle:
-    url: https://deepsymmetry.org/media/antora/ui-bundle-3.zip
+    url: https://deepsymmetry.org/media/antora/ui-bundle-3-self.zip
     snapshot: true

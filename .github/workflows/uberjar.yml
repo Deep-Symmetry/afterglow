@@ -1,0 +1,91 @@
+name: Create überjar
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  initial_description: |
+    :construction: This is pre-release code for people who want to help test [what is going into the next release](https://github.com/Deep-Symmetry/afterglow/blob/master/CHANGELOG.md).
+
+    > Don’t download this if you aren’t comfortable testing code while it is under active development! Instead, look at the [latest release](https:///github.com/Deep-Symmetry/afterglow/releases/latest).
+
+    :calendar: **Ignore the “release date” above!** Because this is a snapshot release, the executables below (you may need to click to expand the Assets) will change frequently—whenever new code is pushed to the project—so you will want to _download the latest version every time you work with one_. The date you see _on each asset row_ shows you when it was last updated. Source code archive assets are not useful for snapshot releases, they will always reflect the state of the project when the snapshots began.
+
+jobs:
+  build_uberjar:
+    name: Build cross-platform überjar
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+
+    steps:
+    - name: Check out main branch
+      uses: actions/checkout@v3
+
+    - name: Install SSH Key
+      uses: shimataro/ssh-key-action@v2
+      with:
+        key: ${{ secrets.GUIDE_SSH_KEY }}
+        known_hosts: 'deepsymmetry.org ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMKq8T1IXQHNYLgO715YbxTXoVxEsJcha9h1lxyOXpa'
+
+    - name: Prepare Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'corretto'
+
+    - name: Determine version being built
+      uses: Deep-Symmetry/github-version-action@v1
+      with:
+        tag-var-name: release_tag
+
+    - name: Determine überjar name from git version, and snapshot status
+      run: |
+        echo "uberjar_name=afterglow-$git_version.jar" >> $GITHUB_ENV
+        if [[ $release_tag =~ .*-SNAPSHOT ]]
+        then
+          echo "release_snapshot=true" >> $GITHUB_ENV
+        else
+          echo "release_snapshot=false" >> $GITHUB_ENV
+        fi
+
+    - name: Cache Leiningen dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-lein-${{ hashFiles('**/project.clj') }}
+        restore-keys: |
+          ${{ runner.os }}-lein-
+
+    - name: Install dependencies, forcing updates of snapshots
+      run: lein -U deps
+
+    - name: Install antora for building user guide
+      run: npm install
+
+    - name: Build überjar
+      run: bash .github/scripts/build.sh
+
+    - name: Upload überjar
+      if: success()
+      uses: Xotl/cool-github-releases@v1
+      with:
+        mode: update
+        tag_name: ${{ env.release_tag }}
+        isPrerelease: ${{ env.release_snapshot }}
+        replace_assets: ${{ env.release_snapshot }}
+        assets: ${{ env.uberjar_name }}
+        github_token: ${{ github.token }}
+        initial_mrkdwn: ${{ env.initial_description }}
+
+    - name: Cache htmltest results
+      uses: actions/cache@v3
+      with:
+        path: tmp/.htmltest
+        key: ${{ runner.os }}-htmltest
+
+    - name: Build and publish user guide
+      env:
+        GUIDE_SSH_KEY: ${{ secrets.GUIDE_SSH_KEY }}
+      run: bash .github/scripts/build_guide.sh

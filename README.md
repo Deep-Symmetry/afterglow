@@ -693,23 +693,11 @@ Here is the set of tasks needed to cut a new release:
   The command I have used so far is: `ffmpeg -i ~/Desktop/Cues.mov
   -pix_fmt rgb24 -r 10 -f gif - | gifsicle --optimize=3 --delay=10 >
   ~/Desktop/Cues.gif`
-- [ ] Set the project version at the top of
-  [`project.clj`](project.clj) to the appropriate non-snapshot version
-  number (probably just removing the `-SNAPHSOT` suffix). This example
-  assumes release 0.2.0 is about to be cut, so the `defproject` form
-  would begin `afterglow "0.2.0"`.
-- [ ] From the top level of the git checkout, run the release
-  preparation script with the name of the git tag that will be
-  associated with the release, to update all of the documentation
-  links to point at the appropriate version-specific tag: `bash
-  scripts/prepare_release.sh v0.2.0`.
-- [ ] Build both versions of the codox documentation, with the release
-  project version and tagged source and documentation links: `lein
-  repl` will do the trick.
 - [ ] Update [`CHANGELOG.md`](CHANGELOG.md) to reflect the release:
   make sure nothing is missing, and rename the sections to reflect the
   fact that the unreleased code is now released, and there is nothing
   unreleased.
+- [ ] Tag the repository with a non -SNAPSHOT version.
 
 ### Release Steps
 
@@ -717,20 +705,12 @@ Here is the set of tasks needed to cut a new release:
   with the tag name used above, and push including the tag. `git
   commit -a`, `git tag -a v0.2.0 -m "Release 0.2.0"`, `git push --tags`.
 - [ ] Deploy the release to Clojars: `lein deploy clojars`.
-- [ ] Build the uberjar with `lein uberjar`.
-- [ ] Create the release record on github, reference the associated
-  tag, copy in the release notes from [`CHANGELOG.md`](CHANGELOG.md), and upload the
-  uberjar.
 
 ### Postrelease Steps
 
-- [ ] Run the release preparation script with no argument to restore
-  the documentation links to point at the master branch: `bash
-  scripts/prepare_release.sh`
 - [ ] Update [`CHANGELOG.md`](CHANGELOG.md) to include a new
   unreleased section.
-- [ ] Set the version at the top of [`project.clj`](project.clj) to
-  the next `-SNAPSHOT` version being developed.
+- [ ] Tag the repository with a new -SNAPSHOT version.
 - [ ] Commit and push.
 
 ## Tasks
