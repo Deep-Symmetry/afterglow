@@ -183,7 +183,7 @@ if it sounds interesting!
  src="doc/modules/ROOT/assets/images/zulip-icon-circle.svg"
  width="128" height="128"></a>
 
-Deep Symmetry's projects are generously sponsored with hosting by <a
+Deep Symmetry&rsquo;s projects are generously sponsored with hosting by <a
 href="https://zulip.com">Zulip</a>, an open-source modern team chat
 app designed to keep both live and asynchronous conversations
 organized. Thanks to them, you can <a
