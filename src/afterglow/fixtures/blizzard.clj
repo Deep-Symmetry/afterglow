@@ -1,6 +1,6 @@
 (ns afterglow.fixtures.blizzard
   "Definitions for fixtures provided by [Blizzard
-  Lighting](http://www.blizzardlighting.com)."
+  Lighting](https://www.blizzardpro.com/)."
   {:author "James Elliott"}
   (:require [afterglow.channels :as chan]
             [afterglow.effects.channel :as chan-fx]
@@ -242,7 +242,7 @@
 
 (defn puck-fab5
   "[Puck
-  Fab5](http://www.blizzardlighting.com/index.php?option=com_k2&view=item&id=172:the-puck-fab5™&Itemid=71)
+  Fab5](https://web.archive.org/web/20140209181145/http://blizzardlighting.com/index.php?option=com_k2&view=item&id=172:the-puck-fab5™&Itemid=151)
   RGBAW LED.
 
 
@@ -313,7 +313,7 @@
 
 (defn weather-system
   "[Weather
-  System](https://www.blizzardpro.com/products/weather-system)
+  System](https://web.archive.org/web/20230206072442/https://www.blizzardpro.com/products/weather-system)
   8-fixture LED bar. Even though this fixture does not move, it is
   important to patch it at the correct orientation, so Afterglow can
   properly reason about the spatial relationships between the eight
@@ -368,7 +368,7 @@
 
 (defn snowbank
   "[Snow
-  Bank](https://www.blizzardpro.com/products/snowbank)
+  Bank](https://web.archive.org/web/20230204191858/https://www.blizzardpro.com/products/snowbank)
   RGB Blinder / LED Pixel Effect."
   ([]
    (snowbank :26-channel))
