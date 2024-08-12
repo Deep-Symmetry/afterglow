@@ -4,22 +4,22 @@
   :license {:name "Eclipse Public License 2.0"
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :jvm-opts ["-Dapple.awt.UIElement=true"]  ; Suppress dock icon and focus stealing when compiling on a Mac.
-  :dependencies [[org.clojure/clojure "1.11.1"]
-                 [org.clojure/core.cache "1.0.225"]
-                 [org.clojure/core.async "1.5.648" :exclusions [org.clojure/tools.reader]]
-                 [org.clojure/data.json "2.4.0"]
-                 [org.clojure/data.zip "1.0.0"]
-                 [org.clojure/math.numeric-tower "0.0.5"]
-                 [org.clojure/tools.cli "1.0.206"]
+  :dependencies [[org.clojure/clojure "1.11.4"]
+                 [org.clojure/core.cache "1.1.234"]
+                 [org.clojure/core.async "1.6.681" :exclusions [org.clojure/tools.reader]]
+                 [org.clojure/data.json "2.5.0"]
+                 [org.clojure/data.zip "1.1.0"]
+                 [org.clojure/math.numeric-tower "0.1.0"]
+                 [org.clojure/tools.cli "1.1.230"]
                  [org.clojure/tools.nrepl "0.2.13"]
-                 [org.clojure/tools.reader "1.3.6"]
-                 [org.deepsymmetry/beat-link "7.0.0" :exclusions [org.slf4j/slf4j-api]]
-                 [org.deepsymmetry/lib-carabiner "1.1.7-SNAPSHOT"]
+                 [org.clojure/tools.reader "1.4.2"]
+                 [org.deepsymmetry/beat-link "8.0.0-SNAPSHOT" :exclusions [org.slf4j/slf4j-api]]
+                 [org.deepsymmetry/lib-carabiner "1.2.0"]
                  [org.deepsymmetry/wayang "0.1.8"]
                  [java3d/vecmath "1.3.1"]
                  [java3d/j3d-core "1.3.1"]
                  [java3d/j3d-core-utils "1.3.1"]
-                 [overtone/at-at "1.2.0"]
+                 [overtone/at-at "1.3.58"]
                  [overtone/midi-clj "0.5.0"]
                  [overtone/osc-clj "0.9.0"]
                  [uk.co.xfactory-librarians/coremidi4j "1.6"]
@@ -28,34 +28,34 @@
                  [com.climate/claypoole "1.1.4"]
                  [org.clojars.brunchboy/protobuf "0.8.3"]
                  [ola-clojure "0.1.8" :exclusions [org.clojure/tools.reader]]
-                 [selmer "1.12.50" :exclusions [cheshire]]
+                 [selmer "1.12.61" :exclusions [cheshire]]
                  [com.evocomputing/colors "1.0.6"]
                  [environ "1.2.0"]
-                 [camel-snake-kebab "0.4.2"]
+                 [camel-snake-kebab "0.4.3"]
                  [com.taoensso/timbre "5.2.1"]
                  [com.taoensso/tufte "2.2.0"]
                  [com.fzakaria/slf4j-timbre "0.3.21"]
                  [com.taoensso/tower "3.0.2"]
                  [com.taoensso/truss "1.6.0"]
-                 [markdown-clj "1.11.0"]
-                 [ring/ring-core "1.9.5"]
+                 [markdown-clj "1.12.1"]
+                 [ring/ring-core "1.12.2"]
                  [clj-time "0.15.2"]
-                 [compojure "1.6.2" :exclusions [org.eclipse.jetty/jetty-server
+                 [compojure "1.7.1" :exclusions [org.eclipse.jetty/jetty-server
                                                  ring/ring-core
                                                  ring/ring-codec]]
-                 [ring/ring-defaults "0.3.3"]
-                 [ring/ring-session-timeout "0.2.0"]
+                 [ring/ring-defaults "0.5.0"]
+                 [ring/ring-session-timeout "0.3.0"]
                  [ring-middleware-format "0.7.5" :exclusions [ring/ring-jetty-adapter
                                                               cheshire
                                                               org.clojure/tools.reader
                                                               org.clojure/java.classpath
                                                               org.clojure/core.memoize
                                                               com.fasterxml.jackson.core/jackson-core]]
-                 [metosin/ring-http-response "0.9.3"]
+                 [metosin/ring-http-response "0.9.4"]
                  [prone "2021-04-23"]
                  [buddy "2.0.0"]
-                 [instaparse "1.4.10"]
-                 [http-kit "2.5.3"]]
+                 [instaparse "1.5.0"]
+                 [http-kit "2.8.0"]]
   :repositories {"sonatype-snapshots" "https://oss.sonatype.org/content/repositories/snapshots"}
   :main afterglow.core
   :uberjar-name "afterglow.jar"
@@ -73,7 +73,7 @@
   ;; :env {:repl-port 16002}
 
   :profiles {:dev     {:dependencies [[ring-mock "0.1.5" :exclusions [ring/ring-codec]]
-                                      [ring/ring-devel "1.9.5"]]
+                                      [ring/ring-devel "1.12.2"]]
                        :repl-options {:init-ns afterglow.examples
                                       :welcome (println "afterglow loaded.")}
                        :jvm-opts     ["-XX:-OmitStackTraceInFastThrow" "-Dapple.awt.UIElement=true"]
