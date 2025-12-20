@@ -125,7 +125,7 @@
    (resolve-param arg show snapshot nil))
   ([arg show snapshot head]
    (if (param? arg)
-     (evaluate arg show snapshot head)
+     (recur (evaluate arg show snapshot head) show snapshot head)
      arg)))
 
 (defn frame-dynamic-param?
