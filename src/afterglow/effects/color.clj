@@ -93,16 +93,15 @@
   (let [resolved (params/resolve-param value show snapshot target) ;only taking 0.5 us now...
         color-key (keyword (str "color-" (:id target)))
         channels (:channels target)
-        vs (mapv #(int (* 255 %)) @(clr/as-rgba resolved))] ;@(clr/as-int24 resolved)
+        vs (mapv #(int (* 255 %)) @(clr/as-rgba resolved))]
     ;; Start with RGB mixing
-  (pspy :color-to-buffer ;down to ~10us with aset-byte
-        (doseq [[rgb-key i] {:red 0 :green 1 :blue 2} ;this is quick enough...
-                ch (filter #(= (:color %) rgb-key) channels)]
-          (chan-fx/apply-channel-value buffers ch (vs i)))) ;this is still slow!!!
+    (doseq [[rgb-key i] {:red 0 :green 1 :blue 2}
+            ch (filter #(= (:color %) rgb-key) channels)]
+      (chan-fx/apply-channel-value buffers ch (vs i)))
 
-  (swap! (:movement *show*) #(assoc-in % [:current color-key] resolved)) ;quick enough
+  (swap! (:movement *show*) #(assoc-in % [:current color-key] resolved))
     ;; Expermental: Does this work well in bringing in the white channel?
-  (when-let [whites (filter #(= (:color %) :white) channels)] ;whiteS multiple?
+  (when-let [whites (filter #(= (:color %) :white) channels)]
       (let [[l s] (map #(% resolved) [clr/luminance clr/saturation])
             s-scale (if (< l 0.5) 1.0 (- 1.0 (* 2.0 (- l 0.5))))
             level (int (* 255 l (- 1.0 (* s s-scale))))]
