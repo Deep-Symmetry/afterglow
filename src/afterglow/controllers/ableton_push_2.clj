@@ -1448,7 +1448,9 @@
                         (.addAttribute as java.awt.font.TextAttribute/FONT font-for-cue-variable-values)
                         (.addAttribute as java.awt.font.TextAttribute/CHAR_REPLACEMENT shape-attribute 0 1)
                         (.addAttribute as java.awt.font.TextAttribute/FOREGROUND
-                                       (java.awt.Color. (clr/red val) (clr/green val) (clr/blue val))
+                                       (java.awt.Color. (int (* 255 (clr/red val)))
+                                                        (int (* 255 (clr/green val)))
+                                                        (int (* 255 (clr/blue val))))
                                        0 1)
                         as)
 
