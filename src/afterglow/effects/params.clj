@@ -50,6 +50,19 @@
   that will be passed in `head`. If no fixure context is available,
   `head` will be `nil`."))))
 
+(defrecord Param [^String name, ^Boolean dynamic, result-type
+                  ^clojure.lang.IFn eval-fn, ^clojure.lang.IFn resolve-fn]
+  IParam
+  (evaluate [this show snapshot head]
+    (eval-fn show snapshot head))
+  (frame-dynamic? [this]
+    dynamic)
+  (result-type [this]
+    result-type)
+  (resolve-non-frame-dynamic-elements [this show snapshot head]
+     (resolve-fn show snapshot head)))
+
+(declare param?)
 
 (defn check-type
   "Ensure that a parameter is of a particular type, or that it
@@ -60,13 +73,14 @@
   {:pre [(some? value) (some? type-expected) (some? name)]}
   (cond (class? type-expected)
         (when-not (or (instance? type-expected value)
-                      (and (satisfies? IParam value)  (.isAssignableFrom type-expected (result-type value))))
-          (throw (IllegalArgumentException. (str "Variable " name " must be of type " type-expected))))
+                      (and (param? value)  (.isAssignableFrom type-expected (result-type value)))
+                      (= type-expected (:type value)))
+          (throw (IllegalArgumentException. (str "Class variable " name " must be " type-expected ", got " (:type value (type value))))))
 
         (keyword? type-expected)
         (when-not (or (= type-expected (type value))
-                      (and (satisfies? IParam value) (= type-expected (result-type value))))
-          (throw (IllegalArgumentException. (str "Variable " name " must be of type " type-expected))))
+                      (and (param? value) (= type-expected (result-type value))))
+          (throw (IllegalArgumentException. (str "Keyword variable " name " must be " type-expected ", got " value))))
 
         :else
         (throw (IllegalArgumentException. (str "Do not know how to check for type " type-expected))))
@@ -95,7 +109,12 @@
 (defn param?
   "Checks whether the argument is an [[IParam]]."
   [arg]
-  (satisfies? IParam arg))
+  (if (nil? arg) false
+    (condp = (type arg)
+      Number false color-type false Boolean false
+      (or (instance? Param arg)
+          (instance? afterglow.effects.params.IParam arg) ;works with IParam and old color param in tolglow.param... ONLY with full name
+          #_(satisfies? IParam arg))))) ;the poison pill, slows things down 100x
 
 (defn resolve-param
   "Takes an argument which may be a raw value, or may be an [[IParam]].
@@ -105,7 +124,7 @@
   ([arg show snapshot]
    (resolve-param arg show snapshot nil))
   ([arg show snapshot head]
-   (if (satisfies? IParam arg)
+   (if (param? arg)
      (recur (evaluate arg show snapshot head) show snapshot head)
      arg)))
 
@@ -113,7 +132,7 @@
   "Checks whether the argument is an [[IParam]] which is dynamic to
   the frame level."
   [arg]
-  (and (satisfies? IParam arg) (frame-dynamic? arg)))
+  (and (param? arg) (frame-dynamic? arg)))
 
 (defn resolve-unless-frame-dynamic
   "If the first argument is an [[IParam]] which is not dynamic all the
@@ -126,7 +145,7 @@
    (resolve-unless-frame-dynamic arg show snapshot nil))
   ([arg show snapshot head]
    {:pre [(some? show)]}
-   (if (satisfies? IParam arg)
+   (if (param? arg)
      (if-not (frame-dynamic? arg)
        (resolve-param arg show snapshot head)
        (resolve-non-frame-dynamic-elements arg show snapshot head))
@@ -355,37 +374,36 @@
       :or {interval :beat interval-ratio 1 fade-fraction 0 fade-curve :linear
            starting (when *show* (metro-snapshot (:metronome *show*)))}}]
   {:pre [(some? *show*)]}
-  (validate-param-type interval clojure.lang.Keyword)
-  (validate-param-type fade-curve clojure.lang.Keyword)
-  (let [interval-ratio (bind-keyword-param interval-ratio Number 1)
-        fade-fraction (bind-keyword-param fade-fraction Number 0)
-        starting (bind-keyword-param starting MetronomeSnapshot (when *show* (metro-snapshot (:metronome *show*))))]
-    (if (not-any? param? [interval interval-ratio fade-fraction fade-curve starting])
-      (fixed-step-param interval interval-ratio fade-fraction fade-curve starting)  ; No dynamic params, can optimize
+  (map #(validate-param-type % clojure.lang.Keyword) [interval fade-curve])
+
+  (let [[interval-ratio fade-fraction] (map #(bind-keyword-param %1 Number %2) [interval-ratio fade-fraction] [1 0])
+        starting (bind-keyword-param starting MetronomeSnapshot (when *show* (metro-snapshot (:metronome *show*))))
+        params [interval interval-ratio fade-fraction fade-curve starting]]
+    (if (not-any? param? params)
+      (apply fixed-step-param params)  ; No dynamic params, can optimize
       (reify IParam  ; Must build dynamic version
         (evaluate [_this show snapshot head]
           ;; Build and delegate to a one-time-use fixed step parameter based on the current values of our parameters
-          (let [interval (resolve-param interval show snapshot head)
-                interval-ratio (resolve-param interval-ratio show snapshot head)
-                fade-fraction (resolve-param fade-fraction show snapshot head)
-                fade-curve (resolve-param fade-curve show snapshot head)
-                starting (resolve-param starting show snapshot head)
-                current-version (fixed-step-param interval interval-ratio fade-fraction fade-curve starting)]
+          (let [params (map #(resolve-param % show snapshot head) params)
+                current-version (apply fixed-step-param params)]
             (evaluate current-version show snapshot head)))
         (frame-dynamic? [_this]
           true)
         (result-type [_this]
           Number)
         (resolve-non-frame-dynamic-elements [this show snapshot head]
-          (if (not-any? frame-dynamic? [interval interval-ratio fade-fraction fade-curve starting])
+          (if (not-any? frame-dynamic? params)
             ;; None of our arguments are frame-dynamic, so we can now optimize to a fixed step parameter
-            (let [interval (resolve-param interval show snapshot head)
-                  interval-ratio (resolve-param interval-ratio show snapshot head)
-                  fade-fraction (resolve-param fade-fraction show snapshot head)
-                  fade-curve (resolve-param fade-curve show snapshot head)
-                  starting (resolve-param starting show snapshot head)]
-              (fixed-step-param interval interval-ratio fade-fraction fade-curve starting))
+            (let [params (map #(resolve-param % show snapshot head) params)]
+              (apply fixed-step-param params))
             this))))))  ; We have frame dynamic inputs, so we need to stay fully dynamic
+
+(defn check-dynamic
+  [frame-dynamic params]
+  (if (= frame-dynamic :default) ;; Default means incoming args control how dynamic we should be
+    (boolean (some frame-dynamic-param? params))
+    (boolean frame-dynamic))) ;; We were given an explicit value for frame-dynamic
+
 
 (defn interpret-color
   "Accept a color as either
@@ -558,37 +576,22 @@
   parameters which themselves are."
   [& {:keys [x y z frame-dynamic] :or {x 0 y 0 z 1 frame-dynamic :default}}]
   {:pre [(some? *show*)]}
-  (let [x (bind-keyword-param x Number 0)
-        y (bind-keyword-param y Number 0)
-        z (bind-keyword-param z Number 1)]
+  (let [[x y z] (map #(bind-keyword-param %1 Number %2) [x y z] [0 0 1])]
     (if (not-any? param? [x y z])
       ;; Optimize the degenerate case of all constant parameters
       (Vector3d. x y z)
       ;; Handle the general case of some dynamic parameters
-      (let [dyn (if (= :default frame-dynamic)
-                  ;; Default means incoming args control how dynamic we should be
-                  (boolean (some frame-dynamic-param? [x y z]))
-                  ;; We were given an explicit value for frame-dynamic
-                  (boolean frame-dynamic))
+      (let [dyn (check-dynamic frame-dynamic [x y z])
             eval-fn (fn [show snapshot head]
                       (Vector3d. (resolve-param x show snapshot head)
                                  (resolve-param y show snapshot head)
                                  (resolve-param z show snapshot head)))
             resolve-fn (fn [show snapshot head]
                          (with-show show
-                           (build-direction-param :x (resolve-unless-frame-dynamic x show snapshot head)
-                                                  :y (resolve-unless-frame-dynamic y show snapshot head)
-                                                  :z (resolve-unless-frame-dynamic z show snapshot head)
-                                                  :frame-dynamic dyn)))]
-        (reify IParam
-          (evaluate [_this show snapshot head]
-            (eval-fn show snapshot head))
-          (frame-dynamic? [_this]
-            dyn)
-          (result-type [_this]
-            Vector3d)
-          (resolve-non-frame-dynamic-elements [_this show snapshot head]
-            (resolve-fn show snapshot head)))))))
+                           (let [[x y z] (map #(resolve-unless-frame-dynamic
+                                               % show snapshot head) [x y z])]
+                             (build-direction-param :x x :y y :z z :frame-dynamic dyn))))]
+        (Param. "Direction" dyn Vector3d eval-fn resolve-fn)))))
 
 (defn build-direction-transformer
   "Returns a dynamic direction parameter for use
@@ -605,31 +608,19 @@
   parameters which themselves are."
   [direction transform & {:keys [frame-dynamic] :or {frame-dynamic :default}}]
   {:pre [(some? *show*)]}
-  (let [direction  (bind-keyword-param direction Vector3d (Vector3d. 0 0 1))
-        transform  (bind-keyword-param transform Transform3D (Transform3D.))
-        dyn        (if (= :default frame-dynamic)
-                     ;; Default means incoming args control how dynamic we should be
-                     (boolean (some frame-dynamic-param? [direction transform]))
-                     ;; We were given an explicit value for frame-dynamic
-                     (boolean frame-dynamic))
-        eval-fn    (fn [show snapshot head]
-                     (let [result (Vector3d. (resolve-param direction show snapshot head))]
-                       (.transform (resolve-param transform show snapshot head) result)
-                    result))
-        resolve-fn (fn [show snapshot head]
-                     (with-show show
-                       (build-direction-transformer (resolve-unless-frame-dynamic direction show snapshot head)
-                                                    (resolve-unless-frame-dynamic transform show snapshot head)
-                                                    :frame-dynamic dyn)))]
-    (reify IParam
-      (evaluate [_this show snapshot head]
-        (eval-fn show snapshot head))
-      (frame-dynamic? [_this]
-        dyn)
-      (result-type [_this]
-        Vector3d)
-      (resolve-non-frame-dynamic-elements [_this show snapshot head]
-        (resolve-fn show snapshot head)))))
+  (let [direction (bind-keyword-param direction Vector3d (Vector3d. 0 0 1))
+        transform (bind-keyword-param transform Transform3D (Transform3D.))]
+    (let [dyn (check-dynamic frame-dynamic [direction transform])
+          eval-fn (fn [show snapshot head]
+                    (let [result (Vector3d. (resolve-param direction show snapshot head))]
+                      (.transform (resolve-param transform show snapshot head) result)
+                      result))
+          resolve-fn (fn [show snapshot head]
+                       (with-show show
+                         (build-direction-transformer (resolve-unless-frame-dynamic direction show snapshot head)
+                                                      (resolve-unless-frame-dynamic transform show snapshot head)
+                                                      :frame-dynamic dyn)))]
+        (Param. "Direction transformer" dyn Vector3d eval-fn resolve-fn))))
 
 (defn- make-radians
   "If an angle was not already radians, convert it from degrees to
@@ -679,36 +670,21 @@
   incoming parameters which themselves are."
   [& {:keys [pan tilt radians frame-dynamic] :or {pan 0 tilt 0 frame-dynamic :default}}]
   {:pre [(some? *show*)]}
-  (let [pan (bind-keyword-param pan Number 0)
-        tilt (bind-keyword-param tilt Number 0)]
-    (if (not-any? param? [pan tilt])
+  (let [pt (map #(bind-keyword-param % Number 0) [pan tilt])]
+    (if (not-any? param? pt)
       ;; Optimize the degenerate case of all constant parameters
-      (vector-from-pan-tilt (make-radians pan radians) (make-radians tilt radians))
+      (apply vector-from-pan-tilt (map #(make-radians % radians) pt))
       ;; Handle the general case of some dynamic parameters
-      (let [dyn (if (= :default frame-dynamic)
-                  ;; Default means incoming args control how dynamic we should be
-                  (boolean (some frame-dynamic-param? [pan tilt]))
-                  ;; We were given an explicit value for frame-dynamic
-                  (boolean frame-dynamic))
+      (let [dyn (check-dynamic frame-dynamic pt)
             eval-fn (fn [show snapshot head]
                       (vector-from-pan-tilt (make-radians (resolve-param pan show snapshot head) radians)
                                             (make-radians (resolve-param tilt show snapshot head) radians)))
             resolve-fn (fn [show snapshot head]
                          (with-show show
-                           (build-direction-param-from-pan-tilt
-                            :pan (resolve-unless-frame-dynamic pan show snapshot head)
-                            :tilt (resolve-unless-frame-dynamic tilt show snapshot head)
-                            :radians radians
-                            :frame-dynamic dyn)))]
-        (reify IParam
-          (evaluate [_this show snapshot head]
-            (eval-fn show snapshot head))
-          (frame-dynamic? [_this]
-            dyn)
-          (result-type [_this]
-            Vector3d)
-          (resolve-non-frame-dynamic-elements [_this show snapshot head]
-            (resolve-fn show snapshot head)))))))
+                           (let [[pan tilt] (map #(resolve-unless-frame-dynamic % show snapshot head) pt)]
+                             (build-direction-param-from-pan-tilt
+                              :pan pan :tilt tilt :radians radians :frame-dynamic dyn))))]
+        (Param. "Direction" dyn Vector3d eval-fn resolve-fn)))))
 
 (defn build-pan-tilt-param
   "Returns a dynamic pan/tilt parameter for use with [[pan-tilt-effect]],
@@ -735,17 +711,12 @@
   use [[build-direction-param-from-pan-tilt]] to set its direction."
   [& {:keys [pan tilt radians frame-dynamic] :or {pan 0 tilt 0 frame-dynamic :default}}]
   {:pre [(some? *show*)]}
-  (let [pan (bind-keyword-param pan Number 0)
-        tilt (bind-keyword-param tilt Number 0)]
+  (let [[pan tilt] (map #(bind-keyword-param % Number 0) [pan tilt])]
     (if (not-any? param? [pan tilt])
       ;; Optimize the degenerate case of all constant parameters
       (Vector2d. (make-radians pan radians) (make-radians tilt radians))
       ;; Handle the general case of some dynamic parameters
-      (let [dyn (if (= :default frame-dynamic)
-                  ;; Default means incoming args control how dynamic we should be
-                  (boolean (some frame-dynamic-param? [pan tilt]))
-                  ;; We were given an explicit value for frame-dynamic
-                  (boolean frame-dynamic))
+      (let [dyn (check-dynamic frame-dynamic [pan tilt])
             eval-fn (fn [show snapshot head]
                       (Vector2d. (make-radians (resolve-param pan show snapshot head) radians)
                                  (make-radians (resolve-param tilt show snapshot head) radians)))
@@ -755,15 +726,7 @@
                                                  :tilt (resolve-unless-frame-dynamic tilt show snapshot head)
                                                  :radians radians
                                                  :frame-dynamic dyn)))]
-        (reify IParam
-          (evaluate [_this show snapshot head]
-            (eval-fn show snapshot head))
-          (frame-dynamic? [_this]
-            dyn)
-          (result-type [_this]
-            Vector2d)
-          (resolve-non-frame-dynamic-elements [_this show snapshot head]
-            (resolve-fn show snapshot head)))))))
+        (Param. "Pan-Tilt" dyn Vector2d eval-fn resolve-fn)))))
 
 (defn build-aim-param
   "Returns a dynamic aiming parameter for use with [[aim-effect]].
@@ -783,37 +746,21 @@
   parameters which themselves are."
   [& {:keys [x y z frame-dynamic] :or {x 0 y 0 z 2 frame-dynamic :default}}]
   {:pre [(some? *show*)]}
-  (let [x (bind-keyword-param x Number 0)
-        y (bind-keyword-param y Number 0)
-        z (bind-keyword-param z Number 2)]
+  (let [[x y z] (map #(bind-keyword-param %1 Number %2) [x y z] [0 0 2])]
     (if (not-any? param? [x y z])
       ;; Optimize the degenerate case of all constant parameters
       (Point3d. x y z)
       ;; Handle the general case of some dynamic parameters
-      (let [dyn (if (= :default frame-dynamic)
-                  ;; Default means incoming args control how dynamic we should be
-                  (boolean (some frame-dynamic-param? [x y z]))
-                  ;; We were given an explicit value for frame-dynamic
-                  (boolean frame-dynamic))
+      (let [dyn (check-dynamic frame-dynamic [x y z])
             eval-fn (fn [show snapshot head]
                       (Point3d. (resolve-param x show snapshot head)
                                 (resolve-param y show snapshot head)
                                 (resolve-param z show snapshot head)))
             resolve-fn (fn [show snapshot head]
                          (with-show show
-                           (build-aim-param :x (resolve-unless-frame-dynamic x show snapshot head)
-                                            :y (resolve-unless-frame-dynamic y show snapshot head)
-                                            :z (resolve-unless-frame-dynamic z show snapshot head)
-                                            :frame-dynamic dyn)))]
-        (reify IParam
-          (evaluate [_this show snapshot head]
-            (eval-fn show snapshot head))
-          (frame-dynamic? [_this]
-            dyn)
-          (result-type [_this]
-            Point3d)
-          (resolve-non-frame-dynamic-elements [_this show snapshot head]
-            (resolve-fn show snapshot head)))))))
+                           (let [[x y z] (map #(resolve-unless-frame-dynamic % show snapshot head) [x y z])]
+                             (build-aim-param :x x :y y :z z :frame-dynamic dyn))))]
+        (Param. "Aim" dyn Point3d eval-fn resolve-fn)))))
 
 (defn build-aim-transformer
   "Returns a dynamic aiming parameter for use with [[aim-effect]]
@@ -829,31 +776,19 @@
   parameters which themselves are."
   [aim transform & {:keys [frame-dynamic] :or {frame-dynamic :default}}]
   {:pre [(some? *show*)]}
-  (let [aim        (bind-keyword-param aim Point3d (Point3d. 0 0 2))
-        transform  (bind-keyword-param transform Transform3D (Transform3D.))
-        dyn        (if (= :default frame-dynamic)
-                     ;; Default means incoming args control how dynamic we should be
-                     (boolean (some frame-dynamic-param? [aim transform]))
-                     ;; We were given an explicit value for frame-dynamic
-                     (boolean frame-dynamic))
-        eval-fn    (fn [show snapshot head]
-                     (let [result (Point3d. (resolve-param aim show snapshot head))]
-                       (.transform (resolve-param transform show snapshot head) result)
-                       result))
-        resolve-fn (fn [show snapshot head]
-                     (with-show show
-                       (build-aim-transformer (resolve-unless-frame-dynamic aim show snapshot head)
-                                              (resolve-unless-frame-dynamic transform show snapshot head)
-                                              :frame-dynamic dyn)))]
-    (reify IParam
-      (evaluate [_this show snapshot head]
-        (eval-fn show snapshot head))
-      (frame-dynamic? [_this]
-        dyn)
-      (result-type [_this]
-        Point3d)
-      (resolve-non-frame-dynamic-elements [_this show snapshot head]
-        (resolve-fn show snapshot head)))))
+  (let [aim (bind-keyword-param aim Point3d (Point3d. 0 0 2))
+        transform (bind-keyword-param transform Transform3D (Transform3D.))]
+    (let [dyn (check-dynamic frame-dynamic [aim transform])
+          eval-fn (fn [show snapshot head]
+                    (let [result (Point3d. (resolve-param aim show snapshot head))]
+                      (.transform (resolve-param transform show snapshot head) result)
+                      result))
+          resolve-fn (fn [show snapshot head]
+                       (with-show show
+                         (build-aim-transformer (resolve-unless-frame-dynamic aim show snapshot head)
+                                                (resolve-unless-frame-dynamic transform show snapshot head)
+                                                :frame-dynamic dyn)))]
+      (Param. "Aim transformer" dyn Point3d eval-fn resolve-fn))))
 
 (defn- scale-spatial-result
   "Map an individual spatial parameter function result into the range
@@ -940,11 +875,7 @@
         max (or max 255)
         target-range (math/abs (- min max))]
     (doseq [v (vals results)] (check-type v Number "spatial-param function result"))
-    (let [dyn (if (= :default frame-dynamic)
-                ;; Default means results of head function control how dynamic to be
-                (boolean (some frame-dynamic-param? (vals results)))
-                ;; We were given an explicit value for frame-dynamic-param
-                (boolean frame-dynamic))
+    (let [dyn (check-dynamic frame-dynamic (vals results ))
           eval-fn (build-spatial-eval-fn results scaling min target-range)
           resolve-fn (fn [show snapshot head]
                        (with-show show
@@ -962,15 +893,7 @@
                                Number)
                              (resolve-non-frame-dynamic-elements [this _ _ _]
                                this)))))] ; Already resolved
-      (reify IParam
-        (evaluate [_this show snapshot head]
-          (eval-fn show snapshot head))
-        (frame-dynamic? [_this]
-          dyn)
-        (result-type [_this]
-          Number)
-        (resolve-non-frame-dynamic-elements [_this show snapshot head]
-          (resolve-fn show snapshot head))))))
+      (Param. "Spatial" dyn Number eval-fn resolve-fn)))) ;might be bad mixing reify and Param?
 
 (defn build-param-formula
   "A helper function to create a dynamic parameter that involves some
@@ -986,14 +909,12 @@
   The compound dynamic parameter will be frame dynamic if any of its
   input parameters are."
   [param-type calc-fn & input-params]
-  (reify IParam
-    (evaluate [_this show snapshot head]
-      (apply calc-fn (map #(resolve-param % show snapshot head) input-params)))
-    (frame-dynamic? [_this] (some frame-dynamic-param? input-params))
-    (result-type [_this]
-      param-type)
-    (resolve-non-frame-dynamic-elements [_this show snapshot head]
-      (apply build-param-formula param-type calc-fn
-             (map #(resolve-unless-frame-dynamic % show snapshot head) input-params)))))
+  (let [dyn (some frame-dynamic-param? input-params)
+        eval-fn (fn [show snapshot head]
+                  (apply calc-fn (map #(resolve-param % show snapshot head) input-params)))
+        resolve-fn (fn [show snapshot head]
+                     (apply build-param-formula param-type calc-fn
+                            (map #(resolve-unless-frame-dynamic % show snapshot head) input-params)))]
+    (Param. "Formula" dyn param-type eval-fn resolve-fn)))
 
 ;; TODO: some kind of random parameter?

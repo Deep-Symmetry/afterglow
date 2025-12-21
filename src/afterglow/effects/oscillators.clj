@@ -6,7 +6,8 @@
             [afterglow.show-context :refer [*show* with-show]]
             [afterglow.util :as util]
             [taoensso.timbre :as timbre])
-    (:import [afterglow.rhythm Metronome]))
+    (:import [afterglow.rhythm Metronome]
+             [afterglow.effects.params Param]))
 
 (defonce
   ^{:private true
@@ -63,11 +64,9 @@
       :bar (fn [^afterglow.rhythm.MetronomeSnapshot snapshot] (.bar-phase snapshot))
       :phrase (fn [^afterglow.rhythm.MetronomeSnapshot snapshot] (.phrase-phase snapshot)))
     ;; Must calculate enhanced phase based on the interval ratio
-    (case interval
-      :beat (fn [^afterglow.rhythm.MetronomeSnapshot snapshot] (rhythm/snapshot-beat-phase snapshot interval-ratio))
-      :bar (fn [^afterglow.rhythm.MetronomeSnapshot snapshot] (rhythm/snapshot-bar-phase snapshot interval-ratio))
-      :phrase (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
-                (rhythm/snapshot-phrase-phase snapshot interval-ratio)))))
+    (let [fm {:beat rhythm/snapshot-beat-phase :bar rhythm/snapshot-bar-phase :phrase rhythm/snapshot-phrase-phase}]
+      (fn [^afterglow.rhythm.MetronomeSnapshot snapshot]
+        ((interval fm) snapshot interval-ratio)))))
 
 (defn- build-adjusted-phase-fn
   "Constructs the function which uses the oscillator phase function to
@@ -99,21 +98,19 @@
   [shape-fn interval interval-ratio phase]
   (reify IOscillator
     (evaluate [this show snapshot head]
-      (let [interval (params/resolve-param interval show snapshot head)
-            interval-ratio (params/resolve-param interval-ratio show snapshot head)
-            phase (params/resolve-param phase show snapshot head)
+      (let [[interval interval-ratio phase]
+            (map #(params/resolve-param % show snapshot head) [interval interval-ratio phase])
             base-phase-fn (build-base-phase-fn interval interval-ratio)
             adjusted-phase-fn (build-adjusted-phase-fn base-phase-fn phase)]
         (shape-fn (adjusted-phase-fn snapshot))))
     (resolve-non-frame-dynamic-elements [this show snapshot head]
       (if (not-any? params/frame-dynamic-param? [interval interval-ratio phase])
         ;; Can now resolve and optimize
-        (let [interval (params/resolve-param interval show snapshot head)
-              interval-ratio (params/resolve-param interval-ratio show snapshot head)
-              phase (params/resolve-param phase show snapshot head)]
-          (fixed-oscillator shape-fn interval interval-ratio phase))
+          (apply fixed-oscillator shape-fn
+                 (map #(params/resolve-param % show snapshot head)
+                      [interval interval-ratio phase])))
         ;; Can't optimize, there is at least one frame-dynamic parameter, so return self
-        this))))
+        this)))
 
 (defn- variable-oscillator
   "Build an oscillator whose shape function relies on dynamic
@@ -133,10 +130,9 @@
         (if (ifn? shape-fn)  ; The function simplified and no longer depends on dynamic parameters; we can optimize
           (if (not-any? params/frame-dynamic-param? [interval interval-ratio phase])
             ;; No parameters are frame-dynamic, can resolve and optimize all the way to a fixed oscillator
-            (let [interval (params/resolve-param interval show snapshot head)
-                  interval-ratio (params/resolve-param interval-ratio show snapshot head)
-                  phase (params/resolve-param phase show snapshot head)]
-              (fixed-oscillator shape-fn interval interval-ratio phase))
+            (apply fixed-oscillator shape-fn
+                 (map #(params/resolve-param % show snapshot head)
+                      [interval interval-ratio phase]))
             ;; Can't fully optimize, there is at least one frame-dynamic parameter, so return a simple oscillator
             (simple-oscillator shape-fn interval interval-ratio phase))
           ;; Can't optimize at all, shape-fn is frame-dynamic, so return self
@@ -377,59 +373,27 @@
   stuck at the value you gave with `:min`."
   [osc & {:keys [min max metronome frame-dynamic] :or {min 0 max 255 frame-dynamic true}}]
   {:pre [(some? *show*) (satisfies? IOscillator osc)]}
-  (let [min (params/bind-keyword-param min Number 0)
-        max (params/bind-keyword-param max Number 255)
-        metronome (params/bind-keyword-param metronome Metronome (:metronome *show*))]
-    (if (not-any? params/param? [min max metronome])
-      ;; Optimize the simple case of all constant parameters
-      (let [max (clojure.core/max min max)  ; Handle case where min > max
-            range (- max min)
-            dyn (boolean frame-dynamic)
-            eval-fn (if (some? metronome)
+  (let [[min max] (map #(params/bind-keyword-param %1 Number %2) [min max] [0 255])
+        metronome (params/bind-keyword-param metronome Metronome (:metronome *show*))
+        presolve-fn (fn [show snapshot head]
+                     (with-show show
+                       (let [[min max metronome] (map #(params/resolve-unless-frame-dynamic % show snapshot head) [min max metronome])
+                             osc (resolve-non-frame-dynamic-elements osc show snapshot head)]
+                         (build-oscillated-param osc :min min :max max :metronome metronome :frame-dynamic frame-dynamic))))
+        eval-fn (if (not-any? params/param? [min max metronome]) ;; Optimize the simple case of all constant parameters
+                  (let [max (clojure.core/max min max)  ; Handle case where min > max
+                        range (- max min)]
+                    (if (some? metronome) ;uh if none are params how could it be a metronome?
                       (fn [show snapshot head]
                         (let [osc-snapshot (rhythm/metro-snapshot metronome (:instant snapshot))]
                           (+ min (* range (evaluate osc show osc-snapshot head)))))
-                      (fn [show snapshot head] (+ min (* range (evaluate osc show snapshot head)))))
-            resolve-fn (fn [show snapshot head]
-                         (with-show show
-                           (build-oscillated-param (resolve-non-frame-dynamic-elements osc show snapshot head)
-                                                   :min (params/resolve-unless-frame-dynamic min show snapshot head)
-                                                   :max (params/resolve-unless-frame-dynamic max show snapshot head)
-                                                   :metronome (params/resolve-unless-frame-dynamic metronome show
-                                                                                                   snapshot head)
-                                                   :frame-dynamic frame-dynamic)))]
-        (reify params/IParam
-          (params/evaluate [this show snapshot head]
-            (eval-fn show snapshot head))
-          (params/frame-dynamic? [this]
-            dyn)
-          (params/result-type [this]
-            Number)
-          (params/resolve-non-frame-dynamic-elements [this show snapshot head]
-            (resolve-fn show snapshot head))))
-      ;; Support the general case where we have an incoming variable parameter
-      (let [dyn (boolean frame-dynamic)
-            eval-fn (if (some? metronome)
-                      (fn [show snapshot head]
-                        (let [local-metronome (params/resolve-param metronome show snapshot head)
-                              osc-snapshot (rhythm/metro-snapshot local-metronome (:instant snapshot))]
-                          (evaluate-oscillator show snapshot head min max osc osc-snapshot)))
-                      (fn [show snapshot head]
-                        (evaluate-oscillator show snapshot head min max osc snapshot)))
-            resolve-fn (fn [show snapshot head]
-                         (with-show show
-                           (build-oscillated-param (resolve-non-frame-dynamic-elements osc show snapshot head)
-                                                   :min (params/resolve-unless-frame-dynamic min show snapshot head)
-                                                   :max (params/resolve-unless-frame-dynamic max show snapshot head)
-                                                   :metronome (params/resolve-unless-frame-dynamic
-                                                               metronome show snapshot head)
-                                                   :frame-dynamic dyn)))]
-        (reify params/IParam
-          (params/evaluate [this show snapshot head]
-            (eval-fn show snapshot head))
-          (params/frame-dynamic? [this]
-            dyn)
-          (params/result-type [this]
-            Number)
-          (params/resolve-non-frame-dynamic-elements [this show snapshot head]
-            (resolve-fn show snapshot head)))))))
+                      (fn [show snapshot head] (+ min (* range (evaluate osc show snapshot head))))))
+
+                  (if (some? metronome) ;; Support the general case where we have an incoming variable parameter
+                    (fn [show snapshot head]
+                      (let [local-metronome (params/resolve-param metronome show snapshot head)
+                            osc-snapshot (rhythm/metro-snapshot local-metronome (:instant snapshot))]
+                        (evaluate-oscillator show snapshot head min max osc osc-snapshot)))
+                    (fn [show snapshot head]
+                      (evaluate-oscillator show snapshot head min max osc snapshot))))]
+    (Param. "LFO +[get type once got Oscillator. as record]" frame-dynamic Number eval-fn presolve-fn)))
