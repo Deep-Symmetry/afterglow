@@ -171,7 +171,7 @@
   "Clear the DMX universe buffers in preparation for generating a new
   frame."
   [show buffers]
-  (cp/pdoseq @(:pool show) [levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
+  (cp/pdoseq @(:pool show) [^bytes levels (vals buffers)] (java.util.Arrays/fill levels (byte 0))))
 
 (defn- clear-extension-buffers
   "Tell any registered extensions to clear their buffers in
@@ -196,7 +196,7 @@
   the OLA daemon."
   [show buffers]
   (cp/pdoseq @(:pool show) [universe (keys buffers)]
-             (let [levels (get buffers universe)]
+             (let [^bytes levels (get buffers universe)]
                (ola/UpdateDmxData {:universe universe :data (ByteString/copyFrom levels)} response-handler))))
 
 (defn- send-extension-buffers
