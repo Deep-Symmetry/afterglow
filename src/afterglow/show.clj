@@ -127,7 +127,7 @@
 (def ^:private frame-count-for-load
   "The number of frames to keep track of for calculating the current
   load on the show."
-  30)
+  200)
 
 (defn- update-stats
   "Update the count of how many frames have been sent, total and
@@ -138,14 +138,14 @@
         total-time (+ duration (:total-time stats 0))
         frames-sent (inc (:frames-sent stats 0))
         average-duration (double (/ total-time frames-sent))
-        recent (:recent stats (ring-buffer 30))
+        recent (:recent stats (ring-buffer frame-count-for-load))
         discarding (if (< (count recent) frame-count-for-load) 0 (- (peek recent)))
         recent (conj recent duration)
         recent-total (+ (:recent-total stats 0) duration discarding)
         recent-average (double (/ recent-total (count recent)))]
     (when (> duration refresh-interval)
-      (taoensso.timbre/warn "Frame took" duration "ms to generate, refresh interval is" refresh-interval "ms."))
-    (assoc stats :total-time total-time :frames-sent frames-sent :average-duration average-duration
+      (taoensso.timbre/warn "Frame took" duration "ms," (- duration refresh-interval) "ms overdue."))
+    (assoc stats :total-time total-time :frames-sent frames-sent :average-duration average-duration :discarding discarding
            :recent recent :recent-total recent-total :recent-average recent-average)))
 
 (defn current-load
@@ -326,14 +326,14 @@
     (when (and @still-running @(:pool show))  ; We have not been shut down
       (let [ended (at-at/now)
             duration (- ended (:instant snapshot))
-            sleep-time (math/round (max 1 (- (:refresh-interval show) duration)))
-            next-frame-snapshot (rhythm/metro-snapshot (:metronome show) (+ ended sleep-time))]
+            sleep-time (math/round (max 0 (- (:refresh-interval show) duration))) ;;if ends late, sleep-time is 0 (was 1) so next frame was actually attempted insanely early? if duration 10 sleep-time 15 it works, but duration 30 sleep-time 1 = 0, 30, 31...
+            next-frame-snapshot (rhythm/metro-snapshot (:metronome show) (+ ended (:refresh-interval show)))] ;or (+ ended (- (:refresh-interval show) duration)) to stay fully on clock... but unlikely to randomly manage to render next frame like, twice as fast as current. will have to judge what's feasible based on recent stats, active effects etc, and set a time
         (doseq [f @(:frame-fns show)]
           (try
             (f next-frame-snapshot)
             (catch Throwable t
               (error t "Problem trying to call frame-notification function"))))
-        (Thread/sleep sleep-time)
+        (when-not (zero? sleep-time) (Thread/sleep sleep-time))
         (when @(:pool show) (recur next-frame-snapshot still-running))))))
 
 (defonce ^{:doc "Keeps track of all running shows."
