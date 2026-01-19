@@ -14,7 +14,9 @@
             (clj-time core format coerce)
             [clojure.string :as string]
             [com.evocomputing.colors :as colors]
-            [overtone.at-at :refer [now]]
+            [thi.ng.color.core :as clr]
+            [org.httpkit.server :refer [with-channel on-receive on-close]]
+            [overtone.at-at :refer [now after]]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
             [ring.util.response :refer [response]]
             [selmer.parser :as parser]
@@ -28,21 +30,21 @@
   [show active-keys cue cue-effect held? snapshot]
   (let [ending (and cue-effect (:ending cue-effect))
         color (cues/current-cue-color cue cue-effect show snapshot)
-        l-boost (if (zero? (colors/saturation color)) 10.0 0.0)]
-    (colors/create-color
-     :h (colors/hue color)
+        l-boost (if (zero? (clr/saturation color)) 0.1 0.0)
      ;; Figure the lightness. Held cues are the lightest, followed by active, non-ending
      ;; cues. When ending, cues blink between middle and low. If they are not active,
      ;; they are at middle lightness unless there is another active effect with the same
      ;; keyword, in which case they are dim.
-     :s (colors/saturation color)
-     :l (+ (if cue-effect
-             (if ending
-               (if (> (rhythm/snapshot-beat-phase snapshot) 0.4) 25.0 50.0)
-               (if held? 90.0 80.0))
-             (if (or (active-keys (:key cue))
-                     (seq (clojure.set/intersection active-keys (set (:end-keys cue))))) 25.0 50.0))
-           l-boost))))
+        l (+ (if cue-effect
+               (if ending
+                 (if (> (rhythm/snapshot-beat-phase snapshot) 0.4) 0.25 0.50)
+                 (if held? 0.90 0.80))
+               (if (or (active-keys (:key cue))
+                       (seq (clojure.set/intersection active-keys (set (:end-keys cue))))) 0.25 0.50))
+                l-boost)]
+    (clr/hsla (clr/hue color) (clr/saturation color) l)))
+
+(defn rgb-hexstr [color] @(-> color clr/as-int24 clr/as-css))
 
 (defn cue-view
   "Returns a nested structure of rows of cue information starting at the
@@ -63,7 +65,7 @@
            (let [held? (and holding (= holding [x y (:id active)]))
                  color (current-cue-color show active-keys cue active held? snapshot)]
              (assoc cue :current-color color
-                    :style-color (str "style=\"background-color: " (colors/rgb-hexstr color)
+                    :style-color (str "style=\"background-color: " (rgb-hexstr color)
                                       "; color: " (util/contrasting-text-color color) "\"")))
            ;; No actual cue found, start with an empty map
            {})
@@ -223,7 +225,7 @@
           :var (merge {:name (name (:key v))}
                       (select-keys v [:key :name :min :max :type]))
           :value (case (:type v)
-                   :color (when value (colors/rgb-hexstr value))
+                   :color (when value (rgb-hexstr value))
                    value)})))))
 
 (defn- cue-var-changes
@@ -393,7 +395,7 @@
                                                 {:id (:id cell)
                                                  :name (:name cell)
                                                  :color (if (:current-color cell)
-                                                          (colors/rgb-hexstr (:current-color cell))
+                                                          (rgb-hexstr (:current-color cell))
                                                           "")
                                                  :textColor (util/contrasting-text-color (:current-color cell))})))))]
     (record-page-grid page-id grid left bottom width height)
@@ -593,8 +595,8 @@
   [cues-with-vars]
   (mapv (fn [[x y vars]]
           [x y (reduce (fn [r [k v]]
-                         (assoc r k (if (= (type v) :com.evocomputing.colors/color)
-                                      (list 'colors/create-color (str \" (colors/rgb-hexstr v) \"))
+                         (assoc r k (if (= (type v) thi.ng.color.core.HSLA)
+                                      (list 'clr/hsla (str \" (rgb-hexstr v) \"))
                                       v))) {} vars)])
         cues-with-vars))
 
@@ -706,7 +708,7 @@
           var-spec (some #(when (= (name (:key %)) var-key) %) (:variables cue))]
       (when (every? some? [cue var-spec value])
         (let [value (case (:type var-spec)
-                      :color (colors/create-color value)
+                      :color (clr/as-hsla (clr/css value))
                       :boolean (Boolean/valueOf value)
                       :integer (Integer/valueOf value)
                       (Double/valueOf value))]

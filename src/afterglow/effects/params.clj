@@ -12,6 +12,8 @@
             [afterglow.util :as util]
             [clojure.math.numeric-tower :as math]
             [com.evocomputing.colors :as colors]
+            [thi.ng.color.core :as clr]
+            [thi.ng.math.core :as cmath]
             [taoensso.timbre :as timbre :refer [error]])
   (:import [afterglow.rhythm MetronomeSnapshot]
            [javax.media.j3d Transform3D]
@@ -91,6 +93,8 @@
      `(validate-optional-param-type ~value ~type-expected ~(str arg))))
   ([value type-expected name]
    `(when (some? ~value) (check-type ~value ~type-expected ~name))))
+
+(def color-type thi.ng.color.core.HSLA)
 
 (defn param?
   "Checks whether the argument is an [[IParam]]."
@@ -395,22 +399,24 @@
   to the jolby/colors `create-color` function."
   [color]
   (cond (string? color)
-        (colors/create-color color)
+        (clr/as-hsla (apply clr/rgba (map #(/ % 255) (:rgba (colors/create-color color)))))
 
-        (keyword? color)
+        (keyword? color) ;should pass back a bound color??
         color
 
-        (= (type color) :com.evocomputing.colors/color)
+        (= (type color) thi.ng.color.core.HSLA)
+        color
+        (= (type color) :com.evocomputing.colors/color) ;comparing speed
         color
 
-        (satisfies? IParam color)
+        (param? color)
         color
 
         :else
         (throw (IllegalArgumentException. (str "Unable to interpret color parameter:" color)))))
 
-  (def ^:private default-color "The default color for build-color-param."
-    (colors/create-color [0 0 0]))
+(def default-color "The default color for build-color-param (and others)"
+  (clr/as-hsla (apply clr/rgba (map #(/ % 255) (:rgba (colors/create-color :black))))))
 
 (defn build-color-param
   "Returns a dynamic color parameter. If supplied, `:color` is passed

@@ -18,6 +18,8 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [com.evocomputing.colors :as colors]
+            [thi.ng.color.core :as clr]
+            [clojure.string :as string]
             [overtone.at-at :as at-at]
             [overtone.midi :as midi]
             [taoensso.timbre :as timbre])
@@ -70,15 +72,23 @@
 (defn dim
   "Return a dimmed version of a color."
   [color]
-  (colors/darken color 35))
+  (clr/adjust-luminance color -0.30))
+
+(defn dignify
+ "Return a version of a color that isn't actively offensive"
+ [color]
+ (-> color
+     (clr/adjust-saturation -0.2)
+     (clr/adjust-luminance 0.04)
+     (clr/rotate-hue 0.03)))
 
 (def off-color
   "The color of buttons that are completely off."
-  (colors/create-color :black))
+  (clr/rgba 0 0 0 0))
 
 (def amber-color
   "The color for bright amber buttons."
-  (colors/create-color :h 45 :s 100 :l 50))
+  (clr/hsla 1/8 0.8 0.5))
 
 (def dim-amber-color
   "The color for dim amber buttons."
@@ -86,7 +96,7 @@
 
 (def red-color
   "The color for bright red buttons."
-  (colors/create-color :red))
+  (dignify (clr/rgba 1 0 0)))
 
 (def dim-red-color
   "The color for dim red buttons."
@@ -94,7 +104,7 @@
 
 (def green-color
   "The color for bright green buttons."
-  (colors/create-color :green))
+  (dignify (clr/rgba 0.2 1.0 0.2)))
 
 (def dim-green-color
   "The color for dim green buttons."
@@ -102,15 +112,15 @@
 
 (def white-color
   "The color for bright white buttons."
-  (colors/create-color :white))
+  (clr/hsla 0 0.1 0.9))
 
 (def dim-white-color
   "The color for dim white buttons."
-  (colors/darken white-color 90))
+  (clr/adjust-luminance white-color -0.7))
 
 (def default-track-color
   "The color gauge tracks will use unless otherwise specified."
-  (colors/darken white-color 50))
+  (clr/adjust-brightness white-color -0.5))
 
 
 (defn send-sysex
@@ -235,11 +245,11 @@
   {:pre [(<= 0 x 7) (<= 0 y 7)]}
   (let [note (+ 36 x (* y 8))
         palette (get @(:led-palettes controller) note)]
-    (if (util/float= (colors/lightness color) 0.0)
+    (if (util/float= (clr/luminance color) 0.0)
       (midi/midi-note-off (:port-out controller) note)
-      (let [r (colors/red color)
-            g (colors/green color)
-            b (colors/blue color)]
+      (let [r (int (* 255 (clr/red color)))
+            g (int (* 255 (clr/green color)))
+            b (int (* 255 (clr/blue color)))]
         (send-sysex controller [0x03 note (bit-and r 0x7f) (quot r 0x80) (bit-and g 0x7f) (quot g 0x80)
                                 (bit-and b 0x7f) (quot b 0x80) (get palette 6) (get palette 7)])
         (midi/midi-note-on (:port-out controller) note note)))))
@@ -343,11 +353,11 @@
   when initially binding to the Push 2."
   [controller control palette-index color]
   (let [palette (get @(:led-palettes controller) palette-index)]
-    (if (util/float= (colors/lightness color) 0.0)
+    (if (util/float= (clr/luminance color) 0.0)
       (midi/midi-control (:port-out controller) control 0)
-        (let [r (colors/red color)
-              g (colors/green color)
-              b (colors/blue color)]
+        (let [r (int (* 255 (clr/red color)))
+              g (int (* 255 (clr/green color)))
+              b (int (* 255 (clr/blue color)))]
           (send-sysex controller [0x03 palette-index (bit-and r 0x7f) (quot r 0x80) (bit-and g 0x7f) (quot g 0x80)
                                   (bit-and b 0x7f) (quot b 0x80) (get palette 6) (get palette 7)])
         (midi/midi-control (:port-out controller) control palette-index)))))
@@ -361,7 +371,7 @@
   [controller button color]
   (if (= :monochrome (:kind button))
     (midi/midi-control (:port-out controller) (:control button)
-                       (math/round (* (/ (colors/lightness color) 100) 127)))
+                       (math/round (* (clr/luminance color) 127)))
     (set-cc-led-color controller (:control button) (or (:index button) (:control button)) color)))
 
 (defn set-top-pad-color
@@ -469,7 +479,7 @@
 (defn show-labels
   "Illuminates all buttons with text labels, for development assistance."
   ([controller]
-   (show-labels controller (colors/create-color :white)))
+   (show-labels controller (clr/rgba 1.0 1.0 1.0)))
   ([controller color]
    (doseq [[_ button] control-buttons]
      (set-button-color controller button color))))
@@ -588,8 +598,10 @@
   "Set the paint of the supplied graphics context to use the specified
   color."
   [graphics color]
-  (.setPaint graphics (java.awt.Color. (colors/red color) (colors/green color) (colors/blue color)
-                                       (colors/alpha color))))
+  (.setPaint graphics (java.awt.Color. (int (* 255 (clr/red color)))
+                                       (int (* 255 (clr/green color)))
+                                       (int (* 255 (clr/blue color)))
+                                       (int (* 255 (clr/alpha color))))))
 
 (defn calculate-text-width
   "Figure out how many pixels wide some text will be in a given font."
@@ -798,7 +810,7 @@
                                                       java.awt.BasicStroke/JOIN_ROUND))
     (dotimes [i 72]  ; Draw the circle of hues
       (.setAngleStart arc (- 270.0 (* i 5)))
-      (set-graphics-color gauge-graphics (colors/create-color :h (* i 5) :s 100.0 :l 50.0))
+      (set-graphics-color gauge-graphics (clr/hsla (/ (* i 5) 360) 1.0 0.5))
       (.draw gauge-graphics arc))
 
     ;; Draw a mask we can use to soft clip the color hue track. Start by clearing it so all pixels have zero alpha.
@@ -838,8 +850,8 @@
     ;; Then draw the larger knob at the current hue value
     (.setStroke graphics (java.awt.BasicStroke. 6.0 java.awt.BasicStroke/CAP_ROUND java.awt.BasicStroke/JOIN_ROUND))
     (if active?
-      (set-graphics-color graphics (colors/create-color :h value :s 100.0 :l 50.0))
-      (set-graphics-color graphics (colors/create-color :h value :s 100.0 :l 25.0)))
+      (set-graphics-color graphics (clr/hsla (/ value 360) 0.75 0.55))
+      (set-graphics-color graphics (clr/hsla (/ value 360) 0.75 0.25)))
     (.draw graphics arc)))
 
 (defn draw-saturation-gauge
@@ -860,7 +872,7 @@
                                                       java.awt.BasicStroke/JOIN_ROUND))
     (dotimes [i 100]  ; Draw the saturation track
       (.setAngleStart arc (- 240.0 (* i 3)))
-      (set-graphics-color gauge-graphics (colors/create-color :h hue :s i :l 50.0))
+      (set-graphics-color gauge-graphics (clr/hsla (/ hue 360) (/ i 100) 0.5))
       (.draw gauge-graphics arc))
 
     ;; Then draw the wider section representing the current saturation
@@ -868,8 +880,8 @@
                                                       java.awt.BasicStroke/JOIN_ROUND))
     (dotimes [i (max (math/round value) 1)]
       (if active?
-        (set-graphics-color gauge-graphics (colors/create-color :h hue :s i :l 50.0))
-        (set-graphics-color gauge-graphics (colors/create-color :h hue :s i :l 25.0)))
+        (set-graphics-color gauge-graphics (clr/hsla (/ hue 360)  (/ i 100)  0.5))
+        (set-graphics-color gauge-graphics (clr/hsla (/ hue 360)  (/ i 100)  0.25)))
       (.setAngleStart arc (- 240.0 (* i 3)))
       (.draw gauge-graphics arc))
 
@@ -941,11 +953,14 @@
 
 (def metronome-background
   "The background for the metronome section, to mark it as such."
-  (colors/darken (colors/desaturate (colors/create-color :blue) 55) 45))
+  (-> (clr/rgba 0.1 0.1 1)
+      (clr/adjust-saturation -0.3)
+      (clr/adjust-brightness -0.4)))
 
 (def metronome-content
   "The color for content in the metronome section, to mark it as such."
-  (colors/desaturate (colors/create-color :aqua) 30))
+  (-> (clr/rgba 0.2 0.7 0.8)
+      (clr/adjust-saturation -0.2)))
 
 (def font-for-metronome-values
   "The font used when drawing metronome values."
@@ -1226,8 +1241,10 @@
               metro (:metronome (:show controller))
               beat-background (java.awt.Color. 255 255 255 100)
               down-beat-background (java.awt.Color. 255 0 0 72)
-              phrase-background (java.awt.Color. (colors/red metronome-content) (colors/green metronome-content)
-                                                 (colors/blue metronome-content) 32)]
+              phrase-background (java.awt.Color. (int (* 255 (clr/red metronome-content)))
+                                                 (int (* 255 (clr/green metronome-content)))
+                                                 (int (* 255 (clr/blue metronome-content)))
+                                                 32)]
           (.setClip graphics  0 (- Wayang/DISPLAY_HEIGHT 60) (* 2 button-cell-width) 40)
 
           ;; Draw a triangle representing the current measure and any following ones that at least partially fit
@@ -1288,21 +1305,21 @@
       (let [[cue active] (show/find-cue-grid-active-effect (:show controller) (+ x origin-x) (+ y origin-y))
             ending (and active (:ending active))
             base-color (when cue (cues/current-cue-color cue active (:show controller) snapshot))
-            l-boost (when base-color (if (zero? (colors/saturation base-color)) 8.0 0.0))
+            l-boost (when base-color (if (zero? (clr/saturation base-color)) 0.08 0.0))
             color (when base-color
-                    (colors/create-color
-                     :h (colors/hue base-color)
-                     :s (colors/saturation base-color)
+                    (clr/hsla
+                     (clr/hue base-color)
+                     (clr/saturation base-color)
                      ;; Figure the brightness. Active, non-ending cues are full brightness;
                      ;; when ending, they blink between middle and low. If they are not active,
                      ;; they are at middle brightness unless there is another active effect with
                      ;; the same keyword, in which case they are dim.
-                     :l (+ (if active
+                     (+ (if active
                              (if ending
-                               (if (> (rhythm/snapshot-beat-phase snapshot) 0.4) 4 22)
-                               55)
+                               (if (> (rhythm/snapshot-beat-phase snapshot) 0.4) 0.04 0.22)
+                               0.55)
                              (if (or (active-keys (:key cue))
-                                     (seq (set/intersection active-keys (set (:end-keys cue))))) 4 22))
+                                     (seq (clojure.set/intersection active-keys (set (:end-keys cue))))) 0.04 0.22))
                            l-boost)))]
         (swap! (:next-grid-pads controller) assoc (+ x (* y 8)) (or color off-color))))))
 
@@ -1407,6 +1424,7 @@
           (draw-encoder-button-label controller (inc (* x 2)) 1
                                      (best-cue-variable-name controller (second cue-vars) 1) white-color))))))
 
+
 (defn- format-cue-variable-value
   "Translates a cue variable to a string format that will look good
   and be meaningful on the display."
@@ -1419,8 +1437,10 @@
 
                       ;; For color values, create an attributed string which contains a swatch of
                       ;; the actual color, followed by the RGB hex string describing it.
-                      (or (= (type val) :com.evocomputing.colors/color) (= (:type v) :color))
-                      (let [as (java.text.AttributedString. (str "\ufffc " (colors/rgb-hexstr val)))
+                      (or (= (type val) :com.evocomputing.colors/color)
+                          (= (:type v) :color)
+                          (string/starts-with? (str (type val)) "class thi.ng.color.core."))
+                      (let [as (java.text.AttributedString. (str "\ufffc " @(clr/as-css val)))
                             swatch (java.awt.geom.Rectangle2D$Double. 0 -16 16 16)
                             shape-attribute (java.awt.font.ShapeGraphicAttribute.
                                              swatch java.awt.font.ShapeGraphicAttribute/ROMAN_BASELINE
@@ -1428,7 +1448,9 @@
                         (.addAttribute as java.awt.font.TextAttribute/FONT font-for-cue-variable-values)
                         (.addAttribute as java.awt.font.TextAttribute/CHAR_REPLACEMENT shape-attribute 0 1)
                         (.addAttribute as java.awt.font.TextAttribute/FOREGROUND
-                                       (java.awt.Color. (colors/red val) (colors/green val) (colors/blue val))
+                                       (java.awt.Color. (int (* 255 (clr/red val)))
+                                                        (int (* 255 (clr/green val)))
+                                                        (int (* 255 (clr/blue val))))
                                        0 1)
                         as)
 
@@ -1478,11 +1500,13 @@
           (draw-gauge controller index encoder-count cur-val :lowest (min cur-val (:min cue-var))
                       :highest (max cur-val (:max cue-var)))))
 
-      (or (= (type cur-val) :com.evocomputing.colors/color) (= (:type cue-var) :color))
+      (or (= (type cur-val) :com.evocomputing.colors/color)
+          (= (:type cue-var) :color)
+          (string/starts-with? (str (type cur-val)) "class thi.ng.color.core."))
       (let [current-color (or (cues/get-cue-variable cue cue-var :show (:show controller) :when-id effect-id)
                               white-color)  ; Treat missing values as white
-            hue (colors/hue current-color)
-            sat (colors/saturation current-color)]
+            hue (clr/hue current-color)
+            sat (clr/saturation current-color)]
         (if (= encoder-count 1)
           (if (odd? index)  ; We have room for just one gauge; draw whichever will be there in the overlay
             (draw-saturation-gauge controller index 1 hue sat false)
@@ -1576,8 +1600,10 @@
 (def no-effects-active-color
   "The color to use for the text explaining that no effects are
   active."
-  (let [color (colors/desaturate (colors/create-color :blue) 70)]
-    (java.awt.Color. (colors/red color) (colors/green color) (colors/blue color))))
+  (let [color (clr/adjust-saturation (clr/rgba 0 0 1) -0.7)]
+    (java.awt.Color. (int (* 255 (clr/red color)))
+                     (int (* 255 (clr/green color)))
+                     (int (* 255 (clr/blue color))))))
 
 (defn- render-effect-list
   "Display information about the four most recently activated
@@ -1609,7 +1635,7 @@
                                      white-color)
                   color (when base-color
                           (if (and ending (> (rhythm/snapshot-beat-phase snapshot) 0.4))
-                            (colors/darken base-color 40)
+                            (clr/adjust-brightness base-color -0.4)
                             base-color))
                   width       (* 2 button-cell-width)
                   left        (* x width)
@@ -1634,7 +1660,8 @@
                     label (fit-string (or (:name cue) (:name (first fx))) label-font context
                                       (- width button-cell-margin 2))
                     label-width (string-width label label-font context)]
-                (set-graphics-color graphics (colors/create-color (util/contrasting-text-color color)))
+                ;; XXX temp
+                (set-graphics-color graphics (clr/rgba 0.5 0.5 0.5) #_(colors/create-color (util/contrasting-text-color color)))
                 (.setFont graphics label-font)
                 (.drawString graphics label (int (math/round (- (+ left button-cell-width) (/ label-width 2))))
                              (- Wayang/DISPLAY_HEIGHT 23)))
@@ -1796,23 +1823,20 @@
     (cond
       (< @counter 8)
       (doseq [y (range 0 (inc @counter))]
-        (let [color (colors/create-color
-                     :h 0 :s 0 :l (max 10 (- 75 (/ (* 50 (- @counter y)) 6))))]
+        (let [color (clr/hsla 0  0  (/ (max 10 (- 75 (/ (* 50 (- @counter y)) 6))) 100))]
           (set-pad-color controller 3 y color)
           (set-pad-color controller 4 y color)))
 
       (< @counter 12)
       (doseq [x (range 0 (- @counter 7))
               y (range 0 8)]
-        (let [color (colors/create-color
-                     :h 340 :s 100 :l (- 75 (* (- @counter 8 x) 20)))]
+        (let [color (clr/hsla  340/360 1.00 (/ (- 75 (* (- @counter 8 x) 20)) 100))]
           (set-pad-color controller (- 3 x) y color)
           (set-pad-color controller (+ 4 x) y color)))
 
       (< @counter 15)
       (doseq [y (range 0 8)]
-        (let [color (colors/create-color
-                     :h (* 13 (- @counter 11)) :s 100 :l 50)]
+        (let [color (clr/hsla (/ (* 13 (- @counter 11)) 360)  1.00  0.50)]
           (set-pad-color controller (- @counter 7) y color)
           (set-pad-color controller (- 14 @counter) y color)))
 
@@ -1834,8 +1858,8 @@
       (doseq [x (range 0 8)]
         (let [lightness-index (if (> x 3) (- 7 x) x)
               lightness ([10 30 50 70] lightness-index)
-              color (colors/create-color
-                     :h (+ 60 (* 40 (- @counter 18))) :s 100 :l lightness)]
+              color (clr/hsla
+                     (/ (+ 60 (* 40 (- @counter 18))) 360) 0.8  (/ lightness 100))]
           (set-pad-color controller x (- 25 @counter) color)))
 
       (= @counter 26)
@@ -1927,11 +1951,13 @@
 
 (def master-background
   "The background for the grand master section, to mark it as such."
-  (colors/darken (colors/desaturate (colors/create-color :yellow) 55) 45))
+  (-> (clr/rgba 1.0 1.0 0.2)
+      (clr/adjust-saturation -0.4)
+      (clr/adjust-brightness -0.4)))
 
 (def master-content
   "The color for content in the metronome section, to mark it as such."
-  (colors/lighten (colors/create-color :yellow) 20))
+  (clr/adjust-brightness (clr/rgba 1.0 1.0 0.2) 0.2))
 
 (defn- master-encoder-touched
   "Add a user interface overlay to give feedback when turning the
@@ -2271,40 +2297,40 @@
     (doseq [f @(:move-listeners controller)] (f @(:grid-controller-impl controller) :moved))))
 
 (defn- control-change-received
-  "Process a control change message which was not handled by an
-  interface overlay."
+  "Process a control change message which was not handled by an interface overlay."
   [controller message]
-  (case (:note message)
+  (let [velocity (pos? (:velocity message))]
+   (case (:note message)
     3 ; Tap tempo button
-    (when (pos? (:velocity message))
+    (when velocity
       ((:tempo-tap-handler controller))
       (enter-metronome-showing controller))
 
     9 ; Metronome button
-    (when (pos? (:velocity message))
+    (when velocity
       (enter-metronome-showing controller))
 
     (20 22 24 26) ; Effect end/save pads
-    (when (pos? (:velocity message))
+    (when velocity
       (if (in-mode? controller :record)
         (handle-save-effect controller (:note message))
         (handle-end-effect controller (:note message))))
 
     (21 23 25 27) ; Effect cue variable scroll pads
-    (when (pos? (:velocity message))
+    (when velocity
       (handle-scroll-cue-vars controller (:note message)))
 
     ;; 28 ; Master button
 
     85 ; Play button
-    (when (pos? (:velocity message))
+    (when velocity
       (enter-stop-mode controller))
 
     (49 86) ; Shift or Record button
-    (update-mode! controller (:note message) (pos? (:velocity message)))
+    (update-mode! controller (:note message) velocity)
 
     62 ; Page left, scroll back to older effects
-    (when (pos? (:velocity message))
+    (when velocity
         (let [[offset max-offset room] (find-effect-offset-range controller)
               new-offset (if (in-mode? controller :shift)
                            max-offset
@@ -2313,23 +2339,23 @@
             (reset! (:effect-offset controller) new-offset)
             (add-button-held-feedback-overlay controller (:page-left control-buttons)))))
 
-    63 ; Page right, scroll forward to newer effects
-    (when (pos? (:velocity message))
-      (let [[offset _max-offset room] (find-effect-offset-range controller)
+    63; Page right, scroll forward to newer effects
+    (when velocity
+      (let [[offset max-offset room] (find-effect-offset-range controller)
             new-offset (if (in-mode? controller :shift) 0 (max 0 (- offset room)))]
         (when (not= offset new-offset)
           (reset! (:effect-offset controller) new-offset)
           (add-button-held-feedback-overlay controller (:page-right control-buttons)))))
 
     44 ; Left arrow, scroll left in cue grid
-    (when (pos? (:velocity message))
+    (when velocity
       (let [[x y] @(:origin controller)]
         (when (pos? x)
           (move-origin controller [(if (in-mode? controller :shift) 0 (max 0 (- x 8))) y])
           (add-button-held-feedback-overlay controller (:left-arrow control-buttons)))))
 
     45 ; Right arrow, scroll right in cue grid
-    (when (pos? (:velocity message))
+    (when velocity
       (let [[x y] @(:origin controller)
             width (max (controllers/grid-width (:cue-grid (:show controller))) 1)]
         (when (> (- width x) 7)
@@ -2337,7 +2363,7 @@
           (add-button-held-feedback-overlay controller (:right-arrow control-buttons)))))
 
     46 ; Up arrow, scroll up in cue grid
-    (when (pos? (:velocity message))
+    (when velocity
       (let [[x y] @(:origin controller)
             height (max (controllers/grid-height (:cue-grid (:show controller))) 1)]
         (when (> height 7)
@@ -2345,14 +2371,14 @@
           (add-button-held-feedback-overlay controller (:up-arrow control-buttons)))))
 
     47 ; Down arrow, scroll down in cue grid
-    (when (pos? (:velocity message))
+    (when velocity
       (let [[x y] @(:origin controller)]
         (when (pos? y)
           (move-origin controller [x (if (in-mode? controller :shift) 0 (max 0 (- y 8)))])
           (add-button-held-feedback-overlay controller (:down-arrow control-buttons)))))
 
     59 ; User mode button
-    (when (pos? (:velocity message))
+    (when velocity
       (leave-user-mode controller))
 
     ;; Something we don't explictly recognize; see if it's been registered as a custom control button.
@@ -2414,10 +2440,10 @@
                        (when holding
                          (let [active (show/find-effect (:key cue))
                                base-color (cues/current-cue-color cue active (:show controller) snapshot)
-                               color (colors/create-color
-                                      :h (colors/hue base-color)
-                                      :s (colors/saturation base-color)
-                                      :l 75)]
+                               color (clr/hsla
+                                      (clr/hue base-color)
+                                      (clr/saturation base-color)
+                                      0.75)]
                            (swap! (:next-grid-pads controller) assoc (+ pad-x (* pad-y 8)) color)))
                        true)
                      (handle-control-change [_this _message])
@@ -2630,22 +2656,18 @@
 
 (def ^:private color-picker-grid
   (let [result (transient (vec (repeat 64 nil)))]
-    (doseq [i (range 16)]
-      (let [x (* 4 (quot i 8))
+    (doseq [i (range 32 #_16)]
+      (let [x (* 2 #_4 (quot i 8))
             y (- 7 (rem i 8))
             origin (+ x (* 8 y))
-            hue (* 360 (/ i 15))
-            base-color (colors/create-color :hue hue :saturation 100 :lightness 50)]
-        (-> result
-            (assoc! origin base-color)
-            (assoc! (inc origin) (colors/desaturate base-color 25))
-            (assoc! (+ origin 2) (colors/desaturate base-color 50))
-            (assoc! (+ origin 3) (colors/desaturate base-color 75)))))
-    (-> result
-        (assoc! 4 (colors/create-color :h 0 :s 0 :l 100))
-        (assoc! 5 (colors/create-color :h 0 :s 0 :l 50))
-        (assoc! 6 (colors/create-color :h 0 :s 0 :l 0))
-        persistent!)))
+            hue (+ 3 (* 350 (/ i 31 #_15)))
+            base-color (clr/hsla (/ hue 360) 0.75 0.55)]
+        (assoc! result origin base-color)
+        (assoc! result (inc origin) (clr/adjust-saturation base-color -0.4))))
+    (assoc! result 4 (clr/hsla  0  0  1.00))
+    (assoc! result 5 (clr/hsla  0  0  0.50))
+    (assoc! result 6 (clr/hsla  0  0  0.00))
+    (persistent! result)))
 
 (defn- build-color-adjustment-overlay
   "Create an overlay for adjusting a color cue parameter. `note`
@@ -2656,98 +2678,100 @@
 
   Also suppresses the ability to scroll through the cue variables
   while the encoder is being held."
-  [controller note cue v _effect info]
-  (let [anchors                   (atom #{note}) ; Track which encoders are keeping the overlay active
-        x                         (quot note 2)
-        effect-id                 (:id info)
-        ;; Take full cell, using both encoders to adjust hue and saturation.
-        [hue-note sat-note]       (if (odd? note) [(dec note) note] [note (inc note)])
-        [hue-control sat-control] (map control-for-top-encoder-note [hue-note sat-note])
-        graphics                  (create-graphics controller)]
-    (reify controllers/IOverlay
-      (captured-controls [_this] #{hue-control sat-control (+ 21 (* 2 x))})
-      (captured-notes [_this] (clojure.set/union #{hue-note sat-note} (set (drop 36 (range 100)))))
-      (adjust-interface [_this _]
-        (when (same-effect-active controller cue (:id info))
-          ;; Draw the color picker grid
-          (reset! (:next-grid-pads controller) color-picker-grid)
+  [controller note cue v effect info]
+  (let [anchors (atom #{note})  ; Track which encoders are keeping the overlay active
+        x (quot note 2)
+        effect-id (:id info)]
+    ;; Take full cell, using both encoders to adjust hue and saturation.
+    (let [[hue-note sat-note] (if (odd? note) [(dec note) note] [note (inc note)])
+          [hue-control sat-control] (map control-for-top-encoder-note [hue-note sat-note])
+          graphics (create-graphics controller)]
+      (reify controllers/IOverlay
+        (captured-controls [this] #{hue-control sat-control (+ 21 (* 2 x))})
+        (captured-notes [this] (clojure.set/union #{hue-note sat-note} (set (drop 36 (range 100)))))
+        (adjust-interface [this _]
+          (when (same-effect-active controller cue (:id info))
+            ;; Draw the color picker grid
+            (reset! (:next-grid-pads controller) color-picker-grid)
+            (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
+                                    white-color)
+                  hue (clr/hue current-color)
+                  sat (clr/saturation current-color)]
+              ;; Show the preview color at the bottom right
+              (swap! (:next-grid-pads controller) assoc 7 current-color)
+
+              ;; Blink any pad which matches the currently selected color
+              (when (< (rhythm/metro-beat-phase (:metronome (:show controller))) 0.3)
+                (doseq [i (range 64)]
+                  (when (and (not= i 7) (= current-color (get @(:next-grid-pads controller) i)))
+                    (swap! (:next-grid-pads controller) assoc i
+                           (clr/adjust-luminance current-color (if (= i 4)
+                                                                 -0.2 0.2))))))
+
+              ;; Replace the cue's variable value section with a hue and saturation editor.
+              (set-graphics-color graphics off-color)
+              (.fillRect graphics (* x 2 button-cell-width) 0 (* 2 button-cell-width) 100)
+              (draw-encoder-button-label controller (* x 2) 1 "Hue" white-color)
+              (draw-cue-variable-value controller (* x 2) 1 (format "%.1f" hue) white-color)
+              (draw-encoder-button-label controller (inc (* x 2)) 1 "Saturation" white-color)
+              (draw-cue-variable-value controller (inc (* x 2)) 1 (format "%.1f" sat) white-color)
+
+              ;; Add a larger color swatch between the gauges
+              (set-graphics-color graphics current-color)
+              (.fillRect graphics (- (* (inc (* x 2)) button-cell-width) 20) 50 40 40)
+
+              ;; Display the hue and saturation gauges
+              (draw-hue-gauge controller (* 2 x) 1 hue (@anchors hue-note))
+              (draw-saturation-gauge controller (inc (* 2 x)) 1 hue sat (@anchors sat-note))
+
+              ;; Put the touch pad into the appropriate state
+              (if (@anchors hue-note)
+                (set-touch-strip-from-value controller hue 0 360 touch-strip-mode-hue)
+                (set-touch-strip-from-value controller sat 0 100 touch-strip-mode-level))
+              ;TODO tol, adjust lightness with touch strip, don't bind to touched encoder
+
+              ;; Darken the cue var scroll button if it was going to be lit
+              (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
+              true)))
+        (handle-control-change [this message]
+          ;; Adjust hue or saturation depending on controller; ignore if it was the cue var scroll button
+          (when (#{hue-control sat-control} (:note message))
+            (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
+                                    white-color)
+                  current-color (clr/hsla (clr/hue current-color)
+                                          (clr/saturation current-color)
+                                          0.50)
+                  delta (/ (* (sign-velocity (:velocity message)) 0.5) 360)]
+              (cues/set-cue-variable! cue v
+                                      (if (= (:note message) hue-control)
+                                        (clr/rotate-hue current-color delta)
+                                        (clr/adjust-saturation current-color delta))
+                                      :show (:show controller) :when-id effect-id)))
+          true)
+        (handle-note-on [this message]
+          (let [note (:note message)]
+            (if (#{hue-note sat-note} note)
+              ;; The user has grabbed another of our controllers, stay active until it is released.
+              (swap! anchors conj note)
+
+              ;; It's a grid pad. Set the color based on the selected note, unless it's the preview pad.
+              (when-not (= note 43)
+                (let [chosen-color (get color-picker-grid (- note 36))]
+                  (cues/set-cue-variable! cue v chosen-color :show (:show controller) :when-id effect-id)))))
+          true)
+        (handle-note-off [this message]
+          (swap! anchors disj (:note message))
+          (when (empty? @anchors)
+            :done))
+        (handle-aftertouch [this message])
+        (handle-pitch-bend [this message]
           (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
                                   white-color)
-                hue           (colors/hue current-color)
-                sat           (colors/saturation current-color)]
-            ;; Show the preview color at the bottom right
-            (swap! (:next-grid-pads controller) assoc 7 current-color)
-
-            ;; Blink any pad which matches the currently selected color
-            (when (< (rhythm/metro-beat-phase (:metronome (:show controller))) 0.3)
-              (doseq [i (range 64)]
-                (when (and (not= i 7) (colors/color= current-color (get @(:next-grid-pads controller) i)))
-                  (swap! (:next-grid-pads controller) assoc i (if (= i 4)
-                                                                (colors/darken current-color 20)
-                                                                (colors/lighten current-color 20))))))
-
-            ;; Replace the cue's variable value section with a hue and saturation editor.
-            (set-graphics-color graphics off-color)
-            (.fillRect graphics (* x 2 button-cell-width) 0 (* 2 button-cell-width) 100)
-            (draw-encoder-button-label controller (* x 2) 1 "Hue" white-color)
-            (draw-cue-variable-value controller (* x 2) 1 (format "%.1f" hue) white-color)
-            (draw-encoder-button-label controller (inc (* x 2)) 1 "Saturation" white-color)
-            (draw-cue-variable-value controller (inc (* x 2)) 1 (format "%.1f" sat) white-color)
-
-            ;; Add a larger color swatch between the gauges
-            (set-graphics-color graphics current-color)
-            (.fillRect graphics (- (* (inc (* x 2)) button-cell-width) 20) 50 40 40)
-
-            ;; Display the hue and saturation gauges
-            (draw-hue-gauge controller (* 2 x) 1 hue (@anchors hue-note))
-            (draw-saturation-gauge controller (inc (* 2 x)) 1 hue sat (@anchors sat-note))
-
-            ;; Put the touch pad into the appropriate state
-            (if (@anchors hue-note)
-              (set-touch-strip-from-value controller hue 0 360 touch-strip-mode-hue)
-              (set-touch-strip-from-value controller sat 0 100 touch-strip-mode-level))
-
-            ;; Darken the cue var scroll button if it was going to be lit
-            (swap! (:next-top-pads controller) assoc (inc (* 2 x)) off-color)
-            true)))
-      (handle-control-change [_this message]
-        ;; Adjust hue or saturation depending on controller; ignore if it was the cue var scroll button
-        (when (#{hue-control sat-control} (:note message))
-          (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
-                                  white-color)
-                current-color (colors/create-color :h (colors/hue current-color) :s (colors/saturation current-color)
-                                                   :l 50)
-                delta         (* (sign-velocity (:velocity message)) 0.5)]
-            (cues/set-cue-variable! cue v
-                                    (if (= (:note message) hue-control)
-                                      (colors/adjust-hue current-color delta)
-                                      (colors/saturate current-color delta))
-                                    :show (:show controller) :when-id effect-id)))
-        true)
-      (handle-note-on [_this message]
-        (let [note (:note message)]
-          (if (#{hue-note sat-note} note)
-            ;; The user has grabbed another of our controllers, stay active until it is released.
-            (swap! anchors conj note)
-
-            ;; It's a grid pad. Set the color based on the selected note, unless it's the preview pad.
-            (when-not (= note 43)
-              (let [chosen-color (get color-picker-grid (- note 36))]
-                (cues/set-cue-variable! cue v chosen-color :show (:show controller) :when-id effect-id)))))
-        true)
-      (handle-note-off [_this message]
-        (swap! anchors disj (:note message))
-        (when (empty? @anchors)
-          :done))
-      (handle-aftertouch [_this _message])
-      (handle-pitch-bend [_this message]
-        (let [current-color (or (cues/get-cue-variable cue v :show (:show controller) :when-id effect-id)
-                                white-color)
-              fraction      (value-from-touch-strip message 0 1)
-              new-hue       (if (@anchors hue-note) (* fraction 360) (colors/hue current-color))
-              new-sat       (if (@anchors sat-note) (* fraction 100) (colors/saturation current-color))]
-          (cues/set-cue-variable! cue v (colors/create-color :h new-hue :s new-sat :l 50)
-                                  :when-id effect-id))))))
+                fraction (value-from-touch-strip message 0 1)
+                new-hue (if (@anchors hue-note) fraction (clr/hue current-color))
+                new-sat (if (@anchors sat-note) fraction (clr/saturation current-color))]
+            (cues/set-cue-variable! cue v (clr/hsla new-hue new-sat 0.50)
+                                    :when-id effect-id)))))))
 
 (defn- display-encoder-touched
   "One of the eight encoders above the text display was touched."
@@ -2775,7 +2799,9 @@
               (controllers/add-overlay (:overlays controller)
                                        (build-numeric-adjustment-overlay controller note cue cue-var effect info))
 
-              (or (= (type cur-val) :com.evocomputing.colors/color) (= (:type cue-var) :color))
+              (or (= (type cur-val) :com.evocomputing.colors/color)
+                  (= (:type cue-var) :color)
+                  (string/starts-with? (str (type val)) "class thi.ng.color.core."))
               (controllers/add-overlay (:overlays controller)
                                        (build-color-adjustment-overlay controller note cue cue-var effect info))
 
